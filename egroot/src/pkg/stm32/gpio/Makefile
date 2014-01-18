@@ -1,0 +1,1 @@
+/home/michal/P/go/github/emgo/Make.pkg

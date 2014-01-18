@@ -1,0 +1,65 @@
+EGROOT = /home/michal/P/go/src/github.com/ziutek/emgo/egroot
+
+TCPREFIX = /usr/local/stm32/bin/arm-none-eabi-
+CC       = $(TCPREFIX)gcc
+LD       = $(TCPREFIX)ld -v
+CP       = $(TCPREFIX)objcopy
+GDBTUI   = $(TCPREFIX)gdb --tui
+
+
+CWARN = -Wall -Wno-parentheses -Wno-unused-function
+CINCL = -I$(EGROOT)/src/builtin -I$(EGROOT)/src/pkg
+COPT = -Os -fno-common # -ffunction-sections -fdata-sections
+CARCH = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
+	-fsingle-precision-constant -fno-exceptions -nostdinc
+CFLAGS = -g $(COPT) $(CWARN) $(CARCH) $(CINCL)
+
+
+OBJECTS = $(patsubst %.c, %.o, $(filter-out _.c, $(wildcard *.c))) _.o
+
+_.a: $(OBJECTS) 
+	ar rcs $@ $^
+
+%.o : %.c
+	$(CC) $(CFLAGS) -c $(CURDIR)/$<
+
+$(OBJECTS) : _.h
+
+_.c _.h : *.go
+	egc
+
+
+CPFLAGS = -Obinary
+ODFLAGS = -S
+LFLAGS  = -Tstm32f407.ld -nostdlib  -nodefaultlibs  -nostartfiles
+
+main.bin: main.elf
+	$(CP) $(CPFLAGS) main.elf main.bin
+	
+main.elf: _.a stm32f407.ld
+	$(LD) $(LFLAGS) -o main.elf \
+		$(EGROOT)/src/builtin/start.o \
+		_.a \
+		$(EGROOT)/src/pkg/delay/_.a \
+		$(EGROOT)/src/pkg/stm32/clock/_.a \
+		$(EGROOT)/src/pkg/stm32/flash/_.a \
+		$(EGROOT)/src/pkg/stm32/gpio/_.a \
+		$(EGROOT)/src/pkg/stm32/periph/_.a
+		
+
+debug:
+	$(GDBTUI) \
+		-ex "target extended-remote localhost:4242" \
+		-ex "set remote hardware-breakpoint-limit 6" \
+		-ex "set remote hardware-watchpoint-limit 4" \
+		main.elf
+
+
+.PHONY : clean
+
+clean :
+	-rm -f _.go _.a _.c _.h _.o main.bin main.elf
+
+
+
+
