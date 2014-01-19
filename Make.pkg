@@ -17,7 +17,7 @@ CFLAGS = -g $(COPT) $(CWARN) $(CARCH) $(CINCL)
 
 OBJECTS = $(patsubst %.c, %.o, $(filter-out _.c, $(wildcard *.c))) _.o
 
-_.a: $(OBJECTS) 
+_.a: _.go $(OBJECTS) _.h
 	ar rcs $@ $^
 
 %.o : %.c
@@ -25,7 +25,7 @@ _.a: $(OBJECTS)
 
 $(OBJECTS) : _.h
 
-_.c _.h : *.go
+_.c _.h _.go : *.go
 	egc
 
 
