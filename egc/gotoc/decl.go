@@ -1,4 +1,4 @@
-package main
+package gotoc
 
 import (
 	"bytes"
@@ -18,13 +18,13 @@ func (cc *CC) GoType(w *bytes.Buffer, typ types.Type) {
 		if p != nil {
 			if p.Path() != cc.pkg.Path() {
 				ipkg := cc.imports[p.Path()]
-				n := ipkg.name
+				n := ipkg.Name
 				if n == "" {
 					n = p.Name()
 				}
 				w.WriteString(n)
 				w.WriteByte('.')
-				ipkg.exported = true
+				ipkg.Exported = true
 			}
 		}
 		w.WriteString(o.Name())

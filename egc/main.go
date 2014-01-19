@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./gotoc"
 	"code.google.com/p/go.tools/go/exact"
 	"code.google.com/p/go.tools/go/types"
 	"go/ast"
@@ -36,7 +37,7 @@ func compile(dir string) {
 		checkErr(err)
 		flist[i] = f
 	}
-	
+
 	og, err := os.Create("_.go")
 	checkErr(err)
 	oh, err := os.Create("_.h")
@@ -59,7 +60,8 @@ func compile(dir string) {
 	pkg, err := tc.Check(path, fset, flist, ti)
 	checkErr(err)
 
-	checkErr(Compile(og, oh, oc, pkg, fset, flist, ti))
+	cc := gotoc.NewCC(fset, pkg, ti, MakeImports(flist))
+	checkErr(cc.Compile(og, oh, oc, flist))
 
 	og.Close()
 	oh.Close()

@@ -1,4 +1,4 @@
-package main
+package gotoc
 
 import (
 	"bytes"
@@ -8,80 +8,111 @@ import (
 	"io"
 )
 
-type ipkg struct {
-	name     string
-	exported bool
+type IPkg struct {
+	Name     string // imported package name
+	Exported bool   // is this name exported
 }
 
-type CC struct {
-	wg, // Go exported declarations
-	wc, // C implementation
-	ws, // C local declarations
-	wh bytes.Buffer // C exported declarations
-
-	pkg     *types.Package
-	imports map[string]*ipkg // imports for whole package
-
-	ti   *types.Info
-	fset *token.FileSet
-
-	il int
-}
-
-func Compile(og, oh, oc io.Writer, pkg *types.Package, fset *token.FileSet, files []*ast.File, ti *types.Info) error {
-	cc := &CC{
-		pkg:     pkg,
-		imports: make(map[string]*ipkg),
-		ti:      ti,
-		fset:    fset,
-	}
-
-	// Package imports
-
+func MakeImports(files []*ast.File) map[string]*IPkg {
+	imports := make(map[string]*IPkg)
 	for _, f := range files {
 		for _, i := range f.Imports {
 			path := i.Path.Value
 			path = path[1 : len(path)-1]
-			p := cc.imports[path]
+			p := imports[path]
 			if p == nil {
-				p = new(ipkg)
-				cc.imports[path] = p
+				p = new(IPkg)
+				imports[path] = p
 			}
 			if i.Name != nil {
 				// Local name is allways unambiguous
-				p.name = i.Name.Name
+				p.Name = i.Name.Name
 			}
 		}
 	}
+	return imports
+}
 
-	// Build package
-	
+type CC struct {
+	fset *token.FileSet
+	pkg  *types.Package
+	ti   *types.Info
+
+	imports map[string]*IPkg // imports for whole package
+	il      int
+
+	// Result of translation
+
+	wg, // Go exported declarations
+	wc, // C implementation
+	ws, // C local declarations
+	wh bytes.Buffer // C exported declarations
+}
+
+func NewCC(fset *token.FileSet, pkg *types.Package, ti *types.Info,
+	imports map[string]*IPkg) *CC {
+
+	return &CC{fset: fset, pkg: pkg, ti: ti, imports: imports}
+}
+
+// Result returns current result of translation.
+// Some kind of result not returned are marks in imports map.
+func (cc *CC) Result() (g, c, s, h []byte) {
+	return cc.wg.Bytes(), cc.wc.Bytes(), cc.ws.Bytes(), cc.wh.Bytes()
+}
+
+// Resets
+func (cc *CC) Reset() {
+	// Reset buffers
+	cc.wg.Reset()
+	cc.wc.Reset()
+	cc.ws.Reset()
+	cc.wh.Reset()
+	for _, p := range cc.imports {
+		p.Exported = false
+	}
+	cc.il = 0
+}
+
+func (cc *CC) File(f *ast.File) {
+	for _, d := range f.Decls {
+		cc.Decl(d)
+	}
+}
+
+// Complie translates files to complete set of C/Go source. It resets cc
+// before translation. It writes results of translation to:
+//	og - Go "header", contains exported declarations
+//	oh - C header, contains exported declarations translated to C
+//	oc - C source
+func (cc *CC) Compile(og, oh, oc io.Writer, files []*ast.File) error {
+	cc.Reset()
+
 	cc.ws.WriteString("\n// Local declarations\n\n")
 	cc.wc.WriteString("\n// Implementation\n\n")
 
+	// Translate files - result in wg, wc, ws, wh + marks in imports
 	for _, f := range files {
-		for _, d := range f.Decls {
-			cc.Decl(d)
-		}
+		cc.File(f)
 	}
 
 	buf := new(bytes.Buffer)
 
-	// Write Go header file that contains all exported symbols
+	// Write Go header file - it contains all exported declarations
 
 	buf.WriteString("// ")
 	buf.WriteString("Tu ma być dokumentacja pakietu!")
 	buf.WriteByte('\n')
 
-	buf.WriteString("package " + pkg.Name() + "\n")
+	buf.WriteString("package " + cc.pkg.Name() + "\n")
 
 	buf.WriteString("import (\n")
 	for path, ipkg := range cc.imports {
-		if !ipkg.exported {
+		if !ipkg.Exported {
 			continue
 		}
-		if ipkg.name != "" {
-			buf.WriteString(ipkg.name)
+		if ipkg.Name != "" {
+			buf.WriteString(ipkg.Name)
 			buf.WriteByte(' ')
 		}
 		buf.WriteByte('"')
@@ -106,7 +137,7 @@ func Compile(og, oh, oc io.Writer, pkg *types.Package, fset *token.FileSet, file
 		return err
 	}
 
-	up := upath(pkg.Path())
+	up := upath(cc.pkg.Path())
 	buf.WriteString("#ifndef " + up + "\n")
 	buf.WriteString("#define " + up + "\n\n")
 
@@ -118,13 +149,13 @@ func Compile(og, oh, oc io.Writer, pkg *types.Package, fset *token.FileSet, file
 		if path == "unsafe" {
 			continue
 		}
-	
+
 		buf.WriteString("#include \"")
 		buf.WriteString(path)
 		buf.WriteString("/_.h\"\n")
 
 		w := oc
-		if ipkg.exported {
+		if ipkg.Exported {
 			w = oh
 		}
 
