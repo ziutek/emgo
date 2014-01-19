@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./gotoc"
+	"github.com/ziutek/emgo/gotoc"
 	"code.google.com/p/go.tools/go/exact"
 	"code.google.com/p/go.tools/go/types"
 	"go/ast"
@@ -16,7 +16,7 @@ var buildCtx = build.Context{
 	GOARCH:      "cortexm4f",
 	GOOS:        "none",
 	GOROOT:      "/home/michal/P/go/github/emgo/egroot",
-	GOPATH:      "/home/michal/P/go/github/emgo",
+	GOPATH:      "/home/michal/P/go/github/emgo/egpath",
 	Compiler:    "gc",
 	ReleaseTags: []string{"go1.1", "go1.2"},
 	CgoEnabled:  false,
@@ -60,7 +60,7 @@ func compile(dir string) {
 	pkg, err := tc.Check(path, fset, flist, ti)
 	checkErr(err)
 
-	cc := gotoc.NewCC(fset, pkg, ti, MakeImports(flist))
+	cc := gotoc.NewCC(fset, pkg, ti, gotoc.MakeImports(flist))
 	checkErr(cc.Compile(og, oh, oc, flist))
 
 	og.Close()

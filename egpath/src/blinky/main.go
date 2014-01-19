@@ -69,28 +69,28 @@ func setupLEDpins() {
 	gpio.D.SetMode(Blue, gpio.Out)
 }
 
-const (
-	w1 = 1e6
-	w2 = 1e7
-)
-
 func loop() {
+	const (
+		W1 = 1e6
+		W2 = 1e7
+	)
+
 	gpio.D.ResetBit(Green)
 	gpio.D.SetBit(Orange)
 	gpio.D.SetBit(Red)
-	delay.Loop(w1)
+	delay.Loop(W1)
 	gpio.D.ResetBit(Red)
 	gpio.D.ResetBit(Orange)
 	gpio.D.SetBit(Blue)
-	delay.Loop(w1)
+	delay.Loop(W1)
 	gpio.D.ResetBit(Blue)
 	gpio.D.SetBit(Orange)
 	gpio.D.SetBit(Red)
-	delay.Loop(w1)
+	delay.Loop(W1)
 	gpio.D.ResetBit(Red)
 	gpio.D.ResetBit(Orange)
 	gpio.D.SetBit(Green)
-	delay.Loop(w2)
+	delay.Loop(W2)
 }
 
 func main() {

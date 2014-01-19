@@ -1,12 +1,7 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
-	"go/ast"
 	"os"
-	"strconv"
-	"strings"
 )
 
 func die(msg string) {

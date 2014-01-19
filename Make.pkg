@@ -59,7 +59,3 @@ debug:
 
 clean :
 	-rm -f _.go _.a _.c _.h _.o main.bin main.elf
-
-
-
-

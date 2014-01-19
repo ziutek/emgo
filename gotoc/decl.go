@@ -10,40 +10,6 @@ import (
 	"strconv"
 )
 
-func (cc *CC) GoType(w *bytes.Buffer, typ types.Type) {
-	switch t := typ.(type) {
-	case *types.Named:
-		o := t.Obj()
-		p := o.Pkg()
-		if p != nil {
-			if p.Path() != cc.pkg.Path() {
-				ipkg := cc.imports[p.Path()]
-				n := ipkg.Name
-				if n == "" {
-					n = p.Name()
-				}
-				w.WriteString(n)
-				w.WriteByte('.')
-				ipkg.Exported = true
-			}
-		}
-		w.WriteString(o.Name())
-
-	case *types.Pointer:
-		w.WriteByte('*')
-		cc.GoType(w, t.Elem())
-
-	case *types.Basic:
-		if t.Info()&types.IsUntyped != 0 {
-			break
-		}
-		types.WriteType(w, nil, typ)
-
-	default:
-		types.WriteType(w, nil, typ)
-	}
-}
-
 func (cc *CC) Tuple(w *bytes.Buffer, t *types.Tuple, sep string) {
 	for i, n := 0, t.Len(); i < n; i++ {
 		if i != 0 {
@@ -227,46 +193,46 @@ func (cc *CC) GenDecl(d *ast.GenDecl) {
 				c := cc.ti.Objects[n].(*types.Const)
 				eval := c.Val().String()
 
-				if n.IsExported() {
+				exported := n.IsExported() && cc.isGlobal(c)
+
+				// Go header
+				if exported {
 					wg.WriteString("const ")
 					wg.WriteString(n.Name)
-					if typ := c.Type(); typ != nil {
+					wg.WriteByte(' ')
+					if cc.GoType(wg, c.Type()) {
 						wg.WriteByte(' ')
-						cc.GoType(wg, typ)
 					}
-					wg.WriteString(" = ")
+					wg.WriteString("= ")
 					wg.WriteString(eval)
-					if i < len(vals) {
-						switch v := vals[i].(type) {
-						case *ast.BasicLit:
-							// It was written before
-						default:
-							wg.WriteString(" // = ")
-							printer.Fprint(wg, cc.fset, v)
+
+					if cc.OriginComments {
+						// Comment about original value
+						if i < len(vals) {
+							switch v := vals[i].(type) {
+							case *ast.BasicLit:
+								// It was written before
+							default:
+								wg.WriteString(" // = ")
+								printer.Fprint(wg, cc.fset, v)
+							}
 						}
 					}
+
 					wg.WriteByte('\n')
 				}
 
-				/*
-					// This code was commented because In C code
-					// all constant expressions are replaced by
-					// their exact values so this
-
-					var wh *bytes.Buffer
-					if n.IsExported() {
-						wh = &cc.wh
-					} else {
-						wh = &cc.ws
-					}
-
+				// C header
+				if exported {
+					wh := &cc.wh
 					cc.indent(wh)
 					wh.WriteString("#define ")
 					cc.Name(wh, c)
 					wh.WriteByte(' ')
 					wh.WriteString(eval)
 					wh.WriteByte('\n')
-				*/
+				}
+
 			}
 		}
 
@@ -285,10 +251,12 @@ func (cc *CC) GenDecl(d *ast.GenDecl) {
 					wg.WriteString(n.Name)
 					wg.WriteByte(' ')
 					cc.GoType(wg, typ)
-
-					if i < len(vals) {
-						wg.WriteString(" // = ")
-						printer.Fprint(wg, cc.fset, vals[i])
+					if cc.OriginComments {
+						// Comment about original initial value
+						if i < len(vals) {
+							wg.WriteString(" // = ")
+							printer.Fprint(wg, cc.fset, vals[i])
+						}
 					}
 					wg.WriteByte('\n')
 				}

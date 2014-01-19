@@ -34,6 +34,8 @@ func MakeImports(files []*ast.File) map[string]*IPkg {
 }
 
 type CC struct {
+	OriginComments bool
+
 	fset *token.FileSet
 	pkg  *types.Package
 	ti   *types.Info
@@ -99,10 +101,6 @@ func (cc *CC) Compile(og, oh, oc io.Writer, files []*ast.File) error {
 	buf := new(bytes.Buffer)
 
 	// Write Go header file - it contains all exported declarations
-
-	buf.WriteString("// ")
-	buf.WriteString("Tu ma być dokumentacja pakietu!")
-	buf.WriteByte('\n')
 
 	buf.WriteString("package " + cc.pkg.Name() + "\n")
 
