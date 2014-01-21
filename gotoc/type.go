@@ -8,42 +8,7 @@ import (
 	"strconv"
 )
 
-func (cc *CC) GoType(w *bytes.Buffer, typ types.Type) bool {
-	switch t := typ.(type) {
-	case *types.Named:
-		o := t.Obj()
-		p := o.Pkg()
-		if p != nil {
-			if p.Path() != cc.pkg.Path() {
-				ipkg := cc.imports[p.Path()]
-				n := ipkg.Name
-				if n == "" {
-					n = p.Name()
-				}
-				w.WriteString(n)
-				w.WriteByte('.')
-				ipkg.Exported = true
-			}
-		}
-		w.WriteString(o.Name())
-
-	case *types.Pointer:
-		w.WriteByte('*')
-		cc.GoType(w, t.Elem())
-
-	case *types.Basic:
-		if t.Info()&types.IsUntyped != 0 {
-			return false
-		}
-		types.WriteType(w, nil, typ)
-
-	default:
-		types.WriteType(w, nil, typ)
-	}
-	return true
-}
-
-func (cc *CC) Type(w *bytes.Buffer, typ types.Type) {
+func (cc *GTC) Type(w *bytes.Buffer, typ types.Type) {
 	switch t := typ.(type) {
 	case *types.Basic:
 		if t.Kind() == types.UnsafePointer {
@@ -94,8 +59,20 @@ func (cc *CC) Type(w *bytes.Buffer, typ types.Type) {
 	}
 }
 
-func (cc *CC) TypeStr(typ types.Type) string {
+func (cc *GTC) TypeStr(typ types.Type) string {
 	buf := new(bytes.Buffer)
 	cc.Type(buf, typ)
 	return buf.String()
+}
+
+func (cc *GTC) Tuple(w *bytes.Buffer, t *types.Tuple, sep string) {
+	for i, n := 0, t.Len(); i < n; i++ {
+		if i != 0 {
+			w.WriteString(sep)
+		}
+		v := t.At(i)
+		cc.Type(w, v.Type())
+		w.WriteByte(' ')
+		w.WriteString(v.Name())
+	}
 }

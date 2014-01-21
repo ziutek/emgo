@@ -5,47 +5,19 @@ import (
 	"code.google.com/p/go.tools/go/types"
 	"fmt"
 	"go/ast"
-	"go/printer"
 	"go/token"
 	"strconv"
 )
-
-func (cc *CC) Tuple(w *bytes.Buffer, t *types.Tuple, sep string) {
-	for i, n := 0, t.Len(); i < n; i++ {
-		if i != 0 {
-			w.WriteString(sep)
-		}
-		v := t.At(i)
-		cc.Type(w, v.Type())
-		w.WriteByte(' ')
-		w.WriteString(v.Name())
-	}
-}
 
 type retVal struct {
 	name, typ string
 }
 
-func (cc *CC) FuncDecl(d *ast.FuncDecl) {
+func (cc *GTC) FuncDecl(d *ast.FuncDecl) *CDD {
 	f := cc.ti.Objects[d.Name].(*types.Func)
-
-	funcName := cc.NameStr(f)
 	s := f.Type().(*types.Signature)
 
-	var wh *bytes.Buffer
-
-	if f.IsExported() || funcName == "main_main" {
-		b := d.Body
-		d.Body = nil
-		printer.Fprint(&cc.wg, cc.fset, d)
-		cc.wg.WriteByte('\n')
-		d.Body = b
-
-		wh = &cc.wh
-	} else {
-		wh = &cc.ws
-	}
-	wc := &cc.wc
+	cdd := newCDD(f, FuncDecl)
 
 	var (
 		retT        string
@@ -53,6 +25,8 @@ func (cc *CC) FuncDecl(d *ast.FuncDecl) {
 		hasRetNames bool
 	)
 
+	w := new(bytes.Buffer)
+	funcName := cc.NameStr(f)
 	if ret := s.Results(); ret != nil {
 		retList = make([]retVal, ret.Len())
 		for i, n := 0, ret.Len(); i < n; i++ {
@@ -71,73 +45,65 @@ func (cc *CC) FuncDecl(d *ast.FuncDecl) {
 
 		if len(retList) > 1 {
 			retT = "__" + funcName
-			cc.indent(wh)
-			wh.WriteString("typedef struct {\n")
+			cc.indent(w)
+			w.WriteString("typedef struct {\n")
 			cc.il++
 			for _, v := range retList {
-				cc.indent(wh)
-				wh.WriteString(v.typ)
-				wh.WriteByte(' ')
-				wh.WriteString(v.name)
-				wh.WriteString(";\n")
+				cc.indent(w)
+				w.WriteString(v.typ)
+				w.WriteByte(' ')
+				w.WriteString(v.name)
+				w.WriteString(";\n")
 			}
 			cc.il--
-			cc.indent(wh)
-			wh.WriteString("} " + retT + ";\n")
+			cc.indent(w)
+			w.WriteString("} " + retT + ";\n")
 		}
 	}
 
-	if wh == &cc.ws {
-		wh.WriteString("static ") // not exported function
-	}
-
-	buf := new(bytes.Buffer)
-
-	cc.indent(buf)
+	cc.indent(w)
 	switch len(retList) {
 	case 0:
-		buf.WriteString("void")
+		w.WriteString("void")
 
 	case 1:
-		buf.WriteString(retList[0].typ)
+		w.WriteString(retList[0].typ)
 
 	default:
-		buf.WriteString(retT)
+		w.WriteString(retT)
 	}
 
-	buf.WriteString(" " + funcName + "(")
+	w.WriteString(" " + funcName + "(")
 	if r := s.Recv(); r != nil {
-		cc.Type(buf, r.Type())
-		buf.WriteByte(' ')
-		buf.WriteString(r.Name())
+		cc.Type(w, r.Type())
+		w.WriteByte(' ')
+		w.WriteString(r.Name())
 		if s.Params() != nil {
-			buf.WriteString(", ")
+			w.WriteString(", ")
 		}
 	}
 	if p := s.Params(); p != nil {
-		cc.Tuple(buf, p, ", ")
+		cc.Tuple(w, p, ", ")
 	}
-	buf.WriteByte(')')
+	w.WriteByte(')')
 
-	wh.Write(buf.Bytes())
-	wh.WriteString(";\n")
+	cdd.copyDecl(w, ";\n")
 
 	if d.Body == nil {
-		return
+		return cdd
 	}
 
-	buf.WriteTo(wc)
-	wc.WriteByte(' ')
+	w.WriteByte(' ')
 
 	if hasRetNames {
-		cc.indent(wc)
-		wc.WriteString("{\n")
+		cc.indent(w)
+		w.WriteString("{\n")
 		cc.il++
 		for _, v := range retList {
-			cc.indent(wc)
-			wc.WriteString(v.typ + " " + v.name + " = {0};\n")
+			cc.indent(w)
+			w.WriteString(v.typ + " " + v.name + " = {0};\n")
 		}
-		cc.indent(wc)
+		cc.indent(w)
 
 		if retT == "" {
 			// Inform ReturnStmt that there is one named result
@@ -145,39 +111,40 @@ func (cc *CC) FuncDecl(d *ast.FuncDecl) {
 		}
 	}
 
-	cc.BlockStmt(wc, d.Body, retT)
-	wc.WriteByte('\n')
+	cc.BlockStmt(w, d.Body, retT)
+	w.WriteByte('\n')
 
 	if hasRetNames {
 		cc.il--
-		cc.indent(wc)
-		wc.WriteString("__end:\n")
+		cc.indent(w)
+		w.WriteString("__end:\n")
 		cc.il++
 
-		cc.indent(wc)
-		wc.WriteString("return ")
+		cc.indent(w)
+		w.WriteString("return ")
 		if len(retList) == 1 {
-			wc.WriteString(retList[0].name)
+			w.WriteString(retList[0].name)
 		} else {
-			wc.WriteString("(" + retT + ") {")
+			w.WriteString("(" + retT + ") {")
 			for i, v := range retList {
 				if i > 0 {
-					wc.WriteString(", ")
+					w.WriteString(", ")
 				}
-				wc.WriteString(v.name)
+				w.WriteString(v.name)
 			}
-			wc.WriteByte('}')
+			w.WriteByte('}')
 		}
-		wc.WriteString(";\n")
+		w.WriteString(";\n")
 
 		cc.il--
-		wc.WriteString("}\n")
+		w.WriteString("}\n")
 	}
+	cdd.copyDef(w)
+	return cdd
 }
 
-func (cc *CC) GenDecl(d *ast.GenDecl) {
-	wc := &cc.wc
-	wg := &cc.wg
+func (cc *GTC) GenDecl(d *ast.GenDecl) (cdds []*CDD) {
+	w := new(bytes.Buffer)
 
 	switch d.Tok {
 	case token.IMPORT:
@@ -187,57 +154,29 @@ func (cc *CC) GenDecl(d *ast.GenDecl) {
 	case token.CONST:
 		for _, s := range d.Specs {
 			vs := s.(*ast.ValueSpec)
-			vals := vs.Values
 
-			for i, n := range vs.Names {
+			for _, n := range vs.Names {
 				c := cc.ti.Objects[n].(*types.Const)
 				eval := c.Val().String()
+				cdd := newCDD(c, ConstDecl)
 
-				exported := n.IsExported() && cc.isGlobal(c)
+				// All constants in expressions are evaluated so
+				// only exported constants need be translated to C
+				if c.IsExported() {
+					cc.indent(w)
+					w.WriteString("#define ")
+					cc.Name(w, c)
+					w.WriteByte(' ')
+					w.WriteString(eval)
 
-				// Go header
-				if exported {
-					wg.WriteString("const ")
-					wg.WriteString(n.Name)
-					wg.WriteByte(' ')
-					if cc.GoType(wg, c.Type()) {
-						wg.WriteByte(' ')
-					}
-					wg.WriteString("= ")
-					wg.WriteString(eval)
-
-					if cc.OriginComments {
-						// Comment about original value
-						if i < len(vals) {
-							switch v := vals[i].(type) {
-							case *ast.BasicLit:
-								// It was written before
-							default:
-								wg.WriteString(" // = ")
-								printer.Fprint(wg, cc.fset, v)
-							}
-						}
-					}
-
-					wg.WriteByte('\n')
+					cdd.copyDecl(w, "\n")
+					w.Reset()
 				}
-
-				// C header
-				if exported {
-					wh := &cc.wh
-					cc.indent(wh)
-					wh.WriteString("#define ")
-					cc.Name(wh, c)
-					wh.WriteByte(' ')
-					wh.WriteString(eval)
-					wh.WriteByte('\n')
-				}
-
+				cdds = append(cdds, cdd)
 			}
 		}
 
 	case token.VAR:
-		buf := new(bytes.Buffer)
 		for _, s := range d.Specs {
 			vs := s.(*ast.ValueSpec)
 			vals := vs.Values
@@ -245,94 +184,64 @@ func (cc *CC) GenDecl(d *ast.GenDecl) {
 			for i, n := range vs.Names {
 				v := cc.ti.Objects[n].(*types.Var)
 				typ := v.Type()
+				cdd := newCDD(v, VarDecl)
 
-				if cc.isGlobal(v) && n.IsExported() {
-					wg.WriteString("var ")
-					wg.WriteString(n.Name)
-					wg.WriteByte(' ')
-					cc.GoType(wg, typ)
-					if cc.OriginComments {
-						// Comment about original initial value
-						if i < len(vals) {
-							wg.WriteString(" // = ")
-							printer.Fprint(wg, cc.fset, vals[i])
-						}
-					}
-					wg.WriteByte('\n')
-				}
+				cc.indent(w)
+				cc.Type(w, typ)
+				w.WriteByte(' ')
+				cc.Name(w, v)
+				cdd.copyDecl(w, ";\n")
 
-				cc.Type(buf, typ)
-				buf.WriteByte(' ')
-				cc.Name(buf, v)
-
-				var wh *bytes.Buffer
-
-				if cc.isGlobal(v) {
-					if n.IsExported() {
-						wh = &cc.wh
-
-						wh.WriteString("extern ")
-					} else {
-						wh = &cc.ws
-
-						wh.WriteString("static ")
-						wc.WriteString("static ")
-					}
-					wh.Write(buf.Bytes())
-					wh.WriteString(";\n")
-				}
-
-				cc.indent(wc)
-				buf.WriteTo(wc)
-				wc.WriteString(" = ")
+				w.WriteString(" = ")
 				if i < len(vals) {
-					cc.Expr(wc, vals[i])
+					cc.Expr(w, vals[i])
 				} else {
-					wc.WriteString("{0}")
+					w.WriteString("{0}")
 				}
-				wc.WriteString(";\n")
+				w.WriteString(";\n")
+				
+				cdd.copyDef(w)
+				w.Reset()
+
+				cdds = append(cdds, cdd)
 			}
 		}
 
 	case token.TYPE:
 		for _, s := range d.Specs {
 			ts := s.(*ast.TypeSpec)
+			t := cc.ti.Objects[ts.Name]
+			cdd := newCDD(t, TypeDecl)
 
-			var wh *bytes.Buffer
-			if ts.Name.IsExported() {
-				wg := &cc.wg
-				wg.WriteString("type ")
-				printer.Fprint(wg, cc.fset, ts)
-				wg.WriteByte('\n')
-
-				wh = &cc.wh
-			} else {
-				wh = &cc.ws
-			}
-
-			cc.indent(wh)
-			wh.WriteString("typedef ")
-			cc.Type(wh, cc.ti.Types[ts.Type])
-			wh.WriteByte(' ')
-			cc.Name(wh, cc.ti.Objects[ts.Name])
-			wh.WriteString(";\n")
+			cc.indent(w)
+			w.WriteString("typedef ")
+			cc.Type(w, cc.ti.Types[ts.Type])
+			w.WriteByte(' ')
+			cc.Name(w, t)
+			
+			cdd.copyDecl(w, ";\n")
+			w.Reset()
+			
+			cdds = append(cdds, cdd)
 		}
 
 	default:
-		fmt.Fprintf(&cc.wh, "%%%s%%", d.Tok)
+		// Return fake CDD for unknown declaration
+		cdds = []*CDD{{
+			Decl: []byte(fmt.Sprintf("@%v (%T)@\n", d.Tok, d)),
+		}}
 	}
-
+	return
 }
 
-func (cc *CC) Decl(decl ast.Decl) {
+func (cc *GTC) Decl(decl ast.Decl) []*CDD {
 	switch d := decl.(type) {
 	case *ast.FuncDecl:
-		cc.FuncDecl(d)
+		return []*CDD{cc.FuncDecl(d)}
 
 	case *ast.GenDecl:
-		cc.GenDecl(d)
-
-	default:
-		fmt.Fprintf(&cc.wc, "@%v<%T>@", d, d)
+		return cc.GenDecl(d)
 	}
+
+	panic(fmt.Sprint("Unknown declaration: ", decl))
 }

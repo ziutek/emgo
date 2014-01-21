@@ -1,9 +1,11 @@
 package main
 
 import (
-	"github.com/ziutek/emgo/gotoc"
 	"code.google.com/p/go.tools/go/exact"
+	"code.google.com/p/go.tools/go/importer"
 	"code.google.com/p/go.tools/go/types"
+	//	"fmt"
+	"github.com/ziutek/emgo/gotoc"
 	"go/ast"
 	"go/build"
 	"go/parser"
@@ -26,6 +28,8 @@ func compile(dir string) {
 	bp, err := buildCtx.ImportDir(dir, 0)
 	checkErr(err)
 
+	//fmt.Printf("package \"%s\"\n%+v\n", dir, bp)
+
 	flist := make([]*ast.File, len(bp.GoFiles))
 	fset := token.NewFileSet()
 
@@ -38,12 +42,15 @@ func compile(dir string) {
 		flist[i] = f
 	}
 
-	og, err := os.Create("_.go")
+	wp, err := os.Create("__.EXPORTS")
 	checkErr(err)
-	oh, err := os.Create("_.h")
+	defer wp.Close()
+	wh, err := os.Create("__.h")
 	checkErr(err)
-	oc, err := os.Create("_.c")
+	defer wh.Close()
+	wc, err := os.Create("_.c")
 	checkErr(err)
+	defer wc.Close()
 
 	tc := &types.Config{Import: NewImporter().Import}
 	ti := &types.Info{
@@ -60,12 +67,22 @@ func compile(dir string) {
 	pkg, err := tc.Check(path, fset, flist, ti)
 	checkErr(err)
 
-	cc := gotoc.NewCC(fset, pkg, ti, gotoc.MakeImports(flist))
-	checkErr(cc.Compile(og, oh, oc, flist))
+	exportData := importer.ExportData(pkg)
+	_, err = wp.Write(exportData)
+	checkErr(err)
 
-	og.Close()
-	oh.Close()
-	oc.Close()
+	gtc := gotoc.NewGTC(fset, pkg, ti, gotoc.MakeImports(flist))
+	checkErr(gtc.Translate(wh, wc, flist))
+
+	/*
+		bt := determineBuildTools()
+		if bt == nil {
+			die("can't determine build tools for " +
+				buildCtx.GOOS + "_" + buildCtx.GOARCH)
+		}
+
+		checkErr(bt.Compile("_.c"))
+	*/
 }
 
 func main() {

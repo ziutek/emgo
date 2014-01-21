@@ -7,7 +7,7 @@ import (
 	"go/token"
 )
 
-func (cc *CC) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) {
+func (cc *GTC) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) {
 	cc.indent(w)
 	switch len(s.Results) {
 	case 0:
@@ -34,8 +34,7 @@ func (cc *CC) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) {
 	}
 }
 
-func (cc *CC) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
-
+func (cc *GTC) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
 	switch s := stmt.(type) {
 	case *ast.AssignStmt:
 		if len(s.Lhs) != 1 || len(s.Rhs) != 1 {
@@ -148,14 +147,21 @@ func (cc *CC) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
 
 }
 
-func (cc *CC) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) {
+func (cc *GTC) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) {
 	w.WriteString("{\n")
 	cc.il++
 	for _, stmt := range bs.List {
 
 		switch s := stmt.(type) {
 		case *ast.DeclStmt:
-			cc.Decl(s.Decl)
+			cdds := cc.Decl(s.Decl)
+			for _, cdd := range cdds{
+				w.Write(cdd.Decl)
+			}
+			for _, cdd := range cdds{
+				w.Write(cdd.Def)
+			}
+			
 
 		case *ast.ReturnStmt:
 			cc.ReturnStmt(w, s, resultT)

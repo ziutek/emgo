@@ -8,7 +8,7 @@ import (
 	"go/token"
 )
 
-func (cc *CC) Name(w *bytes.Buffer, obj types.Object) {
+func (cc *GTC) Name(w *bytes.Buffer, obj types.Object) {
 	switch o := obj.(type) {
 	case *types.PkgName:
 		w.WriteString(upath(o.Pkg().Path()))
@@ -35,13 +35,13 @@ func (cc *CC) Name(w *bytes.Buffer, obj types.Object) {
 	w.WriteString(obj.Name())
 }
 
-func (cc *CC) NameStr(o types.Object) string {
+func (cc *GTC) NameStr(o types.Object) string {
 	buf := new(bytes.Buffer)
 	cc.Name(buf, o)
 	return buf.String()
 }
 
-func (cc *CC) BasicLit(w *bytes.Buffer, l *ast.BasicLit) {
+func (cc *GTC) BasicLit(w *bytes.Buffer, l *ast.BasicLit) {
 	switch l.Kind {
 	case token.STRING:
 		w.WriteString("_GOSTR(")
@@ -56,7 +56,7 @@ func (cc *CC) BasicLit(w *bytes.Buffer, l *ast.BasicLit) {
 	}
 }
 
-func (cc *CC) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
+func (cc *GTC) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
 	xt := cc.ti.Types[e.X]
 	sel := cc.ti.Objects[e.Sel]
 
@@ -94,7 +94,7 @@ func (cc *CC) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
 	return nil
 }
 
-func (cc *CC) Expr(w *bytes.Buffer, expr ast.Expr) {
+func (cc *GTC) Expr(w *bytes.Buffer, expr ast.Expr) {
 	if v, ok := cc.ti.Values[expr]; ok {
 		// Constant expression
 		w.WriteString(v.String())

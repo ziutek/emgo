@@ -17,15 +17,15 @@ CFLAGS = -g $(COPT) $(CWARN) $(CARCH) $(CINCL)
 
 OBJECTS = $(patsubst %.c, %.o, $(filter-out _.c, $(wildcard *.c))) _.o
 
-_.a: _.go $(OBJECTS) _.h
+_.a: __.EXPORTS __.h $(OBJECTS) 
 	ar rcs $@ $^
 
 %.o : %.c
 	$(CC) $(CFLAGS) -c $(CURDIR)/$<
 
-$(OBJECTS) : _.h
+$(OBJECTS) : __.h
 
-_.c _.h _.go : *.go
+_.c __.h __.EXPORTS : *.go
 	egc
 
 
@@ -58,4 +58,4 @@ debug:
 .PHONY : clean
 
 clean :
-	-rm -f _.go _.a _.c _.h _.o main.bin main.elf
+	-rm -f __.EXPORTS _.a _.c __.h *.o main.bin main.elf

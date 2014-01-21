@@ -71,8 +71,8 @@ func setupLEDpins() {
 
 func loop() {
 	const (
-		W1 = 1e6
-		W2 = 1e7
+		W1 = 1e7
+		W2 = 1e8
 	)
 
 	gpio.D.ResetBit(Green)
