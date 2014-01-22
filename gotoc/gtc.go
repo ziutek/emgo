@@ -40,7 +40,6 @@ type GTC struct {
 	ti   *types.Info
 
 	imports map[string]*IPkg // imports for whole package
-	il      int
 }
 
 func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, imports map[string]*IPkg) *GTC {
@@ -59,13 +58,12 @@ func (cc *GTC) Reset() {
 	for _, p := range cc.imports {
 		p.Exported = false
 	}
-	cc.il = 0
 }
 
 func (cc *GTC) File(f *ast.File) (cdds []*CDD) {
 	for _, d := range f.Decls {
 		// TODO: concurrently?
-		cdds = append(cdds, cc.Decl(d)...)
+		cdds = append(cdds, cc.Decl(d, 0)...)
 	}
 	return
 }
@@ -142,12 +140,6 @@ func (cc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 
 	return nil
-}
-
-func (cc *GTC) indent(w *bytes.Buffer) {
-	for i := 0; i < cc.il; i++ {
-		w.WriteByte('\t')
-	}
 }
 
 func (cc *GTC) isImported(o types.Object) bool {

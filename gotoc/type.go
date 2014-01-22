@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func (cc *GTC) Type(w *bytes.Buffer, typ types.Type) {
+func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) {
 	switch t := typ.(type) {
 	case *types.Basic:
 		if t.Kind() == types.UnsafePointer {
@@ -26,20 +26,20 @@ func (cc *GTC) Type(w *bytes.Buffer, typ types.Type) {
 		w.WriteString(o.Name())
 
 	case *types.Pointer:
-		cc.Type(w, t.Elem())
+		cdd.Type(w, t.Elem())
 		w.WriteByte('*')
 
 	case *types.Struct:
 		w.WriteString("struct {\n")
-		cc.il++
+		cdd.il++
 		for i, n := 0, t.NumFields(); i < n; i++ {
 			f := t.Field(i)
-			cc.indent(w)
+			cdd.indent(w)
 			if tag := t.Tag(i); tag != "" {
 				w.WriteString(reflect.StructTag(tag).Get("C"))
 				w.WriteByte(' ')
 			}
-			cc.Type(w, f.Type())
+			cdd.Type(w, f.Type())
 			if !f.Anonymous() {
 				w.WriteByte(' ')
 				if f.Name() != "_" {
@@ -51,7 +51,7 @@ func (cc *GTC) Type(w *bytes.Buffer, typ types.Type) {
 			}
 			w.WriteString(";\n")
 		}
-		cc.il--
+		cdd.il--
 		w.WriteByte('}')
 
 	default:
@@ -59,19 +59,19 @@ func (cc *GTC) Type(w *bytes.Buffer, typ types.Type) {
 	}
 }
 
-func (cc *GTC) TypeStr(typ types.Type) string {
+func (cdd *CDD) TypeStr(typ types.Type) string {
 	buf := new(bytes.Buffer)
-	cc.Type(buf, typ)
+	cdd.Type(buf, typ)
 	return buf.String()
 }
 
-func (cc *GTC) Tuple(w *bytes.Buffer, t *types.Tuple, sep string) {
+func (cdd *CDD) Tuple(w *bytes.Buffer, t *types.Tuple, sep string) {
 	for i, n := 0, t.Len(); i < n; i++ {
 		if i != 0 {
 			w.WriteString(sep)
 		}
 		v := t.At(i)
-		cc.Type(w, v.Type())
+		cdd.Type(w, v.Type())
 		w.WriteByte(' ')
 		w.WriteString(v.Name())
 	}

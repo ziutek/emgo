@@ -14,7 +14,6 @@ const (
 	VarDecl
 	ConstDecl
 	TypeDecl
-	ImportDecl
 )
 
 // CDD stores Go declaration translated to C declaration and definition.
@@ -22,19 +21,24 @@ type CDD struct {
 	Origin types.Object              // object for this declaration
 	Uses   map[types.Object]struct{} // used declarations
 
-	Type   DeclType
+	Typ    DeclType
 	Export bool
 	Inline bool
 
 	Decl []byte
 	Def  []byte
+
+	gtc *GTC
+	il  int
 }
 
-func newCDD(o types.Object, t DeclType) *CDD {
+func (gtc *GTC) newCDD(o types.Object, t DeclType, il int) *CDD {
 	cdd := &CDD{
 		Origin: o,
-		Type:   t,
+		Typ:    t,
 		Uses:   make(map[types.Object]struct{}),
+		gtc:    gtc,
+		il:     il,
 	}
 	if t == FuncDecl && o.Name() == "main" && o.Pkg().Name() == "main" {
 		cdd.Export = true
@@ -42,6 +46,12 @@ func newCDD(o types.Object, t DeclType) *CDD {
 		cdd.Export = o.IsExported()
 	}
 	return cdd
+}
+
+func (cdd *CDD) indent(w *bytes.Buffer) {
+	for i := 0; i < cdd.il; i++ {
+		w.WriteByte('\t')
+	}
 }
 
 func (cdd *CDD) copyDecl(b *bytes.Buffer, suffix string) {
@@ -55,10 +65,14 @@ func (cdd *CDD) copyDef(b *bytes.Buffer) {
 	cdd.Def = append([]byte(nil), b.Bytes()...)
 }
 
+func (cdd *CDD) use(o types.Object) {
+	cdd.Uses[o] = struct{}{}
+}
+
 func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 	prefix := ""
 
-	switch cdd.Type {
+	switch cdd.Typ {
 	case FuncDecl:
 		if cdd.Inline {
 			prefix = "static inline "
@@ -74,11 +88,6 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 		}
 
 	case ConstDecl:
-		if !cdd.Export {
-			return nil
-		}
-
-	case ImportDecl:
 		if !cdd.Export {
 			return nil
 		}
@@ -104,7 +113,7 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 	prefix := ""
 
-	switch cdd.Type {
+	switch cdd.Typ {
 	case FuncDecl:
 		if cdd.Inline {
 			prefix = "static inline "
@@ -118,9 +127,6 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 		}
 
 	case ConstDecl:
-		return nil
-
-	case ImportDecl:
 		return nil
 	}
 

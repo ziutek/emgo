@@ -7,8 +7,8 @@ import (
 	"go/token"
 )
 
-func (cc *GTC) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) {
-	cc.indent(w)
+func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) {
+	cdd.indent(w)
 	switch len(s.Results) {
 	case 0:
 		if resultT == "" {
@@ -19,7 +19,7 @@ func (cc *GTC) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) {
 
 	case 1:
 		w.WriteString("return ")
-		cc.Expr(w, s.Results[0])
+		cdd.Expr(w, s.Results[0])
 		w.WriteString(";\n")
 
 	default:
@@ -28,13 +28,13 @@ func (cc *GTC) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) {
 			if i > 0 {
 				w.WriteString(", ")
 			}
-			cc.Expr(w, e)
+			cdd.Expr(w, e)
 		}
 		w.WriteString("};\n")
 	}
 }
 
-func (cc *GTC) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
+func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
 	switch s := stmt.(type) {
 	case *ast.AssignStmt:
 		if len(s.Lhs) != 1 || len(s.Rhs) != 1 {
@@ -42,11 +42,11 @@ func (cc *GTC) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
 		}
 
 		if s.Tok == token.DEFINE {
-			cc.Type(w, cc.ti.Types[s.Rhs[0]])
+			cdd.Type(w, cdd.gtc.ti.Types[s.Rhs[0]])
 			w.WriteByte(' ')
 		}
 
-		cc.Expr(w, s.Lhs[0])
+		cdd.Expr(w, s.Lhs[0])
 
 		switch s.Tok {
 		case token.DEFINE:
@@ -59,7 +59,7 @@ func (cc *GTC) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
 			w.WriteString(" " + s.Tok.String() + " ")
 		}
 
-		cc.Expr(w, s.Rhs[0])
+		cdd.Expr(w, s.Rhs[0])
 
 		if s.Tok == token.AND_NOT_ASSIGN {
 			w.WriteByte(')')
@@ -68,40 +68,40 @@ func (cc *GTC) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
 
 	case *ast.ExprStmt:
 
-		cc.Expr(w, s.X)
+		cdd.Expr(w, s.X)
 		w.WriteString(";\n")
 
 	case *ast.IfStmt:
 		if s.Init != nil {
 			w.WriteString("{\n")
-			cc.il++
-			cc.Stmt(w, s.Init)
+			cdd.il++
+			cdd.Stmt(w, s.Init)
 		}
 
 		w.WriteString("if (")
-		cc.Expr(w, s.Cond)
+		cdd.Expr(w, s.Cond)
 		w.WriteString(") ")
-		cc.BlockStmt(w, s.Body, "")
+		cdd.BlockStmt(w, s.Body, "")
 		if s.Else == nil {
 			w.WriteByte('\n')
 		} else {
 			w.WriteString(" else ")
-			cc.Stmt(w, s.Else)
+			cdd.Stmt(w, s.Else)
 		}
 
 		if s.Init != nil {
-			cc.il--
-			cc.indent(w)
+			cdd.il--
+			cdd.indent(w)
 			w.WriteString("}\n")
 		}
 
 	case *ast.IncDecStmt:
 		w.WriteString(s.Tok.String())
-		cc.Expr(w, s.X)
+		cdd.Expr(w, s.X)
 		w.WriteString(";\n")
 
 	case *ast.BlockStmt:
-		cc.BlockStmt(w, s, "")
+		cdd.BlockStmt(w, s, "")
 		w.WriteByte('\n')
 
 	case *ast.ForStmt:
@@ -109,35 +109,35 @@ func (cc *GTC) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
 
 		if braces {
 			w.WriteString("{\n")
-			cc.il++
+			cdd.il++
 		}
 		if s.Init != nil {
-			cc.indent(w)
-			cc.Stmt(w, s.Init)
+			cdd.indent(w)
+			cdd.Stmt(w, s.Init)
 		}
 		if braces {
-			cc.indent(w)
+			cdd.indent(w)
 		}
 
 		w.WriteString("while (")
 		if s.Cond != nil {
-			cc.Expr(w, s.Cond)
+			cdd.Expr(w, s.Cond)
 		} else {
 			w.WriteString("true")
 		}
 		w.WriteString(") ")
 
-		cc.BlockStmt(w, s.Body, "")
+		cdd.BlockStmt(w, s.Body, "")
 		w.WriteByte('\n')
 
 		if s.Post != nil {
-			cc.indent(w)
-			cc.Stmt(w, s.Post)
+			cdd.indent(w)
+			cdd.Stmt(w, s.Post)
 		}
 
 		if braces {
-			cc.il--
-			cc.indent(w)
+			cdd.il--
+			cdd.indent(w)
 			w.WriteString("}\n")
 		}
 
@@ -147,14 +147,14 @@ func (cc *GTC) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
 
 }
 
-func (cc *GTC) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) {
+func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) {
 	w.WriteString("{\n")
-	cc.il++
+	cdd.il++
 	for _, stmt := range bs.List {
 
 		switch s := stmt.(type) {
 		case *ast.DeclStmt:
-			cdds := cc.Decl(s.Decl)
+			cdds := cdd.gtc.Decl(s.Decl, cdd.il)
 			for _, cdd := range cdds{
 				w.Write(cdd.Decl)
 			}
@@ -164,14 +164,14 @@ func (cc *GTC) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) {
 			
 
 		case *ast.ReturnStmt:
-			cc.ReturnStmt(w, s, resultT)
+			cdd.ReturnStmt(w, s, resultT)
 
 		default:
-			cc.indent(w)
-			cc.Stmt(w, s)
+			cdd.indent(w)
+			cdd.Stmt(w, s)
 		}
 	}
-	cc.il--
-	cc.indent(w)
+	cdd.il--
+	cdd.indent(w)
 	w.WriteString("}")
 }
