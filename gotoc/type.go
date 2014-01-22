@@ -5,7 +5,6 @@ import (
 	"code.google.com/p/go.tools/go/types"
 	"fmt"
 	"reflect"
-	"strconv"
 )
 
 func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) {
@@ -18,12 +17,7 @@ func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) {
 		}
 
 	case *types.Named:
-		o := t.Obj()
-		if p := o.Pkg(); p != nil {
-			w.WriteString(upath(p.Path()))
-			w.WriteByte('_')
-		}
-		w.WriteString(o.Name())
+		cdd.Name(w, t.Obj())
 
 	case *types.Pointer:
 		cdd.Type(w, t.Elem())
@@ -42,12 +36,7 @@ func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) {
 			cdd.Type(w, f.Type())
 			if !f.Anonymous() {
 				w.WriteByte(' ')
-				if f.Name() != "_" {
-					w.WriteString(f.Name())
-				} else {
-					w.WriteString("__reserved")
-					w.WriteString(strconv.Itoa(i))
-				}
+				cdd.Name(w, f)
 			}
 			w.WriteString(";\n")
 		}
@@ -73,6 +62,6 @@ func (cdd *CDD) Tuple(w *bytes.Buffer, t *types.Tuple, sep string) {
 		v := t.At(i)
 		cdd.Type(w, v.Type())
 		w.WriteByte(' ')
-		w.WriteString(v.Name())
+		cdd.Name(w, v)
 	}
 }

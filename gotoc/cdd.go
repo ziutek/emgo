@@ -18,8 +18,8 @@ const (
 
 // CDD stores Go declaration translated to C declaration and definition.
 type CDD struct {
-	Origin types.Object              // object for this declaration
-	Uses   map[types.Object]struct{} // used declarations
+	Origin types.Object // object for this declaration
+	Uses   map[types.Object]struct{}
 
 	Typ    DeclType
 	Export bool
@@ -30,6 +30,7 @@ type CDD struct {
 
 	gtc *GTC
 	il  int
+	un  int
 }
 
 func (gtc *GTC) newCDD(o types.Object, t DeclType, il int) *CDD {

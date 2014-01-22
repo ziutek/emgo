@@ -31,7 +31,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) *CDD {
 		retList = make([]retVal, ret.Len())
 		for i, n := 0, ret.Len(); i < n; i++ {
 			v := ret.At(i)
-			n := v.Name()
+			n := cdd.NameStr(v)
 			if n == "" {
 				n = "__" + strconv.Itoa(i)
 			} else {
@@ -77,7 +77,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) *CDD {
 	if r := s.Recv(); r != nil {
 		cdd.Type(w, r.Type())
 		w.WriteByte(' ')
-		w.WriteString(r.Name())
+		cdd.Name(w, r)
 		if s.Params() != nil {
 			w.WriteString(", ")
 		}

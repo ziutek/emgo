@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"strconv"
 )
 
 func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object) {
@@ -32,7 +33,14 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object) {
 		w.WriteString(upath(obj.Pkg().Path()))
 		w.WriteByte('_')
 	}
-	w.WriteString(obj.Name())
+	name := obj.Name()
+	if name == "_" {
+		w.WriteString("__unused")
+		w.WriteString(strconv.Itoa(cdd.un))
+		cdd.un++
+	} else {
+		w.WriteString(name)
+	}
 }
 
 func (cdd *CDD) NameStr(o types.Object) string {
