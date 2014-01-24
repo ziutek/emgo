@@ -24,9 +24,11 @@ void setupDataBSS() {
 }
 
 void main_main();
+void main_init();
 
 void start() {
 	setupDataBSS();
+	main_init();
 	main_main();
 }
 

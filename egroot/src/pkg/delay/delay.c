@@ -1,6 +1,6 @@
-void delay_Loop(int i) {
-	while (i > 0) {
+void delay_Loop(int n) {
+	while (n > 0) {
 		asm volatile ("nop");
-		--i;
+		--n;
 	}
 }

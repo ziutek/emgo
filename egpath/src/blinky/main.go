@@ -77,8 +77,8 @@ func Exported(p gpio.Port) {
 
 func loop() {
 	const (
-		W1 = 1e6
-		W2 = 1e7
+		W1 = 2e6
+		W2 = 2e7
 	)
 	var LED = LED
 
