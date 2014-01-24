@@ -87,7 +87,11 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) *CDD {
 	}
 	w.WriteByte(')')
 
-	cdd.copyDecl(w, ";\n")
+	init := (f.Name() == "init")
+
+	if !init {
+		cdd.copyDecl(w, ";\n")
+	}
 
 	if d.Body == nil {
 		return cdd
@@ -142,6 +146,10 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) *CDD {
 		w.WriteString("}\n")
 	}
 	cdd.copyDef(w)
+
+	if init {
+		cdd.Init = []byte("\t" + funcName + "();\n")
+	}
 	return cdd
 }
 
@@ -194,10 +202,10 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				cdd.Type(w, typ)
 				w.WriteByte(' ')
 				w.WriteString(name)
-				
+
 				cinit := true // true if C declaration can init value
-				
-				if cdd.gtc.isGlobal(v){
+
+				if cdd.gtc.isGlobal(v) {
 					cdd.copyDecl(w, ";\n") // Global variables need declaration
 					if i < len(vals) {
 						_, cinit = cdd.gtc.ti.Values[vals[i]]

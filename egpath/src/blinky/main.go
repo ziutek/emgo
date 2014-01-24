@@ -8,7 +8,7 @@ import (
 	"stm32/periph"
 )
 
-func stm32f4init() {
+func init() {
 	const flashLatency = 5 // Need for 2.7-3.6V and 150-168MHz
 
 	flash.SetLatency(flashLatency)
@@ -61,7 +61,7 @@ const (
 
 var LED = gpio.D
 
-func setupLEDpins() {
+func init() {
 	periph.AHB1ClockEnable(periph.GPIOD)
 	periph.AHB1Reset(periph.GPIOD)
 
@@ -72,39 +72,43 @@ func setupLEDpins() {
 }
 
 func Exported(p gpio.Port) {
+	notExported(p)
+}
+
+func notExported(p gpio.Port) {
 	p.SetBit(12)
 }
 
 func loop() {
 	const (
-		W1 = 2e6
-		W2 = 2e7
+		W1 = 1e6
+		W2 = 1e7
 	)
 	var LED = LED
 
 	LED.ResetBit(Green)
 	LED.SetBit(Orange)
+	delay.Loop(W1)
 	LED.SetBit(Red)
 	delay.Loop(W1)
 	LED.ResetBit(Red)
+	delay.Loop(W1)
 	LED.ResetBit(Orange)
 	LED.SetBit(Blue)
 	delay.Loop(W1)
 	LED.ResetBit(Blue)
 	LED.SetBit(Orange)
+	delay.Loop(W1)
 	LED.SetBit(Red)
 	delay.Loop(W1)
 	LED.ResetBit(Red)
+	delay.Loop(W1)
 	LED.ResetBit(Orange)
 	LED.SetBit(Green)
 	delay.Loop(W2)
 }
 
 func main() {
-	stm32f4init()
-
-	setupLEDpins()
-
 	for {
 		loop()
 	}

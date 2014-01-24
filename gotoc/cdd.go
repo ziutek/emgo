@@ -24,16 +24,16 @@ type CDD struct {
 
 	Typ    DeclType
 	Export bool
-	Inline bool // (set by Deter
+	Inline bool // set by DetermineInline
 
 	Decl []byte
 	Def  []byte
 	Init []byte
 
-	gtc      *GTC
-	il       int
-	unusedId int
-	body     bool // true if in function body
+	gtc  *GTC
+	il   int
+	ui   int
+	body bool // true if in function body
 
 }
 
@@ -77,6 +77,10 @@ func (cdd *CDD) copyInit(b *bytes.Buffer) {
 }
 
 func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
+	if len(cdd.Decl) == 0 {
+		return nil
+	}
+
 	prefix := ""
 
 	switch cdd.Typ {

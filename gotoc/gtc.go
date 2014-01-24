@@ -69,9 +69,12 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 	cddm := make(map[types.Object]*CDD)
 	for _, cdd := range cdds {
-		cddm[cdd.Origin] = cdd
+		o := cdd.Origin
+		cddm[o] = cdd
 		if cdd.Typ == FuncDecl {
-			cdd.DetermineInline()
+			if o.Name() != "main" || o.Pkg().Name() != "main" {
+				cdd.DetermineInline()
+			}
 		}
 	}
 
@@ -168,14 +171,21 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		buf.WriteString("\t" + upath(i.Path()) + "_init();\n")
 	}
 	for _, cdd := range cdds {
-		buf.Write(cdd.Init)
+		if cdd.Typ == VarDecl {
+			buf.Write(cdd.Init)
+		}
+	}
+	for _, cdd := range cdds {
+		if cdd.Typ == FuncDecl {
+			buf.Write(cdd.Init)
+		}
 	}
 	if buf.Len() == n {
 		// no imports, no inits
 		buf.Truncate(m)
 	}
 	buf.WriteString("}\n")
-	
+
 	if _, err := buf.WriteTo(wc); err != nil {
 		return err
 	}

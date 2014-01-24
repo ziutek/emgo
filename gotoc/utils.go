@@ -2,6 +2,7 @@ package gotoc
 
 import (
 	"bytes"
+	"code.google.com/p/go.tools/go/types"
 	"fmt"
 	"go/ast"
 	"os"
@@ -20,4 +21,8 @@ func upath(path string) string {
 
 func tmpname(w *bytes.Buffer) string {
 	return "__" + strconv.Itoa(w.Len())
+}
+
+func uniqueId(o types.Object) string {
+	return strconv.Itoa(int(o.Pos()))
 }

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"strconv"
 )
 
 func (cdd *CDD) addObject(o types.Object) {
@@ -44,17 +43,20 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object) {
 		}
 	}
 
-	if p := obj.Pkg(); p != nil && !cdd.gtc.isLocal(obj){
+	if p := obj.Pkg(); p != nil && !cdd.gtc.isLocal(obj) {
 		cdd.addObject(obj)
 		w.WriteString(upath(obj.Pkg().Path()))
 		w.WriteByte('_')
 	}
 	name := obj.Name()
-	if name == "_" {
+	switch name {
+	case "_":
 		w.WriteString("__unused")
-		w.WriteString(strconv.Itoa(cdd.unusedId))
-		cdd.unusedId++
+		w.WriteString(uniqueId(obj))
 		return
+
+	case "init":
+		name = uniqueId(obj) + name
 	}
 	w.WriteString(name)
 }
