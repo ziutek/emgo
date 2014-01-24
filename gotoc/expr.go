@@ -9,9 +9,21 @@ import (
 	"strconv"
 )
 
+func (cdd *CDD) addObject(o types.Object) {
+	if o == cdd.Origin {
+		return
+	}
+	if cdd.body {
+		cdd.BodyUses[o] = struct{}{}
+	} else {
+		cdd.DeclUses[o] = struct{}{}
+	}
+}
+
 func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object) {
 	switch o := obj.(type) {
 	case *types.PkgName:
+		// Imported package name in SelectorExpr: pkgname.Name
 		w.WriteString(upath(o.Pkg().Path()))
 		return
 
@@ -25,22 +37,26 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object) {
 			cdd.Type(w, t)
 			w.WriteByte('_')
 			w.WriteString(o.Name())
+			if !cdd.gtc.isLocal(t.(*types.Named).Obj()) {
+				cdd.addObject(o)
+			}
 			return
 		}
 	}
 
-	if cdd.gtc.isImported(obj) || cdd.gtc.isGlobal(obj) {
+	if p := obj.Pkg(); p != nil && !cdd.gtc.isLocal(obj){
+		cdd.addObject(obj)
 		w.WriteString(upath(obj.Pkg().Path()))
 		w.WriteByte('_')
 	}
 	name := obj.Name()
 	if name == "_" {
 		w.WriteString("__unused")
-		w.WriteString(strconv.Itoa(cdd.un))
-		cdd.un++
-	} else {
-		w.WriteString(name)
+		w.WriteString(strconv.Itoa(cdd.unusedId))
+		cdd.unusedId++
+		return
 	}
+	w.WriteString(name)
 }
 
 func (cdd *CDD) NameStr(o types.Object) string {
@@ -70,19 +86,20 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
 
 	switch s := sel.Type().(type) {
 	case *types.Signature:
+		cdd.Name(w, sel)
 		if recv := s.Recv(); recv != nil {
-			cdd.Name(w, sel)
 			if _, ok := recv.Type().(*types.Pointer); !ok {
+				// Method has non pointer receiver so there is guaranteed
+				// that e.X isn't a pointer.
 				return e.X
 			}
+			// Method has pointer receiver.
 			if _, ok := xt.(*types.Pointer); ok {
-				return e.X
+				return e.X // e.X is pointer
 			}
+			// e.X isn't a pointer so create pointer to it.
 			return &ast.UnaryExpr{Op: token.AND, X: e.X}
 		}
-		cdd.Expr(w, e.X)
-		w.WriteByte('_')
-		w.WriteString(e.Sel.Name)
 
 	default:
 		cdd.Expr(w, e.X)
@@ -103,7 +120,9 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
 }
 
 func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
-	if v, ok := cdd.gtc.ti.Values[expr]; ok {
+	cdd.Complexity++
+
+	if v := cdd.gtc.ti.Values[expr]; v != nil {
 		// Constant expression
 		w.WriteString(v.String())
 		return

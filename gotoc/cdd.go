@@ -3,7 +3,6 @@ package gotoc
 import (
 	"bytes"
 	"code.google.com/p/go.tools/go/types"
-	"fmt"
 	"io"
 )
 
@@ -18,28 +17,35 @@ const (
 
 // CDD stores Go declaration translated to C declaration and definition.
 type CDD struct {
-	Origin types.Object // object for this declaration
-	Uses   map[types.Object]struct{}
+	Origin     types.Object // object for this declaration
+	DeclUses   map[types.Object]struct{}
+	BodyUses   map[types.Object]struct{}
+	Complexity int
 
 	Typ    DeclType
 	Export bool
-	Inline bool
+	Inline bool // (set by Deter
 
 	Decl []byte
 	Def  []byte
+	Init []byte
 
-	gtc *GTC
-	il  int
-	un  int
+	gtc      *GTC
+	il       int
+	unusedId int
+	body     bool // true if in function body
+
 }
 
 func (gtc *GTC) newCDD(o types.Object, t DeclType, il int) *CDD {
 	cdd := &CDD{
-		Origin: o,
-		Typ:    t,
-		Uses:   make(map[types.Object]struct{}),
-		gtc:    gtc,
-		il:     il,
+		Origin:   o,
+		Typ:      t,
+		DeclUses: make(map[types.Object]struct{}),
+		BodyUses: make(map[types.Object]struct{}),
+		gtc:      gtc,
+		il:       il,
+		body:     il > 0,
 	}
 	if t == FuncDecl && o.Name() == "main" && o.Pkg().Name() == "main" {
 		cdd.Export = true
@@ -66,8 +72,8 @@ func (cdd *CDD) copyDef(b *bytes.Buffer) {
 	cdd.Def = append([]byte(nil), b.Bytes()...)
 }
 
-func (cdd *CDD) use(o types.Object) {
-	cdd.Uses[o] = struct{}{}
+func (cdd *CDD) copyInit(b *bytes.Buffer) {
+	cdd.Init = append([]byte(nil), b.Bytes()...)
 }
 
 func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
@@ -103,22 +109,22 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 	if err != nil {
 		return err
 	}
-	if len(cdd.Decl) == 0 {
-		fmt.Fprintf(w, "<%s>", cdd.Origin.Type())
-	} else {
-		_, err = w.Write(cdd.Decl)
-	}
+	_, err = w.Write(cdd.Decl)
 	return err
 }
 
 func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 	prefix := ""
+	w := wc
 
 	switch cdd.Typ {
 	case FuncDecl:
-		if cdd.Inline {
-			prefix = "static inline "
-		} else if !cdd.Export {
+		if cdd.Export {
+			if cdd.Inline {
+				prefix = "static inline "
+				w = wh
+			}
+		} else {
 			prefix = "static "
 		}
 
@@ -131,19 +137,22 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 		return nil
 	}
 
-	w := wc
-	if cdd.Inline {
-		w = wh
-	}
-
 	_, err := io.WriteString(w, prefix)
 	if err != nil {
 		return err
 	}
-	if len(cdd.Decl) == 0 {
-		fmt.Fprintf(w, "<%s>", cdd.Origin.Type())
-	} else {
-		_, err = w.Write(cdd.Def)
-	}
+	_, err = w.Write(cdd.Def)
 	return err
+}
+
+func (cdd *CDD) DetermineInline() {
+	if len(cdd.Def) == 0 {
+		// Declaration only
+		return
+	}
+	// TODO: Use more information (from il, BodyUses). Complexity can be
+	// better calculated.
+	if cdd.Complexity < 10 {
+		cdd.Inline = true
+	}
 }

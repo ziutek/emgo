@@ -93,6 +93,8 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) *CDD {
 		return cdd
 	}
 
+	cdd.body = true
+
 	w.WriteByte(' ')
 
 	if hasRetNames {
@@ -171,8 +173,9 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 					cdd.copyDecl(w, "\n")
 					w.Reset()
+
+					cdds = append(cdds, cdd)
 				}
-				cdds = append(cdds, cdd)
 			}
 		}
 
@@ -185,22 +188,43 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				v := gtc.ti.Objects[n].(*types.Var)
 				typ := v.Type()
 				cdd := gtc.newCDD(v, VarDecl, il)
+				name := cdd.NameStr(v)
 
 				cdd.indent(w)
 				cdd.Type(w, typ)
 				w.WriteByte(' ')
-				cdd.Name(w, v)
-				cdd.copyDecl(w, ";\n")
-
-				w.WriteString(" = ")
-				if i < len(vals) {
-					cdd.Expr(w, vals[i])
-				} else {
-					w.WriteString("{0}")
+				w.WriteString(name)
+				
+				cinit := true // true if C declaration can init value
+				
+				if cdd.gtc.isGlobal(v){
+					cdd.copyDecl(w, ";\n") // Global variables need declaration
+					if i < len(vals) {
+						_, cinit = cdd.gtc.ti.Values[vals[i]]
+					}
+				}
+				if cinit {
+					w.WriteString(" = ")
+					if i < len(vals) {
+						cdd.Expr(w, vals[i])
+					} else {
+						w.WriteString("{0}")
+					}
 				}
 				w.WriteString(";\n")
-
 				cdd.copyDef(w)
+
+				if !cinit {
+					// Runtime initialisation
+					w.Reset()
+					w.WriteByte('\t')
+					w.WriteString(name)
+					w.WriteString(" = ")
+					cdd.Expr(w, vals[i])
+					w.WriteString(";\n")
+					cdd.copyInit(w)
+				}
+
 				w.Reset()
 
 				cdds = append(cdds, cdd)
@@ -208,6 +232,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 		}
 
 	case token.TYPE:
+		// TODO: split struct types to Decl and Def
 		for _, s := range d.Specs {
 			ts := s.(*ast.TypeSpec)
 			t := gtc.ti.Objects[ts.Name]

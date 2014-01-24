@@ -71,7 +71,7 @@ func compile(dir string) {
 	_, err = wp.Write(exportData)
 	checkErr(err)
 
-	gtc := gotoc.NewGTC(fset, pkg, ti, gotoc.MakeImports(flist))
+	gtc := gotoc.NewGTC(pkg, ti)
 	checkErr(gtc.Translate(wh, wc, flist))
 
 	/*

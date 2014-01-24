@@ -59,37 +59,44 @@ const (
 	Blue
 )
 
+var LED = gpio.D
+
 func setupLEDpins() {
 	periph.AHB1ClockEnable(periph.GPIOD)
 	periph.AHB1Reset(periph.GPIOD)
 
-	gpio.D.SetMode(Green, gpio.Out)
-	gpio.D.SetMode(Orange, gpio.Out)
-	gpio.D.SetMode(Red, gpio.Out)
-	gpio.D.SetMode(Blue, gpio.Out)
+	LED.SetMode(Green, gpio.Out)
+	LED.SetMode(Orange, gpio.Out)
+	LED.SetMode(Red, gpio.Out)
+	LED.SetMode(Blue, gpio.Out)
+}
+
+func Exported(p gpio.Port) {
+	p.SetBit(12)
 }
 
 func loop() {
 	const (
-		W1 = 1e7
-		W2 = 1e8
+		W1 = 1e6
+		W2 = 1e7
 	)
+	var LED = LED
 
-	gpio.D.ResetBit(Green)
-	gpio.D.SetBit(Orange)
-	gpio.D.SetBit(Red)
+	LED.ResetBit(Green)
+	LED.SetBit(Orange)
+	LED.SetBit(Red)
 	delay.Loop(W1)
-	gpio.D.ResetBit(Red)
-	gpio.D.ResetBit(Orange)
-	gpio.D.SetBit(Blue)
+	LED.ResetBit(Red)
+	LED.ResetBit(Orange)
+	LED.SetBit(Blue)
 	delay.Loop(W1)
-	gpio.D.ResetBit(Blue)
-	gpio.D.SetBit(Orange)
-	gpio.D.SetBit(Red)
+	LED.ResetBit(Blue)
+	LED.SetBit(Orange)
+	LED.SetBit(Red)
 	delay.Loop(W1)
-	gpio.D.ResetBit(Red)
-	gpio.D.ResetBit(Orange)
-	gpio.D.SetBit(Green)
+	LED.ResetBit(Red)
+	LED.ResetBit(Orange)
+	LED.SetBit(Green)
 	delay.Loop(W2)
 }
 

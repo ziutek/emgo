@@ -35,6 +35,8 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) {
 }
 
 func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
+	cdd.Complexity++
+	
 	switch s := stmt.(type) {
 	case *ast.AssignStmt:
 		if len(s.Lhs) != 1 || len(s.Rhs) != 1 {
@@ -155,11 +157,14 @@ func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) {
 		switch s := stmt.(type) {
 		case *ast.DeclStmt:
 			cdds := cdd.gtc.Decl(s.Decl, cdd.il)
-			for _, cdd := range cdds{
-				w.Write(cdd.Decl)
+			for _, c := range cdds{
+				for u := range c.BodyUses {
+					cdd.BodyUses[u] = struct{}{}
+				}
+				w.Write(c.Decl)
 			}
-			for _, cdd := range cdds{
-				w.Write(cdd.Def)
+			for _, c := range cdds{
+				w.Write(c.Def)
 			}
 			
 

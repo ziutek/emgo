@@ -3,7 +3,7 @@ package gpio
 import "unsafe"
 
 // GPIO represents registers of one GPIO port
-type GPIO struct {
+type Port struct {
 	moder   uint32 `C:"volatile"`
 	otyper  uint32 `C:"volatile"`
 	ospeedr uint32 `C:"volatile"`
@@ -22,17 +22,17 @@ const (
 )
 
 var (
-	A = (*GPIO)(unsafe.Pointer(base + step*0))
-	B = (*GPIO)(unsafe.Pointer(base + step*1))
-	C = (*GPIO)(unsafe.Pointer(base + step*2))
-	D = (*GPIO)(unsafe.Pointer(base + step*3))
-	E = (*GPIO)(unsafe.Pointer(base + step*4))
-	F = (*GPIO)(unsafe.Pointer(base + step*5))
-	G = (*GPIO)(unsafe.Pointer(base + step*6))
-	H = (*GPIO)(unsafe.Pointer(base + step*7))
-	I = (*GPIO)(unsafe.Pointer(base + step*8))
-	J = (*GPIO)(unsafe.Pointer(base + step*9))
-	K = (*GPIO)(unsafe.Pointer(base + step*10))
+	A = (*Port)(unsafe.Pointer(base + step*0))
+	B = (*Port)(unsafe.Pointer(base + step*1))
+	C = (*Port)(unsafe.Pointer(base + step*2))
+	D = (*Port)(unsafe.Pointer(base + step*3))
+	E = (*Port)(unsafe.Pointer(base + step*4))
+	F = (*Port)(unsafe.Pointer(base + step*5))
+	G = (*Port)(unsafe.Pointer(base + step*6))
+	H = (*Port)(unsafe.Pointer(base + step*7))
+	I = (*Port)(unsafe.Pointer(base + step*8))
+	J = (*Port)(unsafe.Pointer(base + step*9))
+	K = (*Port)(unsafe.Pointer(base + step*10))
 )
 
 type Mode byte
@@ -45,13 +45,13 @@ const (
 )
 
 // Mode returns I/O mode for n-th bit
-func (g *GPIO) Mode(n int) Mode {
+func (g *Port) Mode(n int) Mode {
 	n *= 2
 	return Mode(g.moder>>uint(n)) & 3
 }
 
 // SetMode sets I/O mode for n-th bit
-func (g *GPIO) SetMode(n int, mode Mode) {
+func (g *Port) SetMode(n int, mode Mode) {
 	n *= 2
 	g.moder = g.moder&^(3<<uint(n)) | uint32(mode)<<uint(n)
 }
@@ -64,12 +64,12 @@ const (
 )
 
 // OutType returns current type of n-th output bit
-func (g *GPIO) OutType(n int) OutType {
+func (g *Port) OutType(n int) OutType {
 	return OutType(g.otyper>>uint(n)) & 1
 }
 
 // SetOuttype sets type for n-th output bit
-func (g *GPIO) SetOutType(n int, ot OutType) {
+func (g *Port) SetOutType(n int, ot OutType) {
 	g.otyper = g.otyper&^(1<<uint(n)) | uint32(ot)<<uint(n)
 }
 
@@ -83,40 +83,40 @@ const (
 )
 
 // OutSpeed return current speed for n-th output bit
-func (g *GPIO) OutSpeed(n int) Speed {
+func (g *Port) OutSpeed(n int) Speed {
 	n *= 2
 	return Speed(g.ospeedr>>uint(n)) & 3
 }
 
 // SetOutSpeed sets speed for n-th output bit
-func (g *GPIO) SetOutSpeed(n int, speed Speed) {
+func (g *Port) SetOutSpeed(n int, speed Speed) {
 	n *= 2
 	g.ospeedr = g.ospeedr&^(3<<uint(n)) | uint32(speed)<<uint(n)
 }
 
 // SetBit sets n-th output bit to 1
-func (g *GPIO) SetBit(n int) {
+func (g *Port) SetBit(n int) {
 	g.bsrr = uint32(1) << uint(n)
 }
 
 // ResetBit sets n-th output bit to 0
-func (g *GPIO) ResetBit(n int) {
+func (g *Port) ResetBit(n int) {
 	g.bsrr = uint32(0x10000) << uint(n)
 }
 
 // SetBits sets output bits on positions specified by bits to 1
-func (g *GPIO) SetBits(bits uint16) {
+func (g *Port) SetBits(bits uint16) {
 	g.bsrr = uint32(bits)
 }
 
 // ResetBits sets output bits on positions specified by bits to 0
-func (g *GPIO) ResetBits(bits uint16) {
+func (g *Port) ResetBits(bits uint16) {
 	g.bsrr = uint32(bits) << 16
 }
 
 // SetBSRR sets whole BSRR register.
 // High 16 bits in bssr specifies which bits should be 0.
 // Low 16 bits in bss specifies which bits should be 1.
-func (g *GPIO) SetBSRR(bsrr uint32) {
+func (g *Port) SetBSRR(bsrr uint32) {
 	g.bsrr = bsrr
 }
