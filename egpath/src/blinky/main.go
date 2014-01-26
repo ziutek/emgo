@@ -121,8 +121,11 @@ const (
 func main() {
 	a := float32(34)
 	b := a + 2.0/3
+	c := complex(1, a)
+	d := complex(float32(1), -2)
+	var e complex64 = 2i
 	for {
-		a = b
+		a = b + imag(c) + real(d) + imag(e)
 		loop()
 	}
 }

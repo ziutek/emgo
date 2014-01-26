@@ -64,6 +64,21 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 		writeFloat(w, ev, k)
 
 	case exact.Complex:
+		switch k {
+		case types.Complex64:
+			k = types.Float32
+		case types.Complex128:
+			k = types.Float64
+		default:
+			k = types.UntypedFloat
+		}
+		writeFloat(w, exact.Real(ev), k)
+		im := exact.Imag(ev)
+		if exact.Sign(im) != -1 {
+			w.WriteByte('+')
+		}
+		writeFloat(w, im, k)
+		w.WriteByte('i')
 
 	default:
 		w.WriteString(ev.String())

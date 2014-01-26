@@ -11,7 +11,7 @@ CWARN = -Wall -Wno-parentheses -Wno-unused-function
 CINCL = -I$(EGROOT)/src/builtin -I$(EGROOT)/src/pkg
 COPT = -Os -fno-common # -ffunction-sections -fdata-sections
 CARCH = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
-	-fsingle-precision-constant -fno-exceptions -nostdinc
+	-fno-exceptions -nostdinc
 CFLAGS = -g $(COPT) $(CWARN) $(CARCH) $(CINCL)
 
 

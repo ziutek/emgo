@@ -40,6 +40,10 @@ typedef uint8 bool;
 #define true (1)
 #define false (0)
 
+#define complex(re, im) ((re)+1.i*(im))
+#define real(c) (__real__(c))
+#define imag(c) (__imag__(c))
+
 typedef struct {
 	byte *str;
 	int len;
