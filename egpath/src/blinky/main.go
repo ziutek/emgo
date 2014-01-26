@@ -124,8 +124,8 @@ func main() {
 	c := complex(1, a)
 	d := complex(float32(1), -2)
 	var e complex64 = 2i
-	for {
-		a = b + imag(c) + real(d) + imag(e)
+	for a < 2e7 {
+		a += b + imag(c) + real(d) + imag(e)
 		loop()
 	}
 }
