@@ -45,6 +45,6 @@ typedef struct {
 	int len;
 } string;
 
-#define _GOSTR(s) (string) {(byte *)s, sizeof(s)-1}
+#define __GOSTR(s) (string) {(byte *)s, sizeof(s)-1}
 
-bool _string_eq(string s1, string s2);
+bool __string_eq(string s1, string s2);

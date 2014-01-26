@@ -2,11 +2,75 @@ package gotoc
 
 import (
 	"bytes"
+	"code.google.com/p/go.tools/go/exact"
 	"code.google.com/p/go.tools/go/types"
 	"fmt"
 	"go/ast"
 	"go/token"
+	"strconv"
 )
+
+func writeInt(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
+	if k == types.Uintptr {
+		u, _ := exact.Uint64Val(ev)
+		w.WriteString("0x")
+		w.WriteString(strconv.FormatUint(u, 16))
+		return
+	}
+
+	w.WriteString(ev.String())
+	switch k {
+	case types.Int32:
+		w.WriteByte('L')
+
+	case types.Uint32:
+		w.WriteString("UL")
+
+	case types.Int64:
+		w.WriteString("LL")
+
+	case types.Uint64:
+		w.WriteString("ULL")
+	}
+}
+
+func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
+	v, _ := exact.Int64Val(exact.Num(ev))
+	w.WriteString(strconv.FormatInt(v, 10))
+	v, _ = exact.Int64Val(exact.Denom(ev))
+	if v != 1 {
+		w.WriteByte('/')
+		w.WriteString(strconv.FormatInt(v, 10))
+	}
+	w.WriteByte('.')
+	if k == types.Float32 {
+		w.WriteByte('F')
+	}
+}
+
+//k := c.Type().(*types.Basic).Kind()
+//ev := c.Val()
+
+func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
+	k := t.Underlying().(*types.Basic).Kind()
+
+	w.WriteByte('(')
+
+	switch ev.Kind() {
+	case exact.Int:
+		writeInt(w, ev, k)
+
+	case exact.Float:
+		writeFloat(w, ev, k)
+
+	case exact.Complex:
+
+	default:
+		w.WriteString(ev.String())
+	}
+
+	w.WriteByte(')')
+}
 
 func (cdd *CDD) addObject(o types.Object) {
 	if o == cdd.Origin {
@@ -70,15 +134,12 @@ func (cdd *CDD) NameStr(o types.Object) string {
 func (cdd *CDD) BasicLit(w *bytes.Buffer, l *ast.BasicLit) {
 	switch l.Kind {
 	case token.STRING:
-		w.WriteString("_GOSTR(")
+		w.WriteString("__GOSTR(")
 		w.WriteString(l.Value)
 		w.WriteByte(')')
 
-	case token.IMAG:
-		notImplemented(l)
-
 	default:
-		w.WriteString(l.Value)
+		notImplemented(l)
 	}
 }
 
@@ -124,9 +185,9 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
 func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 	cdd.Complexity++
 
-	if v := cdd.gtc.ti.Values[expr]; v != nil {
+	if ev := cdd.gtc.ti.Values[expr]; ev != nil {
 		// Constant expression
-		w.WriteString(v.String())
+		cdd.Value(w, ev, cdd.gtc.ti.Types[expr])
 		return
 	}
 

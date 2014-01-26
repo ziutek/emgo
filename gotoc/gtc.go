@@ -7,18 +7,14 @@ import (
 	"io"
 )
 
-// GTC stores state of Go to C translator.
+// GTC stores information from type checker.
 type GTC struct {
 	pkg *types.Package
 	ti  *types.Info
 }
 
 func NewGTC(pkg *types.Package, ti *types.Info) *GTC {
-	cc := &GTC{
-		pkg: pkg,
-		ti:  ti,
-	}
-	return cc
+	return &GTC{pkg: pkg, ti: ti}
 }
 
 func (cc *GTC) File(f *ast.File) (cdds []*CDD) {
@@ -55,8 +51,8 @@ func (i imports) add(pkg *types.Package, export bool) {
 	}
 }
 
-// Translate translates files to C source. It writes results of translation
-// to:
+// Translate translates files to C source.
+// It writes results of translation to:
 //	wh - C header, contains exported and inlined declarations translated to C,
 //	wc - remaining C source.
 func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
@@ -79,7 +75,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 
 	// Find unexported decls refferenced by inlined
-	// code and mark them for export
+	// code and mark them for export.
 	for _, cdd := range cdds {
 		if cdd.Inline {
 			for o := range cdd.BodyUses {
@@ -91,7 +87,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		}
 	}
 
-	// Find all external packages refferenced by exported code
+	// Find all external packages refferenced by exported code.
 	imp := make(imports)
 	for _, cdd := range cdds {
 		for o := range cdd.DeclUses {
@@ -144,24 +140,56 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		}
 	}
 
+	// Write declarations (types first).
 	for _, cdd := range cdds {
+		if cdd.Typ != TypeDecl {
+			continue
+		}
+		if err := cdd.WriteDecl(wh, wc); err != nil {
+			return err
+		}
+	}
+	for _, cdd := range cdds {
+		if cdd.Typ == TypeDecl {
+			continue
+		}
 		if err := cdd.WriteDecl(wh, wc); err != nil {
 			return err
 		}
 	}
 
+	// Write definitions (order: types, variables, functions)
 	for _, cdd := range cdds {
+		if cdd.Typ != TypeDecl {
+			continue
+		}
+		if err := cdd.WriteDef(wh, wc); err != nil {
+			return err
+		}
+	}
+	for _, cdd := range cdds {
+		if cdd.Typ != VarDecl {
+			continue
+		}
+		if err := cdd.WriteDef(wh, wc); err != nil {
+			return err
+		}
+	}
+	for _, cdd := range cdds {
+		if cdd.Typ != FuncDecl {
+			continue
+		}
 		if err := cdd.WriteDef(wh, wc); err != nil {
 			return err
 		}
 	}
 
+	// Initialisation function.
 	buf.WriteString("void " + up + "_init();\n\n")
 	buf.WriteString("#endif\n")
 	if _, err := buf.WriteTo(wh); err != nil {
 		return err
 	}
-
 	buf.WriteString("void " + up + "_init() {\n")
 	m := buf.Len()
 	buf.WriteString("\tstatic bool called = false;\n")

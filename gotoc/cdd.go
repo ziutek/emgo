@@ -24,7 +24,7 @@ type CDD struct {
 
 	Typ    DeclType
 	Export bool
-	Inline bool // set by DetermineInline
+	Inline bool // set by DetermineInline()
 
 	Decl []byte
 	Def  []byte
@@ -33,7 +33,7 @@ type CDD struct {
 	gtc  *GTC
 	il   int
 	ui   int
-	body bool // true if in function body
+	body bool // true if translation process in function body
 
 }
 
@@ -95,7 +95,7 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 		if cdd.Export {
 			prefix = "extern "
 		} else {
-			prefix = "static "
+			return nil
 		}
 
 	case ConstDecl:
@@ -139,6 +139,11 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 
 	case ConstDecl:
 		return nil
+		
+	case TypeDecl:
+		if cdd.Export {
+			w = wh
+		}
 	}
 
 	_, err := io.WriteString(w, prefix)
@@ -154,8 +159,8 @@ func (cdd *CDD) DetermineInline() {
 		// Declaration only
 		return
 	}
-	// TODO: Use more information (from il, BodyUses). Complexity can be
-	// better calculated.
+	// TODO: Use more information (from il, BodyUses).
+	// TODO: Complexity can be better calculated.
 	if cdd.Complexity < 10 {
 		cdd.Inline = true
 	}

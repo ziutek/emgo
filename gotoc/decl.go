@@ -167,23 +167,24 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 			for _, n := range vs.Names {
 				c := gtc.ti.Objects[n].(*types.Const)
-				eval := c.Val().String()
-				cdd := gtc.newCDD(c, ConstDecl, il)
 
 				// All constants in expressions are evaluated so
 				// only exported constants need be translated to C
-				if c.IsExported() {
-					cdd.indent(w)
-					w.WriteString("#define ")
-					cdd.Name(w, c)
-					w.WriteByte(' ')
-					w.WriteString(eval)
-
-					cdd.copyDecl(w, "\n")
-					w.Reset()
-
-					cdds = append(cdds, cdd)
+				if !c.IsExported() {
+					continue
 				}
+
+				cdd := gtc.newCDD(c, ConstDecl, il)
+
+				cdd.indent(w)
+				w.WriteString("#define ")
+				cdd.Name(w, c)
+				w.WriteByte(' ')
+				cdd.Value(w, c.Val(), c.Type())
+				cdd.copyDecl(w, "\n")
+				w.Reset()
+
+				cdds = append(cdds, cdd)
 			}
 		}
 
@@ -206,7 +207,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				cinit := true // true if C declaration can init value
 
 				if cdd.gtc.isGlobal(v) {
-					cdd.copyDecl(w, ";\n") // Global variables need declaration
+					cdd.copyDecl(w, ";\n") // Global variables may need declaration
 					if i < len(vals) {
 						_, cinit = cdd.gtc.ti.Values[vals[i]]
 					}
@@ -243,17 +244,42 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 		// TODO: split struct types to Decl and Def
 		for _, s := range d.Specs {
 			ts := s.(*ast.TypeSpec)
-			t := gtc.ti.Objects[ts.Name]
-			cdd := gtc.newCDD(t, TypeDecl, il)
+			to := gtc.ti.Objects[ts.Name]
+			tt := gtc.ti.Types[ts.Type]
+			cdd := gtc.newCDD(to, TypeDecl, il)
+			name := cdd.NameStr(to)
 
 			cdd.indent(w)
-			w.WriteString("typedef ")
-			cdd.Type(w, gtc.ti.Types[ts.Type])
-			w.WriteByte(' ')
-			cdd.Name(w, t)
 
+			if _, ok := tt.(*types.Struct); ok {
+				w.WriteString("struct ")
+				w.WriteString(name)
+				w.WriteString("_struct;\n")
+				cdd.indent(w)
+				w.WriteString("typedef struct ")
+				w.WriteString(name)
+				w.WriteString("_struct ")
+				w.WriteString(name)
+			} else {
+				w.WriteString("typedef ")
+				cdd.Type(w, tt)
+				w.WriteByte(' ')
+				w.WriteString(name)
+
+			}
 			cdd.copyDecl(w, ";\n")
 			w.Reset()
+
+			if _, ok := tt.(*types.Struct); ok {
+				w.WriteString("struct ")
+				w.WriteString(name)
+				w.WriteByte('_')
+				cdd.Type(w, tt)
+				w.WriteString(";\n")
+
+				cdd.copyDef(w)
+				w.Reset()
+			}
 
 			cdds = append(cdds, cdd)
 		}
