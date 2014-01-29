@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-// GTC stores information from type checker.
+// GTC stores information from type checker need for translation.
 type GTC struct {
 	pkg *types.Package
 	ti  *types.Info
@@ -105,7 +105,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	buf := new(bytes.Buffer)
 
 	buf.WriteString("#include \"types.h\"\n")
-	buf.WriteString("#include \"__.h\"\n\n")
+	buf.WriteString("#include \"" + gtc.pkg.Path() + ".h\"\n\n")
 
 	if _, err := buf.WriteTo(wc); err != nil {
 		return err

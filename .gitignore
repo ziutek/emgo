@@ -6,3 +6,5 @@ __.*
 a.out
 *.elf
 *.bin
+egroot/pkg/*
+egpath/pkg/*

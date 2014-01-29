@@ -24,13 +24,13 @@ func writeInt(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 		w.WriteByte('L')
 
 	case types.Uint32:
-		w.WriteString("UL")
+		w.WriteString("uL")
 
 	case types.Int64:
 		w.WriteString("LL")
 
 	case types.Uint64:
-		w.WriteString("ULL")
+		w.WriteString("uLL")
 	}
 }
 
@@ -53,9 +53,10 @@ func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 
 func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 	k := t.Underlying().(*types.Basic).Kind()
-
+	
 	w.WriteByte('(')
 
+	// TODO: use t instead ev.Kind() in following switch
 	switch ev.Kind() {
 	case exact.Int:
 		writeInt(w, ev, k)

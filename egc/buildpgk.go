@@ -1,18 +1,19 @@
 package main
 
 import (
-//	"fmt"
+	"errors"
+	"fmt"
+	"go/build"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"strings"
 )
 
 var archMap = map[string]string{
-	"cortexm3": "-mcpu=cortex-m3 -mthumb -mfloat-abi=soft",
-	"cortexm4": "-mcpu=cortex-m4 -mthumb -mfloat-abi=soft",
-	"cortexm4f": "-mcpu=cortex-m4 -mthumb -mfloat-abi=hard " +
-		"-mfpu=fpv4-sp-d16 -fsingle-precision-constant",
+	"cortexm3":  "-mcpu=cortex-m3 -mthumb -mfloat-abi=soft",
+	"cortexm4":  "-mcpu=cortex-m4 -mthumb -mfloat-abi=soft",
+	"cortexm4f": "-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16",
 }
 
 var osMap = map[string]struct{ cc, ld string }{
@@ -62,33 +63,34 @@ const (
 	ldscript = "stm32f407.ld"
 )
 
-func determineBuildTools() *BuildTools {
+func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	var (
 		ldflags string
 		ok      bool
 	)
 
+	pkgoa := filepath.Join("pkg", ctx.GOOS+"_"+ctx.GOARCH)
+
 	cflags := CFLAGS{
 		Dbg: "-g",
-		Incl: "-I" + path.Join(buildCtx.GOROOT, "/pkg/include") +
-			" -I" + path.Join(buildCtx.GOROOT, "/src/builtin") +
-			" -I" + path.Join(buildCtx.GOROOT, "/src/pkg"),
+		Incl: "-I" + filepath.Join(ctx.GOROOT, pkgoa) +
+			" -I" + filepath.Join(ctx.GOROOT, "/src/builtin"),
 		Opt:  "-Os -fno-common",
 		Warn: "-Wall -Wno-parentheses -Wno-unused-function",
 	}
 
-	if cflags.Arch, ok = archMap[buildCtx.GOARCH]; !ok {
-		return nil
+	if cflags.Arch, ok = archMap[ctx.GOARCH]; !ok {
+		return nil, errors.New("unknown EGARCH: " + ctx.GOARCH)
 	}
-	if fl, ok := osMap[buildCtx.GOOS]; ok {
+	if fl, ok := osMap[ctx.GOOS]; ok {
 		cflags.OS = fl.cc
 		ldflags = fl.ld
 	} else {
-		return nil
+		return nil, errors.New("unknown EGOS: " + ctx.GOOS)
 	}
 
-	for _, p := range strings.Split(buildCtx.GOPATH, ":") {
-		cflags.Incl += " -I" + path.Join(p, "pkg/include")
+	for _, p := range strings.Split(ctx.GOPATH, ":") {
+		cflags.Incl += " -I" + filepath.Join(p, pkgoa)
 	}
 
 	bt := &BuildTools{
@@ -99,15 +101,22 @@ func determineBuildTools() *BuildTools {
 		AR:      ar,
 		ARFLAGS: []string{"rcs"},
 	}
-
-	//fmt.Printf("build tools:\n %+v\n", bt)
-
-	return bt
+	return bt, nil
 }
 
-func (bt *BuildTools) Compile(c string) error {
-	args := append(bt.CFLAGS, "-c", c)
+func (bt *BuildTools) Compile(o, c string) error {
+	args := append(bt.CFLAGS, "-o", o, "-c", c)
 	cmd := exec.Command(bt.CC, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+func (bt *BuildTools) Archive(a string, f ...string) error {
+	args := append(bt.ARFLAGS, a)
+	args = append(args, f...)
+	fmt.Println(bt.AR, args)
+	cmd := exec.Command(bt.AR, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
