@@ -25,8 +25,7 @@ func (cc *GTC) File(f *ast.File) (cdds []*CDD) {
 	return
 }
 
-func (gtc *GTC) exportDecl(cddm map[types.Object]*CDD, o types.Object) {
-	cdd := cddm[o]
+func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 	if cdd.Export {
 		return
 	}
@@ -35,7 +34,16 @@ func (gtc *GTC) exportDecl(cddm map[types.Object]*CDD, o types.Object) {
 		if gtc.isImported(o) {
 			continue
 		}
-		gtc.exportDecl(cddm, o)
+		gtc.export(cddm, cddm[o])
+	}
+	if !cdd.Inline {
+		return
+	}
+	for o := range cdd.BodyUses {
+		if gtc.isImported(o) {
+			continue
+		}
+		gtc.export(cddm, cddm[o])
 	}
 }
 
@@ -64,32 +72,38 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 
 	cddm := make(map[types.Object]*CDD)
+
+	// Determine inline for any exported function
 	for _, cdd := range cdds {
+		if cdd.Typ == ImportDecl {
+			continue
+		}
 		o := cdd.Origin
 		cddm[o] = cdd
 		if cdd.Typ == FuncDecl {
-			if o.Name() != "main" || o.Pkg().Name() != "main" {
-				cdd.DetermineInline()
-			}
+			cdd.DetermineInline()
 		}
 	}
 
-	// Find unexported decls refferenced by inlined
-	// code and mark them for export.
+	// Find unexported decls refferenced by exported code
+	// and mark them for export.
 	for _, cdd := range cdds {
-		if cdd.Inline {
-			for o := range cdd.BodyUses {
-				if gtc.isImported(o) {
-					continue
-				}
-				gtc.exportDecl(cddm, o)
-			}
+		if cdd.Typ == ImportDecl {
+			continue
+		}
+		if cdd.Origin.IsExported() {
+			gtc.export(cddm, cdd)
 		}
 	}
 
-	// Find all external packages refferenced by exported code.
+	// Find all imported packages refferenced by exported code.
 	imp := make(imports)
 	for _, cdd := range cdds {
+		if cdd.Typ == ImportDecl {
+			// Package imported as _
+			imp.add(cdd.Origin.Pkg(), false)
+			continue
+		}
 		for o := range cdd.DeclUses {
 			if gtc.isImported(o) {
 				imp.add(o.Pkg(), cdd.Export)
@@ -102,10 +116,17 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		}
 	}
 
+	pkgName := gtc.pkg.Name()
 	buf := new(bytes.Buffer)
 
-	buf.WriteString("#include \"types.h\"\n")
-	buf.WriteString("#include \"" + gtc.pkg.Path() + ".h\"\n\n")
+	buf.WriteString("#include \"runtime/types.h\"\n")
+	buf.WriteString("#include \"")
+	if pkgName == "main" {
+		buf.WriteByte('_')
+	} else {
+		buf.WriteString(gtc.pkg.Path())
+	}
+	buf.WriteString(".h\"\n\n")
 
 	if _, err := buf.WriteTo(wc); err != nil {
 		return err
@@ -127,8 +148,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		}
 
 		buf.WriteString("#include \"")
-		buf.WriteString(path)
-		buf.WriteString("/__.h\"\n")
+		buf.WriteString(path + ".h\"\n")
 
 		w := wc
 		if export {
@@ -192,12 +212,25 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 	buf.WriteString("void " + up + "_init() {\n")
 	m := buf.Len()
-	buf.WriteString("\tstatic bool called = false;\n")
-	buf.WriteString("\tif (called) {\n\t\treturn;\n\t}\n\tcalled = true;\n")
-	n := buf.Len()
-	for i := range imp {
-		buf.WriteString("\t" + upath(i.Path()) + "_init();\n")
+	if pkgName != "startup" && pkgName != "main" {
+		buf.WriteString("\tstatic bool called = false;\n")
+		buf.WriteString("\tif (called) {\n\t\treturn;\n\t}\n\tcalled = true;\n")
 	}
+	n := buf.Len()
+
+	// Initialise packages. There is no any order guaranteed with exception that any
+	// packages named "startup" are initialised first
+	for i := range imp {
+		if i.Name() == "startup" {
+			buf.WriteString("\t" + upath(i.Path()) + "_init();\n")
+		}
+	}
+	for i := range imp {
+		if i.Name() != "startup" {
+			buf.WriteString("\t" + upath(i.Path()) + "_init();\n")
+		}
+	}
+
 	for _, cdd := range cdds {
 		if cdd.Typ == VarDecl {
 			buf.Write(cdd.Init)
@@ -214,10 +247,17 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 	buf.WriteString("}\n")
 
+	if pkgName == "main" {
+		buf.WriteString("#undef main\n")
+		buf.WriteString("int main() {\n")
+		buf.WriteString("\tmain_init();\n")
+		buf.WriteString("\tmain_main();\n")
+		buf.WriteString("\treturn 0;\n")
+		buf.WriteString("}\n")
+	}
 	if _, err := buf.WriteTo(wc); err != nil {
 		return err
 	}
-
 	return nil
 }
 

@@ -4,7 +4,7 @@ import (
 	"code.google.com/p/go.tools/go/exact"
 	"code.google.com/p/go.tools/go/importer"
 	"code.google.com/p/go.tools/go/types"
-	"fmt"
+	"errors"
 	"github.com/ziutek/emgo/gotoc"
 	"go/ast"
 	"go/build"
@@ -28,12 +28,11 @@ var buildCtx = build.Context{
 }
 
 func compile(ppath string) error {
-	var (
-		srcDir string
-		err    error
-	)
+	// Parse
 
+	srcDir := ""
 	if build.IsLocalImport(ppath) {
+		var err error
 		if srcDir, err = os.Getwd(); err != nil {
 			return err
 		}
@@ -43,8 +42,6 @@ func compile(ppath string) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("package \"%s\"\n%+v\n\n", ppath, bp)
 
 	flist := make([]*ast.File, len(bp.GoFiles))
 	fset := token.NewFileSet()
@@ -61,9 +58,13 @@ func compile(ppath string) error {
 	}
 
 	ppath = bp.ImportPath
+	elf := ""
 	if bp.Name == "main" {
+		elf = filepath.Join(bp.Dir, "main.elf")
 		ppath = "main"
 	}
+
+	// Type check
 
 	tc := &types.Config{Import: NewImporter().Import}
 	ti := &types.Info{
@@ -77,29 +78,20 @@ func compile(ppath string) error {
 		return err
 	}
 
+	if bp.Name != "main" && bp.Name != "startup" {
+		for _, imp := range pkg.Imports() {
+			if imp.Name() == "startup" {
+				return errors.New("package " + imp.Path() + " can't import startup package")
+			}
+		}
+	}
+
+	// Translate to C
+
 	work := filepath.Join(tmpDir, ppath)
 	if err = os.MkdirAll(work, 0700); err != nil {
 		return err
 	}
-
-	expath := filepath.Join(work, "__.EXPORTS")
-	wp, err := os.Create(expath)
-	if err != nil {
-		return err
-	}
-	defer wp.Close()
-
-	hpath := filepath.Join(bp.PkgRoot, buildCtx.GOOS+"_"+buildCtx.GOARCH, ppath+".h")
-
-	if err = os.MkdirAll(filepath.Dir(hpath), 0755); err != nil && !os.IsExist(err) {
-		return err
-	}
-
-	wh, err := os.Create(hpath)
-	if err != nil {
-		return err
-	}
-	defer wh.Close()
 
 	cpath := filepath.Join(bp.Dir, "_.c")
 	wc, err := os.Create(cpath)
@@ -108,41 +100,69 @@ func compile(ppath string) error {
 	}
 	defer wc.Close()
 
-	exportData := importer.ExportData(pkg)
-	_, err = wp.Write(exportData)
+	var (
+		hpath string
+		objs  []string
+	)
+
+	if ppath == "main" {
+		hpath = filepath.Join(bp.Dir, "_.h")
+		objs = make([]string, 0, len(bp.CFiles))
+	} else {
+		hpath = filepath.Join(bp.PkgRoot, buildCtx.GOOS+"_"+buildCtx.GOARCH, ppath+".h")
+		expath := filepath.Join(work, "__.EXPORTS")
+		objs = make([]string, 0, len(bp.CFiles)+3)
+		objs = append(objs, expath, hpath)
+
+		err = os.MkdirAll(filepath.Dir(hpath), 0755)
+		if err != nil && !os.IsExist(err) {
+			return err
+		}
+		wp, err := os.Create(expath)
+		if err != nil {
+			return err
+		}
+		edata := importer.ExportData(pkg)
+		_, err = wp.Write(edata)
+		if err != nil {
+			return err
+		}
+		wp.Close()
+	}
+
+	wh, err := os.Create(hpath)
 	if err != nil {
 		return err
 	}
+	defer wh.Close()
+
 	gtc := gotoc.NewGTC(pkg, ti)
 	if err = gtc.Translate(wh, wc, flist); err != nil {
 		return err
 	}
+
+	// Build (package or binary)
 
 	bt, err := NewBuildTools(&buildCtx)
 	if err != nil {
 		return err
 	}
 
-	eoh := make([]string, 0, len(bp.CFiles)+3)
-	eoh = append(eoh, expath)
-
 	for _, c := range append(bp.CFiles, "_.c") {
-		// TODO: avoid recompile up to date obj
+		// TODO: avoid recompile up to date objects
 		o := filepath.Join(work, c[:len(c)-1]+"o")
 		c = filepath.Join(bp.Dir, c)
 		if err = bt.Compile(o, c); err != nil {
 			return err
 		}
-		eoh = append(eoh, o)
+		objs = append(objs, o)
 	}
 
-	eoh = append(eoh, hpath)
-
-	if err = bt.Archive(hpath[:len(hpath)-1]+"a", eoh...); err != nil {
-		return err
+	if ppath != "main" {
+		return bt.Archive(hpath[:len(hpath)-1]+"a", objs...)
 	}
 
-	return nil
+	return bt.Link(elf, pkg.Imports(), objs...)
 }
 
 func main() {

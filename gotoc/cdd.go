@@ -13,6 +13,7 @@ const (
 	VarDecl
 	ConstDecl
 	TypeDecl
+	ImportDecl
 )
 
 // CDD stores Go declaration translated to C declaration and definition.
@@ -46,11 +47,6 @@ func (gtc *GTC) newCDD(o types.Object, t DeclType, il int) *CDD {
 		gtc:      gtc,
 		il:       il,
 		body:     il > 0,
-	}
-	if t == FuncDecl && o.Name() == "main" && o.Pkg().Name() == "main" {
-		cdd.Export = true
-	} else {
-		cdd.Export = o.IsExported()
 	}
 	return cdd
 }
@@ -87,7 +83,7 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 	case FuncDecl:
 		if cdd.Inline {
 			prefix = "static inline "
-		} else if !cdd.Export {
+		} else if !cdd.Export && len(cdd.Def) > 0 {
 			prefix = "static "
 		}
 
@@ -118,6 +114,10 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 }
 
 func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
+	if len(cdd.Def) == 0 {
+		return nil
+	}
+
 	prefix := ""
 	w := wc
 
@@ -139,7 +139,7 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 
 	case ConstDecl:
 		return nil
-		
+
 	case TypeDecl:
 		if cdd.Export {
 			w = wh

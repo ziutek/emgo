@@ -158,8 +158,14 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 	switch d.Tok {
 	case token.IMPORT:
-		// Imports are handled differently
-		break
+		// Only for unrefferenced imports
+		for _, s := range d.Specs {
+			is := s.(*ast.ImportSpec)
+			if is.Name != nil && is.Name.Name == "_" {
+				cdd := gtc.newCDD(gtc.ti.Objects[is.Name], ImportDecl, il)
+				cdds = append(cdds, cdd)
+			}
+		}
 
 	case token.CONST:
 		for _, s := range d.Specs {

@@ -44,7 +44,7 @@ func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 	}
 	w.WriteByte('.')
 	if k == types.Float32 {
-		w.WriteByte('F')
+		w.WriteByte('f')
 	}
 }
 

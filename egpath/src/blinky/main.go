@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "cortexm/startup"
 	"delay"
 	"stm32/clock"
 	"stm32/flash"
@@ -108,24 +109,8 @@ func loop() {
 	delay.Loop(W2)
 }
 
-const (
-	A = -1/2.1
-	B = float32(1./-2)
-	C = float64(1/2)
-	D = 2
-	E = uint64(2)
-	F = uint32(3)
-	G = int32(5)
-)
-
 func main() {
-	a := float32(34)
-	b := a + 2.0/3
-	c := complex(1, a)
-	d := complex(float32(1), -2)
-	var e complex64 = 2i
-	for a < 2e7 {
-		a += b + imag(c) + real(d) + imag(e)
+	for {
 		loop()
 	}
 }

@@ -2,24 +2,12 @@
 
 set -e
 
-rebuild() {
-	cd $1
-	make clean >/dev/null 2>&1
-	make
-	cd - >/dev/null
-}
+egc cortexm/startup
+egc cortexm/systick
+egc delay
+egc stm32/clock
+egc stm32/flash
+egc stm32/gpio
+egc stm32/periph
 
-
-cd egroot/src/pkg
-
-rebuild delay
-rebuild stm32/clock
-rebuild stm32/flash
-rebuild stm32/gpio
-rebuild stm32/periph
-
-
-cd ../../../egpath/src
-
-rebuild blinky
 
