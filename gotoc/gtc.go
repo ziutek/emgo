@@ -73,25 +73,25 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 	cddm := make(map[types.Object]*CDD)
 
-	// Determine inline for any exported function
+	// Determine inline for any function except main.main()
 	for _, cdd := range cdds {
 		if cdd.Typ == ImportDecl {
 			continue
 		}
 		o := cdd.Origin
 		cddm[o] = cdd
-		if cdd.Typ == FuncDecl {
+		if cdd.Typ == FuncDecl && (o.Pkg().Name() != "main" || o.Name() != "main") {
 			cdd.DetermineInline()
 		}
 	}
 
-	// Find unexported decls refferenced by exported code
-	// and mark them for export.
+	// Export code need by exported declarations and inlined function bodies
 	for _, cdd := range cdds {
 		if cdd.Typ == ImportDecl {
 			continue
 		}
-		if cdd.Origin.IsExported() {
+		o := cdd.Origin
+		if o.IsExported() || (o.Pkg().Name() == "main" && o.Name() == "main"){
 			gtc.export(cddm, cdd)
 		}
 	}
@@ -212,23 +212,14 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 	buf.WriteString("void " + up + "_init() {\n")
 	m := buf.Len()
-	if pkgName != "startup" && pkgName != "main" {
+	if pkgName != "main" {
 		buf.WriteString("\tstatic bool called = false;\n")
 		buf.WriteString("\tif (called) {\n\t\treturn;\n\t}\n\tcalled = true;\n")
 	}
 	n := buf.Len()
 
-	// Initialise packages. There is no any order guaranteed with exception that any
-	// packages named "startup" are initialised first
 	for i := range imp {
-		if i.Name() == "startup" {
-			buf.WriteString("\t" + upath(i.Path()) + "_init();\n")
-		}
-	}
-	for i := range imp {
-		if i.Name() != "startup" {
-			buf.WriteString("\t" + upath(i.Path()) + "_init();\n")
-		}
+		buf.WriteString("\t" + upath(i.Path()) + "_init();\n")
 	}
 
 	for _, cdd := range cdds {
@@ -247,14 +238,6 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 	buf.WriteString("}\n")
 
-	if pkgName == "main" {
-		buf.WriteString("#undef main\n")
-		buf.WriteString("int main() {\n")
-		buf.WriteString("\tmain_init();\n")
-		buf.WriteString("\tmain_main();\n")
-		buf.WriteString("\treturn 0;\n")
-		buf.WriteString("}\n")
-	}
 	if _, err := buf.WriteTo(wc); err != nil {
 		return err
 	}

@@ -4,8 +4,8 @@ import (
 	"code.google.com/p/go.tools/go/importer"
 	"code.google.com/p/go.tools/go/types"
 	"errors"
-	"fmt"
 	"go/build"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -69,6 +69,8 @@ type BuildTools struct {
 	AR      string // path to the archiver
 	ARFLAGS []string
 
+	Log io.Writer
+
 	importPaths []string
 }
 
@@ -90,7 +92,7 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 
 	cflags := CFLAGS{
 		Dbg:  "-g",
-		Opt:  "-Os -fno-common",
+		Opt:  "-O0 -fno-common",
 		Warn: "-Wall -Wno-parentheses -Wno-unused-function",
 		Incl: "-I" + filepath.Join(ctx.GOROOT, "src", "pkg"),
 	}
@@ -129,15 +131,26 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	return bt, nil
 }
 
+func (bt *BuildTools) logCmd(cmd string, args []string) {
+	if bt.Log == nil {
+		return
+	}
+	io.WriteString(bt.Log, cmd)
+	for _, a := range args {
+		io.WriteString(bt.Log, " "+a)
+	}
+	bt.Log.Write([]byte{'\n'})
+}
+
 func (bt *BuildTools) Compile(o, c string) error {
 	args := append(bt.CFLAGS)
 	if odir := filepath.Dir(o); filepath.Base(odir) == "main" {
 		args = append(args, "-I", odir)
 	}
 	args = append(args, "-o", o, "-c", c)
-	
-	//fmt.Println(bt.CC, args)
-	
+
+	bt.logCmd(bt.CC, args)
+
 	cmd := exec.Command(bt.CC, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -146,12 +159,12 @@ func (bt *BuildTools) Compile(o, c string) error {
 
 func (bt *BuildTools) Archive(a string, f ...string) error {
 	os.Remove(a)
-	
+
 	args := append(bt.ARFLAGS, a)
 	args = append(args, f...)
-	
-	fmt.Println(bt.AR, args)
-	
+
+	bt.logCmd(bt.AR, args)
+
 	cmd := exec.Command(bt.AR, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -210,7 +223,7 @@ func (bt *BuildTools) Link(e string, imports []*types.Package, o ...string) erro
 	}
 	args = append(args, a...)
 
-	fmt.Println(bt.LD, args)
+	bt.logCmd(bt.LD, args)
 
 	cmd := exec.Command(bt.LD, args...)
 	cmd.Stdout = os.Stdout

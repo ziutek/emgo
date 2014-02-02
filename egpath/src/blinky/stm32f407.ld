@@ -40,4 +40,4 @@ SECTIONS {
 	} >ram
 }  
 
-ENTRY(main)
+ENTRY(cortexm_startup_Start)

@@ -4,7 +4,6 @@ import (
 	"code.google.com/p/go.tools/go/exact"
 	"code.google.com/p/go.tools/go/importer"
 	"code.google.com/p/go.tools/go/types"
-	"errors"
 	"github.com/ziutek/emgo/gotoc"
 	"go/ast"
 	"go/build"
@@ -78,14 +77,6 @@ func compile(ppath string) error {
 		return err
 	}
 
-	if bp.Name != "main" && bp.Name != "startup" {
-		for _, imp := range pkg.Imports() {
-			if imp.Name() == "startup" {
-				return errors.New("package " + imp.Path() + " can't import startup package")
-			}
-		}
-	}
-
 	// Translate to C
 
 	work := filepath.Join(tmpDir, ppath)
@@ -104,14 +95,16 @@ func compile(ppath string) error {
 		hpath string
 		objs  []string
 	)
+	csfiles := append(bp.CFiles, bp.SFiles...)
+	csfiles = append(csfiles, "_.c")
 
 	if ppath == "main" {
 		hpath = filepath.Join(bp.Dir, "_.h")
-		objs = make([]string, 0, len(bp.CFiles))
+		objs = make([]string, 0, len(csfiles))
 	} else {
 		hpath = filepath.Join(bp.PkgRoot, buildCtx.GOOS+"_"+buildCtx.GOARCH, ppath+".h")
 		expath := filepath.Join(work, "__.EXPORTS")
-		objs = make([]string, 0, len(bp.CFiles)+3)
+		objs = make([]string, 0, len(csfiles)+2)
 		objs = append(objs, expath, hpath)
 
 		err = os.MkdirAll(filepath.Dir(hpath), 0755)
@@ -147,8 +140,9 @@ func compile(ppath string) error {
 	if err != nil {
 		return err
 	}
+	//bt.Log = os.Stdout
 
-	for _, c := range append(bp.CFiles, "_.c") {
+	for _, c := range csfiles {
 		// TODO: avoid recompile up to date objects
 		o := filepath.Join(work, c[:len(c)-1]+"o")
 		c = filepath.Join(bp.Dir, c)

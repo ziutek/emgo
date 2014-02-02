@@ -3,7 +3,10 @@
 extern uint32 __dataStart, __dataEnd, __dataStartFlash;
 extern uint32 __bssStart, __bssEnd;
 
-void cortexm_startup_setupDataBSS() {
+int main_init();
+int main_main();
+
+void cortexm_startup_Start() {
 	uint32 *src = &__dataStartFlash;
 	uint32 *dst = &__dataStart;
 	uint32 *end = &__dataEnd;
@@ -21,6 +24,11 @@ void cortexm_startup_setupDataBSS() {
 		*dst = 0;
 		++dst;
 	}
+	
+	main_init();
+	main_main();
+	
+	for(;;);
 }
 
 static void nmi_handler(void) {
@@ -32,11 +40,10 @@ static void hardfault_handler(void) {
 }
 
 extern uint32 stackptr;
-int main();
 
 uint32 *cortexm_startup_vectors[4] __attribute__ ((section("vectors"))) = {
 	&stackptr,
-	(uint32 *) main,              // code entry point
-	(uint32 *) nmi_handler,       // NMI handler (not really)
-	(uint32 *) hardfault_handler, // hard fault handler 
+	(uint32 *) cortexm_startup_Start, // code entry point
+	(uint32 *) nmi_handler,           // NMI handler (not really)
+	(uint32 *) hardfault_handler,     // hard fault handler 
 };
