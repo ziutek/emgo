@@ -3,6 +3,7 @@
 set -e
 
 egc cortexm/startup
+egc cortexm/nvic
 egc cortexm/systick
 egc delay
 egc stm32/clock

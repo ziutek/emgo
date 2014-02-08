@@ -53,7 +53,7 @@ func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 
 func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 	k := t.Underlying().(*types.Basic).Kind()
-	
+
 	w.WriteByte('(')
 
 	// TODO: use t instead ev.Kind() in following switch
@@ -88,18 +88,7 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 	w.WriteByte(')')
 }
 
-func (cdd *CDD) addObject(o types.Object) {
-	if o == cdd.Origin {
-		return
-	}
-	if cdd.body {
-		cdd.BodyUses[o] = struct{}{}
-	} else {
-		cdd.DeclUses[o] = struct{}{}
-	}
-}
-
-func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object) {
+func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, typPtr bool) {
 	switch o := obj.(type) {
 	case *types.PkgName:
 		// Imported package name in SelectorExpr: pkgname.Name
@@ -112,19 +101,20 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object) {
 			t := r.Type()
 			if p, ok := t.(*types.Pointer); ok {
 				t = p.Elem()
+				typPtr = true
 			}
 			cdd.Type(w, t)
 			w.WriteByte('_')
 			w.WriteString(o.Name())
 			if !cdd.gtc.isLocal(t.(*types.Named).Obj()) {
-				cdd.addObject(o)
+				cdd.addObject(o, typPtr)
 			}
 			return
 		}
 	}
 
 	if p := obj.Pkg(); p != nil && !cdd.gtc.isLocal(obj) {
-		cdd.addObject(obj)
+		cdd.addObject(obj, typPtr)
 		w.WriteString(upath(obj.Pkg().Path()))
 		w.WriteByte('_')
 	}
@@ -141,9 +131,9 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object) {
 	w.WriteString(name)
 }
 
-func (cdd *CDD) NameStr(o types.Object) string {
+func (cdd *CDD) NameStr(o types.Object, typPtr bool) string {
 	buf := new(bytes.Buffer)
-	cdd.Name(buf, o)
+	cdd.Name(buf, o, typPtr)
 	return buf.String()
 }
 
@@ -165,7 +155,7 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
 
 	switch s := sel.Type().(type) {
 	case *types.Signature:
-		cdd.Name(w, sel)
+		cdd.Name(w, sel, false)
 		if recv := s.Recv(); recv != nil {
 			if _, ok := recv.Type().(*types.Pointer); !ok {
 				// Method has non pointer receiver so there is guaranteed
@@ -256,7 +246,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		w.WriteByte(')')
 
 	case *ast.Ident:
-		cdd.Name(w, cdd.gtc.ti.Objects[e])
+		cdd.Name(w, cdd.gtc.ti.Objects[e], false)
 
 	case *ast.IndexExpr:
 		cdd.Expr(w, e.X)

@@ -5,9 +5,13 @@ import (
 	"code.google.com/p/go.tools/go/types"
 	"fmt"
 	"reflect"
+	"strconv"
 )
 
 func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) {
+	isPtr := false
+
+writeType:
 	switch t := typ.(type) {
 	case *types.Basic:
 		if t.Kind() == types.UnsafePointer {
@@ -17,11 +21,12 @@ func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) {
 		}
 
 	case *types.Named:
-		cdd.Name(w, t.Obj())
+		cdd.Name(w, t.Obj(), isPtr)
 
 	case *types.Pointer:
-		cdd.Type(w, t.Elem())
-		w.WriteByte('*')
+		typ = t.Elem()
+		defer w.WriteByte('*')
+		goto writeType
 
 	case *types.Struct:
 		w.WriteString("struct {\n")
@@ -36,7 +41,7 @@ func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) {
 			cdd.Type(w, f.Type())
 			if !f.Anonymous() {
 				w.WriteByte(' ')
-				cdd.Name(w, f)
+				cdd.Name(w, f, false)
 			}
 			w.WriteString(";\n")
 		}
@@ -54,14 +59,127 @@ func (cdd *CDD) TypeStr(typ types.Type) string {
 	return buf.String()
 }
 
-func (cdd *CDD) Tuple(w *bytes.Buffer, t *types.Tuple, sep string) {
+func (cdd *CDD) Tuple(w *bytes.Buffer, t *types.Tuple) {
 	for i, n := 0, t.Len(); i < n; i++ {
 		if i != 0 {
-			w.WriteString(sep)
+			w.WriteString(", ")
 		}
 		v := t.At(i)
 		cdd.Type(w, v.Type())
 		w.WriteByte(' ')
-		cdd.Name(w, v)
+		cdd.Name(w, v, false)
 	}
+}
+
+type retVar struct {
+	name, typ string
+}
+
+type results struct {
+	fields []*types.Var
+	//list     []retVar
+	typ      string
+	hasNames bool
+	cdd      *CDD
+}
+
+/*func (res *results) writeStruct() {
+	w := new(bytes.Buffer)
+	cdd := res.cdd
+	cdd.indent(w)
+	w.WriteString("typedef struct {\n")
+	cdd.il++
+	for _, v := range res.list {
+		cdd.indent(w)
+		w.WriteString(v.typ)
+		w.WriteByte(' ')
+		w.WriteString(v.name)
+		w.WriteString(";\n")
+	}
+	cdd.il--
+	cdd.indent(w)
+	w.WriteString("} " + res.typ + ";\n")
+
+	cdd.copyDef(w)
+}*/
+
+func (cdd *CDD) results(tup *types.Tuple, fname string) (res results) {
+	if tup == nil {
+		res.typ = "void"
+		return
+	}
+
+	n := tup.Len()
+	//res.list = make([]retVar, n)
+	res.fields = make([]*types.Var, n)
+
+	for i := 0; i < n; i++ {
+		v := tup.At(i)
+		name := v.Name()
+		if name == "" {
+			name = "__" + strconv.Itoa(i)
+		} else {
+			res.hasNames = true
+		}
+		res.fields[i] = types.NewField(v.Pos(), v.Pkg(), name, v.Type(), false)
+	}
+
+	if n == 1 {
+		res.typ = cdd.TypeStr(res.fields[0].Type())
+		return
+	}
+
+	res.typ = "__" + fname
+	s := types.NewStruct(res.fields, nil)
+	o := types.NewTypeName(tup.At(0).Pos(), cdd.gtc.pkg, res.typ, s)
+	res.cdd = cdd.gtc.newCDD(o, TypeDecl, cdd.il)
+
+	res.cdd.structDecl(new(bytes.Buffer), res.typ, s)
+
+	cdd.DeclUses[o] = false
+	cdd.BodyUses[o] = false
+	return
+	/*
+		for i := 0; i < n; i++ {
+			v := tup.At(i)
+			name := res.cdd.NameStr(v, false)
+			if name == "" {
+				name = "__" + strconv.Itoa(i)
+			} else {
+				res.hasNames = true
+			}
+			res.list[i] = retVar{
+				name: name,
+				typ:  res.cdd.TypeStr(v.Type()),
+			}
+		}
+		res.writeStruct()
+		return
+	*/
+}
+
+func (cdd *CDD) Signature(w *bytes.Buffer, name string, sig *types.Signature, decl bool) (res results) {
+	res = cdd.results(sig.Results(), name)
+
+	w.WriteString(res.typ)
+	w.WriteByte(' ')
+	if decl {
+		w.WriteString(name)
+	} else {
+		w.WriteString("(*" + name + ")")
+	}
+	w.WriteByte('(')
+	if r := sig.Recv(); r != nil {
+		cdd.Type(w, r.Type())
+		w.WriteByte(' ')
+		cdd.Name(w, r, false)
+		if sig.Params() != nil {
+			w.WriteString(", ")
+		}
+	}
+	if p := sig.Params(); p != nil {
+		cdd.Tuple(w, p)
+	}
+	w.WriteByte(')')
+	return
 }

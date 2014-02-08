@@ -8,3 +8,9 @@ package startup
 // 3. Peripherals and CPU (eg. stack pointer) aren't affected.
 // 4. This function never returns.
 func Start()
+
+
+func DefaultHandler() {
+	for {
+	}
+}

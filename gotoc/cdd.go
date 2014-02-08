@@ -19,8 +19,8 @@ const (
 // CDD stores Go declaration translated to C declaration and definition.
 type CDD struct {
 	Origin     types.Object // object for this declaration
-	DeclUses   map[types.Object]struct{}
-	BodyUses   map[types.Object]struct{}
+	DeclUses   map[types.Object]bool
+	BodyUses   map[types.Object]bool
 	Complexity int
 
 	Typ    DeclType
@@ -42,8 +42,8 @@ func (gtc *GTC) newCDD(o types.Object, t DeclType, il int) *CDD {
 	cdd := &CDD{
 		Origin:   o,
 		Typ:      t,
-		DeclUses: make(map[types.Object]struct{}),
-		BodyUses: make(map[types.Object]struct{}),
+		DeclUses: make(map[types.Object]bool),
+		BodyUses: make(map[types.Object]bool),
 		gtc:      gtc,
 		il:       il,
 		body:     il > 0,
@@ -163,5 +163,16 @@ func (cdd *CDD) DetermineInline() {
 	// TODO: Complexity can be better calculated.
 	if cdd.Complexity < 10 {
 		cdd.Inline = true
+	}
+}
+
+func (cdd *CDD) addObject(o types.Object, typPtr bool) {
+	if o == cdd.Origin {
+		return
+	}
+	if cdd.body {
+		cdd.BodyUses[o] = typPtr
+	} else {
+		cdd.DeclUses[o] = typPtr
 	}
 }

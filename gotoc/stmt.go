@@ -7,14 +7,15 @@ import (
 	"go/token"
 )
 
-func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) {
+func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) (end bool) {
 	cdd.indent(w)
 	switch len(s.Results) {
 	case 0:
-		if resultT == "" {
+		if resultT == "void" {
 			w.WriteString("return;\n")
 		} else {
 			w.WriteString("goto __end;\n")
+			end = true
 		}
 
 	case 1:
@@ -32,6 +33,7 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) {
 		}
 		w.WriteString("};\n")
 	}
+	return
 }
 
 func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
@@ -149,7 +151,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt) {
 
 }
 
-func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) {
+func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) (end bool) {
 	w.WriteString("{\n")
 	cdd.il++
 	for _, stmt := range bs.List {
@@ -158,8 +160,8 @@ func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) {
 		case *ast.DeclStmt:
 			cdds := cdd.gtc.Decl(s.Decl, cdd.il)
 			for _, c := range cdds{
-				for u := range c.BodyUses {
-					cdd.BodyUses[u] = struct{}{}
+				for u, typPtr := range c.BodyUses {
+					cdd.BodyUses[u] = typPtr
 				}
 				w.Write(c.Decl)
 			}
@@ -169,7 +171,9 @@ func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) {
 			
 
 		case *ast.ReturnStmt:
-			cdd.ReturnStmt(w, s, resultT)
+			if cdd.ReturnStmt(w, s, resultT) {
+				end = true
+			}
 
 		default:
 			cdd.indent(w)
@@ -179,4 +183,5 @@ func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) {
 	cdd.il--
 	cdd.indent(w)
 	w.WriteString("}")
+	return
 }

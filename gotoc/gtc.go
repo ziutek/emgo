@@ -3,6 +3,7 @@ package gotoc
 import (
 	"bytes"
 	"code.google.com/p/go.tools/go/types"
+	"fmt"
 	"go/ast"
 	"io"
 )
@@ -75,6 +76,10 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 	// Determine inline for any function except main.main()
 	for _, cdd := range cdds {
+		fmt.Printf(
+			"Origin: %s <%d>\n DeclUses: %+v\n BodyUses: %+v\n",
+			cdd.Origin, cdd.Typ, cdd.DeclUses, cdd.BodyUses,
+		)
 		if cdd.Typ == ImportDecl {
 			continue
 		}
@@ -91,7 +96,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 			continue
 		}
 		o := cdd.Origin
-		if o.IsExported() || (o.Pkg().Name() == "main" && o.Name() == "main"){
+		if o.IsExported() || (o.Pkg().Name() == "main" && o.Name() == "main") {
 			gtc.export(cddm, cdd)
 		}
 	}

@@ -6,86 +6,20 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"strconv"
 )
 
-type retVal struct {
-	name, typ string
-}
-
-func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) *CDD {
+func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	f := gtc.ti.Objects[d.Name].(*types.Func)
-	s := f.Type().(*types.Signature)
 
 	cdd := gtc.newCDD(f, FuncDecl, il)
-
-	var (
-		retT        string
-		retList     []retVal
-		hasRetNames bool
-	)
-
+	cdds = append(cdds, cdd)
 	w := new(bytes.Buffer)
-	funcName := cdd.NameStr(f)
-	if ret := s.Results(); ret != nil {
-		retList = make([]retVal, ret.Len())
-		for i, n := 0, ret.Len(); i < n; i++ {
-			v := ret.At(i)
-			n := cdd.NameStr(v)
-			if n == "" {
-				n = "__" + strconv.Itoa(i)
-			} else {
-				hasRetNames = true
-			}
-			retList[i] = retVal{
-				name: n,
-				typ:  cdd.TypeStr(v.Type()),
-			}
-		}
+	fname := cdd.NameStr(f, false)
 
-		if len(retList) > 1 {
-			retT = "__" + funcName
-			cdd.indent(w)
-			w.WriteString("typedef struct {\n")
-			cdd.il++
-			for _, v := range retList {
-				cdd.indent(w)
-				w.WriteString(v.typ)
-				w.WriteByte(' ')
-				w.WriteString(v.name)
-				w.WriteString(";\n")
-			}
-			cdd.il--
-			cdd.indent(w)
-			w.WriteString("} " + retT + ";\n")
-		}
+	res := cdd.Signature(w, fname, f.Type().(*types.Signature), true)
+	if res.cdd != nil {
+		cdds = append(cdds, res.cdd)
 	}
-
-	cdd.indent(w)
-	switch len(retList) {
-	case 0:
-		w.WriteString("void")
-
-	case 1:
-		w.WriteString(retList[0].typ)
-
-	default:
-		w.WriteString(retT)
-	}
-
-	w.WriteString(" " + funcName + "(")
-	if r := s.Recv(); r != nil {
-		cdd.Type(w, r.Type())
-		w.WriteByte(' ')
-		cdd.Name(w, r)
-		if s.Params() != nil {
-			w.WriteString(", ")
-		}
-	}
-	if p := s.Params(); p != nil {
-		cdd.Tuple(w, p, ", ")
-	}
-	w.WriteByte(')')
 
 	init := (f.Name() == "init")
 
@@ -94,63 +28,62 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) *CDD {
 	}
 
 	if d.Body == nil {
-		return cdd
+		return
 	}
 
 	cdd.body = true
 
 	w.WriteByte(' ')
 
-	if hasRetNames {
+	if res.hasNames {
 		cdd.indent(w)
 		w.WriteString("{\n")
 		cdd.il++
-		for _, v := range retList {
+		for _, v := range res.fields {
 			cdd.indent(w)
-			w.WriteString(v.typ + " " + v.name + " = {0};\n")
+			cdd.Type(w, v.Type())
+			w.WriteByte(' ')
+			cdd.Name(w, v, false)
+			w.WriteString(" = {0};\n")
 		}
 		cdd.indent(w)
-
-		if retT == "" {
-			// Inform ReturnStmt that there is one named result
-			retT = "_"
-		}
 	}
 
-	cdd.BlockStmt(w, d.Body, retT)
+	end := cdd.BlockStmt(w, d.Body, res.typ)
 	w.WriteByte('\n')
 
-	if hasRetNames {
-		cdd.il--
-		cdd.indent(w)
-		w.WriteString("__end:\n")
-		cdd.il++
+	if res.hasNames {
+		if end {
+			cdd.il--
+			cdd.indent(w)
+			w.WriteString("__end:\n")
+			cdd.il++
 
-		cdd.indent(w)
-		w.WriteString("return ")
-		if len(retList) == 1 {
-			w.WriteString(retList[0].name)
-		} else {
-			w.WriteString("(" + retT + ") {")
-			for i, v := range retList {
-				if i > 0 {
-					w.WriteString(", ")
+			cdd.indent(w)
+			w.WriteString("return ")
+			if len(res.fields) == 1 {
+				cdd.Name(w, res.fields[0], false)
+			} else {
+				w.WriteString("(" + res.typ + ") {")
+				for i, v := range res.fields {
+					if i > 0 {
+						w.WriteString(", ")
+					}
+					cdd.Name(w, v, false)
 				}
-				w.WriteString(v.name)
+				w.WriteByte('}')
 			}
-			w.WriteByte('}')
+			w.WriteString(";\n")
 		}
-		w.WriteString(";\n")
-
 		cdd.il--
 		w.WriteString("}\n")
 	}
 	cdd.copyDef(w)
 
 	if init {
-		cdd.Init = []byte("\t" + funcName + "();\n")
+		cdd.Init = []byte("\t" + fname + "();\n")
 	}
-	return cdd
+	return
 }
 
 func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
@@ -184,7 +117,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 				cdd.indent(w)
 				w.WriteString("#define ")
-				cdd.Name(w, c)
+				cdd.Name(w, c, false)
 				w.WriteByte(' ')
 				cdd.Value(w, c.Val(), c.Type())
 				cdd.copyDecl(w, "\n")
@@ -203,7 +136,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				v := gtc.ti.Objects[n].(*types.Var)
 				typ := v.Type()
 				cdd := gtc.newCDD(v, VarDecl, il)
-				name := cdd.NameStr(v)
+				name := cdd.NameStr(v, false)
 
 				cdd.indent(w)
 				cdd.Type(w, typ)
@@ -247,45 +180,35 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 		}
 
 	case token.TYPE:
-		// TODO: split struct types to Decl and Def
 		for _, s := range d.Specs {
 			ts := s.(*ast.TypeSpec)
 			to := gtc.ti.Objects[ts.Name]
 			tt := gtc.ti.Types[ts.Type]
 			cdd := gtc.newCDD(to, TypeDecl, il)
-			name := cdd.NameStr(to)
+			name := cdd.NameStr(to, false)
 
 			cdd.indent(w)
 
-			if _, ok := tt.(*types.Struct); ok {
-				w.WriteString("struct ")
-				w.WriteString(name)
-				w.WriteString("_struct;\n")
-				cdd.indent(w)
-				w.WriteString("typedef struct ")
-				w.WriteString(name)
-				w.WriteString("_struct ")
-				w.WriteString(name)
-			} else {
+			switch typ := tt.(type) {
+			case *types.Struct:
+				cdd.structDecl(w, name, typ)
+
+			case *types.Signature:
 				w.WriteString("typedef ")
-				cdd.Type(w, tt)
+				res := cdd.Signature(w, name, typ, false)
+				if res.cdd != nil {
+					cdds = append(cdds, res.cdd)
+				}
+				cdd.copyDecl(w, ";\n")
+
+			default:
+				w.WriteString("typedef ")
+				cdd.Type(w, typ)
 				w.WriteByte(' ')
 				w.WriteString(name)
-
+				cdd.copyDecl(w, ";\n")
 			}
-			cdd.copyDecl(w, ";\n")
 			w.Reset()
-
-			if _, ok := tt.(*types.Struct); ok {
-				w.WriteString("struct ")
-				w.WriteString(name)
-				w.WriteByte('_')
-				cdd.Type(w, tt)
-				w.WriteString(";\n")
-
-				cdd.copyDef(w)
-				w.Reset()
-			}
 
 			cdds = append(cdds, cdd)
 		}
@@ -299,10 +222,35 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 	return
 }
 
+func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) {
+	n := w.Len()
+
+	w.WriteString("struct ")
+	w.WriteString(name)
+	w.WriteString("_struct;\n")
+	cdd.indent(w)
+	w.WriteString("typedef struct ")
+	w.WriteString(name)
+	w.WriteString("_struct ")
+	w.WriteString(name)
+
+	cdd.copyDecl(w, ";\n")
+	w.Truncate(n)
+
+	w.WriteString("struct ")
+	w.WriteString(name)
+	w.WriteByte('_')
+	cdd.Type(w, typ)
+	w.WriteString(";\n")
+
+	cdd.copyDef(w)
+	w.Truncate(n)
+}
+
 func (cc *GTC) Decl(decl ast.Decl, il int) []*CDD {
 	switch d := decl.(type) {
 	case *ast.FuncDecl:
-		return []*CDD{cc.FuncDecl(d, il)}
+		return cc.FuncDecl(d, il)
 
 	case *ast.GenDecl:
 		return cc.GenDecl(d, il)

@@ -1,4 +1,5 @@
 #include "runtime/types.h"
+#include "cortexm/startup.h"
 
 extern uint32 __dataStart, __dataEnd, __dataStartFlash;
 extern uint32 __bssStart, __bssEnd;
@@ -31,19 +32,11 @@ void cortexm_startup_Start() {
 	for(;;);
 }
 
-static void nmi_handler(void) {
-	for (;;);
-}
-
-static void hardfault_handler(void) {
-	for (;;);
-}
-
 extern uint32 stackptr;
 
 uint32 *cortexm_startup_vectors[4] __attribute__ ((section("vectors"))) = {
 	&stackptr,
-	(uint32 *) cortexm_startup_Start, // code entry point
-	(uint32 *) nmi_handler,           // NMI handler (not really)
-	(uint32 *) hardfault_handler,     // hard fault handler 
+	(uint32 *) cortexm_startup_Start,          // entry point
+	(uint32 *) cortexm_startup_DefaultHandler, // NMI
+	(uint32 *) cortexm_startup_DefaultHandler, // hard fault
 };
