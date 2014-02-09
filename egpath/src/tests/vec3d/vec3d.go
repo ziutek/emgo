@@ -4,10 +4,6 @@ type Matrix struct {
 	v1, v2, v3 Vec
 }
 
-type Vec struct {
-	x, y, z float32
-}
-
 func (v Vec) Dot(a Vec) float32 {
 	return v.x*a.x + v.y*a.y + v.z*a.z
 }
@@ -28,4 +24,8 @@ func (v Vec) V3() (vx, vy, vz Vec) {
 	vy.y = v.y
 	vz.z = v.z
 	return
+}
+
+type Vec struct {
+	x, y, z float32
 }

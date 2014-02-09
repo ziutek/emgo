@@ -172,7 +172,7 @@ func main() {
 		logErr(err)
 		return
 	}
-	//defer os.RemoveAll(tmpDir)
+	defer os.RemoveAll(tmpDir)
 
 	if err = compile(path); err != nil {
 		logErr(err)

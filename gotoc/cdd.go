@@ -32,10 +32,9 @@ type CDD struct {
 	Init []byte
 
 	gtc  *GTC
-	il   int
-	ui   int
+	il   int  // indentation level
 	body bool // true if translation process in function body
-
+	dfsm int8
 }
 
 func (gtc *GTC) newCDD(o types.Object, t DeclType, il int) *CDD {
@@ -166,13 +165,43 @@ func (cdd *CDD) DetermineInline() {
 	}
 }
 
-func (cdd *CDD) addObject(o types.Object, typPtr bool) {
+func (cdd *CDD) addObject(o types.Object, direct bool) {
 	if o == cdd.Origin {
 		return
 	}
 	if cdd.body {
-		cdd.BodyUses[o] = typPtr
+		cdd.BodyUses[o] = direct
 	} else {
-		cdd.DeclUses[o] = typPtr
+		cdd.DeclUses[o] = direct
 	}
+}
+
+func (cdd *CDD) dfs(all map[types.Object]*CDD, out []*CDD) []*CDD {
+	if cdd.dfsm > 0 {
+			panic("direct cycle in type declaration")
+	}
+	if cdd.dfsm < 0 {
+			return out
+	}
+	cdd.dfsm = 1
+	for o, direct := range cdd.DeclUses {
+		if !direct {
+			continue
+		}
+		u, ok := all[o]
+		if !ok {
+			continue
+		}
+		out = u.dfs(all, out)
+	}
+	cdd.dfsm = -1
+	return append(out, cdd)
+}
+
+func dfs(all map[types.Object]*CDD) []*CDD {
+	out := make([]*CDD, 0, len(all))
+	for _, cdd := range all {
+		out = cdd.dfs(all, out)
+	}
+	return out
 }

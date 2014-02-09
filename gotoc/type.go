@@ -9,7 +9,7 @@ import (
 )
 
 func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) {
-	isPtr := false
+	direct := true
 
 writeType:
 	switch t := typ.(type) {
@@ -21,10 +21,11 @@ writeType:
 		}
 
 	case *types.Named:
-		cdd.Name(w, t.Obj(), isPtr)
+		cdd.Name(w, t.Obj(), direct)
 
 	case *types.Pointer:
 		typ = t.Elem()
+		direct = false
 		defer w.WriteByte('*')
 		goto writeType
 
@@ -41,7 +42,7 @@ writeType:
 			cdd.Type(w, f.Type())
 			if !f.Anonymous() {
 				w.WriteByte(' ')
-				cdd.Name(w, f, false)
+				cdd.Name(w, f, true)
 			}
 			w.WriteString(";\n")
 		}
@@ -67,7 +68,7 @@ func (cdd *CDD) Tuple(w *bytes.Buffer, t *types.Tuple) {
 		v := t.At(i)
 		cdd.Type(w, v.Type())
 		w.WriteByte(' ')
-		cdd.Name(w, v, false)
+		cdd.Name(w, v, true)
 	}
 }
 
@@ -136,26 +137,9 @@ func (cdd *CDD) results(tup *types.Tuple, fname string) (res results) {
 
 	res.cdd.structDecl(new(bytes.Buffer), res.typ, s)
 
-	cdd.DeclUses[o] = false
-	cdd.BodyUses[o] = false
+	cdd.DeclUses[o] = true
+	cdd.BodyUses[o] = true
 	return
-	/*
-		for i := 0; i < n; i++ {
-			v := tup.At(i)
-			name := res.cdd.NameStr(v, false)
-			if name == "" {
-				name = "__" + strconv.Itoa(i)
-			} else {
-				res.hasNames = true
-			}
-			res.list[i] = retVar{
-				name: name,
-				typ:  res.cdd.TypeStr(v.Type()),
-			}
-		}
-		res.writeStruct()
-		return
-	*/
 }
 
 func (cdd *CDD) Signature(w *bytes.Buffer, name string, sig *types.Signature, decl bool) (res results) {
@@ -172,7 +156,7 @@ func (cdd *CDD) Signature(w *bytes.Buffer, name string, sig *types.Signature, de
 	if r := sig.Recv(); r != nil {
 		cdd.Type(w, r.Type())
 		w.WriteByte(' ')
-		cdd.Name(w, r, false)
+		cdd.Name(w, r, true)
 		if sig.Params() != nil {
 			w.WriteString(", ")
 		}

@@ -14,7 +14,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	cdd := gtc.newCDD(f, FuncDecl, il)
 	cdds = append(cdds, cdd)
 	w := new(bytes.Buffer)
-	fname := cdd.NameStr(f, false)
+	fname := cdd.NameStr(f, true)
 
 	res := cdd.Signature(w, fname, f.Type().(*types.Signature), true)
 	if res.cdd != nil {
@@ -43,7 +43,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 			cdd.indent(w)
 			cdd.Type(w, v.Type())
 			w.WriteByte(' ')
-			cdd.Name(w, v, false)
+			cdd.Name(w, v, true)
 			w.WriteString(" = {0};\n")
 		}
 		cdd.indent(w)
@@ -62,14 +62,14 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 			cdd.indent(w)
 			w.WriteString("return ")
 			if len(res.fields) == 1 {
-				cdd.Name(w, res.fields[0], false)
+				cdd.Name(w, res.fields[0], true)
 			} else {
 				w.WriteString("(" + res.typ + ") {")
 				for i, v := range res.fields {
 					if i > 0 {
 						w.WriteString(", ")
 					}
-					cdd.Name(w, v, false)
+					cdd.Name(w, v, true)
 				}
 				w.WriteByte('}')
 			}
@@ -117,7 +117,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 				cdd.indent(w)
 				w.WriteString("#define ")
-				cdd.Name(w, c, false)
+				cdd.Name(w, c, true)
 				w.WriteByte(' ')
 				cdd.Value(w, c.Val(), c.Type())
 				cdd.copyDecl(w, "\n")
@@ -136,7 +136,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				v := gtc.ti.Objects[n].(*types.Var)
 				typ := v.Type()
 				cdd := gtc.newCDD(v, VarDecl, il)
-				name := cdd.NameStr(v, false)
+				name := cdd.NameStr(v, true)
 
 				cdd.indent(w)
 				cdd.Type(w, typ)
@@ -185,7 +185,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 			to := gtc.ti.Objects[ts.Name]
 			tt := gtc.ti.Types[ts.Type]
 			cdd := gtc.newCDD(to, TypeDecl, il)
-			name := cdd.NameStr(to, false)
+			name := cdd.NameStr(to, true)
 
 			cdd.indent(w)
 

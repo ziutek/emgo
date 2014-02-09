@@ -3,7 +3,6 @@ package gotoc
 import (
 	"bytes"
 	"code.google.com/p/go.tools/go/types"
-	"fmt"
 	"go/ast"
 	"io"
 )
@@ -76,10 +75,10 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 	// Determine inline for any function except main.main()
 	for _, cdd := range cdds {
-		fmt.Printf(
+		/*fmt.Printf(
 			"Origin: %s <%d>\n DeclUses: %+v\n BodyUses: %+v\n",
 			cdd.Origin, cdd.Typ, cdd.DeclUses, cdd.BodyUses,
-		)
+		)*/
 		if cdd.Typ == ImportDecl {
 			continue
 		}
@@ -165,51 +164,77 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		}
 	}
 
-	// Write declarations (types first).
+	var tcs, vcs, fcs []*CDD
+	cddm = make(map[types.Object]*CDD)
+
 	for _, cdd := range cdds {
-		if cdd.Typ != TypeDecl {
-			continue
+		switch cdd.Typ {
+		case TypeDecl:
+			cddm[cdd.Origin] = cdd
+
+		case VarDecl:
+			vcs = append(vcs, cdd)
+
+		case FuncDecl:
+			fcs = append(fcs, cdd)
+
 		}
+	}
+	tcs = dfs(cddm)
+
+	if err := write("// type decl\n", wh, wc); err != nil {
+		return err
+	}
+	for _, cdd := range tcs {
 		if err := cdd.WriteDecl(wh, wc); err != nil {
 			return err
 		}
 	}
-	for _, cdd := range cdds {
-		if cdd.Typ == TypeDecl {
-			continue
+	if err := write("// var  decl\n", wh, wc); err != nil {
+		return err
+	}
+	for _, cdd := range vcs {
+		if err := cdd.WriteDecl(wh, wc); err != nil {
+			return err
 		}
+	}
+	if err := write("// func decl\n", wh, wc); err != nil {
+		return err
+	}
+	for _, cdd := range fcs {
 		if err := cdd.WriteDecl(wh, wc); err != nil {
 			return err
 		}
 	}
 
-	// Write definitions (order: types, variables, functions)
-	for _, cdd := range cdds {
-		if cdd.Typ != TypeDecl {
-			continue
-		}
+	if err := write("// type def\n", wh, wc); err != nil {
+		return err
+	}
+	for _, cdd := range tcs {
 		if err := cdd.WriteDef(wh, wc); err != nil {
 			return err
 		}
 	}
-	for _, cdd := range cdds {
-		if cdd.Typ != VarDecl {
-			continue
-		}
+	if err := write("// var  def\n", wh, wc); err != nil {
+		return err
+	}
+	for _, cdd := range vcs {
 		if err := cdd.WriteDef(wh, wc); err != nil {
 			return err
 		}
 	}
-	for _, cdd := range cdds {
-		if cdd.Typ != FuncDecl {
-			continue
-		}
+	if err := write("// func def\n", wh, wc); err != nil {
+		return err
+	}
+	for _, cdd := range fcs {
 		if err := cdd.WriteDef(wh, wc); err != nil {
 			return err
 		}
 	}
 
-	// Initialisation function.
+	if err := write("// init\n", wh, wc); err != nil {
+		return err
+	}
 	buf.WriteString("void " + up + "_init();\n\n")
 	buf.WriteString("#endif\n")
 	if _, err := buf.WriteTo(wh); err != nil {
@@ -227,15 +252,11 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		buf.WriteString("\t" + upath(i.Path()) + "_init();\n")
 	}
 
-	for _, cdd := range cdds {
-		if cdd.Typ == VarDecl {
-			buf.Write(cdd.Init)
-		}
+	for _, cdd := range vcs {
+		buf.Write(cdd.Init)
 	}
-	for _, cdd := range cdds {
-		if cdd.Typ == FuncDecl {
-			buf.Write(cdd.Init)
-		}
+	for _, cdd := range fcs {
+		buf.Write(cdd.Init)
 	}
 	if buf.Len() == n {
 		// no imports, no inits

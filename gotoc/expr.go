@@ -88,7 +88,7 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 	w.WriteByte(')')
 }
 
-func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, typPtr bool) {
+func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, direct bool) {
 	switch o := obj.(type) {
 	case *types.PkgName:
 		// Imported package name in SelectorExpr: pkgname.Name
@@ -101,20 +101,20 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, typPtr bool) {
 			t := r.Type()
 			if p, ok := t.(*types.Pointer); ok {
 				t = p.Elem()
-				typPtr = true
+				direct = false
 			}
 			cdd.Type(w, t)
 			w.WriteByte('_')
 			w.WriteString(o.Name())
 			if !cdd.gtc.isLocal(t.(*types.Named).Obj()) {
-				cdd.addObject(o, typPtr)
+				cdd.addObject(o, direct)
 			}
 			return
 		}
 	}
 
 	if p := obj.Pkg(); p != nil && !cdd.gtc.isLocal(obj) {
-		cdd.addObject(obj, typPtr)
+		cdd.addObject(obj, direct)
 		w.WriteString(upath(obj.Pkg().Path()))
 		w.WriteByte('_')
 	}
@@ -131,9 +131,9 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, typPtr bool) {
 	w.WriteString(name)
 }
 
-func (cdd *CDD) NameStr(o types.Object, typPtr bool) string {
+func (cdd *CDD) NameStr(o types.Object, direct bool) string {
 	buf := new(bytes.Buffer)
-	cdd.Name(buf, o, typPtr)
+	cdd.Name(buf, o, direct)
 	return buf.String()
 }
 
@@ -155,7 +155,7 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
 
 	switch s := sel.Type().(type) {
 	case *types.Signature:
-		cdd.Name(w, sel, false)
+		cdd.Name(w, sel, true)
 		if recv := s.Recv(); recv != nil {
 			if _, ok := recv.Type().(*types.Pointer); !ok {
 				// Method has non pointer receiver so there is guaranteed
@@ -246,7 +246,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		w.WriteByte(')')
 
 	case *ast.Ident:
-		cdd.Name(w, cdd.gtc.ti.Objects[e], false)
+		cdd.Name(w, cdd.gtc.ti.Objects[e], true)
 
 	case *ast.IndexExpr:
 		cdd.Expr(w, e.X)

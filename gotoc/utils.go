@@ -5,6 +5,7 @@ import (
 	"code.google.com/p/go.tools/go/types"
 	"fmt"
 	"go/ast"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -25,4 +26,13 @@ func tmpname(w *bytes.Buffer) string {
 
 func uniqueId(o types.Object) string {
 	return strconv.Itoa(int(o.Pos()))
+}
+
+func write(s string, ws ...io.Writer) error {
+	for _, w := range ws {
+		if _, err := io.WriteString(w, s); err != nil {
+			return err
+		}
+	}
+	return nil
 }
