@@ -160,7 +160,7 @@ func (cdd *CDD) DetermineInline() {
 	}
 	// TODO: Use more information (from il, BodyUses).
 	// TODO: Complexity can be better calculated.
-	if cdd.Complexity < 10 {
+	if cdd.Complexity < 12 {
 		cdd.Inline = true
 	}
 }

@@ -20,9 +20,9 @@ typedef double float64;
 typedef float _Complex complex64;
 typedef double _Complex complex128;
 
-// Forget about C types
 #ifndef EG_ALLOW_C_TYPES
 
+// Forget about C types
 #define	unsigned	XXunsigned / / /
 #define	signed		XXsigned / / /
 #define	char		XXchar / / /
@@ -48,6 +48,19 @@ typedef struct {
 	int len;
 } string;
 
-#define __GOSTR(s) (string) {(byte *)s, sizeof(s)-1}
+#define __EGSTR(s) (string) {(byte *)s, sizeof(s)-1}
 
-bool __string_eq(string s1, string s2);
+typedef struct {
+	void *array;
+	int len;
+	int cap;
+} __slice;
+
+#define len(v) (v.len)
+
+#define __ALEN(a) (sizeof(a) / sizeof(a[0]))
+
+static inline void panic(string s) {
+	for (;;) {
+	}
+}

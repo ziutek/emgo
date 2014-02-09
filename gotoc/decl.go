@@ -41,9 +41,10 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		cdd.il++
 		for _, v := range res.fields {
 			cdd.indent(w)
-			cdd.Type(w, v.Type())
+			dim := cdd.Type(w, v.Type())
 			w.WriteByte(' ')
 			cdd.Name(w, v, true)
+			writeDim(w, dim)
 			w.WriteString(" = {0};\n")
 		}
 		cdd.indent(w)
@@ -139,9 +140,10 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				name := cdd.NameStr(v, true)
 
 				cdd.indent(w)
-				cdd.Type(w, typ)
+				dim := cdd.Type(w, typ)
 				w.WriteByte(' ')
 				w.WriteString(name)
+				writeDim(w, dim)
 
 				cinit := true // true if C declaration can init value
 
@@ -203,9 +205,10 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 			default:
 				w.WriteString("typedef ")
-				cdd.Type(w, typ)
+				dim := cdd.Type(w, typ)
 				w.WriteByte(' ')
 				w.WriteString(name)
+				writeDim(w, dim)
 				cdd.copyDecl(w, ";\n")
 			}
 			w.Reset()

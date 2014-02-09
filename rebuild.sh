@@ -2,6 +2,9 @@
 
 set -e
 
+egc math
+egc math/matrix
+
 egc cortexm/startup
 egc cortexm/nvic
 egc cortexm/systick

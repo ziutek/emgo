@@ -93,7 +93,7 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	cflags := CFLAGS{
 		Dbg:  "-g",
 		Opt:  "-O0 -fno-common",
-		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable",
+		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-missing-braces",
 		Incl: "-I" + filepath.Join(ctx.GOROOT, "src", "pkg"),
 	}
 	ldflags := LDFLAGS{

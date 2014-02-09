@@ -8,7 +8,21 @@ import (
 	"strconv"
 )
 
-func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) {
+func writeDim(w *bytes.Buffer, dim []int64) {
+	for _, d := range dim {
+		w.WriteByte('[')
+		w.WriteString(strconv.FormatInt(d, 10))
+		w.WriteByte(']')
+	}
+}
+
+func writeStars(w *bytes.Buffer, dim []int64) {
+	for _ = range dim {
+		w.WriteByte('*')
+	}
+}
+
+func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) (dim []int64) {
 	direct := true
 
 writeType:
@@ -39,19 +53,29 @@ writeType:
 				w.WriteString(reflect.StructTag(tag).Get("C"))
 				w.WriteByte(' ')
 			}
-			cdd.Type(w, f.Type())
+			d := cdd.Type(w, f.Type())
 			if !f.Anonymous() {
 				w.WriteByte(' ')
 				cdd.Name(w, f, true)
+				writeDim(w, d)
 			}
 			w.WriteString(";\n")
 		}
 		cdd.il--
+		cdd.indent(w)
 		w.WriteByte('}')
+
+	case *types.Array:
+		dim = append(dim, t.Len())
+		dim = append(dim, cdd.Type(w, t.Elem())...)
+
+	case *types.Slice:
+		w.WriteString("__slice")
 
 	default:
 		fmt.Fprintf(w, "<%T>", t)
 	}
+	return
 }
 
 func (cdd *CDD) TypeStr(typ types.Type) string {

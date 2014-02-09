@@ -54,8 +54,6 @@ func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 	k := t.Underlying().(*types.Basic).Kind()
 
-	w.WriteByte('(')
-
 	// TODO: use t instead ev.Kind() in following switch
 	switch ev.Kind() {
 	case exact.Int:
@@ -81,11 +79,14 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 		writeFloat(w, im, k)
 		w.WriteByte('i')
 
+	case exact.String:
+		w.WriteString("__EGSTR(")
+		w.WriteString(ev.String())
+		w.WriteByte(')')
+
 	default:
 		w.WriteString(ev.String())
 	}
-
-	w.WriteByte(')')
 }
 
 func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, direct bool) {
@@ -137,17 +138,17 @@ func (cdd *CDD) NameStr(o types.Object, direct bool) string {
 	return buf.String()
 }
 
-func (cdd *CDD) BasicLit(w *bytes.Buffer, l *ast.BasicLit) {
+/*func (cdd *CDD) BasicLit(w *bytes.Buffer, l *ast.BasicLit) {
 	switch l.Kind {
 	case token.STRING:
-		w.WriteString("__GOSTR(")
+		w.WriteString("__EGSTR(")
 		w.WriteString(l.Value)
 		w.WriteByte(')')
 
 	default:
 		notImplemented(l)
 	}
-}
+}*/
 
 func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
 	xt := cdd.gtc.ti.Types[e.X]
@@ -198,9 +199,6 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 	}
 
 	switch e := expr.(type) {
-	case *ast.BasicLit:
-		cdd.BasicLit(w, e)
-
 	case *ast.BinaryExpr:
 		cdd.Expr(w, e.X)
 		op := e.Op.String()
@@ -219,13 +217,23 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 			case *ast.SelectorExpr:
 				recv = cdd.SelectorExpr(w, f)
 
+			case *ast.Ident:
+				switch o := cdd.gtc.ti.Objects[f].(type) {
+				case *types.Builtin:
+					cdd.builtin(w, o, e.Args)
+
+				default:
+					cdd.Name(w, o, true)
+				}
+
 			default:
 				cdd.Expr(w, f)
 			}
 
 		default:
 			w.WriteByte('(')
-			cdd.Type(w, cdd.gtc.ti.Types[e.Fun])
+			dim := cdd.Type(w, cdd.gtc.ti.Types[e.Fun])
+			writeDim(w, dim)
 			w.WriteByte(')')
 		}
 
@@ -249,14 +257,22 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		cdd.Name(w, cdd.gtc.ti.Objects[e], true)
 
 	case *ast.IndexExpr:
-		cdd.Expr(w, e.X)
-		switch cdd.gtc.ti.Types[e.X].(type) {
+		switch t := cdd.gtc.ti.Types[e.X].(type) {
 		case *types.Basic: // string
+			cdd.Expr(w, e.X)
 			w.WriteString(".str")
+
 		case *types.Slice:
-			w.WriteString(".sli")
+			w.WriteString("((")
+			dim := cdd.Type(w, t.Elem())
+			writeStars(w, dim)
+			w.WriteString("*)")
+			cdd.Expr(w, e.X)
+			w.WriteString(".array)")
+
 		case *types.Array:
-			// use C arrays
+			cdd.Expr(w, e.X)
+
 		default:
 			notImplemented(e)
 		}
@@ -312,5 +328,24 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 
 	default:
 		fmt.Fprintf(w, "!%v<%T>!", e, e)
+	}
+}
+
+func (cdd *CDD) builtin(w *bytes.Buffer, b *types.Builtin, args []ast.Expr) {
+	switch name := b.Name(); name {
+	case "len":
+		switch t := cdd.gtc.ti.Types[args[0]].(type) {
+		case *types.Slice, *types.Map, *types.Basic: // Basic == String
+			w.WriteString(name)
+
+		case *types.Array:
+			w.WriteString("sizeof")
+
+		default:
+			panic(t)
+		}
+
+	default:
+		w.WriteString(name)
 	}
 }
