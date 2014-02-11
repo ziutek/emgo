@@ -34,8 +34,8 @@ void cortexm_startup_Start() {
 
 extern uint32 stackptr;
 
-uint32 *cortexm_startup_vectors[4] __attribute__ ((section("vectors"))) = {
-	&stackptr,
+uint32 *cortexm_startup_vectors[4] __attribute__ ((section(".vectors"))) = {
+	&mainstack,
 	(uint32 *) cortexm_startup_Start,          // entry point
 	(uint32 *) cortexm_startup_DefaultHandler, // NMI
 	(uint32 *) cortexm_startup_DefaultHandler, // hard fault

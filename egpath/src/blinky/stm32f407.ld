@@ -6,15 +6,15 @@ MEMORY {
  	ram (rwx)	: ORIGIN = 0x20000000, LENGTH =  128K
 }
 
-PROVIDE(stackptr = ORIGIN(ram) + LENGTH(ram));
+PROVIDE(mainstack = ORIGIN(ram) + LENGTH(ram));
 
 SECTIONS {
 	.text : {
-		KEEP(*(vectors))     /* Interrupt vector table */
+		KEEP(*(.vectors))    /* Interrupt vector table */
 		*(.text .text.*)     /* Code */   
 		*(.rodata .rodata.*) /* Read only data */
     	/* } > ram */
-    } >flash
+	} >flash
     
 	.data : {
 		. = ALIGN(4);

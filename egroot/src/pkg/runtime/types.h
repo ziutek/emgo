@@ -45,20 +45,62 @@ typedef uint8 bool;
 
 typedef struct {
 	byte *str;
-	int len;
+	uint len;
 } string;
 
-#define __EGSTR(s) (string) {(byte *)s, sizeof(s)-1}
+#define __EGSTR(s) ((string) {(byte *)s, sizeof(s)-1})
 
 typedef struct {
 	void *array;
-	int len;
-	int cap;
+	uint len;
+	uint cap;
 } __slice;
 
 #define len(v) (v.len)
 
 #define __ALEN(a) (sizeof(a) / sizeof(a[0]))
+
+
+#define __SLICE_LOW(expr, typ, low)         \
+	__slice __s = expr;                   \
+	uint __low = low;                     \
+	__s.array = ((typ*)__s.array) + __low
+	
+#define __SLICEL(expr, typ, low) \
+({                               \
+	__SLICE_LOW(expr, typ, low); \
+	__s;                         \
+})
+
+#define __SLICELH(expr, typ, low, high) \
+({                                      \
+	__SLICE_LOW(expr, typ, low);        \
+	__s.len = high - __low;             \
+	__s;                                \
+})
+
+#define __SLICELHM(expr, typ, low, high, max) \
+({                                            \
+	__SLICE_LOW(expr, typ, low);              \
+	__s.len = high - __low;                   \
+	__s.cap = max - __low;                    \
+	__s;                                      \
+})	
+	
+#undef SLICE_LOW
+
+#define __SLICEH(expr, typ, high) \
+	__slice __s = expr;           \
+	__s.len = high;               \
+	__s;
+	
+#define __SLICEM(expr, typ, max) "Go 1.2 doesn't allow [::max]"
+	
+#define __SLICEHM(expr, typ, high, max) \
+	__slice __s = expr;                 \
+	__s.len = high;                     \
+	__s.cap = max;                      \
+	__s;
 
 static inline void panic(string s) {
 	for (;;) {

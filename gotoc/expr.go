@@ -295,7 +295,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		cdd.SelectorExpr(w, e)
 
 	case *ast.SliceExpr:
-		notImplemented(e)
+		cdd.SliceExpr(w, e)
 
 	case *ast.StarExpr:
 		w.WriteByte('*')
@@ -315,7 +315,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 	case *ast.CompositeLit:
 		w.WriteByte('(')
 		cdd.Type(w, cdd.gtc.ti.Types[e])
-		w.WriteString("){")
+		w.WriteString(") {")
 
 		for i, el := range e.Elts {
 			if i > 0 {
@@ -328,6 +328,70 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 
 	default:
 		fmt.Fprintf(w, "!%v<%T>!", e, e)
+	}
+}
+
+func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
+	switch t := cdd.gtc.ti.Types[e.X].(type) {
+	case *types.Slice:
+		if e.Low == nil && e.High == nil && e.Max == nil {
+			cdd.Expr(w, e.X)
+			break
+		}
+
+		buf := new(bytes.Buffer)
+		cdd.Expr(buf, e.X)
+		buf.WriteString(", ")
+		dim := cdd.Type(buf, t.Elem())
+		writeStars(buf, dim)
+
+		if e.Low != nil {
+			switch {
+			case e.High == nil && e.Max == nil:
+				w.WriteString("__SLICEL(")
+
+			case e.High != nil && e.Max == nil:
+				w.WriteString("__SLICELH(")
+
+			case e.High == nil && e.Max != nil:
+				w.WriteString("__SLICEM(")
+
+			default:
+				w.WriteString("__SLICELHM(")
+			}
+			buf.WriteTo(w)
+			w.WriteString(", ")
+			cdd.Expr(w, e.Low)
+		} else {
+			switch {
+			case e.High != nil && e.Max == nil:
+				w.WriteString("__SLICEH(")
+
+			case e.High == nil && e.Max != nil:
+				w.WriteString("__SLICEM(")
+
+			default:
+				w.WriteString("__SLICEHM(")
+			}
+			buf.WriteTo(w)
+		}
+
+		if e.High != nil {
+			w.WriteString(", ")
+			cdd.Expr(w, e.High)
+		}
+		if e.Max != nil {
+			w.WriteString(", ")
+			cdd.Expr(w, e.Max)
+		}
+
+		w.WriteByte(')')
+
+	case *types.Array:
+		notImplemented(e)
+
+	default:
+		notImplemented(e)
 	}
 }
 
