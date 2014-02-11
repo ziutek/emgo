@@ -6,7 +6,7 @@ MEMORY {
  	ram (rwx)	: ORIGIN = 0x20000000, LENGTH =  128K
 }
 
-PROVIDE(mainstack = ORIGIN(ram) + LENGTH(ram));
+PROVIDE(mainStack = ORIGIN(ram) + LENGTH(ram));
 
 SECTIONS {
 	.text : {
@@ -18,25 +18,25 @@ SECTIONS {
     
 	.data : {
 		. = ALIGN(4);
-		__dataStart = .;
+		dataStart = .;
 		
 		*(.data .data.*)
 		
 		. = ALIGN(4);
-		__dataEnd = .;
+		dataEnd = .;
 	/* } >ram */
 	} >ram AT>flash
     
-	__dataStartFlash = LOADADDR(.data);
+	dataStartFlash = LOADADDR(.data);
 
 	.bss : {
 		. = ALIGN(4);
-		__bssStart = .;
+		bssStart = .;
     	
 		*(.bss .bss.*)
         
 		. = ALIGN(4);
-		__bssEnd = .;
+		bssEnd = .;
 	} >ram
 }  
 
