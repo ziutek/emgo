@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"code.google.com/p/go.tools/go/exact"
 	"code.google.com/p/go.tools/go/importer"
 	"code.google.com/p/go.tools/go/types"
@@ -9,9 +10,11 @@ import (
 	"go/build"
 	"go/parser"
 	"go/token"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var tmpDir string
@@ -42,18 +45,16 @@ func compile(ppath string) error {
 		return err
 	}
 
-	flist := make([]*ast.File, len(bp.GoFiles))
+	flist := make([]*ast.File, 0, len(bp.GoFiles)+1)
 	fset := token.NewFileSet()
 
-	for i, fname := range bp.GoFiles {
+	for _, fname := range bp.GoFiles {
 		fname = filepath.Join(bp.Dir, fname)
-		f, err := parser.ParseFile(
-			fset, fname, nil, parser.ParseComments,
-		)
+		f, err := parser.ParseFile(fset, fname, nil, 0)
 		if err != nil {
 			return err
 		}
-		flist[i] = f
+		flist = append(flist, f)
 	}
 
 	ppath = bp.ImportPath
@@ -61,6 +62,16 @@ func compile(ppath string) error {
 	if bp.Name == "main" {
 		elf = filepath.Join(bp.Dir, "main.elf")
 		ppath = "main"
+		
+		f, err := parser.ParseFile(
+			fset, "_importruntime.go",
+			"package main\nimport _ \"runtime\"\n",
+			0,
+		)
+		if err != nil {
+			return err
+		}
+		flist = append(flist, f)
 	}
 
 	// Type check
@@ -129,8 +140,31 @@ func compile(ppath string) error {
 	}
 	defer wh.Close()
 
+	up := strings.Replace(ppath, "/", "_", -1)
+	_, err = io.WriteString(wh, "#ifndef "+up+"\n#define "+up+"\n\n")
+	if err != nil {
+		return err
+	}
+
 	gtc := gotoc.NewGTC(pkg, ti)
 	if err = gtc.Translate(wh, wc, flist); err != nil {
+		return err
+	}
+
+	for _, h := range bp.HFiles {
+		f, err := os.Open(filepath.Join(bp.Dir, h))
+		if err != nil {
+			return err
+		}
+		if _, err = bufio.NewReader(f).WriteTo(wh); err != nil {
+			return err
+		}
+		if _, err = wh.Write([]byte{'\n'}); err != nil {
+			return err
+		}
+	}
+
+	if _, err = io.WriteString(wh, "#endif\n"); err != nil {
 		return err
 	}
 
@@ -172,7 +206,7 @@ func main() {
 		logErr(err)
 		return
 	}
-	defer os.RemoveAll(tmpDir)
+	//defer os.RemoveAll(tmpDir)
 
 	if err = compile(path); err != nil {
 		logErr(err)

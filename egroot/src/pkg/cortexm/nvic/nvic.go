@@ -20,3 +20,12 @@ type Table struct {
 	PendSV     Vector `C:"volatile"` // prio 5
 	SysTick    Vector `C:"volatile"` // prio 6
 }
+
+type IRQ byte
+
+func (irq IRQ) Enable()
+func (irq IRQ) Disable()
+func (irq IRQ) SetPending(p bool)
+func (irq IRQ) Pending() bool
+func (irq IRQ) SetPriority(prio uint32)
+func (irq IRQ) Priority() uint32

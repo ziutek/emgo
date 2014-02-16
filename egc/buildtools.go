@@ -20,7 +20,7 @@ var archMap = map[string]string{
 
 var osMap = map[string]struct{ cc, ld string }{
 	"none": {
-		cc: "-nostdinc -fno-exceptions -nostartfiles",
+		cc: "-ffreestanding -nostdinc -fno-exceptions -nostartfiles",
 		ld: "-nostdlib  -nodefaultlibs  -nostartfiles",
 	},
 }
@@ -92,9 +92,9 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 
 	cflags := CFLAGS{
 		Dbg:  "-g",
-		Opt:  "-O0 -fno-common",
-		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-missing-braces",
-		Incl: "-I" + filepath.Join(ctx.GOROOT, "src", "pkg"),
+		Opt:  "-Os -fno-common",
+		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-missing-braces -Wno-unused-label",
+		Incl: "-I" + filepath.Join(ctx.GOROOT, "src"),
 	}
 	ldflags := LDFLAGS{
 		Script: EGLDSCRIPT,

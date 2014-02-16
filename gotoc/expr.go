@@ -48,9 +48,6 @@ func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 	}
 }
 
-//k := c.Type().(*types.Basic).Kind()
-//ev := c.Val()
-
 func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 	k := t.Underlying().(*types.Basic).Kind()
 
@@ -221,6 +218,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 				switch o := cdd.gtc.ti.Objects[f].(type) {
 				case *types.Builtin:
 					cdd.builtin(w, o, e.Args)
+					return
 
 				default:
 					cdd.Name(w, o, true)
@@ -265,8 +263,8 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		case *types.Slice:
 			w.WriteString("((")
 			dim := cdd.Type(w, t.Elem())
-			writeStars(w, dim)
-			w.WriteString("*)")
+			writeDimPtr(w, dim)
+			w.WriteByte(')')
 			cdd.Expr(w, e.X)
 			w.WriteString(".array)")
 
@@ -313,9 +311,24 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		cdd.Expr(w, e.X)
 
 	case *ast.CompositeLit:
-		w.WriteByte('(')
-		cdd.Type(w, cdd.gtc.ti.Types[e])
-		w.WriteString(") {")
+		typ := cdd.gtc.ti.Types[e]
+
+		switch t := typ.(type) {
+		case *types.Array:
+			w.WriteByte('{')
+
+		case *types.Slice:
+			w.WriteString("(__slice){(")
+			dim := cdd.Type(w, t.Elem())
+			w.WriteString("[]")
+			writeDim(w, dim)
+			w.WriteString("){")
+
+		default:
+			w.WriteByte('(')
+			cdd.Type(w, t)
+			w.WriteString("){")
+		}
 
 		for i, el := range e.Elts {
 			if i > 0 {
@@ -324,7 +337,17 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 			cdd.Expr(w, el)
 		}
 
-		w.WriteByte('}')
+		switch typ.(type) {
+		case *types.Slice:
+			w.WriteByte('}')
+			plen := ", " + strconv.Itoa(len(e.Elts))
+			w.WriteString(plen)
+			w.WriteString(plen)
+			w.WriteByte('}')
+
+		default:
+			w.WriteByte('}')
+		}
 
 	default:
 		fmt.Fprintf(w, "!%v<%T>!", e, e)
@@ -338,12 +361,6 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			cdd.Expr(w, e.X)
 			break
 		}
-
-		buf := new(bytes.Buffer)
-		cdd.Expr(buf, e.X)
-		buf.WriteString(", ")
-		dim := cdd.Type(buf, t.Elem())
-		writeStars(buf, dim)
 
 		if e.Low != nil {
 			switch {
@@ -359,7 +376,10 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			default:
 				w.WriteString("__SLICELHM(")
 			}
-			buf.WriteTo(w)
+			cdd.Expr(w, e.X)
+			w.WriteString(", ")
+			dim := cdd.Type(w, t.Elem())
+			writeDimPtr(w, dim)
 			w.WriteString(", ")
 			cdd.Expr(w, e.Low)
 		} else {
@@ -373,7 +393,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			default:
 				w.WriteString("__SLICEHM(")
 			}
-			buf.WriteTo(w)
+			cdd.Expr(w, e.X)
 		}
 
 		if e.High != nil {
@@ -388,7 +408,46 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 		w.WriteByte(')')
 
 	case *types.Array:
-		notImplemented(e)
+		if e.Low != nil {
+			switch {
+			case e.High == nil && e.Max == nil:
+				w.WriteString("__ASLICEL(")
+
+			case e.High != nil && e.Max == nil:
+				w.WriteString("__ASLICELH(")
+
+			case e.High == nil && e.Max != nil:
+				w.WriteString("__ASLICEM(")
+
+			default:
+				w.WriteString("__ASLICELHM(")
+			}
+			cdd.Expr(w, e.X)
+			w.WriteString(", ")
+			cdd.Expr(w, e.Low)
+		} else {
+			switch {
+			case e.High != nil && e.Max == nil:
+				w.WriteString("__ASLICEH(")
+
+			case e.High == nil && e.Max != nil:
+				w.WriteString("__ASLICEM(")
+
+			default:
+				w.WriteString("__ASLICEHM(")
+			}
+			cdd.Expr(w, e.X)
+		}
+
+		if e.High != nil {
+			w.WriteString(", ")
+			cdd.Expr(w, e.High)
+		}
+		if e.Max != nil {
+			w.WriteString(", ")
+			cdd.Expr(w, e.Max)
+		}
+		w.WriteByte(')')
 
 	default:
 		notImplemented(e)
@@ -396,20 +455,46 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 }
 
 func (cdd *CDD) builtin(w *bytes.Buffer, b *types.Builtin, args []ast.Expr) {
+	etm := cdd.gtc.ti.Types
+
 	switch name := b.Name(); name {
 	case "len":
-		switch t := cdd.gtc.ti.Types[args[0]].(type) {
+		switch t := etm[args[0]].(type) {
 		case *types.Slice, *types.Map, *types.Basic: // Basic == String
-			w.WriteString(name)
+			w.WriteString("len(")
 
 		case *types.Array:
-			w.WriteString("sizeof")
+			w.WriteString("sizeof(")
+
+		default:
+			panic(t)
+		}
+
+	case "copy":
+		switch t := etm[args[1]].(type) {
+		case *types.Basic: // string
+			w.WriteString("__STRCPY(")
+
+		case *types.Slice:
+			w.WriteString("__SLICPY(")
+			dim := cdd.Type(w, t.Elem())
+			writeDim(w, dim)
+			w.WriteString(", ")
 
 		default:
 			panic(t)
 		}
 
 	default:
-		w.WriteString(name)
+		w.WriteString(name + "(")
 	}
+
+	for i, a := range args {
+		if i != 0 {
+			w.WriteString(", ")
+		}
+		cdd.Expr(w, a)
+	}
+	w.WriteByte(')')
+
 }

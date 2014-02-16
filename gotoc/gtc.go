@@ -50,6 +50,9 @@ func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 type imports map[*types.Package]bool
 
 func (i imports) add(pkg *types.Package, export bool) {
+	if pkg.Path() == "runtime" && !export {
+		return
+	}
 	if e, ok := i[pkg]; ok {
 		if !e && export {
 			i[pkg] = true
@@ -110,7 +113,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		}
 		for o := range cdd.DeclUses {
 			if gtc.isImported(o) {
-				imp.add(o.Pkg(), cdd.Export)
+		 		imp.add(o.Pkg(), cdd.Export)
 			}
 		}
 		for o := range cdd.BodyUses {
@@ -123,7 +126,9 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	pkgName := gtc.pkg.Name()
 	buf := new(bytes.Buffer)
 
-	buf.WriteString("#include \"runtime/types.h\"\n")
+	buf.WriteString("#include \"types/types.h\"\n")
+	buf.WriteString("#include \"runtime.h\"\n")
+	
 	buf.WriteString("#include \"")
 	if pkgName == "main" {
 		buf.WriteByte('_')
@@ -137,9 +142,6 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 
 	up := upath(gtc.pkg.Path())
-
-	buf.WriteString("#ifndef " + up + "\n")
-	buf.WriteString("#define " + up + "\n\n")
 
 	if _, err := buf.WriteTo(wh); err != nil {
 		return err
@@ -236,7 +238,6 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		return err
 	}
 	buf.WriteString("void " + up + "_init();\n\n")
-	buf.WriteString("#endif\n")
 	if _, err := buf.WriteTo(wh); err != nil {
 		return err
 	}

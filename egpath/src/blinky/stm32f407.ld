@@ -13,8 +13,8 @@ SECTIONS {
 		KEEP(*(.vectors))    /* Interrupt vector table */
 		*(.text .text.*)     /* Code */   
 		*(.rodata .rodata.*) /* Read only data */
-    	/* } > ram */
-	} >flash
+    	} > ram
+	/* } >flash */
     
 	.data : {
 		. = ALIGN(4);
@@ -24,8 +24,8 @@ SECTIONS {
 		
 		. = ALIGN(4);
 		dataEnd = .;
-	/* } >ram */
-	} >ram AT>flash
+	} >ram
+	/* } >ram AT>flash */
     
 	dataStartFlash = LOADADDR(.data);
 

@@ -1,4 +1,4 @@
-#include "runtime/types.h"
+#include "types/types.h"
 #include "cortexm/startup.h"
 
 extern uint32 dataStart, dataEnd, dataStartFlash;

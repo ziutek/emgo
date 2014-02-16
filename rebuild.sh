@@ -2,7 +2,7 @@
 
 set -e
 
-egc math/matrix
+egc math/matrix32
 
 egc cortexm/startup
 egc cortexm/nvic

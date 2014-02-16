@@ -48,23 +48,22 @@ typedef struct {
 	uint len;
 } string;
 
-#define __EGSTR(s) ((string) {(byte *)s, sizeof(s)-1})
+#define __EGSTR(s) ((string){(byte *)s, sizeof(s)-1})
 
 typedef struct {
-	void *array;
+	unsafe_Pointer array;
 	uint len;
 	uint cap;
 } __slice;
 
 #define len(v) (v.len)
 
-#define __ALEN(a) (sizeof(a) / sizeof(a[0]))
+#define __ALEN(a) (sizeof(a) / sizeof((a)[0]))
 
-
-#define __SLICE_LOW(expr, typ, low)         \
+#define __SLICE_LOW(expr, typ, low)       \
 	__slice __s = expr;                   \
 	uint __low = low;                     \
-	__s.array = ((typ*)__s.array) + __low
+	__s.array = ((typ)__s.array) + __low
 	
 #define __SLICEL(expr, typ, low) \
 ({                               \
@@ -85,22 +84,62 @@ typedef struct {
 	__s.len = high - __low;                   \
 	__s.cap = max - __low;                    \
 	__s;                                      \
-})	
+})
 	
-#undef SLICE_LOW
+#undef __SLICE_LOW
 
-#define __SLICEH(expr, typ, high) \
+#define __SLICEH(expr, high) \
+({                                \
 	__slice __s = expr;           \
 	__s.len = high;               \
-	__s;
+	__s;                          \
+})
 	
-#define __SLICEM(expr, typ, max) "Go 1.2 doesn't allow [::max]"
+#define __SLICEM(expr, max) "Go 1.2 doesn't allow [::max]"
 	
-#define __SLICEHM(expr, typ, high, max) \
+#define __SLICEHM(expr, high, max) \
+({                                      \
 	__slice __s = expr;                 \
 	__s.len = high;                     \
 	__s.cap = max;                      \
-	__s;
+	__s;                                \
+})
+
+	
+#define __ASLICEL(expr, low) \
+	(__slice){               \
+		&(expr)[low],        \
+		__ALEN(expr)-low,    \
+		__ALEN(expr)-low,    \
+	}
+
+#define __ASLICELH(expr, low, high) \
+	(__slice){                      \
+		&(expr)[low],               \
+		high-low,                   \
+		__ALEN(expr)-low            \
+	}
+	
+#define __ASLICELHM(expr, low, high, max) \
+	(__slice){                            \
+		&(expr)[low],                     \
+		high-low,                         \
+		max-low                           \
+	}
+	
+#define __ASLICEH(expr, high) (__slice){expr, high, __ALEN(expr)}
+	
+#define __ASLICEM(expr, max) "Go 1.2 doesn't allow [::max]"
+	
+#define __ASLICEHM(expr, high, max) (__slice){expr, high, max}
+	
+#define __SLICPY(typ, dst, src)                               \
+	runtime_Copy(                                             \
+		dst.array, src.array,                                 \
+		(dst.len < src.len ? dst.len : src.len) * sizeof(typ) \
+	)
+	
+//#define __STRCPY(dst, src)
 
 static inline void panic(string s) {
 	for (;;) {

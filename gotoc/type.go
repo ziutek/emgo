@@ -16,9 +16,12 @@ func writeDim(w *bytes.Buffer, dim []int64) {
 	}
 }
 
-func writeStars(w *bytes.Buffer, dim []int64) {
-	for _ = range dim {
+func writeDimPtr(w *bytes.Buffer, dim []int64) {
+	if len(dim) == 0 {
 		w.WriteByte('*')
+	} else {
+		w.WriteString("(*)")
+		writeDim(w, dim)
 	}
 }
 
