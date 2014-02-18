@@ -31,7 +31,7 @@ type CFLAGS struct {
 	Dbg  string // debuging flags
 	Opt  string // optimization flags
 	Warn string // warning flags
-	Incl string // include flags
+	Incl string // -I flags
 }
 
 func (cf *CFLAGS) SplitAll() []string {
@@ -47,12 +47,14 @@ func (cf *CFLAGS) SplitAll() []string {
 
 type LDFLAGS struct {
 	OS     string // OS related flags
+	Incl   string // -L flags
 	Script string // path to linker script or empty if default script
 }
 
 func (lf *LDFLAGS) SplitAll() []string {
 	var f []string
 	f = append(f, strings.Fields(lf.OS)...)
+	f = append(f, strings.Fields(lf.Incl)...)
 	if lf.Script != "" {
 		f = append(f, "-T", lf.Script)
 	}
@@ -79,7 +81,7 @@ const (
 	EGCC       = prefix + "gcc"
 	EGLD       = prefix + "ld"
 	EGAR       = prefix + "ar"
-	EGLDSCRIPT = "stm32f407.ld"
+	EGLDSCRIPT = "script.ld"
 )
 
 func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
@@ -92,12 +94,13 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 
 	cflags := CFLAGS{
 		Dbg:  "-g",
-		Opt:  "-Os -fno-common",
+		Opt:  "-O0 -fno-common",
 		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-missing-braces -Wno-unused-label",
 		Incl: "-I" + filepath.Join(ctx.GOROOT, "src"),
 	}
 	ldflags := LDFLAGS{
 		Script: EGLDSCRIPT,
+		Incl: "-L" + filepath.Join(ctx.GOROOT, "ld"),
 	}
 
 	if fl, ok := archMap[ctx.GOARCH]; ok {

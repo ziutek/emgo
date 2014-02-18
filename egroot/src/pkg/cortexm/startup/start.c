@@ -1,30 +1,17 @@
 #include "types/types.h"
+#include "runtime.h"
+
 #include "cortexm/startup.h"
 
-extern uint32 dataStart, dataEnd, dataStartFlash;
-extern uint32 bssStart, bssEnd;
+extern uint32 _DataRAM, _DataLoad, _DataLen;
+extern uint32 _BSSRAM, _BSSLen;
 
 int main_init();
 int main_main();
 
 void cortexm_startup_Start() {
-	uint32 *src = &dataStartFlash;
-	uint32 *dst = &dataStart;
-	uint32 *end = &dataEnd;
-
-	while (dst < end) {
-		*dst = *src;
-		++dst;
-		++src;
-	}
-
-	dst = (uint32 *) & bssStart;
-	end = (uint32 *) & bssEnd;
-
-	while (dst < end) {
-		*dst = 0;
-		++dst;
-	}
+	runtime_Copy(&_DataRAM, &_DataLoad, (uint)(&_DataLen));
+	runtime_Memset(&_BSSRAM, 0, (uint)(&_BSSLen));
 	
 	main_init();
 	main_main();
@@ -32,10 +19,10 @@ void cortexm_startup_Start() {
 	for(;;);
 }
 
-extern uint32 mainStack;
+extern uint32 _MainStack;
 
 uint32 *cortexm_startup_vectors[4] __attribute__ ((section(".vectors"))) = {
-	&mainStack,
+	&_MainStack,
 	(uint32 *) cortexm_startup_Start,          // entry point
 	(uint32 *) cortexm_startup_DefaultHandler, // NMI
 	(uint32 *) cortexm_startup_DefaultHandler, // hard fault
