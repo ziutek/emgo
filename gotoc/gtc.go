@@ -98,7 +98,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 			continue
 		}
 		o := cdd.Origin
-		if o.IsExported() || (o.Pkg().Name() == "main" && o.Name() == "main") {
+		if o.Exported() || (o.Pkg().Name() == "main" && o.Name() == "main") {
 			gtc.export(cddm, cdd)
 		}
 	}

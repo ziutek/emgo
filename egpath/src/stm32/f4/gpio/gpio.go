@@ -2,6 +2,8 @@ package gpio
 
 import "unsafe"
 
+// Common for STM32F4xx and STM32L1xx
+
 // GPIO represents registers of one GPIO port
 type Port struct {
 	moder   uint32 `C:"volatile"`
@@ -74,13 +76,6 @@ func (g *Port) SetOutType(n int, ot OutType) {
 }
 
 type Speed byte
-
-const (
-	Low Speed = iota
-	Medium
-	Fast
-	High
-)
 
 // OutSpeed return current speed for n-th output bit
 func (g *Port) OutSpeed(n int) Speed {

@@ -13,7 +13,7 @@ import (
 )
 
 type Importer struct {
-	tc types.Config
+	tc types.Config // used by importSrc
 }
 
 func NewImporter() *Importer {

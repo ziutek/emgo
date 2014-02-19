@@ -41,6 +41,14 @@ func HSEReady() bool {
 	return c.cr&(1<<17) != 0
 }
 
+func SetHSEBypass() {
+	c.cr |= 1 << 18
+}
+
+func ResetHSEBypass() {
+	c.cr &^= 1 << 18
+}
+
 func EnableMainPLL() {
 	c.cr |= 1 << 24
 }
@@ -68,11 +76,13 @@ func ResetPLLCFGR() {
 type PLLSrc byte
 
 const (
-	PLLSrcHSI PLLSrc = 0
-	PLLSrcHSE PLLSrc = 1
+	SrcHSI PLLSrc = 0
+	SrcHSE PLLSrc = 1
 )
 
-func SetPLLSrc(src PLLSrc) {
+
+
+func SetPLLClock(src PLLSrc) {
 	c.pllcfgr = c.pllcfgr&^(1<<22) | uint32(src)<<22
 }
 
@@ -113,19 +123,20 @@ func ResetCFGR() {
 type AHBDiv byte
 
 const (
-	AHBDiv1   AHBDiv = 0 << 4
-	AHBDiv2   AHBDiv = 8 << 4
-	AHBDiv4   AHBDiv = 9 << 4
-	AHBDiv8   AHBDiv = 10 << 4
-	AHBDiv16  AHBDiv = 11 << 4
-	AHBDiv64  AHBDiv = 12 << 4
-	AHBDiv128 AHBDiv = 13 << 4
-	AHBDiv256 AHBDiv = 14 << 4
-	AHBDiv512 AHBDiv = 15 << 4
+	AHBDiv1   AHBDiv = 0
+	AHBDiv2   AHBDiv = 8
+	AHBDiv4   AHBDiv = 9
+	AHBDiv8   AHBDiv = 10
+	AHBDiv16  AHBDiv = 11
+	AHBDiv64  AHBDiv = 12
+	AHBDiv128 AHBDiv = 13
+	AHBDiv256 AHBDiv = 14
+	AHBDiv512 AHBDiv = 15
 )
 
+// SetPrescalerAHB sets prescaler for AHB bus
 func SetPrescalerAHB(div AHBDiv) {
-	c.cfgr = c.cfgr&^(0xf<<4) | uint32(div)
+	c.cfgr = c.cfgr&^(0xf<<4) | uint32(div)<<4
 }
 
 type APBDiv byte
@@ -138,10 +149,12 @@ const (
 	APBDiv16 APBDiv = 7
 )
 
+// SetPrescalerAPB1 sets prescaler for APB low-speed bus
 func SetPrescalerAPB1(div APBDiv) {
 	c.cfgr = c.cfgr&^(7<<10) | uint32(div)<<10
 }
 
+// SetPrescalerAPB2 sets prescaler for APB high-speed bus
 func SetPrescalerAPB2(div APBDiv) {
 	c.cfgr = c.cfgr&^(7<<13) | uint32(div)<<13
 }

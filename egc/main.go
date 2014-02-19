@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"code.google.com/p/go.tools/go/exact"
 	"code.google.com/p/go.tools/go/importer"
 	"code.google.com/p/go.tools/go/types"
 	"github.com/ziutek/emgo/gotoc"
@@ -78,8 +77,7 @@ func compile(ppath string) error {
 
 	tc := &types.Config{Import: NewImporter().Import}
 	ti := &types.Info{
-		Types:   make(map[ast.Expr]types.Type),
-		Values:  make(map[ast.Expr]exact.Value),
+		Types:   make(map[ast.Expr]types.TypeAndValue),
 		Objects: make(map[*ast.Ident]types.Object),
 	}
 
@@ -115,8 +113,9 @@ func compile(ppath string) error {
 	} else {
 		hpath = filepath.Join(bp.PkgRoot, buildCtx.GOOS+"_"+buildCtx.GOARCH, ppath+".h")
 		expath := filepath.Join(work, "__.EXPORTS")
-		objs = make([]string, 0, len(csfiles)+2)
-		objs = append(objs, expath, hpath)
+		impath := filepath.Join(work, "__.IMPORTS")
+		objs = make([]string, 0, len(csfiles)+3)
+		objs = append(objs, expath, impath, hpath)
 
 		err = os.MkdirAll(filepath.Dir(hpath), 0755)
 		if err != nil && !os.IsExist(err) {
@@ -130,6 +129,16 @@ func compile(ppath string) error {
 		_, err = wp.Write(edata)
 		if err != nil {
 			return err
+		}
+		wp.Close()
+		wp, err = os.Create(impath)
+		if err != nil {
+			return err
+		}
+		for _, p := range pkg.Imports() {
+			if _, err := io.WriteString(wp, p.Path() + "\n"); err != nil {
+				return err
+			}
 		}
 		wp.Close()
 	}
@@ -174,6 +183,7 @@ func compile(ppath string) error {
 	if err != nil {
 		return err
 	}
+	
 	//bt.Log = os.Stdout
 
 	for _, c := range csfiles {
@@ -189,8 +199,12 @@ func compile(ppath string) error {
 	if ppath != "main" {
 		return bt.Archive(hpath[:len(hpath)-1]+"a", objs...)
 	}
-
-	return bt.Link(elf, pkg.Imports(), objs...)
+	
+	imports := make([]string, len(pkg.Imports()))
+	for i, p := range pkg.Imports() {
+		imports[i] = p.Path()
+	}
+	return bt.Link(elf, imports, objs...)
 }
 
 func main() {

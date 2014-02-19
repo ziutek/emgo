@@ -110,7 +110,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 				// All constants in expressions are evaluated so
 				// only exported constants need be translated to C
-				if !c.IsExported() {
+				if !c.Exported() {
 					continue
 				}
 
@@ -145,15 +145,15 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				w.WriteString(name)
 				writeDim(w, dim)
 
-				cinit := true // true if C declaration can init value
+				constInit := true // true if C declaration can init value
 
 				if cdd.gtc.isGlobal(v) {
 					cdd.copyDecl(w, ";\n") // Global variables may need declaration
 					if i < len(vals) {
-						_, cinit = cdd.gtc.ti.Values[vals[i]]
+						constInit = cdd.gtc.ti.Types[vals[i]].Value != nil
 					}
 				}
-				if cinit {
+				if constInit {
 					w.WriteString(" = ")
 					if i < len(vals) {
 						cdd.Expr(w, vals[i])
@@ -164,7 +164,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				w.WriteString(";\n")
 				cdd.copyDef(w)
 
-				if !cinit {
+				if !constInit {
 					// Runtime initialisation
 					w.Reset()
 					w.WriteByte('\t')
@@ -185,7 +185,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 		for _, s := range d.Specs {
 			ts := s.(*ast.TypeSpec)
 			to := gtc.ti.Objects[ts.Name]
-			tt := gtc.ti.Types[ts.Type]
+			tt := gtc.ti.Types[ts.Type].Type
 			cdd := gtc.newCDD(to, TypeDecl, il)
 			name := cdd.NameStr(to, true)
 

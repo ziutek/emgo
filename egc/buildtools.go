@@ -1,8 +1,6 @@
 package main
 
 import (
-	"code.google.com/p/go.tools/go/importer"
-	"code.google.com/p/go.tools/go/types"
 	"errors"
 	"go/build"
 	"io"
@@ -85,13 +83,6 @@ const (
 )
 
 func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
-	pkgoa := filepath.Join("pkg", ctx.GOOS+"_"+ctx.GOARCH)
-
-	importPaths := append([]string{ctx.GOROOT}, strings.Split(ctx.GOPATH, ":")...)
-	for i, p := range importPaths {
-		importPaths[i] = filepath.Join(p, pkgoa)
-	}
-
 	cflags := CFLAGS{
 		Dbg:  "-g",
 		Opt:  "-O0 -fno-common",
@@ -100,7 +91,7 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	}
 	ldflags := LDFLAGS{
 		Script: EGLDSCRIPT,
-		Incl: "-L" + filepath.Join(ctx.GOROOT, "ld"),
+		Incl:   "-L" + filepath.Join(ctx.GOROOT, "ld"),
 	}
 
 	if fl, ok := archMap[ctx.GOARCH]; ok {
@@ -115,8 +106,13 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 		return nil, errors.New("unknown EGOS: " + ctx.GOOS)
 	}
 
-	for _, p := range importPaths {
+	pkgoa := filepath.Join("pkg", ctx.GOOS+"_"+ctx.GOARCH)
+	importPaths := append([]string{ctx.GOROOT}, strings.Split(ctx.GOPATH, ":")...)
+	for i, p := range importPaths {
+		ldflags.Incl += " -L" + filepath.Join(p, "ld")
+		p = filepath.Join(p, pkgoa)
 		cflags.Incl += " -I" + p
+		importPaths[i] = p
 	}
 
 	ldflags.Script = EGLDSCRIPT
@@ -174,12 +170,11 @@ func (bt *BuildTools) Archive(a string, f ...string) error {
 	return cmd.Run()
 }
 
-func (bt *BuildTools) getImports(known map[string]*types.Package, add []*types.Package) ([]string, error) {
+func (bt *BuildTools) getImports(known map[string]struct{}, add []string) ([]string, error) {
 	var a []string
 
-	for _, ipkg := range add {
-		ppath := ipkg.Path()
-		if known[ppath] != nil {
+	for _, ppath := range add {
+		if _, ok := known[ppath]; ok {
 			continue
 		}
 		var (
@@ -189,7 +184,7 @@ func (bt *BuildTools) getImports(known map[string]*types.Package, add []*types.P
 		)
 		for _, ipath := range bt.importPaths {
 			apath = filepath.Join(ipath, ppath+".a")
-			data, err = arReadFile(apath, "__.EXPORTS")
+			data, err = arReadFile(apath, "__.IMPORTS")
 			if err == nil {
 				break
 			}
@@ -201,12 +196,9 @@ func (bt *BuildTools) getImports(known map[string]*types.Package, add []*types.P
 		if apath == "" {
 			return nil, errors.New("can't find compiled package for " + ppath)
 		}
+		known[apath] = struct{}{}
 		a = append(a, apath)
-		ipkg, err := importer.ImportData(known, data)
-		if err != nil {
-			return nil, err
-		}
-		ia, err := bt.getImports(known, ipkg.Imports())
+		ia, err := bt.getImports(known, strings.Fields(string(data)))
 		if err != nil {
 			return nil, err
 		}
@@ -215,12 +207,12 @@ func (bt *BuildTools) getImports(known map[string]*types.Package, add []*types.P
 	return a, nil
 }
 
-func (bt *BuildTools) Link(e string, imports []*types.Package, o ...string) error {
+func (bt *BuildTools) Link(e string, imports []string, o ...string) error {
 	args := append(bt.LDFLAGS, "-o", e)
 	args = append(args, o...)
 
 	// Find all imported packages with all nested imports
-	a, err := bt.getImports(make(map[string]*types.Package), imports)
+	a, err := bt.getImports(make(map[string]struct{}), imports)
 	if err != nil {
 		return err
 	}

@@ -57,7 +57,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) {
 
 		var dim []int64
 		if s.Tok == token.DEFINE {
-			dim = cdd.Type(w, cdd.gtc.ti.Types[s.Rhs[0]])
+			dim = cdd.Type(w, cdd.gtc.ti.Types[s.Rhs[0]].Type)
 			w.WriteByte(' ')
 		}
 
@@ -178,7 +178,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) {
 
 		cdd.indent(w)
 		if s.Tag != nil {
-			cdd.Type(w, cdd.gtc.ti.Types[s.Tag])
+			cdd.Type(w, cdd.gtc.ti.Types[s.Tag].Type)
 			w.WriteString(" __tag = ")
 			cdd.Expr(w, s.Tag)
 			w.WriteString(";\n")

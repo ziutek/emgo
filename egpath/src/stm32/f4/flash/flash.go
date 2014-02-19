@@ -26,6 +26,10 @@ const base uintptr = 0x40023c00
 
 var f = (*regs)(unsafe.Pointer(base))
 
+func ResetACR() {
+	f.acr = 0
+}
+
 func Prefetch() bool {
 	return f.acr&(1<<8) != 0
 }
@@ -51,9 +55,13 @@ func SetDCache(enable bool) {
 }
 
 func Latency() int {
-	return int(f.acr & 0x7)
+	return int(f.acr & 0xf)
 }
 
+// SetLatency sets number of waitStates used for
+// Flash memory access. Allowed values:
+// 0-7  for STM32F405xx/07xx, STM32F415xx/17xx,
+// 0-15 for STM32F42xxx and STM32F43xxx.
 func SetLatency(waitStates int) {
-	f.acr = f.acr&^0x7 | uint32(waitStates)&0x7
+	f.acr = f.acr&^0xf | uint32(waitStates)&0xf
 }

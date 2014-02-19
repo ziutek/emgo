@@ -3,14 +3,14 @@ package periph
 import "unsafe"
 
 type regs struct {
-	ahb1rstr  uint32 `C:"volatile"`
-	ahb2rstr  uint32 `C:"volatile"`
-	ahb3rstr  uint32 `C:"volatile"`
-	_         uint32 `C:"volatile"`
-	apb1rstrr uint32 `C:"volatile"`
-	apb2rstrr uint32 `C:"volatile"`
-	_         uint32 `C:"volatile"`
-	_         uint32 `C:"volatile"`
+	ahb1rstr uint32 `C:"volatile"`
+	ahb2rstr uint32 `C:"volatile"`
+	ahb3rstr uint32 `C:"volatile"`
+	_        uint32 `C:"volatile"`
+	apb1rstr uint32 `C:"volatile"`
+	apb2rstr uint32 `C:"volatile"`
+	_        uint32 `C:"volatile"`
+	_        uint32 `C:"volatile"`
 
 	ahb1enr uint32 `C:"volatile"`
 	ahb2enr uint32 `C:"volatile"`
@@ -33,10 +33,10 @@ const base uintptr = 0x40023810
 
 var p = (*regs)(unsafe.Pointer(base))
 
-type Dev uint32
+type AHB1Dev uint32
 
 const (
-	GPIOA Dev = 1 << iota
+	GPIOA AHB1Dev = 1 << iota
 	GPIOB
 	GPIOC
 	GPIOD
@@ -69,15 +69,15 @@ const (
 	OTGHSULPI
 )
 
-func AHB1ClockEnable(d Dev) {
+func AHB1Reset(d AHB1Dev) {
+	p.ahb1rstr |= uint32(d)
+	p.ahb1rstr &^= uint32(d)
+}
+
+func AHB1ClockEnable(d AHB1Dev) {
 	p.ahb1enr |= uint32(d)
 }
 
-func AHB1ClockDisable(d Dev) {
+func AHB1ClockDisable(d AHB1Dev) {
 	p.ahb1enr &^= uint32(d)
-}
-
-func AHB1Reset(d Dev) {
-	p.ahb1rstr |= uint32(d)
-	p.ahb1rstr &^= uint32(d)
 }
