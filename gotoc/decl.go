@@ -2,10 +2,11 @@ package gotoc
 
 import (
 	"bytes"
-	"code.google.com/p/go.tools/go/types"
 	"fmt"
 	"go/ast"
 	"go/token"
+
+	"code.google.com/p/go.tools/go/types"
 )
 
 func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
@@ -43,8 +44,8 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 			cdd.indent(w)
 			dim := cdd.Type(w, v.Type())
 			w.WriteByte(' ')
-			cdd.Name(w, v, true)
-			writeDim(w, dim)
+			name := cdd.NameStr(v, true)
+			w.WriteString(dimPtr(name, dim))
 			w.WriteString(" = {0};\n")
 		}
 		cdd.indent(w)
@@ -142,8 +143,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				cdd.indent(w)
 				dim := cdd.Type(w, typ)
 				w.WriteByte(' ')
-				w.WriteString(name)
-				writeDim(w, dim)
+				w.WriteString(dimPtr(name, dim))
 
 				constInit := true // true if C declaration can init value
 
@@ -207,8 +207,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				w.WriteString("typedef ")
 				dim := cdd.Type(w, typ)
 				w.WriteByte(' ')
-				w.WriteString(name)
-				writeDim(w, dim)
+				w.WriteString(dimPtr(name, dim))
 				cdd.copyDecl(w, ";\n")
 			}
 			w.Reset()

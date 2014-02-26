@@ -9,7 +9,6 @@ package startup
 // 4. This function never returns.
 func Start()
 
-
 func DefaultHandler() {
 	for {
 	}

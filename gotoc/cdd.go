@@ -2,8 +2,9 @@ package gotoc
 
 import (
 	"bytes"
-	"code.google.com/p/go.tools/go/types"
 	"io"
+
+	"code.google.com/p/go.tools/go/types"
 )
 
 type DeclType int
@@ -160,7 +161,7 @@ func (cdd *CDD) DetermineInline() {
 	}
 	// TODO: Use more information (from il, BodyUses).
 	// TODO: Complexity can be better calculated.
-	if cdd.Complexity < 12 {
+	if cdd.Complexity < cdd.gtc.inlineThr {
 		cdd.Inline = true
 	}
 }
@@ -178,10 +179,10 @@ func (cdd *CDD) addObject(o types.Object, direct bool) {
 
 func (cdd *CDD) dfs(all map[types.Object]*CDD, out []*CDD) []*CDD {
 	if cdd.dfsm > 0 {
-			panic("direct cycle in type declaration")
+		panic("direct cycle in type declaration")
 	}
 	if cdd.dfsm < 0 {
-			return out
+		return out
 	}
 	cdd.dfsm = 1
 	for o, direct := range cdd.DeclUses {

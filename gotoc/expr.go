@@ -2,12 +2,13 @@ package gotoc
 
 import (
 	"bytes"
-	"code.google.com/p/go.tools/go/exact"
-	"code.google.com/p/go.tools/go/types"
 	"fmt"
 	"go/ast"
 	"go/token"
 	"strconv"
+
+	"code.google.com/p/go.tools/go/exact"
+	"code.google.com/p/go.tools/go/types"
 )
 
 func writeInt(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
@@ -197,6 +198,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 
 	switch e := expr.(type) {
 	case *ast.BinaryExpr:
+		w.WriteByte('(')
 		cdd.Expr(w, e.X)
 		op := e.Op.String()
 		if op == "&^" {
@@ -204,9 +206,13 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		}
 		w.WriteString(op)
 		cdd.Expr(w, e.Y)
+		w.WriteByte(')')
 
 	case *ast.CallExpr:
-		var recv ast.Expr
+		var (
+			recv     ast.Expr
+			typeCast bool
+		)
 
 		switch cdd.gtc.ti.Types[e.Fun].Type.(type) {
 		case *types.Signature:
@@ -229,10 +235,11 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 			}
 
 		default:
-			w.WriteByte('(')
+			w.WriteString("((")
 			dim := cdd.Type(w, cdd.gtc.ti.Types[e.Fun].Type)
-			writeDim(w, dim)
+			w.WriteString(dimPtr("", dim))
 			w.WriteByte(')')
+			typeCast = true
 		}
 
 		w.WriteByte('(')
@@ -251,11 +258,23 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		}
 		w.WriteByte(')')
 
+		if typeCast {
+			w.WriteByte(')')
+		}
+
 	case *ast.Ident:
 		cdd.Name(w, cdd.gtc.ti.Objects[e], true)
 
 	case *ast.IndexExpr:
-		switch t := cdd.gtc.ti.Types[e.X].Type.(type) {
+		typ := cdd.gtc.ti.Types[e.X].Type
+
+		pt, isPtr := typ.(*types.Pointer)
+		if isPtr {
+			w.WriteString("(*")
+			typ = pt.Elem()
+		}
+
+		switch t := typ.(type) {
 		case *types.Basic: // string
 			cdd.Expr(w, e.X)
 			w.WriteString(".str")
@@ -263,7 +282,8 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		case *types.Slice:
 			w.WriteString("((")
 			dim := cdd.Type(w, t.Elem())
-			writeDimPtr(w, dim)
+			dim = append([]int64{-1}, dim...)
+			w.WriteString(dimPtr("", dim))
 			w.WriteByte(')')
 			cdd.Expr(w, e.X)
 			w.WriteString(".array)")
@@ -274,6 +294,11 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		default:
 			notImplemented(e)
 		}
+
+		if isPtr {
+			w.WriteByte(')')
+		}
+
 		w.WriteByte('[')
 		cdd.Expr(w, e.Index)
 		w.WriteByte(']')
@@ -320,8 +345,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		case *types.Slice:
 			w.WriteString("(__slice){(")
 			dim := cdd.Type(w, t.Elem())
-			w.WriteString("[]")
-			writeDim(w, dim)
+			w.WriteString("[]" + dimPtr("", dim))
 			w.WriteString("){")
 
 		default:
@@ -379,7 +403,8 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			cdd.Expr(w, e.X)
 			w.WriteString(", ")
 			dim := cdd.Type(w, t.Elem())
-			writeDimPtr(w, dim)
+			dim = append([]int64{-1}, dim...)
+			w.WriteString(dimPtr("", dim))
 			w.WriteString(", ")
 			cdd.Expr(w, e.Low)
 		} else {
@@ -478,7 +503,7 @@ func (cdd *CDD) builtin(w *bytes.Buffer, b *types.Builtin, args []ast.Expr) {
 		case *types.Slice:
 			w.WriteString("__SLICPY(")
 			dim := cdd.Type(w, t.Elem())
-			writeDim(w, dim)
+			w.WriteString(dimPtr("", dim))
 			w.WriteString(", ")
 
 		default:

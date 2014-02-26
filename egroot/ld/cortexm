@@ -1,7 +1,7 @@
 _MainStack = ORIGIN(RAM) + LENGTH(RAM);
 
 SECTIONS {
-	.text : ALIGN(4) {
+	.text : {
 		KEEP(*(.vectors))    /* Interrupt vector table */
 		*(.text .text.*)     /* Code */   
 	} >loadTo

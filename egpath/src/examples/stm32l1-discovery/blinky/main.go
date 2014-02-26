@@ -5,6 +5,8 @@ import (
 	"delay"
 	"stm32/l1/gpio"
 	"stm32/l1/periph"
+	"stm32/l1/setup"
+	"sync"
 )
 
 // STM32L1-Discovery LEDs
@@ -17,6 +19,8 @@ const (
 )
 
 func init() {
+	setup.Performance(0)
+
 	periph.AHBClockEnable(periph.GPIOB)
 	periph.AHBReset(periph.GPIOB)
 
@@ -25,13 +29,18 @@ func init() {
 }
 
 func main() {
-	const wait = 2e4
+	const wait = 1e6
 	for {
 		LEDs.ResetBit(Blue)
 		LEDs.SetBit(Green)
 		delay.Loop(wait)
+
+		sync.Barrier()
+
 		LEDs.ResetBit(Green)
 		LEDs.SetBit(Blue)
 		delay.Loop(wait)
+
+		sync.Memory()
 	}
 }

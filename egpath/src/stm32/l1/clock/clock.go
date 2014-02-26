@@ -147,7 +147,7 @@ func SetPLLMul(mul PLLMul) {
 // SetPLLDiv sets divisor for PLL SysClk output.
 // Allowed values: 2, 3, 4.
 // SysClock frequency should avoid exceeding 32 MHz.
-func SetPllDiv(div int) {
+func SetPLLDiv(div int) {
 	c.cfgr = c.cfgr&^(3<<22) | uint32(div)<<22
 }
 

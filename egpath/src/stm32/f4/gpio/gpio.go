@@ -94,8 +94,8 @@ func (g *Port) SetBit(n int) {
 	g.bsrr = uint32(1) << uint(n)
 }
 
-// ResetBit sets n-th output bit to 0
-func (g *Port) ResetBit(n int) {
+// ClearBit sets n-th output bit to 0
+func (g *Port) ClearBit(n int) {
 	g.bsrr = uint32(0x10000) << uint(n)
 }
 
@@ -104,8 +104,8 @@ func (g *Port) SetBits(bits uint16) {
 	g.bsrr = uint32(bits)
 }
 
-// ResetBits sets output bits on positions specified by bits to 0
-func (g *Port) ResetBits(bits uint16) {
+// ClearBits sets output bits on positions specified by bits to 0
+func (g *Port) ClearBits(bits uint16) {
 	g.bsrr = uint32(bits) << 16
 }
 
@@ -114,4 +114,16 @@ func (g *Port) ResetBits(bits uint16) {
 // Low 16 bits in bss specifies which bits should be 1.
 func (g *Port) SetBSRR(bsrr uint32) {
 	g.bsrr = bsrr
+}
+
+func (g *Port) Write(bits uint16) {
+	g.odr = uint32(bits)
+}
+
+func (g *Port) Read() uint16 {
+	return uint16(g.odr)
+}
+
+func (g *Port) Bit(n int) bool {
+	return g.odr&(uint32(1)<<uint(n)) != 0
 }

@@ -3,6 +3,7 @@
 set -e
 
 egc runtime
+egc sync
 
 egc math/matrix32
 
@@ -21,3 +22,4 @@ egc stm32/l1/clock
 egc stm32/l1/flash
 egc stm32/l1/gpio
 egc stm32/l1/periph
+egc stm32/l1/setup

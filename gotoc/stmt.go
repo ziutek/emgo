@@ -55,14 +55,15 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) {
 			panic("unsuported multiple assignment")
 		}
 
-		var dim []int64
 		if s.Tok == token.DEFINE {
-			dim = cdd.Type(w, cdd.gtc.ti.Types[s.Rhs[0]].Type)
+			dim := cdd.Type(w, cdd.gtc.ti.Types[s.Rhs[0]].Type)
 			w.WriteByte(' ')
-		}
+			name := cdd.NameStr(cdd.gtc.ti.Objects[s.Lhs[0].(*ast.Ident)], true)
+			w.WriteString(dimPtr(name, dim))
 
-		cdd.Expr(w, s.Lhs[0])
-		writeDim(w, dim)
+		} else {
+			cdd.Expr(w, s.Lhs[0])
+		}
 
 		switch s.Tok {
 		case token.DEFINE:

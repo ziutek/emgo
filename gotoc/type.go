@@ -2,27 +2,29 @@ package gotoc
 
 import (
 	"bytes"
-	"code.google.com/p/go.tools/go/types"
 	"fmt"
 	"reflect"
 	"strconv"
+
+	"code.google.com/p/go.tools/go/types"
 )
 
-func writeDim(w *bytes.Buffer, dim []int64) {
-	for _, d := range dim {
-		w.WriteByte('[')
-		w.WriteString(strconv.FormatInt(d, 10))
-		w.WriteByte(']')
-	}
-}
-
-func writeDimPtr(w *bytes.Buffer, dim []int64) {
+func dimPtr(name string, dim []int64) string {
 	if len(dim) == 0 {
-		w.WriteByte('*')
-	} else {
-		w.WriteString("(*)")
-		writeDim(w, dim)
+		return name
 	}
+	for _, d := range dim {
+		if d == -1 {
+			name = "(*" + name + ")"
+		} else {
+			name += "[" + strconv.FormatInt(d, 10) + "]"
+		}
+	}
+	last := len(name) - 1
+	if name[last] == ')' {
+		name = name[1:last]
+	}
+	return name
 }
 
 func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) (dim []int64) {
@@ -43,7 +45,7 @@ writeType:
 	case *types.Pointer:
 		typ = t.Elem()
 		direct = false
-		defer w.WriteByte('*')
+		dim = append(dim, -1)
 		goto writeType
 
 	case *types.Struct:
@@ -59,8 +61,8 @@ writeType:
 			d := cdd.Type(w, f.Type())
 			if !f.Anonymous() {
 				w.WriteByte(' ')
-				cdd.Name(w, f, true)
-				writeDim(w, d)
+				name := cdd.NameStr(f, true)
+				w.WriteString(dimPtr(name, d))
 			}
 			w.WriteString(";\n")
 		}
@@ -81,10 +83,10 @@ writeType:
 	return
 }
 
-func (cdd *CDD) TypeStr(typ types.Type) string {
+func (cdd *CDD) TypeStr(typ types.Type) (string, []int64) {
 	buf := new(bytes.Buffer)
-	cdd.Type(buf, typ)
-	return buf.String()
+	dim := cdd.Type(buf, typ)
+	return buf.String(), dim
 }
 
 func (cdd *CDD) Tuple(w *bytes.Buffer, t *types.Tuple) {
@@ -93,9 +95,10 @@ func (cdd *CDD) Tuple(w *bytes.Buffer, t *types.Tuple) {
 			w.WriteString(", ")
 		}
 		v := t.At(i)
-		cdd.Type(w, v.Type())
+		dim := cdd.Type(w, v.Type())
 		w.WriteByte(' ')
-		cdd.Name(w, v, true)
+		name := cdd.NameStr(v, true)
+		w.WriteString(dimPtr(name, dim))
 	}
 }
 
@@ -153,7 +156,8 @@ func (cdd *CDD) results(tup *types.Tuple, fname string) (res results) {
 	}
 
 	if n == 1 {
-		res.typ = cdd.TypeStr(res.fields[0].Type())
+		typ, dim := cdd.TypeStr(res.fields[0].Type())
+		res.typ = typ + "" + dimPtr("", dim)
 		return
 	}
 
@@ -181,9 +185,10 @@ func (cdd *CDD) Signature(w *bytes.Buffer, name string, sig *types.Signature, de
 	}
 	w.WriteByte('(')
 	if r := sig.Recv(); r != nil {
-		cdd.Type(w, r.Type())
+		dim := cdd.Type(w, r.Type())
 		w.WriteByte(' ')
-		cdd.Name(w, r, true)
+		name := cdd.NameStr(r, true)
+		w.WriteString(dimPtr(name, dim))
 		if sig.Params() != nil {
 			w.WriteString(", ")
 		}

@@ -2,19 +2,25 @@ package gotoc
 
 import (
 	"bytes"
-	"code.google.com/p/go.tools/go/types"
 	"go/ast"
 	"io"
+
+	"code.google.com/p/go.tools/go/types"
 )
 
 // GTC stores information from type checker need for translation.
 type GTC struct {
-	pkg *types.Package
-	ti  *types.Info
+	pkg       *types.Package
+	ti        *types.Info
+	inlineThr int
 }
 
 func NewGTC(pkg *types.Package, ti *types.Info) *GTC {
 	return &GTC{pkg: pkg, ti: ti}
+}
+
+func (cc *GTC) SetInlineThr(thr int) {
+	cc.inlineThr = thr
 }
 
 func (cc *GTC) File(f *ast.File) (cdds []*CDD) {
@@ -113,7 +119,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		}
 		for o := range cdd.DeclUses {
 			if gtc.isImported(o) {
-		 		imp.add(o.Pkg(), cdd.Export)
+				imp.add(o.Pkg(), cdd.Export)
 			}
 		}
 		for o := range cdd.BodyUses {
@@ -127,8 +133,9 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	buf := new(bytes.Buffer)
 
 	buf.WriteString("#include \"types/types.h\"\n")
-	buf.WriteString("#include \"runtime.h\"\n")
-	
+	if pkgName != "runtime" {
+		buf.WriteString("#include \"runtime.h\"\n")
+	}
 	buf.WriteString("#include \"")
 	if pkgName == "main" {
 		buf.WriteByte('_')
@@ -237,7 +244,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	if err := write("// init\n", wh, wc); err != nil {
 		return err
 	}
-	buf.WriteString("void " + up + "_init();\n\n")
+	buf.WriteString("void " + up + "_init();\n")
 	if _, err := buf.WriteTo(wh); err != nil {
 		return err
 	}

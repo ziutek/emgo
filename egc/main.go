@@ -2,9 +2,6 @@ package main
 
 import (
 	"bufio"
-	"code.google.com/p/go.tools/go/importer"
-	"code.google.com/p/go.tools/go/types"
-	"github.com/ziutek/emgo/gotoc"
 	"go/ast"
 	"go/build"
 	"go/parser"
@@ -14,6 +11,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"code.google.com/p/go.tools/go/importer"
+	"code.google.com/p/go.tools/go/types"
+
+	"github.com/ziutek/emgo/gotoc"
 )
 
 var tmpDir string
@@ -61,7 +63,7 @@ func compile(ppath string) error {
 	if bp.Name == "main" {
 		elf = filepath.Join(bp.Dir, "main.elf")
 		ppath = "main"
-		
+
 		f, err := parser.ParseFile(
 			fset, "_importruntime.go",
 			"package main\nimport _ \"runtime\"\n",
@@ -136,7 +138,7 @@ func compile(ppath string) error {
 			return err
 		}
 		for _, p := range pkg.Imports() {
-			if _, err := io.WriteString(wp, p.Path() + "\n"); err != nil {
+			if _, err := io.WriteString(wp, p.Path()+"\n"); err != nil {
 				return err
 			}
 		}
@@ -156,6 +158,7 @@ func compile(ppath string) error {
 	}
 
 	gtc := gotoc.NewGTC(pkg, ti)
+	gtc.SetInlineThr(12)
 	if err = gtc.Translate(wh, wc, flist); err != nil {
 		return err
 	}
@@ -183,7 +186,7 @@ func compile(ppath string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	//bt.Log = os.Stdout
 
 	for _, c := range csfiles {
@@ -199,7 +202,7 @@ func compile(ppath string) error {
 	if ppath != "main" {
 		return bt.Archive(hpath[:len(hpath)-1]+"a", objs...)
 	}
-	
+
 	imports := make([]string, len(pkg.Imports()))
 	for i, p := range pkg.Imports() {
 		imports[i] = p.Path()

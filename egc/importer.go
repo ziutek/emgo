@@ -1,15 +1,15 @@
 package main
 
 import (
-	"code.google.com/p/go.tools/go/importer"
-	"code.google.com/p/go.tools/go/types"
-	//"fmt"
 	"go/ast"
 	"go/build"
 	"go/parser"
 	"go/token"
 	"os"
 	"path/filepath"
+
+	"code.google.com/p/go.tools/go/importer"
+	"code.google.com/p/go.tools/go/types"
 )
 
 type Importer struct {
@@ -98,7 +98,7 @@ func (imp *Importer) importSrc1(imports map[string]*types.Package, path string) 
 	}
 
 	//fmt.Printf("\nimport \"%s\"\n%+v\n", path, bp)
-	
+
 	if pkg := imports[path]; pkg != nil && pkg.Complete() {
 		return pkg, nil
 	}

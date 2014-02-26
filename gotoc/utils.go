@@ -2,17 +2,18 @@ package gotoc
 
 import (
 	"bytes"
-	"code.google.com/p/go.tools/go/types"
 	"fmt"
 	"go/ast"
 	"io"
 	"os"
 	"strconv"
 	"strings"
+	
+	"code.google.com/p/go.tools/go/types"
 )
 
 func notImplemented(n ast.Node) {
-	fmt.Fprintf(os.Stderr, "not implemented: %v <%T>", n, n)
+	fmt.Fprintf(os.Stderr, "not implemented: %v <%T>\n", n, n)
 	os.Exit(1)
 }
 

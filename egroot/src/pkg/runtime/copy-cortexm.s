@@ -12,7 +12,6 @@
 // microcontroler with small SRAM and instructions read
 // from Flash (all Flash acceleration on).
 
-
 // func Copy(dst, src unsafe.Pointer, n uint)
 
 .thumb_func
@@ -21,7 +20,7 @@ runtime_Copy:
 memcpy:
 .thumb_func
 memmove:
-	// TODO: Check that is better to always
+	// TODO: Check will be better to always
 	// use forward copy on non-overlaping data.
 	cmp  r0, r1
 	blo  10f

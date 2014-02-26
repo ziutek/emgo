@@ -1,6 +1,6 @@
 package unistd
 
-func Print(s string) // defined in print.c
+func Print(s string)
 
 func Println(s string) {
 	Print(s)
