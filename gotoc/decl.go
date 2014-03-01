@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"strings"
 
 	"code.google.com/p/go.tools/go/types"
 )
@@ -13,14 +14,17 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	f := gtc.ti.Objects[d.Name].(*types.Func)
 
 	cdd := gtc.newCDD(f, FuncDecl, il)
-	cdds = append(cdds, cdd)
 	w := new(bytes.Buffer)
 	fname := cdd.NameStr(f, true)
 
-	res := cdd.Signature(w, fname, f.Type().(*types.Signature), true)
-	if res.cdd != nil {
-		cdds = append(cdds, res.cdd)
-	}
+	res, params := cdd.signature(f.Type().(*types.Signature))
+
+	w.WriteString(res.typ)
+	w.WriteByte(' ')
+	w.WriteString(dimFuncPtr(fname+params, res.dim))
+
+	cdds = append(cdds, res.acds...)
+	cdds = append(cdds, cdd)
 
 	init := (f.Name() == "init")
 
@@ -40,18 +44,19 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		cdd.indent(w)
 		w.WriteString("{\n")
 		cdd.il++
-		for _, v := range res.fields {
+		for i, v := range res.fields {
 			cdd.indent(w)
-			dim := cdd.Type(w, v.Type())
+			dim, acds := cdd.Type(w, v.Type())
+			cdds = append(cdds, acds...)
 			w.WriteByte(' ')
-			name := cdd.NameStr(v, true)
-			w.WriteString(dimPtr(name, dim))
+			w.WriteString(dimFuncPtr(res.names[i], dim))
 			w.WriteString(" = {0};\n")
 		}
 		cdd.indent(w)
 	}
 
-	end := cdd.BlockStmt(w, d.Body, res.typ)
+	end, acds := cdd.BlockStmt(w, d.Body, res.typ)
+	cdds = append(cdds, acds...)
 	w.WriteByte('\n')
 
 	if res.hasNames {
@@ -64,14 +69,16 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 			cdd.indent(w)
 			w.WriteString("return ")
 			if len(res.fields) == 1 {
-				cdd.Name(w, res.fields[0], true)
+				w.WriteString(res.names[0])
+				//cdd.Name(w, res.fields[0], true)
 			} else {
 				w.WriteString("(" + res.typ + ") {")
-				for i, v := range res.fields {
+				for i, name := range res.names {
 					if i > 0 {
 						w.WriteString(", ")
 					}
-					cdd.Name(w, v, true)
+					w.WriteString(name)
+					//cdd.Name(w, v, true)
 				}
 				w.WriteByte('}')
 			}
@@ -141,9 +148,9 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				name := cdd.NameStr(v, true)
 
 				cdd.indent(w)
-				dim := cdd.Type(w, typ)
+				dim, acds := cdd.Type(w, typ)
 				w.WriteByte(' ')
-				w.WriteString(dimPtr(name, dim))
+				w.WriteString(dimFuncPtr(name, dim))
 
 				constInit := true // true if C declaration can init value
 
@@ -178,6 +185,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				w.Reset()
 
 				cdds = append(cdds, cdd)
+				cdds = append(cdds, acds...)
 			}
 		}
 
@@ -195,19 +203,20 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 			case *types.Struct:
 				cdd.structDecl(w, name, typ)
 
-			case *types.Signature:
-				w.WriteString("typedef ")
-				res := cdd.Signature(w, name, typ, false)
-				if res.cdd != nil {
-					cdds = append(cdds, res.cdd)
-				}
-				cdd.copyDecl(w, ";\n")
+			/*case *types.Signature:
+			w.WriteString("typedef ")
+			res := cdd.Signature(w, name, typ, false)
+			if res.cdd != nil {
+				cdds = append(cdds, res.cdd)
+			}
+			cdd.copyDecl(w, ";\n")*/
 
 			default:
 				w.WriteString("typedef ")
-				dim := cdd.Type(w, typ)
+				dim, acds := cdd.Type(w, typ)
+				cdds = append(cdds, acds...)
 				w.WriteByte(' ')
-				w.WriteString(dimPtr(name, dim))
+				w.WriteString(dimFuncPtr(name, dim))
 				cdd.copyDecl(w, ";\n")
 			}
 			w.Reset()
@@ -239,11 +248,23 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) {
 	cdd.copyDecl(w, ";\n")
 	w.Truncate(n)
 
+	global := strings.HasPrefix(name, "__")
+	
+	if global {
+		cdd.indent(w)
+		w.WriteString("#ifndef "+name+"__\n")
+		cdd.indent(w)
+		w.WriteString("#define "+name+"__\n")
+	}
 	w.WriteString("struct ")
 	w.WriteString(name)
 	w.WriteByte('_')
 	cdd.Type(w, typ)
 	w.WriteString(";\n")
+	if global {
+		cdd.indent(w)
+		w.WriteString("#endif\n")
+	}
 
 	cdd.copyDef(w)
 	w.Truncate(n)

@@ -1,0 +1,92 @@
+// Go code:
+func F(a, b int) (x, y byte) {
+	x, y = byte(a) + y, byte(b) + x
+	return
+}
+// C code:
+// decl
+struct __tuple9189_struct;
+typedef struct __tuple9189_struct __tuple9189;
+// def
+#ifndef __tuple9189__
+#define __tuple9189__
+struct __tuple9189_struct {
+	byte _0;
+	byte _1;
+};
+#endif
+// decl
+__tuple9189 foo_F(int a, int b);
+// def
+__tuple9189 foo_F(int a, int b) {
+	byte x = {0};
+	byte y = {0};
+	{
+		byte __tmp0 = (((byte)(a))+y);
+		byte __tmp1 = (((byte)(b))+x);
+		x = __tmp0;
+		y = __tmp1;
+		goto __end;
+	}
+__end:
+	return (__tuple9189) {x, y};
+}
+// end
+
+// Go code:
+func F(a, b int) (x, y int) {
+	x, y = F(a, b)
+	return
+}
+// C code:
+// decl
+struct __tuple9153_struct;
+typedef struct __tuple9153_struct __tuple9153;
+// def
+#ifndef __tuple9153__
+#define __tuple9153__
+struct __tuple9153_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+__tuple9153 foo_F(int a, int b);
+// def
+__tuple9153 foo_F(int a, int b) {
+	int x = {0};
+	int y = {0};
+	{
+		__tuple9153 __tmp0 = foo_F(a, b);
+		x = __tmp0._0;
+		y = __tmp0._1;
+		goto __end;
+	}
+__end:
+	return (__tuple9153) {x, y};
+}
+// end
+
+// Go code:
+func F(a [2]int) (int, int) {
+	return a[0], a[1]
+}
+// C code:
+// decl
+struct __tuple9153_struct;
+typedef struct __tuple9153_struct __tuple9153;
+// def
+#ifndef __tuple9153__
+#define __tuple9153__
+struct __tuple9153_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+__tuple9153 foo_F(int a[2]);
+// def
+__tuple9153 foo_F(int a[2]) {
+	return (__tuple9153) {a[0], a[1]};
+}
+// end

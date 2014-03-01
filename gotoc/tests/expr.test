@@ -1,0 +1,42 @@
+// Go code:
+func CompositeLitSlice() int {
+	var a = [][2]int{{1, 2}, {3, 4}, {4, 5}}
+	b := []*[2]int{&a[0], &a[1], &a[2]}
+	return len(b)
+}
+// C code:
+// decl
+int foo_CompositeLitSlice();
+// def
+int foo_CompositeLitSlice() {
+	__slice a = (__slice){(int[][2]){{1, 2}, {3, 4}, {4, 5}}, 3, 3};
+	__slice b = (__slice){(int(*[])[2]){&((int(*)[2])a.arr)[0], &((int(*)[2])a.arr)[1], &((int(*)[2])a.arr)[2]}, 3, 3};
+	return len(b);
+}
+// end
+
+// Go code:
+func CompositeLitStruct() int {
+	type S struct {
+		a, b int
+	}
+	s := S{1, 2}
+	s = S{a: 2, b: 3}
+	return s.a + s.b
+}
+// C code:
+// decl
+int foo_CompositeLitStruct();
+// def
+int foo_CompositeLitStruct() {
+	struct S_struct;
+	typedef struct S_struct S;
+	struct S_struct {
+		int a;
+		int b;
+	};
+	S s = (S){1, 2};
+	s = (S){.a = 2, .b = 3};
+	return (s.a+s.b);
+}
+// end

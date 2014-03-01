@@ -1,0 +1,17 @@
+// Go code:
+type F func(a, b int) (x, y int)
+// C code:
+// decl
+struct __tuple9153_struct;
+typedef struct __tuple9153_struct __tuple9153;
+// def
+#ifndef __tuple9153__
+#define __tuple9153__
+struct __tuple9153_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+typedef __tuple9153 (*foo_F)(int a, int b);
+// end

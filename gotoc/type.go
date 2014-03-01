@@ -9,25 +9,30 @@ import (
 	"code.google.com/p/go.tools/go/types"
 )
 
-func dimPtr(name string, dim []int64) string {
+func dimFuncPtr(name string, dim []string) string {
 	if len(dim) == 0 {
 		return name
 	}
-	for _, d := range dim {
-		if d == -1 {
-			name = "(*" + name + ")"
-		} else {
-			name += "[" + strconv.FormatInt(d, 10) + "]"
+	for i, d := range dim {
+		switch d[0] {
+		case '*':
+			if i == len(dim)-1 || dim[i+1][0] == '*' {
+				name = "*" + name
+			} else {
+				name = "(*" + name + ")"
+			}
+
+		case '[':
+			name += d
+
+		default:
+			name = "(*" + name + ")" + d
 		}
-	}
-	last := len(name) - 1
-	if name[last] == ')' {
-		name = name[1:last]
 	}
 	return name
 }
 
-func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) (dim []int64) {
+func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) (dim []string, acds []*CDD) {
 	direct := true
 
 writeType:
@@ -45,7 +50,7 @@ writeType:
 	case *types.Pointer:
 		typ = t.Elem()
 		direct = false
-		dim = append(dim, -1)
+		dim = append(dim, "*")
 		goto writeType
 
 	case *types.Struct:
@@ -58,11 +63,12 @@ writeType:
 				w.WriteString(reflect.StructTag(tag).Get("C"))
 				w.WriteByte(' ')
 			}
-			d := cdd.Type(w, f.Type())
+			d, a := cdd.Type(w, f.Type())
+			acds = append(acds, a...)
 			if !f.Anonymous() {
 				w.WriteByte(' ')
 				name := cdd.NameStr(f, true)
-				w.WriteString(dimPtr(name, d))
+				w.WriteString(dimFuncPtr(name, d))
 			}
 			w.WriteString(";\n")
 		}
@@ -71,11 +77,20 @@ writeType:
 		w.WriteByte('}')
 
 	case *types.Array:
-		dim = append(dim, t.Len())
-		dim = append(dim, cdd.Type(w, t.Elem())...)
+		dim = append(dim, "["+strconv.FormatInt(t.Len(), 10)+"]")
+		d, a := cdd.Type(w, t.Elem())
+		dim = append(dim, d...)
+		acds = append(acds, a...)
 
 	case *types.Slice:
 		w.WriteString("__slice")
+
+	case *types.Signature:
+		res, params := cdd.signature(t)
+		w.WriteString(res.typ)
+		dim = append(dim, params)
+		dim = append(dim, res.dim...)
+		acds = append(acds, res.acds...)
 
 	default:
 		fmt.Fprintf(w, "<%T>", t)
@@ -83,23 +98,10 @@ writeType:
 	return
 }
 
-func (cdd *CDD) TypeStr(typ types.Type) (string, []int64) {
+func (cdd *CDD) TypeStr(typ types.Type) (string, []string, []*CDD) {
 	buf := new(bytes.Buffer)
-	dim := cdd.Type(buf, typ)
-	return buf.String(), dim
-}
-
-func (cdd *CDD) Tuple(w *bytes.Buffer, t *types.Tuple) {
-	for i, n := 0, t.Len(); i < n; i++ {
-		if i != 0 {
-			w.WriteString(", ")
-		}
-		v := t.At(i)
-		dim := cdd.Type(w, v.Type())
-		w.WriteByte(' ')
-		name := cdd.NameStr(v, true)
-		w.WriteString(dimPtr(name, dim))
-	}
+	dim, acds := cdd.Type(buf, typ)
+	return buf.String(), dim, acds
 }
 
 type retVar struct {
@@ -107,95 +109,88 @@ type retVar struct {
 }
 
 type results struct {
-	fields []*types.Var
-	//list     []retVar
+	fields   []*types.Var
+	names    []string
 	typ      string
+	dim      []string
 	hasNames bool
-	cdd      *CDD
+	acds     []*CDD
 }
 
-/*func (res *results) writeStruct() {
-	w := new(bytes.Buffer)
-	cdd := res.cdd
-	cdd.indent(w)
-	w.WriteString("typedef struct {\n")
-	cdd.il++
-	for _, v := range res.list {
-		cdd.indent(w)
-		w.WriteString(v.typ)
-		w.WriteByte(' ')
-		w.WriteString(v.name)
-		w.WriteString(";\n")
-	}
-	cdd.il--
-	cdd.indent(w)
-	w.WriteString("} " + res.typ + ";\n")
-
-	cdd.copyDef(w)
-}*/
-
-func (cdd *CDD) results(tup *types.Tuple, fname string) (res results) {
+func (cdd *CDD) results(tup *types.Tuple) (res results) {
 	if tup == nil {
 		res.typ = "void"
 		return
 	}
 
 	n := tup.Len()
-	//res.list = make([]retVar, n)
 	res.fields = make([]*types.Var, n)
+	res.names = make([]string, n)
 
 	for i := 0; i < n; i++ {
 		v := tup.At(i)
+		n := strconv.Itoa(i)
+		res.fields[i] = types.NewField(v.Pos(), v.Pkg(), "_"+n, v.Type(), false)
+
 		name := v.Name()
 		if name == "" {
-			name = "__" + strconv.Itoa(i)
+			name = "__" + n
 		} else {
 			res.hasNames = true
 		}
-		res.fields[i] = types.NewField(v.Pos(), v.Pkg(), name, v.Type(), false)
+		res.names[i] = name
 	}
 
 	if n == 1 {
-		typ, dim := cdd.TypeStr(res.fields[0].Type())
-		res.typ = typ + "" + dimPtr("", dim)
+		res.typ, res.dim, res.acds = cdd.TypeStr(res.fields[0].Type())
 		return
 	}
 
-	res.typ = "__" + fname
-	s := types.NewStruct(res.fields, nil)
-	o := types.NewTypeName(tup.At(0).Pos(), cdd.gtc.pkg, res.typ, s)
-	res.cdd = cdd.gtc.newCDD(o, TypeDecl, cdd.il)
+	var declared bool
+	res.typ, declared = cdd.gtc.tn.DeclName(tup)
 
-	res.cdd.structDecl(new(bytes.Buffer), res.typ, s)
+	if !declared {
+		s := types.NewStruct(res.fields, nil)
+		o := types.NewTypeName(tup.At(0).Pos(), cdd.gtc.pkg, res.typ, s)
 
-	cdd.DeclUses[o] = true
-	cdd.BodyUses[o] = true
+		acd := cdd.gtc.newCDD(o, TypeDecl, cdd.il)
+		acd.structDecl(new(bytes.Buffer), res.typ, s)
+		res.acds = append(res.acds, acd)
+
+		cdd.DeclUses[o] = true
+		cdd.BodyUses[o] = true
+	}
 	return
 }
 
-func (cdd *CDD) Signature(w *bytes.Buffer, name string, sig *types.Signature, decl bool) (res results) {
-	res = cdd.results(sig.Results(), name)
-
-	w.WriteString(res.typ)
-	w.WriteByte(' ')
-	if decl {
-		w.WriteString(name)
-	} else {
-		w.WriteString("(*" + name + ")")
-	}
-	w.WriteByte('(')
+func (cdd *CDD) signature(sig *types.Signature) (res results, params string) {
+	params = "("
+	res = cdd.results(sig.Results())
 	if r := sig.Recv(); r != nil {
-		dim := cdd.Type(w, r.Type())
-		w.WriteByte(' ')
-		name := cdd.NameStr(r, true)
-		w.WriteString(dimPtr(name, dim))
+		typ, dim, acds := cdd.TypeStr(r.Type())
+		res.acds = append(res.acds, acds...)
+		pname := cdd.NameStr(r, true)
+		params += typ + " " + dimFuncPtr(pname, dim)
 		if sig.Params() != nil {
-			w.WriteString(", ")
+			params += ", "
 		}
 	}
 	if p := sig.Params(); p != nil {
-		cdd.Tuple(w, p)
+		for i, n := 0, p.Len(); i < n; i++ {
+			if i != 0 {
+				params += ", "
+			}
+			v := p.At(i)
+			typ, dim, acds := cdd.TypeStr(v.Type())
+			res.acds = append(res.acds, acds...)
+			name := cdd.NameStr(v, true)
+			if name != "" {
+				params += typ + " " + dimFuncPtr(name, dim)
+			} else {
+				params += typ + dimFuncPtr("", dim)
+			}
+		}
 	}
-	w.WriteByte(')')
+	params += ")"
 	return
 }

@@ -1,0 +1,32 @@
+// Go code:
+type S struct {a, b int}
+// C code:
+// decl
+struct foo_S_struct;
+typedef struct foo_S_struct foo_S;
+// def
+struct foo_S_struct {
+	int a;
+	int b;
+};
+// end
+
+// Go code:
+type S struct {
+	a byte
+	_ byte
+	b byte
+	_ byte
+}
+// C code:
+// decl
+struct foo_S_struct;
+typedef struct foo_S_struct foo_S;
+// def
+struct foo_S_struct {
+	byte a;
+	byte __unused0;
+	byte b;
+	byte __unused1;
+};
+// end

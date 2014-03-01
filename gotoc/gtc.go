@@ -4,23 +4,36 @@ import (
 	"bytes"
 	"go/ast"
 	"io"
+	"strconv"
 
 	"code.google.com/p/go.tools/go/types"
 )
 
 // GTC stores information from type checker need for translation.
 type GTC struct {
-	pkg       *types.Package
-	ti        *types.Info
-	inlineThr int
+	pkg         *types.Package
+	ti          *types.Info
+	inlineThres int
+	tn          *tupleNamer
+	nextInt     chan int
+}
+
+func nextIntGen(c chan<- int) {
+	i := 0
+	for {
+		c <- i
+		i++
+	}
 }
 
 func NewGTC(pkg *types.Package, ti *types.Info) *GTC {
-	return &GTC{pkg: pkg, ti: ti}
+	c := make(chan int, 1)
+	go nextIntGen(c)
+	return &GTC{pkg: pkg, ti: ti, tn: newTupleNamer(), nextInt: c}
 }
 
-func (cc *GTC) SetInlineThr(thr int) {
-	cc.inlineThr = thr
+func (cc *GTC) SetInlineThres(thres int) {
+	cc.inlineThres = thres
 }
 
 func (cc *GTC) File(f *ast.File) (cdds []*CDD) {
@@ -189,6 +202,17 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 		}
 	}
+
+	/*for _, v := range cddm {
+		fmt.Printf("** origin: %p\n    uses:", v.Origin)
+		for p, ok := range v.DeclUses {
+			fmt.Printf(" %p:%t", p, ok)
+		}
+		fmt.Printf("\ndecl:\n%s\n", v.Decl)
+		fmt.Printf("def:\n%s\n", v.Def)
+		fmt.Printf("init:\n%s\n", v.Init)
+	}*/
+
 	tcs = dfs(cddm)
 
 	if err := write("// type decl\n", wh, wc); err != nil {
@@ -288,4 +312,8 @@ func (gtc *GTC) isLocal(o types.Object) bool {
 
 func (gtc *GTC) isGlobal(o types.Object) bool {
 	return !gtc.isImported(o) && o.Parent() == gtc.pkg.Scope()
+}
+
+func (gtc *GTC) uniqueId() string {
+	return strconv.FormatInt(int64(<-gtc.nextInt), 10)
 }

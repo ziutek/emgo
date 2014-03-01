@@ -158,7 +158,7 @@ func compile(ppath string) error {
 	}
 
 	gtc := gotoc.NewGTC(pkg, ti)
-	gtc.SetInlineThr(12)
+	gtc.SetInlineThres(12)
 	if err = gtc.Translate(wh, wc, flist); err != nil {
 		return err
 	}

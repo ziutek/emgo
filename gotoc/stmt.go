@@ -6,6 +6,8 @@ import (
 	"go/ast"
 	"go/token"
 	"strconv"
+
+	"code.google.com/p/go.tools/go/types"
 )
 
 func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) (end bool) {
@@ -46,42 +48,76 @@ func (cdd *CDD) label(w *bytes.Buffer, label, suffix string) {
 	cdd.il++
 }
 
-func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) {
+func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (acds []*CDD) {
 	cdd.Complexity++
 
 	switch s := stmt.(type) {
 	case *ast.AssignStmt:
-		if len(s.Lhs) != 1 || len(s.Rhs) != 1 {
-			panic("unsuported multiple assignment")
-		}
-
-		if s.Tok == token.DEFINE {
-			dim := cdd.Type(w, cdd.gtc.ti.Types[s.Rhs[0]].Type)
-			w.WriteByte(' ')
-			name := cdd.NameStr(cdd.gtc.ti.Objects[s.Lhs[0].(*ast.Ident)], true)
-			w.WriteString(dimPtr(name, dim))
-
+		names := make([]string, len(s.Lhs))
+		if len(s.Lhs) > 1 && len(s.Rhs) == 1 {
+			tup := cdd.gtc.ti.Types[s.Rhs[0]].Type.(*types.Tuple)
+			w.WriteString(cdd.gtc.tn.Name(tup))
+			name := "__tmp" + cdd.gtc.uniqueId()
+			w.WriteString(" " + name + " = ")
+			cdd.Expr(w, s.Rhs[0])
+			w.WriteString(";\n")
+			for i, n := 0, tup.Len(); i < n; i++ {
+				names[i] = name + "._" + strconv.Itoa(i)
+			}
 		} else {
-			cdd.Expr(w, s.Lhs[0])
+			for i := 0; i < len(s.Lhs); i++ {
+				var name string
+				if s.Tok == token.DEFINE {
+					name = cdd.NameStr(cdd.gtc.ti.Objects[s.Lhs[i].(*ast.Ident)], true)
+				} else if len(s.Lhs) > 1 {
+					name = "__tmp" + cdd.gtc.uniqueId()
+				}
+
+				if i != 0 {
+					cdd.indent(w)
+				}
+
+				if s.Tok == token.DEFINE || len(s.Lhs) > 1 {
+					dim, a := cdd.Type(w, cdd.gtc.ti.Types[s.Rhs[i]].Type)
+					acds = append(acds, a...)
+					w.WriteByte(' ')
+					w.WriteString(dimFuncPtr(name, dim))
+				} else {
+					cdd.Expr(w, s.Lhs[i])
+				}
+
+				switch s.Tok {
+				case token.DEFINE:
+					w.WriteString(" = ")
+
+				case token.AND_NOT_ASSIGN:
+					w.WriteString(" &= ~(")
+
+				default:
+					w.WriteString(" " + s.Tok.String() + " ")
+				}
+
+				cdd.Expr(w, s.Rhs[i])
+
+				if s.Tok == token.AND_NOT_ASSIGN {
+					w.WriteByte(')')
+				}
+				w.WriteString(";\n")
+
+				names[i] = name
+			}
+			if len(s.Lhs) == 1 || s.Tok == token.DEFINE {
+				break
+			}
 		}
 
-		switch s.Tok {
-		case token.DEFINE:
+		for i, name := range names {
+			cdd.indent(w)
+			cdd.Expr(w, s.Lhs[i])
 			w.WriteString(" = ")
-
-		case token.AND_NOT_ASSIGN:
-			w.WriteString(" &= ~(")
-
-		default:
-			w.WriteString(" " + s.Tok.String() + " ")
+			w.WriteString(name)
+			w.WriteString(";\n")
 		}
-
-		cdd.Expr(w, s.Rhs[0])
-
-		if s.Tok == token.AND_NOT_ASSIGN {
-			w.WriteByte(')')
-		}
-		w.WriteString(";\n")
 
 	case *ast.ExprStmt:
 		cdd.Expr(w, s.X)
@@ -91,7 +127,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) {
 		if s.Init != nil {
 			w.WriteString("{\n")
 			cdd.il++
-			cdd.Stmt(w, s.Init, "", resultT)
+			acds = append(acds, cdd.Stmt(w, s.Init, "", resultT)...)
 		}
 
 		w.WriteString("if (")
@@ -102,7 +138,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) {
 			w.WriteByte('\n')
 		} else {
 			w.WriteString(" else ")
-			cdd.Stmt(w, s.Else, "", resultT)
+			acds = append(acds, cdd.Stmt(w, s.Else, "", resultT)...)
 		}
 
 		if s.Init != nil {
@@ -125,7 +161,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) {
 			w.WriteString("{\n")
 			cdd.il++
 			cdd.indent(w)
-			cdd.Stmt(w, s.Init, "", resultT)
+			acds = append(acds, cdd.Stmt(w, s.Init, "", resultT)...)
 		}
 		if label != "" {
 			cdd.label(w, label, "_continue")
@@ -146,13 +182,13 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) {
 			cdd.il++
 			cdd.indent(w)
 		}
-
-		cdd.BlockStmt(w, s.Body, "")
+		_, a := cdd.BlockStmt(w, s.Body, "")
+		acds = append(acds, a...)
 		w.WriteByte('\n')
 
 		if s.Post != nil {
 			cdd.indent(w)
-			cdd.Stmt(w, s.Post, "", resultT)
+			acds = append(acds, cdd.Stmt(w, s.Post, "", resultT)...)
 			cdd.il--
 			cdd.indent(w)
 			w.WriteString("}\n")
@@ -174,7 +210,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) {
 
 		if s.Init != nil {
 			cdd.indent(w)
-			cdd.Stmt(w, s.Init, "", resultT)
+			acds = append(acds, cdd.Stmt(w, s.Init, "", resultT)...)
 		}
 
 		cdd.indent(w)
@@ -223,7 +259,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) {
 				}
 				w.WriteString("goto " + ftLabel + ";\n")
 			} else {
-				cdd.Stmt(w, stmt, "", resultT)
+				acds = append(acds, cdd.Stmt(w, stmt, "", resultT)...)
 			}
 		}
 
@@ -257,10 +293,10 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) {
 	default:
 		fmt.Fprintf(w, "#<%T>#", stmt)
 	}
-
+	return
 }
 
-func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) (end bool) {
+func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) (end bool, acds []*CDD) {
 	w.WriteString("{\n")
 	cdd.il++
 	for _, stmt := range bs.List {
@@ -285,11 +321,11 @@ func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) (e
 		case *ast.LabeledStmt:
 			cdd.label(w, s.Label.Name, "")
 			cdd.indent(w)
-			cdd.Stmt(w, s.Stmt, s.Label.Name, resultT)
+			acds = append(acds, cdd.Stmt(w, s.Stmt, s.Label.Name, resultT)...)
 
 		default:
 			cdd.indent(w)
-			cdd.Stmt(w, s, "", resultT)
+			acds = append(acds, cdd.Stmt(w, s, "", resultT)...)
 		}
 	}
 	cdd.il--

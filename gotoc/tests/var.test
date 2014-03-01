@@ -1,0 +1,30 @@
+// Go code:
+var A = 3
+// C code:
+// decl
+int foo_A;
+// def
+int foo_A = 3;
+// end
+
+// Go code:
+var A = []int{1, 2, 3}
+// C code:
+// decl
+__slice foo_A;
+// def
+__slice foo_A;
+// init
+	foo_A = (__slice){(int[]){1, 2, 3}, 3, 3};
+// end
+
+// Go code:
+var A = [][2]int{{1, 2}, {3, 4}}
+// C code:
+// decl
+__slice foo_A;
+// def
+__slice foo_A;
+// init
+	foo_A = (__slice){(int[][2]){{1, 2}, {3, 4}}, 2, 2};
+// end
