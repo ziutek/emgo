@@ -1,0 +1,12 @@
+// Go code:
+func ArrayToSlice(a [3]int) []int {
+	return a[:]
+}
+// C code:
+// decl
+__slice foo_ArrayToSlice(int a[3]);
+// def
+__slice foo_ArrayToSlice(int a[3]) {
+	return __ASLICE(a);
+}
+// end

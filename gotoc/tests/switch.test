@@ -1,5 +1,38 @@
 // Go code:
 func Switch(i int) int {
+	switch {
+	case i+1 < 2:
+		i++	
+	default:
+		i--
+	}
+	return i
+}
+// C code:
+// decl
+int foo_Switch(int i);
+// def
+int foo_Switch(int i) {
+	switch(0) {
+	case 0:;
+		bool __tag = true;
+		{
+			if (__tag == ((i+1)<2)) {
+				++i;
+				break;
+			}
+			{
+				--i;
+				break;
+			}
+		}
+	}
+	return i;
+}
+// end
+
+// Go code:
+func Switch(i int) int {
 	switch i {
 	case 1:
 		return 10
@@ -16,7 +49,7 @@ int foo_Switch(int i);
 // def
 int foo_Switch(int i) {
 	switch(0) {
-	case 0:
+	case 0:;
 		int __tag = i;
 		{
 			if (__tag == 1) {
@@ -65,7 +98,7 @@ int foo_Switch(int i);
 int foo_Switch(int i) {
 	while ((i<10)) {
 		switch(0) {
-		case 0:
+		case 0:;
 			int __tag = i;
 			{
 				if (__tag == 1) {

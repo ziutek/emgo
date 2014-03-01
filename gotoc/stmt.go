@@ -217,7 +217,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (end
 	case *ast.SwitchStmt:
 		w.WriteString("switch(0) {\n")
 		cdd.indent(w)
-		w.WriteString("case 0:\n")
+		w.WriteString("case 0:;\n")
 		cdd.il++
 
 		if s.Init != nil {

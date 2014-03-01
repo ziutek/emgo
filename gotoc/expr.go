@@ -441,6 +441,9 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			cdd.Expr(w, e.Low)
 		} else {
 			switch {
+			case e.High == nil && e.Max == nil:
+				w.WriteString("__ASLICE(")
+			
 			case e.High != nil && e.Max == nil:
 				w.WriteString("__ASLICEH(")
 
