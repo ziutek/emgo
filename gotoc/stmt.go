@@ -11,7 +11,6 @@ import (
 )
 
 func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string) (end bool) {
-	cdd.indent(w)
 	switch len(s.Results) {
 	case 0:
 		if resultT == "void" {
@@ -48,7 +47,14 @@ func (cdd *CDD) label(w *bytes.Buffer, label, suffix string) {
 	cdd.il++
 }
 
-func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (acds []*CDD) {
+func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (end bool, acds []*CDD) {
+	updateEA := func(e bool, a []*CDD) {
+		if e {
+			end = true
+		}
+		acds = append(acds, a...)
+	}
+
 	cdd.Complexity++
 
 	switch s := stmt.(type) {
@@ -127,18 +133,18 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (acd
 		if s.Init != nil {
 			w.WriteString("{\n")
 			cdd.il++
-			acds = append(acds, cdd.Stmt(w, s.Init, "", resultT)...)
+			updateEA(cdd.Stmt(w, s.Init, "", resultT))
 		}
 
 		w.WriteString("if (")
 		cdd.Expr(w, s.Cond)
 		w.WriteString(") ")
-		cdd.BlockStmt(w, s.Body, resultT)
+		updateEA(cdd.BlockStmt(w, s.Body, resultT))
 		if s.Else == nil {
 			w.WriteByte('\n')
 		} else {
 			w.WriteString(" else ")
-			acds = append(acds, cdd.Stmt(w, s.Else, "", resultT)...)
+			updateEA(cdd.Stmt(w, s.Else, "", resultT))
 		}
 
 		if s.Init != nil {
@@ -153,7 +159,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (acd
 		w.WriteString(";\n")
 
 	case *ast.BlockStmt:
-		cdd.BlockStmt(w, s, "")
+		updateEA(cdd.BlockStmt(w, s, ""))
 		w.WriteByte('\n')
 
 	case *ast.ForStmt:
@@ -161,7 +167,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (acd
 			w.WriteString("{\n")
 			cdd.il++
 			cdd.indent(w)
-			acds = append(acds, cdd.Stmt(w, s.Init, "", resultT)...)
+			updateEA(cdd.Stmt(w, s.Init, "", resultT))
 		}
 		if label != "" {
 			cdd.label(w, label, "_continue")
@@ -182,13 +188,12 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (acd
 			cdd.il++
 			cdd.indent(w)
 		}
-		_, a := cdd.BlockStmt(w, s.Body, "")
-		acds = append(acds, a...)
+		updateEA(cdd.BlockStmt(w, s.Body, ""))
 		w.WriteByte('\n')
 
 		if s.Post != nil {
 			cdd.indent(w)
-			acds = append(acds, cdd.Stmt(w, s.Post, "", resultT)...)
+			updateEA(cdd.Stmt(w, s.Post, "", resultT))
 			cdd.il--
 			cdd.indent(w)
 			w.WriteString("}\n")
@@ -204,13 +209,20 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (acd
 			cdd.label(w, label, "_break")
 		}
 
+	case *ast.ReturnStmt:
+		if cdd.ReturnStmt(w, s, resultT) {
+			end = true
+		}
+
 	case *ast.SwitchStmt:
-		w.WriteString("do {\n")
+		w.WriteString("switch(0) {\n")
+		cdd.indent(w)
+		w.WriteString("case 0:\n")
 		cdd.il++
 
 		if s.Init != nil {
 			cdd.indent(w)
-			acds = append(acds, cdd.Stmt(w, s.Init, "", resultT)...)
+			updateEA(cdd.Stmt(w, s.Init, "", resultT))
 		}
 
 		cdd.indent(w)
@@ -224,12 +236,12 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (acd
 		}
 
 		cdd.indent(w)
-		cdd.BlockStmt(w, s.Body, resultT)
+		updateEA(cdd.BlockStmt(w, s.Body, resultT))
 		w.WriteByte('\n')
 
 		cdd.il--
 		cdd.indent(w)
-		w.WriteString("} while(false);\n")
+		w.WriteString("}\n")
 
 		if label != "" {
 			cdd.label(w, label, "_break")
@@ -255,11 +267,11 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (acd
 			cdd.indent(w)
 			if bs, ok := stmt.(*ast.BranchStmt); ok && bs.Tok == token.FALLTHROUGH {
 				if ftLabel == "" {
-					ftLabel = "__fallthrough" + strconv.Itoa(int(s.End()))
+					ftLabel = "__fallthrough" + cdd.gtc.uniqueId()
 				}
 				w.WriteString("goto " + ftLabel + ";\n")
 			} else {
-				acds = append(acds, cdd.Stmt(w, stmt, "", resultT)...)
+				updateEA(cdd.Stmt(w, stmt, "", resultT))
 			}
 		}
 
@@ -297,6 +309,13 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (acd
 }
 
 func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) (end bool, acds []*CDD) {
+	updateEA := func(e bool, a []*CDD) {
+		if e {
+			end = true
+		}
+		acds = append(acds, a...)
+	}
+
 	w.WriteString("{\n")
 	cdd.il++
 	for _, stmt := range bs.List {
@@ -313,19 +332,14 @@ func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string) (e
 				w.Write(c.Def)
 			}
 
-		case *ast.ReturnStmt:
-			if cdd.ReturnStmt(w, s, resultT) {
-				end = true
-			}
-
 		case *ast.LabeledStmt:
 			cdd.label(w, s.Label.Name, "")
 			cdd.indent(w)
-			acds = append(acds, cdd.Stmt(w, s.Stmt, s.Label.Name, resultT)...)
+			updateEA(cdd.Stmt(w, s.Stmt, s.Label.Name, resultT))
 
 		default:
 			cdd.indent(w)
-			acds = append(acds, cdd.Stmt(w, s, "", resultT)...)
+			updateEA(cdd.Stmt(w, s, "", resultT))
 		}
 	}
 	cdd.il--

@@ -18,14 +18,6 @@ type GTC struct {
 	nextInt     chan int
 }
 
-func nextIntGen(c chan<- int) {
-	i := 0
-	for {
-		c <- i
-		i++
-	}
-}
-
 func NewGTC(pkg *types.Package, ti *types.Info) *GTC {
 	c := make(chan int, 1)
 	go nextIntGen(c)
@@ -312,6 +304,14 @@ func (gtc *GTC) isLocal(o types.Object) bool {
 
 func (gtc *GTC) isGlobal(o types.Object) bool {
 	return !gtc.isImported(o) && o.Parent() == gtc.pkg.Scope()
+}
+
+func nextIntGen(c chan<- int) {
+	i := 0
+	for {
+		c <- i
+		i++
+	}
 }
 
 func (gtc *GTC) uniqueId() string {

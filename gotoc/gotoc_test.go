@@ -55,7 +55,7 @@ func (s sampleDecl) testDecl() error {
 		return s.noCDDError(len(cdds))
 	}
 	if len(cdds) > len(s.c) {
-		return s.noExpError(cdds[len(s.c)-1])
+		return s.noExpError(cdds[len(s.c)])
 	}
 	for i, cdd := range cdds {
 		cddDecl := string(cdd.Decl)

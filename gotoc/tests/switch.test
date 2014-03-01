@@ -1,0 +1,95 @@
+// Go code:
+func Switch(i int) int {
+	switch i {
+	case 1:
+		return 10
+	case 2:
+		return 20
+	default:
+		break
+	}
+	return 0
+}
+// C code:
+// decl
+int foo_Switch(int i);
+// def
+int foo_Switch(int i) {
+	switch(0) {
+	case 0:
+		int __tag = i;
+		{
+			if (__tag == 1) {
+				return 10;
+				break;
+			}
+			if (__tag == 2) {
+				return 20;
+				break;
+			}
+			{
+				break;
+				break;
+			}
+		}
+	}
+	return 0;
+}
+// end
+
+// Go code:
+func Switch(i int) int {
+	for i < 10 {
+		switch i {
+		case 1:
+			i += 1
+			fallthrough
+			
+		case 2:
+			i += 2
+			continue
+			
+		case 3:
+			return i
+			
+		default:
+			break
+		}
+	}
+	return i
+}
+// C code:
+// decl
+int foo_Switch(int i);
+// def
+int foo_Switch(int i) {
+	while ((i<10)) {
+		switch(0) {
+		case 0:
+			int __tag = i;
+			{
+				if (__tag == 1) {
+					i += 1;
+					goto __fallthrough0;
+					break;
+				}
+			__fallthrough0:;
+				if (__tag == 2) {
+					i += 2;
+					continue;
+					break;
+				}
+				if (__tag == 3) {
+					return i;
+					break;
+				}
+				{
+					break;
+					break;
+				}
+			}
+		}
+	}
+	return i;
+}
+// end
