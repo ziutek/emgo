@@ -1,5 +1,5 @@
 typedef struct {
-	unsafe_Pointer array;
+	unsafe_Pointer arr;
 	uint len;
 	uint cap;
 } __slice;
@@ -7,7 +7,7 @@ typedef struct {
 #define __SLICE_LOW(expr, typ, low)       \
 	__slice __s = expr;                   \
 	uint __low = low;                     \
-	__s.array = ((typ)__s.array) + __low
+	__s.arr = ((typ)__s.arr) + __low
 	
 #define __SLICEL(expr, typ, low) \
 ({                               \
@@ -77,6 +77,6 @@ typedef struct {
 	
 #define __SLICPY(typ, dst, src)                               \
 	runtime_Copy(                                             \
-		dst.array, src.array,                                 \
+		dst.arr, src.arr,                                     \
 		(dst.len < src.len ? dst.len : src.len) * sizeof(typ) \
 	)
