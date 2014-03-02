@@ -161,7 +161,7 @@ func (cdd *CDD) DetermineInline() {
 	}
 	// TODO: Use more information (from il, BodyUses).
 	// TODO: Complexity can be better calculated.
-	if cdd.Complexity < cdd.gtc.inlineThres {
+	if cdd.Complexity <= cdd.gtc.inlineThres {
 		cdd.Inline = true
 	}
 }

@@ -56,19 +56,33 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (end
 	}
 
 	cdd.Complexity++
-
+	
+	// TODO: really need to rewrite this convoluted code
 	switch s := stmt.(type) {
 	case *ast.AssignStmt:
-		names := make([]string, len(s.Lhs))
+		tmpnames := make([]string, len(s.Lhs))
+		lhs := make([]string, len(s.Lhs))
+		
 		if len(s.Lhs) > 1 && len(s.Rhs) == 1 {
+			// Tuple on RHS
 			tup := cdd.gtc.ti.Types[s.Rhs[0]].Type.(*types.Tuple)
 			w.WriteString(cdd.gtc.tn.Name(tup))
-			name := "__tmp" + cdd.gtc.uniqueId()
-			w.WriteString(" " + name + " = ")
+			tmpname := "__tmp" + cdd.gtc.uniqueId()
+			w.WriteString(" " + tmpname + " = ")
 			cdd.Expr(w, s.Rhs[0])
 			w.WriteString(";\n")
 			for i, n := 0, tup.Len(); i < n; i++ {
-				names[i] = name + "._" + strconv.Itoa(i)
+				if  s.Tok == token.DEFINE {
+					// Type is need for definition
+					typ, dim, a := cdd.TypeStr(tup.At(i).Type())
+					acds = append(acds, a...)
+					ident := s.Lhs[i].(*ast.Ident)
+					name := cdd.NameStr(cdd.gtc.ti.Objects[ident], true)
+					lhs[i] = typ + " " + dimFuncPtr(name, dim)
+				} else {
+					lhs[i] = cdd.ExprStr(s.Lhs[i])
+				}
+				tmpnames[i] = tmpname + "._" + strconv.Itoa(i)
 			}
 		} else {
 			for i := 0; i < len(s.Lhs); i++ {
@@ -84,10 +98,14 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (end
 				}
 
 				if s.Tok == token.DEFINE || len(s.Lhs) > 1 {
+					// Type is need for definition or temporary variable
 					dim, a := cdd.Type(w, cdd.gtc.ti.Types[s.Rhs[i]].Type)
 					acds = append(acds, a...)
 					w.WriteByte(' ')
 					w.WriteString(dimFuncPtr(name, dim))
+					if s.Tok != token.DEFINE {
+						lhs[i] = cdd.ExprStr(s.Lhs[i])
+					}
 				} else {
 					cdd.Expr(w, s.Lhs[i])
 				}
@@ -110,18 +128,18 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (end
 				}
 				w.WriteString(";\n")
 
-				names[i] = name
+				tmpnames[i] = name
 			}
 			if len(s.Lhs) == 1 || s.Tok == token.DEFINE {
 				break
 			}
 		}
 
-		for i, name := range names {
+		for i, tmpname := range tmpnames {
 			cdd.indent(w)
-			cdd.Expr(w, s.Lhs[i])
+			w.WriteString(lhs[i])
 			w.WriteString(" = ")
-			w.WriteString(name)
+			w.WriteString(tmpname)
 			w.WriteString(";\n")
 		}
 
@@ -133,7 +151,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (end
 		if s.Init != nil {
 			w.WriteString("{\n")
 			cdd.il++
+			cdd.indent(w)
 			updateEA(cdd.Stmt(w, s.Init, "", resultT))
+			cdd.indent(w)
 		}
 
 		w.WriteString("if (")
@@ -155,8 +175,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (end
 
 	case *ast.IncDecStmt:
 		w.WriteString(s.Tok.String())
+		w.WriteByte('(')
 		cdd.Expr(w, s.X)
-		w.WriteString(";\n")
+		w.WriteString(");\n")
 
 	case *ast.BlockStmt:
 		updateEA(cdd.BlockStmt(w, s, ""))

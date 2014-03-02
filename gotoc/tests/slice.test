@@ -10,3 +10,62 @@ __slice foo_ArrayToSlice(int a[3]) {
 	return __ASLICE(a);
 }
 // end
+
+// Go code:
+func ArrayToSlice(a [3]int) []int {
+	b := a[0:3]
+	b = a[:3]
+	b = a[0:]
+	b = a[0:1:2]
+	b = a[:1:2]
+	return b
+}
+// C code:
+// decl
+__slice foo_ArrayToSlice(int a[3]);
+// def
+__slice foo_ArrayToSlice(int a[3]) {
+	__slice b = __ASLICELH(a, 0, 3);
+	b = __ASLICEH(a, 3);
+	b = __ASLICEL(a, 0);
+	b = __ASLICELHM(a, 0, 1, 2);
+	b = __ASLICEHM(a, 1, 2);
+	return b;
+}
+// end
+
+// Go code:
+func ArrayPtrToSlice(a *[3]int) []int {
+	return a[:]
+}
+// C code:
+// decl
+__slice foo_ArrayPtrToSlice(int (*a)[3]);
+// def
+__slice foo_ArrayPtrToSlice(int (*a)[3]) {
+	return __ASLICE((*a));
+}
+// end
+
+// Go code:
+func SliceToSlice(a []int) []int {
+	b := a[0:3]
+	b = a[:3]
+	b = a[0:]
+	b = a[0:1:2]
+	b = a[:1:2]
+	return b
+}
+// C code:
+// decl
+__slice foo_SliceToSlice(__slice a);
+// def
+__slice foo_SliceToSlice(__slice a) {
+	__slice b = __SLICELH(a, int*, 0, 3);
+	b = __SLICEH(a, 3);
+	b = __SLICEL(a, int*, 0);
+	b = __SLICELHM(a, int*, 0, 1, 2);
+	b = __SLICEHM(a, 1, 2);
+	return b;
+}
+// end

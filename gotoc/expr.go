@@ -186,15 +186,28 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 
 	switch e := expr.(type) {
 	case *ast.BinaryExpr:
-		w.WriteByte('(')
-		cdd.Expr(w, e.X)
 		op := e.Op.String()
+		hi := (op == "*" || op == "/" || op == "%")
+		if !hi {
+			w.WriteByte('(')
+		}
+		cdd.Expr(w, e.X)
 		if op == "&^" {
 			op = "&~"
 		}
 		w.WriteString(op)
 		cdd.Expr(w, e.Y)
-		w.WriteByte(')')
+		if !hi {
+			w.WriteByte(')')
+		}
+
+	case *ast.UnaryExpr:
+		op := e.Op.String()
+		if op == "^" {
+			op = "~"
+		}
+		w.WriteString(op)
+		cdd.Expr(w, e.X)
 
 	case *ast.CallExpr:
 		var (
@@ -293,7 +306,12 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 
 	case *ast.KeyValueExpr:
 		w.WriteByte('.')
-		cdd.Expr(w, e.Key)
+		if i, ok := e.Key.(*ast.Ident); ok && cdd.gtc.ti.Types[e.Key].Type == nil {
+			// e.Key is field name
+			w.WriteString(i.Name)
+		} else {
+			cdd.Expr(w, e.Key)
+		}
 		w.WriteString(" = ")
 		cdd.Expr(w, e.Value)
 
@@ -314,14 +332,6 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 
 	case *ast.TypeAssertExpr:
 		notImplemented(e)
-
-	case *ast.UnaryExpr:
-		op := e.Op.String()
-		if op == "^" {
-			op = "~"
-		}
-		w.WriteString(op)
-		cdd.Expr(w, e.X)
 
 	case *ast.CompositeLit:
 		typ := cdd.gtc.ti.Types[e].Type
@@ -368,10 +378,19 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 }
 
 func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
-	switch t := cdd.gtc.ti.Types[e.X].Type.(type) {
+	sex := cdd.ExprStr(e.X)
+
+	typ := cdd.gtc.ti.Types[e.X].Type
+	pt, isPtr := typ.(*types.Pointer)
+	if isPtr {
+		typ = pt.Elem()
+		sex = "(*" + sex + ")"
+	}
+
+	switch t := typ.(type) {
 	case *types.Slice:
 		if e.Low == nil && e.High == nil && e.Max == nil {
-			cdd.Expr(w, e.X)
+			w.WriteString(sex)
 			break
 		}
 
@@ -389,7 +408,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			default:
 				w.WriteString("__SLICELHM(")
 			}
-			cdd.Expr(w, e.X)
+			w.WriteString(sex)
 			w.WriteString(", ")
 			dim, _ := cdd.Type(w, t.Elem())
 			dim = append([]string{"*"}, dim...)
@@ -407,7 +426,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			default:
 				w.WriteString("__SLICEHM(")
 			}
-			cdd.Expr(w, e.X)
+			w.WriteString(sex)
 		}
 
 		if e.High != nil {
@@ -436,14 +455,14 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			default:
 				w.WriteString("__ASLICELHM(")
 			}
-			cdd.Expr(w, e.X)
+			w.WriteString(sex)
 			w.WriteString(", ")
 			cdd.Expr(w, e.Low)
 		} else {
 			switch {
 			case e.High == nil && e.Max == nil:
 				w.WriteString("__ASLICE(")
-			
+
 			case e.High != nil && e.Max == nil:
 				w.WriteString("__ASLICEH(")
 
@@ -453,7 +472,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			default:
 				w.WriteString("__ASLICEHM(")
 			}
-			cdd.Expr(w, e.X)
+			w.WriteString(sex)
 		}
 
 		if e.High != nil {
@@ -514,4 +533,10 @@ func (cdd *CDD) builtin(w *bytes.Buffer, b *types.Builtin, args []ast.Expr) {
 	}
 	w.WriteByte(')')
 
+}
+
+func (cdd *CDD) ExprStr(expr ast.Expr) string {
+	buf := new(bytes.Buffer)
+	cdd.Expr(buf, expr)
+	return buf.String()
 }
