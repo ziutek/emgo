@@ -32,16 +32,16 @@ func init() {
 func main() {
 	const wait = 1e6
 	for {
-		LEDs.ResetBit(Green)
+		LEDs.ClearBit(Green)
 		LEDs.SetBit(Orange)
 		delay.Loop(wait)
-		LEDs.ResetBit(Orange)
+		LEDs.ClearBit(Orange)
 		LEDs.SetBit(Red)
 		delay.Loop(wait)
-		LEDs.ResetBit(Red)
+		LEDs.ClearBit(Red)
 		LEDs.SetBit(Blue)
 		delay.Loop(wait)
-		LEDs.ResetBit(Blue)
+		LEDs.ClearBit(Blue)
 		LEDs.SetBit(Green)
 		delay.Loop(wait)
 	}

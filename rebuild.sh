@@ -2,24 +2,33 @@
 
 set -e
 
-egc runtime
-egc sync
+list="
+runtime
+sync
 
-egc math/matrix32
+mmio
+math/matrix32
 
-egc delay
-egc cortexm/startup
-egc cortexm/nvic
-egc cortexm/systick
+delay
 
-egc stm32/f4/clock
-egc stm32/f4/flash
-egc stm32/f4/gpio
-egc stm32/f4/periph
-egc stm32/f4/setup
+cortexm/startup
+cortexm/irq
+cortexm/systick
+cortexm/sleep
 
-egc stm32/l1/clock
-egc stm32/l1/flash
-egc stm32/l1/gpio
-egc stm32/l1/periph
-egc stm32/l1/setup
+stm32/f4/clock
+stm32/f4/flash
+stm32/f4/gpio
+stm32/f4/periph
+stm32/f4/setup
+
+stm32/l1/clock
+stm32/l1/flash
+stm32/l1/gpio
+stm32/l1/periph
+stm32/l1/setup
+"
+for p in $list; do 
+	echo $p
+	egc $p
+done
