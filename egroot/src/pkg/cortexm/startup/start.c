@@ -20,10 +20,13 @@ void cortexm_startup_Start() {
 }
 
 extern uint32 _MainStack;
-
+void cortexm_startup_defaultHandler() {
+	for(;;) {
+	}
+}
 uint32 *cortexm_startup_vectors[4] __attribute__ ((section(".vectors"))) = {
 	&_MainStack,
 	(uint32 *) cortexm_startup_Start,          // entry point
-	(uint32 *) cortexm_startup_DefaultHandler, // NMI
-	(uint32 *) cortexm_startup_DefaultHandler, // hard fault
+	(uint32 *) cortexm_startup_defaultHandler, // NMI
+	(uint32 *) cortexm_startup_defaultHandler, // hard fault
 };

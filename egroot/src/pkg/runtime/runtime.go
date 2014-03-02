@@ -10,8 +10,10 @@ func Copy(dst, src unsafe.Pointer, n uint)
 // pointed to by s with the constant byte c
 func Memset(s unsafe.Pointer, c byte, n uint)
 
-//  Panic is (temporary) implementation of builtin panic function.
-func Panic(s string) {
-	for {
-	}
+// Panic is called by builtin panic function. If Panic returns panic executes
+// infinite loop.
+var Panic func(s string) = defaultPanic
+
+func defaultPanic(s string) {
+	// do nothing
 }

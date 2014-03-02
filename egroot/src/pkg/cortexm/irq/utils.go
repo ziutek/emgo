@@ -19,19 +19,3 @@ func (b *bitReg) bit(n IRQ) bool {
 type byteReg struct {
 	r [60 * 4]byte `C:"volatile"`
 }
-
-type wordReg struct {
-	r uint32 `C:"volatile"`
-}
-
-func (w *wordReg) setBit(n IRQ) {
-	w.r |= uint32(1) << n
-}
-
-func (w *wordReg) clearBit(n IRQ) {
-	w.r &^= uint32(1) << n
-}
-
-func (w *wordReg) bit(n IRQ) bool {
-	return w.r&(uint32(1)<<n) != 0
-}

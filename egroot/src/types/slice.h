@@ -69,12 +69,14 @@ typedef struct {
 		max-low                           \
 	}
 	
+#define __ASLICE(expr) (__slice){expr, __ALEN(expr), __ALEN(expr)}
+
 #define __ASLICEH(expr, high) (__slice){expr, high, __ALEN(expr)}
 	
 #define __ASLICEM(expr, max) "Go 1.2 doesn't allow [::max]"
 	
 #define __ASLICEHM(expr, high, max) (__slice){expr, high, max}
-	
+
 #define __SLICPY(typ, dst, src)                               \
 	runtime_Copy(                                             \
 		dst.arr, src.arr,                                     \
