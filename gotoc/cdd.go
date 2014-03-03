@@ -3,6 +3,7 @@ package gotoc
 import (
 	"bytes"
 	"io"
+	"go/ast"
 
 	"code.google.com/p/go.tools/go/types"
 )
@@ -205,4 +206,8 @@ func dfs(all map[types.Object]*CDD) []*CDD {
 		out = cdd.dfs(all, out)
 	}
 	return out
+}
+
+func (cdd *CDD) object(ident *ast.Ident) types.Object {
+	return cdd.gtc.object(ident)
 }

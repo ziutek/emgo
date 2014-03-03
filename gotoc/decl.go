@@ -11,7 +11,7 @@ import (
 )
 
 func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
-	f := gtc.ti.Objects[d.Name].(*types.Func)
+	f := gtc.object(d.Name).(*types.Func)
 
 	cdd := gtc.newCDD(f, FuncDecl, il)
 	w := new(bytes.Buffer)
@@ -104,7 +104,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 		for _, s := range d.Specs {
 			is := s.(*ast.ImportSpec)
 			if is.Name != nil && is.Name.Name == "_" {
-				cdd := gtc.newCDD(gtc.ti.Objects[is.Name], ImportDecl, il)
+				cdd := gtc.newCDD(gtc.object(is.Name), ImportDecl, il)
 				cdds = append(cdds, cdd)
 			}
 		}
@@ -114,7 +114,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 			vs := s.(*ast.ValueSpec)
 
 			for _, n := range vs.Names {
-				c := gtc.ti.Objects[n].(*types.Const)
+				c := gtc.object(n).(*types.Const)
 
 				// All constants in expressions are evaluated so
 				// only exported constants need be translated to C
@@ -142,7 +142,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 			vals := vs.Values
 
 			for i, n := range vs.Names {
-				v := gtc.ti.Objects[n].(*types.Var)
+				v := gtc.object(n).(*types.Var)
 				typ := v.Type()
 				cdd := gtc.newCDD(v, VarDecl, il)
 				name := cdd.NameStr(v, true)
@@ -192,7 +192,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 	case token.TYPE:
 		for _, s := range d.Specs {
 			ts := s.(*ast.TypeSpec)
-			to := gtc.ti.Objects[ts.Name]
+			to := gtc.object(ts.Name)
 			tt := gtc.ti.Types[ts.Type].Type
 			cdd := gtc.newCDD(to, TypeDecl, il)
 			name := cdd.NameStr(to, true)
@@ -248,20 +248,20 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) {
 	cdd.copyDecl(w, ";\n")
 	w.Truncate(n)
 
-	global := strings.HasPrefix(name, "__")
+	tuple := strings.ContainsRune(name, '$')
 	
-	if global {
+	if tuple {
 		cdd.indent(w)
-		w.WriteString("#ifndef "+name+"__\n")
+		w.WriteString("#ifndef $"+name+"\n")
 		cdd.indent(w)
-		w.WriteString("#define "+name+"__\n")
+		w.WriteString("#define $"+name+"\n")
 	}
 	w.WriteString("struct ")
 	w.WriteString(name)
 	w.WriteByte('_')
 	cdd.Type(w, typ)
 	w.WriteString(";\n")
-	if global {
+	if tuple {
 		cdd.indent(w)
 		w.WriteString("#endif\n")
 	}

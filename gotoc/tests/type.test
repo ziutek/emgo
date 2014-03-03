@@ -2,16 +2,16 @@
 type F func(a, b int) (x, y int)
 // C code:
 // decl
-struct __tuple9153_struct;
-typedef struct __tuple9153_struct __tuple9153;
+struct int$int_struct;
+typedef struct int$int_struct int$int;
 // def
-#ifndef __tuple9153__
-#define __tuple9153__
-struct __tuple9153_struct {
+#ifndef $int$int
+#define $int$int
+struct int$int_struct {
 	int _0;
 	int _1;
 };
 #endif
 // decl
-typedef __tuple9153 (*foo_F)(int a, int b);
+typedef int$int (*foo_F)(int a, int b);
 // end

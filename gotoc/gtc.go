@@ -2,6 +2,7 @@ package gotoc
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"io"
 	"strconv"
@@ -14,14 +15,15 @@ type GTC struct {
 	pkg         *types.Package
 	ti          *types.Info
 	inlineThres int
-	tn          *tupleNamer
 	nextInt     chan int
+	
+	tupNames map[string]struct{} // TODO: safe concurent acces is need
 }
 
 func NewGTC(pkg *types.Package, ti *types.Info) *GTC {
 	c := make(chan int, 1)
 	go nextIntGen(c)
-	return &GTC{pkg: pkg, ti: ti, tn: newTupleNamer(), nextInt: c}
+	return &GTC{pkg: pkg, ti: ti, nextInt: c, tupNames: make(map[string]struct{})}
 }
 
 func (cc *GTC) SetInlineThres(thres int) {
@@ -316,4 +318,15 @@ func nextIntGen(c chan<- int) {
 
 func (gtc *GTC) uniqueId() string {
 	return strconv.FormatInt(int64(<-gtc.nextInt), 10)
+}
+
+func (gtc *GTC) object(ident *ast.Ident) types.Object {
+	o := gtc.ti.Defs[ident]
+	if o == nil {
+		o = gtc.ti.Uses[ident]
+	}
+	if o == nil {
+		fmt.Println("****", ident)
+	}
+	return o
 }

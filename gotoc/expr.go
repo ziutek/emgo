@@ -138,7 +138,7 @@ func (cdd *CDD) NameStr(o types.Object, direct bool) string {
 
 func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
 	xt := cdd.gtc.ti.Types[e.X].Type
-	sel := cdd.gtc.ti.Objects[e.Sel]
+	sel := cdd.object(e.Sel)
 
 	switch s := sel.Type().(type) {
 	case *types.Signature:
@@ -222,7 +222,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 				recv = cdd.SelectorExpr(w, f)
 
 			case *ast.Ident:
-				switch o := cdd.gtc.ti.Objects[f].(type) {
+				switch o := cdd.object(f).(type) {
 				case *types.Builtin:
 					cdd.builtin(w, o, e.Args)
 					return
@@ -264,7 +264,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		}
 
 	case *ast.Ident:
-		cdd.Name(w, cdd.gtc.ti.Objects[e], true)
+		cdd.Name(w, cdd.object(e), true)
 
 	case *ast.IndexExpr:
 		typ := cdd.gtc.ti.Types[e.X].Type

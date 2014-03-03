@@ -66,8 +66,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (end
 		if len(s.Lhs) > 1 && len(s.Rhs) == 1 {
 			// Tuple on RHS
 			tup := cdd.gtc.ti.Types[s.Rhs[0]].Type.(*types.Tuple)
-			w.WriteString(cdd.gtc.tn.Name(tup))
-			tmpname := "__tmp" + cdd.gtc.uniqueId()
+			tmpname, _ := cdd.tupleName(tup)
+			w.WriteString(tmpname)
+			tmpname = "__tmp" + cdd.gtc.uniqueId()
 			w.WriteString(" " + tmpname + " = ")
 			cdd.Expr(w, s.Rhs[0])
 			w.WriteString(";\n")
@@ -77,7 +78,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (end
 					typ, dim, a := cdd.TypeStr(tup.At(i).Type())
 					acds = append(acds, a...)
 					ident := s.Lhs[i].(*ast.Ident)
-					name := cdd.NameStr(cdd.gtc.ti.Objects[ident], true)
+					name := cdd.NameStr(cdd.object(ident), true)
 					lhs[i] = typ + " " + dimFuncPtr(name, dim)
 				} else {
 					lhs[i] = cdd.ExprStr(s.Lhs[i])
@@ -88,7 +89,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string) (end
 			for i := 0; i < len(s.Lhs); i++ {
 				var name string
 				if s.Tok == token.DEFINE {
-					name = cdd.NameStr(cdd.gtc.ti.Objects[s.Lhs[i].(*ast.Ident)], true)
+					name = cdd.NameStr(cdd.object(s.Lhs[i].(*ast.Ident)), true)
 				} else if len(s.Lhs) > 1 {
 					name = "__tmp" + cdd.gtc.uniqueId()
 				}

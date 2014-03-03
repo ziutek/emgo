@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"code.google.com/p/go.tools/go/types"
 )
@@ -85,6 +86,9 @@ writeType:
 	case *types.Slice:
 		w.WriteString("__slice")
 
+	case *types.Map:
+		w.WriteString("__map")
+
 	case *types.Signature:
 		res, params := cdd.signature(t)
 		w.WriteString(res.typ)
@@ -147,7 +151,7 @@ func (cdd *CDD) results(tup *types.Tuple) (res results) {
 	}
 
 	var declared bool
-	res.typ, declared = cdd.gtc.tn.DeclName(tup)
+	res.typ, declared = cdd.tupleName(tup)
 
 	if !declared {
 		s := types.NewStruct(res.fields, nil)
@@ -193,4 +197,31 @@ func (cdd *CDD) signature(sig *types.Signature) (res results, params string) {
 	}
 	params += ")"
 	return
+}
+
+func symToDol(r rune) rune {
+	switch r {
+	case '*', '(', ')', '[', ']':
+		return '$'
+
+	}
+	return r
+}
+
+func (cdd *CDD) tupleName(tup *types.Tuple) (string, bool) {
+	tupName := ""
+	for i, n := 0, tup.Len(); i < n; i++ {
+		if i != 0 {
+			tupName += "$"
+		}
+		name, dim, _ := cdd.TypeStr(tup.At(i).Type())
+		tupName += dimFuncPtr(name, dim)
+	}
+	tupName = strings.Map(symToDol, tupName)
+
+	_, ok := cdd.gtc.tupNames[tupName]
+	if !ok {
+		cdd.gtc.tupNames[tupName] = struct{}{}
+	}
+	return tupName, ok
 }

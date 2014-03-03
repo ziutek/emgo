@@ -40,8 +40,9 @@ func (s sampleDecl) testDecl() error {
 	}
 
 	ti := &types.Info{
-		Types:   make(map[ast.Expr]types.TypeAndValue),
-		Objects: make(map[*ast.Ident]types.Object),
+		Types: make(map[ast.Expr]types.TypeAndValue),
+		Defs: make(map[*ast.Ident]types.Object),
+		Uses: make(map[*ast.Ident]types.Object),
 	}
 	pkg, err := new(types.Config).Check("foo", fset, []*ast.File{f}, ti)
 	if err != nil {

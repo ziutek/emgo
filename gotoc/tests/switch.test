@@ -18,11 +18,11 @@ int foo_Switch(int i) {
 		bool __tag = true;
 		{
 			if (__tag == ((i+1)<2)) {
-				++i;
+				++(i);
 				break;
 			}
 			{
-				--i;
+				--(i);
 				break;
 			}
 		}
