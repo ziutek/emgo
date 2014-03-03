@@ -9,42 +9,37 @@ typedef struct {
 	uint __low = low;                     \
 	__s.arr = ((typ)__s.arr) + __low
 	
-#define __SLICEL(expr, typ, low) \
-({                               \
-	__SLICE_LOW(expr, typ, low); \
-	__s;                         \
+#define __SLICEL(expr, typ, low) ({ \
+	__SLICE_LOW(expr, typ, low);    \
+	__s;                            \
 })
 
-#define __SLICELH(expr, typ, low, high) \
-({                                      \
-	__SLICE_LOW(expr, typ, low);        \
-	__s.len = high - __low;             \
-	__s;                                \
+#define __SLICELH(expr, typ, low, high) ({ \
+	__SLICE_LOW(expr, typ, low);           \
+	__s.len = high - __low;                \
+	__s;                                   \
 })
 
-#define __SLICELHM(expr, typ, low, high, max) \
-({                                            \
-	__SLICE_LOW(expr, typ, low);              \
-	__s.len = high - __low;                   \
-	__s.cap = max - __low;                    \
-	__s;                                      \
+#define __SLICELHM(expr, typ, low, high, max) ({ \
+	__SLICE_LOW(expr, typ, low);                 \
+	__s.len = high - __low;                      \
+	__s.cap = max - __low;                       \
+	__s;                                         \
 })
 
-#define __SLICEH(expr, high) \
-({                                \
-	__slice __s = expr;           \
-	__s.len = high;               \
-	__s;                          \
+#define __SLICEH(expr, high) ({ \
+	__slice __s = expr;         \
+	__s.len = high;             \
+	__s;                        \
 })
 	
 #define __SLICEM(expr, max) "Go 1.2 doesn't allow [::max]"
 	
-#define __SLICEHM(expr, high, max) \
-({                                      \
-	__slice __s = expr;                 \
-	__s.len = high;                     \
-	__s.cap = max;                      \
-	__s;                                \
+#define __SLICEHM(expr, high, max) ({ \
+	__slice __s = expr;               \
+	__s.len = high;                   \
+	__s.cap = max;                    \
+	__s;                              \
 })
 
 	
@@ -77,8 +72,8 @@ typedef struct {
 	
 #define __ASLICEHM(expr, high, max) (__slice){expr, high, max}
 
-#define __SLICPY(typ, dst, src)                               \
-	runtime_Copy(                                             \
-		dst.arr, src.arr,                                     \
-		(dst.len < src.len ? dst.len : src.len) * sizeof(typ) \
-	)
+#define __SLICPY(typ, dst, src) ({                     \
+	int __n = (dst.len < src.len) ? dst.len : src.len; \
+	runtime_Copy(dst.arr, src.arr, __n * sizeof(typ)); \
+	__n;                                               \
+})

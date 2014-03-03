@@ -1,7 +1,13 @@
 package mmio
 
+import "unsafe"
+
 type Reg8 struct {
 	r uint8 `C:"volatile"`
+}
+
+func NewReg8(addr uintptr) *Reg8 {
+	return (*Reg8)(unsafe.Pointer(addr))
 }
 
 func (r *Reg8) SetBit(n int) {
@@ -28,6 +34,10 @@ type Reg16 struct {
 	r uint16 `C:"volatile"`
 }
 
+func NewReg16(addr uintptr) *Reg16 {
+	return (*Reg16)(unsafe.Pointer(addr))
+}
+
 func (r *Reg16) SetBit(n int) {
 	r.r |= uint16(1) << uint(n)
 }
@@ -50,6 +60,10 @@ func (r *Reg16) Write(v uint16) {
 
 type Reg32 struct {
 	r uint32 `C:"volatile"`
+}
+
+func NewReg32(addr uintptr) *Reg32 {
+	return (*Reg32)(unsafe.Pointer(addr))
 }
 
 func (r *Reg32) SetBit(n int) {

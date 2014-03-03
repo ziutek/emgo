@@ -6,7 +6,12 @@ package sync
 // cross this barrier.
 func Barrier()
 
-// Memory is a hardware full memory barier. All optimizations performed by
-// CPU that can reorder explicit memory accesses (at instruction level)
-// can't cross this barrier. Memory implies Barrier.
+// Memory is a hardware full memory barrier. All explicit memory accesses
+// (at instruction level) before Memory should be finished before first
+// subsequent explicit memory access. Memory implies Barrier.
 func Memory()
+
+// Sync is similar to Memory but stronger: it ensures that all explicit memory
+// accesses before Sync should be finished before first subsequent instruction.
+// Sync implies Barrier.
+func Sync()

@@ -1,11 +1,8 @@
 package sleep
 
-import (
-	"mmio"
-	"unsafe"
-)
+import "mmio"
 
-var scr = (*mmio.Reg32)(unsafe.Pointer(uintptr(0xe000ed10)))
+var scr = mmio.NewReg32(0xe000ed10)
 
 func EventOnPend() bool {
 	return scr.Bit(4)

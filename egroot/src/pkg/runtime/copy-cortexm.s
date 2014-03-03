@@ -93,8 +93,8 @@ memmove:
 6:
 	subs   r2, #4
 	ittt   hs
-	ldrhs  r3, [r1], #-4
-	strhs  r3, [r0], #-4
+	ldrhs  r3, [r1, #-4]!
+	strhs  r3, [r0, #-4]!
 	bhs    6b
 
 	adds  r2, #4
@@ -112,14 +112,14 @@ memmove:
 	.byte  (2f-0b)/2
 	.byte  (1f-0b)/2
 1:
-	ldrb  r3, [r1], #-1
-	strb  r3, [r0], #-1
+	ldrb  r3, [r1, #-1]!
+	strb  r3, [r0, #-1]!
 2:
-	ldrb  r3, [r1], #-1
-	strb  r3, [r0], #-1
+	ldrb  r3, [r1, #-1]!
+	strb  r3, [r0, #-1]!
 3:
-	ldrb  r3, [r1], #-1
-	strb  r3, [r0], #-1
+	ldrb  r3, [r1, #-1]!
+	strb  r3, [r0, #-1]!
 4:
 	bne  6b
 9:

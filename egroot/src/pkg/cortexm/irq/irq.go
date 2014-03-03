@@ -39,9 +39,9 @@ var (
 	icp  = (*bitReg)(unsafe.Pointer(uintptr(0xe000e280)))
 	iab  = (*bitReg)(unsafe.Pointer(uintptr(0xe000e300)))
 	ip   = (*byteReg)(unsafe.Pointer(uintptr(0xe000e400)))
-	ics  = (*mmio.Reg32)(unsafe.Pointer(uintptr(0xe000ed04)))
-	shcs = (*mmio.Reg32)(unsafe.Pointer(uintptr(0xe000ed24)))
-	sti  = (*mmio.Reg32)(unsafe.Pointer(uintptr(0xe000ef00)))
+	ics  = mmio.NewReg32(0xe000ed04)
+	shcs = mmio.NewReg32(0xe000ed24)
+	sti  = mmio.NewReg32(0xe000ef00)
 )
 
 // Enable enables handler for irq.

@@ -1,14 +1,14 @@
 package irq
 
 import (
-	"sync"
 	"mmio"
+	"sync"
 	"unsafe"
 )
 
 // Vector represents element of interrupt table. In case of Cortex-M this is
-// simply func().
-type Vector func()
+// simply func()
+type vector func()
 
 // SysTable represents table of Cortex-M system exceptions. Reset, NMI and
 // HardFault are always enabled so they should always be set to correct handler
@@ -18,43 +18,49 @@ type Vector func()
 // sync.Memory() to be sure that modifications take effect. Alternatively you
 // can setup new table and make it active using SetActiveTable.
 type SysTable struct {
-	_ Vector `C:"__attribute__((aligned(32*4)))"`
+	_ vector `C:"__attribute__((aligned(32*4)))"`
 
-	Reset     Vector
-	NMI       Vector
-	HardFault Vector
+	Reset     vector
+	NMI       vector
+	HardFault vector
 
-	MemFault   Vector
-	BusFault   Vector
-	UsageFault Vector
-	_          Vector
-	_          Vector
-	_          Vector
-	_          Vector
-	SVCall     Vector
-	DebugMon   Vector
-	_          Vector
-	PendSV     Vector
-	SysTick    Vector
+	MemFault   vector
+	BusFault   vector
+	UsageFault vector
+	_          vector
+	_          vector
+	_          vector
+	_          vector
+	SVCall     vector
+	DebugMon   vector
+	_          vector
+	PendSV     vector
+	SysTick    vector
+}
+
+// Vector returns (implementation specific) value that correspods to the
+// handler and can be an element of interrupt table.
+func Vector(handler func()) vector {
+	return handler
 }
 
 // Set sets handler for specified system IRQ.
-func (t *SysTable) Set(irq IRQ, v Vector) {
-	(*[16]Vector)(unsafe.Pointer(t))[irq] = v
+func (t *SysTable) Set(irq IRQ, f func()) {
+	(*[16]vector)(unsafe.Pointer(t))[irq] = f
 }
 
 // Slice() returns SysTable as slice of vectors.
-func (t *SysTable) Slice() []Vector {
-	return (*[16]Vector)(unsafe.Pointer(t))[:]
+func (t *SysTable) Slice() []vector {
+	return (*[16]vector)(unsafe.Pointer(t))[:]
 }
 
-var vto = (*mmio.Reg32)(unsafe.Pointer(uintptr(0xe000ed08)))
+var vto = mmio.NewReg32(0xe000ed08)
 
 // SetActiveTable instruct CPU to use t as vector table. t should be properly
 // aligned. Minimum alignment is 32 words which is enough for up to 16 external
 // interrupts. For more interrupts, adjust the alignment by rounding up to the
-// next power of two. SyncActiveTable calls sync.Memory() before using t. 
-func SetActiveTable(t []Vector) {
+// next power of two. SyncActiveTable calls sync.Memory() before using t.
+func SetActiveTable(t []vector) {
 	sync.Memory()
 	vto.Write(uint32(uintptr(unsafe.Pointer(&t[0]))))
 }
