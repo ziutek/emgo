@@ -158,7 +158,7 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
 		}
 
 	default:
-		cdd.Expr(w, e.X)
+		cdd.Expr(w, e.X, nil)
 		switch xt.(type) {
 		case *types.Named:
 			w.WriteByte('.')
@@ -175,7 +175,7 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
 	return nil
 }
 
-func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
+func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 	cdd.Complexity++
 
 	if t := cdd.gtc.ti.Types[expr]; t.Value != nil {
@@ -187,16 +187,25 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 	switch e := expr.(type) {
 	case *ast.BinaryExpr:
 		op := e.Op.String()
+		typ := cdd.gtc.ti.Types[e.X].Type
+		if typ == types.Typ[types.UntypedNil] {
+			typ = cdd.gtc.ti.Types[e.Y].Type
+		}
+		lhs := cdd.ExprStr( e.X, typ)
+		rhs := cdd.ExprStr( e.Y, typ)
+		if op == "==" || op == "!=" {
+			eq(w, lhs, op, rhs, typ)
+			break
+		}
 		hi := (op == "*" || op == "/" || op == "%")
 		if !hi {
 			w.WriteByte('(')
 		}
-		cdd.Expr(w, e.X)
 		if op == "&^" {
 			op = "&~"
 		}
-		w.WriteString(op)
-		cdd.Expr(w, e.Y)
+		w.WriteString(lhs+op+rhs)
+		
 		if !hi {
 			w.WriteByte(')')
 		}
@@ -207,15 +216,12 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 			op = "~"
 		}
 		w.WriteString(op)
-		cdd.Expr(w, e.X)
+		cdd.Expr(w, e.X, nil)
 
 	case *ast.CallExpr:
-		var (
-			recv     ast.Expr
-			typeCast bool
-		)
+		var recv     ast.Expr
 
-		switch cdd.gtc.ti.Types[e.Fun].Type.(type) {
+		switch t := cdd.gtc.ti.Types[e.Fun].Type.(type) {
 		case *types.Signature:
 			switch f := e.Fun.(type) {
 			case *ast.SelectorExpr:
@@ -232,39 +238,41 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 				}
 
 			default:
-				cdd.Expr(w, f)
+				cdd.Expr(w, f, nil)
 			}
+
+			w.WriteByte('(')
+			if recv != nil {
+				cdd.Expr(w, recv, nil)
+				if len(e.Args) > 0 {
+					w.WriteString(", ")
+				}
+			}
+			tup := t.Params()
+			for i, a := range e.Args {
+				if i != 0 {
+					w.WriteString(", ")
+				}
+				cdd.Expr(w, a, tup.At(i).Type())
+			}
+			w.WriteByte(')')
 
 		default:
+			typ := cdd.gtc.ti.Types[e.Fun].Type
 			w.WriteString("((")
-			dim, _ := cdd.Type(w, cdd.gtc.ti.Types[e.Fun].Type)
+			dim, _ := cdd.Type(w, typ)
 			w.WriteString(dimFuncPtr("", dim))
-			w.WriteByte(')')
-			typeCast = true
-		}
-
-		w.WriteByte('(')
-		if recv != nil {
-			cdd.Expr(w, recv)
-			if len(e.Args) > 0 {
-				w.WriteString(", ")
-			}
-		}
-
-		for i, a := range e.Args {
-			if i != 0 {
-				w.WriteString(", ")
-			}
-			cdd.Expr(w, a)
-		}
-		w.WriteByte(')')
-
-		if typeCast {
-			w.WriteByte(')')
+			w.WriteString(")(")
+			cdd.Expr(w, e.Args[0], typ)
+			w.WriteString("))")
 		}
 
 	case *ast.Ident:
-		cdd.Name(w, cdd.object(e), true)
+		if e.Name == "nil" {
+			cdd.Nil(w, nilT)
+		} else {
+			cdd.Name(w, cdd.object(e), true)
+		}
 
 	case *ast.IndexExpr:
 		typ := cdd.gtc.ti.Types[e.X].Type
@@ -275,9 +283,11 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 			typ = pt.Elem()
 		}
 
+		var indT types.Type
+
 		switch t := typ.(type) {
 		case *types.Basic: // string
-			cdd.Expr(w, e.X)
+			cdd.Expr(w, e.X, nil)
 			w.WriteString(".str")
 
 		case *types.Slice:
@@ -286,14 +296,18 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 			dim = append([]string{"*"}, dim...)
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteByte(')')
-			cdd.Expr(w, e.X)
+			cdd.Expr(w, e.X, nil)
 			w.WriteString(".arr)")
 
 		case *types.Array:
-			cdd.Expr(w, e.X)
+			cdd.Expr(w, e.X, nil)
+
+		case *types.Map:
+			indT = t.Key()
+			notImplemented(e)
 
 		default:
-			notImplemented(e)
+			panic(t)
 		}
 
 		if isPtr {
@@ -301,23 +315,24 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		}
 
 		w.WriteByte('[')
-		cdd.Expr(w, e.Index)
+		cdd.Expr(w, e.Index, indT)
 		w.WriteByte(']')
 
 	case *ast.KeyValueExpr:
 		w.WriteByte('.')
-		if i, ok := e.Key.(*ast.Ident); ok && cdd.gtc.ti.Types[e.Key].Type == nil {
+		kt := cdd.gtc.ti.Types[e.Key].Type
+		if i, ok := e.Key.(*ast.Ident); ok && kt == nil {
 			// e.Key is field name
 			w.WriteString(i.Name)
 		} else {
-			cdd.Expr(w, e.Key)
+			cdd.Expr(w, e.Key, kt)
 		}
 		w.WriteString(" = ")
-		cdd.Expr(w, e.Value)
+		cdd.Expr(w, e.Value, nilT)
 
 	case *ast.ParenExpr:
 		w.WriteByte('(')
-		cdd.Expr(w, e.X)
+		cdd.Expr(w, e.X, nilT)
 		w.WriteByte(')')
 
 	case *ast.SelectorExpr:
@@ -328,7 +343,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 
 	case *ast.StarExpr:
 		w.WriteByte('*')
-		cdd.Expr(w, e.X)
+		cdd.Expr(w, e.X, nil)
 
 	case *ast.TypeAssertExpr:
 		notImplemented(e)
@@ -339,6 +354,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 		switch t := typ.(type) {
 		case *types.Array:
 			w.WriteByte('{')
+			nilT = t.Elem()
 
 		case *types.Slice:
 			w.WriteString("(__slice){(")
@@ -346,18 +362,20 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 			dim = append([]string{"[]"}, dim...)
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteString("){")
-
+			nilT = t.Elem()
+			
 		default:
 			w.WriteByte('(')
 			cdd.Type(w, t)
 			w.WriteString("){")
+			nilT = nil
 		}
 
 		for i, el := range e.Elts {
 			if i > 0 {
 				w.WriteString(", ")
 			}
-			cdd.Expr(w, el)
+			cdd.Expr(w, el, nilT)
 		}
 
 		switch typ.(type) {
@@ -378,7 +396,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr) {
 }
 
 func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
-	sex := cdd.ExprStr(e.X)
+	sex := cdd.ExprStr(e.X, nil)
 
 	typ := cdd.gtc.ti.Types[e.X].Type
 	pt, isPtr := typ.(*types.Pointer)
@@ -414,7 +432,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			dim = append([]string{"*"}, dim...)
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteString(", ")
-			cdd.Expr(w, e.Low)
+			cdd.Expr(w, e.Low, nil)
 		} else {
 			switch {
 			case e.High != nil && e.Max == nil:
@@ -431,11 +449,11 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 
 		if e.High != nil {
 			w.WriteString(", ")
-			cdd.Expr(w, e.High)
+			cdd.Expr(w, e.High, nil)
 		}
 		if e.Max != nil {
 			w.WriteString(", ")
-			cdd.Expr(w, e.Max)
+			cdd.Expr(w, e.Max, nil)
 		}
 
 		w.WriteByte(')')
@@ -457,7 +475,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			}
 			w.WriteString(sex)
 			w.WriteString(", ")
-			cdd.Expr(w, e.Low)
+			cdd.Expr(w, e.Low, nil)
 		} else {
 			switch {
 			case e.High == nil && e.Max == nil:
@@ -477,11 +495,11 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 
 		if e.High != nil {
 			w.WriteString(", ")
-			cdd.Expr(w, e.High)
+			cdd.Expr(w, e.High, nil)
 		}
 		if e.Max != nil {
 			w.WriteString(", ")
-			cdd.Expr(w, e.Max)
+			cdd.Expr(w, e.Max, nil)
 		}
 		w.WriteByte(')')
 
@@ -529,14 +547,43 @@ func (cdd *CDD) builtin(w *bytes.Buffer, b *types.Builtin, args []ast.Expr) {
 		if i != 0 {
 			w.WriteString(", ")
 		}
-		cdd.Expr(w, a)
+		cdd.Expr(w, a, nil)
 	}
 	w.WriteByte(')')
 
 }
 
-func (cdd *CDD) ExprStr(expr ast.Expr) string {
+func (cdd *CDD) ExprStr(expr ast.Expr, nilT types.Type) string {
 	buf := new(bytes.Buffer)
-	cdd.Expr(buf, expr)
+	cdd.Expr(buf, expr, nilT)
 	return buf.String()
+}
+
+func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
+	switch t.(type) {
+	case *types.Slice:
+		w.WriteString("__NILS")
+
+	case *types.Map:
+		w.WriteString("__NILM")
+
+	case *types.Pointer:
+		w.WriteString("nil")
+
+	default:
+		w.WriteString("{0}")
+	}
+}
+
+func eq(w *bytes.Buffer, lhs, op, rhs string, typ types.Type) {
+	switch typ.(type) {
+	case *types.Slice, *types.Array, *types.Struct:
+		if op == "!=" {
+			w.WriteByte('!')
+		}
+		w.WriteString("__EQ(" + lhs + ", " + rhs + ")")
+		
+	default:
+		w.WriteString(lhs + " " + op + " " + rhs)
+	}
 }

@@ -1,0 +1,53 @@
+// Go code:
+func Nil() []byte {
+	var b []byte
+	b = nil
+	return b
+}
+// C code:
+// decl
+__slice foo_Nil();
+// def
+__slice foo_Nil() {
+	__slice b = {0};
+	b = __NILS;
+	return b;
+}
+// end
+
+// Go code:
+func Nil() *int {
+	var i *int
+	i = nil
+	return i
+}
+// C code:
+// decl
+int *foo_Nil();
+// def
+int *foo_Nil() {
+	int *i = {0};
+	i = nil;
+	return i;
+}
+// end
+
+// Go code:
+func Nil() []int {
+	return nil
+}
+// C code:
+// decl
+__slice foo_Nil();
+// def
+__slice foo_Nil() {
+	return __NILS;
+}
+// end
+
+// Go code:
+func Nil(b []byte) bool {
+	return b == nil
+}
+// C code:
+// end

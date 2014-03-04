@@ -17,7 +17,8 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	w := new(bytes.Buffer)
 	fname := cdd.NameStr(f, true)
 
-	res, params := cdd.signature(f.Type().(*types.Signature))
+	sig := f.Type().(*types.Signature)
+	res, params := cdd.signature(sig)
 
 	w.WriteString(res.typ)
 	w.WriteByte(' ')
@@ -55,7 +56,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		cdd.indent(w)
 	}
 
-	end, acds := cdd.BlockStmt(w, d.Body, res.typ)
+	end, acds := cdd.BlockStmt(w, d.Body, res.typ, sig.Results())
 	cdds = append(cdds, acds...)
 	w.WriteByte('\n')
 
@@ -163,7 +164,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				if constInit {
 					w.WriteString(" = ")
 					if i < len(vals) {
-						cdd.Expr(w, vals[i])
+						cdd.Expr(w, vals[i], typ)
 					} else {
 						w.WriteString("{0}")
 					}
@@ -177,7 +178,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 					w.WriteByte('\t')
 					w.WriteString(name)
 					w.WriteString(" = ")
-					cdd.Expr(w, vals[i])
+					cdd.Expr(w, vals[i], typ)
 					w.WriteString(";\n")
 					cdd.copyInit(w)
 				}

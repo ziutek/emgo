@@ -16,15 +16,13 @@ int foo_Switch(int i) {
 	switch(0) {
 	case 0:;
 		bool __tag = true;
+		if (__tag == ((i+1)<2)) {
+			++(i);
+			break;
+		}
 		{
-			if (__tag == ((i+1)<2)) {
-				++(i);
-				break;
-			}
-			{
-				--(i);
-				break;
-			}
+			--(i);
+			break;
 		}
 	}
 	return i;
@@ -51,19 +49,17 @@ int foo_Switch(int i) {
 	switch(0) {
 	case 0:;
 		int __tag = i;
+		if (__tag == 1) {
+			return 10;
+			break;
+		}
+		if (__tag == 2) {
+			return 20;
+			break;
+		}
 		{
-			if (__tag == 1) {
-				return 10;
-				break;
-			}
-			if (__tag == 2) {
-				return 20;
-				break;
-			}
-			{
-				break;
-				break;
-			}
+			break;
+			break;
 		}
 	}
 	return 0;
@@ -100,26 +96,24 @@ int foo_Switch(int i) {
 		switch(0) {
 		case 0:;
 			int __tag = i;
+			if (__tag == 1) {
+				i += 1;
+				goto __fallthrough0;
+				break;
+			}
+		__fallthrough0:;
+			if (__tag == 2) {
+				i += 2;
+				continue;
+				break;
+			}
+			if (__tag == 3) {
+				return i;
+				break;
+			}
 			{
-				if (__tag == 1) {
-					i += 1;
-					goto __fallthrough0;
-					break;
-				}
-			__fallthrough0:;
-				if (__tag == 2) {
-					i += 2;
-					continue;
-					break;
-				}
-				if (__tag == 3) {
-					return i;
-					break;
-				}
-				{
-					break;
-					break;
-				}
+				break;
+				break;
 			}
 		}
 	}
