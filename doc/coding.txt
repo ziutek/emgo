@@ -4,14 +4,16 @@ Emgo specific coding guide, mandatory for standard library.
 
 #### Go, Emgo, C, assembler
 
-If you want to write some application always prefer to write it in real Go.
+Always use real Go if you can.
 
-If you really can't use Go or you want to write protable code that can be used by both Go and Emgo code (eg. portable library) write Emgo valid code. Correct Emgo code should always be valid Go code but oposite isn't true. This means that you can't test Emgo code in Go enviroment. Testing embaded application isn't easy at all (TODO: we really need some packge that help).
+If you really can't use Go or you want to write protable code that can be used by both Go and Emgo (eg. portable library) write Emgo valid code. Correct Emgo code should always be valid Go code but oposite isn't true. Unfortunately, this means that there isn't possible to test Emgo code in Go enviroment. Testing embaded application isn't easy at all (TODO: we really need some packge that help).
 
-Writing part of your package in C is probably really need only when you need to talk to linker (sections, symbols, etc.) or use C intrinsic functions. Emgo standard library tries to provide all really useful intrinsics in platform independend way so use them instead. There will never be any embaded assembler in Emgo. If you really wan't to write assembly code that can be executed without any function call overhead, you have no alternative to write C (gcc) "always inline" function that contains inlined assembly code.
+Writing part of your package in C is probably really need only when you need to talk to linker (sections, symbols, etc.) or use C intrinsic functions. Emgo standard library tries to provide all really useful intrinsics in platform independend way so use them instead. There will never be any embaded assembler in Emgo. If you really wan't to write assembly code that can be executed without any function call overhead, you have no alternative to write C (gcc) "always inline" function that contains inlined assembly.
 
 If you want to write CPU specific function in CPU specific library you are free to write it in assembly. You can optimize some function in not CPU specific library by writing it in assembly but in this case always provide portable Emgo function for other architectures.
 
-#### Volatile structs
+#### Volatile fields and sync package
 
-For memory mapped I/O use structs with fileds taged C:"volatile". Don't use "volatile structs" for any other thing. If you think that you need volatile variable for other thing than memory mapped I/O, you are wrong. Instead use ordinary variable and an appropriate function from sync package (TODO: info about channels when they will be available in Emgo).
+If your CPU guarantees ordered access to memory, which is typical in case of memory mapped I/O, you can use structs with fileds taged C:"volatile" to repesents IO registers in your program. This sometimes simplifies code and can slightly improve performance, but can always cause bugs in more complicated code.
+
+So in case of MMIO, use of structs with volatile fields may be desirable, but don't use volatile fields for any other thing. If you think that you need volatile variable for other thing than memory mapped IO, you are wrong. Volatile guarantees actual memory access for any access to volatile variable in source code. Furthermore, order of accesses to volatile variables is preserved in generated binary code. But volatile doesn't guarante to preserve order between accesses to volatile and non-volatile variable and doesn't guarante any order of actual memory access during program execution (eg. CPU can execute instruction in different order). So, in case of ordinary memory, volatile doesn't prevent the need for proper use of appropriate function from sync package, so why use it?

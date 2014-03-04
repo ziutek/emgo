@@ -9,9 +9,7 @@ type regs struct {
 	cir   uint32 `C:"volatile"`
 }
 
-const base uintptr = 0x40023800
-
-var c = (*regs)(unsafe.Pointer(base))
+var c = (*regs)(unsafe.Pointer(uintptr(0x40023800)))
 
 func ResetCR() {
 	c.cr = 0x00000300

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"sync"
+
 	"cortexm/irq"
 	"cortexm/sleep"
 	"cortexm/startup"
@@ -12,7 +14,7 @@ import (
 )
 
 // STM32L1-Discovery LEDs
-var LEDs = gpio.B
+var LED = gpio.B
 
 const (
 	Blue  = 6
@@ -20,10 +22,10 @@ const (
 )
 
 var vt = irq.SysTable{
-	Reset:     startup.Start,
-	NMI:       defaultHandler,
-	HardFault: defaultHandler,
-	SysTick:   sysTickHandler,
+	Reset:     irq.Vector(startup.Start),
+	NMI:       irq.Vector(defaultHandler),
+	HardFault: irq.Vector(defaultHandler),
+	SysTick:   irq.Vector(sysTickHandler),
 }
 
 func defaultHandler() {
@@ -32,22 +34,17 @@ func defaultHandler() {
 }
 
 var (
-	cnt int
-	led = true
+	cnt   int
+	ledup = true
 )
 
 func sysTickHandler() {
-	if cnt++; cnt < 100 {
-		return
-	}
-	cnt = 0
-
-	if led {
-		LEDs.SetBit(Blue)
+	if ledup {
+		LED.SetBit(Blue)
 	} else {
-		LEDs.ClearBit(Blue)
+		LED.ClearBit(Blue)
 	}
-	led = !led
+	ledup = !ledup
 }
 
 func main() {
@@ -56,20 +53,22 @@ func main() {
 	periph.AHBClockEnable(periph.GPIOB)
 	periph.AHBReset(periph.GPIOB)
 
-	LEDs.SetMode(Blue, gpio.Out)
-	LEDs.SetMode(Green, gpio.Out)
+	LED.SetMode(Blue, gpio.Out)
+	LED.SetMode(Green, gpio.Out)
 
 	irq.SetActiveTable(vt.Slice())
 
 	_, _, tenms := systick.Calib()
-	tenms *= 10 // stm32l1 returns value for 1 ms.
-	systick.SetReload(tenms)
+	tenms *= 10 // stm32l1 returns value for 1 ms not for 10ms.
+	systick.SetReload(tenms * 100)
 	systick.SetFlags(systick.Enable | systick.TickInt)
 
+	// Sleep forever.
 	sleep.EnableSleepOnExit()
+	sync.Sync() // not necessary on Cortex-M0,M0+,M3,M4
 	sleep.WFI()
-	
-	// Execution should never reach there so Green LED
+
+	// Execution should never reach there so the green LED
 	// should never light up.
-	LEDs.SetBit(Green)
+	LED.SetBit(Green)
 }

@@ -1,14 +1,16 @@
 package main
 
 import (
-	_ "cortexm/startup"
 	"delay"
+
+	_ "cortexm/startup"
+
 	"stm32/f4/gpio"
 	"stm32/f4/periph"
 	"stm32/f4/setup"
 )
 
-var LEDs = gpio.D
+var LED = gpio.D
 
 const (
 	Green = 12 + iota
@@ -23,26 +25,29 @@ func init() {
 	periph.AHB1ClockEnable(periph.GPIOD)
 	periph.AHB1Reset(periph.GPIOD)
 
-	LEDs.SetMode(Green, gpio.Out)
-	LEDs.SetMode(Orange, gpio.Out)
-	LEDs.SetMode(Red, gpio.Out)
-	LEDs.SetMode(Blue, gpio.Out)
+	LED.SetMode(Green, gpio.Out)
+	LED.SetMode(Orange, gpio.Out)
+	LED.SetMode(Red, gpio.Out)
+	LED.SetMode(Blue, gpio.Out)
 }
 
 func main() {
 	const wait = 1e6
 	for {
-		LEDs.ClearBit(Green)
-		LEDs.SetBit(Orange)
+		LED.ClearBit(Green)
+		LED.SetBit(Orange)
 		delay.Loop(wait)
-		LEDs.ClearBit(Orange)
-		LEDs.SetBit(Red)
+
+		LED.ClearBit(Orange)
+		LED.SetBit(Red)
 		delay.Loop(wait)
-		LEDs.ClearBit(Red)
-		LEDs.SetBit(Blue)
+
+		LED.ClearBit(Red)
+		LED.SetBit(Blue)
 		delay.Loop(wait)
-		LEDs.ClearBit(Blue)
-		LEDs.SetBit(Green)
+
+		LED.ClearBit(Blue)
+		LED.SetBit(Green)
 		delay.Loop(wait)
 	}
 }

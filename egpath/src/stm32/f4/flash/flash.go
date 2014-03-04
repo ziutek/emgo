@@ -22,9 +22,7 @@ func (r *regs) acrSetBit(n uint, b bool) {
 	}
 }
 
-const base uintptr = 0x40023c00
-
-var f = (*regs)(unsafe.Pointer(base))
+var f = (*regs)(unsafe.Pointer(uintptr(0x40023c00)))
 
 func ResetACR() {
 	f.acr = 0

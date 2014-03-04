@@ -29,9 +29,7 @@ type regs struct {
 	apb2lpenr uint32 `C:"volatile"`
 }
 
-const base uintptr = 0x40023810
-
-var p = (*regs)(unsafe.Pointer(base))
+var p = (*regs)(unsafe.Pointer(uintptr(0x40023810)))
 
 type AHB1Dev uint32
 

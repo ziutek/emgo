@@ -79,8 +79,9 @@ func compile(ppath string) error {
 
 	tc := &types.Config{Import: NewImporter().Import}
 	ti := &types.Info{
-		Types:   make(map[ast.Expr]types.TypeAndValue),
-		Objects: make(map[*ast.Ident]types.Object),
+		Types: make(map[ast.Expr]types.TypeAndValue),
+		Defs:  make(map[*ast.Ident]types.Object),
+		Uses:  make(map[*ast.Ident]types.Object),
 	}
 
 	pkg, err := tc.Check(ppath, fset, flist, ti)
@@ -223,7 +224,7 @@ func main() {
 		logErr(err)
 		return
 	}
-	//defer os.RemoveAll(tmpDir)
+	defer os.RemoveAll(tmpDir)
 
 	if err = compile(path); err != nil {
 		logErr(err)

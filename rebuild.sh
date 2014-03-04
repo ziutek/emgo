@@ -16,6 +16,7 @@ cortexm/irq
 cortexm/systick
 cortexm/sleep
 
+stm32/stlink
 stm32/f4/clock
 stm32/f4/flash
 stm32/f4/gpio

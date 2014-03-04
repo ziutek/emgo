@@ -11,12 +11,15 @@ typedef struct {
 	
 #define __SLICEL(expr, typ, low) ({ \
 	__SLICE_LOW(expr, typ, low);    \
+	__s.len -= low;                 \
+	__s.cap -= low;                 \
 	__s;                            \
 })
 
 #define __SLICELH(expr, typ, low, high) ({ \
 	__SLICE_LOW(expr, typ, low);           \
 	__s.len = high - __low;                \
+	__s.cap -= __low;                      \
 	__s;                                   \
 })
 
@@ -77,3 +80,5 @@ typedef struct {
 	runtime_Copy(dst.arr, src.arr, __n * sizeof(typ)); \
 	__n;                                               \
 })
+
+#define __NILSLICE (__slice){0, 0, 0}

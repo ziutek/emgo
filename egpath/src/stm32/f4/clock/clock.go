@@ -9,9 +9,7 @@ type regs struct {
 	cir     uint32 `C:"volatile"`
 }
 
-const base uintptr = 0x40023800
-
-var c = (*regs)(unsafe.Pointer(base))
+var c = (*regs)(unsafe.Pointer(uintptr(0x40023800)))
 
 func ResetCR() {
 	c.cr = 0x000083
@@ -79,8 +77,6 @@ const (
 	SrcHSI PLLSrc = 0
 	SrcHSE PLLSrc = 1
 )
-
-
 
 func SetPLLClock(src PLLSrc) {
 	c.pllcfgr = c.pllcfgr&^(1<<22) | uint32(src)<<22
