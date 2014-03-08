@@ -29,7 +29,7 @@ byte$byte foo_F(int a, int b) {
 		goto __end;
 	}
 __end:
-	return (byte$byte) {x, y};
+	return (byte$byte){x, y};
 }
 // end
 
@@ -63,7 +63,7 @@ int$int foo_F(int a, int b) {
 		goto __end;
 	}
 __end:
-	return (int$int) {x, y};
+	return (int$int){x, y};
 }
 // end
 
@@ -87,7 +87,7 @@ struct int$int_struct {
 int$int foo_F(int a[2]);
 // def
 int$int foo_F(int a[2]) {
-	return (int$int) {a[0], a[1]};
+	return (int$int){a[0], a[1]};
 }
 // end
 
@@ -117,9 +117,38 @@ int$int foo_F(int a, int b) {
 	{
 		int$int __tmp0 = foo_F(a, b);
 		int c = __tmp0._0;
-		int __unused1 = __tmp0._1;
-		return (int$int) {c, (a+b)};
+		return (int$int){c, (a+b)};
 	}
 }
 // end
 
+// Go code:
+func F(a int) (x, _ int) {
+	x = a
+	return
+}
+// C code:
+// decl
+struct int$int_struct;
+typedef struct int$int_struct int$int;
+// def
+#ifndef $int$int
+#define $int$int
+struct int$int_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+int$int foo_F(int a);
+// def
+int$int foo_F(int a) {
+	int x = {0};
+	{
+		x = a;
+		goto __end;
+	}
+__end:
+	return (int$int){._0=x};
+}
+// end

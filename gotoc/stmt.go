@@ -6,6 +6,7 @@ import (
 	"go/ast"
 	"go/token"
 	"strconv"
+	"strings"
 
 	"code.google.com/p/go.tools/go/types"
 )
@@ -26,7 +27,7 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 		w.WriteString(";\n")
 
 	default:
-		w.WriteString("return (" + resultT + ") {")
+		w.WriteString("return (" + resultT + "){")
 		for i, e := range s.Results {
 			if i > 0 {
 				w.WriteString(", ")
@@ -62,8 +63,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		rhs := make([]string, len(s.Lhs))
 		typ := make([]types.Type, len(s.Lhs))
 
-		if len(s.Lhs) > 1 && len(s.Rhs) == 1 {
-			// Tuple on RHS
+		rhsIsTuple := len(s.Lhs) > 1 && len(s.Rhs) == 1
+
+		if rhsIsTuple {
 			tup := cdd.gtc.ti.Types[s.Rhs[0]].Type.(*types.Tuple)
 			tupName, _ := cdd.tupleName(tup)
 			w.WriteString(tupName)
@@ -96,9 +98,13 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		if s.Tok == token.DEFINE {
 			for i, e := range s.Lhs {
 				name := cdd.NameStr(cdd.object(e.(*ast.Ident)), true)
-				t, dim, a := cdd.TypeStr(typ[i])
-				acds = append(acds, a...)
-				lhs[i] = t + " " + dimFuncPtr(name, dim)
+				if strings.HasPrefix(name, "__unused") {
+					lhs[i] = "_"
+				} else {
+					t, dim, a := cdd.TypeStr(typ[i])
+					acds = append(acds, a...)
+					lhs[i] = t + " " + dimFuncPtr(name, dim)
+				}
 			}
 		} else {
 			for i, e := range s.Lhs {
@@ -111,12 +117,18 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				if i > 0 {
 					cdd.indent(w)
 				}
-				dim, a := cdd.Type(w, t)
-				acds = append(acds, a...)
-				tmp := "__tmp" + cdd.gtc.uniqueId()
-				w.WriteString(" " + dimFuncPtr(tmp, dim))
-				w.WriteString(" = " + rhs[i] + ";\n")
-				rhs[i] = tmp
+				if lhs[i] == "_" {
+					w.WriteString("(void)(")
+					w.WriteString(rhs[i])
+					w.WriteString(");\n")
+				} else {
+					dim, a := cdd.Type(w, t)
+					acds = append(acds, a...)
+					tmp := "__tmp" + cdd.gtc.uniqueId()
+					w.WriteString(" " + dimFuncPtr(tmp, dim))
+					w.WriteString(" = " + rhs[i] + ";\n")
+					rhs[i] = tmp
+				}
 			}
 			cdd.indent(w)
 		}
@@ -127,22 +139,31 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			atok = " = "
 
 		case token.AND_NOT_ASSIGN:
-			atok = " &= ~("
+			atok = " &= "
+			rhs[0] = "~(" + rhs[0] + ")"
 
 		default:
 			atok = " " + s.Tok.String() + " "
 		}
-
+		indent := false
 		for i := 0; i < len(lhs); i++ {
-			if i > 0 {
-				cdd.indent(w)
+			li := lhs[i]
+			if li == "_" && rhsIsTuple {
+				continue
 			}
-			w.WriteString(lhs[i])
-			w.WriteString(atok)
-			w.WriteString(rhs[i])
-			if s.Tok == token.AND_NOT_ASSIGN {
+			if indent {
+				cdd.indent(w)
+			} else {
+				indent = true
+			}
+			if li == "_" {
+				w.WriteString("(void)(")
+				w.WriteString(rhs[i])
 				w.WriteString(");\n")
 			} else {
+				w.WriteString(li)
+				w.WriteString(atok)
+				w.WriteString(rhs[i])
 				w.WriteString(";\n")
 			}
 		}
@@ -266,7 +287,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 		for _, stmt := range s.Body.List {
 			cdd.indent(w)
-			
+
 			cs := stmt.(*ast.CaseClause)
 			if cs.List != nil {
 				w.WriteString("if (")

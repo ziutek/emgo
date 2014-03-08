@@ -50,4 +50,10 @@ func Nil(b []byte) bool {
 	return b == nil
 }
 // C code:
+// decl
+bool foo_Nil(__slice b);
+// def
+bool foo_Nil(__slice b) {
+	return __EQ(b, __NILS);
+}
 // end

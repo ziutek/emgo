@@ -40,3 +40,53 @@ int foo_CompositeLitStruct() {
 	return (s.a+s.b);
 }
 // end
+
+// Go code:
+func F() (int, int) {
+	var a int
+	a, _ = F()
+	return a, a
+}
+// C code:
+// decl
+struct int$int_struct;
+typedef struct int$int_struct int$int;
+// def
+#ifndef $int$int
+#define $int$int
+struct int$int_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+int$int foo_F();
+// def
+int$int foo_F() {
+	int a = {0};
+	int$int __tmp0 = foo_F();
+	a = __tmp0._0;
+	return (int$int){a, a};
+}
+// end
+
+// Go code:
+func F() int {
+	a, _ := 1, F()+F()
+	_, a = 3*F(), 2*1
+	return a
+}
+// C code:
+// decl
+int foo_F();
+// def
+int foo_F() {
+	int a = 1;
+	(void)((foo_F()+foo_F()));
+	(void)(3*foo_F());
+	int __tmp1 = 2;
+	(void)(3*foo_F());
+	a = __tmp1;
+	return a;
+}
+// end

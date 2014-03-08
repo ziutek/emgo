@@ -41,8 +41,8 @@ func (s sampleDecl) testDecl() error {
 
 	ti := &types.Info{
 		Types: make(map[ast.Expr]types.TypeAndValue),
-		Defs: make(map[*ast.Ident]types.Object),
-		Uses: make(map[*ast.Ident]types.Object),
+		Defs:  make(map[*ast.Ident]types.Object),
+		Uses:  make(map[*ast.Ident]types.Object),
 	}
 	pkg, err := new(types.Config).Check("foo", fset, []*ast.File{f}, ti)
 	if err != nil {
@@ -50,7 +50,10 @@ func (s sampleDecl) testDecl() error {
 	}
 
 	gtc := gotoc.NewGTC(pkg, ti)
-	cdds := gtc.Decl(f.Decls[0], 0)
+	var cdds []*gotoc.CDD
+	for _, decl := range f.Decls {
+		cdds = append(cdds, gtc.Decl(decl, 0)...)
+	}
 
 	if len(cdds) < len(s.c) {
 		return s.noCDDError(len(cdds))

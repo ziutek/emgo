@@ -88,6 +88,10 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 }
 
 func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, direct bool) {
+	if obj == nil {
+		w.WriteByte('_')
+		return
+	}
 	switch o := obj.(type) {
 	case *types.PkgName:
 		// Imported package name in SelectorExpr: pkgname.Name
@@ -191,8 +195,8 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		if typ == types.Typ[types.UntypedNil] {
 			typ = cdd.gtc.ti.Types[e.Y].Type
 		}
-		lhs := cdd.ExprStr( e.X, typ)
-		rhs := cdd.ExprStr( e.Y, typ)
+		lhs := cdd.ExprStr(e.X, typ)
+		rhs := cdd.ExprStr(e.Y, typ)
 		if op == "==" || op == "!=" {
 			eq(w, lhs, op, rhs, typ)
 			break
@@ -204,8 +208,8 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		if op == "&^" {
 			op = "&~"
 		}
-		w.WriteString(lhs+op+rhs)
-		
+		w.WriteString(lhs + op + rhs)
+
 		if !hi {
 			w.WriteByte(')')
 		}
@@ -219,7 +223,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.Expr(w, e.X, nil)
 
 	case *ast.CallExpr:
-		var recv     ast.Expr
+		var recv ast.Expr
 
 		switch t := cdd.gtc.ti.Types[e.Fun].Type.(type) {
 		case *types.Signature:
@@ -258,13 +262,29 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			w.WriteByte(')')
 
 		default:
-			typ := cdd.gtc.ti.Types[e.Fun].Type
-			w.WriteString("((")
-			dim, _ := cdd.Type(w, typ)
-			w.WriteString(dimFuncPtr("", dim))
-			w.WriteString(")(")
-			cdd.Expr(w, e.Args[0], typ)
-			w.WriteString("))")
+			arg := e.Args[0]
+			switch typ := cdd.gtc.ti.Types[e.Fun].Type.(type) {
+			case *types.Slice:
+				switch cdd.gtc.ti.Types[arg].Type.(type) {
+				case *types.Basic: // string
+					w.WriteString("__NEWSTR(")
+					cdd.Expr(w, arg, typ)
+					w.WriteByte(')')
+
+				default: // slice
+					w.WriteByte('(')
+					cdd.Expr(w, arg, typ)
+					w.WriteByte(')')
+				}
+
+			default:
+				w.WriteString("((")
+				dim, _ := cdd.Type(w, typ)
+				w.WriteString(dimFuncPtr("", dim))
+				w.WriteString(")(")
+				cdd.Expr(w, arg, typ)
+				w.WriteString("))")
+			}
 		}
 
 	case *ast.Ident:
@@ -363,7 +383,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteString("){")
 			nilT = t.Elem()
-			
+
 		default:
 			w.WriteByte('(')
 			cdd.Type(w, t)
@@ -396,19 +416,19 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 }
 
 func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
-	sex := cdd.ExprStr(e.X, nil)
+	sx := cdd.ExprStr(e.X, nil)
 
 	typ := cdd.gtc.ti.Types[e.X].Type
 	pt, isPtr := typ.(*types.Pointer)
 	if isPtr {
 		typ = pt.Elem()
-		sex = "(*" + sex + ")"
+		sx = "(*" + sx + ")"
 	}
 
 	switch t := typ.(type) {
 	case *types.Slice:
 		if e.Low == nil && e.High == nil && e.Max == nil {
-			w.WriteString(sex)
+			w.WriteString(sx)
 			break
 		}
 
@@ -426,7 +446,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			default:
 				w.WriteString("__SLICELHM(")
 			}
-			w.WriteString(sex)
+			w.WriteString(sx)
 			w.WriteString(", ")
 			dim, _ := cdd.Type(w, t.Elem())
 			dim = append([]string{"*"}, dim...)
@@ -444,7 +464,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			default:
 				w.WriteString("__SLICEHM(")
 			}
-			w.WriteString(sex)
+			w.WriteString(sx)
 		}
 
 		if e.High != nil {
@@ -473,7 +493,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			default:
 				w.WriteString("__ASLICELHM(")
 			}
-			w.WriteString(sex)
+			w.WriteString(sx)
 			w.WriteString(", ")
 			cdd.Expr(w, e.Low, nil)
 		} else {
@@ -490,7 +510,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			default:
 				w.WriteString("__ASLICEHM(")
 			}
-			w.WriteString(sex)
+			w.WriteString(sx)
 		}
 
 		if e.High != nil {
@@ -501,10 +521,40 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			w.WriteString(", ")
 			cdd.Expr(w, e.Max, nil)
 		}
+
+		w.WriteByte(')')
+
+	case *types.Basic: // string
+		if e.Low == nil && e.High == nil {
+			w.WriteString(sx)
+			break
+		}
+		switch {
+		case e.Low == nil:
+			w.WriteString("__SSLICEH(")
+
+		case e.High == nil:
+			w.WriteString("__SSLICEL(")
+
+		default:
+			w.WriteString("__SSLICELH(")
+		}
+
+		w.WriteString(sx)
+
+		if e.Low != nil {
+			w.WriteString(", ")
+			cdd.Expr(w, e.Low, nil)
+		}
+		if e.High != nil {
+			w.WriteString(", ")
+			cdd.Expr(w, e.High, nil)
+		}
+
 		w.WriteByte(')')
 
 	default:
-		notImplemented(e)
+		panic(e)
 	}
 }
 
@@ -582,7 +632,7 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, typ types.Type) {
 			w.WriteByte('!')
 		}
 		w.WriteString("__EQ(" + lhs + ", " + rhs + ")")
-		
+
 	default:
 		w.WriteString(lhs + " " + op + " " + rhs)
 	}

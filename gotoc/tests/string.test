@@ -1,0 +1,51 @@
+// Go code:
+func S(s string) string {
+	return s[:]
+}
+// C code:
+// decl
+string foo_S(string s);
+// def
+string foo_S(string s) {
+	return s;
+}
+// end
+
+// Go code:
+func S(s string) string {
+	return s[0:]
+}
+// C code:
+// decl
+string foo_S(string s);
+// def
+string foo_S(string s) {
+	return __SSLICEL(s, 0);
+}
+// end
+
+// Go code:
+func S(s string) string {
+	return s[:len(s)]
+}
+// C code:
+// decl
+string foo_S(string s);
+// def
+string foo_S(string s) {
+	return __SSLICEH(s, len(s));
+}
+// end
+
+// Go code:
+func S(s string) string {
+	return s[0:len(s)]
+}
+// C code:
+// decl
+string foo_S(string s);
+// def
+string foo_S(string s) {
+	return __SSLICELH(s, 0, len(s));
+}
+// end

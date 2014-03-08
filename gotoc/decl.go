@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"strconv"
 	"strings"
 
 	"code.google.com/p/go.tools/go/types"
@@ -41,16 +42,22 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 
 	w.WriteByte(' ')
 
+	all := true
 	if res.hasNames {
 		cdd.indent(w)
 		w.WriteString("{\n")
 		cdd.il++
 		for i, v := range res.fields {
+			name := res.names[i]
+			if name == "_" && len(res.fields) > 1 {
+				all = false
+				continue
+			}
 			cdd.indent(w)
 			dim, acds := cdd.Type(w, v.Type())
 			cdds = append(cdds, acds...)
 			w.WriteByte(' ')
-			w.WriteString(dimFuncPtr(res.names[i], dim))
+			w.WriteString(dimFuncPtr(name, dim))
 			w.WriteString(" = {0};\n")
 		}
 		cdd.indent(w)
@@ -71,15 +78,22 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 			w.WriteString("return ")
 			if len(res.fields) == 1 {
 				w.WriteString(res.names[0])
-				//cdd.Name(w, res.fields[0], true)
 			} else {
-				w.WriteString("(" + res.typ + ") {")
+				w.WriteString("(" + res.typ + "){")
+				comma := false
 				for i, name := range res.names {
-					if i > 0 {
+					if name == "_" {
+						continue
+					}
+					if comma {
 						w.WriteString(", ")
+					} else {
+						comma = true
+					}
+					if !all {
+						w.WriteString("._" + strconv.Itoa(i) + "=")
 					}
 					w.WriteString(name)
-					//cdd.Name(w, v, true)
 				}
 				w.WriteByte('}')
 			}
@@ -144,44 +158,14 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 			for i, n := range vs.Names {
 				v := gtc.object(n).(*types.Var)
-				typ := v.Type()
 				cdd := gtc.newCDD(v, VarDecl, il)
 				name := cdd.NameStr(v, true)
 
-				cdd.indent(w)
-				dim, acds := cdd.Type(w, typ)
-				w.WriteByte(' ')
-				w.WriteString(dimFuncPtr(name, dim))
-
-				constInit := true // true if C declaration can init value
-
-				if cdd.gtc.isGlobal(v) {
-					cdd.copyDecl(w, ";\n") // Global variables may need declaration
-					if i < len(vals) {
-						constInit = cdd.gtc.ti.Types[vals[i]].Value != nil
-					}
+				var val ast.Expr
+				if i < len(vals) {
+					val = vals[i]
 				}
-				if constInit {
-					w.WriteString(" = ")
-					if i < len(vals) {
-						cdd.Expr(w, vals[i], typ)
-					} else {
-						w.WriteString("{0}")
-					}
-				}
-				w.WriteString(";\n")
-				cdd.copyDef(w)
-
-				if !constInit {
-					// Runtime initialisation
-					w.Reset()
-					w.WriteByte('\t')
-					w.WriteString(name)
-					w.WriteString(" = ")
-					cdd.Expr(w, vals[i], typ)
-					w.WriteString(";\n")
-					cdd.copyInit(w)
-				}
+				acds := cdd.varDecl(w, v, name, val)
 
 				w.Reset()
 
@@ -203,14 +187,6 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 			switch typ := tt.(type) {
 			case *types.Struct:
 				cdd.structDecl(w, name, typ)
-
-			/*case *types.Signature:
-			w.WriteString("typedef ")
-			res := cdd.Signature(w, name, typ, false)
-			if res.cdd != nil {
-				cdds = append(cdds, res.cdd)
-			}
-			cdd.copyDecl(w, ";\n")*/
 
 			default:
 				w.WriteString("typedef ")
@@ -234,6 +210,129 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 	return
 }
 
+func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr) (acds []*CDD) {
+	typ := v.Type()
+
+	cdd.indent(w)
+	dim, acds := cdd.Type(w, typ)
+	w.WriteByte(' ')
+	w.WriteString(dimFuncPtr(name, dim))
+
+	constInit := true // true if C declaration can init value
+
+	if cdd.gtc.isGlobal(v) {
+		cdd.copyDecl(w, ";\n") // Global variables may need declaration
+		if val != nil {
+			constInit = cdd.gtc.ti.Types[val].Value != nil
+		}
+	}
+	if constInit {
+		w.WriteString(" = ")
+		if val != nil {
+			cdd.Expr(w, val, typ)
+		} else {
+			w.WriteString("{0}")
+		}
+	}
+	w.WriteString(";\n")
+	cdd.copyDef(w)
+
+	if !constInit {
+		// Runtime initialisation
+		w.Reset()
+
+		assign := false
+
+		switch t := typ.(type) {
+		case *types.Slice:
+			switch v := val.(type) {
+			case *ast.CompositeLit:
+				aname := "__array" + cdd.gtc.uniqueId()
+				at := types.NewArray(t.Elem(), int64(len(v.Elts)))
+				o := types.NewVar(v.Lbrace, cdd.gtc.pkg, aname, at)
+				cdd.gtc.pkg.Scope().Insert(o)
+				acd := cdd.gtc.newCDD(o, VarDecl, cdd.il)
+				av := *v
+				cdd.gtc.ti.Types[&av] = types.TypeAndValue{Type: at}
+				n := w.Len()
+				acd.varDecl(w, o, aname, &av)
+				w.Truncate(n)
+				acds = append(acds, acd)
+
+				w.WriteByte('\t')
+				w.WriteString(name)
+				w.WriteString(" = __ASLICE(")
+				w.WriteString(aname)
+				w.WriteString(");\n")
+
+			default:
+				assign = true
+			}
+
+		case *types.Array:
+			w.WriteByte('\t')
+			w.WriteString("__ACPY(")
+			w.WriteString(name)
+			w.WriteString(", ")
+
+			switch val.(type) {
+			case *ast.CompositeLit:
+				w.WriteString("((")
+				dim, _ := cdd.Type(w, t.Elem())
+				dim = append([]string{"[]"}, dim...)
+				w.WriteString("(" + dimFuncPtr("", dim) + "))")
+				cdd.Expr(w, val, typ)
+
+			default:
+				cdd.Expr(w, val, typ)
+			}
+
+			w.WriteString("));\n")
+
+		case *types.Pointer:
+			u, ok := val.(*ast.UnaryExpr)
+			if !ok {
+				assign = true
+				break
+			}
+			c, ok := u.X.(*ast.CompositeLit)
+			if !ok {
+				assign = true
+				break
+			}
+			cname := "__cl" + cdd.gtc.uniqueId()
+			ct := cdd.gtc.ti.Types[c].Type
+			o := types.NewVar(c.Lbrace, cdd.gtc.pkg, cname, ct)
+			cdd.gtc.pkg.Scope().Insert(o)
+			acd := cdd.gtc.newCDD(o, VarDecl, cdd.il)
+			n := w.Len()
+			acd.varDecl(w, o, cname, c)
+			w.Truncate(n)
+			acds = append(acds, acd)
+
+			w.WriteByte('\t')
+			w.WriteString(name)
+			w.WriteString(" = &")
+			w.WriteString(cname)
+			w.WriteString(";\n")
+
+		default:
+			assign = true
+		}
+
+		if assign {
+			// Ordinary assignment
+			w.WriteByte('\t')
+			w.WriteString(name)
+			w.WriteString(" = ")
+			cdd.Expr(w, val, typ)
+			w.WriteString(";\n")
+		}
+		cdd.copyInit(w)
+	}
+	return
+}
+
 func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) {
 	n := w.Len()
 
@@ -250,12 +349,12 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) {
 	w.Truncate(n)
 
 	tuple := strings.ContainsRune(name, '$')
-	
+
 	if tuple {
 		cdd.indent(w)
-		w.WriteString("#ifndef $"+name+"\n")
+		w.WriteString("#ifndef $" + name + "\n")
 		cdd.indent(w)
-		w.WriteString("#define $"+name+"\n")
+		w.WriteString("#define $" + name + "\n")
 	}
 	w.WriteString("struct ")
 	w.WriteString(name)

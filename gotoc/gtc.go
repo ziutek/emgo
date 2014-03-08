@@ -2,7 +2,6 @@ package gotoc
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"io"
 	"strconv"
@@ -279,6 +278,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 
 	for _, cdd := range vcs {
+		// BUG: use Types.Info.InitOrder
 		buf.Write(cdd.Init)
 	}
 	for _, cdd := range fcs {
@@ -324,9 +324,6 @@ func (gtc *GTC) object(ident *ast.Ident) types.Object {
 	o := gtc.ti.Defs[ident]
 	if o == nil {
 		o = gtc.ti.Uses[ident]
-	}
-	if o == nil {
-		fmt.Println("****", ident)
 	}
 	return o
 }

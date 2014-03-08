@@ -15,16 +15,37 @@ __slice foo_A;
 // def
 __slice foo_A;
 // init
-	foo_A = (__slice){(int[]){1, 2, 3}, 3, 3};
+	foo_A = __ASLICE(__array0);
+// decl
+int __array0[3];
+// def
+int __array0[3];
+// init
+	__ACPY(__array0, ((int([])){1, 2, 3}));
 // end
 
 // Go code:
-var A = [][2]int{{1, 2}, {3, 4}}
+type S struct{a, b int}
+var p = &S{a: 1}
 // C code:
 // decl
-__slice foo_A;
+struct foo_S_struct;
+typedef struct foo_S_struct foo_S;
 // def
-__slice foo_A;
+struct foo_S_struct {
+	int a;
+	int b;
+};
+// decl
+foo_S *foo_p;
+// def
+foo_S *foo_p;
 // init
-	foo_A = (__slice){(int[][2]){{1, 2}, {3, 4}}, 2, 2};
+	foo_p = &__cl0;
+// decl
+foo_S __cl0;
+// def
+foo_S __cl0;
+// init
+	__cl0 = (foo_S){.a = 1};
 // end
