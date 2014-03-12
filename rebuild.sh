@@ -3,18 +3,21 @@
 set -e
 
 list="
-runtime
-sync
+sync/barrier
 
-mmio
-math/matrix32
-
-delay
-
-cortexm/startup
+cortexm
 cortexm/irq
 cortexm/systick
 cortexm/sleep
+
+runtime
+
+strconv
+math/matrix32
+
+mmio
+delay
+
 
 stm32/stlink
 stm32/f4/clock

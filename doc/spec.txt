@@ -1,0 +1,52 @@
+#### Emgo follows Go specification with exception for memory allocation.
+
+In Go, variable declared in function can be allocated on the stack or on the heap - escaping analisis is used for decision. In Emgo (like in C), all local variables are stack allocated. Dynamic allocation and garbage collection is predictable, and can occurs only when:
+
+1. new or make builtin functions is used.
+2. Non-epty strigs are concatanated. 
+3. Builtin append function is called and there is not enough space in destiation.
+4. An element to map is added.
+
+By default, dynamic allocation is disabled. Embeded applications often runs on MCUs that have only few kilobytes of SRAM and there is no place for any dynamic memory allocation at all. If MCU has enough SRAM, dynamic allocation can be enabled by importing package that provides implementation for runtime.Alloc.
+
+Example:
+
+The following function is correct Go function:
+
+func F() ([]byte, *int) {
+	i := 4
+	return []byte{1, 2, 3}, &i
+}
+
+but it isn't correct Emgo function - you need to rewrite it this way:
+
+func F() ([]byte, *int) {
+	i := new(int)
+	*i = 4
+	b := make([]byte, 3)
+	copy(b, []byte{1, 2, 3})
+	return b, i
+}
+
+If dynamic memory allocation is disabled you have to be careful when assign some variable to interface variable. Assigned variable should be a pointer or small variable that size is equal or less than size of uintptr (if your code has to be portable, use pointers only).
+
+### Generated C code.
+
+Current Emgo implementation generates C code that relies on some GCC extensions.
+
+### Standard library.
+
+Generally, Emgo standard library doesn't follow Go standard library. But we always prefer to preserve Go package interface when proting to Emgo when we can. Part of standard library is written in assembly using GNU assembler dialect and in C using some GCC extensions (inline asembler, always inlined functions).
+
+#### Not yet implemented:
+
+Interfaces.
+Channels.
+Gorutines.
+Variadic functions.
+Returning array from function.
+String concatanation.
+Append.
+Range.
+Type switch.
+Package for dynamic memory.

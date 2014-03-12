@@ -1,4 +1,4 @@
-// +build cortexm3 cortexm4 cortexm4f
+// +build cortexm0 cortexm3 cortexm4 cortexm4f
 
 .syntax unified
 

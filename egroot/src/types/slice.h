@@ -7,7 +7,7 @@ typedef struct {
 #define __SLICE_LOW(expr, typ, low)       \
 	__slice __s = expr;                   \
 	uint __low = low;                     \
-	__s.arr = ((typ)__s.arr) + __low
+	__s.arr = ((typ)__s.arr) + low
 	
 #define __SLICEL(expr, typ, low) ({ \
 	__SLICE_LOW(expr, typ, low);    \
@@ -36,7 +36,7 @@ typedef struct {
 	__s;                        \
 })
 	
-#define __SLICEM(expr, max) "Go 1.2 doesn't allow [::max]"
+// #define __SLICEM(expr, max) Go 1.2 doesn't allow [::max].
 	
 #define __SLICEHM(expr, high, max) ({ \
 	__slice __s = expr;               \
@@ -71,7 +71,7 @@ typedef struct {
 
 #define __ASLICEH(expr, high) (__slice){expr, high, __ALEN(expr)}
 	
-#define __ASLICEM(expr, max) "Go 1.2 doesn't allow [::max]"
+// #define __ASLICEM(expr, max) Go 1.2 doesn't allow [::max].
 	
 #define __ASLICEHM(expr, high, max) (__slice){expr, high, max}
 

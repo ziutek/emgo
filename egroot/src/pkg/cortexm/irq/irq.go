@@ -40,6 +40,7 @@ var (
 	iab  = (*bitReg)(unsafe.Pointer(uintptr(0xe000e300)))
 	ip   = (*byteReg)(unsafe.Pointer(uintptr(0xe000e400)))
 	ics  = mmio.NewReg32(0xe000ed04)
+	shp  = (*byteReg)(unsafe.Pointer(uintptr(0xe000ed18)))
 	shcs = mmio.NewReg32(0xe000ed24)
 	sti  = mmio.NewReg32(0xe000ef00)
 )
@@ -197,31 +198,13 @@ func (irq IRQ) Active() bool {
 	return false
 }
 
-// Prio represents Cortex-M setable interrupt priority.
-type Prio byte
-
-const (
-	Highest Prio = 0
-	Lowest  Prio = 255
-)
-
-// SetPriority sets priority level for irq
-func (irq IRQ) SetPriority(prio Prio) {
-	switch {
-	case irq >= MemFault && irq < Ext0:
-		// TODO
-	case irq >= Ext0:
-		ip.r[irq-Ext0] = byte(prio)
-	}
-}
-
 // Priority returns priority level for irq. It returns Highest for Reset,
 // NMI and HardFault but they real priority values are fixed at -3, -2, -1
 // respectively.
 func (irq IRQ) Priority() Prio {
 	switch {
 	case irq >= MemFault && irq < Ext0:
-		// TODO
+		return Prio(shp.byte(irq - MemFault))
 	case irq >= Ext0:
 		return Prio(ip.r[irq-Ext0])
 	}

@@ -77,7 +77,10 @@ func compile(ppath string) error {
 
 	// Type check
 
-	tc := &types.Config{Import: NewImporter().Import}
+	tc := &types.Config{
+		Import: NewImporter().Import,
+		Sizes: &types.StdSizes{4, 4}, // BUG: set sizes based on EGARCH
+	}
 	ti := &types.Info{
 		Types: make(map[ast.Expr]types.TypeAndValue),
 		Defs:  make(map[*ast.Ident]types.Object),

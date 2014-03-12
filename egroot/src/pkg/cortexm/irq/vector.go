@@ -2,12 +2,12 @@ package irq
 
 import (
 	"mmio"
-	"sync"
+	"sync/barrier"
 	"unsafe"
 )
 
 // Vector represents element of interrupt table. In case of Cortex-M this is
-// simply func()
+// simply func().
 type vector func()
 
 // SysTable represents table of Cortex-M system exceptions. Reset, NMI and
@@ -59,8 +59,9 @@ var vto = mmio.NewReg32(0xe000ed08)
 // SetActiveTable instruct CPU to use t as vector table. t should be properly
 // aligned. Minimum alignment is 32 words which is enough for up to 16 external
 // interrupts. For more interrupts, adjust the alignment by rounding up to the
-// next power of two. SyncActiveTable calls sync.Memory() before using t.
+// next power of two. SetActiveTable calls sync.Memory() before seting t as 
+// active table.
 func SetActiveTable(t []vector) {
-	sync.Memory()
+	barrier.Memory()
 	vto.Write(uint32(uintptr(unsafe.Pointer(&t[0]))))
 }
