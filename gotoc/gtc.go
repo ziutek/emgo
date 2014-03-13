@@ -15,7 +15,7 @@ type GTC struct {
 	ti          *types.Info
 	inlineThres int
 	nextInt     chan int
-	
+
 	tupNames map[string]struct{} // TODO: safe concurent acces is need
 }
 
@@ -62,7 +62,7 @@ func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 type imports map[*types.Package]bool
 
 func (i imports) add(pkg *types.Package, export bool) {
-	if pkg.Path() == "runtime" && !export {
+	if pkg.Path() == "builtin" && !export {
 		return
 	}
 	if e, ok := i[pkg]; ok {
@@ -139,8 +139,8 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	buf := new(bytes.Buffer)
 
 	buf.WriteString("#include \"types/types.h\"\n")
-	if pkgName != "runtime" {
-		buf.WriteString("#include \"runtime.h\"\n")
+	if pkgName != "builtin" {
+		buf.WriteString("#include \"builtin.h\"\n")
 	}
 	buf.WriteString("#include \"")
 	if pkgName == "main" {

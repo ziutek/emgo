@@ -140,43 +140,41 @@ func (cdd *CDD) NameStr(o types.Object, direct bool) string {
 	return buf.String()
 }
 
-func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) ast.Expr {
-	xt := cdd.gtc.ti.Types[e.X].Type
-	sel := cdd.object(e.Sel)
-
-	switch s := sel.Type().(type) {
-	case *types.Signature:
-		cdd.Name(w, sel, true)
-		if recv := s.Recv(); recv != nil {
-			if _, ok := recv.Type().(*types.Pointer); !ok {
-				// Method has non pointer receiver so there is guaranteed
-				// that e.X isn't a pointer.
-				return e.X
-			}
-			// Method has pointer receiver.
-			if _, ok := xt.(*types.Pointer); ok {
-				return e.X // e.X is pointer
-			}
-			// e.X isn't a pointer so create pointer to it.
-			return &ast.UnaryExpr{Op: token.AND, X: e.X}
-		}
-
-	default:
+func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (recv ast.Expr) {
+	sel := cdd.gtc.ti.Selections[e]
+	switch sel.Kind() {
+	case types.FieldVal:
 		cdd.Expr(w, e.X, nil)
-		switch xt.(type) {
-		case *types.Named:
-			w.WriteByte('.')
-
-		case *types.Pointer:
+		if sel.Indirect() {
 			w.WriteString("->")
-
-		default:
-			w.WriteByte('_')
-
+		} else {
+			w.WriteByte('.')
 		}
 		w.WriteString(e.Sel.Name)
+
+	case types.MethodVal:
+		cdd.Name(w, sel.Obj(), true)
+		if _, ok := sel.Recv().(*types.Pointer); !ok {
+			// Method has non-pointer receiver so there is guaranteed
+			// that e.X isn't a pointer.
+			recv = e.X
+		}
+		// Method has pointer receiver.
+		if sel.Indirect() {
+			// e.X is pointer.
+			recv = e.X
+		} else {
+			// e.X isn't pointer but pointer receiver is need.
+			recv = &ast.UnaryExpr{Op: token.AND, X: e.X}
+		}
+		
+	case types.PackageObj:
+		cdd.Name(w, sel.Obj(), true)
+		
+	default: // types.MethodExpr
+		notImplemented(e)
 	}
-	return nil
+	return
 }
 
 func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
