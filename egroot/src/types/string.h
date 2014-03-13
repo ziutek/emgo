@@ -32,6 +32,6 @@ typedef struct {
 
 #define __STRCPY(dst, src) ({                     \
 	int __n = (dst.len < src.len) ? dst.len : src.len; \
-	runtime_Copy(dst.arr, src.str, __n); \
+	memmove(dst.arr, src.str, __n); \
 	__n;                                               \
 })

@@ -46,4 +46,4 @@ typedef uint8 bool;
 
 #define len(v) (v.len)
 #define __ALEN(a) (sizeof(a) / sizeof((a)[0]))
-#define __ACPY(dst, src) runtime_Copy(dst, src, sizeof(dst))
+#define __ACPY(dst, src) memmove(dst, src, sizeof(dst))

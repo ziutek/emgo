@@ -1,8 +1,6 @@
-// +build none
-
 extern uint32 MaxTasks;
 
 __attribute__ ((always_inline))
-extern inline int runtime_MaxTasks() {
+extern inline int runtime_noos_MaxTasks() {
 	return (int)&MaxTasks;
 }

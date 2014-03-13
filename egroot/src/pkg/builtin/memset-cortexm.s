@@ -2,13 +2,10 @@
 
 .syntax unified
 
-.global runtime_Memset
 .global memset
 
-// func Memset(s unsafe.Pointer, c byte, n uint)
+// void memset(unsafe.Pointer s, byte b, uint n);
 
-.thumb_func
-runtime_Memset:
 .thumb_func
 memset:
 	and  r1, 0xff

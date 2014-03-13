@@ -22,7 +22,7 @@ var tmpDir string
 
 var buildCtx = build.Context{
 	GOARCH:      "cortexm4f",
-	GOOS:        "none",
+	GOOS:        "noos",
 	GOROOT:      "/home/michal/P/go/github/emgo/egroot",
 	GOPATH:      "/home/michal/P/go/github/emgo/egpath",
 	Compiler:    "gc",
@@ -65,8 +65,12 @@ func compile(ppath string) error {
 		ppath = "main"
 
 		f, err := parser.ParseFile(
-			fset, "_importruntime.go",
-			"package main\nimport _ \"runtime\"\n",
+			fset, "_importbr.go",
+			"package main\n"+
+				"import (\n"+
+				"	_ \"runtime\"\n"+
+				"	_ \"builtin\"\n"+
+				")\n",
 			0,
 		)
 		if err != nil {
@@ -79,12 +83,13 @@ func compile(ppath string) error {
 
 	tc := &types.Config{
 		Import: NewImporter().Import,
-		Sizes: &types.StdSizes{4, 4}, // BUG: set sizes based on EGARCH
+		Sizes:  &types.StdSizes{4, 4}, // BUG: set sizes based on EGARCH
 	}
 	ti := &types.Info{
-		Types: make(map[ast.Expr]types.TypeAndValue),
-		Defs:  make(map[*ast.Ident]types.Object),
-		Uses:  make(map[*ast.Ident]types.Object),
+		Types:      make(map[ast.Expr]types.TypeAndValue),
+		Defs:       make(map[*ast.Ident]types.Object),
+		Uses:       make(map[*ast.Ident]types.Object),
+		Selections: make(map[*ast.SelectorExpr]*types.Selection),
 	}
 
 	pkg, err := tc.Check(ppath, fset, flist, ti)

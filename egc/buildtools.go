@@ -17,7 +17,7 @@ var archMap = map[string]string{
 }
 
 var osMap = map[string]struct{ cc, ld string }{
-	"none": {
+	"noos": {
 		cc: "-ffreestanding -nostdinc -fno-exceptions -nostartfiles",
 		ld: "-nostdlib  -nodefaultlibs  -nostartfiles",
 	},

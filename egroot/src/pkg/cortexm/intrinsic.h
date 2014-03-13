@@ -122,3 +122,8 @@ __attribute__ ((always_inline))
 extern inline void cortexm_SVC(byte n) {
 	asm volatile ("svc %0" :: "i" (n));
 }
+
+__attribute__ ((always_inline))
+extern inline void cortexm_ISB() {
+	asm volatile ("isb");
+}

@@ -51,3 +51,5 @@ func Ctrl() Control
 func SEV()
 
 func SVC(n byte)
+
+func ISB()

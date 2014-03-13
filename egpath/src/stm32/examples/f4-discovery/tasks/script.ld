@@ -1,6 +1,7 @@
 INCLUDE stm32/f407_g
 INCLUDE stm32/loadram
-INCLUDE cortexm
+INCLUDE arch/cortexm
+INCLUDE os/noos
 
-HeapSize = ALIGN(FreeSize / 3 , 4);
+HeapSize = ALIGN(HeapStackSize / 3 , 4);
 MaxTasks = 7;

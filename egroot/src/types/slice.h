@@ -77,7 +77,7 @@ typedef struct {
 
 #define __SLICPY(typ, dst, src) ({                     \
 	int __n = (dst.len < src.len) ? dst.len : src.len; \
-	runtime_Copy(dst.arr, src.arr, __n * sizeof(typ)); \
+	memmove(dst.arr, src.arr, __n * sizeof(typ)); \
 	__n;                                               \
 })
 

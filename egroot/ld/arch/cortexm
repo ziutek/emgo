@@ -30,8 +30,8 @@ SECTIONS {
 	BSSSize = SIZEOF(.bss);
 }
 
-FreeStart = BSSRAM + BSSSize;
-FreeEnd = ORIGIN(RAM) + LENGTH(RAM);
-FreeSize = FreeEnd - FreeStart;
+HeapStackBegin = BSSRAM + BSSSize;
+HeapStackEnd = ORIGIN(RAM) + LENGTH(RAM);
+HeapStackSize = HeapStackEnd - HeapStackBegin;
 
 ENTRY(runtime_Start)

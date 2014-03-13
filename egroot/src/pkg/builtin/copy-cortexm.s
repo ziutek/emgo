@@ -2,7 +2,6 @@
 
 .syntax unified
 
-.global runtime_Copy
 .global memcpy
 .global memmove
 
@@ -12,14 +11,13 @@
 // microcontroler with small SRAM and instructions read
 // from Flash (all Flash acceleration on).
 
-// func Copy(dst, src unsafe.Pointer, n uint)
+// void memmove(unsafe_Pointer dst, unsafe.Pointer, src, uint n);
+// void memcpy(unsafe.Pointer dst, unsafe.Pointer src, uint n);
 
 .thumb_func
-runtime_Copy:
+memmove:
 .thumb_func
 memcpy:
-.thumb_func
-memmove:
 	// TODO: Check will be better to always
 	// use forward copy on non-overlaping data.
 	cmp  r0, r1
