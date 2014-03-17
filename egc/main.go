@@ -23,8 +23,8 @@ var tmpDir string
 var buildCtx = build.Context{
 	GOARCH:      "cortexm4f",
 	GOOS:        "noos",
-	GOROOT:      "/home/michal/P/go/github/emgo/egroot",
-	GOPATH:      "/home/michal/P/go/github/emgo/egpath",
+	GOROOT:      "/home/michal/P/go/src/github.com/ziutek/emgo/egroot",
+	GOPATH:      "/home/michal/P/go/src/github.com/ziutek/emgo/egpath",
 	Compiler:    "gc",
 	ReleaseTags: []string{"go1.1", "go1.2"},
 	CgoEnabled:  false,

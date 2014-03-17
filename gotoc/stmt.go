@@ -295,7 +295,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					if i != 0 {
 						w.WriteString(" || ")
 					}
-					eq(w, "__tag", "==", cdd.ExprStr(e, typ), typ)
+					eq(w, "__tag", "==", cdd.ExprStr(e, typ), typ, typ)
 				}
 				w.WriteString(") ")
 			}

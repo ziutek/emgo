@@ -167,10 +167,10 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (recv ast.Exp
 			// e.X isn't pointer but pointer receiver is need.
 			recv = &ast.UnaryExpr{Op: token.AND, X: e.X}
 		}
-		
+
 	case types.PackageObj:
 		cdd.Name(w, sel.Obj(), true)
-		
+
 	default: // types.MethodExpr
 		notImplemented(e)
 	}
@@ -189,16 +189,16 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 	switch e := expr.(type) {
 	case *ast.BinaryExpr:
 		op := e.Op.String()
-		typ := cdd.gtc.ti.Types[e.X].Type
-		if typ == types.Typ[types.UntypedNil] {
-			typ = cdd.gtc.ti.Types[e.Y].Type
-		}
-		lhs := cdd.ExprStr(e.X, typ)
-		rhs := cdd.ExprStr(e.Y, typ)
+		ltyp := cdd.gtc.ti.Types[e.X].Type
+		rtyp := cdd.gtc.ti.Types[e.Y].Type
+
+		lhs := cdd.ExprStr(e.X, ltyp)
+		rhs := cdd.ExprStr(e.Y, rtyp)
 		if op == "==" || op == "!=" {
-			eq(w, lhs, op, rhs, typ)
+			eq(w, lhs, op, rhs, ltyp, rtyp)
 			break
 		}
+		// BUG: string type
 		hi := (op == "*" || op == "/" || op == "%")
 		if !hi {
 			w.WriteByte('(')
@@ -610,10 +610,10 @@ func (cdd *CDD) ExprStr(expr ast.Expr, nilT types.Type) string {
 func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
 	switch t.(type) {
 	case *types.Slice:
-		w.WriteString("__NILS")
+		w.WriteString("__NILSLICE")
 
 	case *types.Map:
-		w.WriteString("__NILM")
+		w.WriteString("__NILMAP")
 
 	case *types.Pointer:
 		w.WriteString("nil")
@@ -623,15 +623,21 @@ func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
 	}
 }
 
-func eq(w *bytes.Buffer, lhs, op, rhs string, typ types.Type) {
-	switch typ.(type) {
-	case *types.Slice, *types.Array, *types.Struct:
-		if op == "!=" {
-			w.WriteByte('!')
-		}
-		w.WriteString("__EQ(" + lhs + ", " + rhs + ")")
-
-	default:
-		w.WriteString(lhs + " " + op + " " + rhs)
+func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
+	typ := ltyp
+	if typ == types.Typ[types.UntypedNil] {
+		typ = rtyp
 	}
+
+	switch typ.(type) {
+	case *types.Slice:
+		if rtyp == types.Typ[types.UntypedNil] {
+			lhs += ".arr"
+			rhs = "nil"
+		} else {
+			lhs = "nil"
+			rhs += ".arr"
+		}
+	}
+	w.WriteString(lhs + " " + op + " " + rhs)
 }
