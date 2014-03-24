@@ -1,7 +1,9 @@
 package main
 
 import (
-	"delay"
+	"sync/barrier"
+
+	"runtime/noos"
 
 	"stm32/f4/gpio"
 	"stm32/f4/periph"
@@ -32,20 +34,28 @@ func init() {
 func main() {
 	const wait = 2e6
 	for {
-		LED.ClearBit(Green)
-		LED.SetBit(Orange)
-		delay.Loop(wait)
+		c := noos.Tick
+		barrier.Compiler()
 
-		LED.ClearBit(Orange)
-		LED.SetBit(Red)
-		delay.Loop(wait)
-
-		LED.ClearBit(Red)
-		LED.SetBit(Blue)
-		delay.Loop(wait)
-
-		LED.ClearBit(Blue)
-		LED.SetBit(Green)
-		delay.Loop(wait)
+		if c%1373 == 0 {
+			LED.SetBit(Green)
+		} else {
+			LED.ClearBit(Green)
+		}
+		if c%521 == 0 {
+			LED.SetBit(Orange)
+		} else {
+			LED.ClearBit(Orange)
+		}
+		if c%251 == 0 {
+			LED.SetBit(Red)
+		} else {
+			LED.ClearBit(Red)
+		}
+		if c%137 == 0 {
+			LED.SetBit(Blue)
+		} else {
+			LED.ClearBit(Blue)
+		}
 	}
 }

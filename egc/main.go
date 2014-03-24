@@ -104,28 +104,17 @@ func compile(ppath string) error {
 		return err
 	}
 
-	cpath := filepath.Join(bp.Dir, "_.c")
-	wc, err := os.Create(cpath)
-	if err != nil {
-		return err
-	}
-	defer wc.Close()
-
 	var (
 		hpath string
 		objs  []string
 	)
-	csfiles := append(bp.CFiles, bp.SFiles...)
-	csfiles = append(csfiles, "_.c")
 
 	if ppath == "main" {
 		hpath = filepath.Join(bp.Dir, "_.h")
-		objs = make([]string, 0, len(csfiles))
 	} else {
 		hpath = filepath.Join(bp.PkgRoot, buildCtx.GOOS+"_"+buildCtx.GOARCH, ppath+".h")
 		expath := filepath.Join(work, "__.EXPORTS")
 		impath := filepath.Join(work, "__.IMPORTS")
-		objs = make([]string, 0, len(csfiles)+3)
 		objs = append(objs, expath, impath, hpath)
 
 		err = os.MkdirAll(filepath.Dir(hpath), 0755)
@@ -160,6 +149,12 @@ func compile(ppath string) error {
 	}
 	defer wh.Close()
 
+	wc, err := os.Create(filepath.Join(bp.Dir, "_.c"))
+	if err != nil {
+		return err
+	}
+	defer wc.Close()
+
 	up := strings.Replace(ppath, "/", "_", -1)
 	_, err = io.WriteString(wh, "#ifndef "+up+"\n#define "+up+"\n\n")
 	if err != nil {
@@ -173,21 +168,44 @@ func compile(ppath string) error {
 	}
 
 	for _, h := range bp.HFiles {
+		if !strings.HasSuffix(h, "_c.h") {
+			continue
+		}
 		f, err := os.Open(filepath.Join(bp.Dir, h))
 		if err != nil {
+			return err
+		}
+		if _, err = io.WriteString(wh, "\n// included "+h+"\n"); err != nil {
 			return err
 		}
 		if _, err = bufio.NewReader(f).WriteTo(wh); err != nil {
 			return err
 		}
-		if _, err = wh.Write([]byte{'\n'}); err != nil {
+	}
+
+	if _, err = io.WriteString(wh, "\n#endif\n"); err != nil {
+		return err
+	}
+
+	var csfiles = []string{"_.c"}
+
+	for _, c := range bp.CFiles {
+		if !strings.HasSuffix(c, "_c.c") {
+			csfiles = append(csfiles, c)
+			continue
+		}
+		f, err := os.Open(filepath.Join(bp.Dir, c))
+		if err != nil {
+			return err
+		}
+		if _, err = io.WriteString(wc, "\n// included "+c+"\n"); err != nil {
+			return err
+		}
+		if _, err = bufio.NewReader(f).WriteTo(wc); err != nil {
 			return err
 		}
 	}
-
-	if _, err = io.WriteString(wh, "#endif\n"); err != nil {
-		return err
-	}
+	csfiles = append(csfiles, bp.SFiles...)
 
 	// Build (package or binary)
 

@@ -158,6 +158,7 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (recv ast.Exp
 			// Method has non-pointer receiver so there is guaranteed
 			// that e.X isn't a pointer.
 			recv = e.X
+			break
 		}
 		// Method has pointer receiver.
 		if sel.Indirect() {

@@ -4,17 +4,15 @@ import "unsafe"
 
 var heap []byte
 
-func alloc(sptr unsafe.Pointer, b []byte, n int, size uintptr) []byte
+func allocBottom(sptr unsafe.Pointer, b []byte, n int, size, align uintptr) []byte
 
-func sliceU8(p unsafe.Pointer, n uint) []byte
-
-func sliceU16(p unsafe.Pointer, n uint) []byte
-
-func sliceU32(p unsafe.Pointer, n uint) []byte
+func allocTop(sptr unsafe.Pointer, b []byte, n int, size, align uintptr) []byte
 
 func heapStack() []byte
 
-func heapSize() uintptr
+func heapStackEnd() uintptr
+
+func stackSize() uintptr
 
 func panicMemory() {
 	panic("not enough memory")

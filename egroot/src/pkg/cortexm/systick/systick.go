@@ -17,10 +17,10 @@ var stk = (*systick)(unsafe.Pointer(uintptr(0xe000e010)))
 type Flag uint32
 
 const (
-	Enable  Flag = 1 << 0  // (0/1): counter (disabled/ebabled)
-	TickInt Flag = 1 << 1  // (0/1): (don't generate/generate) exceptions
-	ClkSrc  Flag = 1 << 2  // (0/1): (external/CPU) clock
-	Count   Flag = 1 << 16 // 1 if timer counted to 0 since last flag read
+	Enable  Flag = 1 << 0  // Counter ebabled.
+	TickInt Flag = 1 << 1  // Generate exceptions.
+	ClkCPU  Flag = 1 << 2  // Use CPU clock as clock source.
+	Count   Flag = 1 << 16 // Timer counted to 0 since last flag read.
 )
 
 // Flags returns SysTick status and control flags.

@@ -119,11 +119,10 @@ extern inline void cortexm_SEV() {
 }
 
 __attribute__ ((always_inline))
-extern inline void cortexm_SVC(byte n) {
-	asm volatile ("svc %0" :: "i" (n));
-}
-
-__attribute__ ((always_inline))
 extern inline void cortexm_ISB() {
 	asm volatile ("isb");
 }
+
+#define cortexm_SVC(imm) asm volatile ("svc %0" :: "i" (imm))
+
+#define cortexm_BKPT(imm) asm volatile ("bkpt %0" :: "i" (imm))

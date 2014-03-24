@@ -85,7 +85,7 @@ const (
 func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	cflags := CFLAGS{
 		Dbg:  "-g",
-		Opt:  "-O0 -fno-common",
+		Opt:  "-O0 -fno-common -freg-struct-return",
 		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-missing-braces -Wno-unused-label",
 		Incl: "-I" + filepath.Join(ctx.GOROOT, "src"),
 	}

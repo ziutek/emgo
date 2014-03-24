@@ -138,17 +138,17 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	pkgName := gtc.pkg.Name()
 	buf := new(bytes.Buffer)
 
-	buf.WriteString("#include \"types/types.h\"\n")
+	buf.WriteString("#include <types/types.h>\n")
 	if pkgName != "builtin" {
-		buf.WriteString("#include \"builtin.h\"\n")
+		buf.WriteString("#include <builtin.h>\n")
 	}
-	buf.WriteString("#include \"")
+	buf.WriteString("#include <")
 	if pkgName == "main" {
 		buf.WriteByte('_')
 	} else {
 		buf.WriteString(gtc.pkg.Path())
 	}
-	buf.WriteString(".h\"\n\n")
+	buf.WriteString(".h>\n\n")
 
 	if _, err := buf.WriteTo(wc); err != nil {
 		return err
@@ -166,8 +166,8 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 			continue
 		}
 
-		buf.WriteString("#include \"")
-		buf.WriteString(path + ".h\"\n")
+		buf.WriteString("#include <")
+		buf.WriteString(path + ".h>\n")
 
 		w := wc
 		if export {

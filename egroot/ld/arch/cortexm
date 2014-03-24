@@ -33,5 +33,6 @@ SECTIONS {
 HeapStackBegin = BSSRAM + BSSSize;
 HeapStackEnd = ORIGIN(RAM) + LENGTH(RAM);
 HeapStackSize = HeapStackEnd - HeapStackBegin;
+MaxIRQ = 5;
 
 ENTRY(runtime_Start)

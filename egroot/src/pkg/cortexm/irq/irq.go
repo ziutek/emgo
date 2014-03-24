@@ -134,10 +134,10 @@ func (irq IRQ) SetPending() {
 		shcs.SetBit(15)
 
 	case PendSV:
-		ics.SetBit(27)
+		ics.Write(1 << 28)
 
 	case SysTick:
-		ics.SetBit(25)
+		ics.Write(1 << 26)
 	}
 }
 
@@ -149,22 +149,22 @@ func (irq IRQ) ClearPending() {
 	}
 	switch irq {
 	case MemFault:
-		shcs.SetBit(13)
+		shcs.ClearBit(13)
 
 	case BusFault:
-		shcs.SetBit(14)
+		shcs.ClearBit(14)
 
 	case UsageFault:
-		shcs.SetBit(12)
+		shcs.ClearBit(12)
 
 	case SVCall:
-		shcs.SetBit(15)
+		shcs.ClearBit(15)
 
 	case PendSV:
-		ics.SetBit(28)
+		ics.Write(1 << 27)
 
 	case SysTick:
-		ics.SetBit(26)
+		ics.Write(1 << 25)
 	}
 }
 
@@ -201,14 +201,27 @@ func (irq IRQ) Active() bool {
 // Priority returns priority level for irq. It returns Highest for Reset,
 // NMI and HardFault but they real priority values are fixed at -3, -2, -1
 // respectively.
-func (irq IRQ) Priority() Prio {
+func (irq IRQ) Prio() Prio {
 	switch {
 	case irq >= MemFault && irq < Ext0:
 		return Prio(shp.byte(irq - MemFault))
 	case irq >= Ext0:
-		return Prio(ip.r[irq-Ext0])
+		return Prio(ip.byte(irq - Ext0))
 	}
 	return Highest
+}
+
+func (irq IRQ) SetPrio(p Prio) {
+	switch {
+	case irq >= MemFault && irq < Ext0:
+		shp.setByte(irq-MemFault, byte(p))
+
+	case irq >= Ext0:
+		ip.setByte(irq-Ext0, byte(p))
+
+	default:
+		panic("can't set priority for irq < MemFault")
+	}
 }
 
 // Trig generates irq. Only external interrupts can be generated this way.

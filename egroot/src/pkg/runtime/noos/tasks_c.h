@@ -1,4 +1,4 @@
-extern uint32 MaxTasks;
+extern byte MaxTasks;
 
 __attribute__ ((always_inline))
 extern inline int runtime_noos_MaxTasks() {

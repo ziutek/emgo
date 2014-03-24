@@ -84,7 +84,7 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 	case FuncDecl:
 		if cdd.Inline {
 			prefix = "static inline "
-		} else if !cdd.Export && len(cdd.Def) > 0 {
+		} else if !cdd.Export {
 			prefix = "static "
 		}
 
