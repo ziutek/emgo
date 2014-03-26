@@ -142,13 +142,11 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	if pkgName != "builtin" {
 		buf.WriteString("#include <builtin.h>\n")
 	}
-	buf.WriteString("#include <")
 	if pkgName == "main" {
-		buf.WriteByte('_')
+		buf.WriteString("#include \"_.h\"\n\n")
 	} else {
-		buf.WriteString(gtc.pkg.Path())
+		buf.WriteString("#include <" + gtc.pkg.Path() + ".h>\n\n")
 	}
-	buf.WriteString(".h>\n\n")
 
 	if _, err := buf.WriteTo(wc); err != nil {
 		return err

@@ -199,19 +199,11 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			eq(w, lhs, op, rhs, ltyp, rtyp)
 			break
 		}
-		// BUG: string type
-		hi := (op == "*" || op == "/" || op == "%")
-		if !hi {
-			w.WriteByte('(')
-		}
+		// BUG: strings
 		if op == "&^" {
 			op = "&~"
 		}
-		w.WriteString(lhs + op + rhs)
-
-		if !hi {
-			w.WriteByte(')')
-		}
+		w.WriteString("(" + lhs + op + rhs + ")")
 
 	case *ast.UnaryExpr:
 		op := e.Op.String()
