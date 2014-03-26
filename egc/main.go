@@ -168,7 +168,7 @@ func compile(ppath string) error {
 	}
 
 	for _, h := range bp.HFiles {
-		if !strings.HasSuffix(h, "_c.h") {
+		if !strings.HasSuffix(h, "+.h") {
 			continue
 		}
 		f, err := os.Open(filepath.Join(bp.Dir, h))
@@ -190,7 +190,7 @@ func compile(ppath string) error {
 	var csfiles = []string{"_.c"}
 
 	for _, c := range bp.CFiles {
-		if !strings.HasSuffix(c, "_c.c") {
+		if !strings.HasSuffix(c, "+.c") {
 			csfiles = append(csfiles, c)
 			continue
 		}
