@@ -37,22 +37,22 @@ func main() {
 		c := noos.Tick
 		barrier.Compiler()
 
-		if c%1373 == 0 {
+		if c%3 == 0 {
 			LED.SetBit(Green)
 		} else {
 			LED.ClearBit(Green)
 		}
-		if c%521 == 0 {
+		if c%7 == 0 {
 			LED.SetBit(Orange)
 		} else {
 			LED.ClearBit(Orange)
 		}
-		if c%251 == 0 {
+		if c%13 == 0 {
 			LED.SetBit(Red)
 		} else {
 			LED.ClearBit(Red)
 		}
-		if c%137 == 0 {
+		if c%17 == 0 {
 			LED.SetBit(Blue)
 		} else {
 			LED.ClearBit(Blue)

@@ -2,17 +2,19 @@ package noos
 
 import "unsafe"
 
-var heap []byte
+var Heap []byte
 
-func allocBottom(sptr unsafe.Pointer, b []byte, n int, size, align uintptr) []byte
+func stackExp() uint
+ 
+func stackFrac() uint
 
-func allocTop(sptr unsafe.Pointer, b []byte, n int, size, align uintptr) []byte
+func stackEnd() uintptr
 
-func heapStack() []byte
+func heap() []byte
 
-func heapStackEnd() uintptr
+func allocBottom(sptr unsafe.Pointer, b []byte, n int, elSize, elAlign, sliAlign uintptr) []byte
 
-func stackSize() uintptr
+func allocTop(sptr unsafe.Pointer, b []byte, n int, elSize, elAlign, sliAlign uintptr) []byte
 
 func panicMemory() {
 	panic("not enough memory")

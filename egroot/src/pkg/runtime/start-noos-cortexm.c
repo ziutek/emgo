@@ -8,9 +8,11 @@
 int main_init();
 int main_main();
 
+// All external symbols as byte to prevent compiler to optimize
+// any runtime align checks.
 extern byte DataRAM, DataLoad, DataSize;
 extern byte BSSRAM, BSSSize;
-extern byte HeapStackEnd;
+extern byte StackEnd;
 
 void runtime_Start() {
 	memmove(&DataRAM, &DataLoad, (uint)(&DataSize));
@@ -23,14 +25,14 @@ void runtime_Start() {
 	for (;;);
 }
 
-extern uint32 _MainStack;
 void runtime_defaultHandler() {
 	for (;;) {
 	}
 }
 
-uint32 *cortexm_startup_vectors[4] __attribute__ ((section(".vectors"))) = {
-		(uint32 *) &HeapStackEnd,          // MSP
+__attribute__ ((section(".vectors")))
+uint32 *cortexm_startup_vectors[4]  = {
+		(uint32 *) &StackEnd,              // MSP
 		(uint32 *) runtime_Start,          // entry point
 		(uint32 *) runtime_defaultHandler, // NMI
 		(uint32 *) runtime_defaultHandler, // hard fault

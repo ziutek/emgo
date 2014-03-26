@@ -1,5 +1,5 @@
 package noos
 
-func maxIRQ() uintptr
+func vtExp() uint
 
 func MaxTasks() int

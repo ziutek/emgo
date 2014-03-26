@@ -4,11 +4,19 @@ SECTIONS {
 		*(.text .text.*)     /* Code */   
 	} >loadTo
 	
+	
 	.rodata : {
 		. = ALIGN(4);
 		*(.rodata .rodata.*) /* Read only data */
 		. = ALIGN(4);
 	} >loadTo
+    
+    .stack : {
+    	. = ALIGN((1 << StackExp) / 8);
+    	. = . + (1 << StackExp) * StackFrac / 8 * (MaxTasks + 1);
+    } >RAM
+    
+    StackEnd = ADDR(.stack) + SIZEOF(.stack);
     
 	.data : {
 		. = ALIGN(4);
@@ -30,9 +38,7 @@ SECTIONS {
 	BSSSize = SIZEOF(.bss);
 }
 
-HeapStackBegin = BSSRAM + BSSSize;
-HeapStackEnd = ORIGIN(RAM) + LENGTH(RAM);
-HeapStackSize = HeapStackEnd - HeapStackBegin;
-MaxIRQ = 5;
+HeapBegin = BSSRAM + BSSSize;
+HeapSize = ORIGIN(RAM) + LENGTH(RAM) - HeapBegin;
 
 ENTRY(runtime_Start)

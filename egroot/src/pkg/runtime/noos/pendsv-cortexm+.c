@@ -4,6 +4,7 @@ __attribute__ ((naked))
 static void runtime_noos_pendSVHandler() {
 	asm volatile (
 		// Call nextTask with PSP used by current task.
+		"push	{lr}\n\t"
 		"mrs	r0, psp\n\t"
 		"bl		runtime_noos_nextTask\n\t"
 		// Check wheater a context switch is need.
@@ -16,6 +17,6 @@ static void runtime_noos_pendSVHandler() {
 		"subs	r0, #32\n\t" 
 		"ldmia	r0, {r4-r11}\n\t"
 		
-		"1: bx	lr"
+		"1: pop	{pc}"
 	);
 }

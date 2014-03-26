@@ -13,10 +13,10 @@ import (
 	"cortexm/systick"
 )
 
-var stackCap int
+var stackCap uintptr
 
 func initSP(i int) uintptr {
-	return heapStackEnd() - uintptr(i*stackCap)
+	return stackEnd() - uintptr(i)*stackCap
 }
 
 type taskFlags byte
@@ -39,56 +39,38 @@ var (
 )
 
 func init() {
-	stackExp := (stackSize()>>8)&0xff + 1
-	stackNum := int(stackSize()&0xff)>>5 + 1
-	stackCap = (1 << stackExp) * stackNum / 8
-
-	heapStack := heapStack()
+	stackCap = uintptr((1 << stackExp()) * stackFrac() / 8)
+	Heap = heap()
 
 	if MaxTasks() == 0 {
-		if stackCap > len(heapStack) {
-			panicMemory()
-		}
-		stackEnd := len(heapStack) - stackCap
-		heap = heapStack[:stackEnd:stackEnd]
 		return
 	}
 
-	stacksEnd := len(heapStack) - (MaxTasks()+1)*stackCap
-
 	var vt []irq.Vector
-	vtlen := 1 << maxIRQ()
+	vtlen := 1 << vtExp()
 	vtsize := vtlen * int(unsafe.Sizeof(irq.Vector{}))
 
-	heap = allocTop(
-		unsafe.Pointer(&vt), heapStack[:stacksEnd],
-		vtlen, unsafe.Sizeof(irq.Vector{}), uintptr(vtsize),
+	Heap = allocTop(
+		unsafe.Pointer(&vt), Heap,
+		vtlen, unsafe.Sizeof(irq.Vector{}), unsafe.Alignof(irq.Vector{}),
+		uintptr(vtsize),
 	)
-	if heap == nil {
+	if Heap == nil {
 		panicMemory()
 	}
 
-	// There can be some free memory after vector table.
-	irqHeap := heapStack[len(heap)+vtsize : stacksEnd]
-
-	if h := allocBottom(
-		unsafe.Pointer(&tasks), irqHeap,
+	Heap = allocTop(
+		unsafe.Pointer(&tasks), Heap,
 		MaxTasks(), unsafe.Sizeof(taskCtx{}), unsafe.Alignof(taskCtx{}),
-	); h != nil {
-		irqHeap = h
-	} else {
-		heap = allocTop(
-			unsafe.Pointer(&tasks), heap,
-			MaxTasks(), unsafe.Sizeof(taskCtx{}), unsafe.Alignof(taskCtx{}),
-		)
-		if heap == nil {
-			panicMemory()
-		}
+		unsafe.Alignof(taskCtx{}),
+	)
+	if Heap == nil {
+		panicMemory()
 	}
 
 	tasks[0].flags = taskReady
 	for i := 1; i < len(tasks); i++ {
-		tasks[i] = taskCtx{flags: 0}
+		tasks[i].flags = taskEmpty
 	}
 
 	// Use PSP as stack pointer for thread mode.
