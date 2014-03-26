@@ -1,8 +1,12 @@
+/* Stack size: 7/8 KB */
+StackExp = 10;
+StackFrac = 7;
+
+/* One stack, without gorutines */
+MaxTasks = 0;
+VTExp = 0;
+
 INCLUDE stm32/f407_g
 INCLUDE stm32/loadram
-INCLUDE arch/cortexm
-INCLUDE os/noos
+INCLUDE noos-cortexm
 
-stackExp = 10; /* 1 KB */
-stackNum = 7;  /* 7/8 */
-StackSize = (stackExp - 1) << 8 | (stackNum - 1) << 5;
