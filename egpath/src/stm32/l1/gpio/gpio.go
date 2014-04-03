@@ -121,9 +121,9 @@ func (g *Port) Write(bits uint16) {
 }
 
 func (g *Port) Read() uint16 {
-	return uint16(g.odr)
+	return uint16(g.idr)
 }
 
 func (g *Port) Bit(n int) bool {
-	return g.odr&(uint32(1)<<uint(n)) != 0
+	return g.idr&(uint32(1)<<uint(n)) != 0
 }
