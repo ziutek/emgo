@@ -2,10 +2,11 @@ package gotoc
 
 import (
 	"bytes"
-	"io"
 	"go/ast"
+	"io"
 
 	"code.google.com/p/go.tools/go/types"
+	"code.google.com/p/go.tools/go/exact"
 )
 
 type DeclType int
@@ -210,4 +211,12 @@ func dfs(all map[types.Object]*CDD) []*CDD {
 
 func (cdd *CDD) object(ident *ast.Ident) types.Object {
 	return cdd.gtc.object(ident)
+}
+
+func (cdd *CDD) exprType(e ast.Expr) types.Type {
+	return cdd.gtc.exprType(e)
+}
+
+func (cdd *CDD) exprValue(e ast.Expr) exact.Value {
+	return cdd.gtc.exprValue(e)
 }

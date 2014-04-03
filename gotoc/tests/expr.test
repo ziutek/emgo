@@ -83,9 +83,9 @@ int foo_F();
 int foo_F() {
 	int a = 1;
 	(void)((foo_F()+foo_F()));
-	(void)(3*foo_F());
+	(void)((3*foo_F()));
 	int __tmp1 = 2;
-	(void)(3*foo_F());
+	(void)((3*foo_F()));
 	a = __tmp1;
 	return a;
 }

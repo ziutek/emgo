@@ -90,7 +90,7 @@ writeType:
 		w.WriteString("__map")
 
 	case *types.Signature:
-		res, params := cdd.signature(t)
+		res, params := cdd.signature(t, false)
 		w.WriteString(res.typ)
 		dim = append(dim, params)
 		dim = append(dim, res.dim...)
@@ -167,14 +167,21 @@ func (cdd *CDD) results(tup *types.Tuple) (res results) {
 	return
 }
 
-func (cdd *CDD) signature(sig *types.Signature) (res results, params string) {
+func (cdd *CDD) signature(sig *types.Signature, pnames bool) (res results, params string) {
 	params = "("
 	res = cdd.results(sig.Results())
 	if r := sig.Recv(); r != nil {
 		typ, dim, acds := cdd.TypeStr(r.Type())
 		res.acds = append(res.acds, acds...)
-		pname := cdd.NameStr(r, true)
-		params += typ + " " + dimFuncPtr(pname, dim)
+		var pname string
+		if pnames {
+			pname = cdd.NameStr(r, true)
+		}
+		if pname == "" {
+			params += typ + dimFuncPtr("", dim)
+		} else {
+			params += typ + " " + dimFuncPtr(pname, dim)
+		}
 		if sig.Params() != nil {
 			params += ", "
 		}
@@ -187,11 +194,14 @@ func (cdd *CDD) signature(sig *types.Signature) (res results, params string) {
 			v := p.At(i)
 			typ, dim, acds := cdd.TypeStr(v.Type())
 			res.acds = append(res.acds, acds...)
-			name := cdd.NameStr(v, true)
-			if name != "" {
-				params += typ + " " + dimFuncPtr(name, dim)
-			} else {
+			var pname string
+			if pnames {
+				pname = cdd.NameStr(v, true)
+			}
+			if pname == "" {
 				params += typ + dimFuncPtr("", dim)
+			} else {
+				params += typ + " " + dimFuncPtr(pname, dim)
 			}
 		}
 	}

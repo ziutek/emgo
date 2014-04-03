@@ -13,5 +13,5 @@ struct int$int_struct {
 };
 #endif
 // decl
-typedef int$int (*foo_F)(int a, int b);
+typedef int$int (*foo_F)(int, int);
 // end

@@ -2,7 +2,6 @@ package gotoc
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/token"
 	"strconv"
@@ -66,7 +65,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		rhsIsTuple := len(s.Lhs) > 1 && len(s.Rhs) == 1
 
 		if rhsIsTuple {
-			tup := cdd.gtc.ti.Types[s.Rhs[0]].Type.(*types.Tuple)
+			tup := cdd.exprType(s.Rhs[0]).(*types.Tuple)
 			tupName, _ := cdd.tupleName(tup)
 			w.WriteString(tupName)
 			tupName = "__tmp" + cdd.gtc.uniqueId()
@@ -84,9 +83,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			for i, e := range s.Rhs {
 				var t types.Type
 				if s.Tok == token.DEFINE {
-					t = cdd.gtc.ti.Types[e].Type
+					t = cdd.exprType(e)
 				} else {
-					t = cdd.gtc.ti.Types[s.Lhs[i]].Type
+					t = cdd.exprType(s.Lhs[i])
 				}
 				rhs[i] = cdd.ExprStr(e, t)
 				typ[i] = t
@@ -256,9 +255,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 
 	case *ast.ReturnStmt:
-		if cdd.ReturnStmt(w, s, resultT, tup) {
-			end = true
-		}
+		end = cdd.ReturnStmt(w, s, resultT, tup)
 
 	case *ast.SwitchStmt:
 		w.WriteString("switch(0) {\n")
@@ -275,7 +272,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 		var typ types.Type
 		if s.Tag != nil {
-			typ = cdd.gtc.ti.Types[s.Tag].Type
+			typ = cdd.exprType(s.Tag)
 			cdd.Type(w, typ)
 			w.WriteString(" __tag = ")
 			cdd.Expr(w, s.Tag, typ)
@@ -351,8 +348,99 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 		w.WriteString(";\n")
 
+	case *ast.GoStmt:
+		c := s.Call
+		fs, ft, rs, re := cdd.funStr(c.Fun, c.Args)
+
+		type arg struct {
+			l string
+			r string
+			t types.Type
+		}
+
+		n := len(c.Args) + 1
+		if rs != "" {
+			n++
+		}
+
+		argv := make([]arg, n)
+		eval := false
+		n = 0
+
+		if _, ok := c.Fun.(*ast.Ident); ok || rs != "" {
+			argv[n].l = fs
+		} else {
+			argv[n] = arg{"_f", fs, ft}
+			eval = true
+		}
+		n++
+
+		if rs != "" {
+			ev := false
+			if re != nil {
+				if _, ok := re.(*ast.Ident); !ok {
+					ev = true
+				}
+			}
+			if !ev {
+				argv[n].l = rs
+			} else {
+				argv[n] = arg{"_r", rs, cdd.exprType(re)}
+				eval = true
+			}
+			n++
+		}
+
+		tup := cdd.exprType(c.Fun).(*types.Signature).Params()
+		for i, a := range c.Args {
+			s := cdd.ExprStr(a, tup.At(i).Type())
+			_, ok := a.(*ast.Ident)
+			if !ok {
+				_, ok = a.(*ast.BasicLit)
+			}
+			if ok {
+				argv[n].l = s
+			} else {
+				argv[n] = arg{"_" + strconv.Itoa(i), s, cdd.exprType(a)}
+				eval = true
+			}
+			n++
+		}
+
+		if eval {
+			w.WriteString("{\n")
+			cdd.il++
+
+			for _, arg := range argv {
+				if arg.r == "" {
+					continue
+				}
+				t, dim, a := cdd.TypeStr(arg.t)
+				acds = append(acds, a...)
+
+				cdd.indent(w)
+				w.WriteString(t + " " + dimFuncPtr(arg.l, dim) + " = " + arg.r + ";\n")
+			}
+			cdd.indent(w)
+		}
+
+		w.WriteString("go(" + argv[0].l + "(")
+		for i, arg := range argv[1:] {
+			if i > 0 {
+				w.WriteString(", ")
+			}
+			w.WriteString(arg.l)
+		}
+		w.WriteString("));\n")
+
+		if eval {
+			cdd.il--
+			cdd.indent(w)
+			w.WriteString("}\n")
+		}
+
 	default:
-		fmt.Fprintf(w, "#<%T>#", stmt)
+		notImplemented(s)
 	}
 	return
 }

@@ -19,7 +19,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	fname := cdd.NameStr(f, true)
 
 	sig := f.Type().(*types.Signature)
-	res, params := cdd.signature(sig)
+	res, params := cdd.signature(sig, true)
 
 	w.WriteString(res.typ)
 	w.WriteByte(' ')
@@ -178,7 +178,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 		for _, s := range d.Specs {
 			ts := s.(*ast.TypeSpec)
 			to := gtc.object(ts.Name)
-			tt := gtc.ti.Types[ts.Type].Type
+			tt := gtc.exprType(ts.Type)
 			cdd := gtc.newCDD(to, TypeDecl, il)
 			name := cdd.NameStr(to, true)
 
@@ -223,7 +223,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr
 	if cdd.gtc.isGlobal(v) {
 		cdd.copyDecl(w, ";\n") // Global variables may need declaration
 		if val != nil {
-			constInit = cdd.gtc.ti.Types[val].Value != nil
+			constInit = cdd.exprValue(val) != nil
 		}
 	}
 	if constInit {
@@ -253,7 +253,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr
 				cdd.gtc.pkg.Scope().Insert(o)
 				acd := cdd.gtc.newCDD(o, VarDecl, cdd.il)
 				av := *v
-				cdd.gtc.ti.Types[&av] = types.TypeAndValue{Type: at}
+				cdd.gtc.ti.Types[&av] = types.TypeAndValue{Type: at} // BUG: thread-unsafe
 				n := w.Len()
 				acd.varDecl(w, o, aname, &av)
 				w.Truncate(n)
@@ -301,7 +301,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr
 				break
 			}
 			cname := "__cl" + cdd.gtc.uniqueId()
-			ct := cdd.gtc.ti.Types[c].Type
+			ct := cdd.exprType(c)
 			o := types.NewVar(c.Lbrace, cdd.gtc.pkg, cname, ct)
 			cdd.gtc.pkg.Scope().Insert(o)
 			acd := cdd.gtc.newCDD(o, VarDecl, cdd.il)

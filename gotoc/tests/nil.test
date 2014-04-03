@@ -10,7 +10,7 @@ __slice foo_Nil();
 // def
 __slice foo_Nil() {
 	__slice b = {0};
-	b = __NILS;
+	b = __NILSLICE;
 	return b;
 }
 // end
@@ -41,7 +41,7 @@ func Nil() []int {
 __slice foo_Nil();
 // def
 __slice foo_Nil() {
-	return __NILS;
+	return __NILSLICE;
 }
 // end
 
@@ -54,6 +54,6 @@ func Nil(b []byte) bool {
 bool foo_Nil(__slice b);
 // def
 bool foo_Nil(__slice b) {
-	return __EQ(b, __NILS);
+	return b.arr == nil;
 }
 // end

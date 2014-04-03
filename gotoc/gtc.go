@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"code.google.com/p/go.tools/go/types"
+	"code.google.com/p/go.tools/go/exact"
 )
 
 // GTC stores information from type checker need for translation.
@@ -325,3 +326,12 @@ func (gtc *GTC) object(ident *ast.Ident) types.Object {
 	}
 	return o
 }
+
+func (gtc *GTC) exprType(e ast.Expr) types.Type {
+	return gtc.ti.Types[e].Type
+}
+
+func (gtc *GTC) exprValue(e ast.Expr) exact.Value {
+	return gtc.ti.Types[e].Value
+}
+

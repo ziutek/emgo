@@ -151,7 +151,7 @@ var tabSimpleDecl = []simpleDecl{
 
 	{
 		"type F func(a, b int, c byte) byte",
-		"typedef byte (*foo_F)(int a, int b, byte c);",
+		"typedef byte (*foo_F)(int, int, byte);",
 	},
 
 	{"func F(a int)", "void foo_F(int a);"},
@@ -259,7 +259,7 @@ func testDeclFile(fname string) error {
 					d.init += line + "\n"
 
 				default:
-					return fmt.Errorf("%s:%d syntax error", fname, lnum)
+					return fmt.Errorf("%s:%d test syntax error", fname, lnum)
 				}
 				continue
 			}

@@ -140,7 +140,7 @@ func (cdd *CDD) NameStr(o types.Object, direct bool) string {
 	return buf.String()
 }
 
-func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (recv ast.Expr) {
+func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Type, recv ast.Expr) {
 	sel := cdd.gtc.ti.Selections[e]
 	switch sel.Kind() {
 	case types.FieldVal:
@@ -153,6 +153,7 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (recv ast.Exp
 		w.WriteString(e.Sel.Name)
 
 	case types.MethodVal:
+		fun = sel.Obj().Type()
 		cdd.Name(w, sel.Obj(), true)
 		if _, ok := sel.Recv().(*types.Pointer); !ok {
 			// Method has non-pointer receiver so there is guaranteed
@@ -165,7 +166,7 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (recv ast.Exp
 			// e.X is pointer.
 			recv = e.X
 		} else {
-			// e.X isn't pointer but pointer receiver is need.
+			// e.X isn't a pointer but the pointer receiver is need.
 			recv = &ast.UnaryExpr{Op: token.AND, X: e.X}
 		}
 
@@ -176,6 +177,115 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (recv ast.Exp
 		notImplemented(e)
 	}
 	return
+}
+
+func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
+	name := b.Name()
+
+	switch name {
+	case "len":
+		switch t := cdd.exprType(args[0]).(type) {
+		case *types.Slice, *types.Map, *types.Basic: // Basic == String
+			return "len", ""
+
+		case *types.Array:
+			return "sizeof", ""
+
+		default:
+			panic(t)
+		}
+
+	case "copy":
+		switch t := cdd.exprType(args[1]).(type) {
+		case *types.Basic: // string
+			return "__STRCPY", ""
+
+		case *types.Slice:
+			typ, dim, _ := cdd.TypeStr(t.Elem())
+			return "__SLICPY", typ + dimFuncPtr("", dim)
+
+		default:
+			panic(t)
+		}
+	}
+
+	return name, ""
+}
+
+func (cdd *CDD) funStr(fe ast.Expr, args []ast.Expr) (fs string, ft types.Type, rs string, re ast.Expr) {
+	switch f := fe.(type) {
+	case *ast.SelectorExpr:
+		buf := new(bytes.Buffer)
+		ft, re = cdd.SelectorExpr(buf, f)
+		fs = buf.String()
+		if re != nil {
+			rs = cdd.ExprStr(re, nil)
+		}
+		return
+
+	case *ast.Ident:
+		switch o := cdd.object(f).(type) {
+		case *types.Builtin:
+			fs, rs = cdd.builtin(o, args)
+			return
+
+		default:
+			fs = cdd.NameStr(o, true)
+			ft = o.Type()
+			return
+		}
+	}
+	fs = cdd.ExprStr(fe, nil)
+	ft = cdd.exprType(fe)
+	return
+}
+
+func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
+	switch t := cdd.exprType(e.Fun).(type) {
+	case *types.Signature:
+		fun, _, recv, _ := cdd.funStr(e.Fun, e.Args)
+		w.WriteString(fun)
+		w.WriteByte('(')
+		if recv != "" {
+			w.WriteString(recv)
+			if len(e.Args) > 0 {
+				w.WriteString(", ")
+			}
+		}
+		tup := t.Params()
+		for i, a := range e.Args {
+			if i != 0 {
+				w.WriteString(", ")
+			}
+			cdd.Expr(w, a, tup.At(i).Type())
+		}
+		w.WriteByte(')')
+
+	default:
+		arg := e.Args[0]
+		switch typ := cdd.exprType(e.Fun).(type) {
+		case *types.Slice:
+			switch cdd.exprType(arg).(type) {
+			case *types.Basic: // string
+				w.WriteString("__NEWSTR(")
+				cdd.Expr(w, arg, typ)
+				w.WriteByte(')')
+
+			default: // slice
+				w.WriteByte('(')
+				cdd.Expr(w, arg, typ)
+				w.WriteByte(')')
+			}
+
+		default:
+			w.WriteString("(")
+			dim, _ := cdd.Type(w, typ)
+			w.WriteString(dimFuncPtr("", dim))
+			w.WriteString(")(")
+			cdd.Expr(w, arg, typ)
+			w.WriteString(")")
+		}
+	}
 }
 
 func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
@@ -190,11 +300,12 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 	switch e := expr.(type) {
 	case *ast.BinaryExpr:
 		op := e.Op.String()
-		ltyp := cdd.gtc.ti.Types[e.X].Type
-		rtyp := cdd.gtc.ti.Types[e.Y].Type
+		ltyp := cdd.exprType(e.X)
+		rtyp := cdd.exprType(e.Y)
 
 		lhs := cdd.ExprStr(e.X, ltyp)
 		rhs := cdd.ExprStr(e.Y, rtyp)
+
 		if op == "==" || op == "!=" {
 			eq(w, lhs, op, rhs, ltyp, rtyp)
 			break
@@ -214,69 +325,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.Expr(w, e.X, nil)
 
 	case *ast.CallExpr:
-		var recv ast.Expr
-
-		switch t := cdd.gtc.ti.Types[e.Fun].Type.(type) {
-		case *types.Signature:
-			switch f := e.Fun.(type) {
-			case *ast.SelectorExpr:
-				recv = cdd.SelectorExpr(w, f)
-
-			case *ast.Ident:
-				switch o := cdd.object(f).(type) {
-				case *types.Builtin:
-					cdd.builtin(w, o, e.Args)
-					return
-
-				default:
-					cdd.Name(w, o, true)
-				}
-
-			default:
-				cdd.Expr(w, f, nil)
-			}
-
-			w.WriteByte('(')
-			if recv != nil {
-				cdd.Expr(w, recv, nil)
-				if len(e.Args) > 0 {
-					w.WriteString(", ")
-				}
-			}
-			tup := t.Params()
-			for i, a := range e.Args {
-				if i != 0 {
-					w.WriteString(", ")
-				}
-				cdd.Expr(w, a, tup.At(i).Type())
-			}
-			w.WriteByte(')')
-
-		default:
-			arg := e.Args[0]
-			switch typ := cdd.gtc.ti.Types[e.Fun].Type.(type) {
-			case *types.Slice:
-				switch cdd.gtc.ti.Types[arg].Type.(type) {
-				case *types.Basic: // string
-					w.WriteString("__NEWSTR(")
-					cdd.Expr(w, arg, typ)
-					w.WriteByte(')')
-
-				default: // slice
-					w.WriteByte('(')
-					cdd.Expr(w, arg, typ)
-					w.WriteByte(')')
-				}
-
-			default:
-				w.WriteString("((")
-				dim, _ := cdd.Type(w, typ)
-				w.WriteString(dimFuncPtr("", dim))
-				w.WriteString(")(")
-				cdd.Expr(w, arg, typ)
-				w.WriteString("))")
-			}
-		}
+		cdd.CallExpr(w, e)
 
 	case *ast.Ident:
 		if e.Name == "nil" {
@@ -286,7 +335,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		}
 
 	case *ast.IndexExpr:
-		typ := cdd.gtc.ti.Types[e.X].Type
+		typ := cdd.exprType(e.X)
 
 		pt, isPtr := typ.(*types.Pointer)
 		if isPtr {
@@ -331,7 +380,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 
 	case *ast.KeyValueExpr:
 		w.WriteByte('.')
-		kt := cdd.gtc.ti.Types[e.Key].Type
+		kt := cdd.exprType(e.Key)
 		if i, ok := e.Key.(*ast.Ident); ok && kt == nil {
 			// e.Key is field name
 			w.WriteString(i.Name)
@@ -360,7 +409,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		notImplemented(e)
 
 	case *ast.CompositeLit:
-		typ := cdd.gtc.ti.Types[e].Type
+		typ := cdd.exprType(e)
 
 		switch t := typ.(type) {
 		case *types.Array:
@@ -401,6 +450,38 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			w.WriteByte('}')
 		}
 
+	case *ast.FuncLit:
+		//fname := "__func" + cdd.gtc.uniqueId()
+		//w.WriteString(fname)
+		fname := "func"
+
+		fd := &ast.FuncDecl{
+			Name: &ast.Ident{NamePos: e.Type.Func, Name: fname},
+			Type: e.Type,
+			Body: e.Body,
+		}
+		sig := cdd.exprType(e).(*types.Signature)
+		cdd.gtc.ti.Defs[fd.Name] = types.NewFunc(e.Type.Func, cdd.gtc.pkg, fname, sig)
+
+		w.WriteString("({\n")
+		cdd.il++
+
+		cdds := cdd.gtc.FuncDecl(fd, cdd.il)
+		for _, c := range cdds {
+			for u, typPtr := range c.BodyUses {
+				cdd.BodyUses[u] = typPtr
+			}
+			cdd.indent(w)
+			w.Write(c.Def)
+		}
+
+		cdd.indent(w)
+		w.WriteString(fname + ";\n")
+
+		cdd.il--
+		cdd.indent(w)
+		w.WriteString("})")
+
 	default:
 		fmt.Fprintf(w, "!%v<%T>!", e, e)
 	}
@@ -409,7 +490,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 	sx := cdd.ExprStr(e.X, nil)
 
-	typ := cdd.gtc.ti.Types[e.X].Type
+	typ := cdd.exprType(e.X)
 	pt, isPtr := typ.(*types.Pointer)
 	if isPtr {
 		typ = pt.Elem()
@@ -547,51 +628,6 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 	default:
 		panic(e)
 	}
-}
-
-func (cdd *CDD) builtin(w *bytes.Buffer, b *types.Builtin, args []ast.Expr) {
-	etm := cdd.gtc.ti.Types
-
-	switch name := b.Name(); name {
-	case "len":
-		switch t := etm[args[0]].Type.(type) {
-		case *types.Slice, *types.Map, *types.Basic: // Basic == String
-			w.WriteString("len(")
-
-		case *types.Array:
-			w.WriteString("sizeof(")
-
-		default:
-			panic(t)
-		}
-
-	case "copy":
-		switch t := etm[args[1]].Type.(type) {
-		case *types.Basic: // string
-			w.WriteString("__STRCPY(")
-
-		case *types.Slice:
-			w.WriteString("__SLICPY(")
-			dim, _ := cdd.Type(w, t.Elem())
-			w.WriteString(dimFuncPtr("", dim))
-			w.WriteString(", ")
-
-		default:
-			panic(t)
-		}
-
-	default:
-		w.WriteString(name + "(")
-	}
-
-	for i, a := range args {
-		if i != 0 {
-			w.WriteString(", ")
-		}
-		cdd.Expr(w, a, nil)
-	}
-	w.WriteByte(')')
-
 }
 
 func (cdd *CDD) ExprStr(expr ast.Expr, nilT types.Type) string {

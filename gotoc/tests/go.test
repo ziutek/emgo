@@ -1,0 +1,74 @@
+// Go code:
+func F() {
+	go F()
+}
+// C code:
+// decl
+void foo_F();
+// def
+void foo_F() {
+	go(foo_F());
+}
+// end
+
+// Go code:
+func F(i int) {
+	go F(2*i)
+}
+// C code:
+// decl
+void foo_F(int i);
+// def
+void foo_F(int i) {
+	{
+		int _0 = (2*i);
+		go(foo_F(_0));
+	}
+}
+// end
+
+// Go code:
+type I int
+
+func (i I) F(k int) int {
+	go i.F(int(i) * k)
+	return int(i) - k
+}
+// C code:
+// decl
+typedef int foo_I;
+// decl
+int foo_I_F(foo_I i, int k);
+// def
+int foo_I_F(foo_I i, int k) {
+	{
+		int _0 = ((int)(i)*k);
+		go(foo_I_F(i, _0));
+	}
+	return ((int)(i)-k);
+}
+// end
+
+// Go code:
+func F(a []byte) func([]byte) {
+	go F(a[1:])(a[:1])
+	return func(b []byte) {F(b)}
+}
+// C code:
+// decl
+void (*foo_F(__slice a))(__slice);
+// def
+void (*foo_F(__slice a))(__slice) {
+	{
+		void (*_f)(__slice) = foo_F(__SLICEL(a, byte*, 1));
+		__slice _0 = __SLICEH(a, 1);
+		go(_f(_0));
+	}
+	return ({
+		void func(__slice b) {
+			foo_F(b);
+		}
+		func;
+	});
+}
+// end

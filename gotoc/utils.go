@@ -11,7 +11,7 @@ import (
 )
 
 func notImplemented(n ast.Node) {
-	fmt.Fprintf(os.Stderr, "not implemented: %v <%T>\n", n, n)
+	fmt.Fprintf(os.Stderr, "not implemented: %T\n", n)
 	os.Exit(1)
 }
 

@@ -1,0 +1,89 @@
+// Go code:
+func F(a, b int) int {
+	return func(x int) int {
+		return x + b
+	}(a)
+}
+// C code:
+// decl
+int foo_F(int a, int b);
+// def
+int foo_F(int a, int b) {
+	return ({
+		int func(int x) {
+			return (x+b);
+		}
+		func;
+	})(a);
+}
+// end
+
+// Go code:
+func F(a, b int) (int, int) {
+	return func(x int) (int, int) {
+		return x + b, x - b
+	}(a)
+}
+// C code:
+// decl
+struct int$int_struct;
+typedef struct int$int_struct int$int;
+// def
+#ifndef $int$int
+#define $int$int
+struct int$int_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+int$int foo_F(int a, int b);
+// def
+int$int foo_F(int a, int b) {
+	return ({
+		int$int func(int x) {
+			return (int$int){(x+b), (x-b)};
+		}
+		func;
+	})(a);
+}
+// end
+
+// Go code:
+func F(b bool) func(int) bool{
+	var g func(int) bool
+	if b {
+		g = func(a int) bool {
+			return a > 0
+		}
+	} else {
+		g = func(a int) bool {
+			return a < 0
+		}
+	}
+	return g
+}
+// C code:
+// decl
+bool (*foo_F(bool b))(int);
+// def
+bool (*foo_F(bool b))(int) {
+	bool (*g)(int) = {0};
+	if (b) {
+		g = ({
+			bool func(int a) {
+				return (a>0);
+			}
+			func;
+		});
+	} else {
+		g = ({
+			bool func(int a) {
+				return (a<0);
+			}
+			func;
+		});
+	}
+	return g;
+}
+// end
