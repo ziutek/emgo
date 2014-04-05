@@ -1,1 +1,71 @@
-// TODO: test value vs pointer receiver
+// Go code:
+type T int
+
+func (t T) F() {
+	t.F()
+}
+// C code:
+// decl
+typedef int foo_T;
+// decl
+void foo_T_F(foo_T t);
+// def
+void foo_T_F(foo_T t) {
+	foo_T_F(t);
+}
+// end
+
+// Go code:
+type T int
+
+func (t T) F() {
+	p := &t
+	p.F()
+}
+// C code:
+// decl
+typedef int foo_T;
+// decl
+void foo_T_F(foo_T t);
+// def
+void foo_T_F(foo_T t) {
+	foo_T *p = &t;
+	foo_T_F(*p);
+}
+// end
+
+// Go code:
+type T int
+
+func (t *T) F() {
+	t.F()
+}
+// C code:
+// decl
+typedef int foo_T;
+// decl
+void foo_T_F(foo_T *t);
+// def
+void foo_T_F(foo_T *t) {
+	foo_T_F(t);
+}
+// end
+
+// Go code:
+type T int
+
+func (t *T) F() {
+	v := *t
+	v.F()
+}
+// C code:
+// decl
+typedef int foo_T;
+// decl
+void foo_T_F(foo_T *t);
+// def
+void foo_T_F(foo_T *t) {
+	foo_T v = *t;
+	foo_T_F(&v);
+}
+// end

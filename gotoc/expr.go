@@ -155,19 +155,21 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Ty
 	case types.MethodVal:
 		fun = sel.Obj().Type()
 		cdd.Name(w, sel.Obj(), true)
-		if _, ok := sel.Recv().(*types.Pointer); !ok {
-			// Method has non-pointer receiver so there is guaranteed
-			// that e.X isn't a pointer.
-			recv = e.X
-			break
-		}
-		// Method has pointer receiver.
-		if sel.Indirect() {
-			// e.X is pointer.
-			recv = e.X
+		rtyp := fun.(*types.Signature).Recv().Type()
+		if _, ok := rtyp.(*types.Pointer); ok {
+			// Method with pointer receiver.
+			if sel.Indirect() {
+				recv = e.X
+			} else {
+				recv = &ast.UnaryExpr{Op: token.AND, X: e.X}
+			}
 		} else {
-			// e.X isn't a pointer but the pointer receiver is need.
-			recv = &ast.UnaryExpr{Op: token.AND, X: e.X}
+			// Method with non-pointer receiver.
+			if sel.Indirect() {
+				recv = &ast.UnaryExpr{Op: token.MUL, X: e.X}
+			} else {
+				recv = e.X
+			}
 		}
 
 	case types.PackageObj:
@@ -278,12 +280,12 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 			}
 
 		default:
-			w.WriteString("(")
+			w.WriteString("((")
 			dim, _ := cdd.Type(w, typ)
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteString(")(")
 			cdd.Expr(w, arg, typ)
-			w.WriteString(")")
+			w.WriteString("))")
 		}
 	}
 }

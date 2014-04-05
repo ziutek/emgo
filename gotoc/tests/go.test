@@ -42,10 +42,10 @@ int foo_I_F(foo_I i, int k);
 // def
 int foo_I_F(foo_I i, int k) {
 	{
-		int _0 = ((int)(i)*k);
+		int _0 = (((int)(i))*k);
 		go(foo_I_F(i, _0));
 	}
-	return ((int)(i)-k);
+	return (((int)(i))-k);
 }
 // end
 

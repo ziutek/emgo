@@ -22,8 +22,8 @@ byte$byte foo_F(int a, int b) {
 	byte x = {0};
 	byte y = {0};
 	{
-		byte __tmp0 = ((byte)(a)+y);
-		byte __tmp1 = ((byte)(b)+x);
+		byte __tmp0 = (((byte)(a))+y);
+		byte __tmp1 = (((byte)(b))+x);
 		x = __tmp0;
 		y = __tmp1;
 		goto __end;
