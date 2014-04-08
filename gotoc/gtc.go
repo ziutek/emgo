@@ -191,7 +191,6 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 		case FuncDecl:
 			fcs = append(fcs, cdd)
-
 		}
 	}
 
@@ -218,7 +217,9 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	if err := write("// var  decl\n", wh, wc); err != nil {
 		return err
 	}
+	cddm = make(map[types.Object]*CDD)
 	for _, cdd := range vcs {
+		cddm[cdd.Origin] = cdd
 		if err := cdd.WriteDecl(wh, wc); err != nil {
 			return err
 		}
@@ -276,10 +277,15 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		buf.WriteString("\t" + upath(i.Path()) + "_init();\n")
 	}
 
-	for _, cdd := range vcs {
-		// BUG: use Types.Info.InitOrder
-		buf.Write(cdd.Init)
+	for _, i := range gtc.ti.InitOrder {
+		for _, l := range i.Lhs {
+			cdd := cddm[l]
+			if cdd != nil {
+				buf.Write(cdd.Init)
+			}
+		}
 	}
+
 	for _, cdd := range fcs {
 		buf.Write(cdd.Init)
 	}

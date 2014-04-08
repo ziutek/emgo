@@ -58,6 +58,18 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 	cdd.Complexity++
 
 	switch s := stmt.(type) {
+	case *ast.DeclStmt:
+		cdds := cdd.gtc.Decl(s.Decl, cdd.il)
+		for _, c := range cdds {
+			for u, typPtr := range c.BodyUses {
+				cdd.BodyUses[u] = typPtr
+			}
+			w.Write(c.Decl)
+		}
+		for _, c := range cdds {
+			w.Write(c.Def)
+		}
+
 	case *ast.AssignStmt:
 		rhs := make([]string, len(s.Lhs))
 		typ := make([]types.Type, len(s.Lhs))
@@ -457,18 +469,6 @@ func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string, tu
 	cdd.il++
 	for _, stmt := range bs.List {
 		switch s := stmt.(type) {
-		case *ast.DeclStmt:
-			cdds := cdd.gtc.Decl(s.Decl, cdd.il)
-			for _, c := range cdds {
-				for u, typPtr := range c.BodyUses {
-					cdd.BodyUses[u] = typPtr
-				}
-				w.Write(c.Decl)
-			}
-			for _, c := range cdds {
-				w.Write(c.Def)
-			}
-
 		case *ast.LabeledStmt:
 			cdd.label(w, s.Label.Name, "")
 			cdd.indent(w)

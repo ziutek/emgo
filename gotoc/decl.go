@@ -139,7 +139,6 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 				cdd := gtc.newCDD(c, ConstDecl, il)
 
-				cdd.indent(w)
 				w.WriteString("#define ")
 				cdd.Name(w, c, true)
 				w.WriteByte(' ')
@@ -165,6 +164,9 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				if i < len(vals) {
 					val = vals[i]
 				}
+				if i > 0 {
+					cdd.indent(w)
+				}
 				acds := cdd.varDecl(w, v, name, val)
 
 				w.Reset()
@@ -175,14 +177,16 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 		}
 
 	case token.TYPE:
-		for _, s := range d.Specs {
+		for i, s := range d.Specs {
 			ts := s.(*ast.TypeSpec)
 			to := gtc.object(ts.Name)
 			tt := gtc.exprType(ts.Type)
 			cdd := gtc.newCDD(to, TypeDecl, il)
 			name := cdd.NameStr(to, true)
 
-			cdd.indent(w)
+			if i > 0 {
+				cdd.indent(w)
+			}
 
 			switch typ := tt.(type) {
 			case *types.Struct:
@@ -213,7 +217,6 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr) (acds []*CDD) {
 	typ := v.Type()
 
-	cdd.indent(w)
 	dim, acds := cdd.Type(w, typ)
 	w.WriteByte(' ')
 	w.WriteString(dimFuncPtr(name, dim))
@@ -356,6 +359,7 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) {
 		cdd.indent(w)
 		w.WriteString("#define $" + name + "\n")
 	}
+	cdd.indent(w);
 	w.WriteString("struct ")
 	w.WriteString(name)
 	w.WriteByte('_')
