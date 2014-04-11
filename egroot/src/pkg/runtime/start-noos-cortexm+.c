@@ -1,9 +1,7 @@
 // +build noos
 // +build cortexm0 cortexm3 cortexm4 cortexm4f
 
-#include "types/types.h"
 #include "builtin.h"
-#include "runtime.h"
 
 int main_init();
 int main_main();

@@ -36,6 +36,8 @@ type CDD struct {
 
 	gtc  *GTC
 	il   int  // indentation level
+	
+	init bool // true if generated code will be placed in init() function
 	body bool // true if translation process in function body
 	dfsm int8
 }
@@ -170,6 +172,11 @@ func (cdd *CDD) DetermineInline() {
 
 func (cdd *CDD) addObject(o types.Object, direct bool) {
 	if o == cdd.Origin {
+		return
+	}
+	if cdd.init && !cdd.gtc.isImported(o) {
+		// Don't save references to package objects if used in init() function.
+		// This is mainly for global variables initialization in init(). 
 		return
 	}
 	if cdd.body {

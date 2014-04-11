@@ -1,21 +1,4 @@
-// All external symbols as byte to prevent compiler to optimize
-// any runtime align checks.
-extern byte HeapBegin, HeapSize, StackExp, StackFrac, StackEnd;
-
-static inline
-uint runtime_noos_stackExp() {
-	return (uint)&StackExp;
-}
-
-static inline
-uint runtime_noos_stackFrac() {
-	return (uint)&StackFrac;
-}
-
-static inline
-uint runtime_noos_stackEnd() {
-	return (uintptr)&StackEnd;
-}
+extern byte HeapBegin, HeapSize;
 
 static inline
 __slice runtime_noos_heap() {

@@ -28,9 +28,9 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	cdds = append(cdds, res.acds...)
 	cdds = append(cdds, cdd)
 
-	init := (f.Name() == "init")
+	cdd.init = (f.Name() == "init")
 
-	if !init {
+	if !cdd.init {
 		cdd.copyDecl(w, ";\n")
 	}
 
@@ -104,7 +104,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	}
 	cdd.copyDef(w)
 
-	if init {
+	if cdd.init {
 		cdd.Init = []byte("\t" + fname + "();\n")
 	}
 	return
@@ -324,7 +324,8 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr
 		}
 
 		if assign {
-			// Ordinary assignment
+			// Ordinary assignment gos to the init() function
+			cdd.init = true
 			w.WriteByte('\t')
 			w.WriteString(name)
 			w.WriteString(" = ")
@@ -355,9 +356,9 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) {
 
 	if tuple {
 		cdd.indent(w)
-		w.WriteString("#ifndef $" + name + "\n")
+		w.WriteString("#ifndef _" + name + "\n")
 		cdd.indent(w)
-		w.WriteString("#define $" + name + "\n")
+		w.WriteString("#define _" + name + "\n")
 	}
 	cdd.indent(w);
 	w.WriteString("struct ")

@@ -29,8 +29,17 @@ func init() {
 	LED.SetMode(Blue, gpio.Out)
 }
 
+type Args struct {
+	x, y, z int
+	u, v, w int
+}
+
+func F(a Args, b int) int
+
 func main() {
-	const wait = 2e6
+	a := Args{11, 22, 33, 44, 55, 66}
+	wait := 2e6 + F(a, 77)
+	wait += a.x
 	for {
 		LED.ClearBit(Green)
 		LED.SetBit(Orange)

@@ -22,6 +22,14 @@ func (r *Reg8) Bit(n int) bool {
 	return r.r&(uint8(1)<<uint(n)) != 0
 }
 
+func (r *Reg8) SetBits(bits, mask uint8) {
+	r.r = r.r &^ mask | bits
+}
+
+func (r *Reg8) Bits(mask uint8) uint8 {
+	return r.r & mask
+}
+
 func (r *Reg8) Read() uint8 {
 	return r.r
 }
@@ -50,6 +58,14 @@ func (r *Reg16) Bit(n int) bool {
 	return r.r&(uint16(1)<<uint(n)) != 0
 }
 
+func (r *Reg16) SetBits(bits, mask uint16) {
+	r.r = r.r &^ mask | bits
+}
+
+func (r *Reg16) Bits(mask uint16) uint16 {
+	return r.r & mask
+}
+
 func (r *Reg16) Read() uint16 {
 	return r.r
 }
@@ -76,6 +92,14 @@ func (r *Reg32) ClearBit(n int) {
 
 func (r *Reg32) Bit(n int) bool {
 	return r.r&(uint32(1)<<uint(n)) != 0
+}
+
+func (r *Reg32) SetBits(bits, mask uint32) {
+	r.r = r.r &^ mask | bits
+}
+
+func (r *Reg32) Bits(mask uint32) uint32 {
+	return r.r & mask
 }
 
 func (r *Reg32) Read() uint32 {

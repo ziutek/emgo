@@ -209,6 +209,7 @@ func (cdd *CDD) signature(sig *types.Signature, pnames bool) (res results, param
 	return
 }
 
+// BUG: this mapping can be ambiguous
 func symToDol(r rune) rune {
 	switch r {
 	case '*', '(', ')', '[', ']':

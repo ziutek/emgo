@@ -116,7 +116,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		}
 	}
 
-	// Find all imported packages refferenced by exported code.
+	// Classify all imported packages.
 	imp := make(imports)
 	for _, cdd := range cdds {
 		if cdd.Typ == ImportDecl {

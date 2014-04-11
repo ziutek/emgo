@@ -11,6 +11,7 @@ import (
 )
 
 var archMap = map[string]string{
+	"cortexm0":  "-mcpu=cortex-m0 -mthumb -mfloat-abi=soft",
 	"cortexm3":  "-mcpu=cortex-m3 -mthumb -mfloat-abi=soft",
 	"cortexm4":  "-mcpu=cortex-m4 -mthumb -mfloat-abi=soft",
 	"cortexm4f": "-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16",
@@ -85,7 +86,7 @@ const (
 func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	cflags := CFLAGS{
 		Dbg:  "-g",
-		Opt:  "-O0 -fno-common -freg-struct-return",
+		Opt:  "-Os -fno-delete-null-pointer-checks -fno-common -freg-struct-return",
 		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-missing-braces -Wno-unused-label",
 		Incl: "-I" + filepath.Join(ctx.GOROOT, "src"),
 	}

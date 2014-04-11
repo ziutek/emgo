@@ -10,6 +10,7 @@ delay
 mmio
 
 cortexm
+cortexm/fpu
 cortexm/irq
 cortexm/systick
 cortexm/sleep

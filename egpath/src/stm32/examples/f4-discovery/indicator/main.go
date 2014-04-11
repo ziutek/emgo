@@ -23,7 +23,7 @@ func init() {
 
 	periph.AHB1ClockEnable(periph.GPIOD)
 	periph.AHB1Reset(periph.GPIOD)
-	
+
 	LED.SetMode(Green, gpio.Out)
 	LED.SetMode(Orange, gpio.Out)
 	LED.SetMode(Red, gpio.Out)

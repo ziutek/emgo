@@ -8,7 +8,7 @@
 
 // TODO: Implement full aligned copy using LDM and STM
 // and check difference on real Cortex-M application:
-// microcontroler with small SRAM and instructions read
+// a microcontroler with small SRAM and instructions read
 // from Flash (all Flash acceleration on).
 
 // void memmove(unsafe_Pointer dst, unsafe.Pointer, src, uint n);
@@ -24,27 +24,27 @@ memcpy:
 	blo  10f
 
 // Forward copy
-	cmp    r2, #4
+	cmp    r2, 4
 	itt    lo
 	movlo  r3, r2
 	blo    5f
 
 	// calculate number of bytes to copy
 	// to make dst (r0) word aligned
-	ands   r3, r0, #3
+	ands   r3, r0, 3
 	itt    ne
-	rsbne  r3, #4
+	rsbne  r3, 4
 	bne    5f
 
 	// copy words
 6:
-	subs   r2, #4
+	subs   r2, 4
 	ittt   hs
-	ldrhs  r3, [r1], #4
-	strhs  r3, [r0], #4
+	ldrhs  r3, [r1], 4
+	strhs  r3, [r0], 4
 	bhs    6b
 
-	adds  r2, #4
+	adds  r2, 4
 	beq   9f
 	mov   r3, r2
 
@@ -59,14 +59,14 @@ memcpy:
 	.byte  (2f-0b)/2
 	.byte  (1f-0b)/2
 1:
-	ldrb  r3, [r1], #1
-	strb  r3, [r0], #1
+	ldrb  r3, [r1], 1
+	strb  r3, [r0], 1
 2:
-	ldrb  r3, [r1], #1
-	strb  r3, [r0], #1
+	ldrb  r3, [r1], 1
+	strb  r3, [r0], 1
 3:
-	ldrb  r3, [r1], #1
-	strb  r3, [r0], #1
+	ldrb  r3, [r1], 1
+	strb  r3, [r0], 1
 4:
 	bne  6b
 9:
@@ -77,25 +77,25 @@ memcpy:
 	add  r1, r2
 	add  r0, r2
 
-	cmp    r2, #4
+	cmp    r2, 4
 	itt    lo
 	movlo  r3, r2
 	blo    5f
 
 	// calculate number of bytes to copy
 	// to make dst (r0) word aligned
-	ands  r3, r0, #3
+	ands  r3, r0, 3
 	bne   5f
 
 	// copy words
 6:
-	subs   r2, #4
+	subs   r2, 4
 	ittt   hs
-	ldrhs  r3, [r1, #-4]!
-	strhs  r3, [r0, #-4]!
+	ldrhs  r3, [r1, -4]!
+	strhs  r3, [r0, -4]!
 	bhs    6b
 
-	adds  r2, #4
+	adds  r2, 4
 	beq   9f
 	mov   r3, r2
 
@@ -110,14 +110,14 @@ memcpy:
 	.byte  (2f-0b)/2
 	.byte  (1f-0b)/2
 1:
-	ldrb  r3, [r1, #-1]!
-	strb  r3, [r0, #-1]!
+	ldrb  r3, [r1, -1]!
+	strb  r3, [r0, -1]!
 2:
-	ldrb  r3, [r1, #-1]!
-	strb  r3, [r0, #-1]!
+	ldrb  r3, [r1, -1]!
+	strb  r3, [r0, -1]!
 3:
-	ldrb  r3, [r1, #-1]!
-	strb  r3, [r0, #-1]!
+	ldrb  r3, [r1, -1]!
+	strb  r3, [r0, -1]!
 4:
 	bne  6b
 9:

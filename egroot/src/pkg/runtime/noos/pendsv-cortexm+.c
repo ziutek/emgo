@@ -1,22 +1,30 @@
-// +build cortexm0 cortexm3 cortexm4 cortexm4f
+// +build cortexm3 cortexm4
 
-__attribute__ ((naked))
-static void runtime_noos_pendSVHandler() {
+__attribute__ ((naked)) static
+void runtime_noos_pendSVHandler() {
 	asm volatile (
-		// Call nextTask with PSP used by current task.
 		"push	{lr}\n\t"
 		"mrs	r0, psp\n\t"
+		
+		// Call nextTask with SP used by current task.
 		"bl		runtime_noos_nextTask\n\t"
-		// Check wheater a context switch is need.
+		
+		// Check wheater the context switch is need (r0 contains taskInfo.sp
+		// for next task or 0 if context switch isn't need).
 		"cbz	r0, 1f\n\t"
 		
+		// Save the second part of the context of the current task.
 		"mrs	r1, psp\n\t"
 		"stmdb	r1, {r4-r11}\n\t"
-		// nextTask returns PSP before stacking.
-		"msr	psp, r0\n\t"
-		"subs	r0, #32\n\t" 
-		"ldmia	r0, {r4-r11}\n\t"
 		
-		"1: pop	{pc}"
+		// Restore the second part of the context of the next task.
+		"msr	psp, r0\n\t"
+		"subs	r0, 8*4\n\t" 
+		"ldm	r0, {r4-r11}\n\t"
+		
+		"1:\n\t"
+	
+		"pop	{pc}"
+		:: "X" (runtime_noos_nextTask)
 	);
 }

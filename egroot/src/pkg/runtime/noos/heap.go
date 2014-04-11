@@ -2,13 +2,7 @@ package noos
 
 import "unsafe"
 
-var Heap []byte
-
-func stackExp() uint
- 
-func stackFrac() uint
-
-func stackEnd() uintptr
+var Heap = heap()
 
 func heap() []byte
 
