@@ -4,10 +4,10 @@ func S(s string) string {
 }
 // C code:
 // decl
-string foo_S(string s);
+string foo$S(string s$);
 // def
-string foo_S(string s) {
-	return s;
+string foo$S(string s$) {
+	return s$;
 }
 // end
 
@@ -17,10 +17,10 @@ func S(s string) string {
 }
 // C code:
 // decl
-string foo_S(string s);
+string foo$S(string s$);
 // def
-string foo_S(string s) {
-	return __SSLICEL(s, 0);
+string foo$S(string s$) {
+	return SSLICEL(s$, 0);
 }
 // end
 
@@ -30,10 +30,10 @@ func S(s string) string {
 }
 // C code:
 // decl
-string foo_S(string s);
+string foo$S(string s$);
 // def
-string foo_S(string s) {
-	return __SSLICEH(s, len(s));
+string foo$S(string s$) {
+	return SSLICEH(s$, len(s$));
 }
 // end
 
@@ -43,9 +43,9 @@ func S(s string) string {
 }
 // C code:
 // decl
-string foo_S(string s);
+string foo$S(string s$);
 // def
-string foo_S(string s) {
-	return __SSLICELH(s, 0, len(s));
+string foo$S(string s$) {
+	return SSLICELH(s$, 0, len(s$));
 }
 // end

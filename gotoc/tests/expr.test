@@ -6,12 +6,12 @@ func CompositeLitSlice() int {
 }
 // C code:
 // decl
-int foo_CompositeLitSlice();
+int foo$CompositeLitSlice();
 // def
-int foo_CompositeLitSlice() {
-	__slice a = (__slice){(int[][2]){{1, 2}, {3, 4}, {4, 5}}, 3, 3};
-	__slice b = (__slice){(int(*[])[2]){&((int(*)[2])a.arr)[0], &((int(*)[2])a.arr)[1], &((int(*)[2])a.arr)[2]}, 3, 3};
-	return len(b);
+int foo$CompositeLitSlice() {
+	slice a$ = (slice){(int[][2]){{1, 2}, {3, 4}, {4, 5}}, 3, 3};
+	slice b$ = (slice){(int(*[])[2]){&((int(*)[2])a$.arr)[0], &((int(*)[2])a$.arr)[1], &((int(*)[2])a$.arr)[2]}, 3, 3};
+	return len(b$);
 }
 // end
 
@@ -26,18 +26,18 @@ func CompositeLitStruct() int {
 }
 // C code:
 // decl
-int foo_CompositeLitStruct();
+int foo$CompositeLitStruct();
 // def
-int foo_CompositeLitStruct() {
-	struct S_struct;
-	typedef struct S_struct S;
-	struct S_struct {
+int foo$CompositeLitStruct() {
+	struct S$_struct;
+	typedef struct S$_struct S$;
+	struct S$_struct {
 		int a;
 		int b;
 	};
-	S s = (S){1, 2};
-	s = (S){.a = 2, .b = 3};
-	return (s.a+s.b);
+	S$ s$ = (S$){1, 2};
+	s$ = (S$){.a = 2, .b = 3};
+	return (s$.a+s$.b);
 }
 // end
 
@@ -49,24 +49,24 @@ func F() (int, int) {
 }
 // C code:
 // decl
-struct int$int_struct;
-typedef struct int$int_struct int$int;
+struct int$$int_struct;
+typedef struct int$$int_struct int$$int;
 // def
-#ifndef $int$int
-#define $int$int
-struct int$int_struct {
+#ifndef int$$int$
+#define int$$int$
+struct int$$int_struct {
 	int _0;
 	int _1;
 };
 #endif
 // decl
-int$int foo_F();
+int$$int foo$F();
 // def
-int$int foo_F() {
-	int a = {0};
-	int$int __tmp0 = foo_F();
-	a = __tmp0._0;
-	return (int$int){a, a};
+int$$int foo$F() {
+	int a$ = {0};
+	int$$int tmp0 = foo$F();
+	a$ = tmp0._0;
+	return (int$$int){a$, a$};
 }
 // end
 
@@ -78,15 +78,15 @@ func F() int {
 }
 // C code:
 // decl
-int foo_F();
+int foo$F();
 // def
-int foo_F() {
-	int a = 1;
-	(void)((foo_F()+foo_F()));
-	(void)((3*foo_F()));
-	int __tmp1 = 2;
-	(void)((3*foo_F()));
-	a = __tmp1;
-	return a;
+int foo$F() {
+	int a$ = 1;
+	(void)((foo$F()+foo$F()));
+	(void)((3*foo$F()));
+	int tmp1 = 2;
+	(void)((3*foo$F()));
+	a$ = tmp1;
+	return a$;
 }
 // end

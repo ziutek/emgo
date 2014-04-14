@@ -16,7 +16,7 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 		if resultT == "void" {
 			w.WriteString("return;\n")
 		} else {
-			w.WriteString("goto __end;\n")
+			w.WriteString("goto end;\n")
 			end = true
 		}
 
@@ -80,7 +80,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			tup := cdd.exprType(s.Rhs[0]).(*types.Tuple)
 			tupName, _ := cdd.tupleName(tup)
 			w.WriteString(tupName)
-			tupName = "__tmp" + cdd.gtc.uniqueId()
+			tupName = "tmp" + cdd.gtc.uniqueId()
 			w.WriteString(" " + tupName + " = ")
 			cdd.Expr(w, s.Rhs[0], nil)
 			w.WriteString(";\n")
@@ -109,7 +109,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		if s.Tok == token.DEFINE {
 			for i, e := range s.Lhs {
 				name := cdd.NameStr(cdd.object(e.(*ast.Ident)), true)
-				if strings.HasPrefix(name, "__unused") {
+				if strings.HasPrefix(name, "unused") {
 					lhs[i] = "_"
 				} else {
 					t, dim, a := cdd.TypeStr(typ[i])
@@ -135,7 +135,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				} else {
 					dim, a := cdd.Type(w, t)
 					acds = append(acds, a...)
-					tmp := "__tmp" + cdd.gtc.uniqueId()
+					tmp := "tmp" + cdd.gtc.uniqueId()
 					w.WriteString(" " + dimFuncPtr(tmp, dim))
 					w.WriteString(" = " + rhs[i] + ";\n")
 					rhs[i] = tmp
@@ -286,12 +286,12 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		if s.Tag != nil {
 			typ = cdd.exprType(s.Tag)
 			cdd.Type(w, typ)
-			w.WriteString(" __tag = ")
+			w.WriteString(" tag = ")
 			cdd.Expr(w, s.Tag, typ)
 			w.WriteString(";\n")
 		} else {
 			typ = types.Typ[types.Bool]
-			w.WriteString("bool __tag = true;\n")
+			w.WriteString("bool tag = true;\n")
 		}
 
 		for _, stmt := range s.Body.List {
@@ -304,7 +304,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					if i != 0 {
 						w.WriteString(" || ")
 					}
-					eq(w, "__tag", "==", cdd.ExprStr(e, typ), typ, typ)
+					eq(w, "tag", "==", cdd.ExprStr(e, typ), typ, typ)
 				}
 				w.WriteString(") ")
 			}
@@ -316,7 +316,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				cdd.indent(w)
 				if bs, ok := s.(*ast.BranchStmt); ok && bs.Tok == token.FALLTHROUGH {
 					if ftLabel == "" {
-						ftLabel = "__fallthrough" + cdd.gtc.uniqueId()
+						ftLabel = "fallthrough" + cdd.gtc.uniqueId()
 					}
 					w.WriteString("goto " + ftLabel + ";\n")
 				} else {
@@ -374,16 +374,14 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		if rs != "" {
 			n++
 		}
-
 		argv := make([]arg, n)
-		eval := false
+
 		n = 0
 
 		if _, ok := c.Fun.(*ast.Ident); ok || rs != "" {
 			argv[n].l = fs
 		} else {
-			argv[n] = arg{"_f", fs, ft}
-			eval = true
+			argv[n] = arg{"f", fs, ft}
 		}
 		n++
 
@@ -394,11 +392,11 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					ev = true
 				}
 			}
+			t := cdd.exprType(re)
 			if !ev {
-				argv[n].l = rs
+				argv[n] = arg{rs, "", t}
 			} else {
-				argv[n] = arg{"_r", rs, cdd.exprType(re)}
-				eval = true
+				argv[n] = arg{"r", rs, t}
 			}
 			n++
 		}
@@ -410,33 +408,64 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			if !ok {
 				_, ok = a.(*ast.BasicLit)
 			}
+			t := cdd.exprType(a)
 			if ok {
-				argv[n].l = s
+				argv[n] = arg{s, "", t}
 			} else {
-				argv[n] = arg{"_" + strconv.Itoa(i), s, cdd.exprType(a)}
-				eval = true
+				argv[n] = arg{"_" + strconv.Itoa(i), s, t}
 			}
 			n++
 		}
 
-		if eval {
-			w.WriteString("{\n")
-			cdd.il++
+		if len(argv) == 1 {
+			w.WriteString("GO(" + argv[0].l + "());\n")
+			break
+		}
+		
+		w.WriteString("{\n")
+		cdd.il++
 
-			for _, arg := range argv {
-				if arg.r == "" {
-					continue
-				}
-				t, dim, a := cdd.TypeStr(arg.t)
-				acds = append(acds, a...)
-
-				cdd.indent(w)
-				w.WriteString(t + " " + dimFuncPtr(arg.l, dim) + " = " + arg.r + ";\n")
+		cdd.indent(w)
+		w.WriteString("void wrap(")
+		for i, arg := range argv[1:] {
+			if i > 0 {
+				w.WriteString(", ")
 			}
+			t, dim, _ := cdd.TypeStr(arg.t)
+			w.WriteString(t + " " + dimFuncPtr("_"+strconv.Itoa(i), dim))
+		}
+		w.WriteString(") {\n")
+		cdd.il++
+
+		cdd.indent(w)
+		w.WriteString("goready();\n")
+		cdd.indent(w)
+		w.WriteString(argv[0].l + "(")
+		for i := range argv[1:] {
+			if i > 0 {
+				w.WriteString(", ")
+			}
+			w.WriteString("_" + strconv.Itoa(i))
+		}
+		w.WriteString(");\n")
+
+		cdd.il--
+		cdd.indent(w)
+		w.WriteString("}\n")
+
+		for _, arg := range argv {
+			if arg.r == "" {
+				continue
+			}
+			t, dim, a := cdd.TypeStr(arg.t)
+			acds = append(acds, a...)
+
 			cdd.indent(w)
+			w.WriteString(t + " " + dimFuncPtr(arg.l, dim) + " = " + arg.r + ";\n")
 		}
 
-		w.WriteString("go(" + argv[0].l + "(")
+		cdd.indent(w)
+		w.WriteString("GOWAIT(wrap(")
 		for i, arg := range argv[1:] {
 			if i > 0 {
 				w.WriteString(", ")
@@ -444,12 +473,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			w.WriteString(arg.l)
 		}
 		w.WriteString("));\n")
-
-		if eval {
-			cdd.il--
-			cdd.indent(w)
-			w.WriteString("}\n")
-		}
+		cdd.il--
+		cdd.indent(w)
+		w.WriteString("}\n")
 
 	default:
 		notImplemented(s)

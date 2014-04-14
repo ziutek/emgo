@@ -10,22 +10,22 @@ func F() int {
 }
 // C code:
 // decl
-struct foo_S_struct;
-typedef struct foo_S_struct foo_S;
+struct foo$S_struct;
+typedef struct foo$S_struct foo$S;
 // def
-struct foo_S_struct {
+struct foo$S_struct {
 	int a;
 	int b;
 };
 // decl
-foo_S foo_s;
+foo$S foo$s;
 // def
-foo_S foo_s = {0};
+foo$S foo$s = {0};
 // decl
-int foo_F();
+int foo$F();
 // def
-int foo_F() {
-	return (foo_s.a+foo_s.b);
+int foo$F() {
+	return (foo$s.a+foo$s.b);
 }
 // end
 
@@ -40,16 +40,16 @@ func F() int {
 struct {
 	int a;
 	int b;
-} foo_s;
+} foo$s;
 // def
 struct {
 	int a;
 	int b;
-} foo_s = {0};
+} foo$s = {0};
 // decl
-int foo_F();
+int foo$F();
 // def
-int foo_F() {
-	return (foo_s.a+foo_s.b);
+int foo$F() {
+	return (foo$s.a+foo$s.b);
 }
 // end

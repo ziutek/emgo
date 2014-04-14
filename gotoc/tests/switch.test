@@ -10,22 +10,22 @@ func Switch(i int) int {
 }
 // C code:
 // decl
-int foo_Switch(int i);
+int foo$Switch(int i$);
 // def
-int foo_Switch(int i) {
+int foo$Switch(int i$) {
 	switch(0) {
 	case 0:;
-		bool __tag = true;
-		if (__tag == ((i+1)<2)) {
-			++(i);
+		bool tag = true;
+		if (tag == ((i$+1)<2)) {
+			++(i$);
 			break;
 		}
 		{
-			--(i);
+			--(i$);
 			break;
 		}
 	}
-	return i;
+	return i$;
 }
 // end
 
@@ -43,17 +43,17 @@ func Switch(i int) int {
 }
 // C code:
 // decl
-int foo_Switch(int i);
+int foo$Switch(int i$);
 // def
-int foo_Switch(int i) {
+int foo$Switch(int i$) {
 	switch(0) {
 	case 0:;
-		int __tag = i;
-		if (__tag == 1) {
+		int tag = i$;
+		if (tag == 1) {
 			return 10;
 			break;
 		}
-		if (__tag == 2) {
+		if (tag == 2) {
 			return 20;
 			break;
 		}
@@ -89,26 +89,26 @@ func Switch(i int) int {
 }
 // C code:
 // decl
-int foo_Switch(int i);
+int foo$Switch(int i$);
 // def
-int foo_Switch(int i) {
-	while ((i<10)) {
+int foo$Switch(int i$) {
+	while ((i$<10)) {
 		switch(0) {
 		case 0:;
-			int __tag = i;
-			if (__tag == 1) {
-				i += 1;
-				goto __fallthrough0;
+			int tag = i$;
+			if (tag == 1) {
+				i$ += 1;
+				goto fallthrough0;
 				break;
 			}
-		__fallthrough0:;
-			if (__tag == 2) {
-				i += 2;
+		fallthrough0:;
+			if (tag == 2) {
+				i$ += 2;
 				continue;
 				break;
 			}
-			if (__tag == 3) {
-				return i;
+			if (tag == 3) {
+				return i$;
 				break;
 			}
 			{
@@ -117,6 +117,6 @@ int foo_Switch(int i) {
 			}
 		}
 	}
-	return i;
+	return i$;
 }
 // end

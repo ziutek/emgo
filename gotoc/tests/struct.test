@@ -2,10 +2,10 @@
 type S struct {a, b int}
 // C code:
 // decl
-struct foo_S_struct;
-typedef struct foo_S_struct foo_S;
+struct foo$S_struct;
+typedef struct foo$S_struct foo$S;
 // def
-struct foo_S_struct {
+struct foo$S_struct {
 	int a;
 	int b;
 };
@@ -20,13 +20,13 @@ type S struct {
 }
 // C code:
 // decl
-struct foo_S_struct;
-typedef struct foo_S_struct foo_S;
+struct foo$S_struct;
+typedef struct foo$S_struct foo$S;
 // def
-struct foo_S_struct {
+struct foo$S_struct {
 	byte a;
-	byte __unused0;
+	byte _1;
 	byte b;
-	byte __unused1;
+	byte _3;
 };
 // end

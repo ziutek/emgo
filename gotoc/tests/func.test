@@ -5,31 +5,31 @@ func F(a, b int) (x, y byte) {
 }
 // C code:
 // decl
-struct byte$byte_struct;
-typedef struct byte$byte_struct byte$byte;
+struct byte$$byte_struct;
+typedef struct byte$$byte_struct byte$$byte;
 // def
-#ifndef $byte$byte
-#define $byte$byte
-struct byte$byte_struct {
+#ifndef byte$$byte$
+#define byte$$byte$
+struct byte$$byte_struct {
 	byte _0;
 	byte _1;
 };
 #endif
 // decl
-byte$byte foo_F(int a, int b);
+byte$$byte foo$F(int a$, int b$);
 // def
-byte$byte foo_F(int a, int b) {
-	byte x = {0};
-	byte y = {0};
+byte$$byte foo$F(int a$, int b$) {
+	byte x$ = {0};
+	byte y$ = {0};
 	{
-		byte __tmp0 = (((byte)(a))+y);
-		byte __tmp1 = (((byte)(b))+x);
-		x = __tmp0;
-		y = __tmp1;
-		goto __end;
+		byte tmp0 = (((byte)(a$))+y$);
+		byte tmp1 = (((byte)(b$))+x$);
+		x$ = tmp0;
+		y$ = tmp1;
+		goto end;
 	}
-__end:
-	return (byte$byte){x, y};
+end:
+	return (byte$$byte){x$, y$};
 }
 // end
 
@@ -40,30 +40,30 @@ func F(a, b int) (x, y int) {
 }
 // C code:
 // decl
-struct int$int_struct;
-typedef struct int$int_struct int$int;
+struct int$$int_struct;
+typedef struct int$$int_struct int$$int;
 // def
-#ifndef $int$int
-#define $int$int
-struct int$int_struct {
+#ifndef int$$int$
+#define int$$int$
+struct int$$int_struct {
 	int _0;
 	int _1;
 };
 #endif
 // decl
-int$int foo_F(int a, int b);
+int$$int foo$F(int a$, int b$);
 // def
-int$int foo_F(int a, int b) {
-	int x = {0};
-	int y = {0};
+int$$int foo$F(int a$, int b$) {
+	int x$ = {0};
+	int y$ = {0};
 	{
-		int$int __tmp0 = foo_F(a, b);
-		x = __tmp0._0;
-		y = __tmp0._1;
-		goto __end;
+		int$$int tmp0 = foo$F(a$, b$);
+		x$ = tmp0._0;
+		y$ = tmp0._1;
+		goto end;
 	}
-__end:
-	return (int$int){x, y};
+end:
+	return (int$$int){x$, y$};
 }
 // end
 
@@ -73,21 +73,21 @@ func F(a [2]int) (int, int) {
 }
 // C code:
 // decl
-struct int$int_struct;
-typedef struct int$int_struct int$int;
+struct int$$int_struct;
+typedef struct int$$int_struct int$$int;
 // def
-#ifndef $int$int
-#define $int$int
-struct int$int_struct {
+#ifndef int$$int$
+#define int$$int$
+struct int$$int_struct {
 	int _0;
 	int _1;
 };
 #endif
 // decl
-int$int foo_F(int a[2]);
+int$$int foo$F(int a$[2]);
 // def
-int$int foo_F(int a[2]) {
-	return (int$int){a[0], a[1]};
+int$$int foo$F(int a$[2]) {
+	return (int$$int){a$[0], a$[1]};
 }
 // end
 
@@ -98,26 +98,26 @@ func F(a, b int) (x, y int) {
 }
 // C code:
 // decl
-struct int$int_struct;
-typedef struct int$int_struct int$int;
+struct int$$int_struct;
+typedef struct int$$int_struct int$$int;
 // def
-#ifndef $int$int
-#define $int$int
-struct int$int_struct {
+#ifndef int$$int$
+#define int$$int$
+struct int$$int_struct {
 	int _0;
 	int _1;
 };
 #endif
 // decl
-int$int foo_F(int a, int b);
+int$$int foo$F(int a$, int b$);
 // def
-int$int foo_F(int a, int b) {
-	int x = {0};
-	int y = {0};
+int$$int foo$F(int a$, int b$) {
+	int x$ = {0};
+	int y$ = {0};
 	{
-		int$int __tmp0 = foo_F(a, b);
-		int c = __tmp0._0;
-		return (int$int){c, (a+b)};
+		int$$int tmp0 = foo$F(a$, b$);
+		int c$ = tmp0._0;
+		return (int$$int){c$, (a$+b$)};
 	}
 }
 // end
@@ -129,26 +129,26 @@ func F(a int) (x, _ int) {
 }
 // C code:
 // decl
-struct int$int_struct;
-typedef struct int$int_struct int$int;
+struct int$$int_struct;
+typedef struct int$$int_struct int$$int;
 // def
-#ifndef $int$int
-#define $int$int
-struct int$int_struct {
+#ifndef int$$int$
+#define int$$int$
+struct int$$int_struct {
 	int _0;
 	int _1;
 };
 #endif
 // decl
-int$int foo_F(int a);
+int$$int foo$F(int a$);
 // def
-int$int foo_F(int a) {
-	int x = {0};
+int$$int foo$F(int a$) {
+	int x$ = {0};
 	{
-		x = a;
-		goto __end;
+		x$ = a$;
+		goto end;
 	}
-__end:
-	return (int$int){._0=x};
+end:
+	return (int$$int){._0=x$};
 }
 // end

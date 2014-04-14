@@ -1,12 +1,10 @@
 package gotoc
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -16,11 +14,7 @@ func notImplemented(n ast.Node) {
 }
 
 func upath(path string) string {
-	return strings.Replace(path, "/", "_", -1)
-}
-
-func tmpname(w *bytes.Buffer) string {
-	return "__" + strconv.Itoa(w.Len())
+	return strings.Replace(path, "/", "$", -1)
 }
 
 func write(s string, ws ...io.Writer) error {

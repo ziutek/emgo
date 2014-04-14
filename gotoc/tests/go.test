@@ -4,10 +4,10 @@ func F() {
 }
 // C code:
 // decl
-void foo_F();
+void foo$F();
 // def
-void foo_F() {
-	go(foo_F());
+void foo$F() {
+	GO(foo$F());
 }
 // end
 
@@ -17,12 +17,16 @@ func F(i int) {
 }
 // C code:
 // decl
-void foo_F(int i);
+void foo$F(int i$);
 // def
-void foo_F(int i) {
+void foo$F(int i$) {
 	{
-		int _0 = (2*i);
-		go(foo_F(_0));
+		void wrap(int _0) {
+			goready();
+			foo$F(_0);
+		}
+		int _0 = (2*i$);
+		GOWAIT(wrap(_0));
 	}
 }
 // end
@@ -36,16 +40,20 @@ func (i I) F(k int) int {
 }
 // C code:
 // decl
-typedef int foo_I;
+typedef int foo$I;
 // decl
-int foo_I_F(foo_I i, int k);
+int foo$I$F(foo$I i$, int k$);
 // def
-int foo_I_F(foo_I i, int k) {
+int foo$I$F(foo$I i$, int k$) {
 	{
-		int _0 = (((int)(i))*k);
-		go(foo_I_F(i, _0));
+		void wrap(foo$I _0, int _1) {
+			goready();
+			foo$I$F(_0, _1);
+		}
+		int _0 = (((int)(i$))*k$);
+		GOWAIT(wrap(i$, _0));
 	}
-	return (((int)(i))-k);
+	return (((int)(i$))-k$);
 }
 // end
 
@@ -56,19 +64,23 @@ func F(a []byte) func([]byte) {
 }
 // C code:
 // decl
-void (*foo_F(__slice a))(__slice);
+void (*foo$F(slice a$))(slice);
 // def
-void (*foo_F(__slice a))(__slice) {
+void (*foo$F(slice a$))(slice) {
 	{
-		void (*_f)(__slice) = foo_F(__SLICEL(a, byte*, 1));
-		__slice _0 = __SLICEH(a, 1);
-		go(_f(_0));
+		void wrap(slice _0) {
+			goready();
+			f(_0);
+		}
+		void (*f)(slice) = foo$F(SLICEL(a$, byte*, 1));
+		slice _0 = SLICEH(a$, 1);
+		GOWAIT(wrap(_0));
 	}
 	return ({
-		void func(__slice b) {
-			foo_F(b);
+		void func$(slice b$) {
+			foo$F(b$);
 		}
-		func;
+		func$;
 	});
 }
 // end

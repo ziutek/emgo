@@ -6,12 +6,12 @@ func Nil() []byte {
 }
 // C code:
 // decl
-__slice foo_Nil();
+slice foo$Nil();
 // def
-__slice foo_Nil() {
-	__slice b = {0};
-	b = __NILSLICE;
-	return b;
+slice foo$Nil() {
+	slice b$ = {0};
+	b$ = NILSLICE;
+	return b$;
 }
 // end
 
@@ -23,12 +23,12 @@ func Nil() *int {
 }
 // C code:
 // decl
-int *foo_Nil();
+int *foo$Nil();
 // def
-int *foo_Nil() {
-	int *i = {0};
-	i = nil;
-	return i;
+int *foo$Nil() {
+	int *i$ = {0};
+	i$ = nil;
+	return i$;
 }
 // end
 
@@ -38,10 +38,10 @@ func Nil() []int {
 }
 // C code:
 // decl
-__slice foo_Nil();
+slice foo$Nil();
 // def
-__slice foo_Nil() {
-	return __NILSLICE;
+slice foo$Nil() {
+	return NILSLICE;
 }
 // end
 
@@ -51,9 +51,9 @@ func Nil(b []byte) bool {
 }
 // C code:
 // decl
-bool foo_Nil(__slice b);
+bool foo$Nil(slice b$);
 // def
-bool foo_Nil(__slice b) {
-	return b.arr == nil;
+bool foo$Nil(slice b$) {
+	return b$.arr == nil;
 }
 // end

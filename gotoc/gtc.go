@@ -261,11 +261,11 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	if err := write("// init\n", wh, wc); err != nil {
 		return err
 	}
-	buf.WriteString("void " + up + "_init();\n")
+	buf.WriteString("void " + up + "$init();\n")
 	if _, err := buf.WriteTo(wh); err != nil {
 		return err
 	}
-	buf.WriteString("void " + up + "_init() {\n")
+	buf.WriteString("void " + up + "$init() {\n")
 	m := buf.Len()
 	if pkgName != "main" {
 		buf.WriteString("\tstatic bool called = false;\n")
@@ -274,7 +274,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	n := buf.Len()
 
 	for i := range imp {
-		buf.WriteString("\t" + upath(i.Path()) + "_init();\n")
+		buf.WriteString("\t" + upath(i.Path()) + "$init();\n")
 	}
 
 	for _, i := range gtc.ti.InitOrder {

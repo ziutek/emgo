@@ -40,13 +40,18 @@ writeType:
 	switch t := typ.(type) {
 	case *types.Basic:
 		if t.Kind() == types.UnsafePointer {
-			w.WriteString("unsafe_Pointer")
+			w.WriteString("unsafe$Pointer")
 		} else {
 			types.WriteType(w, nil, t)
 		}
 
 	case *types.Named:
-		cdd.Name(w, t.Obj(), direct)
+		tn := t.Obj()
+		if tn.Name() == "error" {
+			w.WriteString("error")
+		} else {
+			cdd.Name(w, tn, direct)
+		}
 
 	case *types.Pointer:
 		typ = t.Elem()
@@ -68,8 +73,12 @@ writeType:
 			acds = append(acds, a...)
 			if !f.Anonymous() {
 				w.WriteByte(' ')
-				name := cdd.NameStr(f, true)
-				w.WriteString(dimFuncPtr(name, d))
+				//name := cdd.NameStr(f, true)
+				name := dimFuncPtr(f.Name(), d)
+				if name == "_" {
+					name += strconv.Itoa(i)
+				}
+				w.WriteString(name)
 			}
 			w.WriteString(";\n")
 		}
@@ -84,10 +93,10 @@ writeType:
 		acds = append(acds, a...)
 
 	case *types.Slice:
-		w.WriteString("__slice")
+		w.WriteString("slice")
 
 	case *types.Map:
-		w.WriteString("__map")
+		w.WriteString("map")
 
 	case *types.Signature:
 		res, params := cdd.signature(t, false)
@@ -137,9 +146,16 @@ func (cdd *CDD) results(tup *types.Tuple) (res results) {
 		res.fields[i] = types.NewField(v.Pos(), v.Pkg(), "_"+n, v.Type(), false)
 
 		name := v.Name()
-		if name == "" {
-			name = "__" + n
-		} else {
+
+		switch name {
+		case "":
+			name = "_" + n
+			
+		case "_":
+			res.hasNames = true
+			
+		default:
+			name += "$"
 			res.hasNames = true
 		}
 		res.names[i] = name
@@ -209,12 +225,11 @@ func (cdd *CDD) signature(sig *types.Signature, pnames bool) (res results, param
 	return
 }
 
-// BUG: this mapping can be ambiguous
+// BUG: this mapping can be ambiguous.
 func symToDol(r rune) rune {
 	switch r {
 	case '*', '(', ')', '[', ']':
 		return '$'
-
 	}
 	return r
 }
@@ -223,7 +238,7 @@ func (cdd *CDD) tupleName(tup *types.Tuple) (string, bool) {
 	tupName := ""
 	for i, n := 0, tup.Len(); i < n; i++ {
 		if i != 0 {
-			tupName += "$"
+			tupName += "$$"
 		}
 		name, dim, _ := cdd.TypeStr(tup.At(i).Type())
 		tupName += dimFuncPtr(name, dim)

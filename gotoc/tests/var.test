@@ -2,26 +2,26 @@
 var A = 3
 // C code:
 // decl
-int foo_A;
+int foo$A;
 // def
-int foo_A = 3;
+int foo$A = 3;
 // end
 
 // Go code:
 var A = []int{1, 2, 3}
 // C code:
 // decl
-__slice foo_A;
+slice foo$A;
 // def
-__slice foo_A;
+slice foo$A;
 // init
-	foo_A = __ASLICE(__array0);
+	foo$A = ASLICE(array0);
 // decl
-int __array0[3];
+int array0[3];
 // def
-int __array0[3];
+int array0[3];
 // init
-	__ACPY(__array0, ((int([])){1, 2, 3}));
+	ACPY(array0, ((int([])){1, 2, 3}));
 // end
 
 // Go code:
@@ -29,23 +29,23 @@ type S struct{a, b int}
 var p = &S{a: 1}
 // C code:
 // decl
-struct foo_S_struct;
-typedef struct foo_S_struct foo_S;
+struct foo$S_struct;
+typedef struct foo$S_struct foo$S;
 // def
-struct foo_S_struct {
+struct foo$S_struct {
 	int a;
 	int b;
 };
 // decl
-foo_S *foo_p;
+foo$S *foo$p;
 // def
-foo_S *foo_p;
+foo$S *foo$p;
 // init
-	foo_p = &__cl0;
+	foo$p = &cl0;
 // decl
-foo_S __cl0;
+foo$S cl0;
 // def
-foo_S __cl0;
+foo$S cl0;
 // init
-	__cl0 = (foo_S){.a = 1};
+	cl0 = (foo$S){.a = 1};
 // end

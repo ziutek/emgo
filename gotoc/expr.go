@@ -78,7 +78,7 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 		w.WriteByte('i')
 
 	case exact.String:
-		w.WriteString("__EGSTR(")
+		w.WriteString("EGSTR(")
 		w.WriteString(ev.String())
 		w.WriteByte(')')
 
@@ -107,7 +107,7 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, direct bool) {
 				direct = false
 			}
 			cdd.Type(w, t)
-			w.WriteByte('_')
+			w.WriteByte('$')
 			w.WriteString(o.Name())
 			if !cdd.gtc.isLocal(t.(*types.Named).Obj()) {
 				cdd.addObject(o, direct)
@@ -119,19 +119,22 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, direct bool) {
 	if p := obj.Pkg(); p != nil && !cdd.gtc.isLocal(obj) {
 		cdd.addObject(obj, direct)
 		w.WriteString(upath(obj.Pkg().Path()))
-		w.WriteByte('_')
+		w.WriteByte('$')
 	}
 	name := obj.Name()
 	switch name {
 	case "_":
-		w.WriteString("__unused")
-		w.WriteString(cdd.gtc.uniqueId())
-		return
+		w.WriteString("unused" + cdd.gtc.uniqueId())
 
 	case "init":
-		name = cdd.gtc.uniqueId() + name
+		w.WriteString(cdd.gtc.uniqueId() + name)
+
+	default:
+		w.WriteString(name)
+		if cdd.gtc.isLocal(obj) {
+			w.WriteByte('$')
+		}
 	}
-	w.WriteString(name)
 }
 
 func (cdd *CDD) NameStr(o types.Object, direct bool) string {
@@ -200,11 +203,11 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 	case "copy":
 		switch t := cdd.exprType(args[1]).(type) {
 		case *types.Basic: // string
-			return "__STRCPY", ""
+			return "STRCPY", ""
 
 		case *types.Slice:
 			typ, dim, _ := cdd.TypeStr(t.Elem())
-			return "__SLICPY", typ + dimFuncPtr("", dim)
+			return "SLICPY", typ + dimFuncPtr("", dim)
 
 		default:
 			panic(t)
@@ -229,13 +232,12 @@ func (cdd *CDD) funStr(fe ast.Expr, args []ast.Expr) (fs string, ft types.Type, 
 		switch o := cdd.object(f).(type) {
 		case *types.Builtin:
 			fs, rs = cdd.builtin(o, args)
-			return
 
 		default:
 			fs = cdd.NameStr(o, true)
 			ft = o.Type()
-			return
 		}
+		return
 	}
 	fs = cdd.ExprStr(fe, nil)
 	ft = cdd.exprType(fe)
@@ -269,7 +271,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 		case *types.Slice:
 			switch cdd.exprType(arg).(type) {
 			case *types.Basic: // string
-				w.WriteString("__NEWSTR(")
+				w.WriteString("NEWSTR(")
 				cdd.Expr(w, arg, typ)
 				w.WriteByte(')')
 
@@ -419,7 +421,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			nilT = t.Elem()
 
 		case *types.Slice:
-			w.WriteString("(__slice){(")
+			w.WriteString("(slice){(")
 			dim, _ := cdd.Type(w, t.Elem())
 			dim = append([]string{"[]"}, dim...)
 			w.WriteString(dimFuncPtr("", dim))
@@ -453,8 +455,6 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		}
 
 	case *ast.FuncLit:
-		//fname := "__func" + cdd.gtc.uniqueId()
-		//w.WriteString(fname)
 		fname := "func"
 
 		fd := &ast.FuncDecl{
@@ -478,7 +478,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		}
 
 		cdd.indent(w)
-		w.WriteString(fname + ";\n")
+		w.WriteString(fname + "$;\n")
 
 		cdd.il--
 		cdd.indent(w)
@@ -509,16 +509,16 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 		if e.Low != nil {
 			switch {
 			case e.High == nil && e.Max == nil:
-				w.WriteString("__SLICEL(")
+				w.WriteString("SLICEL(")
 
 			case e.High != nil && e.Max == nil:
-				w.WriteString("__SLICELH(")
+				w.WriteString("SLICELH(")
 
 			case e.High == nil && e.Max != nil:
-				w.WriteString("__SLICEM(")
+				w.WriteString("SLICEM(")
 
 			default:
-				w.WriteString("__SLICELHM(")
+				w.WriteString("SLICELHM(")
 			}
 			w.WriteString(sx)
 			w.WriteString(", ")
@@ -530,13 +530,13 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 		} else {
 			switch {
 			case e.High != nil && e.Max == nil:
-				w.WriteString("__SLICEH(")
+				w.WriteString("SLICEH(")
 
 			case e.High == nil && e.Max != nil:
-				w.WriteString("__SLICEM(")
+				w.WriteString("SLICEM(")
 
 			default:
-				w.WriteString("__SLICEHM(")
+				w.WriteString("SLICEHM(")
 			}
 			w.WriteString(sx)
 		}
@@ -556,16 +556,16 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 		if e.Low != nil {
 			switch {
 			case e.High == nil && e.Max == nil:
-				w.WriteString("__ASLICEL(")
+				w.WriteString("ASLICEL(")
 
 			case e.High != nil && e.Max == nil:
-				w.WriteString("__ASLICELH(")
+				w.WriteString("ASLICELH(")
 
 			case e.High == nil && e.Max != nil:
-				w.WriteString("__ASLICEM(")
+				w.WriteString("ASLICEM(")
 
 			default:
-				w.WriteString("__ASLICELHM(")
+				w.WriteString("ASLICELHM(")
 			}
 			w.WriteString(sx)
 			w.WriteString(", ")
@@ -573,16 +573,16 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 		} else {
 			switch {
 			case e.High == nil && e.Max == nil:
-				w.WriteString("__ASLICE(")
+				w.WriteString("ASLICE(")
 
 			case e.High != nil && e.Max == nil:
-				w.WriteString("__ASLICEH(")
+				w.WriteString("ASLICEH(")
 
 			case e.High == nil && e.Max != nil:
-				w.WriteString("__ASLICEM(")
+				w.WriteString("ASLICEM(")
 
 			default:
-				w.WriteString("__ASLICEHM(")
+				w.WriteString("ASLICEHM(")
 			}
 			w.WriteString(sx)
 		}
@@ -605,13 +605,13 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 		}
 		switch {
 		case e.Low == nil:
-			w.WriteString("__SSLICEH(")
+			w.WriteString("SSLICEH(")
 
 		case e.High == nil:
-			w.WriteString("__SSLICEL(")
+			w.WriteString("SSLICEL(")
 
 		default:
-			w.WriteString("__SSLICELH(")
+			w.WriteString("SSLICELH(")
 		}
 
 		w.WriteString(sx)
@@ -641,10 +641,10 @@ func (cdd *CDD) ExprStr(expr ast.Expr, nilT types.Type) string {
 func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
 	switch t.(type) {
 	case *types.Slice:
-		w.WriteString("__NILSLICE")
+		w.WriteString("NILSLICE")
 
 	case *types.Map:
-		w.WriteString("__NILMAP")
+		w.WriteString("NILMAP")
 
 	case *types.Pointer:
 		w.WriteString("nil")

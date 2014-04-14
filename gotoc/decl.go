@@ -28,7 +28,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	cdds = append(cdds, res.acds...)
 	cdds = append(cdds, cdd)
 
-	cdd.init = (f.Name() == "init")
+	cdd.init = (f.Name() == "init" && sig.Recv() == nil && !cdd.gtc.isLocal(f))
 
 	if !cdd.init {
 		cdd.copyDecl(w, ";\n")
@@ -71,7 +71,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		if end {
 			cdd.il--
 			cdd.indent(w)
-			w.WriteString("__end:\n")
+			w.WriteString("end:\n")
 			cdd.il++
 
 			cdd.indent(w)
@@ -250,7 +250,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr
 		case *types.Slice:
 			switch v := val.(type) {
 			case *ast.CompositeLit:
-				aname := "__array" + cdd.gtc.uniqueId()
+				aname := "array" + cdd.gtc.uniqueId()
 				at := types.NewArray(t.Elem(), int64(len(v.Elts)))
 				o := types.NewVar(v.Lbrace, cdd.gtc.pkg, aname, at)
 				cdd.gtc.pkg.Scope().Insert(o)
@@ -264,7 +264,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr
 
 				w.WriteByte('\t')
 				w.WriteString(name)
-				w.WriteString(" = __ASLICE(")
+				w.WriteString(" = ASLICE(")
 				w.WriteString(aname)
 				w.WriteString(");\n")
 
@@ -274,7 +274,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr
 
 		case *types.Array:
 			w.WriteByte('\t')
-			w.WriteString("__ACPY(")
+			w.WriteString("ACPY(")
 			w.WriteString(name)
 			w.WriteString(", ")
 
@@ -303,7 +303,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr
 				assign = true
 				break
 			}
-			cname := "__cl" + cdd.gtc.uniqueId()
+			cname := "cl" + cdd.gtc.uniqueId()
 			ct := cdd.exprType(c)
 			o := types.NewVar(c.Lbrace, cdd.gtc.pkg, cname, ct)
 			cdd.gtc.pkg.Scope().Insert(o)
@@ -352,15 +352,15 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) {
 	cdd.copyDecl(w, ";\n")
 	w.Truncate(n)
 
-	tuple := strings.ContainsRune(name, '$')
+	tuple := strings.Contains(name, "$$")
 
 	if tuple {
 		cdd.indent(w)
-		w.WriteString("#ifndef _" + name + "\n")
+		w.WriteString("#ifndef " + name + "$\n")
 		cdd.indent(w)
-		w.WriteString("#define _" + name + "\n")
+		w.WriteString("#define " + name + "$\n")
 	}
-	cdd.indent(w);
+	cdd.indent(w)
 	w.WriteString("struct ")
 	w.WriteString(name)
 	w.WriteByte('_')
