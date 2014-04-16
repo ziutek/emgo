@@ -1,9 +1,9 @@
 extern byte HeapBegin, HeapSize;
 
 static inline
-__slice runtime_noos_heap() {
+slice runtime$noos$heap() {
 	uint size = (uint)&HeapSize;
-	return (__slice){&HeapBegin, size, size};
+	return (slice){&HeapBegin, size, size};
 }
 
 static inline
@@ -17,35 +17,35 @@ uintptr alignDown(uintptr p, uintptr a) {
 	return p & ~(a - 1);
 }
 
-static inline
-__slice runtime_noos_allocBottom(unsafe_Pointer sptr, __slice bs, int n, uintptr elSize, uintptr elAlign, uintptr sliAlign) {
+static
+slice runtime$noos$allocBottom(unsafe$Pointer sptr, slice bs, int n, uintptr elSize, uintptr elAlign, uintptr sliAlign) {
 	uint blen = (uint)n * (uint)alignUp(elSize, elAlign);
-	__slice *p = (__slice*)sptr;
+	slice *p = (slice*)sptr;
 	
-	p->arr = (unsafe_Pointer)alignUp((uintptr)bs.arr, sliAlign);
+	p->arr = (unsafe$Pointer)alignUp((uintptr)bs.arr, sliAlign);
 	p->len = (uint)n;
 	p->cap = (uint)n;
 	blen += (uint)(p->arr - bs.arr);
 	
 	if (blen > bs.len) {
-		return __NILSLICE;
+		return NILSLICE;
 	}
-	return (__slice){bs.arr + blen, bs.len - blen, bs.cap - blen};
+	return (slice){bs.arr + blen, bs.len - blen, bs.cap - blen};
 } 
 
-static inline
-__slice runtime_noos_allocTop(unsafe_Pointer sptr, __slice bs, int n, uintptr elSize, uintptr elAlign, uintptr sliAlign) {
+static
+slice runtime$noos$allocTop(unsafe$Pointer sptr, slice bs, int n, uintptr elSize, uintptr elAlign, uintptr sliAlign) {
 	uint blen = (uint)n * (uint)alignUp(elSize, elAlign);
-	__slice *p = (__slice*)sptr;
+	slice *p = (slice*)sptr;
 	
-	unsafe_Pointer arr = bs.arr + bs.len - blen;
-	p->arr = (unsafe_Pointer)alignDown((uintptr)arr, sliAlign);
+	unsafe$Pointer arr = bs.arr + bs.len - blen;
+	p->arr = (unsafe$Pointer)alignDown((uintptr)arr, sliAlign);
 	p->len = (uint)n;
 	p->cap = (uint)n;
 	blen += (uint)(arr - p->arr);
 	
 	if (blen > bs.len) {
-		return __NILSLICE;
+		return NILSLICE;
 	}
-	return (__slice){bs.arr, bs.len - blen, bs.len - blen};
+	return (slice){bs.arr, bs.len - blen, bs.len - blen};
 } 

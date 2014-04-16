@@ -1,0 +1,263 @@
+// Go code:
+func F(a [4]byte) (r byte) {
+	for k := range a {
+		r += byte(k)
+	}
+	return
+}
+// C code:
+// decl
+byte foo$F(byte a$[4]);
+// def
+byte foo$F(byte a$[4]) {
+	byte r$ = {0};
+	{
+		{
+			int k$ = 0;
+			while (k$++ < 4) {
+				r$ += ((byte)(k$));
+			}
+		}
+		goto end;
+	}
+end:
+	return r$;
+}
+// end
+
+// Go code:
+func F(a [4]byte) (r byte) {
+	for k, _ := range a {
+		r += byte(k)
+	}
+	return
+}
+// C code:
+// decl
+byte foo$F(byte a$[4]);
+// def
+byte foo$F(byte a$[4]) {
+	byte r$ = {0};
+	{
+		{
+			int k$ = 0;
+			while (k$++ < 4) {
+				r$ += ((byte)(k$));
+			}
+		}
+		goto end;
+	}
+end:
+	return r$;
+}
+// end
+
+// Go code:
+func F(a [4]byte) (r byte) {
+	for k, v := range a {
+		if r > 4 {
+			continue
+		}
+		r += byte(k) + v
+	}
+	return
+}
+// C code:
+// decl
+byte foo$F(byte a$[4]);
+// def
+byte foo$F(byte a$[4]) {
+	byte r$ = {0};
+	{
+		{
+			int k$ = 0;
+			while (k$++ < 4) {
+				byte v$ = a$[k$];
+				{
+					if ((r$>4)) {
+						continue;
+					}
+					r$ += (((byte)(k$))+v$);
+				}
+			}
+		}
+		goto end;
+	}
+end:
+	return r$;
+}
+// end
+
+// Go code:
+func F(a [4]byte) (r byte) {
+	for _, v := range a {
+		if r > 4 {
+			break
+		}
+		r += v
+	}
+	return
+}
+// C code:
+// decl
+byte foo$F(byte a$[4]);
+// def
+byte foo$F(byte a$[4]) {
+	byte r$ = {0};
+	{
+		{
+			int _$ = 0;
+			while (_$++ < 4) {
+				byte v$ = a$[_$];
+				{
+					if ((r$>4)) {
+						break;
+					}
+					r$ += v$;
+				}
+			}
+		}
+		goto end;
+	}
+end:
+	return r$;
+}
+// end
+
+// Go code:
+func F(a [4]byte) (r byte) {
+	for k := range a[1:] {
+		r += byte(k)
+	}
+	return
+}
+// C code:
+// decl
+byte foo$F(byte a$[4]);
+// def
+byte foo$F(byte a$[4]) {
+	byte r$ = {0};
+	{
+		{
+			slice x = ASLICEL(a$, 1);
+			int k$ = 0;
+			while (k$++ < len(x)) {
+				r$ += ((byte)(k$));
+			}
+		}
+		goto end;
+	}
+end:
+	return r$;
+}
+// end
+
+// Go code:
+func F(a [4]byte) (r byte) {
+	for k, _ := range a[1:] {
+		r += byte(k)
+	}
+	return
+}
+// C code:
+// decl
+byte foo$F(byte a$[4]);
+// def
+byte foo$F(byte a$[4]) {
+	byte r$ = {0};
+	{
+		{
+			slice x = ASLICEL(a$, 1);
+			int k$ = 0;
+			while (k$++ < len(x)) {
+				r$ += ((byte)(k$));
+			}
+		}
+		goto end;
+	}
+end:
+	return r$;
+}
+// end
+
+// Go code:
+func F(a [4]byte) (r byte) {
+loop:
+	for k, v := range a[1:] {
+		if r > 4 {
+			continue loop
+		}
+		r += byte(k) + v
+	}
+	return
+}
+// C code:
+// decl
+byte foo$F(byte a$[4]);
+// def
+byte foo$F(byte a$[4]) {
+	byte r$ = {0};
+	{
+	loop:;
+		{
+			slice x = ASLICEL(a$, 1);
+			int k$ = 0;
+		loop_continue:;
+			while (k$++ < len(x)) {
+				byte v$ = ((byte*)x.arr)[k$];
+				{
+					if ((r$>4)) {
+						goto loop_continue;
+					}
+					r$ += (((byte)(k$))+v$);
+				}
+			}
+		}
+	loop_break:;
+		goto end;
+	}
+end:
+	return r$;
+}
+// end
+
+// Go code:
+func F(a [4]byte) (r byte) {
+loop:
+	for _, v := range a[1:] {
+		if r > 4 {
+			break loop
+		}
+		r += v
+	}
+	return
+}
+// C code:
+// decl
+byte foo$F(byte a$[4]);
+// def
+byte foo$F(byte a$[4]) {
+	byte r$ = {0};
+	{
+	loop:;
+		{
+			slice x = ASLICEL(a$, 1);
+			int _$ = 0;
+		loop_continue:;
+			while (_$++ < len(x)) {
+				byte v$ = ((byte*)x.arr)[_$];
+				{
+					if ((r$>4)) {
+						goto loop_break;
+					}
+					r$ += v$;
+				}
+			}
+		}
+	loop_break:;
+		goto end;
+	}
+end:
+	return r$;
+}
+// end

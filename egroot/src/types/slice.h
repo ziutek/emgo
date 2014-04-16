@@ -1,84 +1,84 @@
 typedef struct {
-	unsafe_Pointer arr;
+	unsafe$Pointer arr;
 	uint len;
 	uint cap;
-} __slice;
+} slice;
 
-#define __SLICE_LOW(expr, typ, low)       \
-	__slice __s = expr;                   \
-	uint __low = low;                     \
-	__s.arr = ((typ)__s.arr) + low
+#define _SLICE_LOW(expr, typ, low) \
+	slice s = expr;               \
+	uint l = low;                 \
+	s.arr = ((typ)s.arr) + l
 	
-#define __SLICEL(expr, typ, low) ({ \
-	__SLICE_LOW(expr, typ, low);    \
-	__s.len -= low;                 \
-	__s.cap -= low;                 \
-	__s;                            \
+#define SLICEL(expr, typ, low) ({ \
+	_SLICE_LOW(expr, typ, low);    \
+	s.len -= l;                   \
+	s.cap -= l;                   \
+	s;                            \
 })
 
-#define __SLICELH(expr, typ, low, high) ({ \
-	__SLICE_LOW(expr, typ, low);           \
-	__s.len = high - __low;                \
-	__s.cap -= __low;                      \
-	__s;                                   \
+#define SLICELH(expr, typ, low, high) ({ \
+	_SLICE_LOW(expr, typ, low);           \
+	s.len = high - l;                    \
+	s.cap -= l;                          \
+	s;                                   \
 })
 
-#define __SLICELHM(expr, typ, low, high, max) ({ \
-	__SLICE_LOW(expr, typ, low);                 \
-	__s.len = high - __low;                      \
-	__s.cap = max - __low;                       \
-	__s;                                         \
+#define SLICELHM(expr, typ, low, high, max) ({ \
+	_SLICE_LOW(expr, typ, low);                 \
+	s.len = high - l;                          \
+	s.cap = max - l;                           \
+	s;                                         \
 })
 
 #define __SLICEH(expr, high) ({ \
-	__slice __s = expr;         \
-	__s.len = high;             \
-	__s;                        \
+	slice __s = expr;           \
+	s.len = high;               \
+	s;                          \
 })
 	
-// #define __SLICEM(expr, max) Go 1.2 doesn't allow [::max].
+// #define SLICEM(expr, max) Go 1.2 doesn't allow [::max].
 	
-#define __SLICEHM(expr, high, max) ({ \
-	__slice __s = expr;               \
-	__s.len = high;                   \
-	__s.cap = max;                    \
-	__s;                              \
+#define SLICEHM(expr, high, max) ({ \
+	slice s = expr;                 \
+	s.len = high;                   \
+	s.cap = max;                    \
+	s;                              \
 })
 
 	
-#define __ASLICEL(expr, low) \
-	(__slice){               \
-		&(expr)[low],        \
-		__ALEN(expr)-low,    \
-		__ALEN(expr)-low,    \
+#define ASLICEL(expr, low) \
+	(slice){               \
+		&(expr)[low],      \
+		ALEN(expr)-low,    \
+		ALEN(expr)-low,    \
 	}
 
-#define __ASLICELH(expr, low, high) \
-	(__slice){                      \
-		&(expr)[low],               \
-		high-low,                   \
-		__ALEN(expr)-low            \
+#define ASLICELH(expr, low, high) \
+	(slice){                      \
+		&(expr)[low],             \
+		high-low,                 \
+		ALEN(expr)-low            \
 	}
 	
-#define __ASLICELHM(expr, low, high, max) \
-	(__slice){                            \
-		&(expr)[low],                     \
-		high-low,                         \
-		max-low                           \
+#define ASLICELHM(expr, low, high, max) \
+	(slice){                            \
+		&(expr)[low],                   \
+		high-low,                       \
+		max-low                         \
 	}
 	
-#define __ASLICE(expr) (__slice){expr, __ALEN(expr), __ALEN(expr)}
+#define ASLICE(expr) (slice){expr, ALEN(expr), ALEN(expr)}
 
-#define __ASLICEH(expr, high) (__slice){expr, high, __ALEN(expr)}
+#define ASLICEH(expr, high) (slice){expr, high, ALEN(expr)}
 	
-// #define __ASLICEM(expr, max) Go 1.2 doesn't allow [::max].
+// #define ASLICEM(expr, max) Go 1.2 doesn't allow [::max].
 	
-#define __ASLICEHM(expr, high, max) (__slice){expr, high, max}
+#define ASLICEHM(expr, high, max) (slice){expr, high, max}
 
-#define __SLICPY(typ, dst, src) ({                     \
-	int __n = (dst.len < src.len) ? dst.len : src.len; \
-	memmove(dst.arr, src.arr, __n * sizeof(typ)); \
-	__n;                                               \
+#define SLICPY(typ, dst, src) ({                     \
+	int n = (dst.len < src.len) ? dst.len : src.len; \
+	memmove(dst.arr, src.arr, n * sizeof(typ));      \
+	n;                                               \
 })
 
-#define __NILSLICE (__slice){0, 0, 0}
+#define NILSLICE (slice){0, 0, 0}

@@ -9,7 +9,6 @@ import (
 
 	"cortexm"
 	"cortexm/irq"
-	"cortexm/sleep"
 	"cortexm/systick"
 )
 
@@ -51,16 +50,29 @@ func (s *taskState) SetEmpty() {
 // significant bits of sp as flags.
 type taskInfo struct {
 	sp    uintptr
+	next  uint16
 	state taskState
 	prio  uint8
 }
 
-var (
-	tasks   []taskInfo
-	curTask int
-)
+type taskSched struct {
+	tasks     []taskInfo
+	curTask   int
+	forceNext int
+	onSysTick bool
+}
 
-func initTasker() {
+var tasker taskSched
+
+func (ts *taskSched) run() {
+	ts.onSysTick = true
+}
+
+func (ts *taskSched) stop() {
+	ts.onSysTick = false
+}
+
+func (ts *taskSched) init() {
 	var vt []irq.Vector
 	vtlen := 1 << evtExp()
 	vtsize := vtlen * int(unsafe.Sizeof(irq.Vector{}))
@@ -75,7 +87,7 @@ func initTasker() {
 	}
 
 	Heap = allocTop(
-		unsafe.Pointer(&tasks), Heap,
+		unsafe.Pointer(&ts.tasks), Heap,
 		MaxTasks(), unsafe.Sizeof(taskInfo{}), unsafe.Alignof(taskInfo{}),
 		unsafe.Alignof(taskInfo{}),
 	)
@@ -83,10 +95,10 @@ func initTasker() {
 		panicMemory()
 	}
 
-	tasks[0] = taskInfo{prio: 255}
-	tasks[0].state.SetReady()
-	for i := 1; i < len(tasks); i++ {
-		tasks[i].state.SetEmpty()
+	ts.tasks[0] = taskInfo{prio: 255}
+	ts.tasks[0].state.SetReady()
+	for i := 1; i < len(ts.tasks); i++ {
+		ts.tasks[i].state.SetEmpty()
 	}
 
 	// Use PSP as stack pointer for thread mode.
@@ -96,7 +108,7 @@ func initTasker() {
 	cortexm.ISB()
 
 	// Now MSP is used only by exceptions handlers.
-	cortexm.SetMSP(unsafe.Pointer(initSP(len(tasks))))
+	cortexm.SetMSP(unsafe.Pointer(initSP(len(ts.tasks))))
 
 	// Setup interrupt table.
 	// Consider setup at link time using GCC weak functions to support Cortex-M0
@@ -123,6 +135,9 @@ func initTasker() {
 	// One context switch per 5e5 SysTicks (140/s for 70 Mhz, 336/s for 168 MHz)
 	systick.SetReload(5e5 - 1)
 	systick.WriteFlags(systick.Enable | systick.TickInt | systick.ClkCPU)
+
+	tasker.forceNext = -1
+	tasker.run()
 }
 
 func resetHandler() {
@@ -141,7 +156,7 @@ type cfs struct {
 	ufs  uint16 `C:"volatile"`
 }
 
-var cfsr = (*cfs)(unsafe.Pointer(uintptr(0xE000ED28)))
+var cfsr = (*cfs)(unsafe.Pointer(uintptr(0xe000ed28)))
 
 func hardFaultHandler() {
 	for {
@@ -149,19 +164,23 @@ func hardFaultHandler() {
 }
 
 func memFaultHandler() {
-	// Check cfsr.mmfs.
+	mmfs := cfsr.mmfs
+	_ = mmfs
 	for {
 	}
 }
 
 func busFaultHandler() {
-	// Check cfsr.bfs.
+	bfs := cfsr.bfs
+	_ = bfs
 	for {
 	}
 }
 
 func usageFaultHandler() {
-	// Check cfsr.ufs.
+	ufs := cfsr.ufs
+	pfp := (*stackFrame)(unsafe.Pointer(cortexm.PSP()))
+	_, _ = ufs, pfp
 	for {
 	}
 }
@@ -170,65 +189,76 @@ var Tick uint32
 
 func sysTickHandler() {
 	Tick++
-	irq.PendSV.SetPending()
+	if tasker.onSysTick {
+		irq.PendSV.SetPending()
+	}
 }
 
 // pendSVHandler calls nextTask with PSP for current task. It performs
 // context swich if nextTask returns new non-zero value for PSP.
 func pendSVHandler()
 
-// nextTask returns taskInfo.sp for nextTask or 0. pendSVHandler can use two
-// least significant bits of sp as flags.
+// nextTask returns taskInfo.sp for next task or 0. pendSVHandler can use two
+// least significant bits of sp as flags so sp isn't real stack pointer.
+// TODO: better scheduler
 func nextTask(sp uintptr) uintptr {
-	n := curTask
-	for {
-		if n++; n >= len(tasks) {
-			n = 0
+	n := tasker.forceNext
+	if n >= 0 {
+		tasker.forceNext = -1
+	} else {
+		n = tasker.curTask
+		for {
+			if n++; n >= len(tasker.tasks) {
+				n = 0
+			}
+			if tasker.tasks[n].state.Ready() {
+				break
+			}
+			if n == tasker.curTask {
+				panic("no task to run")
+			}
 		}
-		if tasks[n].state.Ready() {
-			break
-		}
-		if n == curTask {
-			sleep.WFE()
+		if n == tasker.curTask {
+			return 0
 		}
 	}
-	if n == curTask {
-		return 0
-	}
-	tasks[curTask].sp = sp
-	curTask = n
-	barrier.Memory()
-
-	return tasks[n].sp
+	tasker.tasks[tasker.curTask].sp = sp
+	tasker.curTask = n
+	return tasker.tasks[n].sp
 }
 
-func newTask(pc uintptr, xpsr uint32) {
-	n := curTask
+func (ts *taskSched) newTask(pc uintptr, xpsr uint32, wait bool) {
+	n := ts.curTask
 	for {
-		if n++; n >= len(tasks) {
+		if n++; n >= len(ts.tasks) {
 			n = 0
 		}
-		if tasks[n].state.Empty() {
+		if ts.tasks[n].state.Empty() {
 			break
 		}
-		if n == curTask {
+		if n == ts.curTask {
 			panic("too many tasks")
 		}
 	}
 
 	sf, sp := allocStackFrame(initSP(n))
-	tasks[n] = taskInfo{sp: sp, prio: 255} // (re)initialization
+	ts.tasks[n] = taskInfo{sp: sp, prio: 255} // (re)initialization
 
 	// Use parent's xPSR as initial xPSR for new task.
 	sf.xpsr = xpsr
 	sf.pc = pc
 
-	tasks[n].state.SetReady()
-	barrier.Memory()
+	ts.tasks[n].state.SetReady()
+
+	if wait {
+		ts.stop()
+		// This badly affects scheduling but don't care for now.
+		ts.forceNext = n
+		irq.PendSV.SetPending()
+	}
 }
 
-func delTask() {
-	tasks[curTask].state.SetEmpty()
-	barrier.Memory()
+func (ts *taskSched) delTask(n int) {
+	ts.tasks[n].state.SetEmpty()
 	irq.PendSV.SetPending()
 }

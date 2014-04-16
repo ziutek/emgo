@@ -1,5 +1,5 @@
 typedef string error;
 
-static inline string error_Error(error e) {
+static inline string error$Error(error e) {
 	return (string)(e);
 }

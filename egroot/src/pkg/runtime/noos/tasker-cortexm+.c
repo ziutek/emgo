@@ -3,6 +3,6 @@
 extern byte EVTExp;
 
 static inline
-uint runtime_noos_evtExp() {
+uint runtime$noos$evtExp() {
 	return (uint)&EVTExp;
 }

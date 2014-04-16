@@ -5,7 +5,9 @@ set -e
 list="
 builtin
 
+sync/atomic
 sync/barrier
+sync/events
 delay
 mmio
 

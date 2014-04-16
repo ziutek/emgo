@@ -4,7 +4,7 @@
 
 .global memset
 
-// void memset(unsafe.Pointer s, byte b, uint n);
+// void memset(unsafe.Pointer s, byte b, uint n)
 
 .thumb_func
 memset:

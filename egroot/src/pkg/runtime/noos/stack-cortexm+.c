@@ -3,16 +3,16 @@
 extern byte StackExp, StackFrac, StackEnd;
 
 static inline
-uint runtime_noos_stackExp() {
+uint runtime$noos$stackExp() {
 	return (uint)&StackExp;
 }
 
 static inline
-uint runtime_noos_stackFrac() {
+uint runtime$noos$stackFrac() {
 	return (uint)&StackFrac;
 }
 
 static inline
-uint runtime_noos_stackEnd() {
+uint runtime$noos$stackEnd() {
 	return (uintptr)&StackEnd;
 }

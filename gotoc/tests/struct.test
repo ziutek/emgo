@@ -25,8 +25,8 @@ typedef struct foo$S_struct foo$S;
 // def
 struct foo$S_struct {
 	byte a;
-	byte _1;
+	byte _1$;
 	byte b;
-	byte _3;
+	byte _3$;
 };
 // end

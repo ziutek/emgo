@@ -123,9 +123,6 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, direct bool) {
 	}
 	name := obj.Name()
 	switch name {
-	case "_":
-		w.WriteString("unused" + cdd.gtc.uniqueId())
-
 	case "init":
 		w.WriteString(cdd.gtc.uniqueId() + name)
 
@@ -339,48 +336,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		}
 
 	case *ast.IndexExpr:
-		typ := cdd.exprType(e.X)
-
-		pt, isPtr := typ.(*types.Pointer)
-		if isPtr {
-			w.WriteString("(*")
-			typ = pt.Elem()
-		}
-
-		var indT types.Type
-
-		switch t := typ.(type) {
-		case *types.Basic: // string
-			cdd.Expr(w, e.X, nil)
-			w.WriteString(".str")
-
-		case *types.Slice:
-			w.WriteString("((")
-			dim, _ := cdd.Type(w, t.Elem())
-			dim = append([]string{"*"}, dim...)
-			w.WriteString(dimFuncPtr("", dim))
-			w.WriteByte(')')
-			cdd.Expr(w, e.X, nil)
-			w.WriteString(".arr)")
-
-		case *types.Array:
-			cdd.Expr(w, e.X, nil)
-
-		case *types.Map:
-			indT = t.Key()
-			notImplemented(e)
-
-		default:
-			panic(t)
-		}
-
-		if isPtr {
-			w.WriteByte(')')
-		}
-
-		w.WriteByte('[')
-		cdd.Expr(w, e.Index, indT)
-		w.WriteByte(']')
+		cdd.indexExpr(w, cdd.exprType(e.X), cdd.ExprStr(e.X, nil), e.Index)
 
 	case *ast.KeyValueExpr:
 		w.WriteByte('.')
@@ -487,6 +443,46 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 	default:
 		fmt.Fprintf(w, "!%v<%T>!", e, e)
 	}
+}
+
+func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Expr) {
+	pt, isPtr := typ.(*types.Pointer)
+	if isPtr {
+		w.WriteString("(*")
+		typ = pt.Elem()
+	}
+
+	var indT types.Type
+
+	switch t := typ.(type) {
+	case *types.Basic: // string
+		w.WriteString(xs + ".str")
+
+	case *types.Slice:
+		w.WriteString("((")
+		dim, _ := cdd.Type(w, t.Elem())
+		dim = append([]string{"*"}, dim...)
+		w.WriteString(dimFuncPtr("", dim))
+		w.WriteByte(')')
+		w.WriteString(xs + ".arr)")
+
+	case *types.Array:
+		w.WriteString(xs)
+
+	case *types.Map:
+		indT = t.Key()
+		notImplemented(&ast.IndexExpr{}, t)
+
+	default:
+		panic(t)
+	}
+
+	if isPtr {
+		w.WriteByte(')')
+	}
+	w.WriteByte('[')
+	cdd.Expr(w, idx, indT)
+	w.WriteByte(']')
 }
 
 func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {

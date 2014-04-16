@@ -5,7 +5,6 @@ import (
 	"go/ast"
 	"go/token"
 	"strconv"
-	"strings"
 
 	"code.google.com/p/go.tools/go/types"
 )
@@ -109,7 +108,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		if s.Tok == token.DEFINE {
 			for i, e := range s.Lhs {
 				name := cdd.NameStr(cdd.object(e.(*ast.Ident)), true)
-				if strings.HasPrefix(name, "unused") {
+				if name == "_$" {
 					lhs[i] = "_"
 				} else {
 					t, dim, a := cdd.TypeStr(typ[i])
@@ -226,12 +225,11 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			cdd.indent(w)
 			updateEA(cdd.Stmt(w, s.Init, "", resultT, tup))
 		}
-		if label != "" {
-			cdd.label(w, label, "_continue")
+
+		if label != "" && s.Post == nil {
+			w.WriteString(label + "_continue: ")
 		}
-		if s.Init != nil {
-			cdd.indent(w)
-		}
+
 		w.WriteString("while (")
 		if s.Cond != nil {
 			cdd.Expr(w, s.Cond, nil)
@@ -249,6 +247,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteByte('\n')
 
 		if s.Post != nil {
+			if label != "" {
+				cdd.label(w, label, "_continue")
+			}
 			cdd.indent(w)
 			updateEA(cdd.Stmt(w, s.Post, "", resultT, tup))
 			cdd.il--
@@ -261,6 +262,109 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			cdd.indent(w)
 			w.WriteString("}\n")
 		}
+
+		if label != "" {
+			cdd.label(w, label, "_break")
+		}
+
+	case *ast.RangeStmt:
+		w.WriteString("{\n")
+		cdd.il++
+		xt := cdd.exprType(s.X)
+		xs := "x"
+		xl := ""
+
+		array := false
+		switch t := xt.(type) {
+		case *types.Array:
+			array = true
+			xl = strconv.FormatInt(t.Len(), 10)
+
+		case *types.Pointer:
+			array = true
+			xl = strconv.FormatInt(t.Elem().(*types.Array).Len(), 10)
+		}
+
+		if v, ok := s.Value.(*ast.Ident); ok && v.Name == "_" {
+			s.Value = nil
+		}
+
+		switch e := s.X.(type) {
+		case *ast.Ident:
+			xs = cdd.NameStr(cdd.object(e), true)
+
+		default:
+			if s.Value != nil || !array {
+				cdd.indent(w)
+				cdd.varDecl(w, xt, false, xs, e)
+			}
+		}
+
+		if !array {
+			xl = "len(" + xs + ")"
+		}
+
+		switch xt.(type) {
+		case *types.Slice, *types.Array, *types.Pointer:
+			cdd.indent(w)
+
+			ks := cdd.ExprStr(s.Key, nil)
+
+			if s.Tok == token.DEFINE {
+				w.WriteString("int ")
+			}
+			w.WriteString(ks + " = 0;\n")
+
+			if label != "" {
+				cdd.label(w, label, "_continue")
+			}
+
+			cdd.indent(w)
+			w.WriteString("while (" + ks + "++ < " + xl + ") ")
+
+			if s.Value != nil {
+				w.WriteString("{\n")
+				cdd.il++
+
+				cdd.indent(w)
+				if s.Tok == token.DEFINE {
+					t := xt
+					if pt, ok := xt.(*types.Pointer); ok {
+						t = pt.Elem()
+					}
+					vt := t.(interface {
+						Elem() types.Type
+					}).Elem()
+					dim, _ := cdd.Type(w, vt)
+					w.WriteByte(' ')
+					w.WriteString(dimFuncPtr(cdd.ExprStr(s.Value, nil), dim))
+				} else {
+					cdd.Expr(w, s.Value, nil)
+				}
+
+				w.WriteString(" = ")
+				cdd.indexExpr(w, xt, xs, s.Key)
+				w.WriteString(";\n")
+
+				cdd.indent(w)
+			}
+
+		default:
+			notImplemented(s, xt)
+		}
+
+		updateEA(cdd.BlockStmt(w, s.Body, resultT, tup))
+		w.WriteByte('\n')
+
+		if s.Value != nil {
+			cdd.il--
+			cdd.indent(w)
+			w.WriteString("}\n")
+		}
+
+		cdd.il--
+		cdd.indent(w)
+		w.WriteString("}\n")
 
 		if label != "" {
 			cdd.label(w, label, "_break")
@@ -285,10 +389,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		var typ types.Type
 		if s.Tag != nil {
 			typ = cdd.exprType(s.Tag)
-			cdd.Type(w, typ)
-			w.WriteString(" tag = ")
-			cdd.Expr(w, s.Tag, typ)
-			w.WriteString(";\n")
+			cdd.varDecl(w, typ, false, "tag", s.Tag)
 		} else {
 			typ = types.Typ[types.Bool]
 			w.WriteString("bool tag = true;\n")
@@ -361,125 +462,132 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteString(";\n")
 
 	case *ast.GoStmt:
-		c := s.Call
-		fs, ft, rs, re := cdd.funStr(c.Fun, c.Args)
-
-		type arg struct {
-			l string
-			r string
-			t types.Type
-		}
-
-		n := len(c.Args) + 1
-		if rs != "" {
-			n++
-		}
-		argv := make([]arg, n)
-
-		n = 0
-
-		if _, ok := c.Fun.(*ast.Ident); ok || rs != "" {
-			argv[n].l = fs
-		} else {
-			argv[n] = arg{"f", fs, ft}
-		}
-		n++
-
-		if rs != "" {
-			ev := false
-			if re != nil {
-				if _, ok := re.(*ast.Ident); !ok {
-					ev = true
-				}
-			}
-			t := cdd.exprType(re)
-			if !ev {
-				argv[n] = arg{rs, "", t}
-			} else {
-				argv[n] = arg{"r", rs, t}
-			}
-			n++
-		}
-
-		tup := cdd.exprType(c.Fun).(*types.Signature).Params()
-		for i, a := range c.Args {
-			s := cdd.ExprStr(a, tup.At(i).Type())
-			_, ok := a.(*ast.Ident)
-			if !ok {
-				_, ok = a.(*ast.BasicLit)
-			}
-			t := cdd.exprType(a)
-			if ok {
-				argv[n] = arg{s, "", t}
-			} else {
-				argv[n] = arg{"_" + strconv.Itoa(i), s, t}
-			}
-			n++
-		}
-
-		if len(argv) == 1 {
-			w.WriteString("GO(" + argv[0].l + "());\n")
-			break
-		}
-		
-		w.WriteString("{\n")
-		cdd.il++
-
-		cdd.indent(w)
-		w.WriteString("void wrap(")
-		for i, arg := range argv[1:] {
-			if i > 0 {
-				w.WriteString(", ")
-			}
-			t, dim, _ := cdd.TypeStr(arg.t)
-			w.WriteString(t + " " + dimFuncPtr("_"+strconv.Itoa(i), dim))
-		}
-		w.WriteString(") {\n")
-		cdd.il++
-
-		cdd.indent(w)
-		w.WriteString("goready();\n")
-		cdd.indent(w)
-		w.WriteString(argv[0].l + "(")
-		for i := range argv[1:] {
-			if i > 0 {
-				w.WriteString(", ")
-			}
-			w.WriteString("_" + strconv.Itoa(i))
-		}
-		w.WriteString(");\n")
-
-		cdd.il--
-		cdd.indent(w)
-		w.WriteString("}\n")
-
-		for _, arg := range argv {
-			if arg.r == "" {
-				continue
-			}
-			t, dim, a := cdd.TypeStr(arg.t)
-			acds = append(acds, a...)
-
-			cdd.indent(w)
-			w.WriteString(t + " " + dimFuncPtr(arg.l, dim) + " = " + arg.r + ";\n")
-		}
-
-		cdd.indent(w)
-		w.WriteString("GOWAIT(wrap(")
-		for i, arg := range argv[1:] {
-			if i > 0 {
-				w.WriteString(", ")
-			}
-			w.WriteString(arg.l)
-		}
-		w.WriteString("));\n")
-		cdd.il--
-		cdd.indent(w)
-		w.WriteString("}\n")
+		a := cdd.GoStmt(w, s)
+		acds = append(acds, a...)
 
 	default:
 		notImplemented(s)
 	}
+	return
+}
+
+func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) (acds []*CDD) {
+	c := s.Call
+	fs, ft, rs, re := cdd.funStr(c.Fun, c.Args)
+
+	type arg struct {
+		l string
+		r string
+		t types.Type
+	}
+
+	n := len(c.Args) + 1
+	if rs != "" {
+		n++
+	}
+	argv := make([]arg, n)
+
+	n = 0
+
+	if _, ok := c.Fun.(*ast.Ident); ok || rs != "" {
+		argv[n].l = fs
+	} else {
+		argv[n] = arg{"f", fs, ft}
+	}
+	n++
+
+	if rs != "" {
+		ev := false
+		if re != nil {
+			if _, ok := re.(*ast.Ident); !ok {
+				ev = true
+			}
+		}
+		t := cdd.exprType(re)
+		if !ev {
+			argv[n] = arg{rs, "", t}
+		} else {
+			argv[n] = arg{"r", rs, t}
+		}
+		n++
+	}
+
+	tup := cdd.exprType(c.Fun).(*types.Signature).Params()
+	for i, a := range c.Args {
+		s := cdd.ExprStr(a, tup.At(i).Type())
+		_, ok := a.(*ast.Ident)
+		if !ok {
+			_, ok = a.(*ast.BasicLit)
+		}
+		t := cdd.exprType(a)
+		if ok {
+			argv[n] = arg{s, "", t}
+		} else {
+			argv[n] = arg{"_" + strconv.Itoa(i), s, t}
+		}
+		n++
+	}
+
+	if len(argv) == 1 {
+		w.WriteString("GO(" + argv[0].l + "());\n")
+		return
+	}
+
+	w.WriteString("{\n")
+	cdd.il++
+
+	cdd.indent(w)
+	w.WriteString("void wrap(")
+	for i, arg := range argv[1:] {
+		if i > 0 {
+			w.WriteString(", ")
+		}
+		t, dim, _ := cdd.TypeStr(arg.t)
+		w.WriteString(t + " " + dimFuncPtr("_"+strconv.Itoa(i), dim))
+	}
+	w.WriteString(") {\n")
+	cdd.il++
+
+	cdd.indent(w)
+	w.WriteString("goready();\n")
+	cdd.indent(w)
+	w.WriteString(argv[0].l + "(")
+	for i := range argv[1:] {
+		if i > 0 {
+			w.WriteString(", ")
+		}
+		w.WriteString("_" + strconv.Itoa(i))
+	}
+	w.WriteString(");\n")
+
+	cdd.il--
+	cdd.indent(w)
+	w.WriteString("}\n")
+
+	for _, arg := range argv {
+		if arg.r == "" {
+			continue
+		}
+		t, dim, a := cdd.TypeStr(arg.t)
+		acds = append(acds, a...)
+
+		cdd.indent(w)
+		w.WriteString(t + " " + dimFuncPtr(arg.l, dim) + " = " + arg.r + ";\n")
+	}
+
+	cdd.indent(w)
+	w.WriteString("GOWAIT(wrap(")
+	for i, arg := range argv[1:] {
+		if i > 0 {
+			w.WriteString(", ")
+		}
+		w.WriteString(arg.l)
+	}
+	w.WriteString("));\n")
+	cdd.il--
+	cdd.indent(w)
+	w.WriteString("}\n")
+
 	return
 }
 

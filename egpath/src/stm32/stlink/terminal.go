@@ -1,4 +1,4 @@
-// Package stlink provides STM32 ST-LINK debuging functions 
+// Package stlink provides STM32 ST-LINK debuging functions.
 package stlink
 
 import "sync/barrier"

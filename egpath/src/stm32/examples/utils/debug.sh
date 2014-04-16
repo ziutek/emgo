@@ -2,7 +2,7 @@
 
 set -e
 
-setsid st-util >/dev/null 2>&1 </dev/null &
+#setsid st-util >/dev/null 2>&1 </dev/null &
 
 trap /bin/true INT
 

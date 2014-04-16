@@ -1,7 +1,7 @@
 // +build cortexm4f
 
 __attribute__ ((naked)) static
-void runtime_noos_pendSVHandler() {
+void runtime$noos$pendSVHandler() {
 	asm volatile (
 		"push	{lr}\n\t"
 		"mrs	r0, psp\n\t"
@@ -12,7 +12,7 @@ void runtime_noos_pendSVHandler() {
 		"addeq	r0, 1\n\t"
 		
 		// Call nextTask with SP used by current task.
-		"bl		runtime_noos_nextTask\n\t"
+		"bl		runtime$noos$nextTask\n\t"
 		
 		"pop	{r2}\n\t"
 		
@@ -53,6 +53,6 @@ void runtime_noos_pendSVHandler() {
 		"1:\n\t"
 		
 		"bx		r2"
-		:: "X" (runtime_noos_nextTask)
+		:: "X" (runtime$noos$nextTask)
 	);
 }

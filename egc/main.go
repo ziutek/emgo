@@ -155,7 +155,7 @@ func compile(ppath string) error {
 	}
 	defer wc.Close()
 
-	up := strings.Replace(ppath, "/", "_", -1)
+	up := strings.Replace(ppath, "/", "$", -1)
 	_, err = io.WriteString(wh, "#ifndef "+up+"\n#define "+up+"\n\n")
 	if err != nil {
 		return err

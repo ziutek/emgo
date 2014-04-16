@@ -84,9 +84,9 @@ int foo$F() {
 	int a$ = 1;
 	(void)((foo$F()+foo$F()));
 	(void)((3*foo$F()));
-	int tmp1 = 2;
+	int tmp0 = 2;
 	(void)((3*foo$F()));
-	a$ = tmp1;
+	a$ = tmp0;
 	return a$;
 }
 // end

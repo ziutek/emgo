@@ -1,7 +1,7 @@
 // +build cortexm3 cortexm4
 
 __attribute__ ((naked)) static
-void runtime_noos_pendSVHandler() {
+void runtime$noos$pendSVHandler() {
 	asm volatile (
 		"push	{lr}\n\t"
 		"mrs	r0, psp\n\t"
@@ -25,6 +25,6 @@ void runtime_noos_pendSVHandler() {
 		"1:\n\t"
 	
 		"pop	{pc}"
-		:: "X" (runtime_noos_nextTask)
+		:: "X" (runtime$noos$nextTask)
 	);
 }

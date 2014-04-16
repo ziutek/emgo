@@ -11,7 +11,7 @@ typedef __UINT64_TYPE__ uint64;
 typedef unsigned int uint;
 
 typedef __UINTPTR_TYPE__ uintptr;
-typedef void* unsafe_Pointer;
+typedef void* unsafe$Pointer;
 
 typedef float float32;
 typedef double float64;
@@ -45,5 +45,5 @@ typedef uint8 bool;
 #define nil (0)
 
 #define len(v) (v.len)
-#define __ALEN(a) (sizeof(a) / sizeof((a)[0]))
-#define __ACPY(dst, src) memmove(dst, src, sizeof(dst))
+#define ALEN(a) (sizeof(a) / sizeof((a)[0]))
+#define ACPY(dst, src) memmove(dst, src, sizeof(dst))

@@ -3,35 +3,35 @@ typedef struct {
 	uint len;
 } string;
 
-#define __EGSTR(s) ((string){(byte *)s, sizeof(s)-1})
+#define EGSTR(s) ((string){(byte *)s, sizeof(s)-1})
 
-// #define __NEWSTR(b) Memory allocation need.
+// #define NEWSTR(b) Memory allocation need.
 
-#define __SSLICE_LOW(expr, low) \
-	string __s = expr;          \
-	uint __low = low;           \
-	__s.str = __s.str + __low
+#define _SSLICE_LOW(expr, low) \
+	string s = expr;          \
+	uint l = low;             \
+	s.str = s.str + l
 
-#define __SSLICEL(expr, low) ({ \
-	__SSLICE_LOW(expr, low);    \
-	__s.len -= low;             \
-	__s;                        \
+#define SSLICEL(expr, low) ({ \
+	_SSLICE_LOW(expr, low);    \
+	s.len -= l;               \
+	s;                        \
 })
 
-#define __SSLICELH(expr, low, high) ({ \
-	__SSLICE_LOW(expr, low);           \
-	__s.len = high - __low;            \
-	__s;                               \
+#define SSLICELH(expr, low, high) ({ \
+	_SSLICE_LOW(expr, low);           \
+	s.len = high - l;            \
+	s;                               \
 })
 
-#define __SSLICEH(expr, high) ({ \
-	string __s = expr;           \
-	__s.len = high;              \
-	__s;                         \
+#define SSLICEH(expr, high) ({ \
+	string s = expr;           \
+	s.len = high;              \
+	s;                         \
 })
 
-#define __STRCPY(dst, src) ({                     \
-	int __n = (dst.len < src.len) ? dst.len : src.len; \
-	memmove(dst.arr, src.str, __n); \
-	__n;                                               \
+#define STRCPY(dst, src) ({                          \
+	int n = (dst.len < src.len) ? dst.len : src.len; \
+	memmove(dst.arr, src.str, n);                    \
+	n;                                               \
 })

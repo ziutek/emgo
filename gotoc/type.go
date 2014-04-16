@@ -76,7 +76,7 @@ writeType:
 				//name := cdd.NameStr(f, true)
 				name := dimFuncPtr(f.Name(), d)
 				if name == "_" {
-					name += strconv.Itoa(i)
+					name += strconv.Itoa(i) + "$"
 				}
 				w.WriteString(name)
 			}

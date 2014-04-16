@@ -3,8 +3,8 @@
 
 #include "builtin.h"
 
-int main_init();
-int main_main();
+int main$init();
+int main$main();
 
 // All external symbols as byte to prevent compiler to optimize
 // any runtime align checks.
@@ -12,26 +12,27 @@ extern byte DataRAM, DataLoad, DataSize;
 extern byte BSSRAM, BSSSize;
 extern byte StackEnd;
 
-void runtime_Start() {
+void runtime$Start() {
 	memmove(&DataRAM, &DataLoad, (uint)(&DataSize));
 	memset(&BSSRAM, 0, (uint)(&BSSSize));
 
-	runtime_init();
-	main_init();
-	main_main();
+	runtime$init();
+	main$init();
+	main$main();
 
 	for (;;);
 }
 
-void runtime_defaultHandler() {
+static
+void defaultHandler() {
 	for (;;) {
 	}
 }
 
 __attribute__ ((section(".vectors")))
-uint32 *cortexm_startup_vectors[4]  = {
-		(uint32 *) &StackEnd,              // MSP
-		(uint32 *) runtime_Start,          // entry point
-		(uint32 *) runtime_defaultHandler, // NMI
-		(uint32 *) runtime_defaultHandler, // hard fault
+uint32 *cortexm$startup$vectors[4]  = {
+		(uint32 *) &StackEnd,      // MSP
+		(uint32 *) runtime$Start,  // entry point
+		(uint32 *) defaultHandler, // NMI
+		(uint32 *) defaultHandler, // hard fault
 };

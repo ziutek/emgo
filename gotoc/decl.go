@@ -167,7 +167,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				if i > 0 {
 					cdd.indent(w)
 				}
-				acds := cdd.varDecl(w, v, name, val)
+				acds := cdd.varDecl(w, v.Type(), cdd.gtc.isGlobal(v), name, val)
 
 				w.Reset()
 
@@ -214,8 +214,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 	return
 }
 
-func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr) (acds []*CDD) {
-	typ := v.Type()
+func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name string, val ast.Expr) (acds []*CDD) {
 
 	dim, acds := cdd.Type(w, typ)
 	w.WriteByte(' ')
@@ -223,7 +222,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr
 
 	constInit := true // true if C declaration can init value
 
-	if cdd.gtc.isGlobal(v) {
+	if global {
 		cdd.copyDecl(w, ";\n") // Global variables may need declaration
 		if val != nil {
 			constInit = cdd.exprValue(val) != nil
@@ -248,17 +247,17 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr
 
 		switch t := typ.(type) {
 		case *types.Slice:
-			switch v := val.(type) {
+			switch vt := val.(type) {
 			case *ast.CompositeLit:
 				aname := "array" + cdd.gtc.uniqueId()
-				at := types.NewArray(t.Elem(), int64(len(v.Elts)))
-				o := types.NewVar(v.Lbrace, cdd.gtc.pkg, aname, at)
+				at := types.NewArray(t.Elem(), int64(len(vt.Elts)))
+				o := types.NewVar(vt.Lbrace, cdd.gtc.pkg, aname, at)
 				cdd.gtc.pkg.Scope().Insert(o)
 				acd := cdd.gtc.newCDD(o, VarDecl, cdd.il)
-				av := *v
+				av := *vt
 				cdd.gtc.ti.Types[&av] = types.TypeAndValue{Type: at} // BUG: thread-unsafe
 				n := w.Len()
-				acd.varDecl(w, o, aname, &av)
+				acd.varDecl(w, o.Type(), cdd.gtc.isGlobal(o), aname, &av)
 				w.Truncate(n)
 				acds = append(acds, acd)
 
@@ -309,7 +308,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, v *types.Var, name string, val ast.Expr
 			cdd.gtc.pkg.Scope().Insert(o)
 			acd := cdd.gtc.newCDD(o, VarDecl, cdd.il)
 			n := w.Len()
-			acd.varDecl(w, o, cname, c)
+			acd.varDecl(w, o.Type(), cdd.gtc.isGlobal(o), cname, c)
 			w.Truncate(n)
 			acds = append(acds, acd)
 
