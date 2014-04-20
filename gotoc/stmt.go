@@ -320,7 +320,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			}
 
 			cdd.indent(w)
-			w.WriteString("while (" + ks + "++ < " + xl + ") ")
+			w.WriteString("for (; " + ks + " < " + xl + "; ++" + ks + ") ")
 
 			if s.Value != nil {
 				w.WriteString("{\n")
