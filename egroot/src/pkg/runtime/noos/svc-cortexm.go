@@ -2,12 +2,14 @@
 
 package noos
 
-import "unsafe"
+import (
+	"unsafe"
+
+	"cortexm/irq"
+)
 
 // svcHandler calls sv with SVC caller's stack frame.
 func svcHandler()
-
-
 
 func sv(fp *stackFrame) {
 	// Consider pass SVC number as a parameter instead embed it into SVC
@@ -22,8 +24,58 @@ func sv(fp *stackFrame) {
 
 	case 1:
 		tasker.delTask(tasker.curTask)
-		
+
 	case 2:
 		tasker.run()
+
+	case 3:
+		tasker.waitEvent(Event(fp.r[0]))
 	}
+}
+
+func (ts *taskSched) newTask(pc uintptr, xpsr uint32, wait bool) {
+	n := ts.curTask
+	for {
+		if n++; n >= len(ts.tasks) {
+			n = 0
+		}
+		if ts.tasks[n].state() == taskEmpty {
+			break
+		}
+		if n == ts.curTask {
+			panic("too many tasks")
+		}
+	}
+
+	sf, sp := allocStackFrame(initSP(n))
+	ts.tasks[n] = taskInfo{sp: sp, prio: 255} // (re)initialization
+
+	// Use parent's xPSR as initial xPSR for new task.
+	sf.xpsr = xpsr
+	sf.pc = pc
+
+	ts.tasks[n].setState(taskReady)
+
+	if wait {
+		ts.stop()
+		// BUG: This badly affects scheduling but don't care for now.
+		ts.forceNext = n
+		irq.PendSV.SetPending()
+	}
+}
+
+func (ts *taskSched) delTask(n int) {
+	ts.tasks[n].setState(taskEmpty)
+	irq.PendSV.SetPending()
+}
+
+func (ts *taskSched) waitEvent(e Event) {
+	t := &ts.tasks[ts.curTask]
+	if e == 0 || t.event&e != 0 {
+		t.event = 0
+		return
+	}
+	t.setState(taskWaitEvent)
+	t.event = e
+	irq.PendSV.SetPending()
 }

@@ -29,11 +29,11 @@ func init() {
 	LED.SetMode(Blue, gpio.Out)
 }
 
-func blink(l, d int, max, inc float32) {
+func blink(led, d int, max, inc float32) {
 	for inc < max {
-		LED.SetBit(l)
+		LED.SetBit(led)
 		delay.Loop(d)
-		LED.ClearBit(l)
+		LED.ClearBit(led)
 		delay.Loop(d)
 		inc *= inc
 	}
@@ -46,5 +46,8 @@ func main() {
 		go blink(Red, 3e5, 130, 1.0001)
 		blink(Blue, 17e5, 100, 1.0001)
 		delay.Loop(1e7)
+		// BUG: In real application you schould ensure that all gorutines
+		// finished before next loop. In this case Blue LED blinks longest
+		// so this works.
 	}
 }

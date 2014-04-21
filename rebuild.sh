@@ -2,12 +2,13 @@
 
 set -e
 
+rm -rf egroot/pkg/* egpath/pkg/*
+
 list="
 builtin
 
 sync/atomic
 sync/barrier
-sync/events
 delay
 mmio
 
@@ -19,6 +20,8 @@ cortexm/sleep
 
 runtime/noos
 runtime
+
+sync
 
 strconv
 math/matrix32

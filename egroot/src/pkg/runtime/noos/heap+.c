@@ -25,8 +25,9 @@ slice runtime$noos$allocBottom(unsafe$Pointer sptr, slice bs, int n, uintptr elS
 	p->arr = (unsafe$Pointer)alignUp((uintptr)bs.arr, sliAlign);
 	p->len = (uint)n;
 	p->cap = (uint)n;
-	blen += (uint)(p->arr - bs.arr);
+	memset(p->arr, 0, blen);
 	
+	blen += (uint)(p->arr - bs.arr);
 	if (blen > bs.len) {
 		return NILSLICE;
 	}
@@ -42,8 +43,9 @@ slice runtime$noos$allocTop(unsafe$Pointer sptr, slice bs, int n, uintptr elSize
 	p->arr = (unsafe$Pointer)alignDown((uintptr)arr, sliAlign);
 	p->len = (uint)n;
 	p->cap = (uint)n;
-	blen += (uint)(arr - p->arr);
+	memset(p->arr, 0, blen);
 	
+	blen += (uint)(arr - p->arr);
 	if (blen > bs.len) {
 		return NILSLICE;
 	}

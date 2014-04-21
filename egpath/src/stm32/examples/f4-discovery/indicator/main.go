@@ -36,7 +36,6 @@ func init() {
 }
 
 func main() {
-	const wait = 2e6
 	for {
 		if In.Bit(0) {
 			LED.SetBit(Red)

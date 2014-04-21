@@ -5,7 +5,7 @@
 .global __clear_cache
 
 // __clear_cache is need by gcc.
-// void __clear_cache(char *begin, char *end)
+// void __clear_cache(char *begin, char *end);
 
 .thumb_func
 __clear_cache:

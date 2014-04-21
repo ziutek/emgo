@@ -26,9 +26,9 @@ MaxTasks > 0 means:
 - MPU (if avilable) is used to protect the stacks and other areas,
 - all tasks runs in user mode.
 
-#### EVTExp
+#### IRTExp
 
-Defines the length of the table for exception vectors. EVTExp should be >= 5 (2^5 allows to handle 16 system exceptions and 16 external intnerrupts.) EVTExp is used only if MaxTasks > 0.
+Defines the length of the table for ISR vectors. IRTExp should be >= 5 (2^5 allows to handle 16 system exceptions and 16 external intnerrupts.) IRTExp is used only if MaxTasks > 0.
 
 #### Remarks
 

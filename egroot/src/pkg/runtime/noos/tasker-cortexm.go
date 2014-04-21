@@ -12,47 +12,32 @@ import (
 	"cortexm/systick"
 )
 
-func evtExp() uint
-
-var stackCap = uintptr((1 << stackExp()) * stackFrac() / 8)
-
-func initSP(i int) uintptr {
-	return stackEnd() - uintptr(i)*stackCap
-}
-
 type taskState byte
 
 const (
 	taskEmpty taskState = iota
 	taskReady
+	taskWaitEvent
 )
-
-func (s taskState) Ready() bool {
-	return s&3 == taskReady
-}
-
-func (s *taskState) SetReady() {
-	*s = *s&^3 | taskReady
-}
-
-func (s taskState) Empty() bool {
-	return s&3 == taskEmpty
-}
-
-func (s *taskState) SetEmpty() {
-	*s = *s&^3 | taskEmpty
-}
 
 // taskInfo
 // sp contains value of SP after automatic stacking during exception entry. So
 // sp points to the last register in set automatically stacked by CPU and just
 // after the register set stacked by tasker. pendSVHandler can use two least
-// significant bits of sp as flags.
+// significant bits of sp for its flags.
 type taskInfo struct {
 	sp    uintptr
-	next  uint16
-	state taskState
+	event Event
+	flags taskState
 	prio  uint8
+}
+
+func (ti *taskInfo) state() taskState {
+	return taskState(ti.flags & 3)
+}
+
+func (ti *taskInfo) setState(s taskState) {
+	ti.flags = ti.flags&^3 | s
 }
 
 type taskSched struct {
@@ -72,9 +57,30 @@ func (ts *taskSched) stop() {
 	ts.onSysTick = false
 }
 
+func (ts *taskSched) deliverEvent(e Event) {
+	for i := range ts.tasks {
+		t := &ts.tasks[i]
+		switch t.state() {
+		case taskEmpty:
+			// skip
+
+		case taskWaitEvent:
+			if t.event&e != 0 {
+				t.event = 0
+				t.setState(taskReady)
+			}
+
+		default:
+			t.event |= e
+		}
+	}
+}
+
+func irtExp() uint
+
 func (ts *taskSched) init() {
 	var vt []irq.Vector
-	vtlen := 1 << evtExp()
+	vtlen := 1 << irtExp()
 	vtsize := vtlen * int(unsafe.Sizeof(irq.Vector{}))
 
 	Heap = allocTop(
@@ -95,11 +101,9 @@ func (ts *taskSched) init() {
 		panicMemory()
 	}
 
-	ts.tasks[0] = taskInfo{prio: 255}
-	ts.tasks[0].state.SetReady()
-	for i := 1; i < len(ts.tasks); i++ {
-		ts.tasks[i].state.SetEmpty()
-	}
+	// Set taskInfo for initial (current) task.
+	ts.tasks[0].prio = 255
+	ts.tasks[0].setState(taskReady)
 
 	// Use PSP as stack pointer for thread mode.
 	cortexm.SetPSP(unsafe.Pointer(cortexm.MSP()))
@@ -114,7 +118,6 @@ func (ts *taskSched) init() {
 	// Consider setup at link time using GCC weak functions to support Cortex-M0
 	// and (in case of Cortex-M3,4) to allow vector load on the ICode bus
 	// simultaneously with registers stacking on DCode bus.
-	vt[irq.Reset] = irq.VectorFor(resetHandler)
 	vt[irq.NMI] = irq.VectorFor(nmiHandler)
 	vt[irq.HardFault] = irq.VectorFor(hardFaultHandler)
 	vt[irq.MemFault] = irq.VectorFor(memFaultHandler)
@@ -138,11 +141,6 @@ func (ts *taskSched) init() {
 
 	tasker.forceNext = -1
 	tasker.run()
-}
-
-func resetHandler() {
-	for {
-	}
 }
 
 func nmiHandler() {
@@ -192,73 +190,4 @@ func sysTickHandler() {
 	if tasker.onSysTick {
 		irq.PendSV.SetPending()
 	}
-}
-
-// pendSVHandler calls nextTask with PSP for current task. It performs
-// context swich if nextTask returns new non-zero value for PSP.
-func pendSVHandler()
-
-// nextTask returns taskInfo.sp for next task or 0. pendSVHandler can use two
-// least significant bits of sp as flags so sp isn't real stack pointer.
-// TODO: better scheduler
-func nextTask(sp uintptr) uintptr {
-	n := tasker.forceNext
-	if n >= 0 {
-		tasker.forceNext = -1
-	} else {
-		n = tasker.curTask
-		for {
-			if n++; n >= len(tasker.tasks) {
-				n = 0
-			}
-			if tasker.tasks[n].state.Ready() {
-				break
-			}
-			if n == tasker.curTask {
-				panic("no task to run")
-			}
-		}
-		if n == tasker.curTask {
-			return 0
-		}
-	}
-	tasker.tasks[tasker.curTask].sp = sp
-	tasker.curTask = n
-	return tasker.tasks[n].sp
-}
-
-func (ts *taskSched) newTask(pc uintptr, xpsr uint32, wait bool) {
-	n := ts.curTask
-	for {
-		if n++; n >= len(ts.tasks) {
-			n = 0
-		}
-		if ts.tasks[n].state.Empty() {
-			break
-		}
-		if n == ts.curTask {
-			panic("too many tasks")
-		}
-	}
-
-	sf, sp := allocStackFrame(initSP(n))
-	ts.tasks[n] = taskInfo{sp: sp, prio: 255} // (re)initialization
-
-	// Use parent's xPSR as initial xPSR for new task.
-	sf.xpsr = xpsr
-	sf.pc = pc
-
-	ts.tasks[n].state.SetReady()
-
-	if wait {
-		ts.stop()
-		// This badly affects scheduling but don't care for now.
-		ts.forceNext = n
-		irq.PendSV.SetPending()
-	}
-}
-
-func (ts *taskSched) delTask(n int) {
-	ts.tasks[n].state.SetEmpty()
-	irq.PendSV.SetPending()
 }
