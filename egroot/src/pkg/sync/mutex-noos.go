@@ -13,10 +13,14 @@ type mutex struct {
 }
 
 func (m *Mutex) lock() {
-	if m.state == 0 {
-		m.state = uintptr(noos.AssignEventFlag())
+	state := atomic.LoadUintptr(&m.state)
+	if state == 0 {
+		state = uintptr(noos.AssignEventFlag())
+		if !atomic.CompareAndSwapUintptr(&m.state, 0, state) {
+			state = m.state
+		}
 	}
-	unlocked, locked := m.state&^1, m.state|1
+	unlocked, locked := state&^1, state|1
 	for {
 		if atomic.CompareAndSwapUintptr(&m.state, unlocked, locked) {
 			return

@@ -5,10 +5,10 @@ import (
 	"unsafe"
 )
 
-// An Event represents event that gorutine or ISR can send and gorutine (but not
-// ISR) can wait for. Events are intended for use by low-level library rutines
-// to implement higher level communication and synchronization primitives like
-// channels and mutexes.
+// An Event represents an event that gorutine or ISR can send and gorutine (but
+// not ISR) can wait for. Events are intended for use by low-level library
+// rutines to implement higher level communication and synchronization primitives
+// like channels and mutexes.
 type Event uintptr
 
 const eventBits = uint32(unsafe.Sizeof(Event(0)) * 8)
@@ -43,9 +43,9 @@ func (e Event) Send() {
 
 // Wait waits for event.
 // If e == 0 it returns immediately. Wait clears all saved events for current
-// gorutine so the information about sended events, that Wait hasn't waited for,
-// is lost. Optimizations performed by compiler treat Wait as compiler memory
-// barier.
+// gorutine so the information about sended events, that Wait hasn't waited
+// for, is lost. Wait acts as a the compiler memory barrier (see sync/barrier
+// package).
 func (e Event) Wait()
 
 // EventSum returns a logical sum of events. Send the sum of events is equal to

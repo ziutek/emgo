@@ -162,3 +162,75 @@ extern inline
 uintptr sync$atomic$SwapUintptr(uintptr *addr, uintptr new) {
 	return __atomic_exchange_n(addr, new, MMODEL);
 }
+
+__attribute__ ((always_inline))
+extern inline
+int32 sync$atomic$LoadInt32(int32 *addr) {
+	return __atomic_load_n(addr, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline
+int64 sync$atomic$LoadInt64(int64 *addr) {
+	return __atomic_load_n(addr, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline
+uint32 sync$atomic$LoadUint32(uint32 *addr) {
+	return __atomic_load_n(addr, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline
+uint64 sync$atomic$LoadUint64(uint64 *addr) {
+	return __atomic_load_n(addr, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline
+uintptr sync$atomic$LoadUintptr(uintptr *addr) {
+	return __atomic_load_n(addr, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline
+unsafe$Pointer sync$atomic$LoadPointer(unsafe$Pointer *addr) {
+	return __atomic_load_n(addr, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline
+void sync$atomic$StoreInt32(int32 *addr, int32 val) {
+	return __atomic_store_n(addr, val, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline
+void sync$atomic$StoreInt64(int64 *addr, int64 val) {
+	return __atomic_store_n(addr, val, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline
+void sync$atomic$StoreUint32(uint32 *addr, uint32 val) {
+	return __atomic_store_n(addr, val, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline
+void sync$atomic$StoreUint64(uint64 *addr, uint64 val) {
+	return __atomic_store_n(addr, val, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline
+void sync$atomic$StorePointer(unsafe$Pointer *addr, unsafe$Pointer val) {
+	return __atomic_store_n(addr, val, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline
+void sync$atomic$StoreUintptr(uintptr *addr, uintptr val) {
+	return __atomic_store_n(addr, val, MMODEL);
+}

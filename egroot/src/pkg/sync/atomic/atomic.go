@@ -1,3 +1,7 @@
+// Package atomic provides low-level atomic memory primitives.
+//
+// These functions do only what specified and don't provide any implicit memory
+// barriers nor "happens-before" edges for different gorutines.
 package atomic
 
 import "unsafe"
@@ -33,3 +37,17 @@ func SwapPointer(addr *unsafe.Pointer, new unsafe.Pointer) (old unsafe.Pointer)
 func SwapUint32(addr *uint32, new uint32) (old uint32)
 func SwapUint64(addr *uint64, new uint64) (old uint64)
 func SwapUintptr(addr *uintptr, new uintptr) (old uintptr)
+
+func LoadInt32(addr *int32) (val int32)
+func LoadInt64(addr *int64) (val int64)
+func LoadUint32(addr *uint32) (val uint32)
+func LoadUint64(addr *uint64) (val uint64)
+func LoadUintptr(addr *uintptr) (val uintptr)
+func LoadPointer(addr *unsafe.Pointer) (val unsafe.Pointer)
+
+func StoreInt32(addr *int32, val int32)
+func StoreInt64(addr *int64, val int64)
+func StoreUint32(addr *uint32, val uint32)
+func StoreUint64(addr *uint64, val uint64)
+func StoreUintptr(addr *uintptr, val uintptr)
+func StorePointer(addr *unsafe.Pointer, val unsafe.Pointer)
