@@ -220,6 +220,10 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	w.WriteByte(' ')
 	w.WriteString(dimFuncPtr(name, dim))
 
+	if t, ok := typ.(*types.Named); ok {
+		typ = t.Underlying()
+	}
+
 	constInit := true // true if C declaration can init value
 
 	if global {
@@ -228,12 +232,17 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 			constInit = cdd.exprValue(val) != nil
 		}
 	}
+
 	if constInit {
-		w.WriteString(" = ")
 		if val != nil {
+			w.WriteString(" = ")
 			cdd.Expr(w, val, typ)
 		} else {
-			w.WriteString("{0}")
+			if t, ok := typ.(*types.Struct); ok && t.NumFields() == 0 {
+			} else if t, ok := typ.(*types.Array); ok && t.Len() == 0 {
+			} else {
+				w.WriteString(" = {0}")
+			}
 		}
 	}
 	w.WriteString(";\n")
