@@ -2,6 +2,7 @@ package noos
 
 import (
 	"sync/atomic"
+	"sync/barrier"
 	"unsafe"
 )
 
@@ -36,21 +37,23 @@ func AssignEventFlag() Event {
 
 // Send sends event that means it waking up all gorutines that wait for e.
 // If some gorutine isn't waiting for any event, e is saved for this gorutine
-// for possible future call of Wait.
+// for possible future call of Wait. Compiler can't reorder Send with any
+// memory operation that is before it in the program code.
 func (e Event) Send() {
+	barrier.Memory()
 	atomic.OrUintptr((*uintptr)(&eventReg), uintptr(e))
 }
 
 // Wait waits for event.
 // If e == 0 it returns immediately. Wait clears all saved events for current
-// gorutine so the information about sended events, that Wait hasn't waited
-// for, is lost. Wait acts as a the compiler memory barrier (see sync/barrier
-// package).
+// gorutine so the information about sended events, that Wait hasn't waited for,
+// is lost. Compiler can't reorder Wait with any memory operation that is before
+// or after it in the program code.
 func (e Event) Wait()
 
-// EventSum returns a logical sum of events. Send the sum of events is equal to
-// send all that events at once. Wait for sum of events means wait for at least
-// one event from sum.
+// EventSum returns a logical sum of events.
+// Send the sum of events is equal to send all that events at once. Wait for sum
+// of events means wait for at least one event from sum.
 func EventSum(el ...Event) Event {
 	var sum Event
 	for _, e := range el {
