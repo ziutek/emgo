@@ -20,7 +20,7 @@ func (m *Mutex) lock() {
 			state = m.state
 		}
 	}
-	unlocked, locked := state&^1, state|1
+	unlocked, locked := state&^1, state|1	
 	for {
 		if atomic.CompareAndSwapUintptr(&m.state, unlocked, locked) {
 			return
@@ -28,6 +28,7 @@ func (m *Mutex) lock() {
 		noos.Event(unlocked).Wait()
 	}
 }
+
 
 func (m *Mutex) unlock() {
 	unlocked := m.state &^ 1

@@ -2,17 +2,16 @@
 
 .syntax unified
 
-.global memcpy
-.global memmove
-
-
 // TODO: Implement full aligned copy using LDM and STM
 // and check difference on real Cortex-M application:
 // a microcontroler with small SRAM and instructions read
 // from Flash (all Flash acceleration on).
 
 // void memmove(unsafe_Pointer dst, unsafe.Pointer, src, uint n)
+.global memmove
+
 // void memcpy(unsafe.Pointer dst, unsafe.Pointer src, uint n)
+.global memcpy
 
 .thumb_func
 memmove:

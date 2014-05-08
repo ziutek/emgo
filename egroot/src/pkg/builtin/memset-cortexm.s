@@ -2,10 +2,14 @@
 
 .syntax unified
 
+// func Memset(s unsafe.Pointer, b byte, n uintptr)
+.global builtin$Memset
+
+// void memset(unsafe$Pointer s, byte b, uintptr n)
 .global memset
 
-// void memset(unsafe.Pointer s, byte b, uint n)
-
+.thumb_func
+builtin$Memset:
 .thumb_func
 memset:
 	and  r1, 0xff

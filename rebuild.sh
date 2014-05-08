@@ -19,9 +19,9 @@ cortexm/systick
 cortexm/sleep
 
 runtime/noos
+sync
 runtime
 
-sync
 
 strconv
 math/matrix32

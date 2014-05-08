@@ -45,7 +45,6 @@ typedef struct {
 	s;                              \
 })
 
-	
 #define ASLICEL(expr, low) \
 	(slice){               \
 		&(expr)[low],      \

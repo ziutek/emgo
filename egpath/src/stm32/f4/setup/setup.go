@@ -5,10 +5,11 @@ import (
 	"stm32/f4/flash"
 )
 
-// Performance setups MCU for best performance (168MHz, Flash prefetch and
+// Performance setups MCU for best performance (168 MHz, Flash prefetch and
 // I/D cache on). It accepts one argument which is freqency of external
 // resonator in MHz. Allowed values are multiples of 2 MHz, from 4 MHz to
 // 26 MHz. Use 0 to select internal HSI oscilator as system clock source.
+// TODO: support for SysClock other than 168 MHz.
 func Performance(osc int) {
 	if osc < 0 || osc > 26 || osc == 2 || osc&1 != 0 {
 		panic("wrong frequency of external resonator")

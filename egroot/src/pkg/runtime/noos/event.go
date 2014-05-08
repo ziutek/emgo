@@ -38,10 +38,11 @@ func AssignEventFlag() Event {
 // Send sends event that means it waking up all gorutines that wait for e.
 // If some gorutine isn't waiting for any event, e is saved for this gorutine
 // for possible future call of Wait. Compiler can't reorder Send with any
-// memory operation that is before it in the program code.
+// memory operation that is before or after it in the program code.
 func (e Event) Send() {
 	barrier.Memory()
 	atomic.OrUintptr((*uintptr)(&eventReg), uintptr(e))
+	barrier.Memory()
 }
 
 // Wait waits for event.
