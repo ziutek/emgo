@@ -220,9 +220,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	w.WriteByte(' ')
 	w.WriteString(dimFuncPtr(name, dim))
 
-	if t, ok := typ.(*types.Named); ok {
-		typ = t.Underlying()
-	}
+	typ = underlying(typ)
 
 	constInit := true // true if C declaration can init value
 

@@ -57,3 +57,18 @@ bool foo$Nil(slice b$) {
 	return b$.arr == nil;
 }
 // end
+
+// Go code:
+import "unsafe"
+
+func Nil() unsafe.Pointer {
+	return nil
+}
+// C code:
+// decl
+unsafe$Pointer foo$Nil();
+// def
+unsafe$Pointer foo$Nil() {
+	return nil;
+}
+// end

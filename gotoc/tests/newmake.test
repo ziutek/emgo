@@ -1,0 +1,64 @@
+// Go code:
+func New() **int{
+	return new(*int)
+}
+// C code:
+// decl
+int **foo$New();
+// def
+int **foo$New() {
+	return NEW(int*);
+}
+// end
+
+// Go code:
+func MakeSli(n int) []*int {
+	return make([]*int, n)
+}
+// C code:
+// decl
+slice foo$MakeSli(int n$);
+// def
+slice foo$MakeSli(int n$) {
+	return MAKESLI(int*, n$);
+}
+// end
+
+// Go code:
+func MakeSli(n int) []*int {
+	return make([]*int, n, n)
+}
+// C code:
+// decl
+slice foo$MakeSli(int n$);
+// def
+slice foo$MakeSli(int n$) {
+	return MAKESLIC(int*, n$, n$);
+}
+// end
+
+// Go code:
+func MakeChan() chan *int {
+	return make(chan *int)
+}
+// C code:
+// decl
+chan foo$MakeChan();
+// def
+chan foo$MakeChan() {
+	return MAKECHAN(int*);
+}
+// end
+
+// Go code:
+func MakeChan(n int) chan *int {
+	return make(chan *int, n)
+}
+// C code:
+// decl
+chan foo$MakeChan(int n$);
+// def
+chan foo$MakeChan(int n$) {
+	return MAKECHANC(int*, n$);
+}
+// end

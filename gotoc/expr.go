@@ -186,7 +186,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 
 	switch name {
 	case "len":
-		switch t := cdd.exprType(args[0]).(type) {
+		switch t := underlying(cdd.exprType(args[0])).(type) {
 		case *types.Slice, *types.Map, *types.Basic: // Basic == String
 			return "len", ""
 
@@ -198,7 +198,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 		}
 
 	case "copy":
-		switch t := cdd.exprType(args[1]).(type) {
+		switch t := underlying(cdd.exprType(args[1])).(type) {
 		case *types.Basic: // string
 			return "STRCPY", ""
 
@@ -209,6 +209,48 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 		default:
 			panic(t)
 		}
+
+	case "new":
+		typ, dim, _ := cdd.TypeStr(cdd.exprType(args[0]))
+		args[0] = nil
+		return "NEW", typ + dimFuncPtr("", dim)
+
+	case "make":
+		a0t := cdd.exprType(args[0])
+		args[0] = nil
+
+		switch t := underlying(a0t).(type) {
+		case *types.Slice:
+			typ, dim, _ := cdd.TypeStr(t.Elem())
+			name := "MAKESLI"
+			if len(args) == 3 {
+				name = "MAKESLIC"
+			}
+			return name, typ + dimFuncPtr("", dim)
+
+		case *types.Chan:
+			typ, dim, _ := cdd.TypeStr(t.Elem())
+			name := "MAKECHAN"
+			if len(args) == 2 {
+				name = "MAKECHANC"
+			}
+			return name, typ + dimFuncPtr("", dim)
+
+		case *types.Map:
+			typ, dim, _ := cdd.TypeStr(t.Key())
+			k := typ + dimFuncPtr("", dim)
+			typ, dim, _ = cdd.TypeStr(t.Elem())
+			e := typ + dimFuncPtr("", dim)
+			name := "MAKEMAP"
+			if len(args) == 2 {
+				name = "MAKEMAPC"
+			}
+			return name, k + ", " + e
+
+		default:
+			notImplemented(args[0])
+		}
+
 	}
 
 	return name, ""
@@ -242,31 +284,42 @@ func (cdd *CDD) funStr(fe ast.Expr, args []ast.Expr) (fs string, ft types.Type, 
 }
 
 func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
-	switch t := cdd.exprType(e.Fun).(type) {
+	switch t := underlying(cdd.exprType(e.Fun)).(type) {
 	case *types.Signature:
 		fun, _, recv, _ := cdd.funStr(e.Fun, e.Args)
 		w.WriteString(fun)
 		w.WriteByte('(')
+		comma := false
 		if recv != "" {
 			w.WriteString(recv)
-			if len(e.Args) > 0 {
-				w.WriteString(", ")
-			}
+			comma = true
 		}
 		tup := t.Params()
 		for i, a := range e.Args {
-			if i != 0 {
-				w.WriteString(", ")
+			if a == nil {
+				// builtin can set type args to nil
+				continue
 			}
-			cdd.Expr(w, a, tup.At(i).Type())
+			if comma {
+				w.WriteString(", ")
+			} else {
+				comma = true
+			}
+			var at types.Type
+			// Builtin functions may not spefify type for all parameters.
+			if i < tup.Len() {
+				at = tup.At(i).Type()
+			}
+			cdd.Expr(w, a, at)
+			i++
 		}
 		w.WriteByte(')')
 
 	default:
 		arg := e.Args[0]
-		switch typ := cdd.exprType(e.Fun).(type) {
+		switch typ := t.(type) {
 		case *types.Slice:
-			switch cdd.exprType(arg).(type) {
+			switch underlying(cdd.exprType(arg)).(type) {
 			case *types.Basic: // string
 				w.WriteString("NEWSTR(")
 				cdd.Expr(w, arg, typ)
@@ -635,14 +688,15 @@ func (cdd *CDD) ExprStr(expr ast.Expr, nilT types.Type) string {
 }
 
 func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
-	switch t.(type) {
+	switch underlying(t).(type) {
 	case *types.Slice:
 		w.WriteString("NILSLICE")
 
 	case *types.Map:
 		w.WriteString("NILMAP")
 
-	case *types.Pointer:
+	case *types.Pointer, *types.Basic:
+		// Pointer or unsafe.Pointer
 		w.WriteString("nil")
 
 	default:
@@ -656,7 +710,7 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 		typ = rtyp
 	}
 
-	switch typ.(type) {
+	switch underlying(typ).(type) {
 	case *types.Slice:
 		if rtyp == types.Typ[types.UntypedNil] {
 			lhs += ".arr"

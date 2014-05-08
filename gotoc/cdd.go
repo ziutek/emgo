@@ -86,9 +86,9 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 	switch cdd.Typ {
 	case FuncDecl:
 		if cdd.Inline {
-			prefix = "static inline "
+			prefix = "static inline\n"
 		} else if !cdd.Export {
-			prefix = "static "
+			prefix = "static\n"
 		}
 
 	case VarDecl:
@@ -129,11 +129,11 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 	case FuncDecl:
 		if cdd.Export {
 			if cdd.Inline {
-				prefix = "static inline "
+				prefix = "static inline\n"
 				w = wh
 			}
 		} else {
-			prefix = "static "
+			prefix = "static\n"
 		}
 
 	case VarDecl:

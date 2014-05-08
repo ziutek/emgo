@@ -97,6 +97,9 @@ writeType:
 
 	case *types.Map:
 		w.WriteString("map")
+		
+	case *types.Chan:
+		w.WriteString("chan")
 
 	case *types.Signature:
 		res, params := cdd.signature(t, false)
@@ -104,7 +107,7 @@ writeType:
 		dim = append(dim, params)
 		dim = append(dim, res.dim...)
 		acds = append(acds, res.acds...)
-
+		
 	default:
 		fmt.Fprintf(w, "<%T>", t)
 	}
