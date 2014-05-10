@@ -35,6 +35,7 @@ func blink(led, d int, max, inc float32) {
 		delay.Loop(d)
 		LED.ClearBit(led)
 		delay.Loop(d)
+		// Use floating point calculations to test STMF4 FPU context switching. 
 		inc *= inc
 	}
 }

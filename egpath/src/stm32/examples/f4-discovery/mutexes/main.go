@@ -55,6 +55,7 @@ func toggle(m1, m2 *sync.Mutex) {
 		LED.ClearBit(leds[i])
 		i = (i + 1) % len(leds)
 		LED.SetBit(leds[i])
+		delay.Loop(1e6)
 	}
 }
 
@@ -65,8 +66,6 @@ func main() {
 	m1.Lock()
 	m2.Lock()
 	go toggle(&m1, &m2)
-
-	delay.Loop(1e6)
 
 	for {
 		b := false

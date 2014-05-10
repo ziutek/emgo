@@ -7,11 +7,13 @@ import (
 	"unsafe"
 )
 
+
+
 const (
 	ready int32 = iota
-	closed
 	recvWait
 	sendWait
+	closed
 )
 
 type Elem int
@@ -80,7 +82,7 @@ func (c *ChanS) unlockAndRecv(e *Elem) {
 // Send sends to c an element e.
 // It blocks if there is no any receiver waiting for communication.
 func (c *ChanS) Send(e *Elem) {
-	panicIfClosed(atomic.LoadInt32(&c.state))
+	panicIfClosed(atomic.LoadInt32(&c.state)) // źle
 
 	for !atomic.CompareAndSwapPointer(&c.src, nil, unsafe.Pointer(&e)) {
 		// Other sender locked this channel.
@@ -182,7 +184,7 @@ func (c *ChanS) TryRecv(e *Elem) int32 {
 		if state == closed {
 			return closed
 		}
-		atomic.StorePointer(&c.src, nil)
+		atomic.StorePointer(&c.dst, nil)
 		c.event.Send()
 		return recvWait
 	}

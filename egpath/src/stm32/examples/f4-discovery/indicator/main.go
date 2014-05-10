@@ -1,3 +1,4 @@
+// Touch some PD pins on your discovery.
 package main
 
 import (
