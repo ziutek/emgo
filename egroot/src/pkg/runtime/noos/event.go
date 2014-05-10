@@ -40,9 +40,9 @@ func AssignEventFlag() Event {
 // for possible future call of Wait. Compiler can't reorder Send with any
 // memory operation that is before or after it in the program code.
 func (e Event) Send() {
-	barrier.Memory()
+	barrier.Compiler()
 	atomic.OrUintptr((*uintptr)(&eventReg), uintptr(e))
-	barrier.Memory()
+	barrier.Compiler()
 }
 
 // Wait waits for event.

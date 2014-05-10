@@ -19,7 +19,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	fname := cdd.NameStr(f, true)
 
 	sig := f.Type().(*types.Signature)
-	res, params := cdd.signature(sig, true)
+	res, params := cdd.signature(sig, true, orgNames)
 
 	w.WriteString(res.typ)
 	w.WriteByte(' ')

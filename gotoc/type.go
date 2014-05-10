@@ -102,7 +102,7 @@ writeType:
 		w.WriteString("chan")
 
 	case *types.Signature:
-		res, params := cdd.signature(t, false)
+		res, params := cdd.signature(t, true, noNames)
 		w.WriteString(res.typ)
 		dim = append(dim, params)
 		dim = append(dim, res.dim...)
@@ -186,14 +186,23 @@ func (cdd *CDD) results(tup *types.Tuple) (res results) {
 	return
 }
 
-func (cdd *CDD) signature(sig *types.Signature, pnames bool) (res results, params string) {
+const (
+	noNames = iota
+	numNames
+	orgNames
+)
+
+func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res results, params string) {
 	params = "("
 	res = cdd.results(sig.Results())
-	if r := sig.Recv(); r != nil {
+	if r := sig.Recv(); r != nil && recv {
 		typ, dim, acds := cdd.TypeStr(r.Type())
-		res.acds = append(res.acds, acds...)
+		res.acds = append(res.acds, acds...)	
 		var pname string
-		if pnames {
+		switch pnames {
+		case numNames:
+			pname = "_0"
+		case orgNames:
 			pname = cdd.NameStr(r, true)
 		}
 		if pname == "" {
@@ -214,7 +223,10 @@ func (cdd *CDD) signature(sig *types.Signature, pnames bool) (res results, param
 			typ, dim, acds := cdd.TypeStr(v.Type())
 			res.acds = append(res.acds, acds...)
 			var pname string
-			if pnames {
+			switch pnames {
+			case numNames:
+				pname = "_" + strconv.Itoa(i+1)
+			case orgNames:
 				pname = cdd.NameStr(v, true)
 			}
 			if pname == "" {

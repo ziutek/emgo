@@ -181,6 +181,13 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Ty
 	return
 }
 
+func (cdd *CDD) SelectorExprStr(e *ast.SelectorExpr) (s string, fun types.Type, recv ast.Expr) {
+	buf := new(bytes.Buffer)
+	fun, recv = cdd.SelectorExpr(buf, e)
+	s = buf.String()
+	return
+}
+
 func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 	name := b.Name()
 
@@ -409,7 +416,25 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		w.WriteByte(')')
 
 	case *ast.SelectorExpr:
-		cdd.SelectorExpr(w, e)
+		s, fun, recv := cdd.SelectorExprStr(e)
+		if recv == nil {
+			w.WriteString(s)
+			break
+		}
+		sig := fun.(*types.Signature)
+		w.WriteString("({")
+		res, params := cdd.signature(sig, false, numNames)
+		w.WriteString(res.typ)
+		w.WriteByte(' ')
+		w.WriteString(dimFuncPtr("func"+params, res.dim))
+		w.WriteString(" { return " + s + "(")
+		cdd.Expr(w, recv, nil)
+		if p := sig.Params(); p != nil {
+			for i := 1; i <= p.Len(); i++ {
+				w.WriteString(", _" + strconv.Itoa(i))
+			}
+		}
+		w.WriteString("); } func;})")
 
 	case *ast.SliceExpr:
 		cdd.SliceExpr(w, e)
