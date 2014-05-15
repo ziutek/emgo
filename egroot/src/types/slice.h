@@ -5,26 +5,26 @@ typedef struct {
 } slice;
 
 #define _SLICE_LOW(expr, typ, low) \
-	slice s = expr;               \
-	uint l = low;                 \
+	slice s = expr;                \
+	uint l = low;                  \
 	s.arr = ((typ)s.arr) + l
 	
 #define SLICEL(expr, typ, low) ({ \
-	_SLICE_LOW(expr, typ, low);    \
+	_SLICE_LOW(expr, typ, low);   \
 	s.len -= l;                   \
 	s.cap -= l;                   \
 	s;                            \
 })
 
 #define SLICELH(expr, typ, low, high) ({ \
-	_SLICE_LOW(expr, typ, low);           \
+	_SLICE_LOW(expr, typ, low);          \
 	s.len = high - l;                    \
 	s.cap -= l;                          \
 	s;                                   \
 })
 
 #define SLICELHM(expr, typ, low, high, max) ({ \
-	_SLICE_LOW(expr, typ, low);                 \
+	_SLICE_LOW(expr, typ, low);                \
 	s.len = high - l;                          \
 	s.cap = max - l;                           \
 	s;                                         \

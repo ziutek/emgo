@@ -1,0 +1,77 @@
+// Go code:
+var c chan int;
+// C code:
+// decl
+chan foo$c;
+// def
+chan foo$c = {0};
+// end
+
+// Go code:
+var c chan int = nil;
+// C code:
+// decl
+chan foo$c;
+// def
+chan foo$c = {0};
+// end
+
+// Go code:
+func R(c chan *int) *int {
+	return <-c
+}
+// C code:
+// decl
+int *foo$R(chan c$);
+// def
+int *foo$R(chan c$) {
+	return RECV(int*, c$);
+}
+// end
+
+// Go code:
+func R(c chan int) (i int, ok bool) {
+	i, ok = <-c
+	return
+}
+// C code:
+// decl
+struct int$$bool_struct;
+typedef struct int$$bool_struct int$$bool;
+// def
+#ifndef int$$bool$
+#define int$$bool$
+struct int$$bool_struct {
+	int _0;
+	bool _1;
+};
+#endif
+// decl
+int$$bool foo$R(chan c$);
+// def
+int$$bool foo$R(chan c$) {
+	int i$ = {0};
+	bool ok$ = {0};
+	{
+		int$$bool tmp0 = RECVOK(int$$bool, c$);
+		i$ = tmp0._0;
+		ok$ = tmp0._1;
+		goto end;
+	}
+end:
+	return (int$$bool){i$, ok$};
+}
+// end
+
+// Go code:
+func S(c chan int, i int) {
+	c <- i
+}
+// C code:
+// decl
+void foo$S(chan c$, int i$);
+// def
+void foo$S(chan c$, int i$) {
+	SEND(c$, int, i$);
+}
+// end

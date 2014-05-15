@@ -38,7 +38,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		return
 	}
 
-	cdd.body = true
+	cdd.fbody = true
 
 	w.WriteByte(' ')
 
@@ -154,7 +154,6 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 		for _, s := range d.Specs {
 			vs := s.(*ast.ValueSpec)
 			vals := vs.Values
-
 			for i, n := range vs.Names {
 				v := gtc.object(n).(*types.Var)
 				cdd := gtc.newCDD(v, VarDecl, il)
@@ -163,16 +162,18 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				var val ast.Expr
 				if i < len(vals) {
 					val = vals[i]
+					if t, ok := cdd.exprType(val).(*types.Tuple); ok {
+						notImplemented(s, t)
+					}
 				}
 				if i > 0 {
 					cdd.indent(w)
 				}
 				acds := cdd.varDecl(w, v.Type(), cdd.gtc.isGlobal(v), name, val)
-
 				w.Reset()
 
-				cdds = append(cdds, cdd)
 				cdds = append(cdds, acds...)
+				cdds = append(cdds, cdd)
 			}
 		}
 
@@ -190,7 +191,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 			switch typ := tt.(type) {
 			case *types.Struct:
-				cdd.structDecl(w, name, typ)
+				cdds = append(cdds, cdd.structDecl(w, name, typ)...)
 
 			default:
 				w.WriteString("typedef ")
@@ -227,7 +228,9 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	if global {
 		cdd.copyDecl(w, ";\n") // Global variables may need declaration
 		if val != nil {
-			constInit = cdd.exprValue(val) != nil
+			if i, ok := val.(*ast.Ident); !ok || i.Name != "nil" {
+				constInit = cdd.exprValue(val) != nil
+			}
 		}
 	}
 
@@ -343,7 +346,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	return
 }
 
-func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) {
+func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) (acds []*CDD) {
 	n := w.Len()
 
 	w.WriteString("struct ")
@@ -370,7 +373,7 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) {
 	w.WriteString("struct ")
 	w.WriteString(name)
 	w.WriteByte('_')
-	cdd.Type(w, typ)
+	_, acds = cdd.Type(w, typ)
 	w.WriteString(";\n")
 	if tuple {
 		cdd.indent(w)
@@ -379,6 +382,7 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) {
 
 	cdd.copyDef(w)
 	w.Truncate(n)
+	return
 }
 
 func (cc *GTC) Decl(decl ast.Decl, il int) []*CDD {

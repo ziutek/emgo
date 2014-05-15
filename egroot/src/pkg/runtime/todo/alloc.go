@@ -1,7 +1,7 @@
 package memory
 
 // Type is a bitfield that describes limitations of some memory type.
-type Type byte
+type Type int
 
 const (
 	Universal Type = 0
@@ -17,18 +17,3 @@ const (
 type Typer interface {
 	RuntimeMemoryType() Type
 }
-
-// ObjectDescr specifies type and size for a dynamically allocated object.
-// It also specifies location of pointers for garbage collector.
-type ObjectDescr struct {
-	Size uintptr    // object length in bytes
-	Ptrs []uint     // bitfield for pointers 
-	Type MemoryType // type of memory
-}
-
-// Allocator is type of function that aloocates continous block of memory that
-// can hold n objects descibed by d.
-type Allocator func(n int, d *ObjectDescr) uintptr
-
-// SetAllocator sets allocator used by new() and make() to allocate memory.
-func SetAllocator(a Allocator)

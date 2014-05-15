@@ -73,7 +73,6 @@ writeType:
 			acds = append(acds, a...)
 			if !f.Anonymous() {
 				w.WriteByte(' ')
-				//name := cdd.NameStr(f, true)
 				name := dimFuncPtr(f.Name(), d)
 				if name == "_" {
 					name += strconv.Itoa(i) + "$"
@@ -82,6 +81,7 @@ writeType:
 			}
 			w.WriteString(";\n")
 		}
+
 		cdd.il--
 		cdd.indent(w)
 		w.WriteByte('}')
@@ -97,7 +97,7 @@ writeType:
 
 	case *types.Map:
 		w.WriteString("map")
-		
+
 	case *types.Chan:
 		w.WriteString("chan")
 
@@ -107,7 +107,7 @@ writeType:
 		dim = append(dim, params)
 		dim = append(dim, res.dim...)
 		acds = append(acds, res.acds...)
-		
+
 	default:
 		fmt.Fprintf(w, "<%T>", t)
 	}
@@ -153,10 +153,10 @@ func (cdd *CDD) results(tup *types.Tuple) (res results) {
 		switch name {
 		case "":
 			name = "_" + n
-			
+
 		case "_":
 			res.hasNames = true
-			
+
 		default:
 			name += "$"
 			res.hasNames = true
@@ -176,12 +176,11 @@ func (cdd *CDD) results(tup *types.Tuple) (res results) {
 		s := types.NewStruct(res.fields, nil)
 		o := types.NewTypeName(tup.At(0).Pos(), cdd.gtc.pkg, res.typ, s)
 
-		acd := cdd.gtc.newCDD(o, TypeDecl, cdd.il)
+		acd := cdd.gtc.newCDD(o, TypeDecl, 0)
 		acd.structDecl(new(bytes.Buffer), res.typ, s)
 		res.acds = append(res.acds, acd)
 
 		cdd.DeclUses[o] = true
-		cdd.BodyUses[o] = true
 	}
 	return
 }
@@ -197,7 +196,7 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 	res = cdd.results(sig.Results())
 	if r := sig.Recv(); r != nil && recv {
 		typ, dim, acds := cdd.TypeStr(r.Type())
-		res.acds = append(res.acds, acds...)	
+		res.acds = append(res.acds, acds...)
 		var pname string
 		switch pnames {
 		case numNames:

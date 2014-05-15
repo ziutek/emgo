@@ -11,17 +11,17 @@ int foo$A = 3;
 var A = []int{1, 2, 3}
 // C code:
 // decl
-slice foo$A;
-// def
-slice foo$A;
-// init
-	foo$A = ASLICE(array0);
-// decl
 int array0[3];
 // def
 int array0[3];
 // init
 	ACPY(array0, ((int([])){1, 2, 3}));
+// decl
+slice foo$A;
+// def
+slice foo$A;
+// init
+	foo$A = ASLICE(array0);
 // end
 
 // Go code:
@@ -37,15 +37,35 @@ struct foo$S_struct {
 	int b;
 };
 // decl
-foo$S *foo$p;
-// def
-foo$S *foo$p;
-// init
-	foo$p = &cl0;
-// decl
 foo$S cl0;
 // def
 foo$S cl0;
 // init
 	cl0 = (foo$S){.a = 1};
+// decl
+foo$S *foo$p;
+// def
+foo$S *foo$p;
+// init
+	foo$p = &cl0;
+// end
+
+// Go code:
+var F func(byte, int) (bool, int32)
+// C code:
+// decl
+struct bool$$int32_struct;
+typedef struct bool$$int32_struct bool$$int32;
+// def
+#ifndef bool$$int32$
+#define bool$$int32$
+struct bool$$int32_struct {
+	bool _0;
+	int32 _1;
+};
+#endif
+// decl
+bool$$int32 (*foo$F)(byte, int);
+// def
+bool$$int32 (*foo$F)(byte, int) = {0};
 // end

@@ -172,10 +172,10 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Ty
 			}
 		}
 
-	case types.PackageObj:
+	case types.PackageObj, types.MethodExpr:
 		cdd.Name(w, sel.Obj(), true)
 
-	default: // types.MethodExpr
+	default: 
 		notImplemented(e)
 	}
 	return
@@ -237,11 +237,11 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 
 		case *types.Chan:
 			typ, dim, _ := cdd.TypeStr(t.Elem())
-			name := "MAKECHAN"
-			if len(args) == 2 {
-				name = "MAKECHANC"
+			typ += dimFuncPtr("", dim)
+			if len(args) == 1 {
+				typ += ", 0"
 			}
-			return name, typ + dimFuncPtr("", dim)
+			return "MAKECHAN", typ
 
 		case *types.Map:
 			typ, dim, _ := cdd.TypeStr(t.Key())
@@ -379,6 +379,23 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 
 	case *ast.UnaryExpr:
 		op := e.Op.String()
+
+		if op == "<-" {
+			t := cdd.exprType(e.X).(*types.Chan).Elem()
+			if tup, ok := cdd.exprType(e).(*types.Tuple); ok {
+				tn, _ := cdd.tupleName(tup)
+				w.WriteString("RECVOK(" + tn)
+			} else {
+				w.WriteString("RECV(")
+				dim, _ := cdd.Type(w, t)
+				w.WriteString(dimFuncPtr("", dim))
+			}
+			w.WriteString(", ")
+			cdd.Expr(w, e.X, nil)
+			w.WriteByte(')')
+			break
+		}
+
 		if op == "^" {
 			op = "~"
 		}
@@ -504,8 +521,8 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 
 		cdds := cdd.gtc.FuncDecl(fd, cdd.il)
 		for _, c := range cdds {
-			for u, typPtr := range c.BodyUses {
-				cdd.BodyUses[u] = typPtr
+			for u, typPtr := range c.FuncBodyUses {
+				cdd.FuncBodyUses[u] = typPtr
 			}
 			cdd.indent(w)
 			w.Write(c.Def)

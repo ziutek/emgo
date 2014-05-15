@@ -23,7 +23,7 @@ const (
 type CDD struct {
 	Origin     types.Object // object for this declaration
 	DeclUses   map[types.Object]bool
-	BodyUses   map[types.Object]bool
+	FuncBodyUses   map[types.Object]bool
 	Complexity int
 
 	Typ    DeclType
@@ -38,7 +38,7 @@ type CDD struct {
 	il   int  // indentation level
 	
 	init bool // true if generated code will be placed in init() function
-	body bool // true if translation process in function body
+	fbody bool // true if translation process in function body
 	dfsm int8
 }
 
@@ -47,10 +47,9 @@ func (gtc *GTC) newCDD(o types.Object, t DeclType, il int) *CDD {
 		Origin:   o,
 		Typ:      t,
 		DeclUses: make(map[types.Object]bool),
-		BodyUses: make(map[types.Object]bool),
+		FuncBodyUses: make(map[types.Object]bool),
 		gtc:      gtc,
 		il:       il,
-		body:     il > 0,
 	}
 	return cdd
 }
@@ -179,8 +178,8 @@ func (cdd *CDD) addObject(o types.Object, direct bool) {
 		// This is mainly for global variables initialization in init(). 
 		return
 	}
-	if cdd.body {
-		cdd.BodyUses[o] = direct
+	if cdd.fbody {
+		cdd.FuncBodyUses[o] = direct
 	} else {
 		cdd.DeclUses[o] = direct
 	}

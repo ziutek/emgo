@@ -60,8 +60,8 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 	case *ast.DeclStmt:
 		cdds := cdd.gtc.Decl(s.Decl, cdd.il)
 		for _, c := range cdds {
-			for u, typPtr := range c.BodyUses {
-				cdd.BodyUses[u] = typPtr
+			for u, typPtr := range c.FuncBodyUses {
+				cdd.FuncBodyUses[u] = typPtr
 			}
 			w.Write(c.Decl)
 		}
@@ -463,6 +463,18 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 	case *ast.GoStmt:
 		a := cdd.GoStmt(w, s)
+		acds = append(acds, a...)
+
+	case *ast.SendStmt:
+		et := cdd.exprType(s.Chan).(*types.Chan).Elem()
+		w.WriteString("SEND(")
+		cdd.Expr(w, s.Chan, nil)
+		w.WriteString(", ")
+		dim, a := cdd.Type(w, et)
+		w.WriteString(dimFuncPtr("", dim))
+		w.WriteString(", ")
+		cdd.Expr(w, s.Value, et)
+		w.WriteString(");\n")
 		acds = append(acds, a...)
 
 	default:

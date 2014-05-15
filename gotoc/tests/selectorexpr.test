@@ -65,6 +65,9 @@ func (t *T) F() func(T) {
 	// This isn't correct Emgo code. t.Addr can't be
 	// returned from F because it is implemented in C
 	// as embeded function that refers to local variable t.
+	// This will be correct when func will be simple
+	// closure (planned in next-gen of gotoc) but now it is
+	// simply a pointer to the function.
 	return t.Add
 }
 // C code:
@@ -81,5 +84,32 @@ void (*foo$T$F(foo$T *t$))(foo$T);
 // def
 void (*foo$T$F(foo$T *t$))(foo$T) {
 	return ({void func(foo$T _1) { return foo$T$Add(t$, _1); } func;});
+}
+// end
+
+// Go code:
+type T int
+
+func (t *T) Add(a T) {
+	*t += a
+}
+
+func F() func(*T, T) {
+	return (*T).Add
+}
+// C code:
+// decl
+typedef int foo$T;
+// decl
+void foo$T$Add(foo$T *t$, foo$T a$);
+// def
+void foo$T$Add(foo$T *t$, foo$T a$) {
+	*t$ += a$;
+}
+// decl
+void (*foo$F())(foo$T*, foo$T);
+// def
+void (*foo$F())(foo$T*, foo$T) {
+	return foo$T$Add;
 }
 // end

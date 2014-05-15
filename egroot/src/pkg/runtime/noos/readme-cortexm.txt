@@ -23,7 +23,7 @@ MaxTasks == 0 means:
 MaxTasks > 0 means:
 
 - separate stack for any task + separate stack for ISRs,
-- MPU (if avilable) is used to protect the stacks and other areas,
+- MPU (if avilable) is used to protect the stacks and other areas (not implemented yet),
 - all tasks runs in user mode.
 
 #### IRTExp

@@ -51,33 +51,6 @@ func NewChanA(cap int, size, align uintptr) *ChanA {
 
 const b31 = 1 << 31
 
-/*func (c *ChanA) TrySend() int {
-	for {
-		tosend := atomic.LoadUint32(&c.tosend)
-		if atomic.LoadUint32(&c.torecv) == tosend^b31 {
-			// Channel is full.
-			return -1
-		}
-		n := tosend &^ b31
-
-		if bit(&c.rd[n>>5], n&31) {
-			// This element is still being received.
-			return -1
-		}
-
-		var next uint32
-
-		if n+1 == c.cap {
-			next = ^tosend & b31
-		} else {
-			next = tosend + 1
-		}
-		if atomic.CompareAndSwapUint32(&c.tosend, tosend, next) {
-			return int(n)
-		}
-	}
-}*/
-
 func (c *ChanA) Close() {
 	atomic.StoreInt32(&c.closed, 1)
 	c.event.Send()

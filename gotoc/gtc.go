@@ -52,7 +52,7 @@ func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 	if !cdd.Inline {
 		return
 	}
-	for o := range cdd.BodyUses {
+	for o := range cdd.FuncBodyUses {
 		if gtc.isImported(o) {
 			continue
 		}
@@ -129,7 +129,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 				imp.add(o.Pkg(), cdd.Export)
 			}
 		}
-		for o := range cdd.BodyUses {
+		for o := range cdd.FuncBodyUses {
 			if gtc.isImported(o) {
 				imp.add(o.Pkg(), cdd.Export && cdd.Inline)
 			}

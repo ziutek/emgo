@@ -30,3 +30,29 @@ struct foo$S_struct {
 	byte _3$;
 };
 // end
+
+// Go code:
+type S struct {
+	F func(c, e int) (uint, int, byte)
+}
+// C code:
+// decl
+struct uint$$int$$byte_struct;
+typedef struct uint$$int$$byte_struct uint$$int$$byte;
+// def
+#ifndef uint$$int$$byte$
+#define uint$$int$$byte$
+struct uint$$int$$byte_struct {
+	uint _0;
+	int _1;
+	byte _2;
+};
+#endif
+// decl
+struct foo$S_struct;
+typedef struct foo$S_struct foo$S;
+// def
+struct foo$S_struct {
+	uint$$int$$byte (*F)(int, int);
+};
+// end

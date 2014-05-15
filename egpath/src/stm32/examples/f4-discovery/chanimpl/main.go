@@ -63,11 +63,12 @@ func (c Chan) Recv() (e int, ok bool) {
 		recv, done = c.s.Recv, c.s.Done
 	}
 	p, d := recv(unsafe.Pointer(&e))
-	if p != nil {
-		e = *(*int)(p)
-		done(d)
+	if p == nil {
+		return e, (d == 0)
 	}
-	return e, (d == 0)
+	e = *(*int)(p)
+	done(d)
+	return e, true
 }
 
 func toggle(l, d int) {
@@ -86,7 +87,7 @@ func blink(c Chan) {
 
 func main() {
 	// Change n to 0, 1, 2, 4, ... 
-	n := 5
+	n := 0
 
 	red := NewChan(n)
 	green := NewChan(n)

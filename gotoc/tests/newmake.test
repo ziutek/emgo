@@ -46,7 +46,7 @@ func MakeChan() chan *int {
 chan foo$MakeChan();
 // def
 chan foo$MakeChan() {
-	return MAKECHAN(int*);
+	return MAKECHAN(int*, 0);
 }
 // end
 
@@ -59,6 +59,6 @@ func MakeChan(n int) chan *int {
 chan foo$MakeChan(int n$);
 // def
 chan foo$MakeChan(int n$) {
-	return MAKECHANC(int*, n$);
+	return MAKECHAN(int*, n$);
 }
 // end
