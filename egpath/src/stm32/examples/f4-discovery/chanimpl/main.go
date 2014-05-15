@@ -86,25 +86,20 @@ func blink(c Chan) {
 }
 
 func main() {
-	// Change n to 0, 1, 2, 4, ... 
-	n := 0
-
-	red := NewChan(n)
-	green := NewChan(n)
-	blue := NewChan(n)
+	c := NewChan(10)
 
 	// Consumers
-	go blink(red)
-	go blink(blue)
-	go blink(green)
+	go blink(c)
+	go blink(c)
+	go blink(c)
 
 	// Producer
 	for {
-		red.Send(Red)
+		c.Send(Red)
 		toggle(Orange, 1e6)
-		blue.Send(Blue)
+		c.Send(Blue)
 		toggle(Orange, 1e6)
-		green.Send(Green)
+		c.Send(Green)
 		toggle(Orange, 1e6)
 	}
 }

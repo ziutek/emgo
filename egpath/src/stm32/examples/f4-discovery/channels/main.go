@@ -29,10 +29,10 @@ func init() {
 	LED.SetMode(Blue, gpio.Out)
 }
 
-func toggle(l, d int) {
-	LED.SetBit(l)
+func toggle(led, d int) {
+	LED.SetBit(led)
 	delay.Loop(d)
-	LED.ClearBit(l)
+	LED.ClearBit(led)
 	delay.Loop(d)
 }
 
@@ -44,23 +44,20 @@ func blink(c <-chan int) {
 }
 
 func main() {
-	const n = 0 // Set n to 0, 1, 2, 4, ... and see LEDs.
-	red := make(chan int, n)
-	green := make(chan int, n)
-	blue := make(chan int, n)
+	c := make(chan int, 0)
 
 	// Consumers
-	go blink(red)
-	go blink(blue)
-	go blink(green)
+	go blink(c)
+	go blink(c)
+	go blink(c)
 
 	// Producer
 	for {
-		red <- Red
+		c <- Red
 		toggle(Orange, 1e6)
-		blue <- Blue
+		c <- Blue
 		toggle(Orange, 1e6)
-		green <- Green
+		c <- Green
 		toggle(Orange, 1e6)
 	}
 }
