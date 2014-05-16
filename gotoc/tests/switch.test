@@ -98,10 +98,7 @@ int foo$Switch(int i$) {
 			int tag = i$;
 			if (tag == 1) {
 				i$ += 1;
-				goto fallthrough0;
-				break;
 			}
-		fallthrough0:;
 			if (tag == 2) {
 				i$ += 2;
 				continue;

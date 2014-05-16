@@ -412,31 +412,26 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			w.WriteString("{\n")
 			cdd.il++
 
-			var ftLabel string
-			for _, s := range cs.Body {
-				cdd.indent(w)
-				if bs, ok := s.(*ast.BranchStmt); ok && bs.Tok == token.FALLTHROUGH {
-					if ftLabel == "" {
-						ftLabel = "fallthrough" + cdd.gtc.uniqueId()
-					}
-					w.WriteString("goto " + ftLabel + ";\n")
-				} else {
-					updateEA(cdd.Stmt(w, s, "", resultT, tup))
+			brk := true
+			if n := len(cs.Body) - 1; n >= 0 {
+				bs, ok := cs.Body[n].(*ast.BranchStmt)
+				if ok && bs.Tok == token.FALLTHROUGH {
+					brk = false
+					cs.Body = cs.Body[:n]
 				}
 			}
-
-			cdd.indent(w)
-			w.WriteString("break;\n")
+			for _, s := range cs.Body {
+				cdd.indent(w)
+				updateEA(cdd.Stmt(w, s, "", resultT, tup))
+			}
+			if brk {
+				cdd.indent(w)
+				w.WriteString("break;\n")
+			}
 
 			cdd.il--
 			cdd.indent(w)
 			w.WriteString("}\n")
-			if ftLabel != "" {
-				cdd.il--
-				cdd.indent(w)
-				w.WriteString(ftLabel + ":;\n")
-				cdd.il++
-			}
 		}
 
 		cdd.il--
