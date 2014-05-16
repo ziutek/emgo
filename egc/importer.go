@@ -140,20 +140,37 @@ func (imp *Importer) importPkg(imports map[string]*types.Package, path string) (
 		}
 	}
 
-	bp, err := buildCtx.Import(path, srcDir, build.FindOnly|build.AllowBinary)
+	bp, err := buildCtx.Import(path, srcDir, build.AllowBinary)
 	if err != nil {
 		return nil, err
 	}
-
-	//fmt.Printf("\nimport \"%s\"\n%+v\n", path, bp)
 
 	if pkg := imports[path]; pkg != nil && pkg.Complete() {
 		return pkg, nil
 	}
 
-	buf, err := arReadFile(bp.PkgObj, "__.EXPORTS")
+	buf, err := loadExports(bp)
 	if err != nil {
 		return nil, err
 	}
 	return importer.ImportData(imports, buf)
+}
+
+func loadExports(bp *build.Package) ([]byte, error) {
+	if nc, err := needCompile(bp); err != nil {
+		return nil, err
+	} else if nc {
+		if err := compile(bp); err != nil {
+			return nil, err
+		}
+	}
+	return arReadFile(bp.PkgObj, "__.EXPORTS")
+}
+
+func needCompile(bp *build.Package) (bool, error) {
+	_, err := os.Stat(bp.PkgObj)
+	if os.IsNotExist(err) {
+		return true, nil
+	}
+	return false, nil
 }

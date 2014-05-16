@@ -1,15 +1,19 @@
 ### Emgo follows Go specification with exception for memory allocation.
 
+Think about Emgo as C with Go syntax, packages and Go building infrastructure.
+
 In Go, variable declared in function can be allocated on the stack or on the heap - escaping analisis is used for decision. In Emgo (like in C), all local variables are stack allocated. Dynamic allocation and garbage collection can occurs only when:
 
-1. new or make builtin functions is used.
-2. Non-epty strigs are concatanated. 
+1. new or make builtin function is used.
+2. Non-epty strings are concatanated. 
 3. Builtin append function is called and there is not enough space in destiation.
 4. An element to map is added or removed.
 
-By default, dynamic allocation is disabled. Embeded applications often runs on MCUs that have only few kilobytes of SRAM and there can be no place for any dynamic memory allocation at all. If MCU has enough SRAM, dynamic allocation can be enabled by importing package that provides implementation for runtime.Alloc.
+Current allocator is trivial and doesn't contain GC. This isn't big disadventage for many embeded applications that need allocation only during startup. They often run on MCU that has only few kilobytes of SRAM and in many cases they must respond in realtime. The simple "stop the world GC" can't be used and much sophisticated one consumes to much Flash/SRAM.
 
-Example:
+But the target is to allow chose between multiple allocators and use one that best fits application needs
+
+Examples:
 
 The following function is correct Go function:
 
@@ -27,7 +31,7 @@ func F() ([]byte, *int) {
 	return b, i
 }
 
-If dynamic memory allocation is disabled you have to be careful when assign some variable to interface variable. Assigned variable should be a pointer or small variable that size is equal or less than size of uintptr.
+If dynamic memory allocation is disabled or default trivial allocator is used you have to be careful when assign some variable to interface variable. To avoid allocation assigned variable should be a pointer or small variable that size is equal or less than size of uintptr.
 
 ### Generated C code.
 
@@ -35,15 +39,14 @@ Current Emgo implementation generates C code that relies on many GCC extensions.
 
 ### Standard library.
 
-Emgo standard library doesn't follow Go standard library. There is always prefered to preserve Go package interface when porting it to Emgo.
+Emgo standard library doesn't follow Go standard library. But when porting some Go
+package to Emgo there is always prefered to preserve original interface and package name.
 
 #### Not yet implemented:
 
-Interfaces.
-Channels.
-Variadic functions.
+Interfaces (and friends).
+Select.
 Returning array from function.
-Type switch.
-Package for dynamic memory.
+Defer.
 String concatanation.
 Append.

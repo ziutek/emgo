@@ -32,7 +32,7 @@ void runtime$noos$pendSVHandler() {
 		
 		"0:\n\t"
 		
-		// Adjust new SP and EXC_RETURN according to FPU bit in taskInfo.sp.
+		// Adjust new SP and EXC_RETURN according to the FPU bit in taskInfo.sp.
 		"tst	r0, 1\n\t"
 		"ittt	eq\n\t"
 		"subeq	r0, 8*4\n\t"

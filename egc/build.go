@@ -19,6 +19,10 @@ import (
 )
 
 func egc(ppath string) error {
+	if err := checkBuiltin(); err != nil {
+		return err
+	}
+
 	srcDir := ""
 	if build.IsLocalImport(ppath) {
 		var err error
@@ -37,7 +41,7 @@ func compile(bp *build.Package) error {
 	if verbose > 0 {
 		defer fmt.Println(bp.ImportPath)
 	}
-	
+
 	// Parse
 
 	flist := make([]*ast.File, 0, len(bp.GoFiles)+1)
@@ -231,4 +235,17 @@ func compile(bp *build.Package) error {
 		imports[i] = p.Path()
 	}
 	return bt.Link(elf, imports, objs...)
+}
+
+func checkBuiltin() error {
+	bp, err := buildCtx.Import("builtin", "", build.AllowBinary)
+	if err != nil {
+		return err
+	}
+	if nc, err := needCompile(bp); err != nil {
+		return err
+	} else if nc {
+		return compile(bp)
+	}
+	return nil
 }

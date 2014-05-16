@@ -50,11 +50,13 @@ type taskSched struct {
 var tasker taskSched
 
 func (ts *taskSched) run() {
+	barrier.Memory()
 	ts.onSysTick = true
 }
 
 func (ts *taskSched) stop() {
 	ts.onSysTick = false
+	barrier.Memory()
 }
 
 func (ts *taskSched) deliverEvent(e Event) {
@@ -143,6 +145,15 @@ func (ts *taskSched) init() {
 	tasker.run()
 }
 
+var Tick uint32
+
+func sysTickHandler() {
+	Tick++
+	if tasker.onSysTick {
+		irq.PendSV.SetPending()
+	}
+}
+
 func nmiHandler() {
 	for {
 	}
@@ -180,14 +191,5 @@ func usageFaultHandler() {
 	pfp := (*stackFrame)(unsafe.Pointer(cortexm.PSP()))
 	_, _ = ufs, pfp
 	for {
-	}
-}
-
-var Tick uint32
-
-func sysTickHandler() {
-	Tick++
-	if tasker.onSysTick {
-		irq.PendSV.SetPending()
 	}
 }

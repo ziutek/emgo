@@ -15,5 +15,5 @@ const (
 // "ordinary" allocation and small (function call) overhead for allocation of
 // memory of specific type.
 type Typer interface {
-	RuntimeMemoryType() Type
+	AllocMemoryType() Type
 }
