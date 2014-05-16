@@ -5,15 +5,17 @@ import (
 	"go/build"
 	"go/parser"
 	"go/token"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 
 	"code.google.com/p/go.tools/go/importer"
 	"code.google.com/p/go.tools/go/types"
 )
 
 type Importer struct {
-	tc types.Config // used by importSrc
+	tc types.Config // Legacy: used by importSrc.
 }
 
 func NewImporter() *Importer {
@@ -97,8 +99,6 @@ func (imp *Importer) importSrc1(imports map[string]*types.Package, path string) 
 		return nil, err
 	}
 
-	//fmt.Printf("\nimport \"%s\"\n%+v\n", path, bp)
-
 	if pkg := imports[path]; pkg != nil && pkg.Complete() {
 		return pkg, nil
 	}
@@ -157,9 +157,9 @@ func (imp *Importer) importPkg(imports map[string]*types.Package, path string) (
 }
 
 func loadExports(bp *build.Package) ([]byte, error) {
-	if nc, err := needCompile(bp); err != nil {
+	if ok, err := checkPkg(bp); err != nil {
 		return nil, err
-	} else if nc {
+	} else if !ok {
 		if err := compile(bp); err != nil {
 			return nil, err
 		}
@@ -167,10 +167,62 @@ func loadExports(bp *build.Package) ([]byte, error) {
 	return arReadFile(bp.PkgObj, "__.EXPORTS")
 }
 
-func needCompile(bp *build.Package) (bool, error) {
-	_, err := os.Stat(bp.PkgObj)
-	if os.IsNotExist(err) {
+var builtinCTime time.Time
+
+// checkPkg returns true if package need to be (re)compiled.
+func checkPkg(bp *build.Package) (bool, error) {
+	oi, err := os.Stat(bp.PkgObj)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return true, nil
+		}
+		return false, err
+	}
+	if bp.ImportPath == "builtin" {
+		builtinCTime = oi.ModTime()
+	} else if !oi.ModTime().After(builtinCTime) {
 		return true, nil
 	}
-	return false, nil
+	if len(bp.GoFiles) == 0 {
+		return false, nil
+	}
+	src := append(bp.GoFiles, bp.CFiles...)
+	src = append(src, bp.HFiles...)
+	src = append(src, bp.SFiles...)
+	dir := filepath.Join(bp.SrcRoot, bp.ImportPath)
+	for _, s := range src {
+		si, err := os.Stat(filepath.Join(dir, s))
+		if err != nil {
+			return false, err
+		}
+		if !oi.ModTime().After(si.ModTime()) {
+			return false, nil
+		}
+	}
+	h := bp.PkgObj[:len(bp.PkgObj)-1] + "h"
+	ok, err := checkH(h, oi.ModTime())
+	if err != nil {
+		return false, err
+	}
+	if !ok {
+		data, err := arReadFile(bp.PkgObj, filepath.Base(h))
+		if err != nil {
+			return false, err
+		}
+		if err = ioutil.WriteFile(h, data, 0644); err != nil {
+			return false, err
+		}
+	}
+	return true, nil
+}
+
+func checkH(h string, omt time.Time) (bool, error) {
+	hi, err := os.Stat(h)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	return hi.ModTime().After(omt), nil
 }

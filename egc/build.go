@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"code.google.com/p/go.tools/go/importer"
 	"code.google.com/p/go.tools/go/types"
@@ -242,10 +243,13 @@ func checkBuiltin() error {
 	if err != nil {
 		return err
 	}
-	if nc, err := needCompile(bp); err != nil {
+	if ok, err := checkPkg(bp); err != nil {
 		return err
-	} else if nc {
-		return compile(bp)
+	} else if !ok {
+		if err := compile(bp); err != nil {
+			return err
+		}
+		builtinCTime = time.Now()
 	}
 	return nil
 }
