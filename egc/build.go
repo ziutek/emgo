@@ -2,12 +2,14 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/build"
 	"go/parser"
 	"go/token"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,11 +21,9 @@ import (
 	"github.com/ziutek/emgo/gotoc"
 )
 
-func egc(ppath string) error {
-	if err := checkBuiltin(); err != nil {
-		return err
-	}
+const mainbin = "main.elf"
 
+func egc(ppath string) error {
 	srcDir := ""
 	if build.IsLocalImport(ppath) {
 		var err error
@@ -38,8 +38,15 @@ func egc(ppath string) error {
 	return compile(bp)
 }
 
+var uptodate = make(map[string]struct{})
+
 func compile(bp *build.Package) error {
-	if verbose > 0 {
+	if ok, err := checkPkg(bp); err != nil {
+		return err
+	} else if ok {
+		return nil
+	}
+	if verbosity > 0 {
 		defer fmt.Println(bp.ImportPath)
 	}
 
@@ -57,26 +64,26 @@ func compile(bp *build.Package) error {
 		flist = append(flist, f)
 	}
 
-	ppath := bp.ImportPath
-	elf := ""
-	if bp.Name == "main" {
-		elf = filepath.Join(bp.Dir, "main.elf")
-		ppath = "main"
+	var iimp string
 
-		f, err := parser.ParseFile(
-			fset, "_importbr.go",
-			"package main\n"+
-				"import (\n"+
-				"	_ \"runtime\"\n"+
-				"	_ \"builtin\"\n"+
-				")\n",
-			0,
-		)
-		if err != nil {
-			return err
-		}
-		flist = append(flist, f)
+	ppath := bp.ImportPath
+	if bp.Name == "main" {
+		ppath = "main"
+		iimp = `_ "runtime";_ "builtin"`
+	} else if bp.ImportPath != "builtin" {
+		iimp = `_ "builtin"`
 	}
+
+	f, err := parser.ParseFile(
+		fset,
+		"_iimports.go",
+		"package "+bp.Name+";import("+iimp+")",
+		0,
+	)
+	if err != nil {
+		return err
+	}
+	flist = append(flist, f)
 
 	// Type check
 
@@ -213,7 +220,7 @@ func compile(bp *build.Package) error {
 		return err
 	}
 
-	if verbose > 1 {
+	if verbosity > 1 {
 		bt.Log = os.Stdout
 	}
 
@@ -228,28 +235,123 @@ func compile(bp *build.Package) error {
 	}
 
 	if ppath != "main" {
-		return bt.Archive(hpath[:len(hpath)-1]+"a", objs...)
+		if err := bt.Archive(hpath[:len(hpath)-1]+"a", objs...); err != nil {
+			return err
+		}
+		now := time.Now()
+		return os.Chtimes(hpath, now, now)
 	}
 
 	imports := make([]string, len(pkg.Imports()))
 	for i, p := range pkg.Imports() {
 		imports[i] = p.Path()
 	}
-	return bt.Link(elf, imports, objs...)
+	return bt.Link(filepath.Join(bp.Dir, mainbin), imports, objs...)
 }
 
-func checkBuiltin() error {
-	bp, err := buildCtx.Import("builtin", "", build.AllowBinary)
+// checkPkg returns true if the package and its dependences are up to date (doesn't
+// need to be (re)compiled).
+func checkPkg(bp *build.Package) (bool, error) {
+	if _, ok := uptodate[bp.ImportPath]; ok {
+		return true, nil
+	}
+	pkgobj := bp.PkgObj
+	if bp.Name == "main" {
+		pkgobj = filepath.Join(bp.Dir, mainbin)
+	}
+	oi, err := os.Stat(pkgobj)
 	if err != nil {
-		return err
-	}
-	if ok, err := checkPkg(bp); err != nil {
-		return err
-	} else if !ok {
-		if err := compile(bp); err != nil {
-			return err
+		if os.IsNotExist(err) {
+			return false, nil
 		}
-		builtinCTime = time.Now()
+		return false, err
 	}
-	return nil
+	if len(bp.GoFiles) == 0 {
+		uptodate[bp.ImportPath] = struct{}{}
+		return true, nil
+	}
+	src := append(bp.GoFiles, bp.CFiles...)
+	src = append(src, bp.HFiles...)
+	src = append(src, bp.SFiles...)
+	dir := filepath.Join(bp.SrcRoot, bp.ImportPath)
+	for _, s := range src {
+		si, err := os.Stat(filepath.Join(dir, s))
+		if err != nil {
+			return false, err
+		}
+		if !oi.ModTime().After(si.ModTime()) {
+			return false, nil
+		}
+	}
+	if bp.Name != "main" {
+		h := bp.PkgObj[:len(bp.PkgObj)-1] + "h"
+		ok, err := checkH(h, oi.ModTime())
+		if err != nil {
+			return false, err
+		}
+		if !ok {
+			data, err := arReadFile(bp.PkgObj, filepath.Base(h))
+			if err != nil {
+				return false, err
+			}
+			if err = ioutil.WriteFile(h, data, 0644); err != nil {
+				return false, err
+			}
+		}
+	}
+	if bp.ImportPath == "builtin" {
+		if len(bp.Imports) > 1 || len(bp.Imports) == 1 && bp.Imports[0] != "unsafe" {
+			return false, errors.New("builtin can't import other packages")
+		}
+	} else {
+		imports := addPkg(bp.Imports, "builtin")
+		if bp.Name == "main" {
+			imports = addPkg(bp.Imports, "runtime")
+		}
+		for _, imp := range imports {
+			if imp == "unsafe" {
+				continue
+			}
+			ibp, err := buildCtx.Import(imp, dir, build.AllowBinary)
+			if err != nil {
+				return false, err
+			}
+			if ok, err := checkPkg(ibp); err != nil {
+				return false, err
+			} else if !ok {
+				return false, nil
+			} else {
+				pi, err := os.Stat(ibp.PkgObj)
+				if err != nil {
+					return false, err
+				}
+				if !oi.ModTime().After(pi.ModTime()) {
+					return false, nil
+				}
+			}
+			uptodate[imp] = struct{}{}
+		}
+	}
+	uptodate[bp.ImportPath] = struct{}{}
+	return true, nil
+}
+
+func checkH(h string, omt time.Time) (bool, error) {
+	hi, err := os.Stat(h)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	return !omt.Before(hi.ModTime()), nil
+}
+
+func addPkg(imports []string, pkg string) []string {
+	for _, s := range imports {
+		if s == pkg {
+			return imports
+		}
+	}
+	return append(imports, pkg)
 }

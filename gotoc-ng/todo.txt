@@ -30,7 +30,7 @@ label: for s0; ex; s {...} -> {s0; cont_label: for ex {{...} s} break_label:
 Pass 2
 ------
 
-Things that are not/wrong handled by current gotoc:
+Things that are not or wrong handled by current gotoc:
 
 interface -> struct Name { void *v; typeSpec *t; }
 

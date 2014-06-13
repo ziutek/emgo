@@ -2,7 +2,7 @@
 
 ### Go, Emgo, C, assembler
 
-Write your code in Go, if you can.
+Write your application in real Go, if you can.
 
 If you really can't use Go or you want to write protable code that can be used by both Go and Emgo (eg. portable library) write Emgo valid code. Correct Emgo code should always be valid Go code but oposite isn't true. Unfortunately, this means that there isn't possible to test Emgo code in Go enviroment.
 
@@ -18,8 +18,8 @@ If you want to write CPU specific function in CPU specific library you are free 
 
 3. Don't follow coding style you can see in Go to C translator. This piece of code was born as proof of concept project without any plan and without any solid knowledge about Go parser and type checker. As my knowledge grows it evolved from very naive code to something that works but for now this isn't an example of good idiomatic Go code.
 
-### Volatile field
+### Volatile fields
 
-If your CPU guarantees ordered access to some part of address spece, which is typical in case of memory mapped IO, you can use structs with fileds taged C:"volatile" to repesent IO registers in your program. This sometimes simplifies code and can slightly improve performance, but can cause bugs in more complicated cases.
+If your CPU guarantees ordered access to I/O address spece, you can use structs with fileds taged C:"volatile" to repesent I/O registers in your program. This simplifies code and can slightly improve performance, but can cause bugs in more complicated cases.
 
-So, in case of MMIO, use of structs with volatile fields may be desirable, but don't use volatile fields for any other thing. If you think that you need volatile variable for other thing than memory mapped IO, you are wrong. Volatile guarantees actual memory access for any access to volatile variable. Furthermore, order of accesses to volatile variables is preserved in generated binary code. But volatile doesn't guarante to preserve order between accesses to volatile and non-volatile variables and doesn't guarante any order of actual memory access during program execution (eg. CPU can execute instruction in different order, there may be buffers in hardware that reorder actual writes to different part of memory, etc...). So, in cases other than MMIO, volatile is useless.
+So, in case of MMIO, use of structs with volatile fields may be desirable, but don't use volatile fields for any other thing. If you think that you need volatile variable for other thing than memory mapped I/O, you are wrong. Volatile guarantees actual memory access for any access to volatile variable. Furthermore, order of accesses to volatile variables is preserved in generated binary code. But volatile doesn't guarante to preserve order between accesses to volatile and non-volatile variables and doesn't guarante any order of actual memory access during program execution (eg. CPU can execute instruction in different order, there may be buffers in hardware that reorder actual writes to different part of memory, etc...). So, in cases other than MMIO, volatile is useless.

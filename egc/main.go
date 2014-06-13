@@ -20,7 +20,7 @@ var buildCtx = build.Context{
 	CgoEnabled:  false,
 }
 
-var verbose int
+var verbosity int
 
 func usage() {
 	fmt.Println("Usage:\n  egc [flags] PKGPATH")
@@ -28,7 +28,7 @@ func usage() {
 }
 
 func main() {
-	flag.IntVar(&verbose, "v", 0, "Verbose level [0...2]")
+	flag.IntVar(&verbosity, "v", 0, "Verbosity level [0...2]")
 	flag.Usage = usage
 	flag.Parse()
 	args := flag.Args()

@@ -46,20 +46,22 @@ func blink(c <-chan int) {
 }
 
 func main() {
-	c := make(chan int)
+	cRed := make(chan int, 0)
+	cBlue := make(chan int, 10)
 
 	// Consumers
-	go blink(c)
-	go blink(c)
-	go blink(c)
+	go blink(cRed)
+	go blink(cBlue)
 
 	// Producer
 	for {
-		c <- Red
-		toggle(Orange, dly)
-		c <- Blue
-		toggle(Orange, dly)
-		c <- Green
-		toggle(Orange, dly)
+		select {
+		case cRed <- Red:
+			toggle(Orange, dly)
+		case cBlue <- Blue:
+			toggle(Orange, dly)
+		default:
+			toggle(Green, dly)
+		}
 	}
 }

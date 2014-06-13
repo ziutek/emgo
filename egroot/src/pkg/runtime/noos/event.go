@@ -37,7 +37,7 @@ func AssignEventFlag() Event {
 
 // Send sends event that means it waking up all gorutines that wait for e.
 // If some gorutine isn't waiting for any event, e is saved for this gorutine
-// for possible future call of Wait. Compiler can't reorder Send with any
+// for possible future call of Wait. Compiler doesn't reorder Send with any
 // memory operation that is before or after it in the program code.
 func (e Event) Send() {
 	barrier.Compiler()
@@ -48,17 +48,13 @@ func (e Event) Send() {
 // Wait waits for event.
 // If e == 0 it returns immediately. Wait clears all saved events for current
 // gorutine so the information about sended events, that Wait hasn't waited for,
-// is lost. Compiler can't reorder Wait with any memory operation that is before
-// or after it in the program code.
+// is lost. Compiler doesn't reorder Wait with any memory operation that is
+// before or after it in the program code.
 func (e Event) Wait()
 
-// EventSum returns a logical sum of events.
-// Send the sum of events is equal to send all that events at once. Wait for sum
-// of events means wait for at least one event from sum.
-func EventSum(el ...Event) Event {
-	var sum Event
-	for _, e := range el {
-		sum |= e
-	}
-	return sum
+// Sum returns logical sum of events.
+// Sending the sum of events is equal to send all that events at once. Waiting
+// for sum of events means waiting for at least one event from sum.
+func (e Event) Sum(a Event) Event {
+	return e | a
 }

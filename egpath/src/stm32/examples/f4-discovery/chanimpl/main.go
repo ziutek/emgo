@@ -1,4 +1,5 @@
-// This example is for people that are interested in channels implementation.
+// This example contains very early implementation of channels. See
+// runtime/noos/chan* and builtin/chan* for current working implementation.
 // See ../channels for example of channels usage.
 package main
 
