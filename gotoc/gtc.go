@@ -6,8 +6,8 @@ import (
 	"io"
 	"strconv"
 
-	"code.google.com/p/go.tools/go/types"
 	"code.google.com/p/go.tools/go/exact"
+	"code.google.com/p/go.tools/go/types"
 )
 
 // GTC stores information from type checker need for translation.
@@ -63,9 +63,6 @@ func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 type imports map[*types.Package]bool
 
 func (i imports) add(pkg *types.Package, export bool) {
-	if pkg.Path() == "builtin" && !export {
-		return
-	}
 	if e, ok := i[pkg]; ok {
 		if !e && export {
 			i[pkg] = true
@@ -135,47 +132,34 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 			}
 		}
 	}
-
-	pkgName := gtc.pkg.Name()
-	buf := new(bytes.Buffer)
-
-	buf.WriteString("#include <types/types.h>\n")
-	if pkgName != "builtin" {
-		buf.WriteString("#include <builtin.h>\n")
-	}
-	if pkgName == "main" {
-		buf.WriteString("#include \"_.h\"\n\n")
-	} else {
-		buf.WriteString("#include <" + gtc.pkg.Path() + ".h>\n\n")
-	}
-
-	if _, err := buf.WriteTo(wc); err != nil {
+	_, err := io.WriteString(
+		wc,
+		"#include <types/types.h>\n#include <builtin.h>\n",
+	)
+	if err != nil {
 		return err
 	}
-
-	up := upath(gtc.pkg.Path())
-
-	if _, err := buf.WriteTo(wh); err != nil {
-		return err
-	}
-
 	for pkg, export := range imp {
 		path := pkg.Path()
-		if path == "unsafe" {
+		if path == "unsafe" || path == "builtin" {
 			continue
 		}
-
-		buf.WriteString("#include <")
-		buf.WriteString(path + ".h>\n")
-
 		w := wc
 		if export {
 			w = wh
 		}
-
-		if _, err := buf.WriteTo(w); err != nil {
+		if _, err = io.WriteString(w, "#include <"+path+".h>\n"); err != nil {
 			return err
 		}
+	}
+	pkgName := gtc.pkg.Name()
+	if pkgName == "main" {
+		_, err = io.WriteString(wc, "\n#include \"_.h\"\n")
+	} else if gtc.pkg.Path() != "builtin" {
+		_, err = io.WriteString(wc, "\n#include <"+gtc.pkg.Path()+".h>\n")
+	}
+	if err != nil {
+		return err
 	}
 
 	var tcs, vcs, fcs []*CDD
@@ -261,12 +245,12 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	if err := write("// init\n", wh, wc); err != nil {
 		return err
 	}
-	buf.WriteString("void " + up + "$init();\n")
-	if _, err := buf.WriteTo(wh); err != nil {
+	up := upath(gtc.pkg.Path())
+	if _, err = io.WriteString(wh, "void "+up+"$init();\n"); err != nil {
 		return err
 	}
+	buf := new(bytes.Buffer)
 	buf.WriteString("void " + up + "$init() {\n")
-	m := buf.Len()
 	if pkgName != "main" {
 		buf.WriteString("\tstatic bool called = false;\n")
 		buf.WriteString("\tif (called) {\n\t\treturn;\n\t}\n\tcalled = true;\n")
@@ -285,19 +269,19 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 			}
 		}
 	}
-
 	for _, cdd := range fcs {
 		buf.Write(cdd.Init)
 	}
 	if buf.Len() == n {
 		// no imports, no inits
-		buf.Truncate(m)
+		_, err := io.WriteString(wh, "#define " + up + "$init()\n")
+		return err
 	}
 	buf.WriteString("}\n")
-
 	if _, err := buf.WriteTo(wc); err != nil {
 		return err
 	}
+	
 	return nil
 }
 
@@ -340,4 +324,3 @@ func (gtc *GTC) exprType(e ast.Expr) types.Type {
 func (gtc *GTC) exprValue(e ast.Expr) exact.Value {
 	return gtc.ti.Types[e].Value
 }
-

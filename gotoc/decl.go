@@ -151,6 +151,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 		}
 
 	case token.VAR:
+		indent := false
 		for _, s := range d.Specs {
 			vs := s.(*ast.ValueSpec)
 			vals := vs.Values
@@ -166,8 +167,10 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 						notImplemented(s, t)
 					}
 				}
-				if i > 0 {
+				if indent {
 					cdd.indent(w)
+				} else {
+					indent = true
 				}
 				acds := cdd.varDecl(w, v.Type(), cdd.gtc.isGlobal(v), name, val)
 				w.Reset()

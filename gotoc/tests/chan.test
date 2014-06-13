@@ -75,3 +75,29 @@ void foo$S(chan c$, int i$) {
 	SEND(c$, int, i$);
 }
 // end
+
+// Go code:
+func S(c1, c2 chan int) (d int) {
+	select {
+	case i := <-c1:
+		return i
+	case d = <-c2:
+		break
+	case <-c1:
+		return -7
+	case i, ok := <-c2:
+		if !ok {
+			break
+		}
+		return i
+	case c1 <- 1:
+		return -1
+	case c2 <- 2:
+		return -2
+	default:
+		return
+	}
+	return
+}
+// C code:
+// end

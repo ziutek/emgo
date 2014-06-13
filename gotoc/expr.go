@@ -175,7 +175,7 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Ty
 	case types.PackageObj, types.MethodExpr:
 		cdd.Name(w, sel.Obj(), true)
 
-	default: 
+	default:
 		notImplemented(e)
 	}
 	return
@@ -466,7 +466,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 	case *ast.CompositeLit:
 		typ := cdd.exprType(e)
 
-		switch t := typ.(type) {
+		switch t := underlying(typ).(type) {
 		case *types.Array:
 			w.WriteByte('{')
 			nilT = t.Elem()
@@ -479,21 +479,28 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			w.WriteString("){")
 			nilT = t.Elem()
 
-		default:
+		case *types.Struct:
 			w.WriteByte('(')
-			cdd.Type(w, t)
+			cdd.Type(w, typ)
 			w.WriteString("){")
 			nilT = nil
+
+		default:
+			notImplemented(e, t)
 		}
 
 		for i, el := range e.Elts {
 			if i > 0 {
 				w.WriteString(", ")
 			}
-			cdd.Expr(w, el, nilT)
+			if nilT != nil {
+				cdd.Expr(w, el, nilT)
+			} else {
+				cdd.Expr(w, el, underlying(typ).(*types.Struct).Field(i).Type())
+			}
 		}
 
-		switch typ.(type) {
+		switch underlying(typ).(type) {
 		case *types.Slice:
 			w.WriteByte('}')
 			plen := ", " + strconv.Itoa(len(e.Elts))
@@ -737,7 +744,7 @@ func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
 	case *types.Map:
 		w.WriteString("NILMAP")
 
-	case *types.Pointer, *types.Basic:
+	case *types.Pointer, *types.Basic, *types.Signature:
 		// Pointer or unsafe.Pointer
 		w.WriteString("nil")
 

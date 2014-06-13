@@ -472,6 +472,172 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteString(");\n")
 		acds = append(acds, a...)
 
+	case *ast.SelectStmt:
+		w.WriteString("switch(0) {\n")
+		cdd.indent(w)
+		w.WriteString("case 0:;\n")
+		cdd.il++
+		dflt := false
+		for i, stmt := range s.Body.List {
+			switch s := stmt.(*ast.CommClause).Comm.(type) {
+			case nil:
+				dflt = true
+				continue
+
+			case *ast.SendStmt:
+				cdd.indent(w)
+				w.WriteString("SENDINIT(" + strconv.Itoa(i) + ", ")
+				cdd.Expr(w, s.Chan, nil)
+				w.WriteString(", ")
+				et := cdd.exprType(s.Chan).(*types.Chan).Elem()
+				dim, a := cdd.Type(w, et)
+				dimFuncPtr("", dim)
+				w.WriteString(", ")
+				cdd.Expr(w, s.Value, et)
+				w.WriteString(");\n")
+				acds = append(acds, a...)
+
+			default:
+				cdd.indent(w)
+				w.WriteString("RECVINIT(" + strconv.Itoa(i) + ", ")
+				var c ast.Expr
+				switch r := s.(type) {
+				case *ast.AssignStmt:
+					c = r.Rhs[0].(*ast.UnaryExpr).X
+				case *ast.ExprStmt:
+					c = r.X.(*ast.UnaryExpr).X
+				default:
+					notImplemented(s)
+				}
+				cdd.Expr(w, c, nil)
+				w.WriteString(", ")
+				et := cdd.exprType(c).(*types.Chan).Elem()
+				dim, a := cdd.Type(w, et)
+				dimFuncPtr("", dim)
+				w.WriteString(");\n")
+				acds = append(acds, a...)
+			}
+		}
+
+		cdd.indent(w)
+		n := len(s.Body.List)
+		if dflt {
+			w.WriteString("NBSELECT(\n")
+			n--
+		} else {
+			w.WriteString("SELECT(\n")
+		}
+
+		cdd.il++
+		for i, stmt := range s.Body.List {
+			s := stmt.(*ast.CommClause).Comm
+			switch s.(type) {
+			case nil:
+				continue
+
+			case *ast.SendStmt:
+				cdd.indent(w)
+				w.WriteString("SENDCOMM(" + strconv.Itoa(i) + ")")
+
+			default:
+				cdd.indent(w)
+				w.WriteString("RECVCOMM(" + strconv.Itoa(i) + ")")
+			}
+			if n--; n > 0 {
+				w.WriteByte(',')
+			}
+			w.WriteByte('\n')
+		}
+		cdd.il--
+		cdd.indent(w)
+		w.WriteString(");\n")
+
+		for i, stmt := range s.Body.List {
+			cc := stmt.(*ast.CommClause)
+			s := cc.Comm
+			cdd.indent(w)
+			switch s.(type) {
+			case nil:
+				w.WriteString("DEFAULT {\n")
+			default:
+				w.WriteString("CASE(" + strconv.Itoa(i) + ") {\n")
+			}
+			cdd.il++
+			switch s := s.(type) {
+			case nil:
+
+			case *ast.SendStmt:
+				cdd.indent(w)
+				w.WriteString("SELSEND(" + strconv.Itoa(i) + ");\n")
+
+			case *ast.AssignStmt:
+				cdd.indent(w)
+				name := cdd.ExprStr(s.Lhs[0], nil)
+				if len(s.Lhs) == 1 {
+					if name != "_$" {
+						if s.Tok == token.DEFINE {
+							dim, a := cdd.Type(w, cdd.exprType(s.Rhs[0]))
+							w.WriteString(" " + dimFuncPtr(name, dim))
+							acds = append(acds, a...)
+						} else {
+							w.WriteString(name)
+						}
+						w.WriteString(" = ")
+					}
+					w.WriteString("SELRECV(" + strconv.Itoa(i) + ");\n")
+				} else {
+					ok := cdd.ExprStr(s.Lhs[1], nil)
+					tmp := ""
+					var tup *types.Tuple
+					if name != "_$" || ok != "_$" {
+						tup = cdd.exprType(s.Rhs[0]).(*types.Tuple)
+						tupName, _ := cdd.tupleName(tup)
+						w.WriteString(tupName + " ")
+						tmp = "tmp" + cdd.gtc.uniqueId()
+						w.WriteString(tmp + " = ")
+					}
+					w.WriteString("SELRECVOK(" + strconv.Itoa(i) + ");\n")
+					if name != "_$" {
+						cdd.indent(w)
+						if s.Tok == token.DEFINE {
+							dim, a := cdd.Type(w, tup.At(0).Type())
+							w.WriteString(" " + dimFuncPtr(name, dim))
+							acds = append(acds, a...)
+						} else {
+							w.WriteString(name)
+						}
+						w.WriteString(" = " + tmp + "._0;\n")
+					}
+					if ok != "_$" {
+						cdd.indent(w)
+						if s.Tok == token.DEFINE {
+							w.WriteString("bool ")
+						}
+						w.WriteString(ok + " = " + tmp + "._1;\n")
+					}
+				}
+
+			case *ast.ExprStmt:
+				cdd.indent(w)
+				w.WriteString("SELRECV(" + strconv.Itoa(i) + ")\n")
+
+			default:
+				notImplemented(s)
+			}
+			for _, s = range cc.Body {
+				cdd.indent(w)
+				updateEA(cdd.Stmt(w, s, "", resultT, tup))
+			}
+			cdd.indent(w)
+			w.WriteString("break;\n")
+			cdd.il--
+			cdd.indent(w)
+			w.WriteString("}\n")
+		}
+		cdd.il--
+		cdd.indent(w)
+		w.WriteString("}\n")
+
 	default:
 		notImplemented(s)
 	}

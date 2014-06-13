@@ -227,6 +227,9 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 				pname = "_" + strconv.Itoa(i+1)
 			case orgNames:
 				pname = cdd.NameStr(v, true)
+				if pname == "_$" {
+					pname = "unused" + cdd.gtc.uniqueId()
+				}
 			}
 			if pname == "" {
 				params += typ + dimFuncPtr("", dim)
