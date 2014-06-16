@@ -198,22 +198,22 @@ byte foo$F(byte a$[4]);
 byte foo$F(byte a$[4]) {
 	byte r$ = {0};
 	{
-	loop:;
+	loop$:;
 		{
 			slice x = ASLICEL(a$, 1);
 			int k$ = 0;
-		loop_continue:;
+		loop$_continue:;
 			for (; k$ < len(x); ++k$) {
 				byte v$ = ((byte*)x.arr)[k$];
 				{
 					if ((r$>4)) {
-						goto loop_continue;
+						goto loop$_continue;
 					}
 					r$ += (((byte)(k$))+v$);
 				}
 			}
 		}
-	loop_break:;
+	loop$_break:;
 		goto end;
 	}
 end:
@@ -239,22 +239,22 @@ byte foo$F(byte a$[4]);
 byte foo$F(byte a$[4]) {
 	byte r$ = {0};
 	{
-	loop:;
+	loop$:;
 		{
 			slice x = ASLICEL(a$, 1);
 			int _$ = 0;
-		loop_continue:;
+		loop$_continue:;
 			for (; _$ < len(x); ++_$) {
 				byte v$ = ((byte*)x.arr)[_$];
 				{
 					if ((r$>4)) {
-						goto loop_break;
+						goto loop$_break;
 					}
 					r$ += v$;
 				}
 			}
 		}
-	loop_break:;
+	loop$_break:;
 		goto end;
 	}
 end:

@@ -446,7 +446,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		if s.Label == nil {
 			w.WriteString(s.Tok.String())
 		} else {
-			w.WriteString("goto " + s.Label.Name)
+			w.WriteString("goto " + s.Label.Name + "$")
 			switch s.Tok {
 			case token.BREAK:
 				w.WriteString("_break")
@@ -777,9 +777,10 @@ func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string, tu
 	for _, stmt := range bs.List {
 		switch s := stmt.(type) {
 		case *ast.LabeledStmt:
-			cdd.label(w, s.Label.Name, "")
+			label := s.Label.Name + "$"
+			cdd.label(w, label, "")
 			cdd.indent(w)
-			updateEA(cdd.Stmt(w, s.Stmt, s.Label.Name, resultT, tup))
+			updateEA(cdd.Stmt(w, s.Stmt, label, resultT, tup))
 
 		default:
 			cdd.indent(w)

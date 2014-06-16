@@ -1,0 +1,164 @@
+// Go code:
+func S(c1, c2 chan int) (d int) {
+	select {
+	case i := <-c1:
+		return i
+	case d = <-c2:
+		break
+	case <-c1:
+		return -7
+	case i, ok := <-c2:
+		if !ok {
+			break
+		}
+		return i
+	case i, _ := <-c2:
+		return i
+	case c1 <- 1:
+		return -1
+	case c2 <- 2:
+		return -2
+	default:
+		return
+	}
+	return
+}
+// C code:
+// decl
+int foo$S(chan c1$, chan c2$);
+// def
+int foo$S(chan c1$, chan c2$) {
+	int d$ = {0};
+	{
+		switch(0) {
+		case 0:;
+			RECVINIT(0, c1$, int);
+			RECVINIT(1, c2$, int);
+			RECVINIT(2, c1$, int);
+			RECVINIT(3, c2$, int);
+			RECVINIT(4, c2$, int);
+			SENDINIT(5, c1$, int, 1);
+			SENDINIT(6, c2$, int, 2);
+			NBSELECT(
+				RECVCOMM(0),
+				RECVCOMM(1),
+				RECVCOMM(2),
+				RECVCOMM(3),
+				RECVCOMM(4),
+				SENDCOMM(5),
+				SENDCOMM(6)
+			);
+			CASE(0) {
+				int i$ = SELRECV(0);
+				return i$;
+				break;
+			}
+			CASE(1) {
+				d$ = SELRECV(1);
+				break;
+				break;
+			}
+			CASE(2) {
+				SELRECV(2)
+				return -7;
+				break;
+			}
+			CASE(3) {
+				int$$bool tmp0 = SELRECVOK(3);
+				int i$ = tmp0._0;
+				bool ok$ = tmp0._1;
+				if (!ok$) {
+					break;
+				}
+				return i$;
+				break;
+			}
+			CASE(4) {
+				int$$bool tmp1 = SELRECVOK(4);
+				int i$ = tmp1._0;
+				return i$;
+				break;
+			}
+			CASE(5) {
+				SELSEND(5);
+				return -1;
+				break;
+			}
+			CASE(6) {
+				SELSEND(6);
+				return -2;
+				break;
+			}
+			DEFAULT {
+				goto end;
+				break;
+			}
+		}
+		goto end;
+	}
+end:
+	return d$;
+}
+// end
+
+// Go code:
+func S(c1, c2 chan int) (d int) {
+loop:
+	for {
+		select {
+		case i, ok := <-c1:
+			if i == 0 || !ok {
+				break loop
+			}
+			return i
+		case <-c2:
+			if i == 0 {
+				continue loop
+			}
+			return i
+		}
+	}
+	return 0
+}
+// C code:
+// decl
+int foo$S(chan c1$, chan c2$);
+// def
+int foo$S(chan c1$, chan c2$) {
+	int d$ = {0};
+	{
+	loop$:;
+		loop$_continue: while (true) {
+			switch(0) {
+			case 0:;
+				RECVINIT(0, c1$, int);
+				RECVINIT(1, c2$, int);
+				SELECT(
+					RECVCOMM(0),
+					RECVCOMM(1)
+				);
+				CASE(0) {
+					int$$bool tmp0 = SELRECVOK(0);
+					int i$ = tmp0._0;
+					bool ok$ = tmp0._1;
+					if ((i$ == 0||!ok$)) {
+						goto loop$_break;
+					}
+					return i$;
+					break;
+				}
+				CASE(1) {
+					SELRECV(1)
+					if (i$ == 0) {
+						goto loop$_continue;
+					}
+					return i$;
+					break;
+				}
+			}
+		}
+	loop$_break:;
+		return 0;
+	}
+}
+// end
