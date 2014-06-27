@@ -9,7 +9,7 @@ func Nil() []byte {
 slice foo$Nil();
 // def
 slice foo$Nil() {
-	slice b$ = {0};
+	slice b$ = {};
 	b$ = NILSLICE;
 	return b$;
 }
@@ -26,7 +26,7 @@ func Nil() *int {
 int *foo$Nil();
 // def
 int *foo$Nil() {
-	int *i$ = {0};
+	int *i$ = nil;
 	i$ = nil;
 	return i$;
 }

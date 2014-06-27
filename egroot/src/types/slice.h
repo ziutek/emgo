@@ -45,18 +45,18 @@ typedef struct {
 	s;                              \
 })
 
-#define ASLICEL(expr, low) \
-	(slice){               \
-		&(expr)[low],      \
-		ALEN(expr)-low,    \
-		ALEN(expr)-low,    \
+#define ASLICEL(len, expr, low) \
+	(slice){                    \
+		&(expr)[low],           \
+		len-low,                \
+		len-low,                \
 	}
 
-#define ASLICELH(expr, low, high) \
+#define ASLICELH(len, expr, low, high) \
 	(slice){                      \
 		&(expr)[low],             \
 		high-low,                 \
-		ALEN(expr)-low            \
+		len-low                   \
 	}
 	
 #define ASLICELHM(expr, low, high, max) \
@@ -66,9 +66,9 @@ typedef struct {
 		max-low                         \
 	}
 	
-#define ASLICE(expr) (slice){expr, ALEN(expr), ALEN(expr)}
+#define ASLICE(len, expr) (slice){expr, len, len}
 
-#define ASLICEH(expr, high) (slice){expr, high, ALEN(expr)}
+#define ASLICEH(len, expr, high) (slice){expr, high, len}
 	
 // #define ASLICEM(expr, max) Go 1.2 doesn't allow [::max].
 	

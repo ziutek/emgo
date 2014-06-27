@@ -1,23 +1,23 @@
-package irq
+package exce
 
 import (
 	"mmio"
 	"unsafe"
 )
 
-// IRQ represents Cortex-M exception. Its value is equal to Exception Number
-// (not IRQ number) as defined by ARM in Cortex-M documentation. Lowest IRQ
+// Exce represents Cortex-M exception. Its value is equal to Exception Number
+// (not IRQ number) as defined by ARM in Cortex-M documentation. Lowest Exc
 // value is 1 (Reset), highes value is 255 (externel interrupt #239).
-type IRQ byte
+type Exce byte
 
 // Cortex-M system exceptions (with they default priority levels).
 const (
-	Reset      IRQ = iota + 1 // prio -3 (fixed)
-	NMI                       // prio -2 (fixed)
-	HardFault                 // prio -1 (fixed)
-	MemFault                  // prio 0
-	BusFault                  // prio 1
-	UsageFault                // prio 2
+	Reset      Exce = iota + 1 // prio -3 (fixed)
+	NMI                        // prio -2 (fixed)
+	HardFault                  // prio -1 (fixed)
+	MemFault                   // prio 0
+	BusFault                   // prio 1
+	UsageFault                 // prio 2
 	_
 	_
 	_
@@ -30,7 +30,7 @@ const (
 )
 
 // First external interrupt
-const Ext0 IRQ = 16
+const IRQ0 Exce = 16
 
 var (
 	ise  = (*bitReg)(unsafe.Pointer(uintptr(0xe000e100)))
@@ -46,22 +46,22 @@ var (
 )
 
 // Enable enables handler for irq.
-func (irq IRQ) Enable() {
+func (e Exce) Enable() {
 	switch {
-	case irq >= MemFault && irq <= UsageFault:
-		shcs.SetBit(int(18 - UsageFault + irq))
-	case irq >= Ext0:
-		ise.setBit(irq - Ext0)
+	case e >= MemFault && e <= UsageFault:
+		shcs.SetBit(int(18 - UsageFault + e))
+	case e >= IRQ0:
+		ise.setBit(e - IRQ0)
 	}
 }
 
 // Enabled returns true if handler for irq is enabled.
-func (irq IRQ) Enabled() bool {
+func (e Exce) Enabled() bool {
 	switch {
-	case irq >= MemFault && irq <= UsageFault:
-		return shcs.Bit(int(18 - UsageFault + irq))
-	case irq >= Ext0:
-		return ise.bit(irq - Ext0)
+	case e >= MemFault && e <= UsageFault:
+		return shcs.Bit(int(18 - UsageFault + e))
+	case e >= IRQ0:
+		return ise.bit(e - IRQ0)
 	}
 	return true
 }
@@ -72,21 +72,21 @@ func (irq IRQ) Enabled() bool {
 // HardFault will be used. There are SetPrimask, SetFaultmask, SetBasePrimask
 // functions that can be used to disable handling of some class of exceptions
 // in one step.
-func (irq IRQ) Disable() {
+func (e Exce) Disable() {
 	switch {
-	case irq >= MemFault && irq <= UsageFault:
-		shcs.ClearBit(int(18 - UsageFault + irq))
-	case irq >= Ext0:
-		ice.setBit(irq - Ext0)
+	case e >= MemFault && e <= UsageFault:
+		shcs.ClearBit(int(18 - UsageFault + e))
+	case e >= IRQ0:
+		ice.setBit(e - IRQ0)
 	}
 }
 
 // Pending returns true if irq is pending.
-func (irq IRQ) Pending() bool {
-	if irq >= Ext0 {
-		return isp.bit(irq - Ext0)
+func (e Exce) Pending() bool {
+	if e >= IRQ0 {
+		return isp.bit(e - IRQ0)
 	}
-	switch irq {
+	switch e {
 	case NMI:
 		return ics.Bit(31)
 
@@ -112,12 +112,12 @@ func (irq IRQ) Pending() bool {
 }
 
 // SetPending generates irq.
-func (irq IRQ) SetPending() {
-	if irq >= Ext0 {
-		isp.setBit(irq - Ext0)
+func (e Exce) SetPending() {
+	if e >= IRQ0 {
+		isp.setBit(e - IRQ0)
 		return
 	}
-	switch irq {
+	switch e {
 	case NMI:
 		ics.SetBit(31)
 
@@ -142,12 +142,12 @@ func (irq IRQ) SetPending() {
 }
 
 // ClearPending cancel pending irq.
-func (irq IRQ) ClearPending() {
-	if irq >= Ext0 {
-		icp.setBit(irq - Ext0)
+func (e Exce) ClearPending() {
+	if e >= IRQ0 {
+		icp.setBit(e - IRQ0)
 		return
 	}
-	switch irq {
+	switch e {
 	case MemFault:
 		shcs.ClearBit(13)
 
@@ -169,11 +169,11 @@ func (irq IRQ) ClearPending() {
 }
 
 // Active returns true if CPU is handling irq.
-func (irq IRQ) Active() bool {
-	if irq >= Ext0 {
-		return iab.bit(irq - Ext0)
+func (e Exce) Active() bool {
+	if e >= IRQ0 {
+		return iab.bit(e - IRQ0)
 	}
-	switch irq {
+	switch e {
 	case MemFault:
 		return shcs.Bit(0)
 
@@ -201,39 +201,39 @@ func (irq IRQ) Active() bool {
 // Priority returns priority level for irq. It returns Highest for Reset,
 // NMI and HardFault but they real priority values are fixed at -3, -2, -1
 // respectively.
-func (irq IRQ) Prio() Prio {
+func (e Exce) Prio() Prio {
 	switch {
-	case irq >= MemFault && irq < Ext0:
-		return Prio(shp.byte(irq - MemFault))
-	case irq >= Ext0:
-		return Prio(ip.byte(irq - Ext0))
+	case e >= MemFault && e < IRQ0:
+		return Prio(shp.byte(e - MemFault))
+	case e >= IRQ0:
+		return Prio(ip.byte(e - IRQ0))
 	}
 	return Highest
 }
 
-func (irq IRQ) SetPrio(p Prio) {
+func (e Exce) SetPrio(p Prio) {
 	switch {
-	case irq >= MemFault && irq < Ext0:
-		shp.setByte(irq-MemFault, byte(p))
+	case e >= MemFault && e < IRQ0:
+		shp.setByte(e-MemFault, byte(p))
 
-	case irq >= Ext0:
-		ip.setByte(irq-Ext0, byte(p))
+	case e >= IRQ0:
+		ip.setByte(e-IRQ0, byte(p))
 
 	default:
-		panic("can't set priority for irq < MemFault")
+		panic("can't set priority for exception < MemFault")
 	}
 }
 
 // Trig generates irq. Only external interrupts can be generated this way.
 // This function can be call from user level if USERSETMPEND bit in CCR is set.
-func (irq IRQ) Trig() {
-	if irq < Ext0 {
+func (e Exce) Trig() {
+	if e < IRQ0 {
 		return
 	}
-	sti.Write(uint32(irq - Ext0))
+	sti.Write(uint32(e - IRQ0))
 }
 
-// Pending return true if any interrupt other than NMI or fault is pending
+// Pending return true if any exception other than NMI or fault is pending
 func Pending() bool {
 	return ics.Bit(22)
 }
@@ -241,11 +241,11 @@ func Pending() bool {
 // VecPending returns the number of the highest priority pending enabled
 // exception. 0 means no pending exceptions. Returned value includes the
 // effect of the BASEPRI and FAULTMASK (but not PRIMASK) registers.
-func VecPending() IRQ {
-	return IRQ(ics.Read() >> 12)
+func VecPending() Exce {
+	return Exce(ics.Read() >> 12)
 }
 
 // VecActive returns the number of active exception or 0 for thread mode.
-func VecActive() IRQ {
-	return IRQ(ics.Read())
+func VecActive() Exce {
+	return Exce(ics.Read())
 }

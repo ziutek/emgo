@@ -1,6 +1,7 @@
 package noos
 
 import (
+	"bits"
 	"builtin"
 	"sync/atomic"
 	"sync/barrier"
@@ -31,12 +32,13 @@ func alignUp(p, a uintptr) uintptr {
 
 type chanA struct {
 	event  Event // Event must be the first field - see chanSelect.
-	tosend uint32
-	torecv uint32
+	tosend uintptr
+	torecv uintptr
 	cap    uintptr
+	mask   uintptr
 	step   uintptr
-	rd     *[1 << 30]uint32
 	buf    unsafe.Pointer
+	rd     *[1 << 30]uint32
 	closed int32
 }
 
@@ -44,13 +46,16 @@ func makeChanA(cap int, size, align uintptr) *chanA {
 	c := new(chanA)
 	c.event = AssignEvent()
 	c.cap = uintptr(cap)
+	c.mask = ^uintptr(0) >> (bits.LeadingZerosPtr(c.cap-1) - 1)
 	c.step = alignUp(size, align)
-	c.rd = (*[1 << 30]uint32)(builtin.Alloc(1+cap/32, 4, 4))
 	c.buf = builtin.Alloc(cap, size, align)
+	rdlen := cap / 32
+	if rdlen*32 < cap {
+		rdlen++
+	}
+	c.rd = (*[1 << 30]uint32)(builtin.Alloc(rdlen, 4, 4))
 	return c
 }
-
-const b31 = 1 << 31
 
 func (c *chanA) Close() {
 	if c == nil {
@@ -68,36 +73,37 @@ func (c *chanA) panicIfClosed() {
 
 // TrySend tries to reserve place in c's internl ring buffer.
 // After return, if p != nil then p contains pointer to the place in internal
-// buffer where data can be stored. After that sender need to call c.Done(d).
-// If p == nil then d == cagain which means that the internal buffer was full
-// and TrySend can be called again.
+// buffer where data can be stored. After data store sender need to call
+// c.Done(d). If p == nil then d == cagain which means that the internal buffer
+// was full and TrySend can be called again.
 func (c *chanA) TrySend(_, _ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
-	if c == nil {
-		return nil, cagain
-	}
 	var n uintptr
+	nmask := c.mask >> 1
+	abalsb := c.mask &^ nmask
 	for {
 		c.panicIfClosed()
-		tosend := atomic.LoadUint32(&c.tosend)
-		if atomic.LoadUint32(&c.torecv) == tosend^b31 {
+		tosend := atomic.LoadUintptr(&c.tosend)
+		if atomic.LoadUintptr(&c.torecv)&c.mask == (tosend^abalsb)&c.mask {
 			// Channel is full.
 			return nil, cagain
 		}
-		n = uintptr(tosend &^ b31)
+		n = tosend & nmask
 		if bit(&c.rd[n>>5], n&31) {
 			// This element is still being received.
 			return nil, cagain
 		}
-		var next uint32
+		var next uintptr
 		if n+1 == c.cap {
-			next = ^tosend & b31
+			next = (tosend + abalsb) &^ nmask
 		} else {
 			next = tosend + 1
 		}
-		if atomic.CompareAndSwapUint32(&c.tosend, tosend, next) {
+		if atomic.CompareAndSwapUintptr(&c.tosend, tosend, next) {
 			break
 		}
 	}
+	// BUG: If sizeof(uintptr) == 4 and task was blocked after load and before
+	// CAS for long enough time, there is non-zero probability of ABA problem.
 	return unsafe.Pointer(uintptr(c.buf) + c.step*n), n
 }
 
@@ -106,34 +112,35 @@ func (c *chanA) TrySend(_, _ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 // to copy the data and after that it need to call c.Done(d). If p == nil then
 // d can be equal to cagain or cclosed.
 func (c *chanA) TryRecv(_, _ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
-	if c == nil {
-		return nil, cagain
-	}
 	var n uintptr
+	nmask := c.mask >> 1
+	abalsb := c.mask &^ nmask
 	for {
-		torecv := atomic.LoadUint32(&c.torecv)
-		if atomic.LoadUint32(&c.tosend) == torecv {
+		torecv := atomic.LoadUintptr(&c.torecv)
+		if atomic.LoadUintptr(&c.tosend) == torecv {
 			// Channel is empty.
 			if atomic.LoadInt32(&c.closed) != 0 {
 				return nil, cclosed
 			}
 			return nil, cagain
 		}
-		n = uintptr(torecv &^ b31)
+		n = torecv & nmask
 		if !bit(&c.rd[n>>5], n&31) {
 			// This element is still being sent.
 			return nil, cagain
 		}
-		var next uint32
+		var next uintptr
 		if n+1 == c.cap {
-			next = ^torecv & b31
+			next = (torecv + abalsb) &^ nmask
 		} else {
 			next = torecv + 1
 		}
-		if atomic.CompareAndSwapUint32(&c.torecv, torecv, next) {
+		if atomic.CompareAndSwapUintptr(&c.torecv, torecv, next) {
 			break
 		}
 	}
+	// BUG: If sizeof(uintptr) == 4 and task was blocked after load and before
+	// CAS for long enough time, there is non-zero probability of ABA problem.
 	return unsafe.Pointer(uintptr(c.buf) + c.step*n), n
 }
 
@@ -170,6 +177,31 @@ func (c *chanA) Done(n uintptr) {
 	c.event.Send()
 }
 
+func (c *chanA) Len() int {
+	var torecv, tosend uintptr
+	for {
+		torecv = atomic.LoadUintptr(&c.torecv)
+		barrier.Compiler()
+		tosend = atomic.LoadUintptr(&c.tosend)
+		barrier.Compiler()
+		if atomic.LoadUintptr(&c.torecv) == torecv {
+			break
+		}
+	}
+	nmask := c.mask >> 1
+	abalsb := c.mask &^ nmask
+	nr := torecv & nmask
+	ns := tosend & nmask
+	if (torecv^tosend)&abalsb == 0 {
+		return int(ns - nr)
+	}
+	return int(c.cap - nr + ns)
+}
+
+func (c *chanA) Cap() int {
+	return int(c.cap)
+}
+
 type chanAMethods struct {
 	Send       func(c *chanA, e unsafe.Pointer) (p unsafe.Pointer, d uintptr)
 	Recv       func(c *chanA, e unsafe.Pointer) (p unsafe.Pointer, d uintptr)
@@ -179,6 +211,8 @@ type chanAMethods struct {
 	CancelRecv func()
 	Done       func(c *chanA, d uintptr)
 	Close      func(c *chanA)
+	Len        func(c *chanA) int
+	Cap        func(c *chanA) int
 }
 
 var cam = chanAMethods{
@@ -190,4 +224,6 @@ var cam = chanAMethods{
 	nil,
 	(*chanA).Done,
 	(*chanA).Close,
+	(*chanA).Len,
+	(*chanA).Cap,
 }

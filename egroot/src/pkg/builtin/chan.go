@@ -2,11 +2,7 @@ package builtin
 
 import "unsafe"
 
-const (
-	ChanOK uintptr = iota
-	ChanClosed
-	ChanAgain
-)
+const ChanOK uintptr = 0
 
 // A Chan is internal representation of chan T type.
 type Chan struct {
@@ -14,8 +10,8 @@ type Chan struct {
 	M *ChanMethods
 }
 
-// A ChanMethods is set of methods used internally to perform send, receive and
-// close operations.
+// A ChanMethods is set of methods used internally to implement channel
+// operations.
 type ChanMethods struct {
 	Send       func(c, e unsafe.Pointer) (p unsafe.Pointer, d uintptr)
 	Recv       func(c, e unsafe.Pointer) (p unsafe.Pointer, d uintptr)
@@ -25,6 +21,8 @@ type ChanMethods struct {
 	CancelRecv func(c, w unsafe.Pointer)
 	Done       func(c unsafe.Pointer, d uintptr)
 	Close      func(c unsafe.Pointer)
+	Len        func(c unsafe.Pointer) int
+	Cap        func(c unsafe.Pointer) int
 }
 
 // MakeChan is used internally to implement make(chan T, cap) operation.

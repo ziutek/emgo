@@ -7,7 +7,7 @@ func ArrayToSlice(a [3]int) []int {
 slice foo$ArrayToSlice(int a$[3]);
 // def
 slice foo$ArrayToSlice(int a$[3]) {
-	return ASLICE(a$);
+	return ASLICE(3, a$);
 }
 // end
 
@@ -25,9 +25,9 @@ func ArrayToSlice(a [3]int) []int {
 slice foo$ArrayToSlice(int a$[3]);
 // def
 slice foo$ArrayToSlice(int a$[3]) {
-	slice b$ = ASLICELH(a$, 0, 3);
-	b$ = ASLICEH(a$, 3);
-	b$ = ASLICEL(a$, 0);
+	slice b$ = ASLICELH(3, a$, 0, 3);
+	b$ = ASLICEH(3, a$, 3);
+	b$ = ASLICEL(3, a$, 0);
 	b$ = ASLICELHM(a$, 0, 1, 2);
 	b$ = ASLICEHM(a$, 1, 2);
 	return b$;
@@ -43,7 +43,7 @@ func ArrayPtrToSlice(a *[3]int) []int {
 slice foo$ArrayPtrToSlice(int (*a$)[3]);
 // def
 slice foo$ArrayPtrToSlice(int (*a$)[3]) {
-	return ASLICE((*a$));
+	return ASLICE(3, (*a$));
 }
 // end
 

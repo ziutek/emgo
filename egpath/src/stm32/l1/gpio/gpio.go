@@ -46,6 +46,11 @@ const (
 	Analog
 )
 
+// Number returns port number.
+func (g *Port) Number() int {
+	return int((uintptr(unsafe.Pointer(g)) - base) / step)
+}
+
 // Mode returns I/O mode for n-th bit
 func (g *Port) Mode(n int) Mode {
 	n *= 2

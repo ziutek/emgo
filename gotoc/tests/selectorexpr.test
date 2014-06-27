@@ -20,7 +20,7 @@ struct foo$S_struct {
 // decl
 foo$S foo$s;
 // def
-foo$S foo$s = {0};
+foo$S foo$s = {};
 // decl
 int foo$F();
 // def
@@ -45,7 +45,7 @@ struct {
 struct {
 	int a;
 	int b;
-} foo$s = {0};
+} foo$s = {};
 // decl
 int foo$F();
 // def

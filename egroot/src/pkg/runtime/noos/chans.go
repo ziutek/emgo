@@ -95,9 +95,6 @@ func (c *chanS) unlock() {
 // for communication and TrySend can be called again. cok means that data
 // transfer was performed by receiver.
 func (c *chanS) TrySend(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintptr) {
-	if c == nil {
-		return nil, cagain
-	}
 	if w == nil {
 		// Fast path.
 		if loadWaiter(&c.dst) == nil {
@@ -171,9 +168,6 @@ func (c *chanS) TrySend(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintpt
 // isn't ready for communication and TryRecv can be called again. cok means
 // that data transfer was performed by receiver. cclosed means that c is closed.
 func (c *chanS) TryRecv(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintptr) {
-	if c == nil {
-		return nil, cagain
-	}
 	if w == nil {
 		// Fast path.
 		if loadWaiter(&c.src) == nil {
@@ -305,6 +299,14 @@ func (c *chanS) Recv(e unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 	}
 }
 
+func (_ *chanS) Len() int {
+	return 0
+}
+
+func (_ *chanS) Cap() int {
+	return 0
+}
+
 type chanSMethods struct {
 	Send       func(c *chanS, e unsafe.Pointer) (p unsafe.Pointer, d uintptr)
 	Recv       func(c *chanS, e unsafe.Pointer) (p unsafe.Pointer, d uintptr)
@@ -314,6 +316,8 @@ type chanSMethods struct {
 	CancelRecv func(c *chanS, w *waiter)
 	Done       func(c *chanS, d uintptr)
 	Close      func(c *chanS)
+	Len        func(c *chanS) int
+	Cap        func(c *chanS) int
 }
 
 var csm = chanSMethods{
@@ -325,4 +329,6 @@ var csm = chanSMethods{
 	(*chanS).CancelRecv,
 	(*chanS).Done,
 	(*chanS).Close,
+	(*chanS).Len,
+	(*chanS).Cap,
 }

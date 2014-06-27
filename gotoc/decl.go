@@ -54,11 +54,14 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 				continue
 			}
 			cdd.indent(w)
-			dim, acds := cdd.Type(w, v.Type())
+			t := v.Type()
+			dim, acds := cdd.Type(w, t)
 			cdds = append(cdds, acds...)
 			w.WriteByte(' ')
 			w.WriteString(dimFuncPtr(name, dim))
-			w.WriteString(" = {0};\n")
+			w.WriteString(" = ")
+			zeroVal(w, t)
+			w.WriteString(";\n")
 		}
 		cdd.indent(w)
 	}
@@ -218,13 +221,34 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 	return
 }
 
+func zeroVal(w *bytes.Buffer, typ types.Type) {
+	switch t := underlying(typ).(type) {
+	case *types.Struct, *types.Array, *types.Slice, *types.Chan, *types.Interface:
+		w.WriteString("{}")
+
+	case *types.Pointer, *types.Signature:
+		w.WriteString("nil")
+
+	case *types.Basic:
+		switch t.Kind() {
+		case types.String:
+			w.WriteString("{}")
+		case types.Bool:
+			w.WriteString("false")
+		default:
+			w.WriteByte('0')
+		}
+		
+	default:
+		w.WriteByte('0')
+	}
+}
+
 func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name string, val ast.Expr) (acds []*CDD) {
 
 	dim, acds := cdd.Type(w, typ)
 	w.WriteByte(' ')
 	w.WriteString(dimFuncPtr(name, dim))
-
-	typ = underlying(typ)
 
 	constInit := true // true if C declaration can init value
 
@@ -238,15 +262,11 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	}
 
 	if constInit {
+		w.WriteString(" = ")
 		if val != nil {
-			w.WriteString(" = ")
 			cdd.Expr(w, val, typ)
 		} else {
-			if t, ok := typ.(*types.Struct); ok && t.NumFields() == 0 {
-			} else if t, ok := typ.(*types.Array); ok && t.Len() == 0 {
-			} else {
-				w.WriteString(" = {0}")
-			}
+			zeroVal(w, typ)
 		}
 	}
 	w.WriteString(";\n")
@@ -258,7 +278,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 
 		assign := false
 
-		switch t := typ.(type) {
+		switch t := underlying(typ).(type) {
 		case *types.Slice:
 			switch vt := val.(type) {
 			case *ast.CompositeLit:

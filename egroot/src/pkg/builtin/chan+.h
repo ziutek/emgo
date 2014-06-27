@@ -1,5 +1,7 @@
 typedef builtin$Chan chan;
 
+#define NILCHAN (chan){}
+
 #define MAKECHAN(typ, cap) builtin$MakeChan(cap, sizeof(typ), __alignof__(typ))
 
 #define SEND(cx, typ, val) do {                     \
@@ -12,9 +14,9 @@ typedef builtin$Chan chan;
 	}                                               \
 } while(0)
 
-#define RECV(typ, cx) ({                            \
+#define RECV(typ, cx, zero) ({                      \
 	chan c = cx;                                    \
-	typeof(typ) v = {0};                            \
+	typeof(typ) v = zero;                           \
 	unsafe$Pointer$$uintptr r = c.M->Recv(c.C, &v); \
 	if (r._0 != nil) {                              \
 		v = *(typ*)r._0;                            \
@@ -25,14 +27,14 @@ typedef builtin$Chan chan;
 
 #define RECVOK(tt, cx) ({                                \
 	chan c = cx;                                         \
-	tt vok = {0};                                        \
+	tt vok = {};                                         \
 	unsafe$Pointer$$uintptr r = c.M->Recv(c.C, &vok._0); \
 	if (r._0 != nil) {                                   \
 		vok._0 = *(typeof(&vok._0))r._0;                 \
 		c.M->Done(c.C, r._1);                            \
 		vok._1 = true;                                   \
-	} else if (r._1 == builtin$ChanClosed) {             \
-		vok._1 = true;                                   \
+	} else {                                             \
+		vok._1 = (r._1 == builtin$ChanOK);               \
 	}                                                    \
 	vok;                                                 \
 })
@@ -63,13 +65,14 @@ typedef builtin$Chan chan;
 
 #define _SELECT(dflt, commList...)                              \
 	builtin$Comm arr[] = {commList};                            \
-	builtin$Comm *comms[ALEN(arr)];                             \
-	int i = ALEN(arr);                                          \
+	int n = sizeof(arr)/sizeof(arr[0]);                         \
+	builtin$Comm *comms[n];                                     \
+	int i = n;                                                  \
 	while (i--) {                                               \
 		comms[i] = &arr[i];                                     \
 	}                                                           \
 	unsafe$Pointer$$unsafe$Pointer$$uintptr r = builtin$Select( \
-		ASLICE(comms), dflt                                     \
+		ASLICE(n, comms), dflt                                  \
 	);                                                          \
 	goto *r._0
 
@@ -101,8 +104,23 @@ typedef builtin$Chan chan;
 		val##i._0 = *(typeof(&val##i._0))r._1; \
 		chan##i.M->Done(chan##i.C, r._2);      \
 		val##i._1 = true;                      \
-	} else if (r._2 == builtin$ChanClosed) {   \
-		val##i._1 = true;                      \
+	} else {                                   \
+		val##i._1 = (r._2 == builtin$ChanOK);  \
 	}                                          \
 	val##i;                                    \
 })
+
+static inline
+void close(chan c) {
+	c.M->Close(c.C);
+}
+
+static inline
+int clen(chan c) {
+	return c.M->Len(c.C);
+}
+
+static inline
+int ccap(chan c) {
+	return c.M->Cap(c.C);
+}

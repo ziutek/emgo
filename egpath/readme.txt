@@ -1,1 +1,1 @@
-This directory is there temporarily. In the future, packages that are there will be distributed separately or will be incorporated into the standard library.
+It isn't clear does packages from this directore shoud be included into standard library or not

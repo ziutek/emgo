@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	cok     = builtin.ChanOK
-	cclosed = builtin.ChanClosed
-	cagain  = builtin.ChanAgain
+	cok = builtin.ChanOK + iota
+	cclosed
+	cagain
 )
 
 func panicClosed() {
@@ -42,6 +42,9 @@ func selectComm(comms []*builtin.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Point
 	if dflt != nil {
 		// "Nonblocking" select.
 		for _, comm := range comms {
+			if comm.C == nil {
+				continue
+			}
 			p, d = comm.Try(comm.C, comm.E, nil)
 			if p != nil || d != cagain {
 				jmp = comm.Case
@@ -58,17 +61,21 @@ func selectComm(comms []*builtin.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Point
 		w   waiter
 	)
 	for _, comm := range comms {
-		e = e.Sum(*(*Event)(comm.C))
+		if comm.C != nil {
+			e = e.Sum(*(*Event)(comm.C))
+		}
 	}
 	w.addr = unsafe.Pointer(&sel)
 	w.next = &w
 	n := 0
 	for {
 		comm := comms[n]
-		p, d = comm.Try(comm.C, comm.E, unsafe.Pointer(&w))
-		if p != nil || d != cagain {
-			jmp = comm.Case
-			break
+		if comm.C != nil {
+			p, d = comm.Try(comm.C, comm.E, unsafe.Pointer(&w))
+			if p != nil || d != cagain {
+				jmp = comm.Case
+				break
+			}
 		}
 		if n++; n == len(comms) {
 			n = 0
@@ -77,7 +84,7 @@ func selectComm(comms []*builtin.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Point
 	}
 	atomic.CompareAndSwapInt32(&sel, 0, 2)
 	for i, comm := range comms {
-		if i != n && comm.Cancel != nil {
+		if i != n && comm.C != nil && comm.Cancel != nil {
 			comm.Cancel(comm.C, unsafe.Pointer(&w))
 		}
 	}

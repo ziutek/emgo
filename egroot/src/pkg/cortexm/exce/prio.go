@@ -1,4 +1,4 @@
-package irq
+package exce
 
 // Prio represents Cortex-M setable interrupt priority.
 type Prio byte
@@ -23,12 +23,12 @@ func (p Prio) Higher(o Prio) bool {
 	return p < o
 }
 
-// SetPriority sets priority level for irq
-func (irq IRQ) SetPriority(prio Prio) {
+// SetPriority sets priority level for exception.
+func (e Exce) SetPriority(prio Prio) {
 	switch {
-	case irq >= MemFault && irq < Ext0:
-		shp.setByte(irq-MemFault, byte(prio))
-	case irq >= Ext0:
-		ip.setByte(irq-Ext0, byte(prio))
+	case e >= MemFault && e < IRQ0:
+		shp.setByte(e-MemFault, byte(prio))
+	case e >= IRQ0:
+		ip.setByte(e-IRQ0, byte(prio))
 	}
 }

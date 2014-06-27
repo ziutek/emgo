@@ -77,7 +77,8 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 		if rhsIsTuple {
 			tup := cdd.exprType(s.Rhs[0]).(*types.Tuple)
-			tupName, _ := cdd.tupleName(tup)
+			tupName, _, a := cdd.tupleName(tup)
+			acds = append(acds, a...)
 			w.WriteString(tupName)
 			tupName = "tmp" + cdd.gtc.uniqueId()
 			w.WriteString(" " + tupName + " = ")
@@ -224,6 +225,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			cdd.il++
 			cdd.indent(w)
 			updateEA(cdd.Stmt(w, s.Init, "", resultT, tup))
+			cdd.indent(w)
 		}
 
 		if label != "" && s.Post == nil {
@@ -591,7 +593,8 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					var tup *types.Tuple
 					if name != "_$" || ok != "_$" {
 						tup = cdd.exprType(s.Rhs[0]).(*types.Tuple)
-						tupName, _ := cdd.tupleName(tup)
+						tupName, _, a := cdd.tupleName(tup)
+						acds = append(acds, a...)
 						w.WriteString(tupName + " ")
 						tmp = "tmp" + cdd.gtc.uniqueId()
 						w.WriteString(tmp + " = ")

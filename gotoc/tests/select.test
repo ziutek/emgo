@@ -28,7 +28,7 @@ func S(c1, c2 chan int) (d int) {
 int foo$S(chan c1$, chan c2$);
 // def
 int foo$S(chan c1$, chan c2$) {
-	int d$ = {0};
+	int d$ = 0;
 	{
 		switch(0) {
 		case 0:;
@@ -99,6 +99,17 @@ int foo$S(chan c1$, chan c2$) {
 end:
 	return d$;
 }
+// decl
+struct int$$bool_struct;
+typedef struct int$$bool_struct int$$bool;
+// def
+#ifndef int$$bool$
+#define int$$bool$
+struct int$$bool_struct {
+	int _0;
+	bool _1;
+};
+#endif
 // end
 
 // Go code:
@@ -125,7 +136,7 @@ loop:
 int foo$S(chan c1$, chan c2$);
 // def
 int foo$S(chan c1$, chan c2$) {
-	int d$ = {0};
+	int d$ = 0;
 	{
 	loop$:;
 		loop$_continue: while (true) {
@@ -161,4 +172,15 @@ int foo$S(chan c1$, chan c2$) {
 		return 0;
 	}
 }
+// decl
+struct int$$bool_struct;
+typedef struct int$$bool_struct int$$bool;
+// def
+#ifndef int$$bool$
+#define int$$bool$
+struct int$$bool_struct {
+	int _0;
+	bool _1;
+};
+#endif
 // end

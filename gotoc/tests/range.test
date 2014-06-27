@@ -10,7 +10,7 @@ func F(a [4]byte) (r byte) {
 byte foo$F(byte a$[4]);
 // def
 byte foo$F(byte a$[4]) {
-	byte r$ = {0};
+	byte r$ = 0;
 	{
 		{
 			int k$ = 0;
@@ -37,7 +37,7 @@ func F(a [4]byte) (r byte) {
 byte foo$F(byte a$[4]);
 // def
 byte foo$F(byte a$[4]) {
-	byte r$ = {0};
+	byte r$ = 0;
 	{
 		{
 			int k$ = 0;
@@ -67,7 +67,7 @@ func F(a [4]byte) (r byte) {
 byte foo$F(byte a$[4]);
 // def
 byte foo$F(byte a$[4]) {
-	byte r$ = {0};
+	byte r$ = 0;
 	{
 		{
 			int k$ = 0;
@@ -103,7 +103,7 @@ func F(a [4]byte) (r byte) {
 byte foo$F(byte a$[4]);
 // def
 byte foo$F(byte a$[4]) {
-	byte r$ = {0};
+	byte r$ = 0;
 	{
 		{
 			int _$ = 0;
@@ -136,10 +136,10 @@ func F(a [4]byte) (r byte) {
 byte foo$F(byte a$[4]);
 // def
 byte foo$F(byte a$[4]) {
-	byte r$ = {0};
+	byte r$ = 0;
 	{
 		{
-			slice x = ASLICEL(a$, 1);
+			slice x = ASLICEL(4, a$, 1);
 			int k$ = 0;
 			for (; k$ < len(x); ++k$) {
 				r$ += ((byte)(k$));
@@ -164,10 +164,10 @@ func F(a [4]byte) (r byte) {
 byte foo$F(byte a$[4]);
 // def
 byte foo$F(byte a$[4]) {
-	byte r$ = {0};
+	byte r$ = 0;
 	{
 		{
-			slice x = ASLICEL(a$, 1);
+			slice x = ASLICEL(4, a$, 1);
 			int k$ = 0;
 			for (; k$ < len(x); ++k$) {
 				r$ += ((byte)(k$));
@@ -196,11 +196,11 @@ loop:
 byte foo$F(byte a$[4]);
 // def
 byte foo$F(byte a$[4]) {
-	byte r$ = {0};
+	byte r$ = 0;
 	{
 	loop$:;
 		{
-			slice x = ASLICEL(a$, 1);
+			slice x = ASLICEL(4, a$, 1);
 			int k$ = 0;
 		loop$_continue:;
 			for (; k$ < len(x); ++k$) {
@@ -237,11 +237,11 @@ loop:
 byte foo$F(byte a$[4]);
 // def
 byte foo$F(byte a$[4]) {
-	byte r$ = {0};
+	byte r$ = 0;
 	{
 	loop$:;
 		{
-			slice x = ASLICEL(a$, 1);
+			slice x = ASLICEL(4, a$, 1);
 			int _$ = 0;
 		loop$_continue:;
 			for (; _$ < len(x); ++_$) {

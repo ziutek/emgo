@@ -194,14 +194,29 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 	switch name {
 	case "len":
 		switch t := underlying(cdd.exprType(args[0])).(type) {
-		case *types.Slice, *types.Map, *types.Basic: // Basic == String
+		case *types.Slice, *types.Basic: // Basic == String
 			return "len", ""
 
 		case *types.Array:
-			return "sizeof", ""
+			return "", strconv.FormatInt(t.Len(), 10)
+
+		case *types.Chan:
+			return "clen", ""
 
 		default:
-			panic(t)
+			notImplemented(ast.NewIdent("len"), t)
+		}
+
+	case "cap":
+		switch t := underlying(cdd.exprType(args[0])).(type) {
+		case *types.Slice:
+			return "cap", ""
+
+		case *types.Chan:
+			return "ccap", ""
+
+		default:
+			notImplemented(ast.NewIdent("cap"), t)
 		}
 
 	case "copy":
@@ -255,7 +270,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 			return name, k + ", " + e
 
 		default:
-			notImplemented(args[0])
+			notImplemented(ast.NewIdent(name))
 		}
 
 	}
@@ -294,6 +309,9 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 	switch t := underlying(cdd.exprType(e.Fun)).(type) {
 	case *types.Signature:
 		fun, _, recv, _ := cdd.funStr(e.Fun, e.Args)
+		if fun == "" {
+			w.WriteString(recv)
+		}
 		w.WriteString(fun)
 		w.WriteByte('(')
 		comma := false
@@ -383,16 +401,20 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		if op == "<-" {
 			t := cdd.exprType(e.X).(*types.Chan).Elem()
 			if tup, ok := cdd.exprType(e).(*types.Tuple); ok {
-				tn, _ := cdd.tupleName(tup)
-				w.WriteString("RECVOK(" + tn)
+				tn, _, _ := cdd.tupleName(tup)
+				w.WriteString("RECVOK(" + tn + ", ")
+				cdd.Expr(w, e.X, nil)
+				w.WriteByte(')')
 			} else {
 				w.WriteString("RECV(")
 				dim, _ := cdd.Type(w, t)
 				w.WriteString(dimFuncPtr("", dim))
+				w.WriteString(", ")
+				cdd.Expr(w, e.X, nil)
+				w.WriteString(", ")
+				zeroVal(w, t)
+				w.WriteByte(')')
 			}
-			w.WriteString(", ")
-			cdd.Expr(w, e.X, nil)
-			w.WriteByte(')')
 			break
 		}
 
@@ -651,13 +673,14 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 		w.WriteByte(')')
 
 	case *types.Array:
+		alen := strconv.FormatInt(t.Len(), 10) + ", "
 		if e.Low != nil {
 			switch {
 			case e.High == nil && e.Max == nil:
-				w.WriteString("ASLICEL(")
+				w.WriteString("ASLICEL(" + alen)
 
 			case e.High != nil && e.Max == nil:
-				w.WriteString("ASLICELH(")
+				w.WriteString("ASLICELH(" + alen)
 
 			case e.High == nil && e.Max != nil:
 				w.WriteString("ASLICEM(")
@@ -671,10 +694,10 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 		} else {
 			switch {
 			case e.High == nil && e.Max == nil:
-				w.WriteString("ASLICE(")
+				w.WriteString("ASLICE(" + alen)
 
 			case e.High != nil && e.Max == nil:
-				w.WriteString("ASLICEH(")
+				w.WriteString("ASLICEH(" + alen)
 
 			case e.High == nil && e.Max != nil:
 				w.WriteString("ASLICEM(")
@@ -744,12 +767,15 @@ func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
 	case *types.Map:
 		w.WriteString("NILMAP")
 
+	case *types.Chan:
+		w.WriteString("NILCHAN")
+
 	case *types.Pointer, *types.Basic, *types.Signature:
 		// Pointer or unsafe.Pointer
 		w.WriteString("nil")
 
 	default:
-		w.WriteString("{0}")
+		w.WriteString("'unknown nil'")
 	}
 }
 

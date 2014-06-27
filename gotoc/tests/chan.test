@@ -4,7 +4,7 @@ var c chan int;
 // decl
 chan foo$c;
 // def
-chan foo$c = {0};
+chan foo$c = {};
 // end
 
 // Go code:
@@ -13,7 +13,7 @@ var c chan int = nil;
 // decl
 chan foo$c;
 // def
-chan foo$c = {0};
+chan foo$c = NILCHAN;
 // end
 
 // Go code:
@@ -25,7 +25,7 @@ func R(c chan *int) *int {
 int *foo$R(chan c$);
 // def
 int *foo$R(chan c$) {
-	return RECV(int*, c$);
+	return RECV(int*, c$, nil);
 }
 // end
 
@@ -50,8 +50,8 @@ struct int$$bool_struct {
 int$$bool foo$R(chan c$);
 // def
 int$$bool foo$R(chan c$) {
-	int i$ = {0};
-	bool ok$ = {0};
+	int i$ = 0;
+	bool ok$ = false;
 	{
 		int$$bool tmp0 = RECVOK(int$$bool, c$);
 		i$ = tmp0._0;
@@ -66,6 +66,7 @@ end:
 // Go code:
 func S(c chan int, i int) {
 	c <- i
+	close(c)
 }
 // C code:
 // decl
@@ -73,5 +74,32 @@ void foo$S(chan c$, int i$);
 // def
 void foo$S(chan c$, int i$) {
 	SEND(c$, int, i$);
+	close(c$);
+}
+// end
+
+// Go code:
+func Len(c chan int) int {
+	return len(c)
+}
+// C code:
+// decl
+int foo$Len(chan c$);
+// def
+int foo$Len(chan c$) {
+	return clen(c$);
+}
+// end
+
+// Go code:
+func Cap(c chan int) int {
+	return cap(c)
+}
+// C code:
+// decl
+int foo$Cap(chan c$);
+// def
+int foo$Cap(chan c$) {
+	return ccap(c$);
 }
 // end

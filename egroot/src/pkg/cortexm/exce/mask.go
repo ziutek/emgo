@@ -1,4 +1,4 @@
-package irq
+package exce
 
 // Disable disables all exceptions other than NMI and faults. Internally it
 // sets Cortex-M PRIMASK to 1.

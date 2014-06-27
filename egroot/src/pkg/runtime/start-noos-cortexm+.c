@@ -6,8 +6,8 @@
 int main$init();
 int main$main();
 
-// All external symbols as byte to prevent compiler to optimize
-// any runtime align checks.
+// All external symbols as byte to prevent compiler to optimize any runtime
+// align checks.
 extern byte DataRAM, DataLoad, DataSize;
 extern byte BSSRAM, BSSSize;
 extern byte StackEnd;

@@ -162,7 +162,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		return err
 	}
 
-	var tcs, vcs, fcs []*CDD
+	var tcs, vcs, fcs, ccs []*CDD
 	cddm = make(map[types.Object]*CDD)
 
 	for _, cdd := range cdds {
@@ -175,6 +175,9 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 		case FuncDecl:
 			fcs = append(fcs, cdd)
+			
+		case ConstDecl:
+			ccs = append(ccs, cdd)
 		}
 	}
 
@@ -212,6 +215,14 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		return err
 	}
 	for _, cdd := range fcs {
+		if err := cdd.WriteDecl(wh, wc); err != nil {
+			return err
+		}
+	}
+	if err := write("// const decl\n", wh, wc); err != nil {
+		return err
+	}
+	for _, cdd := range ccs {
 		if err := cdd.WriteDecl(wh, wc); err != nil {
 			return err
 		}

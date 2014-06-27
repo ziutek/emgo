@@ -5,7 +5,7 @@ package noos
 import (
 	"unsafe"
 
-	"cortexm/irq"
+	"cortexm/exce"
 )
 
 // svcHandler calls sv with SVC caller's stack frame.
@@ -60,13 +60,13 @@ func (ts *taskSched) newTask(pc uintptr, xpsr uint32, wait bool) {
 		ts.stop()
 		// BUG: This badly affects scheduling but don't care for now.
 		ts.forceNext = n
-		irq.PendSV.SetPending()
+		exce.PendSV.SetPending()
 	}
 }
 
 func (ts *taskSched) delTask(n int) {
 	ts.tasks[n].setState(taskEmpty)
-	irq.PendSV.SetPending()
+	exce.PendSV.SetPending()
 }
 
 func (ts *taskSched) waitEvent(e Event) {
@@ -77,5 +77,5 @@ func (ts *taskSched) waitEvent(e Event) {
 	}
 	t.setState(taskWaitEvent)
 	t.event = e
-	irq.PendSV.SetPending()
+	exce.PendSV.SetPending()
 }

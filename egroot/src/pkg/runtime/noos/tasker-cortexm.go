@@ -3,12 +3,11 @@
 package noos
 
 import (
+	"sync/barrier"
 	"unsafe"
 
-	"sync/barrier"
-
 	"cortexm"
-	"cortexm/irq"
+	"cortexm/exce"
 	"cortexm/systick"
 )
 
@@ -81,13 +80,13 @@ func (ts *taskSched) deliverEvent(e Event) {
 func irtExp() uint
 
 func (ts *taskSched) init() {
-	var vt []irq.Vector
+	var vt []exce.Vector
 	vtlen := 1 << irtExp()
-	vtsize := vtlen * int(unsafe.Sizeof(irq.Vector{}))
+	vtsize := vtlen * int(unsafe.Sizeof(exce.Vector{}))
 
 	Heap = allocTop(
 		unsafe.Pointer(&vt), Heap,
-		vtlen, unsafe.Sizeof(irq.Vector{}), unsafe.Alignof(irq.Vector{}),
+		vtlen, unsafe.Sizeof(exce.Vector{}), unsafe.Alignof(exce.Vector{}),
 		uintptr(vtsize),
 	)
 	if Heap == nil {
@@ -120,22 +119,22 @@ func (ts *taskSched) init() {
 	// Consider setup at link time using GCC weak functions to support Cortex-M0
 	// and (in case of Cortex-M3,4) to allow vector load on the ICode bus
 	// simultaneously with registers stacking on DCode bus.
-	vt[irq.NMI] = irq.VectorFor(nmiHandler)
-	vt[irq.HardFault] = irq.VectorFor(hardFaultHandler)
-	vt[irq.MemFault] = irq.VectorFor(memFaultHandler)
-	vt[irq.BusFault] = irq.VectorFor(busFaultHandler)
-	vt[irq.UsageFault] = irq.VectorFor(usageFaultHandler)
-	vt[irq.SVCall] = irq.VectorFor(svcHandler)
-	vt[irq.PendSV] = irq.VectorFor(pendSVHandler)
-	vt[irq.SysTick] = irq.VectorFor(sysTickHandler)
-	irq.UseTable(vt)
+	vt[exce.NMI] = exce.VectorFor(nmiHandler)
+	vt[exce.HardFault] = exce.VectorFor(hardFaultHandler)
+	vt[exce.MemFault] = exce.VectorFor(memFaultHandler)
+	vt[exce.BusFault] = exce.VectorFor(busFaultHandler)
+	vt[exce.UsageFault] = exce.VectorFor(usageFaultHandler)
+	vt[exce.SVCall] = exce.VectorFor(svcHandler)
+	vt[exce.PendSV] = exce.VectorFor(pendSVHandler)
+	vt[exce.SysTick] = exce.VectorFor(sysTickHandler)
+	exce.UseTable(vt)
 
-	irq.MemFault.Enable()
-	irq.BusFault.Enable()
-	irq.UsageFault.Enable()
+	exce.MemFault.Enable()
+	exce.BusFault.Enable()
+	exce.UsageFault.Enable()
 
-	irq.SVCall.SetPrio(irq.Lowest)
-	irq.PendSV.SetPrio(irq.Lowest)
+	exce.SVCall.SetPrio(exce.Lowest)
+	exce.PendSV.SetPrio(exce.Lowest)
 
 	// One context switch per 5e5 SysTicks (140/s for 70 Mhz, 336/s for 168 MHz)
 	systick.SetReload(5e5 - 1)
@@ -150,7 +149,7 @@ var Tick uint32
 func sysTickHandler() {
 	Tick++
 	if tasker.onSysTick {
-		irq.PendSV.SetPending()
+		exce.PendSV.SetPending()
 	}
 }
 

@@ -68,7 +68,7 @@ func F(b bool) func(int) bool{
 bool (*foo$F(bool b$))(int);
 // def
 bool (*foo$F(bool b$))(int) {
-	bool (*g$)(int) = {0};
+	bool (*g$)(int) = nil;
 	if (b$) {
 		g$ = ({
 			bool func$(int a$) {

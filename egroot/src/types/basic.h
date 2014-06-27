@@ -38,6 +38,8 @@ typedef uint8 bool;
 #define true (1)
 #define false (0)
 
+typedef struct{} empty;
+
 #define complex(re, im) ((re)+1.i*(im))
 #define real(c) (__real__(c))
 #define imag(c) (__imag__(c))
@@ -45,5 +47,4 @@ typedef uint8 bool;
 #define nil (0)
 
 #define len(v) (v.len)
-#define ALEN(a) (sizeof(a) / sizeof((a)[0]))
 #define ACPY(dst, src) memmove(dst, src, sizeof(dst))

@@ -19,8 +19,8 @@ struct byte$$byte_struct {
 byte$$byte foo$F(int a$, int b$);
 // def
 byte$$byte foo$F(int a$, int b$) {
-	byte x$ = {0};
-	byte y$ = {0};
+	byte x$ = 0;
+	byte y$ = 0;
 	{
 		byte tmp0 = (((byte)(a$))+y$);
 		byte tmp1 = (((byte)(b$))+x$);
@@ -54,8 +54,8 @@ struct int$$int_struct {
 int$$int foo$F(int a$, int b$);
 // def
 int$$int foo$F(int a$, int b$) {
-	int x$ = {0};
-	int y$ = {0};
+	int x$ = 0;
+	int y$ = 0;
 	{
 		int$$int tmp0 = foo$F(a$, b$);
 		x$ = tmp0._0;
@@ -112,8 +112,8 @@ struct int$$int_struct {
 int$$int foo$F(int a$, int b$);
 // def
 int$$int foo$F(int a$, int b$) {
-	int x$ = {0};
-	int y$ = {0};
+	int x$ = 0;
+	int y$ = 0;
 	{
 		int$$int tmp0 = foo$F(a$, b$);
 		int c$ = tmp0._0;
@@ -143,7 +143,7 @@ struct int$$int_struct {
 int$$int foo$F(int a$);
 // def
 int$$int foo$F(int a$) {
-	int x$ = {0};
+	int x$ = 0;
 	{
 		x$ = a$;
 		goto end;

@@ -63,7 +63,7 @@ struct int$$int_struct {
 int$$int foo$F();
 // def
 int$$int foo$F() {
-	int a$ = {0};
+	int a$ = 0;
 	int$$int tmp0 = foo$F();
 	a$ = tmp0._0;
 	return (int$$int){a$, a$};

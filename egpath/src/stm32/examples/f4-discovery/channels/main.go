@@ -38,28 +38,42 @@ func toggle(led, d int) {
 
 const dly = 1e6
 
-func blink(c <-chan int) {
+func blink(color <-chan int, end chan<- struct{}) {
 	for {
-		led := <-c
+		led, ok := <-color
+		if !ok {
+			end <- struct{}{}
+			return
+		}
 		toggle(led, dly*10)
 	}
 }
 
 func main() {
-	c := make(chan int)
+	color := make(chan int, 10)
+	end := make(chan struct{}, 3)
 
 	// Consumers
-	go blink(c)
-	go blink(c)
-	go blink(c)
+	go blink(color, end)
+	go blink(color, end)
+	go blink(color, end)
 
 	// Producer
+	for i := 0; i < 10; i++ {
+		color <- Red
+		toggle(Orange, dly)
+		color <- Blue
+		toggle(Orange, dly)
+		color <- Green
+		toggle(Orange, dly)
+	}
+	close(color)
+
+	// Wait for consumers.
+	<-end
+	<-end
+	<-end
 	for {
-		c <- Red
-		toggle(Orange, dly)
-		c <- Blue
-		toggle(Orange, dly)
-		c <- Green
 		toggle(Orange, dly)
 	}
 }

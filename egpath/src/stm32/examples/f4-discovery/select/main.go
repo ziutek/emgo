@@ -46,8 +46,8 @@ func blink(c <-chan int) {
 }
 
 func main() {
-	cRed := make(chan int, 0)
-	cBlue := make(chan int, 10)
+	cRed := make(chan int)
+	cBlue := make(chan int)
 
 	// Consumers
 	go blink(cRed)

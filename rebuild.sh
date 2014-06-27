@@ -11,10 +11,11 @@ sync/atomic
 sync/barrier
 delay
 mmio
+bits
 
 cortexm
 cortexm/fpu
-cortexm/irq
+cortexm/exce
 cortexm/systick
 cortexm/sleep
 
@@ -32,6 +33,7 @@ stm32/f4/flash
 stm32/f4/gpio
 stm32/f4/periph
 stm32/f4/setup
+stm32/f4/exti
 
 stm32/l1/clock
 stm32/l1/flash

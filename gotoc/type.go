@@ -60,6 +60,10 @@ writeType:
 		goto writeType
 
 	case *types.Struct:
+		if t.NumFields() == 0 {
+			w.WriteString("empty")
+			break
+		}
 		w.WriteString("struct {\n")
 		cdd.il++
 		for i, n := 0, t.NumFields(); i < n; i++ {
@@ -140,19 +144,13 @@ func (cdd *CDD) results(tup *types.Tuple) (res results) {
 	}
 
 	n := tup.Len()
-	res.fields = make([]*types.Var, n)
+
 	res.names = make([]string, n)
-
 	for i := 0; i < n; i++ {
-		v := tup.At(i)
-		n := strconv.Itoa(i)
-		res.fields[i] = types.NewField(v.Pos(), v.Pkg(), "_"+n, v.Type(), false)
-
-		name := v.Name()
-
+		name := tup.At(i).Name()
 		switch name {
 		case "":
-			name = "_" + n
+			name = "_" + strconv.Itoa(n)
 
 		case "_":
 			res.hasNames = true
@@ -163,25 +161,14 @@ func (cdd *CDD) results(tup *types.Tuple) (res results) {
 		}
 		res.names[i] = name
 	}
-
-	if n == 1 {
-		res.typ, res.dim, res.acds = cdd.TypeStr(res.fields[0].Type())
+	if n > 1 {
+		res.typ, res.fields, res.acds = cdd.tupleName(tup)
 		return
 	}
-
-	var declared bool
-	res.typ, declared = cdd.tupleName(tup)
-
-	if !declared {
-		s := types.NewStruct(res.fields, nil)
-		o := types.NewTypeName(tup.At(0).Pos(), cdd.gtc.pkg, res.typ, s)
-
-		acd := cdd.gtc.newCDD(o, TypeDecl, 0)
-		acd.structDecl(new(bytes.Buffer), res.typ, s)
-		res.acds = append(res.acds, acd)
-
-		cdd.DeclUses[o] = true
-	}
+	v := tup.At(0)
+	field0 := types.NewField(v.Pos(), v.Pkg(), "_0", v.Type(), false)
+	res.fields = []*types.Var{field0}
+	res.typ, res.dim, res.acds = cdd.TypeStr(v.Type())
 	return
 }
 
@@ -251,20 +238,39 @@ func symToDol(r rune) rune {
 	return r
 }
 
-func (cdd *CDD) tupleName(tup *types.Tuple) (string, bool) {
-	tupName := ""
-	for i, n := 0, tup.Len(); i < n; i++ {
+func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var, acds []*CDD) {
+	n := tup.Len()
+	for i := 0; i < n; i++ {
 		if i != 0 {
 			tupName += "$$"
 		}
-		name, dim, _ := cdd.TypeStr(tup.At(i).Type())
+		name, dim, a := cdd.TypeStr(tup.At(i).Type())
 		tupName += dimFuncPtr(name, dim)
+		acds = append(acds, a...)
+
 	}
 	tupName = strings.Map(symToDol, tupName)
 
-	_, ok := cdd.gtc.tupNames[tupName]
-	if !ok {
-		cdd.gtc.tupNames[tupName] = struct{}{}
+	fields = make([]*types.Var, n)
+	for i := 0; i < n; i++ {
+		v := tup.At(i)
+		fields[i] = types.NewField(
+			v.Pos(), v.Pkg(), "_"+strconv.Itoa(i), v.Type(), false,
+		)
 	}
-	return tupName, ok
+
+	if _, ok := cdd.gtc.tupNames[tupName]; ok {
+		return
+	}
+
+	cdd.gtc.tupNames[tupName] = struct{}{}
+
+	s := types.NewStruct(fields, nil)
+	o := types.NewTypeName(tup.At(0).Pos(), cdd.gtc.pkg, tupName, s)
+	acd := cdd.gtc.newCDD(o, TypeDecl, 0)
+	acd.structDecl(new(bytes.Buffer), tupName, s)
+	cdd.DeclUses[o] = true
+	acds = append(acds, acd)
+
+	return
 }

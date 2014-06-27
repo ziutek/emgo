@@ -67,5 +67,5 @@ struct bool$$int32_struct {
 // decl
 bool$$int32 (*foo$F)(byte, int);
 // def
-bool$$int32 (*foo$F)(byte, int) = {0};
+bool$$int32 (*foo$F)(byte, int) = nil;
 // end

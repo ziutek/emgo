@@ -2,7 +2,7 @@
 
 __attribute__ ((always_inline))
 extern inline 
-bool sync$atomic$CompareAndSwapInt32(int32 *addr, int32 old, int32 new) {
+bool sync$atomic$compareAndSwapInt32(int32 *addr, int32 old, int32 new) {
 	return __atomic_compare_exchange_n(addr, &old, new, false, MMODEL, MMODEL);
 }
 
