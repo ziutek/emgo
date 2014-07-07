@@ -18,7 +18,7 @@ const (
 )
 
 func init() {
-	setup.Performance(8)
+	setup.Performance168(8)
 
 	periph.AHB1ClockEnable(periph.GPIOD)
 	periph.AHB1Reset(periph.GPIOD)
@@ -31,12 +31,12 @@ func init() {
 
 func toggle(led, d int) {
 	LED.SetBit(led)
-	delay.Loop(d)
+	delay.Millisec(d)
 	LED.ClearBit(led)
-	delay.Loop(d)
+	delay.Millisec(d)
 }
 
-const dly = 1e6
+const dly = 100
 
 func blink(color <-chan int, end chan<- struct{}) {
 	for {

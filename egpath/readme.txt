@@ -1,1 +1,1 @@
-It isn't clear does packages from this directore shoud be included into standard library or not
+Need to decide which packages from this directory can be included into standard library and which distributed separately.

@@ -14,11 +14,11 @@ const (
 )
 
 func SetAccess(p Perm) {
-	cpac.SetBits(uint32(p), 3<<20)
+	cpac.StoreBits(uint32(p), 3<<20)
 }
 
 func Access() Perm {
-	return Perm(cpac.Bits(3 << 20))
+	return Perm(cpac.LoadBits(3 << 20))
 }
 
 var fpcc = mmio.NewReg32(0xe000ef34)
@@ -43,11 +43,11 @@ const (
 )
 
 func SetSP(f SPFlags) {
-	fpcc.Write(uint32(f))
+	fpcc.Store(uint32(f))
 }
 
 func SP() SPFlags {
-	return SPFlags(fpcc.Read())
+	return SPFlags(fpcc.Load())
 }
 
 var fpca = mmio.NewReg32(0xe000ef38)

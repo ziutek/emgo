@@ -234,6 +234,7 @@ func (c *chanS) TryRecv(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintpt
 
 // Done must be called after the data transfer was completed.
 func (c *chanS) Done(d uintptr) {
+	barrier.Memory()
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(d)), nil)
 	c.event.Send()
 }
@@ -257,7 +258,7 @@ func (c *chanS) CancelRecv(w *waiter) {
 	c.cancel(&c.dst, w)
 }
 
-// Send tries to send the value of variable pointed by e.
+// Send sends the value of variable pointed by e.
 // If p != nil the data transfer need to be performed by sender and after that
 // sender need to call c.Done(d). Otherwise the data transfer was performed by
 // receiver.
@@ -277,8 +278,7 @@ func (c *chanS) Send(e unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 	}
 }
 
-// Recv tries to receive a value from channel and store it into variable pointed
-// by e.
+// Recv receive a value from channel and store it into variable pointed by e.
 // If p != nil the data transfer need to be performed by receiver and after that
 // receiver need to call c.Done(d). Otherwise d == cok means that the data
 // transfer was performed by sender, d == cclosed means that channel is closed

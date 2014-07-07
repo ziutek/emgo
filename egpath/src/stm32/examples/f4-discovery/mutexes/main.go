@@ -1,3 +1,5 @@
+// This example was created before channels were implemented in Emgo. It shows
+// example how to use mutexes to synchronize two gorutines.
 package main
 
 import (
@@ -24,7 +26,7 @@ const (
 const Button = 0
 
 func init() {
-	setup.Performance(8)
+	setup.Performance168(8)
 
 	periph.AHB1ClockEnable(periph.GPIOA | periph.GPIOD)
 	periph.AHB1Reset(periph.GPIOA | periph.GPIOD)
@@ -40,9 +42,9 @@ func init() {
 func blink(led, d int) {
 	for {
 		LED.SetBit(led)
-		delay.Loop(d)
+		delay.Millisec(d)
 		LED.ClearBit(led)
-		delay.Loop(d)
+		delay.Millisec(d)
 	}
 }
 
@@ -55,12 +57,12 @@ func toggle(m1, m2 *sync.Mutex) {
 		LED.ClearBit(leds[i])
 		i = (i + 1) % len(leds)
 		LED.SetBit(leds[i])
-		delay.Loop(1e6)
+		delay.Millisec(100)
 	}
 }
 
 func main() {
-	go blink(Green, 1e7)
+	go blink(Green, 1000)
 
 	var m1, m2 sync.Mutex
 	m1.Lock()

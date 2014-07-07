@@ -18,7 +18,7 @@ const (
 )
 
 func init() {
-	setup.Performance(8)
+	setup.Performance168(8)
 
 	periph.AHB1ClockEnable(periph.GPIOD)
 	periph.AHB1Reset(periph.GPIOD)
@@ -46,19 +46,19 @@ func blink(c <-chan int) {
 }
 
 func main() {
-	cRed := make(chan int)
-	cBlue := make(chan int)
+	c1 := make(chan int)
+	c2 := make(chan int)
 
 	// Consumers
-	go blink(cRed)
-	go blink(cBlue)
+	go blink(c1)
+	go blink(c2)
 
 	// Producer
 	for {
 		select {
-		case cRed <- Red:
+		case c1 <- Red:
 			toggle(Orange, dly)
-		case cBlue <- Blue:
+		case c2 <- Blue:
 			toggle(Orange, dly)
 		default:
 			toggle(Green, dly)

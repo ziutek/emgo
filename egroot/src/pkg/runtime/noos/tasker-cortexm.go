@@ -8,7 +8,6 @@ import (
 
 	"cortexm"
 	"cortexm/exce"
-	"cortexm/systick"
 )
 
 type taskState byte
@@ -136,21 +135,9 @@ func (ts *taskSched) init() {
 	exce.SVCall.SetPrio(exce.Lowest)
 	exce.PendSV.SetPrio(exce.Lowest)
 
-	// One context switch per 5e5 SysTicks (140/s for 70 Mhz, 336/s for 168 MHz)
-	systick.SetReload(5e5 - 1)
-	systick.WriteFlags(systick.Enable | systick.TickInt | systick.ClkCPU)
-
+	sysTickStart()
 	tasker.forceNext = -1
 	tasker.run()
-}
-
-var Tick uint32
-
-func sysTickHandler() {
-	Tick++
-	if tasker.onSysTick {
-		exce.PendSV.SetPending()
-	}
 }
 
 func nmiHandler() {

@@ -8,229 +8,162 @@ bool sync$atomic$compareAndSwapInt32(int32 *addr, int32 old, int32 new) {
 
 __attribute__ ((always_inline))
 extern inline 
-bool sync$atomic$CompareAndSwapInt64(int64 *addr, int64 old, int64 new) {
+bool sync$atomic$compareAndSwapUint32(uint32 *addr, uint32 old, uint32 new) {
 	return __atomic_compare_exchange_n(addr, &old, new, false, MMODEL, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-bool sync$atomic$CompareAndSwapPointer(unsafe$Pointer *addr, unsafe$Pointer old, unsafe$Pointer new) {
+bool sync$atomic$compareAndSwapUintptr(uintptr *addr, uintptr old, uintptr new) {
 	return __atomic_compare_exchange_n(addr, &old, new, false, MMODEL, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-bool sync$atomic$CompareAndSwapUint32(uint32 *addr, uint32 old, uint32 new) {
+bool sync$atomic$compareAndSwapPointer(unsafe$Pointer *addr, unsafe$Pointer old, unsafe$Pointer new) {
 	return __atomic_compare_exchange_n(addr, &old, new, false, MMODEL, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-bool sync$atomic$CompareAndSwapUint64(uint64 *addr, uint64 old, uint64 new) {
-	return __atomic_compare_exchange_n(addr, &old, new, false, MMODEL, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline 
-bool sync$atomic$CompareAndSwapUintptr(uintptr *addr, uintptr old, uintptr new) {
-	return __atomic_compare_exchange_n(addr, &old, new, false, MMODEL, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline 
-int32 sync$atomic$AddInt32(int32 *addr, int32 delta) {
+int32 sync$atomic$addInt32(int32 *addr, int32 delta) {
 	return __atomic_add_fetch(addr, delta, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-uint32 sync$atomic$AddUint32(uint32 *addr, uint32 delta) {
+uint32 sync$atomic$addUint32(uint32 *addr, uint32 delta) {
 	return __atomic_add_fetch(addr, delta, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-int64 sync$atomic$AddInt64(int64 *addr, int64 delta) {
+uintptr sync$atomic$addUintptr(uintptr *addr, uintptr delta) {
 	return __atomic_add_fetch(addr, delta, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-uint64 sync$atomic$AddUint64(uint64 *addr, uint64 delta) {
-	return __atomic_add_fetch(addr, delta, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline 
-uintptr sync$atomic$AddUintptr(uintptr *addr, uintptr delta) {
-	return __atomic_add_fetch(addr, delta, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline 
-int32 sync$atomic$OrInt32(int32 *addr, int32 mask) {
+int32 sync$atomic$orInt32(int32 *addr, int32 mask) {
 	return __atomic_or_fetch(addr, mask, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-uint32 sync$atomic$OrUint32(uint32 *addr, uint32 mask) {
+uint32 sync$atomic$orUint32(uint32 *addr, uint32 mask) {
 	return __atomic_or_fetch(addr, mask, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-int64 sync$atomic$OrInt64(int64 *addr, int64 mask) {
+uintptr sync$atomic$orUintptr(uintptr *addr, uintptr mask) {
 	return __atomic_or_fetch(addr, mask, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-uint64 sync$atomic$OrUint64(uint64 *addr, uint64 mask) {
-	return __atomic_or_fetch(addr, mask, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline 
-uintptr sync$atomic$OrUintptr(uintptr *addr, uintptr mask) {
-	return __atomic_or_fetch(addr, mask, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline 
-int32 sync$atomic$AndInt32(int32 *addr, int32 mask) {
+int32 sync$atomic$andInt32(int32 *addr, int32 mask) {
 	return __atomic_and_fetch(addr, mask, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-uint32 sync$atomic$AndUint32(uint32 *addr, uint32 mask) {
+uint32 sync$atomic$andUint32(uint32 *addr, uint32 mask) {
 	return __atomic_and_fetch(addr, mask, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-int64 sync$atomic$AndInt64(int64 *addr, int64 mask) {
+uintptr sync$atomic$andUintptr(uintptr *addr, uintptr mask) {
 	return __atomic_and_fetch(addr, mask, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline 
-uintptr sync$atomic$AndUintptr(uintptr *addr, uintptr mask) {
-	return __atomic_and_fetch(addr, mask, MMODEL);
+int32 sync$atomic$xorInt32(int32 *addr, int32 mask) {
+	return __atomic_xor_fetch(addr, mask, MMODEL);
 }
-
 
 __attribute__ ((always_inline))
 extern inline 
-uint64 sync$atomic$AndUint64(uint64 *addr, uint64 mask) {
-	return __atomic_and_fetch(addr, mask, MMODEL);
+uint32 sync$atomic$xorUint32(uint32 *addr, uint32 mask) {
+	return __atomic_xor_fetch(addr, mask, MMODEL);
+}
+
+__attribute__ ((always_inline))
+extern inline 
+uintptr sync$atomic$xorUintptr(uintptr *addr, uintptr mask) {
+	return __atomic_xor_fetch(addr, mask, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-int32 sync$atomic$SwapInt32(int32 *addr, int32 new) {
+int32 sync$atomic$swapInt32(int32 *addr, int32 new) {
 	return __atomic_exchange_n(addr, new, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-int64 sync$atomic$SwapInt64(int64 *addr, int64 new) {
+unsafe$Pointer sync$atomic$swapPointer(unsafe$Pointer *addr, unsafe$Pointer new) {
 	return __atomic_exchange_n(addr, new, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-unsafe$Pointer sync$atomic$SwapPointer(unsafe$Pointer *addr, unsafe$Pointer new) {
+uint32 sync$atomic$swapUint32(uint32 *addr, uint32 new) {
 	return __atomic_exchange_n(addr, new, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-uint32 sync$atomic$SwapUint32(uint32 *addr, uint32 new) {
+uintptr sync$atomic$swapUintptr(uintptr *addr, uintptr new) {
 	return __atomic_exchange_n(addr, new, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-uint64 sync$atomic$SwapUint64(uint64 *addr, uint64 new) {
-	return __atomic_exchange_n(addr, new, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline
-uintptr sync$atomic$SwapUintptr(uintptr *addr, uintptr new) {
-	return __atomic_exchange_n(addr, new, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline
-int32 sync$atomic$LoadInt32(int32 *addr) {
+int32 sync$atomic$loadInt32(int32 *addr) {
 	return __atomic_load_n(addr, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-int64 sync$atomic$LoadInt64(int64 *addr) {
+uint32 sync$atomic$loadUint32(uint32 *addr) {
 	return __atomic_load_n(addr, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-uint32 sync$atomic$LoadUint32(uint32 *addr) {
+uintptr sync$atomic$loadUintptr(uintptr *addr) {
 	return __atomic_load_n(addr, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-uint64 sync$atomic$LoadUint64(uint64 *addr) {
+unsafe$Pointer sync$atomic$loadPointer(unsafe$Pointer *addr) {
 	return __atomic_load_n(addr, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-uintptr sync$atomic$LoadUintptr(uintptr *addr) {
-	return __atomic_load_n(addr, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline
-unsafe$Pointer sync$atomic$LoadPointer(unsafe$Pointer *addr) {
-	return __atomic_load_n(addr, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline
-void sync$atomic$StoreInt32(int32 *addr, int32 val) {
+void sync$atomic$storeInt32(int32 *addr, int32 val) {
 	return __atomic_store_n(addr, val, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-void sync$atomic$StoreInt64(int64 *addr, int64 val) {
+void sync$atomic$storeUint32(uint32 *addr, uint32 val) {
 	return __atomic_store_n(addr, val, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-void sync$atomic$StoreUint32(uint32 *addr, uint32 val) {
+void sync$atomic$storePointer(unsafe$Pointer *addr, unsafe$Pointer val) {
 	return __atomic_store_n(addr, val, MMODEL);
 }
 
 __attribute__ ((always_inline))
 extern inline
-void sync$atomic$StoreUint64(uint64 *addr, uint64 val) {
-	return __atomic_store_n(addr, val, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline
-void sync$atomic$StorePointer(unsafe$Pointer *addr, unsafe$Pointer val) {
-	return __atomic_store_n(addr, val, MMODEL);
-}
-
-__attribute__ ((always_inline))
-extern inline
-void sync$atomic$StoreUintptr(uintptr *addr, uintptr val) {
+void sync$atomic$storeUintptr(uintptr *addr, uintptr val) {
 	return __atomic_store_n(addr, val, MMODEL);
 }

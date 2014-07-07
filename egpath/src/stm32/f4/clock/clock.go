@@ -105,7 +105,7 @@ func SetMainPLLSysDiv(div int) {
 	c.pllcfgr = c.pllcfgr&^(3<<16) | uint32(div)<<16
 }
 
-// SetMainPLLPeriphDiv sts divisor for main PLL output used by USB OTG,
+// SetMainPLLPeriphDiv sets divisor for main PLL output used by USBFS,
 // SDIO and RNG. USB OTG requires 48 MHz clock (SDIO and RNG <= 48 MHz).
 // Allowed values: 2 <= div <= 15
 func SetMainPLLPeriphDiv(div int) {

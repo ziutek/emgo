@@ -8,7 +8,7 @@ import (
 	"unsafe"
 )
 
-// Asynchronous channels
+// Asynchronous channels - lockless implementation.
 
 func bit(w *uint32, n uintptr) bool {
 	barrier.Compiler()
@@ -71,6 +71,15 @@ func (c *chanA) panicIfClosed() {
 	}
 }
 
+// BUG: TrySend, TryRecv and Len can be affected by ABA problem.
+// They all rely on comparasion of two values of some counter taken at two
+// points in time. If both values are equal they assume that this counter
+// hasn't been modified. TrySend increments tosend couner, TryRecv increments
+// torecv couner. If sizeof(uintptr) == 4 both couners can wrap after about
+// 1<<31 increments in worst case. 1<<31 is quiet big value but on busy system,
+// some low priority task can be blocked for enough time (say, an hour in case
+// of 100 MHz CPU) to have a chanse to be affected.
+
 // TrySend tries to reserve place in c's internl ring buffer.
 // After return, if p != nil then p contains pointer to the place in internal
 // buffer where data can be stored. After data store sender need to call
@@ -102,8 +111,6 @@ func (c *chanA) TrySend(_, _ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 			break
 		}
 	}
-	// BUG: If sizeof(uintptr) == 4 and task was blocked after load and before
-	// CAS for long enough time, there is non-zero probability of ABA problem.
 	return unsafe.Pointer(uintptr(c.buf) + c.step*n), n
 }
 
@@ -139,8 +146,6 @@ func (c *chanA) TryRecv(_, _ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 			break
 		}
 	}
-	// BUG: If sizeof(uintptr) == 4 and task was blocked after load and before
-	// CAS for long enough time, there is non-zero probability of ABA problem.
 	return unsafe.Pointer(uintptr(c.buf) + c.step*n), n
 }
 
@@ -178,15 +183,23 @@ func (c *chanA) Done(n uintptr) {
 }
 
 func (c *chanA) Len() int {
-	var torecv, tosend uintptr
+	torecv := atomic.LoadUintptr(&c.torecv)
+	barrier.Compiler()
+	tosend := atomic.LoadUintptr(&c.tosend)
+	barrier.Compiler()
 	for {
-		torecv = atomic.LoadUintptr(&c.torecv)
+		tr := atomic.LoadUintptr(&c.torecv)
 		barrier.Compiler()
-		tosend = atomic.LoadUintptr(&c.tosend)
+		ts := atomic.LoadUintptr(&c.tosend)
 		barrier.Compiler()
-		if atomic.LoadUintptr(&c.torecv) == torecv {
+		if tr == torecv {
 			break
 		}
+		torecv = tr
+		if ts == tosend {
+			break
+		}
+		tosend = ts
 	}
 	nmask := c.mask >> 1
 	abalsb := c.mask &^ nmask

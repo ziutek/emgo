@@ -1,5 +1,3 @@
---------------------------------------------------------------------------------
-
 ### Go, Emgo, C, assembler
 
 Write your application in real Go, if you can.
@@ -20,6 +18,8 @@ If you want to write CPU specific function in CPU specific library you are free 
 
 ### Volatile fields
 
-If your CPU guarantees ordered access to I/O address spece, you can use structs with fileds taged C:"volatile" to repesent I/O registers in your program. This simplifies code and can slightly improve performance, but can cause bugs in more complicated cases.
+If your CPU guarantees ordered access to I/O address spece, you can use structs with fileds taged C:"volatile" to repesent I/O registers in your program. This simplifies code and can slightly improves performance, but can cause bugs in more complicated cases.
 
-So, in case of MMIO, use of structs with volatile fields may be desirable, but don't use volatile fields for any other thing. If you think that you need volatile variable for other thing than memory mapped I/O, you are wrong. Volatile guarantees actual memory access for any access to volatile variable. Furthermore, order of accesses to volatile variables is preserved in generated binary code. But volatile doesn't guarante to preserve order between accesses to volatile and non-volatile variables and doesn't guarante any order of actual memory access during program execution (eg. CPU can execute instruction in different order, there may be buffers in hardware that reorder actual writes to different part of memory, etc...). So, in cases other than MMIO, volatile is useless.
+Don't use volatile fields for other things. If you think that you need volatile for something other than MMIO you're wrong - use functions from atomic/sync and atomic/barrier packages instead.
+
+--------------------------------------------------------------------------------

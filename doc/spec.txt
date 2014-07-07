@@ -1,6 +1,6 @@
 ### Emgo follows Go specification with exception for memory allocation.
 
-Think about Emgo as C with: Go syntax, Go packages, Go building philosophy..
+Think about Emgo as C with: Go syntax, Go packages, Go building philosophy.
 
 In Go, variable declared in function can be allocated on the stack or on the heap - escaping analisis is used for decision. In Emgo (like in C), all local variables are stack allocated. Dynamic allocation and garbage collection can occurs only when:
 

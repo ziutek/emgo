@@ -18,7 +18,7 @@ const (
 )
 
 func init() {
-	setup.Performance(8)
+	setup.Performance168(8)
 
 	periph.AHB1ClockEnable(periph.GPIOD)
 	periph.AHB1Reset(periph.GPIOD)

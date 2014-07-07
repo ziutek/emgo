@@ -134,7 +134,7 @@ func (e Exce) SetPending() {
 		shcs.SetBit(15)
 
 	case PendSV:
-		ics.Write(1 << 28)
+		ics.StoreWord(1 << 28)
 
 	case SysTick:
 		ics.Write(1 << 26)

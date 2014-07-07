@@ -22,19 +22,19 @@ func (r *Reg8) Bit(n int) bool {
 	return r.r&(uint8(1)<<uint(n)) != 0
 }
 
-func (r *Reg8) SetBits(bits, mask uint8) {
-	r.r = r.r &^ mask | bits
+func (r *Reg8) StoreBits(bits, mask uint8) {
+	r.r = r.r&^mask | bits
 }
 
-func (r *Reg8) Bits(mask uint8) uint8 {
+func (r *Reg8) LoadBits(mask uint8) uint8 {
 	return r.r & mask
 }
 
-func (r *Reg8) Read() uint8 {
+func (r *Reg8) Load() uint8 {
 	return r.r
 }
 
-func (r *Reg8) Write(v uint8) {
+func (r *Reg8) Store(v uint8) {
 	r.r = v
 }
 
@@ -58,19 +58,19 @@ func (r *Reg16) Bit(n int) bool {
 	return r.r&(uint16(1)<<uint(n)) != 0
 }
 
-func (r *Reg16) SetBits(bits, mask uint16) {
-	r.r = r.r &^ mask | bits
+func (r *Reg16) StoreBits(bits, mask uint16) {
+	r.r = r.r&^mask | bits
 }
 
-func (r *Reg16) Bits(mask uint16) uint16 {
+func (r *Reg16) LoadBits(mask uint16) uint16 {
 	return r.r & mask
 }
 
-func (r *Reg16) Read() uint16 {
+func (r *Reg16) Load() uint16 {
 	return r.r
 }
 
-func (r *Reg16) Write(v uint16) {
+func (r *Reg16) Store(v uint16) {
 	r.r = v
 }
 
@@ -94,18 +94,18 @@ func (r *Reg32) Bit(n int) bool {
 	return r.r&(uint32(1)<<uint(n)) != 0
 }
 
-func (r *Reg32) SetBits(bits, mask uint32) {
-	r.r = r.r &^ mask | bits
-}
-
-func (r *Reg32) Bits(mask uint32) uint32 {
+func (r *Reg32) LoadBits(mask uint32) uint32 {
 	return r.r & mask
 }
 
-func (r *Reg32) Read() uint32 {
+func (r *Reg32) StoreBits(bits, mask uint32) {
+	r.r = r.r&^mask | bits
+}
+
+func (r *Reg32) Load() uint32 {
 	return r.r
 }
 
-func (r *Reg32) Write(v uint32) {
+func (r *Reg32) Store(v uint32) {
 	r.r = v
 }

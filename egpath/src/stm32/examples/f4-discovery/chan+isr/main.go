@@ -1,3 +1,9 @@
+// This example shows how use channels to divide interrupt handler into two
+// parts: fast part - that runs in interrupt context and soft part - that run
+// in user context. Fast part only enqueues events/data and can signal to the
+// source that it isn't ready for receive next portion. Slow part dequeues
+// events/data and handles its. This scheme can be used to  implement interrupt 
+// driven I/O library.
 package main
 
 import (
@@ -20,7 +26,7 @@ const (
 )
 
 func init() {
-	setup.Performance(8)
+	setup.Performance168(8)
 
 	periph.AHB1ClockEnable(periph.GPIOA | periph.GPIOD)
 	periph.AHB1Reset(periph.GPIOA | periph.GPIOD)
@@ -39,14 +45,12 @@ func init() {
 	irq.Ext0.Enable()
 }
 
-func toggle(led, d int) {
+func toggle(led) {
 	LED.SetBit(led)
-	delay.Loop(d)
+	delay.Millisec(500)
 	LED.ClearBit(led)
-	delay.Loop(d)
+	delay.Millisec(500)
 }
-
-const dly = 1e6
 
 var (
 	c   = make(chan int, 3)
@@ -63,12 +67,14 @@ func buttonHandler() {
 		}
 	default:
 		// Signal that c is full.
-		toggle(Blue, dly)
+		LED.SetBit(Blue)
+		delay.Loop(1e5)
+		LED.ClearBit(Blue)
 	}
 }
 
 func main() {
 	for {
-		toggle(<-c, 5*dly)
+		toggle(<-c)
 	}
 }

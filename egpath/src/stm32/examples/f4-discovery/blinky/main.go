@@ -18,7 +18,7 @@ const (
 )
 
 func init() {
-	setup.Performance(8)
+	setup.Performance168(8)
 
 	periph.AHB1ClockEnable(periph.GPIOD)
 	periph.AHB1Reset(periph.GPIOD)
@@ -30,22 +30,21 @@ func init() {
 }
 
 func main() {
-	wait := int(2e6)
 	for {
 		LED.ClearBit(Green)
 		LED.SetBit(Orange)
-		delay.Loop(wait)
+		delay.Millisec(500)
 
 		LED.ClearBit(Orange)
 		LED.SetBit(Red)
-		delay.Loop(wait)
+		delay.Millisec(500)
 
 		LED.ClearBit(Red)
 		LED.SetBit(Blue)
-		delay.Loop(wait)
+		delay.Millisec(500)
 
 		LED.ClearBit(Blue)
 		LED.SetBit(Green)
-		delay.Loop(wait)
+		delay.Millisec(500)
 	}
 }
