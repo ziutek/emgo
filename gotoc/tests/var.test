@@ -21,7 +21,24 @@ slice foo$A;
 // def
 slice foo$A;
 // init
-	foo$A = ASLICE(array0);
+	foo$A = ASLICE(3, array0);
+// end
+
+// Go code:
+var A = []int{10: 1, 20: 2, 30: 3}
+// C code:
+// decl
+int array0[31];
+// def
+int array0[31];
+// init
+	ACPY(array0, ((int([])){[10] = 1, [20] = 2, [30] = 3}));
+// decl
+slice foo$A;
+// def
+slice foo$A;
+// init
+	foo$A = ASLICE(31, array0);
 // end
 
 // Go code:

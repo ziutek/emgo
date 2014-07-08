@@ -438,13 +438,15 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.indexExpr(w, cdd.exprType(e.X), cdd.ExprStr(e.X, nil), e.Index)
 
 	case *ast.KeyValueExpr:
-		w.WriteByte('.')
 		kt := cdd.exprType(e.Key)
 		if i, ok := e.Key.(*ast.Ident); ok && kt == nil {
 			// e.Key is field name
+			w.WriteByte('.')
 			w.WriteString(i.Name)
 		} else {
+			w.WriteByte('[')
 			cdd.Expr(w, e.Key, kt)
+			w.WriteByte(']')
 		}
 		w.WriteString(" = ")
 		cdd.Expr(w, e.Value, nilT)

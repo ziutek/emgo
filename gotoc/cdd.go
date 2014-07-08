@@ -5,8 +5,8 @@ import (
 	"go/ast"
 	"io"
 
-	"code.google.com/p/go.tools/go/types"
 	"code.google.com/p/go.tools/go/exact"
+	"code.google.com/p/go.tools/go/types"
 )
 
 type DeclType int
@@ -21,35 +21,36 @@ const (
 
 // CDD stores Go declaration translated to C declaration and definition.
 type CDD struct {
-	Origin     types.Object // object for this declaration
-	DeclUses   map[types.Object]bool
-	FuncBodyUses   map[types.Object]bool
-	Complexity int
+	Origin       types.Object // object for this declaration
+	DeclUses     map[types.Object]bool
+	FuncBodyUses map[types.Object]bool
+	Complexity   int
 
 	Typ    DeclType
 	Export bool
 	Inline bool // set by DetermineInline()
 
-	Decl []byte
-	Def  []byte
-	Init []byte
+	Decl     []byte
+	Def      []byte
+	Init     []byte
+	InitNext *CDD
 
-	gtc  *GTC
-	il   int  // indentation level
-	
-	init bool // true if generated code will be placed in init() function
+	gtc *GTC
+	il  int // indentation level
+
+	init  bool // true if generated code will be placed in init() function
 	fbody bool // true if translation process in function body
-	dfsm int8
+	dfsm  int8
 }
 
 func (gtc *GTC) newCDD(o types.Object, t DeclType, il int) *CDD {
 	cdd := &CDD{
-		Origin:   o,
-		Typ:      t,
-		DeclUses: make(map[types.Object]bool),
+		Origin:       o,
+		Typ:          t,
+		DeclUses:     make(map[types.Object]bool),
 		FuncBodyUses: make(map[types.Object]bool),
-		gtc:      gtc,
-		il:       il,
+		gtc:          gtc,
+		il:           il,
 	}
 	return cdd
 }
@@ -175,7 +176,7 @@ func (cdd *CDD) addObject(o types.Object, direct bool) {
 	}
 	if cdd.init && !cdd.gtc.isImported(o) {
 		// Don't save references to package objects if used in init() function.
-		// This is mainly for global variables initialization in init(). 
+		// This is mainly for global variables initialization in init().
 		return
 	}
 	if cdd.fbody {

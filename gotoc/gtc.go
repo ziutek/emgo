@@ -175,7 +175,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 		case FuncDecl:
 			fcs = append(fcs, cdd)
-			
+
 		case ConstDecl:
 			ccs = append(ccs, cdd)
 		}
@@ -275,8 +275,9 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	for _, i := range gtc.ti.InitOrder {
 		for _, l := range i.Lhs {
 			cdd := cddm[l]
-			if cdd != nil {
+			for cdd != nil {
 				buf.Write(cdd.Init)
+				cdd = cdd.InitNext
 			}
 		}
 	}
@@ -285,14 +286,14 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 	if buf.Len() == n {
 		// no imports, no inits
-		_, err := io.WriteString(wh, "#define " + up + "$init()\n")
+		_, err := io.WriteString(wh, "#define "+up+"$init()\n")
 		return err
 	}
 	buf.WriteString("}\n")
 	if _, err := buf.WriteTo(wc); err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 

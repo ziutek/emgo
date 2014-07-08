@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"code.google.com/p/go.tools/go/exact"
 	"code.google.com/p/go.tools/go/types"
 )
 
@@ -238,7 +239,7 @@ func zeroVal(w *bytes.Buffer, typ types.Type) {
 		default:
 			w.WriteByte('0')
 		}
-		
+
 	default:
 		w.WriteByte('0')
 	}
@@ -273,9 +274,9 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	cdd.copyDef(w)
 
 	if !constInit {
-		// Runtime initialisation
 		w.Reset()
 
+		// Runtime initialisation
 		assign := false
 
 		switch t := underlying(typ).(type) {
@@ -283,20 +284,38 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 			switch vt := val.(type) {
 			case *ast.CompositeLit:
 				aname := "array" + cdd.gtc.uniqueId()
-				at := types.NewArray(t.Elem(), int64(len(vt.Elts)))
+				last := vt.Elts[len(vt.Elts)-1]
+				var n int64
+				switch l := last.(type) {
+				case *ast.KeyValueExpr:
+					val := cdd.exprValue(l.Key)
+					if val == nil {
+						panic("slice: composite literal with non-constant key")
+					}
+					var ok bool
+					n, ok = exact.Int64Val(val)
+					if !ok {
+						panic("slice: can't convert " + val.String() + " to int64")
+					}
+					n++
+				default:
+					n = int64(len(vt.Elts))
+				}
+				at := types.NewArray(t.Elem(), n)
 				o := types.NewVar(vt.Lbrace, cdd.gtc.pkg, aname, at)
 				cdd.gtc.pkg.Scope().Insert(o)
 				acd := cdd.gtc.newCDD(o, VarDecl, cdd.il)
 				av := *vt
 				cdd.gtc.ti.Types[&av] = types.TypeAndValue{Type: at} // BUG: thread-unsafe
-				n := w.Len()
-				acd.varDecl(w, o.Type(), cdd.gtc.isGlobal(o), aname, &av)
-				w.Truncate(n)
+				acd.varDecl(new(bytes.Buffer), o.Type(), cdd.gtc.isGlobal(o), aname, &av)
+				cdd.InitNext = acd
 				acds = append(acds, acd)
 
 				w.WriteByte('\t')
 				w.WriteString(name)
 				w.WriteString(" = ASLICE(")
+				w.WriteString(strconv.FormatInt(at.Len(), 10))
+				w.WriteString(", ")
 				w.WriteString(aname)
 				w.WriteString(");\n")
 
@@ -340,9 +359,8 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 			o := types.NewVar(c.Lbrace, cdd.gtc.pkg, cname, ct)
 			cdd.gtc.pkg.Scope().Insert(o)
 			acd := cdd.gtc.newCDD(o, VarDecl, cdd.il)
-			n := w.Len()
-			acd.varDecl(w, o.Type(), cdd.gtc.isGlobal(o), cname, c)
-			w.Truncate(n)
+			acd.varDecl(new(bytes.Buffer), o.Type(), cdd.gtc.isGlobal(o), cname, c)
+			cdd.InitNext = acd
 			acds = append(acds, acd)
 
 			w.WriteByte('\t')
