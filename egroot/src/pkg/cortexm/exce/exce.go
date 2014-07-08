@@ -134,10 +134,10 @@ func (e Exce) SetPending() {
 		shcs.SetBit(15)
 
 	case PendSV:
-		ics.StoreWord(1 << 28)
+		ics.Store(1 << 28)
 
 	case SysTick:
-		ics.Write(1 << 26)
+		ics.Store(1 << 26)
 	}
 }
 
@@ -161,10 +161,10 @@ func (e Exce) ClearPending() {
 		shcs.ClearBit(15)
 
 	case PendSV:
-		ics.Write(1 << 27)
+		ics.Store(1 << 27)
 
 	case SysTick:
-		ics.Write(1 << 25)
+		ics.Store(1 << 25)
 	}
 }
 
@@ -230,7 +230,7 @@ func (e Exce) Trig() {
 	if e < IRQ0 {
 		return
 	}
-	sti.Write(uint32(e - IRQ0))
+	sti.Store(uint32(e - IRQ0))
 }
 
 // Pending return true if any exception other than NMI or fault is pending
@@ -242,10 +242,10 @@ func Pending() bool {
 // exception. 0 means no pending exceptions. Returned value includes the
 // effect of the BASEPRI and FAULTMASK (but not PRIMASK) registers.
 func VecPending() Exce {
-	return Exce(ics.Read() >> 12)
+	return Exce(ics.Load() >> 12)
 }
 
 // VecActive returns the number of active exception or 0 for thread mode.
 func VecActive() Exce {
-	return Exce(ics.Read())
+	return Exce(ics.Load())
 }

@@ -1,6 +1,8 @@
 package exce
 
 import (
+	"bits"
+	"builtin"
 	"mmio"
 	"sync/barrier"
 	"unsafe"
@@ -31,7 +33,7 @@ var (
 func UseTable(vt []Vector) {
 	activeVT = vt
 	barrier.Memory()
-	vto.Write(uint32(uintptr(unsafe.Pointer(&vt[0]))))
+	vto.Store(uint32(uintptr(unsafe.Pointer(&vt[0]))))
 }
 
 // UseHandler changes handler in currently used vector table.
@@ -41,4 +43,20 @@ func (e Exce) UseHandler(handler func()) {
 	}
 	activeVT[e] = VectorFor(handler)
 	barrier.Sync()
+}
+
+// NewTable allocates new (properly aligned) vector table for n
+// interrupt vectors.
+func NewTable(n int) []Vector {
+	if n < 0 || n > 256 {
+		panic("bad vector table length")
+	}
+	exp := 32 - bits.LeadingZeros32(uint32(n-1))
+	if exp < 5 {
+		exp = 5
+	}
+	m := 1 << exp
+	vsize := unsafe.Sizeof(Vector{})
+	vt := (*[256]Vector)(builtin.Alloc(m, vsize, uintptr(m)*vsize))
+	return vt[:n]
 }

@@ -7,7 +7,7 @@ void runtime$noos$pendSVHandler() {
 		"mrs	r0, psp\n\t"
 		
 		// Call nextTask with SP used by current task.
-		"bl		runtime_noos_nextTask\n\t"
+		"bl		runtime$noos$nextTask\n\t"
 		
 		// Check wheater the context switch is need (r0 contains taskInfo.sp
 		// for next task or 0 if context switch isn't need).
