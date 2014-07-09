@@ -1,9 +1,9 @@
-// This example shows how use channels to divide interrupt handler into two
-// parts: fast part - that runs in interrupt context and soft part - that run
-// in user context. Fast part only enqueues events/data and can signal to the
-// source that it isn't ready for receive next portion. Slow part dequeues
-// events/data and handles its. This scheme can be used to  implement interrupt 
-// driven I/O library.
+// This example shows how to use channels to divide interrupt handler into two
+// parts: fast part - that runs in interrupt context and soft part - that runs
+// in user context. Fast part only enqueues events/data and signals to the
+// source if it isn't ready to receive next portion. Slow part dequeues
+// events/data and handles them. This scheme can be used to implement
+// interrupt driven I/O library.
 package main
 
 import (
@@ -45,13 +45,6 @@ func init() {
 	irq.Ext0.Enable()
 }
 
-func toggle(led) {
-	LED.SetBit(led)
-	delay.Millisec(500)
-	LED.ClearBit(led)
-	delay.Millisec(500)
-}
-
 var (
 	c   = make(chan int, 3)
 	led = Green
@@ -59,7 +52,6 @@ var (
 
 func buttonHandler() {
 	exti.L0.ClearPending()
-	// Non-blocking selects with buffered channels can be used in ISR.
 	select {
 	case c <- led:
 		if led++; led > Red {
@@ -71,6 +63,13 @@ func buttonHandler() {
 		delay.Loop(1e5)
 		LED.ClearBit(Blue)
 	}
+}
+
+func toggle(led int) {
+	LED.SetBit(led)
+	delay.Millisec(500)
+	LED.ClearBit(led)
+	delay.Millisec(500)
 }
 
 func main() {

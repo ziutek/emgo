@@ -8,7 +8,6 @@ import (
 	"stm32/l1/setup"
 )
 
-// STM32L1-Discovery LEDs
 var LED = gpio.B
 
 const (
@@ -27,14 +26,13 @@ func init() {
 }
 
 func main() {
-	const wait = 2e6
 	for {
 		LED.ClearBit(Blue)
 		LED.SetBit(Green)
-		delay.Loop(wait)
+		delay.Millisec(1000)
 
 		LED.ClearBit(Green)
 		LED.SetBit(Blue)
-		delay.Loop(wait)
+		delay.Millisec(1000)
 	}
 }

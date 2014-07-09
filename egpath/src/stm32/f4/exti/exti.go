@@ -1,39 +1,6 @@
 package exti
 
-import (
-	"unsafe"
-
-	"stm32/f4/gpio"
-)
-
 type Lines uint32
-
-const (
-	L0 Lines = 1 << iota
-	L1
-	L2
-	L3
-	L4
-	L5
-	L6
-	L7
-	L8
-	L9
-	L10
-	L11
-	L12
-	L13
-	L14
-	L15
-	LPVD
-	LRTCAlarm
-	LUSBFS
-	LEthernet
-	LUSBHS
-	LTampStamp
-	LRTCWkup
-	LAll Lines = (1 << iota) - 1
-)
 
 type extiRegs struct {
 	im   Lines `C:"volatile"`
@@ -43,8 +10,6 @@ type extiRegs struct {
 	swie Lines `C:"volatile"`
 	p    Lines `C:"volatile"`
 }
-
-var regs1 = (*extiRegs)(unsafe.Pointer(uintptr(0x40013C00)))
 
 func IntEnabled() Lines {
 	return regs1.im
@@ -110,15 +75,7 @@ func (l Lines) ClearPending() {
 	regs1.p = l
 }
 
-var regs2 = (*[4]uint32)(unsafe.Pointer(uintptr(0x40013808)))
-
-const (
-	gpioBase uintptr = 0x4002000
-	gpioStep uintptr = 0x400
-)
-
-func (l Lines) Connect(src *gpio.Port) {
-	port := uint32(src.Number())
+func (l Lines) connect(port uint32) {
 	if l >= L15<<1 {
 		panic("exti: only lines 0...15 can be connected to the external source")
 	}

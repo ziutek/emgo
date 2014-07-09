@@ -79,4 +79,6 @@ func Performance(osc int) {
 	}
 
 	clock.DisableMSI()
+	
+	setSystick(32)
 }

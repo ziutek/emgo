@@ -34,8 +34,6 @@ func Performance(osc, mul, sdiv int) {
 	}
 
 	sysclk := 2 * mul / sdiv
-	
-	setSystick(sysclk)
 
 	lat := (sysclk - 1) / 30
 	flash.SetLatency(lat) // Requires supply voltage 2.7-3.6 V.
@@ -101,10 +99,11 @@ func Performance(osc, mul, sdiv int) {
 	clock.SetSysClock(clock.PLL)
 	for clock.SysClock() != clock.PLL {
 	}
-
 	if osc != 0 {
 		clock.DisableHSI()
 	}
+	
+	setSystick(sysclk)
 }
 
 // Performance168 setups MCU to work with 168 MHz clock.

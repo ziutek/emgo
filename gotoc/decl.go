@@ -284,23 +284,27 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 			switch vt := val.(type) {
 			case *ast.CompositeLit:
 				aname := "array" + cdd.gtc.uniqueId()
-				last := vt.Elts[len(vt.Elts)-1]
 				var n int64
-				switch l := last.(type) {
-				case *ast.KeyValueExpr:
-					val := cdd.exprValue(l.Key)
-					if val == nil {
-						panic("slice: composite literal with non-constant key")
+				for _, elem := range vt.Elts {
+					switch e := elem.(type) {
+					case *ast.KeyValueExpr:
+						val := cdd.exprValue(e.Key)
+						if val == nil {
+							panic("slice: composite literal with non-constant key")
+						}
+						m, ok := exact.Int64Val(val)
+						if !ok {
+							panic("slice: can't convert " + val.String() + " to int64")
+						}
+						m++
+						if m > n {
+							n = m
+						}
+					default:
+						n++
 					}
-					var ok bool
-					n, ok = exact.Int64Val(val)
-					if !ok {
-						panic("slice: can't convert " + val.String() + " to int64")
-					}
-					n++
-				default:
-					n = int64(len(vt.Elts))
 				}
+
 				at := types.NewArray(t.Elem(), n)
 				o := types.NewVar(vt.Lbrace, cdd.gtc.pkg, aname, at)
 				cdd.gtc.pkg.Scope().Insert(o)

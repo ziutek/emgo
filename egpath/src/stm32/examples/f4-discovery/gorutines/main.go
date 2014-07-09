@@ -32,23 +32,23 @@ func init() {
 func blink(led, d int, max, inc float32) {
 	for inc < max {
 		LED.SetBit(led)
-		delay.Loop(d)
+		delay.Millisec(d)
 		LED.ClearBit(led)
-		delay.Loop(d)
-		// Use floating point calculations to test STMF4 FPU context switching. 
+		delay.Millisec(d)
+		// Use floating point calculations to test STMF4 FPU context switching.
 		inc *= inc
 	}
 }
 
 func main() {
 	for {
-		go blink(Green, 11e5, 110, 1.0001)
-		go blink(Orange, 7e5, 120, 1.0001)
-		go blink(Red, 3e5, 130, 1.0001)
-		blink(Blue, 17e5, 100, 1.0001)
-		delay.Loop(1e7)
+		go blink(Green, 100, 110, 1.0001)
+		go blink(Orange, 230, 120, 1.0001)
+		go blink(Red, 350, 130, 1.0001)
+		blink(Blue, 500, 100, 1.0001)
+		delay.Millisec(250)
 		// BUG: In real application you schould ensure that all gorutines
 		// finished before next loop. In this case Blue LED blinks longest
-		// so this works.
+		// so this example works.
 	}
 }

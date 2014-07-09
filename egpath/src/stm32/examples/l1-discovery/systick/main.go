@@ -1,10 +1,12 @@
+// This example shows how to manually setup interrupt table when you don't use
+// runtime initialisation (MaxTasks == 0) and how to write purely interrupt
+// driven application.
 package main
 
 import (
-	"runtime"
 	"sync/barrier"
 
-	"cortexm/irq"
+	"cortexm/exce"
 	"cortexm/sleep"
 	"cortexm/systick"
 
@@ -13,20 +15,12 @@ import (
 	"stm32/l1/setup"
 )
 
-// STM32L1-Discovery LEDs
 var LED = gpio.B
 
 const (
 	Blue  = 6
 	Green = 7
 )
-
-var vt = irq.SysTable{
-	Reset:     irq.Vector(runtime.Start),
-	NMI:       irq.Vector(defaultHandler),
-	HardFault: irq.Vector(defaultHandler),
-	SysTick:   irq.Vector(sysTickHandler),
-}
 
 func defaultHandler() {
 	for {
@@ -56,7 +50,11 @@ func main() {
 	LED.SetMode(Blue, gpio.Out)
 	LED.SetMode(Green, gpio.Out)
 
-	irq.SetActiveTable(vt.Slice())
+	vt := exce.NewTable(16)
+	vt[exce.NMI] = exce.VectorFor(defaultHandler)
+	vt[exce.HardFault] = exce.VectorFor(defaultHandler)
+	vt[exce.SysTick] = exce.VectorFor(sysTickHandler)
+	exce.UseTable(vt[:])
 
 	_, _, tenms := systick.Calib()
 	tenms *= 10 // stm32l1 returns value for 1 ms not for 10ms.

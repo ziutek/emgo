@@ -31,17 +31,15 @@ func init() {
 
 func toggle(led, d int) {
 	LED.SetBit(led)
-	delay.Loop(d)
+	delay.Millisec(d)
 	LED.ClearBit(led)
-	delay.Loop(d)
+	delay.Millisec(d)
 }
-
-const dly = 1e6
 
 func blink(c <-chan int) {
 	for {
 		led := <-c
-		toggle(led, dly*10)
+		toggle(led, 1200)
 	}
 }
 
@@ -57,11 +55,11 @@ func main() {
 	for {
 		select {
 		case c1 <- Red:
-			toggle(Orange, dly)
+			toggle(Orange, 200)
 		case c2 <- Blue:
-			toggle(Orange, dly)
+			toggle(Orange, 200)
 		default:
-			toggle(Green, dly)
+			toggle(Green, 200)
 		}
 	}
 }

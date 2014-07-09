@@ -42,6 +42,23 @@ slice foo$A;
 // end
 
 // Go code:
+var A = []int{1, 2, 30: 3, 4}
+// C code:
+// decl
+int array0[32];
+// def
+int array0[32];
+// init
+	ACPY(array0, ((int([])){1, 2, [30] = 3, 4}));
+// decl
+slice foo$A;
+// def
+slice foo$A;
+// init
+	foo$A = ASLICE(32, array0);
+// end
+
+// Go code:
 type S struct{a, b int}
 var p = &S{a: 1}
 // C code:

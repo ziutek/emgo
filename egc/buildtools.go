@@ -75,18 +75,12 @@ type BuildTools struct {
 	importPaths []string
 }
 
-const (
-	prefix     = "/usr/local/stm32/bin/arm-none-eabi-"
-	EGCC       = prefix + "gcc"
-	EGLD       = prefix + "ld"
-	EGAR       = prefix + "ar"
-	EGLDSCRIPT = "script.ld"
-)
+const EGLDSCRIPT = "script.ld"
 
 func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	cflags := CFLAGS{
 		Dbg:  "-g",
-		Opt:  "-Os -fno-delete-null-pointer-checks -fno-common -freg-struct-return",
+		Opt:  "-O" + optLevel + " -fno-delete-null-pointer-checks -fno-common -freg-struct-return",
 		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-unused-label",
 		Incl: "-I" + filepath.Join(ctx.GOROOT, "src"),
 	}

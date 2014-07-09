@@ -8,19 +8,45 @@ import (
 	"os"
 )
 
-var tmpDir string
-
 var buildCtx = build.Context{
-	GOARCH:      "cortexm4f",
-	GOOS:        "noos",
-	GOROOT:      "/home/michal/P/go/src/github.com/ziutek/emgo/egroot",
-	GOPATH:      "/home/michal/P/go/src/github.com/ziutek/emgo/egpath",
 	Compiler:    "gc",
 	ReleaseTags: []string{"go1.1", "go1.2"},
 	CgoEnabled:  false,
 }
 
-var verbosity int
+var EGCC, EGLD, EGAR string
+
+func getEnv() {
+	if EGCC = os.Getenv("EGCC"); EGCC == "" {
+		die("EGCC environment variable not set")
+	}
+	if EGLD = os.Getenv("EGLD"); EGLD == "" {
+		die("EGLD environment variable not set")
+	}
+	if EGAR = os.Getenv("EGAR"); EGAR == "" {
+		die("EGAR environment variable not set")
+	}
+
+	if buildCtx.GOARCH = os.Getenv("EGARCH"); buildCtx.GOARCH == "" {
+		die("EGARCH environment variable not set")
+	}
+	if buildCtx.GOOS = os.Getenv("EGOS"); buildCtx.GOOS == "" {
+		die("EGOS environment variable not set")
+	}
+	if buildCtx.GOROOT = os.Getenv("EGROOT"); buildCtx.GOROOT == "" {
+		die("EGROOT environment variable not set")
+	}
+	if buildCtx.GOPATH = os.Getenv("EGPATH"); buildCtx.GOPATH == "" {
+		die("EGPATH environment variable not set")
+	}
+
+}
+
+var (
+	tmpDir    string
+	verbosity int
+	optLevel  string
+)
 
 func usage() {
 	fmt.Println("Usage:\n  egc [flags] PKGPATH")
@@ -29,6 +55,7 @@ func usage() {
 
 func main() {
 	flag.IntVar(&verbosity, "v", 0, "Verbosity level [0...2]")
+	flag.StringVar(&optLevel, "O", "s", "GCC optimization level")
 	flag.Usage = usage
 	flag.Parse()
 	args := flag.Args()
@@ -36,6 +63,8 @@ func main() {
 		usage()
 		os.Exit(1)
 	}
+
+	getEnv()
 
 	path := "."
 	if len(args) == 1 {

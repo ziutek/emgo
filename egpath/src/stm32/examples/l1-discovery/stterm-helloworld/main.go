@@ -1,13 +1,9 @@
 package main
 
-import (
-	"stm32/l1/setup"
-	"stm32/stlink"
-)
-
-var st = stlink.Term
+import "stm32/stlink"
 
 func main() {
-	setup.Performance(0)
-	st.WriteString("Hello world!\n")
+	for {
+		stlink.Term.WriteString("Hello world!\n")
+	}
 }
