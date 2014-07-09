@@ -1,0 +1,39 @@
+Two pass:
+1. Convert Go AST to simplified (C compatible) Go AST.
+2. Convert simplified Go AST to C.
+
+Pass 1
+------
+
+var v = nonconst -> var v T; func init(){ v = nonconst; }
+
+var s = []T{...} -> var (a = [...]T; s []T); func init(){ s = a[]; }
+
+var v = &T{...} -> var (c T, v *T); func init(){ c = T{...}; v = &c; }
+
+tuple -> struct (anonymous ?)
+	var a, b = expr -> var a, b T; func init(){ tmp = expr; a = tmp._0; b = tmp._1;}
+	
+range -> for, ...
+
+nil -> type(nil)
+
+func f() (a T) -> f() T
+	return -> goto end
+
+anonymous structs -> named struct in special package ?
+
+label: for s0; ex; s {...} -> {s0; cont_label: for ex {{...} s} break_label:
+	conntinue label, break label -> goto label_x
+
+	
+Pass 2
+------
+
+Things that are not or wrong handled by current gotoc:
+
+interface -> struct Name { void *v; typeSpec *t; }
+
+func(p0, p1, ...) (r0, r1, ...) -> struct func { void *f, *ctx; }
+
+select -> ?
