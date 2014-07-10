@@ -30,7 +30,7 @@ func Utoa(buf []byte, u uint32, base int) int {
 	return n
 }
 
-// Utoa converts i to string and returns offset to most significant digit or sign.
+// Itoa converts i to string and returns offset to most significant digit or sign.
 func Itoa(buf []byte, i int32, base int) int {
 	if i >= 0 {
 		return Utoa(buf, uint32(i), base)
