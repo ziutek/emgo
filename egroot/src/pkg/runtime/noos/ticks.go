@@ -20,7 +20,7 @@ func SetTickPeriod(ms int) {
 
 var tickEvent = AssignEvent()
 
-// TickEvent return event that is send at every tick.
+// TickEvent returns event that is send at every tick.
 func TickEvent() Event {
 	return tickEvent
 }
