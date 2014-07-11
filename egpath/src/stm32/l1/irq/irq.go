@@ -48,6 +48,7 @@ const (
 	USBFSWkup
 	Tim6
 	Tim7
+	// BUG: following interrupt names are wrong in case of high density devices 
 	SDIO
 	Tim5
 	SPI3

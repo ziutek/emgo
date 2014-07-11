@@ -1,19 +1,25 @@
+// Package rand provides functions that can be used to generate pseudorandom
+// numbers.
 package rand
 
+// XorShift64 is 64-bit xorshift* pseudorandom number generator.
+// See http://en.wikipedia.org/wiki/Xorshift for more informations.
 type XorShift64 struct {
 	x uint64
 }
 
-// Seed initializes XorShift. seed should not be zero.
+// Seed initializes XorShift64 state. seed must not be zero..
 func (g *XorShift64) Seed(seed uint64) {
 	g.x = seed
 }
 
 // Next seteps generator to next state.
-func (g XorShift64) Next() {
-	g.x ^= g.x >> 12
-	g.x ^= g.x << 25
-	g.x ^= g.x >> 27
+func (g *XorShift64) Next() {
+	x := g.x
+	x ^= x >> 12
+	x ^= x << 25
+	x ^= x >> 27
+	g.x = x
 }
 
 // Uint64 converts current generator state to unsigned 64-bit integer.

@@ -14,7 +14,7 @@ func main() {
 	setup.Performance(0)
 
 	var (
-		buf [16]byte
+		buf [20]byte
 		rnd rand.XorShift64
 	)
 
@@ -22,8 +22,8 @@ func main() {
 
 	for {
 		rnd.Next()
-		n := strconv.Utoa(buf[:], rnd.Uint32(), 10)
-		st.Write(buf[n:])
+		strconv.Utoa(buf[:], rnd.Uint32(), 10)
+		st.Write(buf[:])
 		st.WriteByte('\n')
 	}
 }
