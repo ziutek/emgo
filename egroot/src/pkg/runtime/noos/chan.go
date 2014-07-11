@@ -37,7 +37,7 @@ type waiter struct {
 }
 
 func selectComm(comms []*builtin.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Pointer, d uintptr) {
-	// BUG: comms need to be shufled there.
+	// BUG: comms need to be shufled there. Waiting for rand package...
 
 	if dflt != nil {
 		// "Nonblocking" select.
@@ -83,6 +83,7 @@ func selectComm(comms []*builtin.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Point
 		}
 	}
 	atomic.CompareAndSwapInt32(&sel, 0, 2)
+	barrier.Compiler()
 	for i, comm := range comms {
 		if i != n && comm.C != nil && comm.Cancel != nil {
 			comm.Cancel(comm.C, unsafe.Pointer(&w))
