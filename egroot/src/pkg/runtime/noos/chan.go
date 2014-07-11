@@ -83,7 +83,6 @@ func selectComm(comms []*builtin.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Point
 		}
 	}
 	atomic.CompareAndSwapInt32(&sel, 0, 2)
-	barrier.Compiler()
 	for i, comm := range comms {
 		if i != n && comm.C != nil && comm.Cancel != nil {
 			comm.Cancel(comm.C, unsafe.Pointer(&w))
