@@ -142,6 +142,10 @@ func (cdd *CDD) NameStr(o types.Object, direct bool) string {
 
 func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Type, recv ast.Expr) {
 	sel := cdd.gtc.ti.Selections[e]
+	if sel == nil {
+		cdd.Name(w, cdd.object(e.Sel), true)
+		return
+	}
 	switch sel.Kind() {
 	case types.FieldVal:
 		cdd.Expr(w, e.X, nil)
@@ -172,7 +176,7 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Ty
 			}
 		}
 
-	case types.PackageObj, types.MethodExpr:
+	case types.MethodExpr:
 		cdd.Name(w, sel.Obj(), true)
 
 	default:

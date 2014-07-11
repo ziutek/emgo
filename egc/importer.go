@@ -151,7 +151,8 @@ func (imp *Importer) importPkg(imports map[string]*types.Package, path string) (
 	if err != nil {
 		return nil, err
 	}
-	return importer.ImportData(imports, buf)
+	_, pkg, err := importer.ImportData(imports, buf)
+	return pkg, err
 }
 
 func loadExports(bp *build.Package) ([]byte, error) {
