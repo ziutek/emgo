@@ -36,6 +36,11 @@ type waiter struct {
 	next *waiter
 }
 
+func shufle(comms []*builtin.Comm) {
+	rng := tasker.tasks[tasker.curTask].rng
+	rng.Uint64()
+}
+
 func selectComm(comms []*builtin.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Pointer, d uintptr) {
 	// BUG: comms need to be shufled there. Waiting for rand package...
 

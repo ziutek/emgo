@@ -13,31 +13,27 @@ func (g *XorShift64) Seed(seed uint64) {
 	g.x = seed
 }
 
-// Next seteps generator to next state.
-func (g *XorShift64) Next() {
+// Uint64 returns pseudorandom uint64 number.
+func (g XorShift64) Uint64() uint64 {
 	x := g.x
 	x ^= x >> 12
 	x ^= x << 25
 	x ^= x >> 27
 	g.x = x
+	return x * 2685821657736338717
 }
 
-// Uint64 converts current generator state to unsigned 64-bit integer.
-func (g XorShift64) Uint64() uint64 {
-	return g.x * 2685821657736338717
-}
-
-// Uint64 converts current generator state to signed 64-bit integer.
+// Int64 returns pseudorandom int64 number.
 func (g XorShift64) Int64() int64 {
 	return int64(g.Uint64())
 }
 
-// Uint32 converts current generator state to unsigned 32-bit integer.
+// Uint32 returns pseudorandom uint32 number.
 func (g XorShift64) Uint32() uint32 {
 	return uint32(g.Uint64())
 }
 
-// Int32 converts current generator state to signed 32-bit integer.
+// Int32 returns pseudorandom int32 number.
 func (g XorShift64) Int32() int32 {
 	return int32(g.Uint64())
 }

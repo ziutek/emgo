@@ -3,6 +3,7 @@
 package noos
 
 import (
+	"math/rand"
 	"sync/barrier"
 	"unsafe"
 
@@ -26,6 +27,7 @@ const (
 type taskInfo struct {
 	sp    uintptr
 	event Event
+	rng   rand.XorShift64
 	flags taskState
 	prio  uint8
 }
