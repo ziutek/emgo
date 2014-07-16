@@ -39,5 +39,5 @@ type Comm struct {
 }
 
 // Select is used internelly to implement select statement. After Select comms
-// can be modified (shufled).
+// can be modified (shuffled).
 var Select func(comms []*Comm, dflt unsafe.Pointer) (jmp, p unsafe.Pointer, d uintptr)

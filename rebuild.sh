@@ -26,6 +26,7 @@ runtime
 
 strconv
 math/matrix32
+math/rand
 
 stm32/stlink
 stm32/f4/clock

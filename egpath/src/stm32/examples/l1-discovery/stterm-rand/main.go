@@ -21,7 +21,6 @@ func main() {
 	rnd.Seed(1)
 
 	for {
-		rnd.Next()
 		strconv.Utoa(buf[:], rnd.Uint32(), 10)
 		st.Write(buf[:])
 		st.WriteByte('\n')

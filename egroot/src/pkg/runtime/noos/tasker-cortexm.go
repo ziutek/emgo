@@ -9,6 +9,7 @@ import (
 
 	"cortexm"
 	"cortexm/exce"
+	"cortexm/systick"
 )
 
 type taskState byte
@@ -30,6 +31,11 @@ type taskInfo struct {
 	rng   rand.XorShift64
 	flags taskState
 	prio  uint8
+}
+
+func (ti *taskInfo) init() {
+	*ti = taskInfo{prio: 255}
+	ti.rng.Seed(Ticks() ^ (uint64(systick.Val()) << 32))
 }
 
 func (ti *taskInfo) state() taskState {
@@ -103,10 +109,6 @@ func (ts *taskSched) init() {
 		panicMemory()
 	}
 
-	// Set taskInfo for initial (current) task.
-	ts.tasks[0].prio = 255
-	ts.tasks[0].setState(taskReady)
-
 	// Use PSP as stack pointer for thread mode.
 	cortexm.SetPSP(unsafe.Pointer(cortexm.MSP()))
 	barrier.Sync()
@@ -137,7 +139,14 @@ func (ts *taskSched) init() {
 	exce.SVCall.SetPrio(exce.Lowest)
 	exce.PendSV.SetPrio(exce.Lowest)
 
+	// Start SysTick before setup taskInfo for initial task to
+	// allow correct rng seed.
 	sysTickStart()
+
+	// Set taskInfo for initial (current) task.
+	ts.tasks[0].init()
+	ts.tasks[0].setState(taskReady)
+
 	tasker.forceNext = -1
 	tasker.run()
 }

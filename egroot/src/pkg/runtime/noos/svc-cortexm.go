@@ -48,9 +48,8 @@ func (ts *taskSched) newTask(pc uintptr, xpsr uint32, wait bool) {
 	}
 
 	sf, sp := allocStackFrame(initSP(n))
-	ti := taskInfo{sp: sp, prio: 255}
-	ti.rng.Seed(Ticks())
-	ts.tasks[n] = ti
+	ts.tasks[n].init()
+	ts.tasks[n].sp = sp
 
 	// Use parent's xPSR as initial xPSR for new task.
 	sf.xpsr = xpsr

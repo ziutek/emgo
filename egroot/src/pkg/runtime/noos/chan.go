@@ -36,13 +36,23 @@ type waiter struct {
 	next *waiter
 }
 
-func shufle(comms []*builtin.Comm) {
-	rng := tasker.tasks[tasker.curTask].rng
-	rng.Uint64()
+func shuffle(comms []*builtin.Comm) {
+	rng := &tasker.tasks[tasker.curTask].rng
+	n := uint(len(comms))
+	for n > 1 {
+		i := uint(rng.Uint64()) % n
+		n--
+		if i != n {
+			comms[i], comms[n] = comms[n], comms[i]
+		}
+	}
+	// TODO: use len(comms) to do this more efficently. Divide value from
+	// rng.Uint64() into smaller chunks of nonzero bits. This reduces number of
+	// rng.Uint64() calls and will result in fasetr % operation.
 }
 
 func selectComm(comms []*builtin.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Pointer, d uintptr) {
-	// BUG: comms need to be shufled there. Waiting for rand package...
+	shuffle(comms)
 
 	if dflt != nil {
 		// "Nonblocking" select.

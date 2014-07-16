@@ -8,7 +8,7 @@ type XorShift64 struct {
 	x uint64
 }
 
-// Seed initializes XorShift64 state. seed must not be zero..
+// Seed initializes XorShift64 state. seed must not be zero.
 func (g *XorShift64) Seed(seed uint64) {
 	g.x = seed
 }
