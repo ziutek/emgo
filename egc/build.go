@@ -40,6 +40,17 @@ func egc(ppath string) error {
 
 var uptodate = make(map[string]struct{})
 
+var (
+	cortexmSizes = &types.StdSizes{4, 8}
+
+	sizesMap = map[string]*types.StdSizes{
+		"cortexm0":  cortexmSizes,
+		"cortexm3":  cortexmSizes,
+		"cortexm4":  cortexmSizes,
+		"cortexm4f": cortexmSizes,
+	}
+)
+
 func compile(bp *build.Package) error {
 	if ok, err := checkPkg(bp); err != nil {
 		return err
@@ -89,7 +100,7 @@ func compile(bp *build.Package) error {
 
 	tc := &types.Config{
 		Import: NewImporter().Import,
-		Sizes:  &types.StdSizes{4, 4}, // BUG: set sizes based on EGARCH
+		Sizes:  sizesMap[buildCtx.GOARCH],
 	}
 	ti := &types.Info{
 		Types:      make(map[ast.Expr]types.TypeAndValue),
