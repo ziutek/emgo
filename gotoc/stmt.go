@@ -622,7 +622,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 			case *ast.ExprStmt:
 				cdd.indent(w)
-				w.WriteString("SELRECV(" + strconv.Itoa(i) + ")\n")
+				w.WriteString("SELRECV(" + strconv.Itoa(i) + ");\n")
 
 			default:
 				notImplemented(s)

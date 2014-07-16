@@ -59,7 +59,7 @@ int foo$S(chan c1$, chan c2$) {
 				break;
 			}
 			CASE(2) {
-				SELRECV(2)
+				SELRECV(2);
 				return -7;
 				break;
 			}
@@ -159,7 +159,7 @@ int foo$S(chan c1$, chan c2$) {
 					break;
 				}
 				CASE(1) {
-					SELRECV(1)
+					SELRECV(1);
 					if (i$ == 0) {
 						goto loop$_continue;
 					}
