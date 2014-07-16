@@ -14,7 +14,7 @@ func (g *XorShift64) Seed(seed uint64) {
 }
 
 // Uint64 returns pseudorandom uint64 number.
-func (g XorShift64) Uint64() uint64 {
+func (g *XorShift64) Uint64() uint64 {
 	x := g.x
 	x ^= x >> 12
 	x ^= x << 25
@@ -24,16 +24,16 @@ func (g XorShift64) Uint64() uint64 {
 }
 
 // Int64 returns pseudorandom int64 number.
-func (g XorShift64) Int64() int64 {
+func (g *XorShift64) Int64() int64 {
 	return int64(g.Uint64())
 }
 
 // Uint32 returns pseudorandom uint32 number.
-func (g XorShift64) Uint32() uint32 {
+func (g *XorShift64) Uint32() uint32 {
 	return uint32(g.Uint64())
 }
 
 // Int32 returns pseudorandom int32 number.
-func (g XorShift64) Int32() int32 {
+func (g *XorShift64) Int32() int32 {
 	return int32(g.Uint64())
 }
