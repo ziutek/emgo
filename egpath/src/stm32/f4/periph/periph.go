@@ -150,8 +150,8 @@ const (
 	SPI3
 
 	_
-	UART2
-	UART3
+	USART2
+	USART3
 	UART4
 	UART5
 	I2C1
