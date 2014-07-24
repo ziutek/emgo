@@ -115,14 +115,6 @@ func (g *Port) SetPull(n int, pull Pull) {
 	g.pupd = g.pupd&^(3<<uint(n)) | uint32(pull)<<uint(n)
 }
 
-type AltFunc byte
-
-// AltFunc
-// func (g *Port) AltFunc(n int) AltFunc
-
-// SetAltFunc
-// func (g *Port) SetAltFunc(n int, af AltFunc) AltFunc
-
 // SetBit sets n-th output bit to 1
 func (g *Port) SetBit(n int) {
 	g.bsr = uint32(1) << uint(n)
@@ -144,11 +136,11 @@ func (g *Port) ClearBits(bits uint16) {
 }
 
 // ClearAndSet sets whole BSRR register.
-// High 16 bits in bssr specifies which bits should be 0.
+// High 16 bits in bsr specifies which bits should be 0.
 // Low 16 bits in bss specifies which bits should be 1.
 // Set bits has priority above clear bits.
-func (g *Port) ClearAndSet(bsrr uint32) {
-	g.bsr = bsrr
+func (g *Port) ClearAndSet(bsr uint32) {
+	g.bsr = bsr
 }
 
 func (g *Port) Store(bits uint16) {

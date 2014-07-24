@@ -44,7 +44,7 @@ const (
 	USART3
 	Ext15_10
 	RTCAlarm
-	USBFSWkup
+	OTGFSWkup
 	Tim8BrkTim12
 	Tim8UpTim13
 	Tim8TrgComTim14
@@ -63,22 +63,22 @@ const (
 	DMA2Stream2
 	DMA2Stream3
 	DMA2Stream4
-	Ethernet
-	EthernetWkup
+	Eth
+	EthWkup
 	CAN2Tx
 	CAN2Rx0
 	CAN2Rx1
 	CAN2SCE
-	USBFS
+	OTGFS
 	DMA2Stream5
 	DMA2Stream6
 	DMA2Stream7
 	USART6
 	I2C3Ev
 	I2C3Er
-	USBHSEP1In
-	USBHSWkup
-	USBHS
+	OTGHSEP1In
+	OTGHSWkup
+	OTGHS
 	DCMI
 	CRYP
 	HashRng

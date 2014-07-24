@@ -24,9 +24,9 @@ const (
 	L15
 	LPVD
 	LRTCAlarm
-	LUSBFS
-	LEthernet
-	LUSBHS
+	LOTGFS
+	LEth
+	LOTGHS
 	LTampStamp
 	LRTCWkup
 	LAll Lines = (1 << iota) - 1

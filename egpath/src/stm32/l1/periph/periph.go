@@ -92,7 +92,7 @@ const (
 	UART4
 	UART5
 	I2C1
-	USB
+	OTG
 	_
 	_
 	_

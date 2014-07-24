@@ -66,8 +66,8 @@ const (
 	EthMACTx
 	EthMACRx
 	EthMACPTP
-	USBHS
-	USBHSULPI
+	OTGHS
+	OTGHSULPI
 )
 
 func AHB1Reset(d AHB1Dev) {
@@ -93,7 +93,7 @@ const (
 	CRYP
 	HASH
 	RNG
-	USBFS
+	OTGFS
 )
 
 func AHB2Reset(d AHB2Dev) {

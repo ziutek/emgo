@@ -22,8 +22,8 @@ const (
 	DMA1Chan6
 	DMA1Chan7
 	ADC1
-	USB
-	USBLP
+	OTG
+	OTGLP
 	DAC
 	CompCA
 	Ext9_5
@@ -45,7 +45,7 @@ const (
 	USART3
 	Ext15_10
 	RTCAlarm
-	USBFSWkup
+	OTGFSWkup
 	Tim6
 	Tim7
 	// BUG: following interrupt names are wrong in case of high density devices 

@@ -32,12 +32,14 @@ func init() {
 	periph.APB1Reset(periph.USART2)
 
 	io, tx, rx := gpio.A, 2, 3
+	_ = rx
+
 	io.SetMode(tx, gpio.Alt)
 	io.SetOutType(tx, gpio.PushPullOut)
 	io.SetPull(tx, gpio.PullUp)
 	io.SetOutSpeed(tx, gpio.Fast)
+	io.SetAltFunc(tx, gpio.USART2)
 
-	_ = rx
 }
 
 func toggle(led int) {
