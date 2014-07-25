@@ -779,9 +779,13 @@ func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
 	case *types.Pointer, *types.Basic, *types.Signature:
 		// Pointer or unsafe.Pointer
 		w.WriteString("nil")
+		
+	case *types.Interface:
+		// BUG: Only errors are supported.
+		w.WriteString("(error){}")
 
 	default:
-		w.WriteString("'unknown nil'")
+		w.WriteString("'unknown nil")
 	}
 }
 
