@@ -1,8 +1,11 @@
 package usart
 
-import "unsafe"
+import (
+	"stm32/f4/setup"
+	"unsafe"
+)
 
-type USART struct {
+type Dev struct {
 	s   uint32 `C:"volatile"`
 	d   uint32 `C:"volatile"`
 	br  uint32 `C:"volatile"`
@@ -13,12 +16,159 @@ type USART struct {
 }
 
 var (
-	USART1 = (*USART)(unsafe.Pointer(uintptr(0x40011000)))
-	USART2 = (*USART)(unsafe.Pointer(uintptr(0x40004400)))
-	USART3 = (*USART)(unsafe.Pointer(uintptr(0x40004800)))
-	UART4  = (*USART)(unsafe.Pointer(uintptr(0x40004C00)))
-	UART5  = (*USART)(unsafe.Pointer(uintptr(0x40005000)))
-	USART6 = (*USART)(unsafe.Pointer(uintptr(0x40011400)))
-	UART7  = (*USART)(unsafe.Pointer(uintptr(0x40007800)))
-	UART8  = (*USART)(unsafe.Pointer(uintptr(0x40007C00)))
+	USART1 = (*Dev)(unsafe.Pointer(uintptr(0x40011000)))
+	USART2 = (*Dev)(unsafe.Pointer(uintptr(0x40004400)))
+	USART3 = (*Dev)(unsafe.Pointer(uintptr(0x40004800)))
+	UART4  = (*Dev)(unsafe.Pointer(uintptr(0x40004C00)))
+	UART5  = (*Dev)(unsafe.Pointer(uintptr(0x40005000)))
+	USART6 = (*Dev)(unsafe.Pointer(uintptr(0x40011400)))
+	UART7  = (*Dev)(unsafe.Pointer(uintptr(0x40007800)))
+	UART8  = (*Dev)(unsafe.Pointer(uintptr(0x40007C00)))
 )
+
+type Status uint32
+
+const (
+	ParityErr Status = 1 << iota
+	FramingErr
+	Noise
+	OverrunErr
+	Idle
+	RxNotEmpty
+	TxDone
+	TxEmpty
+
+	LINBreak
+	CTS
+)
+
+func (u *Dev) Status() Status {
+	return Status(u.s)
+}
+
+func (u *Dev) SetBaudRate(br int) {
+	div := uint32(setup.APB1Clk / uint(br))
+	if uint(br) > setup.APB1Clk/16 {
+		// Oversampling = 8
+		u.c1 |= 1 << 15
+		u.br = div&7<<1 | div&7
+	} else {
+		// Oversampling = 16
+		u.c1 &^= 1 << 15
+		u.br = div
+	}
+
+}
+
+func (u *Dev) Enable() {
+	u.c1 |= 1 << 13
+}
+
+func (u *Dev) Disable() {
+	u.c1 &^= 1 << 13
+}
+
+type WordLen byte
+
+const (
+	Bits8 WordLen = iota
+	Bits9
+)
+
+func (u *Dev) SetWordLen(l WordLen) {
+	if l == Bits8 {
+		u.c1 &^= 1 << 12
+	} else {
+		u.c1 |= 1 << 12
+	}
+}
+
+type Parity byte
+
+const (
+	None Parity = iota
+	_
+	Even
+	Odd
+)
+
+func (u *Dev) SetParity(p Parity) {
+	u.c1 = u.c1&^(3<<9) | uint32(p)<<9
+}
+
+func (u *Dev) SetParityErrIRQ(enabled bool) {
+	if enabled {
+		u.c1 |= 1 << 8
+	} else {
+		u.c1 &^= 1 << 8
+	}
+}
+
+func (u *Dev) SetTxEmptyIRQ(enabled bool) {
+	if enabled {
+		u.c1 |= 1 << 7
+	} else {
+		u.c1 &^= 1 << 7
+	}
+}
+
+func (u *Dev) SetTxDoneIRQ(enabled bool) {
+	if enabled {
+		u.c1 |= 1 << 6
+	} else {
+		u.c1 &^= 1 << 6
+	}
+}
+
+func (u *Dev) SetRxNotEmptyIRQ(enabled bool) {
+	if enabled {
+		u.c1 |= 1 << 5
+	} else {
+		u.c1 &^= 1 << 5
+	}
+}
+
+func (u *Dev) SetIdleIRQ(enabled bool) {
+	if enabled {
+		u.c1 |= 1 << 4
+	} else {
+		u.c1 &^= 1 << 4
+	}
+}
+
+func (u *Dev) EnableTx() {
+	u.c1 |= 1 << 3
+}
+
+func (u *Dev) DisableTx() {
+	u.c1 &^= 1 << 3
+}
+
+func (u *Dev) EnableRx() {
+	u.c1 |= 1 << 2
+}
+
+func (u *Dev) DisableRx() {
+	u.c1 &^= 1 << 2
+}
+
+type StopBits byte
+
+const (
+	Stop1b StopBits = iota
+	Stop0b5
+	Stop2b
+	Stop1b5
+)
+
+func (u *Dev) SetStopBits(sb StopBits) {
+	u.c2 = u.c2&^(3<<12) | uint32(sb)<<12
+}
+
+func (u *Dev) Store(b byte) {
+	u.d = uint32(b)
+}
+
+func (u *Dev) Load() byte {
+	return byte(u.d)
+}

@@ -5,6 +5,12 @@ import (
 	"stm32/f4/flash"
 )
 
+var (
+	SysClk  uint // System clock [Hz]
+	APB1Clk uint // APB1 clock [Hz]
+	APB2Clk uint // APB2 clock [Hz]
+)
+
 // Performance setups MCU for best performance (Flash prefetch, I/D cache on
 // minimum allowed Flash latency).
 // osc is freqency of external resonator in MHz. Allowed values are multiples
@@ -34,6 +40,7 @@ func Performance(osc, mul, sdiv int) {
 	}
 
 	sysclk := 2 * mul / sdiv
+	SysClk = uint(sysclk) * 1e6
 
 	lat := (sysclk - 1) / 30
 	flash.SetLatency(lat) // Requires supply voltage 2.7-3.6 V.
@@ -63,15 +70,23 @@ func Performance(osc, mul, sdiv int) {
 	case sysclk <= 42:
 		div1 = clock.APBDiv1
 		div2 = clock.APBDiv1
+		APB1Clk = SysClk
+		APB2Clk = SysClk
 	case sysclk <= 84:
 		div1 = clock.APBDiv2
 		div2 = clock.APBDiv1
+		APB1Clk = SysClk / 2
+		APB2Clk = SysClk
 	case sysclk <= 168:
 		div1 = clock.APBDiv4
 		div2 = clock.APBDiv2
+		APB1Clk = SysClk / 4
+		APB2Clk = SysClk / 2
 	default:
 		div1 = clock.APBDiv8
 		div2 = clock.APBDiv4
+		APB1Clk = SysClk / 8
+		APB2Clk = SysClk / 4
 	}
 	clock.SetPrescalerAHB(clock.AHBDiv1)
 	clock.SetPrescalerAPB1(div1)
@@ -102,8 +117,8 @@ func Performance(osc, mul, sdiv int) {
 	if osc != 0 {
 		clock.DisableHSI()
 	}
-	
-	setSystick(sysclk)
+
+	setSystick()
 }
 
 // Performance168 setups MCU to work with 168 MHz clock.
