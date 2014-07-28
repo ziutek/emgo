@@ -7,7 +7,7 @@ import (
 	"stm32/f4/usart"
 )
 
-var sp = usart.USART2
+var udev = usart.USART2
 
 func init() {
 	setup.Performance168(8)
@@ -26,13 +26,13 @@ func init() {
 	io.SetAltFunc(tx, gpio.USART2)
 	io.SetMode(rx, gpio.Alt)
 
-	sp.SetBaudRate(115200)
-	sp.SetWordLen(usart.Bits8)
-	sp.SetParity(usart.None)
-	sp.SetStopBits(usart.Stop1b)
-	sp.Enable()
-	sp.EnableTx()
-	sp.EnableRx()
+	udev.SetBaudRate(115200)
+	udev.SetWordLen(usart.Bits8)
+	udev.SetParity(usart.None)
+	udev.SetStopBits(usart.Stop1b)
+	udev.Enable()
+	udev.EnableTx()
+	udev.EnableRx()
 }
 
 type Serial struct {
@@ -50,14 +50,14 @@ func NewSerial(dev *usart.Dev) *Serial {
 }
 
 func (s *Serial) WriteByte(b byte) error {
-	sp.Store(b)
-	for sp.Status()&usart.TxEmpty == 0 {
+	s.dev.Store(b)
+	for s.dev.Status()&usart.TxEmpty == 0 {
 	}
 	return nil
 }
 
 func main() {
-	s := NewSerial(sp)
+	s := NewSerial(udev)
 	for {
 		s.WriteByte('H')
 		s.WriteByte('i')
