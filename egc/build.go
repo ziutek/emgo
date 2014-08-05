@@ -178,7 +178,7 @@ func compile(bp *build.Package) error {
 		return err
 	}
 
-	gtc := gotoc.NewGTC(pkg, ti)
+	gtc := gotoc.NewGTC(pkg, ti, tc.Sizes)
 	gtc.SetInlineThres(12)
 	if err = gtc.Translate(wh, wc, flist); err != nil {
 		return err

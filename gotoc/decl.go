@@ -197,9 +197,8 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 			}
 
 			switch typ := tt.(type) {
-			case *types.Struct:
+			case *types.Struct, *types.Interface:
 				cdds = append(cdds, cdd.structDecl(w, name, typ)...)
-
 			default:
 				w.WriteString("typedef ")
 				dim, acds := cdd.Type(w, typ)
@@ -391,7 +390,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	return
 }
 
-func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ *types.Struct) (acds []*CDD) {
+func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) (acds []*CDD) {
 	n := w.Len()
 
 	w.WriteString("struct ")

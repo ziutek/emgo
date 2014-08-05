@@ -2,6 +2,7 @@ package gotoc
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/token"
 	"strconv"
@@ -21,7 +22,16 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 
 	case 1:
 		w.WriteString("return ")
-		cdd.Expr(w, s.Results[0], tup.At(0).Type())
+		var retTyp types.Type
+		if tup.Len() != 1 {
+			retTyp = tup
+		} else {
+			retTyp = tup.At(0).Type()
+		}
+		resExpr := s.Results[0]
+		resTyp := cdd.exprType(resExpr)
+		e := cdd.ExprStr(resExpr, retTyp)
+		cdd.interfaceExpr(w, e, resTyp, retTyp)
 		w.WriteString(";\n")
 
 	default:
@@ -35,6 +45,73 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 		w.WriteString("};\n")
 	}
 	return
+}
+
+var ptr = types.NewPointer(types.NewStruct(nil, nil))
+
+func hash(s string) uint32 {
+	var h uint32
+	for _, r := range s {
+		h = 37*h + uint32(r)
+	}
+	return h
+}
+
+func (cdd *CDD) typeHash(typ types.Type) string {
+	// BUG: hash isn't good for type id
+	t, dim, _ := cdd.TypeStr(typ)
+	return "0x" + strconv.FormatUint(uint64(hash(t+dimFuncPtr("", dim))), 16)
+}
+
+func (cdd *CDD) interfaceExpr(w *bytes.Buffer, e string, etyp, ityp types.Type) {
+	if ityp == nil || etyp == nil {
+		w.WriteString(e)
+		return
+	}
+	if _, ok := ityp.Underlying().(*types.Interface); !ok || types.Identical(ityp, etyp) {
+		w.WriteString(e)
+		return
+	}
+	if cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.siz.Sizeof(ptr) {
+		panic(fmt.Sprintf(
+			"can't assign value of type %s to interface of type %s",
+			etyp, ityp,
+		))
+	}
+
+	tid := cdd.typeHash(etyp)
+	it := ityp.Underlying().(*types.Interface)
+	if it.Empty() {
+		w.WriteString("INTERFACE(" + e + ", " + tid + ")")
+		return
+	}
+
+	w.WriteByte('(')
+	cdd.Type(w, ityp)
+	w.WriteString("){\n")
+	cdd.il++
+
+	cdd.indent(w)
+	w.WriteString(".I$ = INTERFACE(" + e + ", " + tid + ")")
+
+	for i := 0; i < it.NumMethods(); i++ {
+		f := it.Method(i)
+		w.WriteString(",\n")
+		cdd.indent(w)
+		w.WriteString("." + f.Name() + " = ")
+		cdd.Name(w, f, true)
+	}
+
+	w.WriteByte('\n')
+	cdd.il--
+	cdd.indent(w)
+	w.WriteByte('}')
+}
+
+func (cdd *CDD) interfaceExprStr(e string, etyp, ityp types.Type) string {
+	buf := new(bytes.Buffer)
+	cdd.interfaceExpr(buf, e, etyp, ityp)
+	return buf.String()
 }
 
 func (cdd *CDD) label(w *bytes.Buffer, label, suffix string) {
@@ -93,13 +170,15 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			}
 		} else {
 			for i, e := range s.Rhs {
-				var t types.Type
 				if s.Tok == token.DEFINE {
-					t = cdd.exprType(e)
-				} else {
-					t = cdd.exprType(s.Lhs[i])
+					t := cdd.exprType(e)
+					rhs[i] = cdd.ExprStr(e, t)
+					typ[i] = t
+					continue
 				}
-				rhs[i] = cdd.ExprStr(e, t)
+				t := cdd.exprType(s.Lhs[i])
+				et := cdd.exprType(e)
+				rhs[i] = cdd.interfaceExprStr(cdd.ExprStr(e, t), et, t)
 				typ[i] = t
 			}
 		}

@@ -1,0 +1,54 @@
+// Go code:
+type A interface {
+	Len() int
+	Elem(int) interface{}
+}
+
+type Array []int
+
+func (a *Array) Len() int {
+	return a.Len()
+}
+
+func (a *Array) Elem(i int) interface{} {
+	return (*a)[i]
+}
+
+func (a *Array) A() A {
+	return a
+}
+// C code:
+// decl
+struct foo$A_struct;
+typedef struct foo$A_struct foo$A;
+// def
+struct foo$A_struct {
+	interface I$;
+	interface (*Elem)(uintptr, int);
+	int (*Len)(uintptr);
+};
+// decl
+typedef slice foo$Array;
+// decl
+int foo$Array$Len(foo$Array *a$);
+// def
+int foo$Array$Len(foo$Array *a$) {
+	return foo$Array$Len(a$);
+}
+// decl
+interface foo$Array$Elem(foo$Array *a$, int i$);
+// def
+interface foo$Array$Elem(foo$Array *a$, int i$) {
+	return INTERFACE(((int*)(*a$).arr)[i$], 0x241db);
+}
+// decl
+foo$A foo$Array$A(foo$Array *a$);
+// def
+foo$A foo$Array$A(foo$Array *a$) {
+	return (foo$A){
+		.I$ = INTERFACE(a$, 0xf9a175a5),
+		.Elem = foo$A$Elem,
+		.Len = foo$A$Len
+	};
+}
+// end

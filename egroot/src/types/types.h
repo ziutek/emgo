@@ -1,4 +1,4 @@
 #include "basic.h"
 #include "string.h"
-#include "error.h"
+#include "interface.h"
 #include "slice.h"

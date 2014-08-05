@@ -16,14 +16,15 @@ type GTC struct {
 	ti          *types.Info
 	inlineThres int
 	nextInt     chan int
+	siz         types.Sizes 
 
 	tupNames map[string]struct{} // TODO: safe concurent acces is need
 }
 
-func NewGTC(pkg *types.Package, ti *types.Info) *GTC {
+func NewGTC(pkg *types.Package, ti *types.Info, siz types.Sizes) *GTC {
 	c := make(chan int, 1)
 	go nextIntGen(c)
-	return &GTC{pkg: pkg, ti: ti, nextInt: c, tupNames: make(map[string]struct{})}
+	return &GTC{pkg: pkg, ti: ti, nextInt: c, tupNames: make(map[string]struct{}), siz: siz}
 }
 
 func (cc *GTC) SetInlineThres(thres int) {

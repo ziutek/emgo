@@ -584,7 +584,7 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 
 	var indT types.Type
 
-	switch t := typ.(type) {
+	switch t := typ.Underlying().(type) {
 	case *types.Basic: // string
 		w.WriteString(xs + ".str")
 
@@ -781,8 +781,7 @@ func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
 		w.WriteString("nil")
 		
 	case *types.Interface:
-		// BUG: Only errors are supported.
-		w.WriteString("(error){}")
+		w.WriteString("NILI")
 
 	default:
 		w.WriteString("'unknown nil")

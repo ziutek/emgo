@@ -112,6 +112,26 @@ writeType:
 		dim = append(dim, res.dim...)
 		acds = append(acds, res.acds...)
 
+	case *types.Interface:
+		if t.NumMethods() == 0 {
+			w.WriteString("interface")
+			break
+		}
+		w.WriteString("struct {\n")
+		cdd.il++
+		cdd.indent(w)
+		w.WriteString("interface I$;\n")
+		for i := 0; i < t.NumMethods(); i++ {
+			cdd.indent(w)
+			f := t.Method(i)
+			d, a := cdd.Type(w, f.Type())
+			acds = append(acds, a...)
+			w.WriteString(" " + dimFuncPtr(f.Name(), d) + ";\n")
+		}
+		cdd.il--
+		cdd.indent(w)
+		w.WriteByte('}')
+
 	default:
 		fmt.Fprintf(w, "<%T>", t)
 	}
@@ -182,8 +202,17 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 	params = "("
 	res = cdd.results(sig.Results())
 	if r := sig.Recv(); r != nil && recv {
-		typ, dim, acds := cdd.TypeStr(r.Type())
-		res.acds = append(res.acds, acds...)
+		var (
+			typ  string
+			dim  []string
+			acds []*CDD
+		)
+		if _, ok := r.Type().Underlying().(*types.Interface); ok {
+			typ = "uintptr"
+		} else {
+			typ, dim, acds = cdd.TypeStr(r.Type())
+			res.acds = append(res.acds, acds...)
+		}
 		var pname string
 		switch pnames {
 		case numNames:
