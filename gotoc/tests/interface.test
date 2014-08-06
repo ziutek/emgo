@@ -30,25 +30,43 @@ struct foo$A_struct {
 // decl
 typedef slice foo$Array;
 // decl
+int foo$Array$Len$(uintptr a$);
+// def
+int foo$Array$Len$(uintptr a$) {
+	return foo$Array$Len((foo$Array*)a$);
+}
+// decl
 int foo$Array$Len(foo$Array *a$);
 // def
 int foo$Array$Len(foo$Array *a$) {
 	return foo$Array$Len(a$);
 }
 // decl
+interface foo$Array$Elem$(uintptr a$, int i$);
+// def
+interface foo$Array$Elem$(uintptr a$, int i$) {
+	return foo$Array$Elem((foo$Array*)a$, i$);
+}
+// decl
 interface foo$Array$Elem(foo$Array *a$, int i$);
 // def
 interface foo$Array$Elem(foo$Array *a$, int i$) {
-	return INTERFACE(((int*)(*a$).arr)[i$], 0x241db);
+	return INTERFACE(((int*)(*a$).arr)[i$], 0x19100092);
+}
+// decl
+foo$A foo$Array$A$(uintptr a$);
+// def
+foo$A foo$Array$A$(uintptr a$) {
+	return foo$Array$A((foo$Array*)a$);
 }
 // decl
 foo$A foo$Array$A(foo$Array *a$);
 // def
 foo$A foo$Array$A(foo$Array *a$) {
 	return (foo$A){
-		.I$ = INTERFACE(a$, 0xf9a175a5),
-		.Elem = foo$A$Elem,
-		.Len = foo$A$Len
+		.I$ = INTERFACE(a$, 0xe2fae8e6),
+		.Elem = foo$A$Elem$,
+		.Len = foo$A$Len$
 	};
 }
 // end

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"hash/crc32"
 	"strconv"
 
 	"code.google.com/p/go.tools/go/types"
@@ -47,20 +48,18 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 	return
 }
 
-var ptr = types.NewPointer(types.NewStruct(nil, nil))
+var (
+	ptr    = types.NewPointer(types.NewStruct(nil, nil))
+	crcTab = crc32.MakeTable(crc32.Castagnoli)
+)
 
-func hash(s string) uint32 {
-	var h uint32
-	for _, r := range s {
-		h = 37*h + uint32(r)
-	}
-	return h
-}
-
+// BUG: not good for type id
 func (cdd *CDD) typeHash(typ types.Type) string {
-	// BUG: hash isn't good for type id
-	t, dim, _ := cdd.TypeStr(typ)
-	return "0x" + strconv.FormatUint(uint64(hash(t+dimFuncPtr("", dim))), 16)
+	buf := new(bytes.Buffer)
+	dim, _ := cdd.Type(buf, typ)
+	buf.WriteString(dimFuncPtr("", dim))
+	crc := crc32.Checksum(buf.Bytes(), crcTab)
+	return "0x" + strconv.FormatUint(uint64(crc), 16)
 }
 
 func (cdd *CDD) interfaceExpr(w *bytes.Buffer, e string, etyp, ityp types.Type) {
@@ -100,6 +99,7 @@ func (cdd *CDD) interfaceExpr(w *bytes.Buffer, e string, etyp, ityp types.Type) 
 		cdd.indent(w)
 		w.WriteString("." + f.Name() + " = ")
 		cdd.Name(w, f, true)
+		w.WriteByte('$')
 	}
 
 	w.WriteByte('\n')

@@ -108,7 +108,7 @@ writeType:
 	case *types.Signature:
 		res, params := cdd.signature(t, true, noNames)
 		w.WriteString(res.typ)
-		dim = append(dim, params)
+		dim = append(dim, params.String())
 		dim = append(dim, res.dim...)
 		acds = append(acds, res.acds...)
 
@@ -196,10 +196,25 @@ const (
 	noNames = iota
 	numNames
 	orgNames
+	orgNamesI
 )
 
-func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res results, params string) {
-	params = "("
+type param struct {
+	typ  string
+	name string
+}
+
+type params []param
+
+func (prs params) String() string {
+	s := make([]string, len(prs))
+	for i, p := range prs {
+		s[i] = fmt.Sprintf(p.typ, p.name)
+	}
+	return "(" + strings.Join(s, ", ") + ")"
+}
+
+func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res results, prms params) {
 	res = cdd.results(sig.Results())
 	if r := sig.Recv(); r != nil && recv {
 		var (
@@ -207,7 +222,7 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 			dim  []string
 			acds []*CDD
 		)
-		if _, ok := r.Type().Underlying().(*types.Interface); ok {
+		if _, ok := r.Type().Underlying().(*types.Interface); ok || pnames == orgNamesI {
 			typ = "uintptr"
 		} else {
 			typ, dim, acds = cdd.TypeStr(r.Type())
@@ -217,23 +232,23 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 		switch pnames {
 		case numNames:
 			pname = "_0"
-		case orgNames:
+		case orgNames, orgNamesI:
 			pname = cdd.NameStr(r, true)
 		}
 		if pname == "" {
-			params += typ + dimFuncPtr("", dim)
+			prms = append(
+				prms,
+				param{typ: typ + dimFuncPtr("%s", dim)},
+			)
 		} else {
-			params += typ + " " + dimFuncPtr(pname, dim)
-		}
-		if sig.Params() != nil {
-			params += ", "
+			prms = append(
+				prms,
+				param{typ: typ + " " + dimFuncPtr("%s", dim), name: pname},
+			)
 		}
 	}
 	if p := sig.Params(); p != nil {
 		for i, n := 0, p.Len(); i < n; i++ {
-			if i != 0 {
-				params += ", "
-			}
 			v := p.At(i)
 			typ, dim, acds := cdd.TypeStr(v.Type())
 			res.acds = append(res.acds, acds...)
@@ -241,20 +256,25 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 			switch pnames {
 			case numNames:
 				pname = "_" + strconv.Itoa(i+1)
-			case orgNames:
+			case orgNames, orgNamesI:
 				pname = cdd.NameStr(v, true)
 				if pname == "_$" {
 					pname = "unused" + cdd.gtc.uniqueId()
 				}
 			}
 			if pname == "" {
-				params += typ + dimFuncPtr("", dim)
+				prms = append(
+					prms,
+					param{typ: typ + dimFuncPtr("%s", dim)},
+				)
 			} else {
-				params += typ + " " + dimFuncPtr(pname, dim)
+				prms = append(
+					prms,
+					param{typ: typ + " " + dimFuncPtr("%s", dim), name: pname},
+				)
 			}
 		}
 	}
-	params += ")"
 	return
 }
 

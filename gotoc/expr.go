@@ -471,7 +471,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		res, params := cdd.signature(sig, false, numNames)
 		w.WriteString(res.typ)
 		w.WriteByte(' ')
-		w.WriteString(dimFuncPtr("func"+params, res.dim))
+		w.WriteString(dimFuncPtr("func"+params.String(), res.dim))
 		w.WriteString(" { return " + s + "(")
 		cdd.Expr(w, recv, nil)
 		if p := sig.Params(); p != nil {

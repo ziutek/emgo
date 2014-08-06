@@ -159,8 +159,8 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 }
 
 func (cdd *CDD) DetermineInline() {
-	if len(cdd.Def) == 0 {
-		// Declaration only
+	if len(cdd.Def) == 0 || cdd.Complexity < 0 {
+		// Declaration only or function marked not for inlining.
 		return
 	}
 	// TODO: Use more information (from il, BodyUses).

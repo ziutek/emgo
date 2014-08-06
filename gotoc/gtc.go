@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"io"
 	"strconv"
+	"fmt"
 
 	"code.google.com/p/go.tools/go/exact"
 	"code.google.com/p/go.tools/go/types"
@@ -47,6 +48,9 @@ func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 	for o := range cdd.DeclUses {
 		if gtc.isImported(o) {
 			continue
+		}
+		if cddm[o] == nil {
+			fmt.Printf("%#v\n%#v\n%s\n%s\n", o, cdd.DeclUses, cdd.Decl, cdd.Def)
 		}
 		gtc.export(cddm, cddm[o])
 	}

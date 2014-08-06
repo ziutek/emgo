@@ -48,11 +48,13 @@ type LDFLAGS struct {
 	OS     string // OS related flags
 	Incl   string // -L flags
 	Script string // path to linker script or empty if default script
+	Opt    string // optimization flags
 }
 
 func (lf *LDFLAGS) SplitAll() []string {
 	var f []string
 	f = append(f, strings.Fields(lf.OS)...)
+	f = append(f, strings.Fields(lf.Opt)...)
 	f = append(f, strings.Fields(lf.Incl)...)
 	if lf.Script != "" {
 		f = append(f, "-T", lf.Script)
@@ -80,13 +82,14 @@ const EGLDSCRIPT = "script.ld"
 func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	cflags := CFLAGS{
 		Dbg:  "-g",
-		Opt:  "-O" + optLevel + " -fno-delete-null-pointer-checks -fno-common -freg-struct-return",
+		Opt:  "-O" + optLevel + " -fno-delete-null-pointer-checks -fno-common -freg-struct-return -ffunction-sections",
 		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-unused-label",
 		Incl: "-I" + filepath.Join(ctx.GOROOT, "src"),
 	}
 	ldflags := LDFLAGS{
 		Script: EGLDSCRIPT,
 		Incl:   "-L" + filepath.Join(ctx.GOROOT, "ld"),
+		Opt:    "-gc-sections",
 	}
 
 	if fl, ok := archMap[ctx.GOARCH]; ok {
@@ -109,8 +112,6 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 		cflags.Incl += " -I" + p
 		importPaths[i] = p
 	}
-
-	ldflags.Script = EGLDSCRIPT
 
 	bt := &BuildTools{
 		CC:      EGCC,

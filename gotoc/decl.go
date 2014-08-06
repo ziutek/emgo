@@ -14,17 +14,53 @@ import (
 
 func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	f := gtc.object(d.Name).(*types.Func)
-
-	cdd := gtc.newCDD(f, FuncDecl, il)
-	w := new(bytes.Buffer)
-	fname := cdd.NameStr(f, true)
-
 	sig := f.Type().(*types.Signature)
+	cdd := gtc.newCDD(f, FuncDecl, il)
+	fname := cdd.NameStr(f, true)
+	w := new(bytes.Buffer)
+
+	if r := sig.Recv(); r != nil {
+		fi := types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$", sig)
+		cddi := gtc.newCDD(fi, FuncDecl, il)
+		finame := cddi.NameStr(fi, true)
+		res, params := cddi.signature(sig, true, orgNamesI)
+
+		w.WriteString(res.typ)
+		w.WriteByte(' ')
+		w.WriteString(dimFuncPtr(finame+params.String(), res.dim))
+		cdds = append(cdds, res.acds...)
+		cdds = append(cdds, cddi)
+		cddi.copyDecl(w, ";\n")
+
+		w.WriteString(" {\n")
+		cddi.il++
+		cddi.indent(w)
+		w.WriteString("return " + fname + "(")
+
+		typ, dim, _ := cddi.TypeStr(r.Type())
+		w.WriteString("(" + typ + dimFuncPtr("", dim) + ")")
+		prs := make([]string, len(params))
+		for i, p := range params {
+			prs[i] = p.name
+		}
+		w.WriteString(strings.Join(prs, ", "))
+
+		w.WriteString(");\n")
+		cddi.il--
+		cddi.indent(w)
+		w.WriteString("}\n")
+		cddi.copyDef(w)
+		w.Reset()
+
+		cddi.Complexity = -1
+		cddi.addObject(f, true)
+	}
+
 	res, params := cdd.signature(sig, true, orgNames)
 
 	w.WriteString(res.typ)
 	w.WriteByte(' ')
-	w.WriteString(dimFuncPtr(fname+params, res.dim))
+	w.WriteString(dimFuncPtr(fname+params.String(), res.dim))
 
 	cdds = append(cdds, res.acds...)
 	cdds = append(cdds, cdd)
