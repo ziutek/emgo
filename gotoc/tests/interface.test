@@ -30,22 +30,10 @@ struct foo$A_struct {
 // decl
 typedef slice foo$Array;
 // decl
-int foo$Array$Len$(uintptr a$);
-// def
-int foo$Array$Len$(uintptr a$) {
-	return foo$Array$Len((foo$Array*)a$);
-}
-// decl
 int foo$Array$Len(foo$Array *a$);
 // def
 int foo$Array$Len(foo$Array *a$) {
 	return foo$Array$Len(a$);
-}
-// decl
-interface foo$Array$Elem$(uintptr a$, int i$);
-// def
-interface foo$Array$Elem$(uintptr a$, int i$) {
-	return foo$Array$Elem((foo$Array*)a$, i$);
 }
 // decl
 interface foo$Array$Elem(foo$Array *a$, int i$);
@@ -54,19 +42,67 @@ interface foo$Array$Elem(foo$Array *a$, int i$) {
 	return INTERFACE(((int*)(*a$).arr)[i$], 0x19100092);
 }
 // decl
-foo$A foo$Array$A$(uintptr a$);
-// def
-foo$A foo$Array$A$(uintptr a$) {
-	return foo$Array$A((foo$Array*)a$);
-}
-// decl
 foo$A foo$Array$A(foo$Array *a$);
 // def
 foo$A foo$Array$A(foo$Array *a$) {
 	return (foo$A){
 		.I$ = INTERFACE(a$, 0xe2fae8e6),
-		.Elem = foo$A$Elem$,
-		.Len = foo$A$Len$
+		.Elem = (interface (*)(uintptr, int))foo$A$Elem,
+		.Len = (int (*)(uintptr))foo$A$Len
+	};
+}
+// end
+
+// Go code:
+type Stringer interface {
+	String() string
+}
+
+type B byte
+
+func (b B) String() string {
+	return "byte"
+}
+
+func (b B) B() Stringer {
+	return b
+}
+// C code:
+// decl
+struct foo$Stringer_struct;
+typedef struct foo$Stringer_struct foo$Stringer;
+// def
+struct foo$Stringer_struct {
+	interface I$;
+	string (*String)(uintptr);
+};
+// decl
+typedef byte foo$B;
+// decl
+string foo$B$String$(uintptr b$);
+// def
+string foo$B$String$(uintptr b$) {
+	return foo$B$String((foo$B)b$);
+}
+// decl
+string foo$B$String(foo$B b$);
+// def
+string foo$B$String(foo$B b$) {
+	return EGSTR("byte");
+}
+// decl
+foo$Stringer foo$B$B$(uintptr b$);
+// def
+foo$Stringer foo$B$B$(uintptr b$) {
+	return foo$B$B((foo$B)b$);
+}
+// decl
+foo$Stringer foo$B$B(foo$B b$);
+// def
+foo$Stringer foo$B$B(foo$B b$) {
+	return (foo$Stringer){
+		.I$ = INTERFACE(b$, 0x91ea9690),
+		.String = foo$Stringer$String$
 	};
 }
 // end

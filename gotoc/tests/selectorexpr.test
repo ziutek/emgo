@@ -74,22 +74,10 @@ func (t *T) F() func(T) {
 // decl
 typedef int foo$T;
 // decl
-void foo$T$Add$(uintptr t$, foo$T a$);
-// def
-void foo$T$Add$(uintptr t$, foo$T a$) {
-	return foo$T$Add((foo$T*)t$, a$);
-}
-// decl
 void foo$T$Add(foo$T *t$, foo$T a$);
 // def
 void foo$T$Add(foo$T *t$, foo$T a$) {
 	*t$ += a$;
-}
-// decl
-void (*foo$T$F$(uintptr t$))(foo$T);
-// def
-void (*foo$T$F$(uintptr t$))(foo$T) {
-	return foo$T$F((foo$T*)t$);
 }
 // decl
 void (*foo$T$F(foo$T *t$))(foo$T);
@@ -112,12 +100,6 @@ func F() func(*T, T) {
 // C code:
 // decl
 typedef int foo$T;
-// decl
-void foo$T$Add$(uintptr t$, foo$T a$);
-// def
-void foo$T$Add$(uintptr t$, foo$T a$) {
-	return foo$T$Add((foo$T*)t$, a$);
-}
 // decl
 void foo$T$Add(foo$T *t$, foo$T a$);
 // def

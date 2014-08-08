@@ -42,12 +42,6 @@ func (i I) F(k int) int {
 // decl
 typedef int foo$I;
 // decl
-int foo$I$F$(uintptr i$, int k$);
-// def
-int foo$I$F$(uintptr i$, int k$) {
-	return foo$I$F((foo$I)i$, k$);
-}
-// decl
 int foo$I$F(foo$I i$, int k$);
 // def
 int foo$I$F(foo$I i$, int k$) {

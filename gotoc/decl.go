@@ -19,7 +19,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	fname := cdd.NameStr(f, true)
 	w := new(bytes.Buffer)
 
-	if r := sig.Recv(); r != nil {
+	if r := sig.Recv(); r != nil && cdd.gtc.siz.Sizeof(r.Type()) != cdd.gtc.siz.Sizeof(ptr) {
 		fi := types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$", sig)
 		cddi := gtc.newCDD(fi, FuncDecl, il)
 		finame := cddi.NameStr(fi, true)
