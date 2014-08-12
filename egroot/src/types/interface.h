@@ -1,13 +1,11 @@
 typedef struct {
-	uintptr val;
-	uint32 typ;
+	uintptr val$;
+	uint32 typ$;
 } interface;
 
-#define INTERFACE(e, t) (interface){(uintptr)(e), t}
-
-#define NILI (interface){}
+#define INTERFACE(v, t) (interface){.val$ = (uintptr)(v), .typ$ = t}
 
 typedef struct {
-	interface I$;
+	interface;
 	string (*Error)(uintptr);
 } error;

@@ -120,7 +120,7 @@ writeType:
 		w.WriteString("struct {\n")
 		cdd.il++
 		cdd.indent(w)
-		w.WriteString("interface I$;\n")
+		w.WriteString("interface;\n")
 		for i := 0; i < t.NumMethods(); i++ {
 			cdd.indent(w)
 			f := t.Method(i)

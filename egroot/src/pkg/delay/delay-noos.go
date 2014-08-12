@@ -2,15 +2,18 @@
 
 package delay
 
-import "runtime/noos"
+import (
+	"log"
+	"runtime/noos"
+)
 
 func millisec(ms int) {
 	if noos.MaxTasks() == 0 {
-		panic("no support for delay.Millisec")
+		log.Panic("no support for delay.Millisec")
 	}
 	period := noos.TickPeriod()
 	if period == 0 {
-		panic("tick period not configured in runtime/noos")
+		log.Panic("tick period not configured in runtime/noos")
 	}
 	dt := ms / period
 	if dt == 0 {

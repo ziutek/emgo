@@ -3,6 +3,7 @@ package gotoc
 import (
 	"bytes"
 	"go/ast"
+	"go/token"
 	"io"
 
 	"code.google.com/p/go.tools/go/exact"
@@ -226,4 +227,12 @@ func (cdd *CDD) exprType(e ast.Expr) types.Type {
 
 func (cdd *CDD) exprValue(e ast.Expr) exact.Value {
 	return cdd.gtc.exprValue(e)
+}
+
+func (cdd *CDD) exit(pos token.Pos, f string, a ...interface{}) {
+	cdd.gtc.exit(pos, f, a...)
+}
+
+func (cdd *CDD) notImplemented(n ast.Node, tl ...types.Type) {
+	cdd.gtc.notImplemented(n, tl...)
 }

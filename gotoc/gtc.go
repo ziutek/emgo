@@ -2,10 +2,12 @@ package gotoc
 
 import (
 	"bytes"
-	"go/ast"
-	"io"
-	"strconv"
 	"fmt"
+	"go/ast"
+	"go/token"
+	"io"
+	"os"
+	"strconv"
 
 	"code.google.com/p/go.tools/go/exact"
 	"code.google.com/p/go.tools/go/types"
@@ -13,19 +15,20 @@ import (
 
 // GTC stores information from type checker need for translation.
 type GTC struct {
+	fset        *token.FileSet
 	pkg         *types.Package
 	ti          *types.Info
 	inlineThres int
 	nextInt     chan int
-	siz         types.Sizes 
+	siz         types.Sizes
 
 	tupNames map[string]struct{} // TODO: safe concurent acces is need
 }
 
-func NewGTC(pkg *types.Package, ti *types.Info, siz types.Sizes) *GTC {
+func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.Sizes) *GTC {
 	c := make(chan int, 1)
 	go nextIntGen(c)
-	return &GTC{pkg: pkg, ti: ti, nextInt: c, tupNames: make(map[string]struct{}), siz: siz}
+	return &GTC{fset: fset, pkg: pkg, ti: ti, nextInt: c, tupNames: make(map[string]struct{}), siz: siz}
 }
 
 func (cc *GTC) SetInlineThres(thres int) {
@@ -54,12 +57,16 @@ func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 		}
 		gtc.export(cddm, cddm[o])
 	}
-	if !cdd.Inline {
+	if cdd.Typ != FuncDecl || !cdd.Inline {
 		return
 	}
 	for o := range cdd.FuncBodyUses {
 		if gtc.isImported(o) {
 			continue
+		}
+		if cddm[o] == nil {
+			fmt.Printf("%s\n", cdd.Def)
+			cdd.exit(o.Pos(), "cddm[o] == nil")
 		}
 		gtc.export(cddm, cddm[o])
 	}
@@ -340,4 +347,19 @@ func (gtc *GTC) exprType(e ast.Expr) types.Type {
 
 func (gtc *GTC) exprValue(e ast.Expr) exact.Value {
 	return gtc.ti.Types[e].Value
+}
+
+func (gtc *GTC) exit(pos token.Pos, f string, a ...interface{}) {
+	fmt.Fprint(os.Stderr, gtc.fset.Position(pos), " ")
+	fmt.Fprintf(os.Stderr, f+"\n", a...)
+	os.Exit(1)
+}
+
+func (gtc *GTC) notImplemented(n ast.Node, tl ...types.Type) {
+	fmt.Fprint(os.Stderr, gtc.fset.Position(n.Pos()))
+	fmt.Fprintf(os.Stderr, "not implemented: %T\n", n)
+	for _, t := range tl {
+		fmt.Fprintf(os.Stderr, "	in case of: %T\n", t)
+	}
+	os.Exit(1)
 }

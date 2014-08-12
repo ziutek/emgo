@@ -5,6 +5,7 @@ import (
 	"stm32/f4/periph"
 	"stm32/f4/setup"
 	"stm32/f4/usart"
+	"stm32/serial"
 )
 
 var udev = usart.USART2
@@ -35,18 +36,9 @@ func init() {
 	udev.EnableRx()
 }
 
-func writeByte(b byte) {
-	udev.Store(b)
-	for udev.Status()&usart.TxEmpty == 0 {
-	}
-}
-
 func main() {
-	for {
-		writeByte('H')
-		writeByte('i')
-		writeByte('!')
-		writeByte('\r')
-		writeByte('\n')
+	s := serial.NewSerial(udev)
+	for _, r := range []byte{'A', 'l', 'a', '!', '\r', '\n'} {
+		s.WriteByte(r)
 	}
 }

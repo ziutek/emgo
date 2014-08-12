@@ -158,21 +158,25 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Ty
 
 	case types.MethodVal:
 		fun = sel.Obj().Type()
-		cdd.Name(w, sel.Obj(), true)
+		recv = e.X
 		rtyp := fun.(*types.Signature).Recv().Type()
-		if _, ok := rtyp.(*types.Pointer); ok {
+
+		switch rtyp.Underlying().(type) {
+		case *types.Interface:
+			// Method with interface receiver.
+			w.WriteString(e.Sel.Name)
+
+		case *types.Pointer:
 			// Method with pointer receiver.
-			if sel.Indirect() {
-				recv = e.X
-			} else {
+			cdd.Name(w, sel.Obj(), true)
+			if !sel.Indirect() {
 				recv = &ast.UnaryExpr{Op: token.AND, X: e.X}
 			}
-		} else {
+		default:
 			// Method with non-pointer receiver.
+			cdd.Name(w, sel.Obj(), true)
 			if sel.Indirect() {
 				recv = &ast.UnaryExpr{Op: token.MUL, X: e.X}
-			} else {
-				recv = e.X
 			}
 		}
 
@@ -180,7 +184,7 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Ty
 		cdd.Name(w, sel.Obj(), true)
 
 	default:
-		notImplemented(e)
+		cdd.notImplemented(e)
 	}
 	return
 }
@@ -208,7 +212,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 			return "clen", ""
 
 		default:
-			notImplemented(ast.NewIdent("len"), t)
+			cdd.notImplemented(ast.NewIdent("len"), t)
 		}
 
 	case "cap":
@@ -220,7 +224,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 			return "ccap", ""
 
 		default:
-			notImplemented(ast.NewIdent("cap"), t)
+			cdd.notImplemented(ast.NewIdent("cap"), t)
 		}
 
 	case "copy":
@@ -274,7 +278,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 			return name, k + ", " + e
 
 		default:
-			notImplemented(ast.NewIdent(name))
+			cdd.notImplemented(ast.NewIdent(name))
 		}
 
 	}
@@ -312,16 +316,32 @@ func (cdd *CDD) funStr(fe ast.Expr, args []ast.Expr) (fs string, ft types.Type, 
 func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 	switch t := underlying(cdd.exprType(e.Fun)).(type) {
 	case *types.Signature:
-		fun, _, recv, _ := cdd.funStr(e.Fun, e.Args)
-		if fun == "" {
-			w.WriteString(recv)
-		}
-		w.WriteString(fun)
-		w.WriteByte('(')
+		fun, _, recv, rexpr := cdd.funStr(e.Fun, e.Args)
+
 		comma := false
-		if recv != "" {
+		reci := false
+		rtyp := cdd.exprType(rexpr)
+		if rtyp != nil {
+			_, reci = rtyp.Underlying().(*types.Interface)
+		}
+		if reci {
+			w.WriteString("({")
+			dim, _ := cdd.Type(w, rtyp)
+			w.WriteString(" " + dimFuncPtr("r", dim) + " = ")
 			w.WriteString(recv)
+			w.WriteString("; r." + fun + "(r.val$")
 			comma = true
+		} else {
+			if fun == "" {
+				w.WriteString(recv)
+			}
+			w.WriteString(fun)
+
+			w.WriteByte('(')
+			if recv != "" {
+				w.WriteString(recv)
+				comma = true
+			}
 		}
 		tup := t.Params()
 		for i, a := range e.Args {
@@ -339,10 +359,13 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 			if i < tup.Len() {
 				at = tup.At(i).Type()
 			}
-			cdd.Expr(w, a, at)
+			cdd.interfaceExpr(w, a, at)
 			i++
 		}
 		w.WriteByte(')')
+		if reci {
+			w.WriteString(";})")
+		}
 
 	default:
 		arg := e.Args[0]
@@ -489,7 +512,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.Expr(w, e.X, nil)
 
 	case *ast.TypeAssertExpr:
-		notImplemented(e)
+		cdd.notImplemented(e)
 
 	case *ast.CompositeLit:
 		typ := cdd.exprType(e)
@@ -514,7 +537,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			nilT = nil
 
 		default:
-			notImplemented(e, t)
+			cdd.notImplemented(e, t)
 		}
 
 		for i, el := range e.Elts {
@@ -601,7 +624,7 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 
 	case *types.Map:
 		indT = t.Key()
-		notImplemented(&ast.IndexExpr{}, t)
+		cdd.notImplemented(&ast.IndexExpr{}, t)
 
 	default:
 		panic(t)
@@ -779,9 +802,11 @@ func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
 	case *types.Pointer, *types.Basic, *types.Signature:
 		// Pointer or unsafe.Pointer
 		w.WriteString("nil")
-		
+
 	case *types.Interface:
-		w.WriteString("NILI")
+		w.WriteByte('(')
+		cdd.Type(w, t)
+		w.WriteString("){}")
 
 	default:
 		w.WriteString("'unknown nil")

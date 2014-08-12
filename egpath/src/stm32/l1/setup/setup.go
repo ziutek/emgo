@@ -1,6 +1,8 @@
 package setup
 
 import (
+	"log"
+
 	"stm32/l1/clock"
 	"stm32/l1/flash"
 )
@@ -30,7 +32,7 @@ func Performance(osc int) {
 	case 24:
 		mul = clock.PLLMul3
 	default:
-		panic("wrong frequency of external resonator")
+		log.Panic("wrong frequency of external resonator")
 	}
 
 	flash.SetAcc64(true)

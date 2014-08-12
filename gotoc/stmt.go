@@ -2,7 +2,6 @@ package gotoc
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/token"
 	"hash/crc32"
@@ -29,19 +28,16 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 		} else {
 			retTyp = tup.At(0).Type()
 		}
-		resExpr := s.Results[0]
-		resTyp := cdd.exprType(resExpr)
-		e := cdd.ExprStr(resExpr, retTyp)
-		cdd.interfaceExpr(w, e, resTyp, retTyp)
+		cdd.interfaceExpr(w, s.Results[0], retTyp)
 		w.WriteString(";\n")
 
 	default:
 		w.WriteString("return (" + resultT + "){")
-		for i, e := range s.Results {
+		for i, expr := range s.Results {
 			if i > 0 {
 				w.WriteString(", ")
 			}
-			cdd.Expr(w, e, tup.At(i).Type())
+			cdd.interfaceExpr(w, expr, tup.At(i).Type())
 		}
 		w.WriteString("};\n")
 	}
@@ -53,16 +49,27 @@ var (
 	crcTab = crc32.MakeTable(crc32.Castagnoli)
 )
 
-// BUG: not good for type id
-func (cdd *CDD) typeHash(typ types.Type) string {
+// BUG: crc32 isn't good for type id
+func (cdd *CDD) typeHash(typ types.Type) uint32 {
 	buf := new(bytes.Buffer)
 	dim, _ := cdd.Type(buf, typ)
 	buf.WriteString(dimFuncPtr("", dim))
-	crc := crc32.Checksum(buf.Bytes(), crcTab)
-	return "0x" + strconv.FormatUint(uint64(crc), 16)
+	return crc32.Checksum(buf.Bytes(), crcTab)
 }
 
-func (cdd *CDD) interfaceExpr(w *bytes.Buffer, e string, etyp, ityp types.Type) {
+func findMethod(t *types.Named, name string) *types.Func {
+	for i := 0; i < t.NumMethods(); i++ {
+		f := t.Method(i)
+		if f.Name() == name {
+			return f
+		}
+	}
+	return nil
+}
+
+func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
+	etyp := cdd.exprType(expr)
+	e := cdd.ExprStr(expr, ityp)
 	if ityp == nil || etyp == nil {
 		w.WriteString(e)
 		return
@@ -71,46 +78,96 @@ func (cdd *CDD) interfaceExpr(w *bytes.Buffer, e string, etyp, ityp types.Type) 
 		w.WriteString(e)
 		return
 	}
-	if cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.siz.Sizeof(ptr) {
-		panic(fmt.Sprintf(
-			"can't assign value of type %s to interface of type %s",
-			etyp, ityp,
-		))
-	}
-
-	tid := cdd.typeHash(etyp)
-	it := ityp.Underlying().(*types.Interface)
-	if it.Empty() {
-		w.WriteString("INTERFACE(" + e + ", " + tid + ")")
+	if b, ok := (etyp).(*types.Basic); ok && b.Kind() == types.UntypedNil {
+		w.WriteString(e)
 		return
 	}
 
-	w.WriteByte('(')
-	cdd.Type(w, ityp)
-	w.WriteString("){\n")
-	cdd.il++
-
-	cdd.indent(w)
-	w.WriteString(".I$ = INTERFACE(" + e + ", " + tid + ")")
-
-	for i := 0; i < it.NumMethods(); i++ {
-		f := it.Method(i)
-		w.WriteString(",\n")
-		cdd.indent(w)
-		w.WriteString("." + f.Name() + " = ")
-		cdd.Name(w, f, true)
-		w.WriteByte('$')
+	_, eii := etyp.Underlying().(*types.Interface)
+	if !eii && cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.siz.Sizeof(ptr) {
+		cdd.exit(
+			expr.Pos(), "can't assign value of type %v to interface of type %v",
+			etyp, ityp,
+		)
 	}
 
-	w.WriteByte('\n')
-	cdd.il--
-	cdd.indent(w)
-	w.WriteByte('}')
+	tid := "0x" + strconv.FormatUint(uint64(cdd.typeHash(etyp)), 16)
+	it := ityp.Underlying().(*types.Interface)
+
+	if eii {
+		if it.Empty() {
+			w.WriteString(e + ".interface")
+		} else {
+			w.WriteString("({\n")
+			cdd.il++
+			cdd.indent(w)
+			cdd.Type(w, etyp)
+			w.WriteString(" e = " + e + ";\n")
+			cdd.indent(w)
+			w.WriteByte('(')
+			cdd.Type(w, ityp)
+			w.WriteString("){\n")
+			cdd.il++
+			cdd.indent(w)
+			w.WriteString(".interface = e.interface")
+			for i := 0; i < it.NumMethods(); i++ {
+				f := it.Method(i)
+				w.WriteString(",\n")
+				cdd.indent(w)
+				fname := f.Name()
+				w.WriteString("." + fname + " = e." + fname)
+			}
+			w.WriteByte('\n')
+			cdd.il--
+			cdd.indent(w)
+			w.WriteString("}\n")
+			cdd.il--
+			cdd.indent(w)
+			w.WriteString("})")
+		}
+	} else {
+		if it.Empty() {
+			w.WriteString("INTERFACE(" + e + ", " + tid + ")")
+		} else {
+			w.WriteByte('(')
+			cdd.Type(w, ityp)
+			w.WriteString("){\n")
+			cdd.il++
+			cdd.indent(w)
+			w.WriteString(".interface = INTERFACE(" + e + ", " + tid + ")")
+			for i := 0; i < it.NumMethods(); i++ {
+				f := it.Method(i)
+				w.WriteString(",\n")
+				cdd.indent(w)
+				fname := f.Name()
+				w.WriteString("." + fname + " = ")
+				if t, ok := etyp.(*types.Pointer); ok {
+					etyp = t.Elem()
+				}
+				m := findMethod(etyp.(*types.Named), fname)
+				recv := m.Type().(*types.Signature).Recv().Type()
+				if cdd.gtc.siz.Sizeof(recv) != cdd.gtc.siz.Sizeof(ptr) {
+					cdd.Name(w, m, true)
+					w.WriteByte('$')
+					continue
+				}
+				w.WriteByte('(')
+				dim, _ := cdd.Type(w, f.Type())
+				w.WriteString(dimFuncPtr("", dim))
+				w.WriteByte(')')
+				cdd.Name(w, m, true)
+			}
+			w.WriteByte('\n')
+			cdd.il--
+			cdd.indent(w)
+			w.WriteByte('}')
+		}
+	}
 }
 
-func (cdd *CDD) interfaceExprStr(e string, etyp, ityp types.Type) string {
+func (cdd *CDD) interfaceExprStr(expr ast.Expr, ityp types.Type) string {
 	buf := new(bytes.Buffer)
-	cdd.interfaceExpr(buf, e, etyp, ityp)
+	cdd.interfaceExpr(buf, expr, ityp)
 	return buf.String()
 }
 
@@ -177,8 +234,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					continue
 				}
 				t := cdd.exprType(s.Lhs[i])
-				et := cdd.exprType(e)
-				rhs[i] = cdd.interfaceExprStr(cdd.ExprStr(e, t), et, t)
+				rhs[i] = cdd.interfaceExprStr(e, t)
 				typ[i] = t
 			}
 		}
@@ -431,7 +487,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			}
 
 		default:
-			notImplemented(s, xt)
+			cdd.notImplemented(s, xt)
 		}
 
 		updateEA(cdd.BlockStmt(w, s.Body, resultT, tup))
@@ -588,7 +644,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				case *ast.ExprStmt:
 					c = r.X.(*ast.UnaryExpr).X
 				default:
-					notImplemented(s)
+					cdd.notImplemented(s)
 				}
 				cdd.Expr(w, c, nil)
 				w.WriteString(", ")
@@ -704,7 +760,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				w.WriteString("SELRECV(" + strconv.Itoa(i) + ");\n")
 
 			default:
-				notImplemented(s)
+				cdd.notImplemented(s)
 			}
 			for _, s = range cc.Body {
 				cdd.indent(w)
@@ -721,7 +777,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteString("}\n")
 
 	default:
-		notImplemented(s)
+		cdd.notImplemented(s)
 	}
 	return
 }

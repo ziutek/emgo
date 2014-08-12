@@ -4,6 +4,7 @@ package runtime
 
 import (
 	"builtin"
+	"log"
 	"runtime/noos"
 	"sync"
 	"unsafe"
@@ -30,7 +31,7 @@ func alloc(n int, size, align uintptr) unsafe.Pointer {
 	p := alignUp(h, align)
 	m := size + (p - h)
 	if m > uintptr(len(noos.Heap)) {
-		panic("out of memory")
+		log.Panic("out of memory")
 	}
 	noos.Heap = noos.Heap[m:]
 	hm.Unlock()

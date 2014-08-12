@@ -1,17 +1,19 @@
 package strconv
 
+import "log"
+
 const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
 
 func panicIfZero(n int) {
 	if n == 0 {
-		panic("strconv: buffer too short")
+		log.Panic("strconv: buffer too short")
 	}
 }
 
 // Utoa converts u to string and returns offset to most significant digit.
 func Utoa(buf []byte, u uint32, base int) int {
 	if base < 2 || base > len(digits) {
-		panic("strconv: illegal base")
+		log.Panic("strconv: illegal base")
 	}
 	b := uint32(base)
 	n := len(buf)
@@ -40,7 +42,7 @@ func Itoa(buf []byte, i int32, base int) int {
 		return Utoa(buf, uint32(i), base)
 	}
 	if len(buf) == 0 {
-		panic("strconv: buffer too short")
+		log.Panic("strconv: buffer too short")
 	}
 	n := Utoa(buf[1:], uint32(-i), base)
 	buf[n] = '-'

@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"log"
 	"stm32/f4/clock"
 	"stm32/f4/flash"
 )
@@ -21,16 +22,16 @@ var (
 // clock used by SDIO, RNG and USBFS is equal to 48 MHz (required by USBFS).
 func Performance(osc, mul, sdiv int) {
 	if osc < 4 || osc > 26 || osc&1 != 0 {
-		panic("wrong frequency of external resonator")
+		log.Panic("wrong frequency of external resonator")
 	}
 	if mul < 96 || mul > 216 || mul%24 != 0 {
-		panic("wrong PLL multipler")
+		log.Panic("wrong PLL multipler")
 	}
 	switch sdiv {
 	case 2, 4, 6, 8:
 		// OK.
 	default:
-		panic("wrong PLL divider for SysClk")
+		log.Panic("wrong PLL divider for SysClk")
 	}
 
 	// Set HSI as system clock source

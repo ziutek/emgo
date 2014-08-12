@@ -23,7 +23,7 @@ struct foo$A_struct;
 typedef struct foo$A_struct foo$A;
 // def
 struct foo$A_struct {
-	interface I$;
+	interface;
 	interface (*Elem)(uintptr, int);
 	int (*Len)(uintptr);
 };
@@ -46,9 +46,9 @@ foo$A foo$Array$A(foo$Array *a$);
 // def
 foo$A foo$Array$A(foo$Array *a$) {
 	return (foo$A){
-		.I$ = INTERFACE(a$, 0xe2fae8e6),
-		.Elem = (interface (*)(uintptr, int))foo$A$Elem,
-		.Len = (int (*)(uintptr))foo$A$Len
+		.interface = INTERFACE(a$, 0xe2fae8e6),
+		.Elem = (interface(*)(uintptr, int))foo$Array$Elem,
+		.Len = (int(*)(uintptr))foo$Array$Len
 	};
 }
 // end
@@ -73,7 +73,7 @@ struct foo$Stringer_struct;
 typedef struct foo$Stringer_struct foo$Stringer;
 // def
 struct foo$Stringer_struct {
-	interface I$;
+	interface;
 	string (*String)(uintptr);
 };
 // decl
@@ -101,8 +101,53 @@ foo$Stringer foo$B$B(foo$B b$);
 // def
 foo$Stringer foo$B$B(foo$B b$) {
 	return (foo$Stringer){
-		.I$ = INTERFACE(b$, 0x91ea9690),
-		.String = foo$Stringer$String$
+		.interface = INTERFACE(b$, 0x91ea9690),
+		.String = foo$B$String$
 	};
+}
+// end
+
+// Go code:
+type A interface {
+	A() string
+}
+
+type AB interface {
+	A() string
+	B() int
+}
+
+func ToA(ab AB) A {
+	return ab
+}
+// C code:
+// decl
+struct foo$A_struct;
+typedef struct foo$A_struct foo$A;
+// def
+struct foo$A_struct {
+	interface;
+	string (*A)(uintptr);
+};
+// decl
+struct foo$AB_struct;
+typedef struct foo$AB_struct foo$AB;
+// def
+struct foo$AB_struct {
+	interface;
+	string (*A)(uintptr);
+	int (*B)(uintptr);
+};
+// decl
+foo$A foo$ToA(foo$AB ab$);
+// def
+foo$A foo$ToA(foo$AB ab$) {
+	return ({
+		foo$AB e = ab$;
+		(foo$A){
+			.interface = e.interface,
+			.A = e.A
+		}
+	});
 }
 // end

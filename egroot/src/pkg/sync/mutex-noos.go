@@ -3,6 +3,7 @@
 package sync
 
 import (
+	"log"
 	"runtime/noos"
 	"sync/atomic"
 	"sync/barrier"
@@ -20,7 +21,7 @@ func (m *Mutex) lock() {
 			state = m.state
 		}
 	}
-	unlocked, locked := state&^1, state|1	
+	unlocked, locked := state&^1, state|1
 	for {
 		if atomic.CompareAndSwapUintptr(&m.state, unlocked, locked) {
 			return
@@ -29,12 +30,11 @@ func (m *Mutex) lock() {
 	}
 }
 
-
 func (m *Mutex) unlock() {
 	unlocked := m.state &^ 1
 	barrier.Memory()
 	if atomic.AddUintptr(&m.state, ^uintptr(0)) != unlocked {
-		panic("sync: unlock of unlocked mutex")
+		log.Panic("sync: unlock of unlocked mutex")
 	}
 	noos.Event(unlocked).Send()
 }

@@ -1,22 +1,11 @@
 package gotoc
 
 import (
-	"fmt"
-	"go/ast"
 	"io"
-	"os"
 	"strings"
 
 	"code.google.com/p/go.tools/go/types"
 )
-
-func notImplemented(n ast.Node, tl ...types.Type) {
-	fmt.Fprintf(os.Stderr, "not implemented: %T\n", n)
-	for _, t := range tl {
-		fmt.Fprintf(os.Stderr, "	in case of: %T\n", t)
-	}
-	os.Exit(1)
-}
 
 func upath(path string) string {
 	return strings.Replace(path, "/", "$", -1)

@@ -204,7 +204,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				if i < len(vals) {
 					val = vals[i]
 					if t, ok := cdd.exprType(val).(*types.Tuple); ok {
-						notImplemented(s, t)
+						gtc.notImplemented(s, t)
 					}
 				}
 				if indent {

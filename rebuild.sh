@@ -6,10 +6,10 @@ rm -rf egroot/pkg/* egpath/pkg/*
 
 list="
 builtin
+log
 
 sync/atomic
 sync/barrier
-delay
 mmio
 bits
 
@@ -22,11 +22,13 @@ cortexm/sleep
 runtime/noos
 sync
 runtime
-
+delay
 
 strconv
 math/matrix32
 math/rand
+
+stm32/serial
 
 stm32/stlink
 stm32/f4/clock
@@ -36,6 +38,7 @@ stm32/f4/periph
 stm32/f4/setup
 stm32/f4/exti
 stm32/f4/irq
+stm32/f4/usart
 
 stm32/l1/clock
 stm32/l1/flash
@@ -45,6 +48,7 @@ stm32/l1/setup
 stm32/l1/exti
 stm32/l1/irq
 "
+
 for p in $list; do 
 	echo $p
 	egc $p
