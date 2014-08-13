@@ -41,7 +41,7 @@ func init() {
 	udev.EnableIRQs(usart.TxEmptyIRQ)
 	udev.Enable()
 	udev.EnableTx()
-	
+	udev.EnableRx()
 }
 
 var s = serial.NewSerial(udev)

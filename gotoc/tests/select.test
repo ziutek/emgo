@@ -42,6 +42,7 @@ int foo$S(chan c1$, chan c2$) {
 	int d$ = 0;
 	{
 		switch(0) {
+			__label__ case0, case1, case2, case3, case4, case5, case6, dflt;
 		case 0:;
 			RECVINIT(0, c1$, int);
 			RECVINIT(1, c2$, int);
@@ -59,22 +60,22 @@ int foo$S(chan c1$, chan c2$) {
 				SENDCOMM(5),
 				SENDCOMM(6)
 			);
-			CASE(0) {
+			case0:{
 				int i$ = SELRECV(0);
 				return i$;
 				break;
 			}
-			CASE(1) {
+			case1:{
 				d$ = SELRECV(1);
 				break;
 				break;
 			}
-			CASE(2) {
+			case2:{
 				SELRECV(2);
 				return -7;
 				break;
 			}
-			CASE(3) {
+			case3:{
 				int$$bool tmp0 = SELRECVOK(3);
 				int i$ = tmp0._0;
 				bool ok$ = tmp0._1;
@@ -84,23 +85,23 @@ int foo$S(chan c1$, chan c2$) {
 				return i$;
 				break;
 			}
-			CASE(4) {
+			case4:{
 				int$$bool tmp1 = SELRECVOK(4);
 				int i$ = tmp1._0;
 				return i$;
 				break;
 			}
-			CASE(5) {
+			case5:{
 				SELSEND(5);
 				return -1;
 				break;
 			}
-			CASE(6) {
+			case6:{
 				SELSEND(6);
 				return -2;
 				break;
 			}
-			DEFAULT {
+			dflt:{
 				goto end;
 				break;
 			}
@@ -152,6 +153,7 @@ int foo$S(chan c1$, chan c2$) {
 	loop$:;
 		loop$_continue: while (true) {
 			switch(0) {
+				__label__ case0, case1;
 			case 0:;
 				RECVINIT(0, c1$, int);
 				RECVINIT(1, c2$, int);
@@ -159,7 +161,7 @@ int foo$S(chan c1$, chan c2$) {
 					RECVCOMM(0),
 					RECVCOMM(1)
 				);
-				CASE(0) {
+				case0:{
 					int$$bool tmp0 = SELRECVOK(0);
 					int i$ = tmp0._0;
 					bool ok$ = tmp0._1;
@@ -169,7 +171,7 @@ int foo$S(chan c1$, chan c2$) {
 					return i$;
 					break;
 				}
-				CASE(1) {
+				case1:{
 					SELRECV(1);
 					if (i$ == 0) {
 						goto loop$_continue;

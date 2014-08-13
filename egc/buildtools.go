@@ -83,7 +83,7 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	cflags := CFLAGS{
 		Dbg:  "-g",
 		Opt:  "-O" + optLevel + " -fplan9-extensions -fno-delete-null-pointer-checks -fno-common -freg-struct-return -ffunction-sections",
-		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-unused-label",
+		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-unused-label -Wno-maybe-uninitialized",
 		Incl: "-I" + filepath.Join(ctx.GOROOT, "src"),
 	}
 	ldflags := LDFLAGS{

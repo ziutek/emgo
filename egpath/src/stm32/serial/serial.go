@@ -22,13 +22,13 @@ func NewSerial(dev USART) *Serial {
 }
 
 func (s *Serial) IRQ() {
-	tx, _ := s.dev.Ready()
-	/*if rx {
+	tx, rx := s.dev.Ready()
+	if rx {
 		select {
 		case s.rx <- s.dev.Load():
 		default:
 		}
-	}*/
+	}
 	if tx {
 		select {
 		case b := <-s.tx:

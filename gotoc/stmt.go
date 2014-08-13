@@ -606,15 +606,30 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 	case *ast.SelectStmt:
 		w.WriteString("switch(0) {\n")
+		cdd.il++
+		cdd.indent(w)
+		w.WriteString("__label__ ")
+		dflt := false
+		for i, stmt := range s.Body.List {
+			if i != 0 {
+				w.WriteString(", ")
+			}
+			if stmt.(*ast.CommClause).Comm == nil {
+				dflt = true
+				w.WriteString("dflt")
+			} else {
+				w.WriteString("case" + strconv.Itoa(i))
+			}
+		}
+		w.WriteString(";\n")
+		cdd.il--
 		cdd.indent(w)
 		w.WriteString("case 0:;\n")
 		cdd.il++
-		dflt := false
+
 		for i, stmt := range s.Body.List {
 			switch s := stmt.(*ast.CommClause).Comm.(type) {
 			case nil:
-				dflt = true
-				continue
 
 			case *ast.SendStmt:
 				cdd.indent(w)
@@ -688,10 +703,11 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			cdd.indent(w)
 			switch s.(type) {
 			case nil:
-				w.WriteString("DEFAULT {\n")
+				w.WriteString("dflt")
 			default:
-				w.WriteString("CASE(" + strconv.Itoa(i) + ") {\n")
+				w.WriteString("case" + strconv.Itoa(i))
 			}
+			w.WriteString(":{\n")
 			cdd.il++
 			switch s := s.(type) {
 			case nil:

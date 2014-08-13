@@ -79,10 +79,6 @@ typedef builtin$Chan chan;
 #define SELECT(commList...) _SELECT(nil, commList)
 
 #define NBSELECT(commList...) _SELECT(&&dflt, commList)
-	
-#define CASE(i) case##i:
-
-#define DEFAULT dflt:
 
 #define SELSEND(i) do {                	  \
 	if (r._1 != nil) {                    \
