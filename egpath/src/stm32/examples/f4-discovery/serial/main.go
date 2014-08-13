@@ -1,6 +1,8 @@
 package main
 
 import (
+	"delay"
+
 	"stm32/f4/gpio"
 	"stm32/f4/irq"
 	"stm32/f4/periph"
@@ -19,7 +21,6 @@ const (
 var (
 	leds = gpio.D
 	udev = usart.USART2
-	uirq = irq.USART2
 )
 
 func init() {
@@ -52,31 +53,41 @@ func init() {
 	io.SetMode(rx, gpio.Alt)
 	io.SetAltFunc(rx, gpio.USART2)
 
-	udev.SetBaudRate(115200)
+	udev.SetBaudRate(9600)
 	udev.SetWordLen(usart.Bits8)
 	udev.SetParity(usart.None)
 	udev.SetStopBits(usart.Stop1b)
-	udev.EnableIRQs(usart.TxEmptyIRQ | usart.RxNotEmptyIRQ)
+	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.SetMode(usart.Tx | usart.Rx)
 	udev.Enable()
 
-	uirq.UseHandler(sirq)
-	uirq.Enable()
+	irq.USART2.UseHandler(sirq)
+	irq.USART2.Enable()
 }
 
 var s = serial.NewSerial(udev, 3, 3)
 
+func blink(c, d int) {
+	leds.SetBit(c)
+	if d > 0 {
+		delay.Millisec(d)
+	} else {
+		delay.Loop(-10e6 * d)
+	}
+	leds.ClearBit(c)
+}
+
 func sirq() {
-	leds.SetBit(Blue)
+	/*if s.IRQ() != nil {
+		blink(Red, -1)
+	}*/
 	s.IRQ()
 }
 
 func main() {
-	udev.Store('.')
 	for {
-		for _, r := range []byte{'A', 'l', 'a', '!', '\r', '\n'} {
-			s.WriteByte(r)
-			leds.SetBit(Red)
-		}
+		b, _ := s.ReadByte()
+		s.WriteByte(b)
+		blink(Green, 50)
 	}
 }

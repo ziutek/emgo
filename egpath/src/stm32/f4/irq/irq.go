@@ -38,6 +38,7 @@ const (
 	I2C1Er
 	I2C2Ev
 	I2C2Er
+	SPI1
 	SPI2
 	USART1
 	USART2

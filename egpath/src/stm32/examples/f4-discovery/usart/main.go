@@ -41,11 +41,16 @@ func writeByte(b byte) {
 	}
 }
 
+func readByte() byte {
+	for udev.Status()&usart.RxNotEmpty == 0 {
+	}
+	return udev.Load()
+}
+
 func main() {
 	for {
-		writeByte('H')
-		writeByte('i')
-		writeByte('!')
+		b := readByte()
+		writeByte(b)
 		writeByte('\r')
 		writeByte('\n')
 	}

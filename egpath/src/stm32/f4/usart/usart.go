@@ -152,7 +152,17 @@ func (u *Dev) Load() byte {
 	return byte(u.d)
 }
 
+// Ready is need to implements stm32/serial.USART interface.
 func (u *Dev) Ready() (tx, rx bool) {
 	s := u.Status()
 	return s&TxEmpty != 0, s&RxNotEmpty != 0
+}
+
+// SetTxIRQ is need to implements stm32/serial.USART interface.
+func (u *Dev) TxIRQ(enabled bool) {
+	if enabled {
+		u.EnableIRQs(TxEmptyIRQ)
+	} else {
+		u.DisableIRQs(TxEmptyIRQ)
+	}
 }

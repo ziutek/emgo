@@ -2,9 +2,10 @@
 package serial
 
 type USART interface {
-	Store(byte)
+	Store(b byte)
 	Load() byte
 	Ready() (tx, rx bool)
+	TxIRQ(enable bool)
 }
 
 type Serial struct {
@@ -21,12 +22,27 @@ func NewSerial(dev USART, txlen, rxlen int) *Serial {
 	return s
 }
 
-func (s *Serial) IRQ() {
+type Error int
+
+const (
+	RxBufErr Error = iota
+)
+
+var errStr = [...]string{
+	"Rx buffer is full",
+}
+
+func (e Error) Error() string {
+	return errStr[e]
+}
+
+func (s *Serial) IRQ() (err error) {
 	tx, rx := s.dev.Ready()
 	if rx {
 		select {
 		case s.rx <- s.dev.Load():
 		default:
+			err = RxBufErr
 		}
 	}
 	if tx {
@@ -34,11 +50,20 @@ func (s *Serial) IRQ() {
 		case b := <-s.tx:
 			s.dev.Store(b)
 		default:
+			s.dev.TxIRQ(false)
 		}
+	} else {
+		s.dev.TxIRQ(true)
 	}
+	return
 }
 
 func (s *Serial) WriteByte(b byte) error {
 	s.tx <- b
+	s.IRQ()
 	return nil
+}
+
+func (s *Serial) ReadByte() (byte, error) {
+	return <-s.rx, nil
 }
