@@ -44,7 +44,7 @@ func init() {
 	udev.EnableRx()
 }
 
-var s = serial.NewSerial(udev)
+var s = serial.NewSerial(udev, 3, 3)
 
 func sirq() {
 	s.IRQ()

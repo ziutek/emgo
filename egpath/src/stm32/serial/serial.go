@@ -13,11 +13,11 @@ type Serial struct {
 	rx  chan byte
 }
 
-func NewSerial(dev USART) *Serial {
+func NewSerial(dev USART, txlen, rxlen int) *Serial {
 	s := new(Serial)
 	s.dev = dev
-	s.tx = make(chan byte, 1)
-	s.rx = make(chan byte, 1)
+	s.tx = make(chan byte, txlen)
+	s.rx = make(chan byte, rxlen)
 	return s
 }
 
