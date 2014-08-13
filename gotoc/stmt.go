@@ -508,9 +508,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		updateEnd(cdd.ReturnStmt(w, s, resultT, tup))
 
 	case *ast.SwitchStmt:
-		w.WriteString("switch(0) {\n")
-		cdd.indent(w)
-		w.WriteString("case 0:;\n")
+		w.WriteString("switch(0){case 0:{\n")
 		cdd.il++
 
 		if s.Init != nil {
@@ -570,7 +568,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 		cdd.il--
 		cdd.indent(w)
-		w.WriteString("}\n")
+		w.WriteString("}}\n")
 
 		if label != "" {
 			cdd.label(w, label, "_break")
@@ -605,7 +603,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteString(");\n")
 
 	case *ast.SelectStmt:
-		w.WriteString("switch(0) {\n")
+		w.WriteString("switch(0){case 0:{\n")
 		cdd.il++
 		cdd.indent(w)
 		w.WriteString("__label__ ")
@@ -622,10 +620,6 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			}
 		}
 		w.WriteString(";\n")
-		cdd.il--
-		cdd.indent(w)
-		w.WriteString("case 0:;\n")
-		cdd.il++
 
 		for i, stmt := range s.Body.List {
 			switch s := stmt.(*ast.CommClause).Comm.(type) {
@@ -780,7 +774,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 		cdd.il--
 		cdd.indent(w)
-		w.WriteString("}\n")
+		w.WriteString("}}\n")
 
 	default:
 		cdd.notImplemented(s)

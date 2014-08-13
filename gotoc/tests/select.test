@@ -41,9 +41,8 @@ int foo$S(chan c1$, chan c2$);
 int foo$S(chan c1$, chan c2$) {
 	int d$ = 0;
 	{
-		switch(0) {
+		switch(0){case 0:{
 			__label__ case0, case1, case2, case3, case4, case5, case6, dflt;
-		case 0:;
 			RECVINIT(0, c1$, int);
 			RECVINIT(1, c2$, int);
 			RECVINIT(2, c1$, int);
@@ -105,7 +104,7 @@ int foo$S(chan c1$, chan c2$) {
 				goto end;
 				break;
 			}
-		}
+		}}
 		goto end;
 	}
 end:
@@ -152,9 +151,8 @@ int foo$S(chan c1$, chan c2$) {
 	{
 	loop$:;
 		loop$_continue: while (true) {
-			switch(0) {
+			switch(0){case 0:{
 				__label__ case0, case1;
-			case 0:;
 				RECVINIT(0, c1$, int);
 				RECVINIT(1, c2$, int);
 				SELECT(
@@ -179,7 +177,7 @@ int foo$S(chan c1$, chan c2$) {
 					return i$;
 					break;
 				}
-			}
+			}}
 		}
 	loop$_break:;
 		return 0;

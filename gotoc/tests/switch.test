@@ -13,8 +13,7 @@ func Switch(i int) int {
 int foo$Switch(int i$);
 // def
 int foo$Switch(int i$) {
-	switch(0) {
-	case 0:;
+	switch(0){case 0:{
 		bool tag = true;
 		if (tag == ((i$+1)<2)) {
 			++(i$);
@@ -24,7 +23,7 @@ int foo$Switch(int i$) {
 			--(i$);
 			break;
 		}
-	}
+	}}
 	return i$;
 }
 // end
@@ -46,8 +45,7 @@ func Switch(i int) int {
 int foo$Switch(int i$);
 // def
 int foo$Switch(int i$) {
-	switch(0) {
-	case 0:;
+	switch(0){case 0:{
 		int tag = i$;
 		if (tag == 1) {
 			return 10;
@@ -61,7 +59,7 @@ int foo$Switch(int i$) {
 			break;
 			break;
 		}
-	}
+	}}
 	return 0;
 }
 // end
@@ -93,8 +91,7 @@ int foo$Switch(int i$);
 // def
 int foo$Switch(int i$) {
 	while ((i$<10)) {
-		switch(0) {
-		case 0:;
+		switch(0){case 0:{
 			int tag = i$;
 			if (tag == 1) {
 				i$ += 1;
@@ -112,7 +109,7 @@ int foo$Switch(int i$) {
 				break;
 				break;
 			}
-		}
+		}}
 	}
 	return i$;
 }
