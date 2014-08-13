@@ -25,14 +25,14 @@ func init() {
 	io.SetOutSpeed(tx, gpio.Fast)
 	io.SetAltFunc(tx, gpio.USART2)
 	io.SetMode(rx, gpio.Alt)
+	io.SetAltFunc(rx, gpio.USART2)
 
 	udev.SetBaudRate(115200)
 	udev.SetWordLen(usart.Bits8)
 	udev.SetParity(usart.None)
 	udev.SetStopBits(usart.Stop1b)
+	udev.SetMode(usart.Tx | usart.Rx)
 	udev.Enable()
-	udev.EnableTx()
-	udev.EnableRx()
 }
 
 func writeByte(b byte) {

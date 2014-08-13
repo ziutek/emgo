@@ -100,7 +100,7 @@ func (u *Dev) SetParity(p Parity) {
 type IRQ byte
 
 const (
-	IdleIEQ IRQ = 1 << iota
+	IdleIRQ IRQ = 1 << iota
 	RxNotEmptyIRQ
 	TxDoneIRQ
 	TxEmptyIRQ
@@ -116,20 +116,19 @@ func (u *Dev) DisableIRQs(irqs IRQ) {
 	u.c1 &^= uint32(irqs) << 4
 }
 
-func (u *Dev) EnableTx() {
-	u.c1 |= 1 << 3
+type Mode byte
+
+const (
+	Rx = 1 << 2
+	Tx = 1 << 3
+)
+
+func (u *Dev) Mode() Mode {
+	return Mode(u.c1 & (3 << 2))
 }
 
-func (u *Dev) DisableTx() {
-	u.c1 &^= 1 << 3
-}
-
-func (u *Dev) EnableRx() {
-	u.c1 |= 1 << 2
-}
-
-func (u *Dev) DisableRx() {
-	u.c1 &^= 1 << 2
+func (u *Dev) SetMode(m Mode) {
+	u.c1 = u.c1&^(3<<2) | uint32(m)
 }
 
 type StopBits byte
