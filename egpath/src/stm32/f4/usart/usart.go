@@ -1,8 +1,9 @@
 package usart
 
 import (
-	"stm32/f4/setup"
 	"unsafe"
+
+	"stm32/f4/setup"
 )
 
 type Dev struct {
@@ -96,44 +97,23 @@ func (u *Dev) SetParity(p Parity) {
 	u.c1 = u.c1&^(3<<9) | uint32(p)<<9
 }
 
-func (u *Dev) SetParityErrIRQ(enabled bool) {
-	if enabled {
-		u.c1 |= 1 << 8
-	} else {
-		u.c1 &^= 1 << 8
-	}
+type IRQ byte
+
+const (
+	IdleIEQ IRQ = 1 << iota
+	RxNotEmptyIRQ
+	TxDoneIRQ
+	TxEmptyIRQ
+	ParityErrIRQ
+)
+
+func (u *Dev) EnableIRQs(irqs IRQ) {
+	u.c1 |= uint32(irqs) << 4
 }
 
-func (u *Dev) SetTxEmptyIRQ(enabled bool) {
-	if enabled {
-		u.c1 |= 1 << 7
-	} else {
-		u.c1 &^= 1 << 7
-	}
-}
+func (u *Dev) DisableIRQs(irqs IRQ) {
 
-func (u *Dev) SetTxDoneIRQ(enabled bool) {
-	if enabled {
-		u.c1 |= 1 << 6
-	} else {
-		u.c1 &^= 1 << 6
-	}
-}
-
-func (u *Dev) SetRxNotEmptyIRQ(enabled bool) {
-	if enabled {
-		u.c1 |= 1 << 5
-	} else {
-		u.c1 &^= 1 << 5
-	}
-}
-
-func (u *Dev) SetIdleIRQ(enabled bool) {
-	if enabled {
-		u.c1 |= 1 << 4
-	} else {
-		u.c1 &^= 1 << 4
-	}
+	u.c1 &^= uint32(irqs) << 4
 }
 
 func (u *Dev) EnableTx() {
@@ -171,4 +151,9 @@ func (u *Dev) Store(b byte) {
 
 func (u *Dev) Load() byte {
 	return byte(u.d)
+}
+
+func (u *Dev) Ready() (tx, rx bool) {
+	s := u.Status()
+	return s&TxEmpty != 0, s&RxNotEmpty != 0
 }

@@ -1,13 +1,10 @@
 // Package serial provides high level interface to STM32 USART devices.
 package serial
 
-import "delay"
-
 type USART interface {
 	Store(byte)
 	Load() byte
-	SetTxEmptyIRQ(bool)
-	SetRxNotEmptyIRQ(bool)
+	Ready() (tx, rx bool)
 }
 
 type Serial struct {
@@ -24,8 +21,24 @@ func NewSerial(dev USART) *Serial {
 	return s
 }
 
+func (s *Serial) IRQ() {
+	tx, _ := s.dev.Ready()
+	/*if rx {
+		select {
+		case s.rx <- s.dev.Load():
+		default:
+		}
+	}*/
+	if tx {
+		select {
+		case b := <-s.tx:
+			s.dev.Store(b)
+		default:
+		}
+	}
+}
+
 func (s *Serial) WriteByte(b byte) error {
-	s.dev.Store(b)
-	delay.Millisec(20)
+	s.tx <- b
 	return nil
 }
