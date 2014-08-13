@@ -1,6 +1,6 @@
 typedef struct {
 	uintptr val$;
-	uint32 typ$;
+	uintptr typ$;
 } interface;
 
 #define INTERFACE(v, t) (interface){.val$ = (uintptr)(v), .typ$ = t}

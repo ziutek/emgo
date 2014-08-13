@@ -1,0 +1,22 @@
+// Go code:
+func Goto(i int) int {
+	if i > 0 {
+		goto next
+	}
+	return 0
+next:
+	return 1
+}
+// C code:
+// decl
+int foo$Goto(int i$);
+// def
+int foo$Goto(int i$) {
+	if ((i$>0)) {
+		goto next$;
+	}
+	return 0;
+next$:;
+	return 1;
+}
+// end

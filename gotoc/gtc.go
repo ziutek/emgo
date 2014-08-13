@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"hash/crc32"
+	"hash/crc64"
 	"io"
 	"os"
 	"strconv"
@@ -21,6 +23,7 @@ type GTC struct {
 	inlineThres int
 	nextInt     chan int
 	siz         types.Sizes
+	sizPtr      int64
 
 	tupNames map[string]struct{} // TODO: safe concurent acces is need
 }
@@ -28,14 +31,20 @@ type GTC struct {
 func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.Sizes) *GTC {
 	c := make(chan int, 1)
 	go nextIntGen(c)
-	return &GTC{fset: fset, pkg: pkg, ti: ti, nextInt: c, tupNames: make(map[string]struct{}), siz: siz}
+	return &GTC{
+		fset:     fset,
+		pkg:      pkg,
+		ti:       ti,
+		nextInt:  c,
+		tupNames: make(map[string]struct{}),
+		siz:      siz,
+		sizPtr:   siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
+	}
 }
 
 func (cc *GTC) SetInlineThres(thres int) {
 	cc.inlineThres = thres
 }
-
-
 
 func (gtc *GTC) File(f *ast.File) (cdds []*CDD) {
 	for _, d := range f.Decls {
@@ -362,4 +371,20 @@ func (gtc *GTC) notImplemented(n ast.Node, tl ...types.Type) {
 		fmt.Fprintf(os.Stderr, "	in case of: %T\n", t)
 	}
 	os.Exit(1)
+}
+
+var (
+	crc32tab = crc32.MakeTable(crc32.Castagnoli)
+	crc64tab = crc64.MakeTable(crc64.ECMA)
+)
+
+// BUG: CRC isn't good for type id
+func (gtc *GTC) typeHash(typ string, dim []string) uint64 {
+	buf := new(bytes.Buffer)
+	buf.WriteString(typ)
+	buf.WriteString(dimFuncPtr("", dim))
+	if gtc.sizPtr == 4 {
+		return uint64(crc32.Checksum(buf.Bytes(), crc32tab))
+	}
+	return crc64.Checksum(buf.Bytes(), crc64tab)
 }

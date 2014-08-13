@@ -41,9 +41,9 @@ func egc(ppath string) error {
 var uptodate = make(map[string]struct{})
 
 var (
-	cortexmSizes = &types.StdSizes{4, 8}
+	cortexmSizes = &gotoc.StdSizes{4, 8}
 
-	sizesMap = map[string]*types.StdSizes{
+	sizesMap = map[string]types.Sizes{
 		"cortexm0":  cortexmSizes,
 		"cortexm3":  cortexmSizes,
 		"cortexm4":  cortexmSizes,

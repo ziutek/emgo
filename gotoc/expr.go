@@ -832,3 +832,118 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 	}
 	w.WriteString(lhs + " " + op + " " + rhs)
 }
+
+func findMethod(t *types.Named, name string) *types.Func {
+	for i := 0; i < t.NumMethods(); i++ {
+		f := t.Method(i)
+		if f.Name() == name {
+			return f
+		}
+	}
+	return nil
+}
+
+func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
+	etyp := cdd.exprType(expr)
+	e := cdd.ExprStr(expr, ityp)
+	if ityp == nil || etyp == nil {
+		w.WriteString(e)
+		return
+	}
+	if _, ok := ityp.Underlying().(*types.Interface); !ok || types.Identical(ityp, etyp) {
+		w.WriteString(e)
+		return
+	}
+	if b, ok := (etyp).(*types.Basic); ok && b.Kind() == types.UntypedNil {
+		w.WriteString(e)
+		return
+	}
+
+	_, eii := etyp.Underlying().(*types.Interface)
+	if !eii && cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.sizPtr {
+		cdd.exit(
+			expr.Pos(), "can't assign value of type %v to interface of type %v",
+			etyp, ityp,
+		)
+	}
+
+	ets, edim := cdd.TypeStr(etyp)
+	tid := "0x" + strconv.FormatUint(cdd.gtc.typeHash(ets, edim), 16)
+	it := ityp.Underlying().(*types.Interface)
+
+	if eii {
+		if it.Empty() {
+			w.WriteString(e + ".interface")
+		} else {
+			w.WriteString("({\n")
+			cdd.il++
+			cdd.indent(w)
+			w.WriteString(ets + " e = " + e + ";\n")
+			cdd.indent(w)
+			w.WriteByte('(')
+			cdd.Type(w, ityp)
+			w.WriteString("){\n")
+			cdd.il++
+			cdd.indent(w)
+			w.WriteString(".interface = e.interface")
+			for i := 0; i < it.NumMethods(); i++ {
+				f := it.Method(i)
+				w.WriteString(",\n")
+				cdd.indent(w)
+				fname := f.Name()
+				w.WriteString("." + fname + " = e." + fname)
+			}
+			w.WriteByte('\n')
+			cdd.il--
+			cdd.indent(w)
+			w.WriteString("}\n")
+			cdd.il--
+			cdd.indent(w)
+			w.WriteString("})")
+		}
+	} else {
+		if it.Empty() {
+			w.WriteString("INTERFACE(" + e + ", " + tid + ")")
+		} else {
+			w.WriteByte('(')
+			cdd.Type(w, ityp)
+			w.WriteString("){\n")
+			cdd.il++
+			cdd.indent(w)
+			w.WriteString(".interface = INTERFACE(" + e + ", " + tid + ")")
+			for i := 0; i < it.NumMethods(); i++ {
+				f := it.Method(i)
+				w.WriteString(",\n")
+				cdd.indent(w)
+				fname := f.Name()
+				w.WriteString("." + fname + " = ")
+				if t, ok := etyp.(*types.Pointer); ok {
+					etyp = t.Elem()
+				}
+				m := findMethod(etyp.(*types.Named), fname)
+				recv := m.Type().(*types.Signature).Recv().Type()
+				if cdd.gtc.siz.Sizeof(recv) != cdd.gtc.sizPtr {
+					cdd.Name(w, m, true)
+					w.WriteByte('$')
+					continue
+				}
+				w.WriteByte('(')
+				dim := cdd.Type(w, f.Type())
+				w.WriteString(dimFuncPtr("", dim))
+				w.WriteByte(')')
+				cdd.Name(w, m, true)
+			}
+			w.WriteByte('\n')
+			cdd.il--
+			cdd.indent(w)
+			w.WriteByte('}')
+		}
+	}
+	return
+}
+
+func (cdd *CDD) interfaceExprStr(expr ast.Expr, ityp types.Type) string {
+	buf := new(bytes.Buffer)
+	cdd.interfaceExpr(buf, expr, ityp)
+	return buf.String()
+}

@@ -1,7 +1,7 @@
 typedef struct {
 	unsafe$Pointer arr;
-	uint len;
-	uint cap;
+	uintptr len;
+	uintptr cap;
 } slice;
 
 #define _SLICE_LOW(expr, typ, low) \

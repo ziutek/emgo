@@ -50,7 +50,7 @@ func (s sampleDecl) testDecl() error {
 		return err
 	}
 
-	gtc := gotoc.NewGTC(fset, pkg, ti, &types.StdSizes{4, 8})
+	gtc := gotoc.NewGTC(fset, pkg, ti, &gotoc.StdSizes{4, 8})
 	var cdds []*gotoc.CDD
 	for _, d := range f.Decls {
 		for _, cdd :=  range gtc.Decl(d, 0) {
