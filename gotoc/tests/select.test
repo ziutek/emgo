@@ -25,6 +25,17 @@ func S(c1, c2 chan int) (d int) {
 }
 // C code:
 // decl
+struct int$$bool_struct;
+typedef struct int$$bool_struct int$$bool;
+// def
+#ifndef int$$bool$
+#define int$$bool$
+struct int$$bool_struct {
+	int _0;
+	bool _1;
+};
+#endif
+// decl
 int foo$S(chan c1$, chan c2$);
 // def
 int foo$S(chan c1$, chan c2$) {
@@ -99,17 +110,6 @@ int foo$S(chan c1$, chan c2$) {
 end:
 	return d$;
 }
-// decl
-struct int$$bool_struct;
-typedef struct int$$bool_struct int$$bool;
-// def
-#ifndef int$$bool$
-#define int$$bool$
-struct int$$bool_struct {
-	int _0;
-	bool _1;
-};
-#endif
 // end
 
 // Go code:
@@ -132,6 +132,17 @@ loop:
 	return 0
 }
 // C code:
+// decl
+struct int$$bool_struct;
+typedef struct int$$bool_struct int$$bool;
+// def
+#ifndef int$$bool$
+#define int$$bool$
+struct int$$bool_struct {
+	int _0;
+	bool _1;
+};
+#endif
 // decl
 int foo$S(chan c1$, chan c2$);
 // def
@@ -172,15 +183,4 @@ int foo$S(chan c1$, chan c2$) {
 		return 0;
 	}
 }
-// decl
-struct int$$bool_struct;
-typedef struct int$$bool_struct int$$bool;
-// def
-#ifndef int$$bool$
-#define int$$bool$
-struct int$$bool_struct {
-	int _0;
-	bool _1;
-};
-#endif
 // end

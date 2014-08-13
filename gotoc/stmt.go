@@ -50,9 +50,9 @@ var (
 )
 
 // BUG: crc32 isn't good for type id
-func (cdd *CDD) typeHash(typ types.Type) uint32 {
+func typeHash(typ string, dim []string) uint32 {
 	buf := new(bytes.Buffer)
-	dim, _ := cdd.Type(buf, typ)
+	buf.WriteString(typ)
 	buf.WriteString(dimFuncPtr("", dim))
 	return crc32.Checksum(buf.Bytes(), crcTab)
 }
@@ -91,7 +91,8 @@ func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
 		)
 	}
 
-	tid := "0x" + strconv.FormatUint(uint64(cdd.typeHash(etyp)), 16)
+	ets, edim := cdd.TypeStr(etyp)
+	tid := "0x" + strconv.FormatUint(uint64(typeHash(ets, edim)), 16)
 	it := ityp.Underlying().(*types.Interface)
 
 	if eii {
@@ -101,8 +102,7 @@ func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
 			w.WriteString("({\n")
 			cdd.il++
 			cdd.indent(w)
-			cdd.Type(w, etyp)
-			w.WriteString(" e = " + e + ";\n")
+			w.WriteString(ets + " e = " + e + ";\n")
 			cdd.indent(w)
 			w.WriteByte('(')
 			cdd.Type(w, ityp)
@@ -152,7 +152,7 @@ func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
 					continue
 				}
 				w.WriteByte('(')
-				dim, _ := cdd.Type(w, f.Type())
+				dim := cdd.Type(w, f.Type())
 				w.WriteString(dimFuncPtr("", dim))
 				w.WriteByte(')')
 				cdd.Name(w, m, true)
@@ -163,6 +163,7 @@ func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
 			w.WriteByte('}')
 		}
 	}
+	return
 }
 
 func (cdd *CDD) interfaceExprStr(expr ast.Expr, ityp types.Type) string {
@@ -180,12 +181,11 @@ func (cdd *CDD) label(w *bytes.Buffer, label, suffix string) {
 	cdd.il++
 }
 
-func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup *types.Tuple) (end bool, acds []*CDD) {
-	updateEA := func(e bool, a []*CDD) {
+func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup *types.Tuple) (end bool) {
+	updateEnd := func(e bool) {
 		if e {
 			end = true
 		}
-		acds = append(acds, a...)
 	}
 
 	cdd.Complexity++
@@ -211,8 +211,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 		if rhsIsTuple {
 			tup := cdd.exprType(s.Rhs[0]).(*types.Tuple)
-			tupName, _, a := cdd.tupleName(tup)
-			acds = append(acds, a...)
+			tupName, _ := cdd.tupleName(tup)
 			w.WriteString(tupName)
 			tupName = "tmp" + cdd.gtc.uniqueId()
 			w.WriteString(" " + tupName + " = ")
@@ -247,8 +246,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				if name == "_$" {
 					lhs[i] = "_"
 				} else {
-					t, dim, a := cdd.TypeStr(typ[i])
-					acds = append(acds, a...)
+					t, dim := cdd.TypeStr(typ[i])
 					lhs[i] = t + " " + dimFuncPtr(name, dim)
 				}
 			}
@@ -268,8 +266,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					w.WriteString(rhs[i])
 					w.WriteString(");\n")
 				} else {
-					dim, a := cdd.Type(w, t)
-					acds = append(acds, a...)
+					dim := cdd.Type(w, t)
 					tmp := "tmp" + cdd.gtc.uniqueId()
 					w.WriteString(" " + dimFuncPtr(tmp, dim))
 					w.WriteString(" = " + rhs[i] + ";\n")
@@ -323,19 +320,19 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			w.WriteString("{\n")
 			cdd.il++
 			cdd.indent(w)
-			updateEA(cdd.Stmt(w, s.Init, "", resultT, tup))
+			updateEnd(cdd.Stmt(w, s.Init, "", resultT, tup))
 			cdd.indent(w)
 		}
 
 		w.WriteString("if (")
 		cdd.Expr(w, s.Cond, nil)
 		w.WriteString(") ")
-		updateEA(cdd.BlockStmt(w, s.Body, resultT, tup))
+		updateEnd(cdd.BlockStmt(w, s.Body, resultT, tup))
 		if s.Else == nil {
 			w.WriteByte('\n')
 		} else {
 			w.WriteString(" else ")
-			updateEA(cdd.Stmt(w, s.Else, "", resultT, tup))
+			updateEnd(cdd.Stmt(w, s.Else, "", resultT, tup))
 		}
 
 		if s.Init != nil {
@@ -351,7 +348,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteString(");\n")
 
 	case *ast.BlockStmt:
-		updateEA(cdd.BlockStmt(w, s, resultT, tup))
+		updateEnd(cdd.BlockStmt(w, s, resultT, tup))
 		w.WriteByte('\n')
 
 	case *ast.ForStmt:
@@ -359,7 +356,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			w.WriteString("{\n")
 			cdd.il++
 			cdd.indent(w)
-			updateEA(cdd.Stmt(w, s.Init, "", resultT, tup))
+			updateEnd(cdd.Stmt(w, s.Init, "", resultT, tup))
 			cdd.indent(w)
 		}
 
@@ -380,7 +377,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			cdd.il++
 			cdd.indent(w)
 		}
-		updateEA(cdd.BlockStmt(w, s.Body, resultT, tup))
+		updateEnd(cdd.BlockStmt(w, s.Body, resultT, tup))
 		w.WriteByte('\n')
 
 		if s.Post != nil {
@@ -388,7 +385,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				cdd.label(w, label, "_continue")
 			}
 			cdd.indent(w)
-			updateEA(cdd.Stmt(w, s.Post, "", resultT, tup))
+			updateEnd(cdd.Stmt(w, s.Post, "", resultT, tup))
 			cdd.il--
 			cdd.indent(w)
 			w.WriteString("}\n")
@@ -472,7 +469,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					vt := t.(interface {
 						Elem() types.Type
 					}).Elem()
-					dim, _ := cdd.Type(w, vt)
+					dim := cdd.Type(w, vt)
 					w.WriteByte(' ')
 					w.WriteString(dimFuncPtr(cdd.ExprStr(s.Value, nil), dim))
 				} else {
@@ -490,7 +487,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			cdd.notImplemented(s, xt)
 		}
 
-		updateEA(cdd.BlockStmt(w, s.Body, resultT, tup))
+		updateEnd(cdd.BlockStmt(w, s.Body, resultT, tup))
 		w.WriteByte('\n')
 
 		if s.Value != nil {
@@ -508,7 +505,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 
 	case *ast.ReturnStmt:
-		end = cdd.ReturnStmt(w, s, resultT, tup)
+		updateEnd(cdd.ReturnStmt(w, s, resultT, tup))
 
 	case *ast.SwitchStmt:
 		w.WriteString("switch(0) {\n")
@@ -518,7 +515,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 		if s.Init != nil {
 			cdd.indent(w)
-			updateEA(cdd.Stmt(w, s.Init, "", resultT, tup))
+			updateEnd(cdd.Stmt(w, s.Init, "", resultT, tup))
 		}
 
 		cdd.indent(w)
@@ -559,7 +556,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			}
 			for _, s := range cs.Body {
 				cdd.indent(w)
-				updateEA(cdd.Stmt(w, s, "", resultT, tup))
+				updateEnd(cdd.Stmt(w, s, "", resultT, tup))
 			}
 			if brk {
 				cdd.indent(w)
@@ -594,20 +591,18 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteString(";\n")
 
 	case *ast.GoStmt:
-		a := cdd.GoStmt(w, s)
-		acds = append(acds, a...)
+		cdd.GoStmt(w, s)
 
 	case *ast.SendStmt:
 		et := cdd.exprType(s.Chan).(*types.Chan).Elem()
 		w.WriteString("SEND(")
 		cdd.Expr(w, s.Chan, nil)
 		w.WriteString(", ")
-		dim, a := cdd.Type(w, et)
+		dim := cdd.Type(w, et)
 		w.WriteString(dimFuncPtr("", dim))
 		w.WriteString(", ")
 		cdd.Expr(w, s.Value, et)
 		w.WriteString(");\n")
-		acds = append(acds, a...)
 
 	case *ast.SelectStmt:
 		w.WriteString("switch(0) {\n")
@@ -627,12 +622,11 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				cdd.Expr(w, s.Chan, nil)
 				w.WriteString(", ")
 				et := cdd.exprType(s.Chan).(*types.Chan).Elem()
-				dim, a := cdd.Type(w, et)
+				dim := cdd.Type(w, et)
 				dimFuncPtr("", dim)
 				w.WriteString(", ")
 				cdd.Expr(w, s.Value, et)
 				w.WriteString(");\n")
-				acds = append(acds, a...)
 
 			default:
 				cdd.indent(w)
@@ -649,10 +643,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				cdd.Expr(w, c, nil)
 				w.WriteString(", ")
 				et := cdd.exprType(c).(*types.Chan).Elem()
-				dim, a := cdd.Type(w, et)
+				dim := cdd.Type(w, et)
 				dimFuncPtr("", dim)
 				w.WriteString(");\n")
-				acds = append(acds, a...)
 			}
 		}
 
@@ -713,9 +706,8 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				if len(s.Lhs) == 1 {
 					if name != "_$" {
 						if s.Tok == token.DEFINE {
-							dim, a := cdd.Type(w, cdd.exprType(s.Rhs[0]))
+							dim := cdd.Type(w, cdd.exprType(s.Rhs[0]))
 							w.WriteString(" " + dimFuncPtr(name, dim))
-							acds = append(acds, a...)
 						} else {
 							w.WriteString(name)
 						}
@@ -728,8 +720,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					var tup *types.Tuple
 					if name != "_$" || ok != "_$" {
 						tup = cdd.exprType(s.Rhs[0]).(*types.Tuple)
-						tupName, _, a := cdd.tupleName(tup)
-						acds = append(acds, a...)
+						tupName, _ := cdd.tupleName(tup)
 						w.WriteString(tupName + " ")
 						tmp = "tmp" + cdd.gtc.uniqueId()
 						w.WriteString(tmp + " = ")
@@ -738,9 +729,8 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					if name != "_$" {
 						cdd.indent(w)
 						if s.Tok == token.DEFINE {
-							dim, a := cdd.Type(w, tup.At(0).Type())
+							dim := cdd.Type(w, tup.At(0).Type())
 							w.WriteString(" " + dimFuncPtr(name, dim))
-							acds = append(acds, a...)
 						} else {
 							w.WriteString(name)
 						}
@@ -764,7 +754,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			}
 			for _, s = range cc.Body {
 				cdd.indent(w)
-				updateEA(cdd.Stmt(w, s, "", resultT, tup))
+				updateEnd(cdd.Stmt(w, s, "", resultT, tup))
 			}
 			cdd.indent(w)
 			w.WriteString("break;\n")
@@ -782,7 +772,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 	return
 }
 
-func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) (acds []*CDD) {
+func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 	c := s.Call
 	fs, ft, rs, re := cdd.funStr(c.Fun, c.Args)
 
@@ -853,7 +843,7 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) (acds []*CDD) {
 		if i > 0 {
 			w.WriteString(", ")
 		}
-		t, dim, _ := cdd.TypeStr(arg.t)
+		t, dim := cdd.TypeStr(arg.t)
 		w.WriteString(t + " " + dimFuncPtr("_"+strconv.Itoa(i), dim))
 	}
 	w.WriteString(") {\n")
@@ -879,8 +869,7 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) (acds []*CDD) {
 		if arg.r == "" {
 			continue
 		}
-		t, dim, a := cdd.TypeStr(arg.t)
-		acds = append(acds, a...)
+		t, dim := cdd.TypeStr(arg.t)
 
 		cdd.indent(w)
 		w.WriteString(t + " " + dimFuncPtr(arg.l, dim) + " = " + arg.r + ";\n")
@@ -902,12 +891,11 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) (acds []*CDD) {
 	return
 }
 
-func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string, tup *types.Tuple) (end bool, acds []*CDD) {
-	updateEA := func(e bool, a []*CDD) {
+func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string, tup *types.Tuple) (end bool) {
+	updateEnd := func(e bool) {
 		if e {
 			end = true
 		}
-		acds = append(acds, a...)
 	}
 
 	w.WriteString("{\n")
@@ -918,11 +906,11 @@ func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string, tu
 			label := s.Label.Name + "$"
 			cdd.label(w, label, "")
 			cdd.indent(w)
-			updateEA(cdd.Stmt(w, s.Stmt, label, resultT, tup))
+			updateEnd(cdd.Stmt(w, s.Stmt, label, resultT, tup))
 
 		default:
 			cdd.indent(w)
-			updateEA(cdd.Stmt(w, s, "", resultT, tup))
+			updateEnd(cdd.Stmt(w, s, "", resultT, tup))
 		}
 	}
 	cdd.il--

@@ -52,8 +52,10 @@ func (s sampleDecl) testDecl() error {
 
 	gtc := gotoc.NewGTC(fset, pkg, ti, &types.StdSizes{4, 8})
 	var cdds []*gotoc.CDD
-	for _, decl := range f.Decls {
-		cdds = append(cdds, gtc.Decl(decl, 0)...)
+	for _, d := range f.Decls {
+		for _, cdd :=  range gtc.Decl(d, 0) {
+			cdds = append(cdds, cdd.AllCDDS()...)
+		}
 	}
 
 	if len(cdds) < len(s.c) {

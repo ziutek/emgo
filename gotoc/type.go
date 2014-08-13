@@ -33,7 +33,7 @@ func dimFuncPtr(name string, dim []string) string {
 	return name
 }
 
-func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) (dim []string, acds []*CDD) {
+func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) (dim []string) {
 	direct := true
 
 writeType:
@@ -73,8 +73,7 @@ writeType:
 				w.WriteString(reflect.StructTag(tag).Get("C"))
 				w.WriteByte(' ')
 			}
-			d, a := cdd.Type(w, f.Type())
-			acds = append(acds, a...)
+			d := cdd.Type(w, f.Type())
 			if !f.Anonymous() {
 				w.WriteByte(' ')
 				name := dimFuncPtr(f.Name(), d)
@@ -92,9 +91,8 @@ writeType:
 
 	case *types.Array:
 		dim = append(dim, "["+strconv.FormatInt(t.Len(), 10)+"]")
-		d, a := cdd.Type(w, t.Elem())
+		d := cdd.Type(w, t.Elem())
 		dim = append(dim, d...)
-		acds = append(acds, a...)
 
 	case *types.Slice:
 		w.WriteString("slice")
@@ -110,7 +108,6 @@ writeType:
 		w.WriteString(res.typ)
 		dim = append(dim, params.String())
 		dim = append(dim, res.dim...)
-		acds = append(acds, res.acds...)
 
 	case *types.Interface:
 		if t.NumMethods() == 0 {
@@ -124,8 +121,7 @@ writeType:
 		for i := 0; i < t.NumMethods(); i++ {
 			cdd.indent(w)
 			f := t.Method(i)
-			d, a := cdd.Type(w, f.Type())
-			acds = append(acds, a...)
+			d := cdd.Type(w, f.Type())
 			w.WriteString(" " + dimFuncPtr(f.Name(), d) + ";\n")
 		}
 		cdd.il--
@@ -138,10 +134,10 @@ writeType:
 	return
 }
 
-func (cdd *CDD) TypeStr(typ types.Type) (string, []string, []*CDD) {
+func (cdd *CDD) TypeStr(typ types.Type) (string, []string) {
 	buf := new(bytes.Buffer)
-	dim, acds := cdd.Type(buf, typ)
-	return buf.String(), dim, acds
+	dim := cdd.Type(buf, typ)
+	return buf.String(), dim
 }
 
 type retVar struct {
@@ -154,7 +150,6 @@ type results struct {
 	typ      string
 	dim      []string
 	hasNames bool
-	acds     []*CDD
 }
 
 func (cdd *CDD) results(tup *types.Tuple) (res results) {
@@ -182,13 +177,13 @@ func (cdd *CDD) results(tup *types.Tuple) (res results) {
 		res.names[i] = name
 	}
 	if n > 1 {
-		res.typ, res.fields, res.acds = cdd.tupleName(tup)
+		res.typ, res.fields = cdd.tupleName(tup)
 		return
 	}
 	v := tup.At(0)
 	field0 := types.NewField(v.Pos(), v.Pkg(), "_0", v.Type(), false)
 	res.fields = []*types.Var{field0}
-	res.typ, res.dim, res.acds = cdd.TypeStr(v.Type())
+	res.typ, res.dim = cdd.TypeStr(v.Type())
 	return
 }
 
@@ -220,13 +215,11 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 		var (
 			typ  string
 			dim  []string
-			acds []*CDD
 		)
 		if _, ok := r.Type().Underlying().(*types.Interface); ok || pnames == orgNamesI {
 			typ = "uintptr"
 		} else {
-			typ, dim, acds = cdd.TypeStr(r.Type())
-			res.acds = append(res.acds, acds...)
+			typ, dim = cdd.TypeStr(r.Type())
 		}
 		var pname string
 		switch pnames {
@@ -250,8 +243,7 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 	if p := sig.Params(); p != nil {
 		for i, n := 0, p.Len(); i < n; i++ {
 			v := p.At(i)
-			typ, dim, acds := cdd.TypeStr(v.Type())
-			res.acds = append(res.acds, acds...)
+			typ, dim := cdd.TypeStr(v.Type())
 			var pname string
 			switch pnames {
 			case numNames:
@@ -287,16 +279,14 @@ func symToDol(r rune) rune {
 	return r
 }
 
-func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var, acds []*CDD) {
+func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var) {
 	n := tup.Len()
 	for i := 0; i < n; i++ {
 		if i != 0 {
 			tupName += "$$"
 		}
-		name, dim, a := cdd.TypeStr(tup.At(i).Type())
+		name, dim := cdd.TypeStr(tup.At(i).Type())
 		tupName += dimFuncPtr(name, dim)
-		acds = append(acds, a...)
-
 	}
 	tupName = strings.Map(symToDol, tupName)
 
@@ -319,7 +309,7 @@ func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var
 	acd := cdd.gtc.newCDD(o, TypeDecl, 0)
 	acd.structDecl(new(bytes.Buffer), tupName, s)
 	cdd.DeclUses[o] = true
-	acds = append(acds, acd)
+	cdd.acds = append(cdd.acds, acd)
 
 	return
 }

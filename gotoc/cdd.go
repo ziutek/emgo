@@ -42,6 +42,8 @@ type CDD struct {
 	init  bool // true if generated code will be placed in init() function
 	fbody bool // true if translation process in function body
 	dfsm  int8
+	
+	acds []*CDD // additional CDDs
 }
 
 func (gtc *GTC) newCDD(o types.Object, t DeclType, il int) *CDD {
@@ -235,4 +237,11 @@ func (cdd *CDD) exit(pos token.Pos, f string, a ...interface{}) {
 
 func (cdd *CDD) notImplemented(n ast.Node, tl ...types.Type) {
 	cdd.gtc.notImplemented(n, tl...)
+}
+func (cdd *CDD) AllCDDS() (cdds []*CDD) {
+	for _, a := range cdd.acds {
+		cdds = append(cdds, a.AllCDDS()...)
+	}
+	cdds = append(cdds, cdd)
+	return
 }

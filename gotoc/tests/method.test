@@ -8,16 +8,16 @@ func (t T) F() {
 // decl
 typedef byte foo$T;
 // decl
-void foo$T$F$(uintptr t$);
-// def
-void foo$T$F$(uintptr t$) {
-	return foo$T$F((foo$T)t$);
-}
-// decl
 void foo$T$F(foo$T t$);
 // def
 void foo$T$F(foo$T t$) {
 	foo$T$F(t$);
+}
+// decl
+void foo$T$F$(uintptr t$);
+// def
+void foo$T$F$(uintptr t$) {
+	return foo$T$F((foo$T)t$);
 }
 // end
 

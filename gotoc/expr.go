@@ -233,7 +233,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 			return "STRCPY", ""
 
 		case *types.Slice:
-			typ, dim, _ := cdd.TypeStr(t.Elem())
+			typ, dim := cdd.TypeStr(t.Elem())
 			return "SLICPY", typ + dimFuncPtr("", dim)
 
 		default:
@@ -241,7 +241,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 		}
 
 	case "new":
-		typ, dim, _ := cdd.TypeStr(cdd.exprType(args[0]))
+		typ, dim := cdd.TypeStr(cdd.exprType(args[0]))
 		args[0] = nil
 		return "NEW", typ + dimFuncPtr("", dim)
 
@@ -251,7 +251,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 
 		switch t := underlying(a0t).(type) {
 		case *types.Slice:
-			typ, dim, _ := cdd.TypeStr(t.Elem())
+			typ, dim := cdd.TypeStr(t.Elem())
 			name := "MAKESLI"
 			if len(args) == 3 {
 				name = "MAKESLIC"
@@ -259,7 +259,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 			return name, typ + dimFuncPtr("", dim)
 
 		case *types.Chan:
-			typ, dim, _ := cdd.TypeStr(t.Elem())
+			typ, dim := cdd.TypeStr(t.Elem())
 			typ += dimFuncPtr("", dim)
 			if len(args) == 1 {
 				typ += ", 0"
@@ -267,9 +267,9 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 			return "MAKECHAN", typ
 
 		case *types.Map:
-			typ, dim, _ := cdd.TypeStr(t.Key())
+			typ, dim := cdd.TypeStr(t.Key())
 			k := typ + dimFuncPtr("", dim)
-			typ, dim, _ = cdd.TypeStr(t.Elem())
+			typ, dim = cdd.TypeStr(t.Elem())
 			e := typ + dimFuncPtr("", dim)
 			name := "MAKEMAP"
 			if len(args) == 2 {
@@ -326,7 +326,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 		}
 		if reci {
 			w.WriteString("({")
-			dim, _ := cdd.Type(w, rtyp)
+			dim := cdd.Type(w, rtyp)
 			w.WriteString(" " + dimFuncPtr("r", dim) + " = ")
 			w.WriteString(recv)
 			w.WriteString("; r." + fun + "(r.val$")
@@ -385,7 +385,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 
 		default:
 			w.WriteString("((")
-			dim, _ := cdd.Type(w, typ)
+			dim := cdd.Type(w, typ)
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteString(")(")
 			cdd.Expr(w, arg, typ)
@@ -428,13 +428,13 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		if op == "<-" {
 			t := cdd.exprType(e.X).(*types.Chan).Elem()
 			if tup, ok := cdd.exprType(e).(*types.Tuple); ok {
-				tn, _, _ := cdd.tupleName(tup)
+				tn, _ := cdd.tupleName(tup)
 				w.WriteString("RECVOK(" + tn + ", ")
 				cdd.Expr(w, e.X, nil)
 				w.WriteByte(')')
 			} else {
 				w.WriteString("RECV(")
-				dim, _ := cdd.Type(w, t)
+				dim := cdd.Type(w, t)
 				w.WriteString(dimFuncPtr("", dim))
 				w.WriteString(", ")
 				cdd.Expr(w, e.X, nil)
@@ -524,7 +524,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 
 		case *types.Slice:
 			w.WriteString("(slice){(")
-			dim, _ := cdd.Type(w, t.Elem())
+			dim := cdd.Type(w, t.Elem())
 			dim = append([]string{"[]"}, dim...)
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteString("){")
@@ -596,6 +596,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 	default:
 		fmt.Fprintf(w, "!%v<%T>!", e, e)
 	}
+	return
 }
 
 func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Expr) {
@@ -613,7 +614,7 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 
 	case *types.Slice:
 		w.WriteString("((")
-		dim, _ := cdd.Type(w, t.Elem())
+		dim := cdd.Type(w, t.Elem())
 		dim = append([]string{"*"}, dim...)
 		w.WriteString(dimFuncPtr("", dim))
 		w.WriteByte(')')
@@ -671,7 +672,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			}
 			w.WriteString(sx)
 			w.WriteString(", ")
-			dim, _ := cdd.Type(w, t.Elem())
+			dim := cdd.Type(w, t.Elem())
 			dim = append([]string{"*"}, dim...)
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteString(", ")

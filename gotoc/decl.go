@@ -16,20 +16,20 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	f := gtc.object(d.Name).(*types.Func)
 	sig := f.Type().(*types.Signature)
 	cdd := gtc.newCDD(f, FuncDecl, il)
+	cdds = append(cdds, cdd)
 	fname := cdd.NameStr(f, true)
 	w := new(bytes.Buffer)
 
 	if r := sig.Recv(); r != nil && cdd.gtc.siz.Sizeof(r.Type()) != cdd.gtc.siz.Sizeof(ptr) {
 		fi := types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$", sig)
 		cddi := gtc.newCDD(fi, FuncDecl, il)
+		cdds = append(cdds, cddi)
 		finame := cddi.NameStr(fi, true)
 		res, params := cddi.signature(sig, true, orgNamesI)
 
 		w.WriteString(res.typ)
 		w.WriteByte(' ')
 		w.WriteString(dimFuncPtr(finame+params.String(), res.dim))
-		cdds = append(cdds, res.acds...)
-		cdds = append(cdds, cddi)
 		cddi.copyDecl(w, ";\n")
 
 		w.WriteString(" {\n")
@@ -37,7 +37,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		cddi.indent(w)
 		w.WriteString("return " + fname + "(")
 
-		typ, dim, _ := cddi.TypeStr(r.Type())
+		typ, dim := cddi.TypeStr(r.Type())
 		w.WriteString("(" + typ + dimFuncPtr("", dim) + ")")
 		prs := make([]string, len(params))
 		for i, p := range params {
@@ -61,9 +61,6 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	w.WriteString(res.typ)
 	w.WriteByte(' ')
 	w.WriteString(dimFuncPtr(fname+params.String(), res.dim))
-
-	cdds = append(cdds, res.acds...)
-	cdds = append(cdds, cdd)
 
 	cdd.init = (f.Name() == "init" && sig.Recv() == nil && !cdd.gtc.isLocal(f))
 
@@ -92,8 +89,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 			}
 			cdd.indent(w)
 			t := v.Type()
-			dim, acds := cdd.Type(w, t)
-			cdds = append(cdds, acds...)
+			dim := cdd.Type(w, t)
 			w.WriteByte(' ')
 			w.WriteString(dimFuncPtr(name, dim))
 			w.WriteString(" = ")
@@ -103,8 +99,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		cdd.indent(w)
 	}
 
-	end, acds := cdd.BlockStmt(w, d.Body, res.typ, sig.Results())
-	cdds = append(cdds, acds...)
+	end := cdd.BlockStmt(w, d.Body, res.typ, sig.Results())
 	w.WriteByte('\n')
 
 	if res.hasNames {
@@ -212,10 +207,8 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				} else {
 					indent = true
 				}
-				acds := cdd.varDecl(w, v.Type(), cdd.gtc.isGlobal(v), name, val)
+				cdd.varDecl(w, v.Type(), cdd.gtc.isGlobal(v), name, val)
 				w.Reset()
-
-				cdds = append(cdds, acds...)
 				cdds = append(cdds, cdd)
 			}
 		}
@@ -234,11 +227,10 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 			switch typ := tt.(type) {
 			case *types.Struct, *types.Interface:
-				cdds = append(cdds, cdd.structDecl(w, name, typ)...)
+				cdd.structDecl(w, name, typ)
 			default:
 				w.WriteString("typedef ")
-				dim, acds := cdd.Type(w, typ)
-				cdds = append(cdds, acds...)
+				dim := cdd.Type(w, typ)
 				w.WriteByte(' ')
 				w.WriteString(dimFuncPtr(name, dim))
 				cdd.copyDecl(w, ";\n")
@@ -280,9 +272,9 @@ func zeroVal(w *bytes.Buffer, typ types.Type) {
 	}
 }
 
-func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name string, val ast.Expr) (acds []*CDD) {
+func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name string, val ast.Expr) {
 
-	dim, acds := cdd.Type(w, typ)
+	dim := cdd.Type(w, typ)
 	w.WriteByte(' ')
 	w.WriteString(dimFuncPtr(name, dim))
 
@@ -348,7 +340,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 				cdd.gtc.ti.Types[&av] = types.TypeAndValue{Type: at} // BUG: thread-unsafe
 				acd.varDecl(new(bytes.Buffer), o.Type(), cdd.gtc.isGlobal(o), aname, &av)
 				cdd.InitNext = acd
-				acds = append(acds, acd)
+				cdd.acds = append(cdd.acds, acd)
 
 				w.WriteByte('\t')
 				w.WriteString(name)
@@ -371,7 +363,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 			switch val.(type) {
 			case *ast.CompositeLit:
 				w.WriteString("((")
-				dim, _ := cdd.Type(w, t.Elem())
+				dim := cdd.Type(w, t.Elem())
 				dim = append([]string{"[]"}, dim...)
 				w.WriteString("(" + dimFuncPtr("", dim) + "))")
 				cdd.Expr(w, val, typ)
@@ -400,7 +392,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 			acd := cdd.gtc.newCDD(o, VarDecl, cdd.il)
 			acd.varDecl(new(bytes.Buffer), o.Type(), cdd.gtc.isGlobal(o), cname, c)
 			cdd.InitNext = acd
-			acds = append(acds, acd)
+			cdd.acds = append(cdd.acds, acd)
 
 			w.WriteByte('\t')
 			w.WriteString(name)
@@ -426,7 +418,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	return
 }
 
-func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) (acds []*CDD) {
+func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) {
 	n := w.Len()
 
 	w.WriteString("struct ")
@@ -453,7 +445,7 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) (acds [
 	w.WriteString("struct ")
 	w.WriteString(name)
 	w.WriteByte('_')
-	_, acds = cdd.Type(w, typ)
+	cdd.Type(w, typ)
 	w.WriteString(";\n")
 	if tuple {
 		cdd.indent(w)

@@ -64,7 +64,7 @@ func (b B) String() string {
 	return "byte"
 }
 
-func (b B) B() Stringer {
+func (b B) Str() Stringer {
 	return b
 }
 // C code:
@@ -79,31 +79,31 @@ struct foo$Stringer_struct {
 // decl
 typedef byte foo$B;
 // decl
-string foo$B$String$(uintptr b$);
-// def
-string foo$B$String$(uintptr b$) {
-	return foo$B$String((foo$B)b$);
-}
-// decl
 string foo$B$String(foo$B b$);
 // def
 string foo$B$String(foo$B b$) {
 	return EGSTR("byte");
 }
 // decl
-foo$Stringer foo$B$B$(uintptr b$);
+string foo$B$String$(uintptr b$);
 // def
-foo$Stringer foo$B$B$(uintptr b$) {
-	return foo$B$B((foo$B)b$);
+string foo$B$String$(uintptr b$) {
+	return foo$B$String((foo$B)b$);
 }
 // decl
-foo$Stringer foo$B$B(foo$B b$);
+foo$Stringer foo$B$Str(foo$B b$);
 // def
-foo$Stringer foo$B$B(foo$B b$) {
+foo$Stringer foo$B$Str(foo$B b$) {
 	return (foo$Stringer){
 		.interface = INTERFACE(b$, 0x91ea9690),
 		.String = foo$B$String$
 	};
+}
+// decl
+foo$Stringer foo$B$Str$(uintptr b$);
+// def
+foo$Stringer foo$B$Str$(uintptr b$) {
+	return foo$B$Str((foo$B)b$);
 }
 // end
 
@@ -150,4 +150,30 @@ foo$A foo$ToA(foo$AB ab$) {
 		}
 	});
 }
+// end
+
+// Go code:
+type A interface {
+	A() (int, int)
+}
+// C code:
+// decl
+struct int$$int_struct;
+typedef struct int$$int_struct int$$int;
+// def
+#ifndef int$$int$
+#define int$$int$
+struct int$$int_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+struct foo$A_struct;
+typedef struct foo$A_struct foo$A;
+// def
+struct foo$A_struct {
+	interface;
+	int$$int (*A)(uintptr);
+};
 // end

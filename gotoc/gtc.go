@@ -35,10 +35,14 @@ func (cc *GTC) SetInlineThres(thres int) {
 	cc.inlineThres = thres
 }
 
-func (cc *GTC) File(f *ast.File) (cdds []*CDD) {
+
+
+func (gtc *GTC) File(f *ast.File) (cdds []*CDD) {
 	for _, d := range f.Decls {
 		// TODO: concurrently?
-		cdds = append(cdds, cc.Decl(d, 0)...)
+		for _, cdd := range gtc.Decl(d, 0) {
+			cdds = append(cdds, cdd.AllCDDS()...)
+		}
 	}
 	return
 }
@@ -53,7 +57,7 @@ func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 			continue
 		}
 		if cddm[o] == nil {
-			fmt.Printf("%#v\n%#v\n%s\n%s\n", o, cdd.DeclUses, cdd.Decl, cdd.Def)
+			cdd.exit(o.Pos(), "cddm[o] == nil")
 		}
 		gtc.export(cddm, cddm[o])
 	}
@@ -63,10 +67,6 @@ func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 	for o := range cdd.FuncBodyUses {
 		if gtc.isImported(o) {
 			continue
-		}
-		if cddm[o] == nil {
-			fmt.Printf("%s\n", cdd.Def)
-			cdd.exit(o.Pos(), "cddm[o] == nil")
 		}
 		gtc.export(cddm, cddm[o])
 	}
