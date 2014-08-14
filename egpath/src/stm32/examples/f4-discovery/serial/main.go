@@ -85,9 +85,11 @@ func sirq() {
 }
 
 func main() {
+	s.SetUnix(true)
+	s.WriteString("Hello!\n")
 	for {
 		b, _ := s.ReadByte()
 		s.WriteByte(b)
-		blink(Green, 50) // 50 ms to see overflow (red) LED blinking.
+		blink(Green, 50) // 50 ms to see overflow LED blinking (red).
 	}
 }

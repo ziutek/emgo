@@ -1,6 +1,7 @@
 // Package serial provides high level interface to STM32 USART devices.
 package serial
 
+// USART is interface need by Serial to operate on some USART device.
 type USART interface {
 	Store(b byte)
 	Load() byte
@@ -8,12 +9,17 @@ type USART interface {
 	TxIRQ(enable bool)
 }
 
+// Serial provide high level interface to send and receive data on USART device. It
+// uses interrupts to avoid pulling.
 type Serial struct {
-	dev USART
-	tx  chan byte
-	rx  chan byte
+	dev  USART
+	tx   chan byte
+	rx   chan byte
+	unix bool
 }
 
+// NewSerial creates new Serial for USART device dev with Tx/Rx buffer of specified
+// lengths.
 func NewSerial(dev USART, txlen, rxlen int) *Serial {
 	s := new(Serial)
 	s.dev = dev
@@ -36,6 +42,7 @@ func (e Error) Error() string {
 	return errStr[e]
 }
 
+// IRQ should be called by USART interrupt handler.
 func (s *Serial) IRQ() (err error) {
 	tx, rx := s.dev.Ready()
 	if rx {
@@ -58,12 +65,45 @@ func (s *Serial) IRQ() (err error) {
 	return
 }
 
+// SetUnix sets Serial into text mode with unix new lines. Every readed '\r' is
+// translated to '\n'. Every writed '\n' is translated to "\r\n". This simple
+// translation works well for many terminal emulators but not for all.
+func (s *Serial) SetUnix(enable bool) {
+	s.unix = enable
+}
+
 func (s *Serial) WriteByte(b byte) error {
+	if s.unix && b == '\n' {
+		s.tx <- '\r'
+		s.IRQ()
+	}
 	s.tx <- b
 	s.IRQ()
 	return nil
 }
 
 func (s *Serial) ReadByte() (byte, error) {
-	return <-s.rx, nil
+	b := <-s.rx
+	if s.unix && b == '\r' {
+		b = '\n'
+	}
+	return b, nil
+}
+
+func (s *Serial) Write(buf []byte) (int, error) {
+	for i, b := range buf {
+		if e := s.WriteByte(b); e != nil {
+			return i + 1, e
+		}
+	}
+	return len(buf), nil
+}
+
+func (s *Serial) WriteString(str string) (int, error) {
+	for i := 0; i < len(str); i++ {
+		if e := s.WriteByte(str[i]); e != nil {
+			return i + 1, e
+		}
+	}
+	return len(str), nil
 }
