@@ -9,7 +9,7 @@ type USART interface {
 	TxIRQ(enable bool)
 }
 
-// Serial provide high level interface to send and receive data on USART device. It
+// Serial provides high level interface to send and receive data on USART device. It
 // uses interrupts to avoid pulling.
 type Serial struct {
 	dev  USART
@@ -65,9 +65,9 @@ func (s *Serial) IRQ() (err error) {
 	return
 }
 
-// SetUnix sets Serial into text mode with unix new lines. Every readed '\r' is
-// translated to '\n'. Every writed '\n' is translated to "\r\n". This simple
-// translation works well for many terminal emulators but not for all.
+// SetUnix enabls/disables unix text mode. If enabled, every readed '\r' is
+// translated to '\n' and  every writed '\n' is translated to "\r\n". This
+// simple translation works well for many terminal emulators but not for all.
 func (s *Serial) SetUnix(enable bool) {
 	s.unix = enable
 }
@@ -75,10 +75,10 @@ func (s *Serial) SetUnix(enable bool) {
 func (s *Serial) WriteByte(b byte) error {
 	if s.unix && b == '\n' {
 		s.tx <- '\r'
-		s.IRQ()
+		s.dev.TxIRQ(true)
 	}
 	s.tx <- b
-	s.IRQ()
+	s.dev.TxIRQ(true)
 	return nil
 }
 

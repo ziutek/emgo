@@ -86,7 +86,7 @@ func sirq() {
 
 func main() {
 	s.SetUnix(true)
-	s.WriteString("Hello!\n")
+	s.WriteString("Echo application\n\n")
 	for {
 		b, _ := s.ReadByte()
 		s.WriteByte(b)
