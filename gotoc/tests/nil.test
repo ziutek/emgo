@@ -72,3 +72,29 @@ unsafe$Pointer foo$Nil() {
 	return nil;
 }
 // end
+
+// Go code:
+func Nil(i interface{}) bool {
+	return i == nil
+}
+// C code:
+// decl
+bool foo$Nil(interface i$);
+// def
+bool foo$Nil(interface i$) {
+	return EQUALI(i$, NILI);
+}
+// end
+
+// Go code:
+func NotNil(e error) bool {
+	return nil != e
+}
+// C code:
+// decl
+bool foo$NotNil(error e$);
+// def
+bool foo$NotNil(error e$) {
+	return !EQUALI(NILI, e$.interface);
+}
+// end

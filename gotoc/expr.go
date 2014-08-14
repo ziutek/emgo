@@ -819,16 +819,35 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 	if typ == types.Typ[types.UntypedNil] {
 		typ = rtyp
 	}
-
-	switch underlying(typ).(type) {
+	switch t := underlying(typ).(type) {
 	case *types.Slice:
+		nilv := "nil"
+		sel := ".arr"
 		if rtyp == types.Typ[types.UntypedNil] {
-			lhs += ".arr"
-			rhs = "nil"
+			lhs += sel
+			rhs = nilv
 		} else {
-			lhs = "nil"
-			rhs += ".arr"
+			lhs = nilv
+			rhs += sel
 		}
+	case *types.Interface:
+		nilv := "NILI"
+		sel := ""
+		if !t.Empty() {
+			sel = ".interface"
+		}
+		if op == "!=" {
+			w.WriteByte('!')
+		}
+		if rtyp == types.Typ[types.UntypedNil] {
+			lhs += sel
+			rhs = nilv
+		} else {
+			lhs = nilv
+			rhs += sel
+		}
+		w.WriteString("EQUALI(" + lhs + ", " + rhs + ")")
+		return
 	}
 	w.WriteString(lhs + " " + op + " " + rhs)
 }

@@ -53,7 +53,7 @@ func init() {
 	io.SetMode(rx, gpio.Alt)
 	io.SetAltFunc(rx, gpio.USART2)
 
-	udev.SetBaudRate(9600)
+	udev.SetBaudRate(115200)
 	udev.SetWordLen(usart.Bits8)
 	udev.SetParity(usart.None)
 	udev.SetStopBits(usart.Stop1b)
@@ -72,16 +72,15 @@ func blink(c, d int) {
 	if d > 0 {
 		delay.Millisec(d)
 	} else {
-		delay.Loop(-10e6 * d)
+		delay.Loop(-10e3 * d)
 	}
 	leds.ClearBit(c)
 }
 
 func sirq() {
-	/*if s.IRQ() != nil {
+	if s.IRQ() != nil {
 		blink(Red, -1)
-	}*/
-	s.IRQ()
+	}
 }
 
 func main() {
