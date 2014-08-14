@@ -79,6 +79,7 @@ func blink(c, d int) {
 
 func sirq() {
 	if s.IRQ() != nil {
+		// Indicate Rx buffer overflow.
 		blink(Red, -1)
 	}
 }
@@ -87,6 +88,6 @@ func main() {
 	for {
 		b, _ := s.ReadByte()
 		s.WriteByte(b)
-		blink(Green, 50)
+		blink(Green, 50) // 50 ms to see overflow (red) LED blinking.
 	}
 }
