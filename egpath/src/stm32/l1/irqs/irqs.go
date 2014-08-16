@@ -1,4 +1,4 @@
-package irq
+package irqs
 
 import "cortexm/exce"
 

@@ -37,8 +37,8 @@ stm32/f4/gpio
 stm32/f4/periph
 stm32/f4/setup
 stm32/f4/exti
-stm32/f4/irq
-stm32/f4/usart
+stm32/f4/irqs
+stm32/f4/usarts
 
 stm32/l1/clock
 stm32/l1/flash
@@ -46,7 +46,8 @@ stm32/l1/gpio
 stm32/l1/periph
 stm32/l1/setup
 stm32/l1/exti
-stm32/l1/irq
+stm32/l1/irqs
+stm32/l1/usarts
 "
 
 for p in $list; do 

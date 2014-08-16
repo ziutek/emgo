@@ -1,10 +1,5 @@
+// Package usart supports USART/UART devices in most STM32 MCUs.
 package usart
-
-import (
-	"unsafe"
-
-	"stm32/f4/setup"
-)
 
 type Dev struct {
 	s   uint32 `C:"volatile"`
@@ -15,17 +10,6 @@ type Dev struct {
 	c3  uint32 `C:"volatile"`
 	gtp uint32 `C:"volatile"`
 }
-
-var (
-	USART1 = (*Dev)(unsafe.Pointer(uintptr(0x40011000)))
-	USART2 = (*Dev)(unsafe.Pointer(uintptr(0x40004400)))
-	USART3 = (*Dev)(unsafe.Pointer(uintptr(0x40004800)))
-	UART4  = (*Dev)(unsafe.Pointer(uintptr(0x40004C00)))
-	UART5  = (*Dev)(unsafe.Pointer(uintptr(0x40005000)))
-	USART6 = (*Dev)(unsafe.Pointer(uintptr(0x40011400)))
-	UART7  = (*Dev)(unsafe.Pointer(uintptr(0x40007800)))
-	UART8  = (*Dev)(unsafe.Pointer(uintptr(0x40007C00)))
-)
 
 type Status uint32
 
@@ -47,9 +31,9 @@ func (u *Dev) Status() Status {
 	return Status(u.s)
 }
 
-func (u *Dev) SetBaudRate(br int) {
-	div := uint32(setup.APB1Clk / uint(br))
-	if uint(br) > setup.APB1Clk/16 {
+func (u *Dev) SetBaudRate(br int, pclk uint) {
+	div := uint32(pclk / uint(br))
+	if uint(br) > pclk/16 {
 		// Oversampling = 8
 		u.c1 |= 1 << 15
 		u.br = div&7<<1 | div&7
@@ -105,7 +89,13 @@ const (
 	TxDoneIRQ
 	TxEmptyIRQ
 	ParityErrIRQ
+
+	afterLastIRQ
 )
+
+func (u *Dev) EnabledIRQs() IRQ {
+	return IRQ(u.c1>>4) & (afterLastIRQ - 1)
+}
 
 func (u *Dev) EnableIRQs(irqs IRQ) {
 	u.c1 |= uint32(irqs) << 4
@@ -144,25 +134,14 @@ func (u *Dev) SetStopBits(sb StopBits) {
 	u.c2 = u.c2&^(3<<12) | uint32(sb)<<12
 }
 
-func (u *Dev) Store(b byte) {
-	u.d = uint32(b)
+func (u *Dev) Store(d uint32) {
+	u.d = d
 }
 
-func (u *Dev) Load() byte {
-	return byte(u.d)
+func (u *Dev) Load() uint32 {
+	return u.d
 }
 
-// Ready is need to implements stm32/serial.USART interface.
-func (u *Dev) Ready() (tx, rx bool) {
-	s := u.Status()
-	return s&TxEmpty != 0, s&RxNotEmpty != 0
-}
-
-// SetTxIRQ is need to implements stm32/serial.USART interface.
-func (u *Dev) TxIRQ(enabled bool) {
-	if enabled {
-		u.EnableIRQs(TxEmptyIRQ)
-	} else {
-		u.DisableIRQs(TxEmptyIRQ)
-	}
-}
+// STM32F10xxx doesn't support:
+// 1. 8x oversampling mode
+// 2. Onebit sample method.

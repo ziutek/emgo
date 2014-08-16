@@ -1,14 +1,23 @@
+// This example shows how to use USART as serial console.
+//
+// You need terminal emulator (eg. screen, minicom, hyperterm) and some USB to
+// 3.3V TTL serial adapter (eg. FT232RL, CP2102 based). Warninig! If you use
+// USB to RS232 it can destroy your Discovery board.
+
+// Connct adapter's GND, Rx and TX pins respectively to Discovery's GND, PA2,
+// PA3 pins.
 package main
 
 import (
 	"delay"
 
 	"stm32/f4/gpio"
-	"stm32/f4/irq"
+	"stm32/f4/irqs"
 	"stm32/f4/periph"
 	"stm32/f4/setup"
-	"stm32/f4/usart"
+	"stm32/f4/usarts"
 	"stm32/serial"
+	"stm32/usart"
 )
 
 const (
@@ -20,7 +29,8 @@ const (
 
 var (
 	leds = gpio.D
-	udev = usart.USART2
+	udev = usarts.USART2
+	s    = serial.NewSerial(udev, 80, 8)
 )
 
 func init() {
@@ -53,43 +63,52 @@ func init() {
 	io.SetMode(rx, gpio.Alt)
 	io.SetAltFunc(rx, gpio.USART2)
 
-	udev.SetBaudRate(115200)
+	udev.SetBaudRate(115200, setup.APB1Clk)
 	udev.SetWordLen(usart.Bits8)
 	udev.SetParity(usart.None)
 	udev.SetStopBits(usart.Stop1b)
-	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.SetMode(usart.Tx | usart.Rx)
+	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	irq.USART2.UseHandler(sirq)
-	irq.USART2.Enable()
-}
+	irqs.USART2.UseHandler(sirq)
+	irqs.USART2.Enable()
 
-var s = serial.NewSerial(udev, 3, 3)
+	s.SetUnix(true)
+}
 
 func blink(c, d int) {
 	leds.SetBit(c)
 	if d > 0 {
 		delay.Millisec(d)
 	} else {
-		delay.Loop(-10e3 * d)
+		delay.Loop(-1e4 * d)
 	}
 	leds.ClearBit(c)
 }
 
 func sirq() {
-	if s.IRQ() != nil {
-		// Indicate Rx buffer overflow.
-		blink(Red, -1)
+	// blink(Blue, -10) // Uncoment to see "hardware buffer overrun" error.
+	s.IRQ()
+}
+
+func checkErr(err error) {
+	if err != nil {
+		blink(Red, 10)
+		s.WriteString("\nError: ")
+		s.WriteString(err.Error())
+		s.WriteByte('\n')
 	}
 }
 
 func main() {
-	s.SetUnix(true)
 	s.WriteString("Echo application\n\n")
+	s.Flush()
+	var buf [40]byte
 	for {
-		b, _ := s.ReadByte()
-		s.WriteByte(b)
-		blink(Green, 50) // 50 ms to see overflow LED blinking (red).
+		n, err := s.Read(buf[:])
+		checkErr(err)
+		s.Write(buf[:n])
+		blink(Green, 10)
 	}
 }
