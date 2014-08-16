@@ -66,7 +66,7 @@ func SoftReq() Lines {
 }
 
 func (l Lines) SoftReqGen() {
-	regs1.swie |= l
+	regs1.swie = l
 }
 
 func Pending() Lines {
@@ -81,21 +81,21 @@ func (l Lines) connect(port uint32) {
 	if l >= L15<<1 {
 		log.Panic("exti: only lines 0...15 can be connected to the external source")
 	}
-	for i, r := range regs2 {
+	for i := range regs2 {
 		if l&0x0f != 0 {
+			r := &regs2[i]
 			if l&1 != 0 {
-				r = r&^0x000f | port
+				r.StoreBits(port, 0x000f)
 			}
 			if l&2 != 0 {
-				r = r&^0x00f0 | port<<4
+				r.StoreBits(port<<4, 0x00f0)
 			}
 			if l&4 != 0 {
-				r = r&^0x0f00 | port<<8
+				r.StoreBits(port<<8, 0x0f00)
 			}
 			if l&8 != 0 {
-				r = r&^0xf000 | port<<16
+				r.StoreBits(port<<12, 0xf000)
 			}
-			regs2[i] = r
 		}
 		l = l >> 4
 	}

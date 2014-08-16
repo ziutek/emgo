@@ -26,6 +26,8 @@ const (
 func init() {
 	setup.Performance(0)
 
+	periph.APB2ClockEnable(periph.SysCfg)
+	periph.APB2Reset(periph.SysCfg)
 	periph.AHBClockEnable(periph.GPIOA | periph.GPIOB)
 	periph.AHBReset(periph.GPIOA | periph.GPIOB)
 

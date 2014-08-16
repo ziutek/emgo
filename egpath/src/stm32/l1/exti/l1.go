@@ -37,6 +37,8 @@ var (
 	regs2 = (*[4]uint32)(unsafe.Pointer(uintptr(0x40010008)))
 )
 
-func (l Lines) Connect(src *gpio.Port) {
+// Connect connects port to exti lines. periph.SysCfg should
+// be enabled before use this method.
+func (l Lines) Connect(port *gpio.Port) {
 	l.connect(uint32(src.Number()))
 }

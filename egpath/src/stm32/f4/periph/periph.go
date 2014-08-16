@@ -199,7 +199,7 @@ const (
 	SDIO
 	SPI1
 	SPI4
-	SYSCFG
+	SysCfg
 	_
 
 	TIM9

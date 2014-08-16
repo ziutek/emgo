@@ -11,7 +11,7 @@ import (
 
 	"stm32/f4/exti"
 	"stm32/f4/gpio"
-	"stm32/f4/irq"
+	"stm32/f4/irqs"
 	"stm32/f4/periph"
 	"stm32/f4/setup"
 )
@@ -28,6 +28,8 @@ const (
 func init() {
 	setup.Performance168(8)
 
+	periph.APB2ClockEnable(periph.SysCfg)
+	periph.APB2Reset(periph.SysCfg)
 	periph.AHB1ClockEnable(periph.GPIOA | periph.GPIOD)
 	periph.AHB1Reset(periph.GPIOA | periph.GPIOD)
 
@@ -41,8 +43,8 @@ func init() {
 	exti.L0.Connect(gpio.A)
 	exti.L0.RiseTrigEnable()
 	exti.L0.IntEnable()
-	irq.Ext0.UseHandler(buttonHandler)
-	irq.Ext0.Enable()
+	irqs.Ext0.UseHandler(buttonHandler)
+	irqs.Ext0.Enable()
 }
 
 var (
