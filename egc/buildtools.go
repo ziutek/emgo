@@ -20,7 +20,7 @@ var archMap = map[string]string{
 var osMap = map[string]struct{ cc, ld string }{
 	"noos": {
 		cc: "-ffreestanding -nostdinc -fno-exceptions -nostartfiles",
-		ld: "-nostdlib  -nodefaultlibs  -nostartfiles",
+		ld: "-nostdlib  -nodefaultlibs  -nostartfiles -lgcc",
 	},
 }
 
@@ -47,8 +47,8 @@ func (cf *CFLAGS) SplitAll() []string {
 type LDFLAGS struct {
 	OS     string // OS related flags
 	Incl   string // -L flags
-	Script string // path to linker script or empty if default script
-	Opt    string // optimization flags
+	Script string // Path to linker script or empty if default script
+	Opt    string // Optimization flags
 }
 
 func (lf *LDFLAGS) SplitAll() []string {
@@ -66,8 +66,9 @@ type BuildTools struct {
 	CC     string // path to the C compiler
 	CFLAGS []string
 
-	LD      string // path to the linker
-	LDFLAGS []string
+	LD       string // path to the linker
+	LDFLAGS  []string
+	LDlibgcc string
 
 	AR      string // path to the archiver
 	ARFLAGS []string
@@ -86,17 +87,18 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-unused-label -Wno-maybe-uninitialized",
 		Incl: "-I" + filepath.Join(ctx.GOROOT, "src"),
 	}
+	if fl, ok := archMap[ctx.GOARCH]; ok {
+		cflags.Arch = fl
+	} else {
+		return nil, errors.New("unknown EGARCH: " + ctx.GOARCH)
+	}
+
 	ldflags := LDFLAGS{
 		Script: EGLDSCRIPT,
 		Incl:   "-L" + filepath.Join(ctx.GOROOT, "ld"),
 		Opt:    "-gc-sections",
 	}
 
-	if fl, ok := archMap[ctx.GOARCH]; ok {
-		cflags.Arch = fl
-	} else {
-		return nil, errors.New("unknown EGARCH: " + ctx.GOARCH)
-	}
 	if fl, ok := osMap[ctx.GOOS]; ok {
 		cflags.OS = fl.cc
 		ldflags.OS = fl.ld
@@ -123,6 +125,22 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 
 		importPaths: importPaths,
 	}
+
+	for i, f := range bt.LDFLAGS {
+		if f == "-lgcc" {
+			libgcc, err := exec.Command(
+				EGCC,
+				append(strings.Fields(cflags.Arch), "-print-libgcc-file-name")...,
+			).Output()
+			if err != nil {
+				return nil, err
+			}
+			bt.LDFLAGS = append(bt.LDFLAGS[:i], bt.LDFLAGS[i+1:]...)
+			bt.LDlibgcc = strings.TrimSpace(string(libgcc))
+			break
+		}
+	}
+
 	return bt, nil
 }
 
@@ -138,7 +156,7 @@ func (bt *BuildTools) logCmd(cmd string, args []string) {
 }
 
 func (bt *BuildTools) Compile(o, c string) error {
-	args := append(bt.CFLAGS)
+	args := bt.CFLAGS
 	if odir := filepath.Dir(o); filepath.Base(odir) == "main" {
 		args = append(args, "-I", odir)
 	}
@@ -213,6 +231,12 @@ func (bt *BuildTools) Link(e string, imports []string, o ...string) error {
 		return err
 	}
 	args = append(args, a...)
+
+	if bt.LDlibgcc != "" {
+		// Ugly trick to insert libgcc.a before last builtin.a.
+		lasta := len(args) - 1
+		args = append(args[:lasta], bt.LDlibgcc, args[lasta])
+	}
 
 	bt.logCmd(bt.LD, args)
 
