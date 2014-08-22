@@ -17,7 +17,7 @@ func sv(fp *stackFrame) {
 	// instruction. It take me few hours to analyze a bug caused by software
 	// breakpoints: the following line returns number embeded in BKPT
 	// instruction (that was inserted by gdb) instead of number in SVC
-	// instruction, but x command shows right values and the fun begins...
+	// instruction, but gdb x command shows right values and the fun begins...
 	n := *(*byte)(unsafe.Pointer(fp.pc - 2))
 	switch n {
 	case 0:

@@ -10,6 +10,8 @@ package main
 
 import (
 	"delay"
+	"runtime/noos"
+	"strconv"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -53,15 +55,15 @@ func init() {
 	periph.APB1ClockEnable(periph.USART2)
 	periph.APB1Reset(periph.USART2)
 
-	io, tx, rx := gpio.A, 2, 3
+	port, tx, rx := gpio.A, 2, 3
 
-	io.SetMode(tx, gpio.Alt)
-	io.SetOutType(tx, gpio.PushPullOut)
-	io.SetPull(tx, gpio.PullUp)
-	io.SetOutSpeed(tx, gpio.Fast)
-	io.SetAltFunc(tx, gpio.USART2)
-	io.SetMode(rx, gpio.Alt)
-	io.SetAltFunc(rx, gpio.USART2)
+	port.SetMode(tx, gpio.Alt)
+	port.SetOutType(tx, gpio.PushPullOut)
+	port.SetPull(tx, gpio.PullUp)
+	port.SetOutSpeed(tx, gpio.Fast)
+	port.SetAltFunc(tx, gpio.USART2)
+	port.SetMode(rx, gpio.Alt)
+	port.SetAltFunc(rx, gpio.USART2)
 
 	udev.SetBaudRate(115200, setup.APB1Clk)
 	udev.SetWordLen(usart.Bits8)
@@ -94,7 +96,7 @@ func sirq() {
 
 func checkErr(err error) {
 	if err != nil {
-		blink(Red, 10)
+		blink(Red, -10)
 		s.WriteString("\nError: ")
 		s.WriteString(err.Error())
 		s.WriteByte('\n')
@@ -104,11 +106,25 @@ func checkErr(err error) {
 func main() {
 	s.WriteString("Echo application\n\n")
 	s.Flush()
+
+	for i := 0; i < 20; i++ {
+		ns := noos.Uptime()
+		strconv.WriteUint64(s, ns, 10)
+		s.WriteString(" ns\n")
+	}
+
 	var buf [40]byte
 	for {
 		n, err := s.Read(buf[:])
 		checkErr(err)
+
+		ns := noos.Uptime()
+		strconv.WriteUint64(s, ns, 10)
+
+		s.WriteString(" ns \"")
 		s.Write(buf[:n])
-		blink(Green, 10)
+		s.WriteString("\"\n")
+
+		blink(Green, -10)
 	}
 }

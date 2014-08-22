@@ -1,6 +1,5 @@
 #include "types/types.h"
 
-void panic(string s) {
-	for (;;) {
-	}
+void panic(interface i) {
+	for (;;);
 }

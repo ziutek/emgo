@@ -59,6 +59,11 @@ func Val() uint32 {
 	return stk.cvr & 0x00ffffff
 }
 
+// Reset counter to 0.
+func Reset() {
+	stk.cvr = 0
+}
+
 // Calib returns calibration properties.
 func Calib() (skew, noref bool, tenms uint32) {
 	c := stk.calib

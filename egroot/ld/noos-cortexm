@@ -1,5 +1,6 @@
 SECTIONS {
 	.text : {
+		__exidx_start = .;
 		KEEP(*(.vectors))    /* Interrupt vector table */
 		*(.text .text.*)     /* Code */   
 	} >loadTo
@@ -9,6 +10,7 @@ SECTIONS {
 		. = ALIGN(4);
 		*(.rodata .rodata.*) /* Read only data */
 		. = ALIGN(4);
+		__exidx_end = .;
 	} >loadTo
     
     .stack : {

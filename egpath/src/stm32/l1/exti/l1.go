@@ -1,8 +1,10 @@
 package exti
 
 import (
-	"stm32/l1/gpio"
+	"mmio"
 	"unsafe"
+
+	"stm32/l1/gpio"
 )
 
 const (
@@ -34,11 +36,11 @@ const (
 
 var (
 	regs1 = (*extiRegs)(unsafe.Pointer(uintptr(0x40010400)))
-	regs2 = (*[4]uint32)(unsafe.Pointer(uintptr(0x40010008)))
+	regs2 = (*[4]mmio.Reg32)(unsafe.Pointer(uintptr(0x40010008)))
 )
 
 // Connect connects port to exti lines. periph.SysCfg should
 // be enabled before use this method.
 func (l Lines) Connect(port *gpio.Port) {
-	l.connect(uint32(src.Number()))
+	l.connect(uint32(port.Number()))
 }

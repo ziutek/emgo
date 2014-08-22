@@ -29,22 +29,27 @@ func init() {
 	LED.SetMode(Blue, gpio.Out)
 }
 
+func wait() {
+	//delay.Loop(1e7)
+	delay.Millisec(500)
+}
+
 func main() {
 	for {
 		LED.ClearBit(Green)
 		LED.SetBit(Orange)
-		delay.Millisec(500)
+		wait()
 
 		LED.ClearBit(Orange)
 		LED.SetBit(Red)
-		delay.Millisec(500)
+		wait()
 
 		LED.ClearBit(Red)
 		LED.SetBit(Blue)
-		delay.Millisec(500)
+		wait()
 
 		LED.ClearBit(Blue)
 		LED.SetBit(Green)
-		delay.Millisec(500)
+		wait()
 	}
 }

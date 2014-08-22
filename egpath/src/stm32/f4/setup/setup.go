@@ -2,6 +2,7 @@ package setup
 
 import (
 	"log"
+	
 	"stm32/f4/clock"
 	"stm32/f4/flash"
 )
@@ -119,7 +120,7 @@ func Performance(osc, mul, sdiv int) {
 		clock.DisableHSI()
 	}
 
-	setSystick()
+	sysClkChanged()
 }
 
 // Performance168 setups MCU to work with 168 MHz clock.

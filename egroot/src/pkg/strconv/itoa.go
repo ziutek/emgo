@@ -1,6 +1,9 @@
 package strconv
 
-import "log"
+import (
+	"io"
+	"log"
+)
 
 const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
 
@@ -35,6 +38,12 @@ func Utoa(buf []byte, u uint32, base int) int {
 	return n
 }
 
+func WriteUint(w io.Writer, u uint32, base int) (int, error) {
+	var buf [10]byte
+	first := Utoa(buf[:], u, base)
+	return w.Write(buf[first:])
+}
+
 // Itoa converts i to string and returns offset to most significant digit or
 // sign.
 func Itoa(buf []byte, i int32, base int) int {
@@ -49,13 +58,16 @@ func Itoa(buf []byte, i int32, base int) int {
 	return n
 }
 
-/*
-TODO: need to provide __aeabi_uldivmod for 64bit/64bit division.
+func WriteInt(w io.Writer, i int32, base int) (int, error) {
+	var buf [11]byte
+	first := Itoa(buf[:], i, base)
+	return w.Write(buf[first:])
+}
 
 // Utoa64 converts u to string and returns offset to most significant digit.
 func Utoa64(buf []byte, u uint64, base int) int {
 	if base < 2 || base > len(digits) {
-		panic("strconv: illegal base")
+		log.Panic("strconv: illegal base")
 	}
 	b := uint64(base)
 	n := len(buf)
@@ -77,17 +89,28 @@ func Utoa64(buf []byte, u uint64, base int) int {
 	return n
 }
 
-// Itoa converts i to string and returns offset to most significant digit or
+func WriteUint64(w io.Writer, u uint64, base int) (int, error) {
+	var buf [20]byte
+	first := Utoa64(buf[:], u, base)
+	return w.Write(buf[first:])
+}
+
+// Itoa64 converts i to string and returns offset to most significant digit or
 // sign.
 func Itoa64(buf []byte, i int64, base int) int {
 	if i >= 0 {
 		return Utoa64(buf, uint64(i), base)
 	}
 	if len(buf) == 0 {
-		panic("strconv: buffer too short")
+		log.Panic("strconv: buffer too short")
 	}
 	n := Utoa64(buf[1:], uint64(-i), base)
 	buf[n] = '-'
 	return n
 }
-*/
+
+func WriteInt64(w io.Writer, i int64, base int) (int, error) {
+	var buf [21]byte
+	first := Itoa64(buf[:], i, base)
+	return w.Write(buf[first:])
+}

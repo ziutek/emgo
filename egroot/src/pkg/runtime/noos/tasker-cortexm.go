@@ -9,7 +9,6 @@ import (
 
 	"cortexm"
 	"cortexm/exce"
-	"cortexm/systick"
 )
 
 type taskState byte
@@ -35,7 +34,7 @@ type taskInfo struct {
 
 func (ti *taskInfo) init() {
 	*ti = taskInfo{prio: 255}
-	ti.rng.Seed(Ticks() ^ (uint64(systick.Val()) << 32))
+	ti.rng.Seed(Uptime())
 }
 
 func (ti *taskInfo) state() taskState {
@@ -132,12 +131,15 @@ func (ts *taskSched) init() {
 	vt[exce.SysTick] = exce.VectorFor(sysTickHandler)
 	exce.UseTable(vt)
 
+	exce.SysTick.SetPrio(exce.Highest)
+	exce.SVCall.SetPrio(exce.Lowest)
+	exce.PendSV.SetPrio(exce.Lowest)
+	for irq := exce.IRQ0; int(irq) < len(vt); irq++ {
+		irq.SetPrio((exce.Lowest + exce.Highest) / 2)
+	}
 	exce.MemFault.Enable()
 	exce.BusFault.Enable()
 	exce.UsageFault.Enable()
-
-	exce.SVCall.SetPrio(exce.Lowest)
-	exce.PendSV.SetPrio(exce.Lowest)
 
 	// Start SysTick before setup taskInfo for initial task to
 	// allow correct rng seed.

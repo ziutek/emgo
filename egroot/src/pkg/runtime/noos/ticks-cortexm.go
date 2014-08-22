@@ -17,15 +17,24 @@ func sysTickStart() {
 }
 
 var (
-	ticks    [2]uint64
-	ticksABA uintptr
+	tickPeriod uint32
+	ticks2     [2]uint64
+	ticksABA   uintptr
 )
+
+func setTickPeriod() {
+	// Set tick period to 2 ms (500 context switches per second).
+	const periodms = 2
+	tickPeriod = uint32(sysClk * periodms / 1e3)
+	systick.SetReload(tickPeriod - 1)
+	systick.Reset()
+}
 
 func sysTickHandler() {
 	aba := atomic.LoadUintptr(&ticksABA)
-	t := ticks[aba&1]
+	t := ticks2[aba&1]
 	aba++
-	ticks[aba&1] = t + 1
+	ticks2[aba&1] = t + 1
 	barrier.Memory()
 	atomic.StoreUintptr(&ticksABA, aba)
 	tickEvent.Send()
@@ -35,16 +44,34 @@ func sysTickHandler() {
 	}
 }
 
-func loadTicks() uint64 {
+
+func uptime() uint64 {
+	var (
+		ticks uint64
+		cnt   uint32
+	)
 	aba := atomic.LoadUintptr(&ticksABA)
 	for {
 		barrier.Compiler()
-		t := ticks[aba&1]
+		ticks = ticks2[aba&1]
+		cnt = systick.Val()
 		barrier.Compiler()
 		aba1 := atomic.LoadUintptr(&ticksABA)
 		if aba == aba1 {
-			return t
+			break
 		}
 		aba = aba1
 	}
+	return muldiv64(
+		ticks*uint64(tickPeriod)+uint64(tickPeriod-cnt),
+		1e9, uint64(sysClk),
+	)
+}
+
+func muldiv64(x, m, d uint64) uint64 {
+	divx := x / d
+	modx := x - divx*d
+	divm := m / d
+	modm := m - divm*d
+	return divx*m + modx*divm + modx*modm/d
 }

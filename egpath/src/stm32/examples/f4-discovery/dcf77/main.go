@@ -35,9 +35,12 @@ func init() {
 	gpio.C.SetMode(1, gpio.In)
 	exti.L1.Connect(gpio.C)
 	exti.L1.RiseTrigEnable()
+	exti.L1.FallTrigEnable()
 	exti.L1.IntEnable()
 	irqs.Ext1.UseHandler(pulse)
 	irqs.Ext1.Enable()
+
+	periph.APB2ClockDisable(periph.SysCfg)
 }
 
 func blink(led int) {
@@ -48,10 +51,15 @@ func blink(led int) {
 
 func pulse() {
 	exti.L1.ClearPending()
-	blink(Green)
+	if gpio.C.Bit(1) {
+		blink(Green)
+	} else {
+		blink(Blue)
+	}
 }
 
 func main() {
 	for {
+		delay.Millisec(1e3)
 	}
 }

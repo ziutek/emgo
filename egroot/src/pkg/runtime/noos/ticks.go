@@ -1,26 +1,28 @@
 package noos
 
-// Ticks return current value of system counter that is incremented with some
-// period of the order of one to several milliseconds.
-func Ticks() uint64 {
-	return loadTicks()
+import "log"
+
+// Uptime returns how long system is running (in nanosecond). It includes or not
+// the time when system is in deep sleep state - this is implementation specific.
+func Uptime() uint64 {
+	if MaxTasks() == 0 {
+		log.Panic("noos.Uptime not supported (MaxTasks==0)")
+	}
+	return uptime()
 }
 
-var tickPeriod int
+var sysClk uint
 
-// TickPeriod returns tick period in milliseconds.
-func TickPeriod() int {
-	return tickPeriod
-}
-
-// SetTickPeriod can be used to set value of tick period.
-func SetTickPeriod(ms int) {
-	tickPeriod = ms
+// SetSysClk informs runtime about current system clock frequency. It should be
+// called at every system clock change.
+func SetSysClk(hz uint) {
+	sysClk = hz
+	setTickPeriod()
 }
 
 var tickEvent = AssignEvent()
 
-// TickEvent returns event that is send at every tick.
+// TickEvent returns event that is sended at every tasker interrupt.
 func TickEvent() Event {
 	return tickEvent
 }

@@ -7,6 +7,11 @@ import (
 	"stm32/l1/flash"
 )
 
+var (
+	SysClk  uint = 32e6 // System clock [Hz]
+)
+
+
 // Performance setups MCU for best performance (32MHz, Flash prefetch and
 // 64-bit access on).
 // It accepts one argument which is a freqency of external resonator in MHz.
@@ -82,5 +87,5 @@ func Performance(osc int) {
 
 	clock.DisableMSI()
 	
-	setSystick(32)
+	sysClkChanged()
 }

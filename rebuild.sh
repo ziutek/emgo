@@ -24,6 +24,7 @@ sync
 runtime
 delay
 
+io
 strconv
 math/matrix32
 math/rand
