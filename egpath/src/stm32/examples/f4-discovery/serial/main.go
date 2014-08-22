@@ -96,7 +96,7 @@ func sirq() {
 
 func checkErr(err error) {
 	if err != nil {
-		blink(Red, -10)
+		blink(Red, 10)
 		s.WriteString("\nError: ")
 		s.WriteString(err.Error())
 		s.WriteByte('\n')
@@ -125,6 +125,6 @@ func main() {
 		s.Write(buf[:n])
 		s.WriteString("\"\n")
 
-		blink(Green, -10)
+		blink(Green, 10)
 	}
 }
