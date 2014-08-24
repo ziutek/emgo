@@ -44,7 +44,6 @@ func sysTickHandler() {
 	}
 }
 
-
 func uptime() uint64 {
 	var (
 		ticks uint64
@@ -53,8 +52,8 @@ func uptime() uint64 {
 	aba := atomic.LoadUintptr(&ticksABA)
 	for {
 		barrier.Compiler()
-		ticks = ticks2[aba&1]
 		cnt = systick.Val()
+		ticks = ticks2[aba&1]
 		barrier.Compiler()
 		aba1 := atomic.LoadUintptr(&ticksABA)
 		if aba == aba1 {
