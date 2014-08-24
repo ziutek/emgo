@@ -49,3 +49,29 @@ string foo$S(string s$) {
 	return SSLICELH(s$, 0, len(s$));
 }
 // end
+
+// Go code:
+func Eq(s1, s2 string) bool {
+	return s1 == s2
+}
+// C code:
+// decl
+bool foo$Eq(string s1$, string s2$);
+// def
+bool foo$Eq(string s1$, string s2$) {
+	return equals(s1$, s2$);
+}
+// end
+
+// Go code:
+func Neq(s1, s2 string) bool {
+	return s1 != s2
+}
+// C code:
+// decl
+bool foo$Neq(string s1$, string s2$);
+// def
+bool foo$Neq(string s1$, string s2$) {
+	return !equals(s1$, s2$);
+}
+// end

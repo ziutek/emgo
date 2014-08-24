@@ -18,8 +18,11 @@ func writeInt(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 		w.WriteString(strconv.FormatUint(u, 16))
 		return
 	}
-
-	w.WriteString(ev.String())
+	s := ev.String()
+	if s[0] == '-' {
+		w.WriteByte('(')
+	}
+	w.WriteString(s)
 	switch k {
 	case types.Int32:
 		w.WriteByte('L')
@@ -33,19 +36,28 @@ func writeInt(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 	case types.Uint64:
 		w.WriteString("ULL")
 	}
+	if s[0] == '-' {
+		w.WriteByte(')')
+	}
 }
 
 func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
-	v, _ := exact.Int64Val(exact.Num(ev))
-	w.WriteString(strconv.FormatInt(v, 10))
-	v, _ = exact.Int64Val(exact.Denom(ev))
-	if v != 1 {
+	n, _ := exact.Int64Val(exact.Num(ev))
+	if n < 0 {
+		w.WriteByte('(')
+	}
+	w.WriteString(strconv.FormatInt(n, 10))
+	d, _ := exact.Int64Val(exact.Denom(ev))
+	if d != 1 {
 		w.WriteByte('/')
-		w.WriteString(strconv.FormatInt(v, 10))
+		w.WriteString(strconv.FormatInt(d, 10))
 	}
 	w.WriteByte('.')
 	if k == types.Float32 {
 		w.WriteByte('F')
+	}
+	if n < 0 {
+		w.WriteByte(')')
 	}
 }
 
@@ -515,13 +527,14 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.notImplemented(e)
 
 	case *ast.CompositeLit:
+		w.WriteByte('(')
+		
 		typ := cdd.exprType(e)
 
 		switch t := underlying(typ).(type) {
 		case *types.Array:
 			w.WriteByte('{')
 			nilT = t.Elem()
-
 		case *types.Slice:
 			w.WriteString("(slice){(")
 			dim := cdd.Type(w, t.Elem())
@@ -529,13 +542,11 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteString("){")
 			nilT = t.Elem()
-
 		case *types.Struct:
 			w.WriteByte('(')
 			cdd.Type(w, typ)
 			w.WriteString("){")
 			nilT = nil
-
 		default:
 			cdd.notImplemented(e, t)
 		}
@@ -562,6 +573,8 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		default:
 			w.WriteByte('}')
 		}
+		
+		w.WriteByte(')')
 
 	case *ast.FuncLit:
 		fname := "func"
@@ -847,6 +860,15 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 			rhs += sel
 		}
 		w.WriteString("EQUALI(" + lhs + ", " + rhs + ")")
+		return
+	case *types.Basic:
+		if t.Kind() != types.String {
+			break
+		}
+		if op == "!=" {
+			w.WriteByte('!')
+		}
+		w.WriteString("equals(" + lhs + ", " + rhs + ")")
 		return
 	}
 	w.WriteString(lhs + " " + op + " " + rhs)

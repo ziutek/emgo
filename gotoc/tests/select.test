@@ -71,7 +71,7 @@ int foo$S(chan c1$, chan c2$) {
 			}
 			case2:{
 				SELRECV(2);
-				return -7;
+				return (-7);
 				break;
 			}
 			case3:{
@@ -92,12 +92,12 @@ int foo$S(chan c1$, chan c2$) {
 			}
 			case5:{
 				SELSEND(5);
-				return -1;
+				return (-1);
 				break;
 			}
 			case6:{
 				SELSEND(6);
-				return -2;
+				return (-2);
 				break;
 			}
 			dflt:{
