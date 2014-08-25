@@ -115,22 +115,33 @@ func pulse() {
 }
 
 func main() {
+	i := -1
 	for {
 		p := <-c
-		strconv.WriteUint64(con, p.Stamp, 10)
+		strconv.WriteInt(con, int32(i), 10)
 		switch p.Bit {
 		case Zero:
-			con.WriteString(" 0\n")
+			con.WriteString(" 0     ")
 			blink(Blue)
+			if i >= 0 {
+				i++
+			}
 		case One:
-			con.WriteString(" 1\n")
+			con.WriteString(" 1     ")
 			blink(Green)
+			if i >= 0 {
+				i++
+			}
 		case Sync:
-			con.WriteString(" sync\n")
+			con.WriteString(" sync  ")
 			blink(Orange)
+			i = 0
 		default: // Err
-			con.WriteString(" error\n")
+			con.WriteString(" error ")
 			blink(Red)
+			i = -1
 		}
+		strconv.WriteUint64(con, p.Stamp, 10)
+		con.WriteByte('\n')
 	}
 }
