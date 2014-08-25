@@ -22,19 +22,25 @@ func writeInt(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 	if s[0] == '-' {
 		w.WriteByte('(')
 	}
-	w.WriteString(s)
 	switch k {
 	case types.Int32:
-		w.WriteByte('L')
-
+		if s == "-2147483648" {
+			w.WriteString("-2147483647L-1L")
+		} else {
+			w.WriteString(s + "L")
+		}
 	case types.Uint32:
-		w.WriteString("UL")
-
+		w.WriteString(s + "UL")
 	case types.Int64:
-		w.WriteString("LL")
-
+		if s == "-9223372036854775808" {
+			w.WriteString("-9223372036854775807LL-1LL")
+		} else {
+			w.WriteString(s + "LL")
+		}
 	case types.Uint64:
-		w.WriteString("ULL")
+		w.WriteString(s + "ULL")
+	default:
+		w.WriteString(s)
 	}
 	if s[0] == '-' {
 		w.WriteByte(')')
@@ -528,11 +534,15 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 
 	case *ast.CompositeLit:
 		w.WriteByte('(')
-		
+
 		typ := cdd.exprType(e)
 
 		switch t := underlying(typ).(type) {
 		case *types.Array:
+			w.WriteString("(")
+			dim := cdd.Type(w, t.Elem())
+			dim = append([]string{"[]"}, dim...)
+			w.WriteString("(" + dimFuncPtr("", dim) + "))")
 			w.WriteByte('{')
 			nilT = t.Elem()
 		case *types.Slice:
@@ -573,7 +583,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		default:
 			w.WriteByte('}')
 		}
-		
+
 		w.WriteByte(')')
 
 	case *ast.FuncLit:

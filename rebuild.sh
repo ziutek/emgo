@@ -23,6 +23,7 @@ runtime/noos
 sync
 runtime
 delay
+time
 
 io
 strconv

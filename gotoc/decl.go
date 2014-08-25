@@ -359,20 +359,8 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 			w.WriteString("ACPY(")
 			w.WriteString(name)
 			w.WriteString(", ")
-
-			switch val.(type) {
-			case *ast.CompositeLit:
-				w.WriteString("((")
-				dim := cdd.Type(w, t.Elem())
-				dim = append([]string{"[]"}, dim...)
-				w.WriteString("(" + dimFuncPtr("", dim) + "))")
-				cdd.Expr(w, val, typ)
-
-			default:
-				cdd.Expr(w, val, typ)
-			}
-
-			w.WriteString("));\n")
+			cdd.Expr(w, val, typ)
+			w.WriteString(");\n")
 
 		case *types.Pointer:
 			u, ok := val.(*ast.UnaryExpr)
