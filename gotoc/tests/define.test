@@ -1,0 +1,47 @@
+// Go code:
+func F() int {
+	a := 1
+	a, b := 2, 3
+	return a + b
+}
+// C code:
+// decl
+int foo$F();
+// def
+int foo$F() {
+	int a$ = 1;
+	a$ = 2;
+	int b$ = 3;
+	return (a$+b$);
+}
+// end
+
+// Go code:
+func F() (int, int) {
+	a := 1
+	a, b := F()
+	return a, b
+}
+// C code:
+// decl
+struct int$$int_struct;
+typedef struct int$$int_struct int$$int;
+// def
+#ifndef int$$int$
+#define int$$int$
+struct int$$int_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+int$$int foo$F();
+// def
+int$$int foo$F() {
+	int a$ = 1;
+	int$$int tmp0 = foo$F();
+	a$ = tmp0._0;
+	int b$ = tmp0._1;
+	return (int$$int){a$, b$};
+}
+// end

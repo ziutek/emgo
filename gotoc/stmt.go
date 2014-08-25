@@ -92,15 +92,23 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			for i, n := 0, tup.Len(); i < n; i++ {
 				rhs[i] = tupName + "._" + strconv.Itoa(i)
 				if s.Tok == token.DEFINE {
-					typ[i] = tup.At(i).Type()
+					if o := cdd.gtc.ti.Defs[s.Lhs[i].(*ast.Ident)]; o != nil {
+						typ[i] = o.Type()
+					} // else Lhs[i] was defined before.
 				}
 			}
 		} else {
 			for i, e := range s.Rhs {
 				if s.Tok == token.DEFINE {
-					t := cdd.exprType(e)
+					var t types.Type
+					if o := cdd.gtc.ti.Defs[s.Lhs[i].(*ast.Ident)]; o != nil {
+						t = o.Type()
+						typ[i] = t
+					} else {
+						// Lhs[i] was defined before.
+						t = cdd.exprType(s.Lhs[i])
+					}
 					rhs[i] = cdd.ExprStr(e, t)
-					typ[i] = t
 					continue
 				}
 				t := cdd.exprType(s.Lhs[i])
@@ -116,9 +124,11 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				name := cdd.NameStr(cdd.object(e.(*ast.Ident)), true)
 				if name == "_$" {
 					lhs[i] = "_"
-				} else {
+				} else if typ[i] != nil {
 					t, dim := cdd.TypeStr(typ[i])
 					lhs[i] = t + " " + dimFuncPtr(name, dim)
+				} else {
+					lhs[i] = name
 				}
 			}
 		} else {
