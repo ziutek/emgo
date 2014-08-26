@@ -881,7 +881,7 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 		w.WriteString("equals(" + lhs + ", " + rhs + ")")
 		return
 	}
-	w.WriteString(lhs + " " + op + " " + rhs)
+	w.WriteString("(" + lhs + " " + op + " " + rhs + ")")
 }
 
 func findMethod(t *types.Named, name string) *types.Func {
