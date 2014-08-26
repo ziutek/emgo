@@ -104,14 +104,20 @@ func checkErr(err error) {
 }
 
 func main() {
-	s.WriteString("Echo application\n\n")
-	s.Flush()
+	var uts [50]uint64
+	for i := range uts {
+		delay.Loop(2e3)
+		uts[i] = noos.Uptime()
+	}
 
-	for i := 0; i < 20; i++ {
-		ns := noos.Uptime()
-		strconv.WriteUint64(s, ns, 10)
+	s.WriteString("\nFor loop:\n")
+	for _, ut := range uts {
+		strconv.WriteUint64(s, ut, 10)
 		s.WriteString(" ns\n")
 	}
+
+	s.WriteString("Echo:\n")
+	s.Flush()
 
 	var buf [40]byte
 	for {

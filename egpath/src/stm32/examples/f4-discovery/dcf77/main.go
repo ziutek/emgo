@@ -114,34 +114,143 @@ func pulse() {
 	}
 }
 
+type data struct {
+	i           int
+	min, hour   int
+	mday, wday  int
+	month, year int
+	ones        int
+	summer      bool
+}
+
+func (d *data) reset() {
+	*d = data{i: -1}
+}
+
+func (d *data) zero() {
+	*d = data{}
+}
+
 func main() {
-	i := -1
+	var d data
+	d.reset()
 	for {
 		p := <-c
-		strconv.WriteInt(con, int32(i), 10)
+
+		switch {
+		case d.i == -1 || p.Bit > One:
+			// break
+		case d.i <= 16:
+			// ...
+		case d.i == 17:
+			d.summer = (p.Bit == One)
+		case d.i == 18:
+			if d.summer && p.Bit == One || !d.summer && p.Bit == Zero {
+				con.WriteString("Err: bad summer time bits\n")
+				d.reset()
+			}
+		case d.i == 19:
+			// Leap second announcement
+		case d.i == 20:
+			if p.Bit != 1 {
+				con.WriteString("Err: start bit != 1\n")
+				d.reset()
+			}
+		case d.i <= 27:
+			if p.Bit == One {
+				d.ones++
+				d.min += 1 << uint(d.i-21)
+			}
+		case d.i == 28:
+			if p.Bit == One {
+				d.ones++
+			}
+			if d.ones&1 != 0 {
+				con.WriteString("Err: minute bits parity != even\n")
+				d.reset()
+			}
+		case d.i <= 34:
+			if p.Bit == One {
+				d.ones++
+				d.hour += 1 << uint(d.i-29)
+			}
+		case d.i == 35:
+			if p.Bit == One {
+				d.ones++
+			}
+			if d.ones&1 != 0 {
+				con.WriteString("Err: hour bits parity != even\n")
+				d.reset()
+			}
+		case d.i <= 41:
+			if p.Bit == One {
+				d.ones++
+				d.mday += 1 << uint(d.i-36)
+			}
+		case d.i <= 44:
+			if p.Bit == One {
+				d.ones++
+				d.wday += 1 << uint(d.i-42)
+			}
+		case d.i <= 49:
+			if p.Bit == One {
+				d.ones++
+				d.month += 1 << uint(d.i-45)
+			}
+		case d.i <= 57:
+			if p.Bit == One {
+				d.ones++
+				d.year += 1 << uint(d.i-50)
+			}
+		case d.i == 58:
+			if p.Bit == One {
+				d.ones++
+			}
+			if d.ones&1 != 0 {
+				con.WriteString("Err: date bits parity != even\n")
+				d.reset()
+			}
+		}
+
+		strconv.WriteUint64(con, p.Stamp, 10)
+		con.WriteByte(' ')
+		strconv.WriteInt(con, int32(d.i), 10)
+		if d.i >= 0 {
+			d.i++
+		}
+		con.WriteByte(' ')
 		switch p.Bit {
 		case Zero:
-			con.WriteString(" 0     ")
+			con.WriteByte('0')
 			blink(Blue)
-			if i >= 0 {
-				i++
-			}
 		case One:
-			con.WriteString(" 1     ")
+			con.WriteByte('1')
 			blink(Green)
-			if i >= 0 {
-				i++
-			}
 		case Sync:
-			con.WriteString(" sync  ")
+			con.WriteString("sync\n")
 			blink(Orange)
-			i = 0
+			con.WriteString("Time: ")
+			strconv.WriteInt(con, int32(2<<12+d.year), 16)
+			con.WriteByte('-')
+			strconv.WriteInt(con, int32(d.month), 16)
+			con.WriteByte('-')
+			strconv.WriteInt(con, int32(d.mday), 16)
+			con.WriteByte(' ')
+			strconv.WriteInt(con, int32(d.hour), 16)
+			con.WriteByte(':')
+			strconv.WriteInt(con, int32(d.min), 16)
+			con.WriteByte(' ')
+			if d.summer {
+				con.WriteString("CEST")
+			} else {
+				con.WriteString("CET")
+			}
+			d.zero()
 		default: // Err
-			con.WriteString(" error ")
+			con.WriteString("error")
 			blink(Red)
-			i = -1
+			d.reset()
 		}
-		strconv.WriteUint64(con, p.Stamp, 10)
 		con.WriteByte('\n')
 	}
 }
