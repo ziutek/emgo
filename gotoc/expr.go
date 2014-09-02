@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"go/ast"
-	"go/token"
 	"strconv"
 
 	"code.google.com/p/go.tools/go/exact"
@@ -158,16 +157,31 @@ func (cdd *CDD) NameStr(o types.Object, direct bool) string {
 	return buf.String()
 }
 
-func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Type, recv ast.Expr) {
+func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun, recvt types.Type, recvs string) {
 	sel := cdd.gtc.ti.Selections[e]
 	if sel == nil {
 		cdd.Name(w, cdd.object(e.Sel), true)
 		return
 	}
+	s := cdd.ExprStr(e.X, nil)
+	index := sel.Index()
+	rt := sel.Recv()
+	for _, id := range index[:len(index)-1] {
+		if p, ok := rt.(*types.Pointer); ok {
+			rt = p.Elem()
+			s += "->"
+		} else {
+			s += "."
+		}
+		f := underlying(rt).(*types.Struct).Field(id)
+		s += f.Name()
+		rt = f.Type()
+	}
+	rpt, isPtr := rt.(*types.Pointer)
 	switch sel.Kind() {
 	case types.FieldVal:
-		cdd.Expr(w, e.X, nil)
-		if sel.Indirect() {
+		w.WriteString(s)
+		if isPtr {
 			w.WriteString("->")
 		} else {
 			w.WriteByte('.')
@@ -176,25 +190,34 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Ty
 
 	case types.MethodVal:
 		fun = sel.Obj().Type()
-		recv = e.X
 		rtyp := fun.(*types.Signature).Recv().Type()
 
 		switch rtyp.Underlying().(type) {
 		case *types.Interface:
 			// Method with interface receiver.
 			w.WriteString(e.Sel.Name)
+			recvs = s
+			recvt = rt
 
 		case *types.Pointer:
 			// Method with pointer receiver.
 			cdd.Name(w, sel.Obj(), true)
-			if !sel.Indirect() {
-				recv = &ast.UnaryExpr{Op: token.AND, X: e.X}
+			if isPtr {
+				recvs = s
+				recvt = rt
+			} else {
+				recvs = "&" + s
+				recvt = types.NewPointer(rt)
 			}
 		default:
 			// Method with non-pointer receiver.
 			cdd.Name(w, sel.Obj(), true)
-			if sel.Indirect() {
-				recv = &ast.UnaryExpr{Op: token.MUL, X: e.X}
+			if isPtr {
+				recvs = "*" + s
+				recvt = rpt.Elem()
+			} else {
+				recvs = s
+				recvt = rt
 			}
 		}
 
@@ -207,9 +230,9 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun types.Ty
 	return
 }
 
-func (cdd *CDD) SelectorExprStr(e *ast.SelectorExpr) (s string, fun types.Type, recv ast.Expr) {
+func (cdd *CDD) SelectorExprStr(e *ast.SelectorExpr) (s string, fun, recvt types.Type, recvs string) {
 	buf := new(bytes.Buffer)
-	fun, recv = cdd.SelectorExpr(buf, e)
+	fun, recvt, recvs = cdd.SelectorExpr(buf, e)
 	s = buf.String()
 	return
 }
@@ -304,15 +327,12 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 	return name, ""
 }
 
-func (cdd *CDD) funStr(fe ast.Expr, args []ast.Expr) (fs string, ft types.Type, rs string, re ast.Expr) {
+func (cdd *CDD) funStr(fe ast.Expr, args []ast.Expr) (fs string, ft types.Type, rs string, rt types.Type) {
 	switch f := fe.(type) {
 	case *ast.SelectorExpr:
 		buf := new(bytes.Buffer)
-		ft, re = cdd.SelectorExpr(buf, f)
+		ft, rt, rs = cdd.SelectorExpr(buf, f)
 		fs = buf.String()
-		if re != nil {
-			rs = cdd.ExprStr(re, nil)
-		}
 		return
 
 	case *ast.Ident:
@@ -332,32 +352,35 @@ func (cdd *CDD) funStr(fe ast.Expr, args []ast.Expr) (fs string, ft types.Type, 
 }
 
 func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
-	switch t := underlying(cdd.exprType(e.Fun)).(type) {
+	switch t := cdd.exprType(e.Fun).(type) {
 	case *types.Signature:
-		fun, _, recv, rexpr := cdd.funStr(e.Fun, e.Args)
+		fun, _, recvs, recvt := cdd.funStr(e.Fun, e.Args)
 
-		comma := false
-		reci := false
-		rtyp := cdd.exprType(rexpr)
-		if rtyp != nil {
-			_, reci = rtyp.Underlying().(*types.Interface)
+		var comma, reci bool
+		if recvt != nil {
+			_, reci = recvt.Underlying().(*types.Interface)
 		}
 		if reci {
-			w.WriteString("({")
-			dim := cdd.Type(w, rtyp)
-			w.WriteString(" " + dimFuncPtr("r", dim) + " = ")
-			w.WriteString(recv)
-			w.WriteString("; r." + fun + "(r.val$")
+			if _, ok := e.Fun.(*ast.SelectorExpr).X.(*ast.Ident); ok {
+				reci = false
+				w.WriteString(recvs + "." + fun + "(" + recvs + ".val$")
+			} else {
+				w.WriteString("({")
+				dim := cdd.Type(w, recvt)
+				w.WriteString(" " + dimFuncPtr("r", dim) + " = ")
+				w.WriteString(recvs)
+				w.WriteString("; r." + fun + "(r.val$")
+			}
 			comma = true
 		} else {
 			if fun == "" {
-				w.WriteString(recv)
+				w.WriteString(recvs)
 			}
 			w.WriteString(fun)
 
 			w.WriteByte('(')
-			if recv != "" {
-				w.WriteString(recv)
+			if recvs != "" {
+				w.WriteString(recvs)
 				comma = true
 			}
 		}
@@ -387,7 +410,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 
 	default:
 		arg := e.Args[0]
-		switch typ := t.(type) {
+		switch typ := underlying(t).(type) {
 		case *types.Slice:
 			switch underlying(cdd.exprType(arg)).(type) {
 			case *types.Basic: // string
@@ -401,12 +424,15 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 				w.WriteByte(')')
 			}
 
+		case *types.Interface:
+			cdd.interfaceExpr(w, arg, t)
+
 		default:
 			w.WriteString("((")
-			dim := cdd.Type(w, typ)
+			dim := cdd.Type(w, t)
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteString(")(")
-			cdd.Expr(w, arg, typ)
+			cdd.Expr(w, arg, t)
 			w.WriteString("))")
 		}
 	}
@@ -502,8 +528,8 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		w.WriteByte(')')
 
 	case *ast.SelectorExpr:
-		s, fun, recv := cdd.SelectorExprStr(e)
-		if recv == nil {
+		s, fun, recvt, recvs := cdd.SelectorExprStr(e)
+		if recvt == nil {
 			w.WriteString(s)
 			break
 		}
@@ -513,8 +539,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		w.WriteString(res.typ)
 		w.WriteByte(' ')
 		w.WriteString(dimFuncPtr("func"+params.String(), res.dim))
-		w.WriteString(" { return " + s + "(")
-		cdd.Expr(w, recv, nil)
+		w.WriteString(" { return " + s + "(" + recvs)
 		if p := sig.Params(); p != nil {
 			for i := 1; i <= p.Len(); i++ {
 				w.WriteString(", _" + strconv.Itoa(i))

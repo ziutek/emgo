@@ -42,7 +42,7 @@ Emgo standard library doesn't follow Go standard library. When porting some Go p
 
 ### Not yet implemented:
 
-Interfaces (and friends).
+Interfaces (and friends): partialy supported (no reflection, no dynamic conversion).
 Maps.
 Returning array from function.
 Defer.
@@ -50,4 +50,3 @@ String concatanation.
 Append.
 Unnamed structs.
 Closures.
-Embeded fields in struct.

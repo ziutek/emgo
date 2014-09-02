@@ -163,7 +163,7 @@ int foo$S(chan c1$, chan c2$) {
 					int$$bool tmp0 = SELRECVOK(0);
 					int i$ = tmp0._0;
 					bool ok$ = tmp0._1;
-					if ((i$ == 0||!ok$)) {
+					if (((i$ == 0)||!ok$)) {
 						goto loop$_break;
 					}
 					return i$;
@@ -171,7 +171,7 @@ int foo$S(chan c1$, chan c2$) {
 				}
 				case1:{
 					SELRECV(1);
-					if (i$ == 0) {
+					if ((i$ == 0)) {
 						goto loop$_continue;
 					}
 					return i$;

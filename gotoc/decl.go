@@ -302,6 +302,8 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 
 	if !constInit {
 		w.Reset()
+		cdd.il++
+		cdd.indent(w)
 
 		// Runtime initialisation
 		assign := false
@@ -335,14 +337,13 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 				at := types.NewArray(t.Elem(), n)
 				o := types.NewVar(vt.Lbrace, cdd.gtc.pkg, aname, at)
 				cdd.gtc.pkg.Scope().Insert(o)
-				acd := cdd.gtc.newCDD(o, VarDecl, cdd.il)
+				acd := cdd.gtc.newCDD(o, VarDecl, cdd.il-1)
 				av := *vt
 				cdd.gtc.ti.Types[&av] = types.TypeAndValue{Type: at} // BUG: thread-unsafe
 				acd.varDecl(new(bytes.Buffer), o.Type(), cdd.gtc.isGlobal(o), aname, &av)
 				cdd.InitNext = acd
 				cdd.acds = append(cdd.acds, acd)
 
-				w.WriteByte('\t')
 				w.WriteString(name)
 				w.WriteString(" = ASLICE(")
 				w.WriteString(strconv.FormatInt(at.Len(), 10))
@@ -355,7 +356,6 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 			}
 
 		case *types.Array:
-			w.WriteByte('\t')
 			w.WriteString("ACPY(")
 			w.WriteString(name)
 			w.WriteString(", ")
@@ -377,12 +377,11 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 			ct := cdd.exprType(c)
 			o := types.NewVar(c.Lbrace, cdd.gtc.pkg, cname, ct)
 			cdd.gtc.pkg.Scope().Insert(o)
-			acd := cdd.gtc.newCDD(o, VarDecl, cdd.il)
+			acd := cdd.gtc.newCDD(o, VarDecl, cdd.il-1)
 			acd.varDecl(new(bytes.Buffer), o.Type(), cdd.gtc.isGlobal(o), cname, c)
 			cdd.InitNext = acd
 			cdd.acds = append(cdd.acds, acd)
 
-			w.WriteByte('\t')
 			w.WriteString(name)
 			w.WriteString(" = &")
 			w.WriteString(cname)
@@ -395,12 +394,12 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 		if assign {
 			// Ordinary assignment gos to the init() function
 			cdd.init = true
-			w.WriteByte('\t')
 			w.WriteString(name)
 			w.WriteString(" = ")
 			cdd.Expr(w, val, typ)
 			w.WriteString(";\n")
 		}
+		cdd.il--
 		cdd.copyInit(w)
 	}
 	return

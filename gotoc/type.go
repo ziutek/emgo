@@ -74,15 +74,12 @@ writeType:
 				w.WriteByte(' ')
 			}
 			d := cdd.Type(w, f.Type())
-			if !f.Anonymous() {
-				w.WriteByte(' ')
-				name := dimFuncPtr(f.Name(), d)
-				if name == "_" {
-					name += strconv.Itoa(i) + "$"
-				}
-				w.WriteString(name)
+			w.WriteByte(' ')
+			name := dimFuncPtr(f.Name(), d)
+			if name == "_" {
+				name += strconv.Itoa(i) + "$"
 			}
-			w.WriteString(";\n")
+			w.WriteString(name + ";\n")
 		}
 
 		cdd.il--
@@ -213,8 +210,8 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 	res = cdd.results(sig.Results())
 	if r := sig.Recv(); r != nil && recv {
 		var (
-			typ  string
-			dim  []string
+			typ string
+			dim []string
 		)
 		if _, ok := r.Type().Underlying().(*types.Interface); ok || pnames == orgNamesI {
 			typ = "uintptr"

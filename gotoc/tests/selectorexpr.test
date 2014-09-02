@@ -113,3 +113,41 @@ void (*foo$F())(foo$T*, foo$T) {
 	return foo$T$Add;
 }
 // end
+
+// Go code:
+type A struct {
+	Fa int
+}
+
+type B struct {
+	A
+	Fb int
+}
+
+func (a *A) F(b *B) {
+	b.F(b)
+}
+
+// C code:
+// decl
+struct foo$A_struct;
+typedef struct foo$A_struct foo$A;
+// def
+struct foo$A_struct {
+	int Fa;
+};
+// decl
+struct foo$B_struct;
+typedef struct foo$B_struct foo$B;
+// def
+struct foo$B_struct {
+	foo$A A;
+	int Fb;
+};
+// decl
+void foo$A$F(foo$A *a$, foo$B *b$);
+// def
+void foo$A$F(foo$A *a$, foo$B *b$) {
+	foo$A$F(&b$->A, b$);
+}
+// end

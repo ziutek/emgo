@@ -665,7 +665,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 	c := s.Call
-	fs, ft, rs, re := cdd.funStr(c.Fun, c.Args)
+	fs, ft, rs, rt := cdd.funStr(c.Fun, c.Args)
 
 	type arg struct {
 		l string
@@ -673,56 +673,52 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 		t types.Type
 	}
 
-	n := len(c.Args) + 1
-	if rs != "" {
-		n++
-	}
-	argv := make([]arg, n)
-
-	n = 0
-
-	if _, ok := c.Fun.(*ast.Ident); ok || rs != "" {
-		argv[n].l = fs
-	} else {
-		argv[n] = arg{"f", fs, ft}
-	}
-	n++
-
-	if rs != "" {
-		ev := false
-		if re != nil {
-			if _, ok := re.(*ast.Ident); !ok {
-				ev = true
+	var f arg
+	if rt == nil {
+		// Call of function or function variable.
+		f = arg{"_f", fs, ft}
+		if fident, ok := c.Fun.(*ast.Ident); ok {
+			if _, ok = cdd.object(fident).(*types.Var); !ok {
+				// Ordinary function call
+				f = arg{fs, "", nil}
 			}
 		}
-		t := cdd.exprType(re)
-		if !ev {
-			argv[n] = arg{rs, "", t}
-		} else {
-			argv[n] = arg{"r", rs, t}
-		}
+	} else {
+		// Method call.
+		f = arg{fs, "", nil}
+	}
+
+	n := len(c.Args)
+	if f.t != nil {
+		n++
+	}
+	if rt != nil {
 		n++
 	}
 
+	if n == 0 {
+		// Fast path for ordinary function without parameters.
+		w.WriteString("GO(" + f.l + "());\n")
+		return
+	}
+
+	argv := make([]arg, n)
+	n = 0
+
+	if f.t != nil {
+		argv[n] = f
+		n++
+	}
+	if rt != nil {
+		argv[n] = arg{"_r", rs, rt}
+		n++
+	}
 	tup := cdd.exprType(c.Fun).(*types.Signature).Params()
 	for i, a := range c.Args {
 		s := cdd.ExprStr(a, tup.At(i).Type())
-		_, ok := a.(*ast.Ident)
-		if !ok {
-			_, ok = a.(*ast.BasicLit)
-		}
 		t := cdd.exprType(a)
-		if ok {
-			argv[n] = arg{s, "", t}
-		} else {
-			argv[n] = arg{"_" + strconv.Itoa(i), s, t}
-		}
+		argv[n] = arg{"_" + strconv.Itoa(i), s, t}
 		n++
-	}
-
-	if len(argv) == 1 {
-		w.WriteString("GO(" + argv[0].l + "());\n")
-		return
 	}
 
 	w.WriteString("{\n")
@@ -730,51 +726,50 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 
 	cdd.indent(w)
 	w.WriteString("void wrap(")
-	for i, arg := range argv[1:] {
+	for i, arg := range argv {
 		if i > 0 {
 			w.WriteString(", ")
 		}
 		t, dim := cdd.TypeStr(arg.t)
-		w.WriteString(t + " " + dimFuncPtr("_"+strconv.Itoa(i), dim))
+		w.WriteString(t + " " + dimFuncPtr(arg.l, dim))
 	}
 	w.WriteString(") {\n")
 	cdd.il++
-
 	cdd.indent(w)
 	w.WriteString("goready();\n")
 	cdd.indent(w)
-	w.WriteString(argv[0].l + "(")
-	for i := range argv[1:] {
+	w.WriteString(f.l + "(")
+	args := argv
+	if f.t != nil {
+		args = argv[1:]
+	}
+	for i, arg := range args {
 		if i > 0 {
 			w.WriteString(", ")
 		}
-		w.WriteString("_" + strconv.Itoa(i))
+		w.WriteString(arg.l)
 	}
 	w.WriteString(");\n")
-
 	cdd.il--
 	cdd.indent(w)
 	w.WriteString("}\n")
 
 	for _, arg := range argv {
-		if arg.r == "" {
-			continue
-		}
 		t, dim := cdd.TypeStr(arg.t)
-
 		cdd.indent(w)
 		w.WriteString(t + " " + dimFuncPtr(arg.l, dim) + " = " + arg.r + ";\n")
 	}
 
 	cdd.indent(w)
 	w.WriteString("GOWAIT(wrap(")
-	for i, arg := range argv[1:] {
+	for i, arg := range argv {
 		if i > 0 {
 			w.WriteString(", ")
 		}
 		w.WriteString(arg.l)
 	}
 	w.WriteString("));\n")
+
 	cdd.il--
 	cdd.indent(w)
 	w.WriteString("}\n")

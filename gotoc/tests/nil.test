@@ -54,7 +54,7 @@ func Nil(b []byte) bool {
 bool foo$Nil(slice b$);
 // def
 bool foo$Nil(slice b$) {
-	return b$.arr == nil;
+	return (b$.arr == nil);
 }
 // end
 

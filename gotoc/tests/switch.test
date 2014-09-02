@@ -15,7 +15,7 @@ int foo$Switch(int i$);
 int foo$Switch(int i$) {
 	switch(0){case 0:{
 		bool tag = true;
-		if (tag == ((i$+1)<2)) {
+		if ((tag == ((i$+1)<2))) {
 			++(i$);
 			break;
 		}
@@ -47,11 +47,11 @@ int foo$Switch(int i$);
 int foo$Switch(int i$) {
 	switch(0){case 0:{
 		int tag = i$;
-		if (tag == 1) {
+		if ((tag == 1)) {
 			return 10;
 			break;
 		}
-		if (tag == 2) {
+		if ((tag == 2)) {
 			return 20;
 			break;
 		}
@@ -93,15 +93,15 @@ int foo$Switch(int i$) {
 	while ((i$<10)) {
 		switch(0){case 0:{
 			int tag = i$;
-			if (tag == 1) {
+			if ((tag == 1)) {
 				i$ += 1;
 			}
-			if (tag == 2) {
+			if ((tag == 2)) {
 				i$ += 2;
 				continue;
 				break;
 			}
-			if (tag == 3) {
+			if ((tag == 3)) {
 				return i$;
 				break;
 			}

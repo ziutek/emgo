@@ -177,3 +177,76 @@ struct foo$A_struct {
 	int$$int (*A)(uintptr);
 };
 // end
+
+// Go code:
+type Error string
+
+func (e *Error) Error() string {
+	return string(*e)
+}
+
+var (
+	errNoSignal = Error("no signal")
+	ErrNoSignal = error(&errNoSignal)
+)
+// C code:
+// decl
+typedef string foo$Error;
+// decl
+string foo$Error$Error(foo$Error *e$);
+// def
+string foo$Error$Error(foo$Error *e$) {
+	return ((string)(*e$));
+}
+// decl
+foo$Error foo$errNoSignal;
+// def
+foo$Error foo$errNoSignal = EGSTR("no signal");
+// decl
+error foo$ErrNoSignal;
+// def
+error foo$ErrNoSignal;
+// init
+	foo$ErrNoSignal = (error){
+		.interface = INTERFACE(&foo$errNoSignal, 0x101c7c62),
+		.Error = (string(*)(uintptr))foo$Error$Error
+	};
+// end
+
+// Go code:
+func E(e error) string {
+	return e.Error()
+}
+// C code:
+// decl
+string foo$E(error e$);
+// def
+string foo$E(error e$) {
+	return e$.Error(e$.val$);
+}
+// end
+
+// Go code:
+type Stringer interface {
+	String() string
+}
+
+func S(s *Stringer) string {
+	return (*s).String()
+}
+// C code:
+// decl
+struct foo$Stringer_struct;
+typedef struct foo$Stringer_struct foo$Stringer;
+// def
+struct foo$Stringer_struct {
+	interface;
+	string (*String)(uintptr);
+};
+// decl
+string foo$S(foo$Stringer *s$);
+// def
+string foo$S(foo$Stringer *s$) {
+	return ({foo$Stringer r = (*s$); r.String(r.val$);});
+}
+// end

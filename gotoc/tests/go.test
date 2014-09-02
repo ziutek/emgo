@@ -46,12 +46,13 @@ int foo$I$F(foo$I i$, int k$);
 // def
 int foo$I$F(foo$I i$, int k$) {
 	{
-		void wrap(foo$I _0, int _1) {
+		void wrap(foo$I _r, int _0) {
 			goready();
-			foo$I$F(_0, _1);
+			foo$I$F(_r, _0);
 		}
+		foo$I _r = i$;
 		int _0 = (((int)(i$))*k$);
-		GOWAIT(wrap(i$, _0));
+		GOWAIT(wrap(_r, _0));
 	}
 	return (((int)(i$))-k$);
 }
@@ -68,13 +69,13 @@ void (*foo$F(slice a$))(slice);
 // def
 void (*foo$F(slice a$))(slice) {
 	{
-		void wrap(slice _0) {
+		void wrap(void (*_f)(slice), slice _0) {
 			goready();
-			f(_0);
+			_f(_0);
 		}
-		void (*f)(slice) = foo$F(SLICEL(a$, byte*, 1));
+		void (*_f)(slice) = foo$F(SLICEL(a$, byte*, 1));
 		slice _0 = SLICEH(a$, 1);
-		GOWAIT(wrap(_0));
+		GOWAIT(wrap(_f, _0));
 	}
 	return ({
 		void func$(slice b$) {
