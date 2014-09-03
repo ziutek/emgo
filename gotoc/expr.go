@@ -862,16 +862,18 @@ func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
 	}
 }
 
+var unil = types.Typ[types.UntypedNil]
+
 func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 	typ := ltyp
-	if typ == types.Typ[types.UntypedNil] {
+	if typ == unil {
 		typ = rtyp
 	}
 	switch t := underlying(typ).(type) {
 	case *types.Slice:
 		nilv := "nil"
 		sel := ".arr"
-		if rtyp == types.Typ[types.UntypedNil] {
+		if rtyp == unil {
 			lhs += sel
 			rhs = nilv
 		} else {
@@ -887,12 +889,12 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 		if op == "!=" {
 			w.WriteByte('!')
 		}
-		if rtyp == types.Typ[types.UntypedNil] {
-			lhs += sel
+		lhs += sel
+		rhs += sel
+		if rtyp == unil {
 			rhs = nilv
-		} else {
+		} else if ltyp == unil {
 			lhs = nilv
-			rhs += sel
 		}
 		w.WriteString("EQUALI(" + lhs + ", " + rhs + ")")
 		return
