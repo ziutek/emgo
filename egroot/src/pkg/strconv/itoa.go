@@ -3,6 +3,7 @@ package strconv
 import (
 	"io"
 	"log"
+	"unsafe"
 )
 
 const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
@@ -13,8 +14,8 @@ func panicIfZero(n int) {
 	}
 }
 
-// Utoa converts u to string and returns offset to most significant digit.
-func Utoa(buf []byte, u uint32, base int) int {
+// Utoa32 converts u to string and returns offset to most significant digit.
+func Utoa32(buf []byte, u uint32, base int) int {
 	if base < 2 || base > len(digits) {
 		log.Panic("strconv: illegal base")
 	}
@@ -38,29 +39,23 @@ func Utoa(buf []byte, u uint32, base int) int {
 	return n
 }
 
-func WriteUint(w io.Writer, u uint32, base int) (int, error) {
-	var buf [10]byte
-	first := Utoa(buf[:], u, base)
-	return w.Write(buf[first:])
-}
-
-// Itoa converts i to string and returns offset to most significant digit or
+// Itoa32 converts i to string and returns offset to most significant digit or
 // sign.
-func Itoa(buf []byte, i int32, base int) int {
+func Itoa32(buf []byte, i int32, base int) int {
 	if i >= 0 {
-		return Utoa(buf, uint32(i), base)
+		return Utoa32(buf, uint32(i), base)
 	}
 	if len(buf) == 0 {
 		log.Panic("strconv: buffer too short")
 	}
-	n := Utoa(buf[1:], uint32(-i), base)
+	n := Utoa32(buf[1:], uint32(-i), base)
 	buf[n] = '-'
 	return n
 }
 
-func WriteInt(w io.Writer, i int32, base int) (int, error) {
+func WriteInt32(w io.Writer, i int32, base int) (int, error) {
 	var buf [11]byte
-	first := Itoa(buf[:], i, base)
+	first := Itoa32(buf[:], i, base)
 	return w.Write(buf[first:])
 }
 
@@ -113,4 +108,12 @@ func WriteInt64(w io.Writer, i int64, base int) (int, error) {
 	var buf [21]byte
 	first := Itoa64(buf[:], i, base)
 	return w.Write(buf[first:])
+}
+
+func Itoa(buf []byte, i, base int) int {
+	if unsafe.Sizeof(i) <= 4 {
+		return Itoa32(buf, int32(i), base)
+	}
+	return Itoa64(buf, int64(i), base)
+
 }
