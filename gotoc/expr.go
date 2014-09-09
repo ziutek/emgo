@@ -385,6 +385,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 			}
 		}
 		tup := t.Params()
+		n := tup.Len() - 1
 		for i, a := range e.Args {
 			if a == nil {
 				// builtin can set type args to nil
@@ -400,8 +401,26 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 			if i < tup.Len() {
 				at = tup.At(i).Type()
 			}
+			if i == n && t.Variadic() {
+				s := at.(*types.Slice)
+				slen := len(e.Args) - n
+				w.WriteString("ASLICE(" + strconv.Itoa(slen) + ", (")
+				dim := cdd.Type(w, s.Elem())
+				w.WriteString(dimFuncPtr("[]", dim))
+				w.WriteString("){")
+			}
 			cdd.interfaceExpr(w, a, at)
 			i++
+		}
+		if t.Variadic() {
+			if len(e.Args) == n {
+				if comma {
+					w.WriteString(", ")
+				}
+				w.WriteString("NILSLICE")
+			} else {
+				w.WriteString("})")
+			}
 		}
 		w.WriteByte(')')
 		if reci {

@@ -152,3 +152,10 @@ end:
 	return (int$$int){._0=x$};
 }
 // end
+
+// Go code:
+func F(a ...int) {
+	F(1)
+}
+// C code:
+// end
