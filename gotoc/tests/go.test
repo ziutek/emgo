@@ -7,7 +7,7 @@ func F() {
 void foo$F();
 // def
 void foo$F() {
-	GO(foo$F());
+	GO(foo$F(), false);
 }
 // end
 
@@ -26,7 +26,7 @@ void foo$F(int i$) {
 			foo$F(_0);
 		}
 		int _0 = (2*i$);
-		GOWAIT(wrap(_0));
+		GO(wrap(_0), true);
 	}
 }
 // end
@@ -52,7 +52,7 @@ int foo$I$F(foo$I i$, int k$) {
 		}
 		foo$I _r = i$;
 		int _0 = (((int)(i$))*k$);
-		GOWAIT(wrap(_r, _0));
+		GO(wrap(_r, _0), true);
 	}
 	return (((int)(i$))-k$);
 }
@@ -75,7 +75,7 @@ void (*foo$F(slice a$))(slice) {
 		}
 		void (*_f)(slice) = foo$F(SLICEL(a$, byte*, 1));
 		slice _0 = SLICEH(a$, 1);
-		GOWAIT(wrap(_f, _0));
+		GO(wrap(_f, _0), true);
 	}
 	return ({
 		void func$(slice b$) {
@@ -83,5 +83,45 @@ void (*foo$F(slice a$))(slice) {
 		}
 		func$;
 	});
+}
+// end
+
+// Go code:
+func F(n int, a ...int) {
+	go F(10, )
+	go F(20, 0)
+	go F(30, 0, 1)
+}
+// C code:
+// decl
+void foo$F(int n$, slice a$);
+// def
+void foo$F(int n$, slice a$) {
+	{
+		void wrap(int _0) {
+			goready();
+			foo$F(_0, NILSLICE);
+		}
+		int _0 = 10;
+		GO(wrap(_0), true);
+	}
+	{
+		void wrap(int _0, int _a[1]) {
+			goready();
+			foo$F(_0, ASLICE(1, _a));
+		}
+		int _0 = 20;
+		int _a[1] = {0};
+		GO(wrap(_0, _a), true);
+	}
+	{
+		void wrap(int _0, int _a[2]) {
+			goready();
+			foo$F(_0, ASLICE(2, _a));
+		}
+		int _0 = 30;
+		int _a[2] = {0, 1};
+		GO(wrap(_0, _a), true);
+	}
 }
 // end

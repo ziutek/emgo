@@ -247,7 +247,8 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 			return "len", ""
 
 		case *types.Array:
-			return "", strconv.FormatInt(t.Len(), 10)
+			panic("builtin len(array) isn't handled as constant expression")
+			// return "", strconv.FormatInt(t.Len(), 10)
 
 		case *types.Chan:
 			return "clen", ""

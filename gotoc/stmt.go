@@ -678,8 +678,11 @@ type call struct {
 
 func (cdd *CDD) call(e *ast.CallExpr, eval bool) *call {
 	c := new(call)
-	n := len(e.Args)
+	n := len(e.Args) + 1 // +1 for variadic function without any parameter.
 	fs, ft, rs, rt := cdd.funStr(e.Fun, e.Args)
+	if fs == "" {
+		panic("fs == \"\", rs == \"" + rs + "\"")
+	}
 	ri := false
 	if rt != nil {
 		n++
@@ -727,7 +730,9 @@ func (cdd *CDD) call(e *ast.CallExpr, eval bool) *call {
 	tup := sig.Params()
 	alen := tup.Len()
 	if sig.Variadic() {
-		c.arr.t = tup.At(alen - 1).Type().(*types.Slice).Elem()
+		et := tup.At(alen - 1).Type().(*types.Slice).Elem()
+		c.arr.t = types.NewArray(et, int64(len(e.Args)-alen+1))
+		c.arr.l = "_a"
 	}
 	for i, a := range e.Args {
 		if a == nil {
@@ -761,11 +766,9 @@ func (cdd *CDD) call(e *ast.CallExpr, eval bool) *call {
 			c.args[n].l = "NILSLICE"
 			c.arr = arg{}
 		} else {
-			c.args[n].l = "ASLICE(" + strconv.Itoa(len(e.Args)-alen) + ", _a)"
-			ts, dim := cdd.TypeStr(c.arr.t)
-			c.arr.l = ts + " " + dimFuncPtr("_a[]", dim) + " = {" + c.arr.r + "};\n"
-			c.arr.t = nil
-			c.arr.r = ""
+			c.args[n].t = types.NewSlice(c.arr.t.(*types.Array).Elem())
+			c.args[n].l = "ASLICE(" + strconv.Itoa(len(e.Args)-alen+1) + ", _a)"
+			c.arr.r = "{" + c.arr.r + "}"
 		}
 		n++
 	}
@@ -778,7 +781,7 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 
 	if c.fun.r == "" && len(c.args) == 0 {
 		// Fast path: ordinary function without parameters.
-		w.WriteString("GO(" + c.fun.l + "());\n")
+		w.WriteString("GO(" + c.fun.l + "(), false);\n")
 		return
 	}
 
@@ -792,9 +795,19 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 
 	cdd.indent(w)
 	w.WriteString("void wrap(")
+	comma := false
 	for i, arg := range argv {
-		if i > 0 {
+		if arg.t == nil {
+			continue // const. expr.
+		}
+		if comma {
 			w.WriteString(", ")
+		} else {
+			comma = true
+		}
+		if i == len(argv)-1 && c.arr.t != nil {
+			// Variadic function.
+			arg = c.arr
 		}
 		dim := cdd.Type(w, arg.t)
 		w.WriteString(" " + dimFuncPtr(arg.l, dim))
@@ -818,9 +831,15 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 	if c.rcv.r != "" {
 		argv = append([]arg{c.rcv}, argv...)
 	}
-	for _, arg := range argv {
+	for i, arg := range argv {
+		if i == len(argv)-1 && c.arr.t != nil {
+			// Variadic function.
+			cdd.indent(w)
+			dim := cdd.Type(w, c.arr.t)
+			w.WriteString(" " + dimFuncPtr(c.arr.l, dim) + " = " + c.arr.r + ";\n")
+		}
 		if arg.r == "" {
-			continue
+			continue // Don't evaluate
 		}
 		cdd.indent(w)
 		dim := cdd.Type(w, arg.t)
@@ -830,14 +849,24 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 		argv = argv[1:]
 	}
 	cdd.indent(w)
-	w.WriteString("GOWAIT(wrap(")
+	w.WriteString("GO(wrap(")
+	comma = false
 	for i, arg := range argv {
-		if i > 0 {
+		if arg.t == nil {
+			continue // const. expr.
+		}
+		if comma {
 			w.WriteString(", ")
+		} else {
+			comma = true
+		}
+		if i == len(argv)-1 && c.arr.t != nil {
+			// Variadic function.
+			arg = c.arr
 		}
 		w.WriteString(arg.l)
 	}
-	w.WriteString("));\n")
+	w.WriteString("), true);\n")
 
 	cdd.il--
 	cdd.indent(w)
