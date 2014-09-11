@@ -676,16 +676,21 @@ type call struct {
 	args []arg
 }
 
-func (cdd *CDD) call(e *ast.CallExpr, eval bool) *call {
+func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 	c := new(call)
 	n := len(e.Args) + 1 // +1 for variadic function without any parameter.
 	fs, ft, rs, rt := cdd.funStr(e.Fun, e.Args)
+	if t != nil {
+		ft = t
+	}
 	if fs == "" {
 		panic("fs == \"\", rs == \"" + rs + "\"")
 	}
+	if rs != "" {
+		n++
+	}
 	ri := false
 	if rt != nil {
-		n++
 		_, ri = rt.Underlying().(*types.Interface)
 	}
 	c.args = make([]arg, n)
@@ -694,15 +699,15 @@ func (cdd *CDD) call(e *ast.CallExpr, eval bool) *call {
 		// Interface receiver
 		if _, ok := e.Fun.(*ast.SelectorExpr).X.(*ast.Ident); ok && !eval {
 			c.fun.l = rs + "." + fs
-			c.args[n] = arg{types.Typ[types.Uintptr], rs + ".var$", ""}
+			c.args[n] = arg{types.Typ[types.Uintptr], rs + ".val$", ""}
 			n++
 		} else {
 			c.rcv = arg{rt, "_r", rs}
-			c.fun.l = "_r" + fs
-			c.args[n] = arg{types.Typ[types.Uintptr], "_r" + ".var$", ""}
+			c.fun.l = "_r." + fs
+			c.args[n] = arg{types.Typ[types.Uintptr], "_r" + ".val$", ""}
 			n++
 		}
-	} else if rt == nil {
+	} else if rs == "" {
 		if eval {
 			// Call of function or function variable.
 			c.fun = arg{ft, "_f", fs}
@@ -729,7 +734,8 @@ func (cdd *CDD) call(e *ast.CallExpr, eval bool) *call {
 	sig := ft.(*types.Signature)
 	tup := sig.Params()
 	alen := tup.Len()
-	if sig.Variadic() {
+	variadic := sig.Variadic() && !e.Ellipsis.IsValid()
+	if variadic {
 		et := tup.At(alen - 1).Type().(*types.Slice).Elem()
 		c.arr.t = types.NewArray(et, int64(len(e.Args)-alen+1))
 		c.arr.l = "_a"
@@ -739,7 +745,7 @@ func (cdd *CDD) call(e *ast.CallExpr, eval bool) *call {
 			// builtin can set type args to nil
 			continue
 		}
-		if sig.Variadic() && i >= alen-1 {
+		if variadic && i >= alen-1 {
 			if c.arr.r != "" {
 				c.arr.r += ", "
 			}
@@ -754,7 +760,7 @@ func (cdd *CDD) call(e *ast.CallExpr, eval bool) *call {
 			at = cdd.exprType(a)
 		}
 		s := cdd.interfaceExprStr(a, at)
-		if eval {
+		if eval || c.arr.t != nil {
 			c.args[n] = arg{at, "_" + strconv.Itoa(i), s}
 		} else {
 			c.args[n].l = s
@@ -765,6 +771,11 @@ func (cdd *CDD) call(e *ast.CallExpr, eval bool) *call {
 		if c.arr.r == "" {
 			c.args[n].l = "NILSLICE"
 			c.arr = arg{}
+			if !eval {
+				for i, a := range c.args[:n] {
+					c.args[i] = arg{nil, a.r, ""}
+				}
+			}
 		} else {
 			c.args[n].t = types.NewSlice(c.arr.t.(*types.Array).Elem())
 			c.args[n].l = "ASLICE(" + strconv.Itoa(len(e.Args)-alen+1) + ", _a)"
@@ -777,7 +788,7 @@ func (cdd *CDD) call(e *ast.CallExpr, eval bool) *call {
 }
 
 func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
-	c := cdd.call(s.Call, true)
+	c := cdd.call(s.Call, nil, true)
 
 	if c.fun.r == "" && len(c.args) == 0 {
 		// Fast path: ordinary function without parameters.

@@ -88,9 +88,10 @@ void (*foo$F(slice a$))(slice) {
 
 // Go code:
 func F(n int, a ...int) {
-	go F(10, )
+	go F(10)
 	go F(20, 0)
 	go F(30, 0, 1)
+	go F(40, a...)
 }
 // C code:
 // decl
@@ -122,6 +123,15 @@ void foo$F(int n$, slice a$) {
 		int _0 = 30;
 		int _a[2] = {0, 1};
 		GO(wrap(_0, _a), true);
+	}
+	{
+		void wrap(int _0, slice _1) {
+			goready();
+			foo$F(_0, _1);
+		}
+		int _0 = 40;
+		slice _1 = a$;
+		GO(wrap(_0, _1), true);
 	}
 }
 // end

@@ -154,8 +154,28 @@ end:
 // end
 
 // Go code:
-func F(a ...int) {
-	F(1)
+func F(n int, a ...int) {
+	F(10)
+	F(20, 1)
+	F(30, 1, 2)
+	F(40, a...)
 }
 // C code:
+// decl
+void foo$F(int n$, slice a$);
+// def
+void foo$F(int n$, slice a$) {
+	foo$F(10, NILSLICE);
+	({
+		int _0 = 20;
+		int _a[1] = {1};
+		foo$F(_0, ASLICE(1, _a));
+	});
+	({
+		int _0 = 30;
+		int _a[2] = {1, 2};
+		foo$F(_0, ASLICE(2, _a));
+	});
+	foo$F(40, a$);
+}
 // end

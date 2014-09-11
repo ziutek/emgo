@@ -247,6 +247,9 @@ struct foo$Stringer_struct {
 string foo$S(foo$Stringer *s$);
 // def
 string foo$S(foo$Stringer *s$) {
-	return ({foo$Stringer r = (*s$); r.String(r.val$);});
+	return ({
+		foo$Stringer _r = (*s$);
+		_r.String(_r.val$);
+	});
 }
 // end

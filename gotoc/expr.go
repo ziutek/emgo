@@ -355,77 +355,50 @@ func (cdd *CDD) funStr(fe ast.Expr, args []ast.Expr) (fs string, ft types.Type, 
 func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 	switch t := cdd.exprType(e.Fun).(type) {
 	case *types.Signature:
-		fun, _, recvs, recvt := cdd.funStr(e.Fun, e.Args)
-
-		var comma, reci bool
-		if recvt != nil {
-			_, reci = recvt.Underlying().(*types.Interface)
+		c := cdd.call(e, t, false)
+		if c.rcv.r != "" || c.arr.r != "" {
+			w.WriteString("({\n")
+			cdd.il++
+			cdd.indent(w)
 		}
-		if reci {
-			if _, ok := e.Fun.(*ast.SelectorExpr).X.(*ast.Ident); ok {
-				reci = false
-				w.WriteString(recvs + "." + fun + "(" + recvs + ".val$")
-			} else {
-				w.WriteString("({")
-				dim := cdd.Type(w, recvt)
-				w.WriteString(" " + dimFuncPtr("r", dim) + " = ")
-				w.WriteString(recvs)
-				w.WriteString("; r." + fun + "(r.val$")
-			}
-			comma = true
-		} else {
-			if fun == "" {
-				w.WriteString(recvs)
-			}
-			w.WriteString(fun)
-
-			w.WriteByte('(')
-			if recvs != "" {
-				w.WriteString(recvs)
-				comma = true
-			}
+		if c.rcv.r != "" {
+			dim := cdd.Type(w, c.rcv.t)
+			w.WriteString(" " + dimFuncPtr(c.rcv.l, dim) + " = " + c.rcv.r + ";\n")
+			cdd.indent(w)
 		}
-		tup := t.Params()
-		n := tup.Len() - 1
-		for i, a := range e.Args {
-			if a == nil {
-				// builtin can set type args to nil
-				continue
+		if c.arr.r != "" {
+			argv := c.args
+			if c.fun.r != "" {
+				argv = append([]arg{c.fun}, c.args...)
 			}
-			if comma {
-				w.WriteString(", ")
-			} else {
-				comma = true
-			}
-			var at types.Type
-			// Builtin functions may not spefify type for all parameters.
-			if i < tup.Len() {
-				at = tup.At(i).Type()
-			}
-			if i == n && t.Variadic() {
-				s := at.(*types.Slice)
-				slen := len(e.Args) - n
-				w.WriteString("ASLICE(" + strconv.Itoa(slen) + ", (")
-				dim := cdd.Type(w, s.Elem())
-				w.WriteString(dimFuncPtr("[]", dim))
-				w.WriteString("){")
-			}
-			cdd.interfaceExpr(w, a, at)
-			i++
-		}
-		if t.Variadic() {
-			if len(e.Args) == n {
-				if comma {
-					w.WriteString(", ")
+			for i, arg := range argv {
+				if i == len(argv)-1 {
+					// Variadic function.
+					dim := cdd.Type(w, c.arr.t)
+					w.WriteString(" " + dimFuncPtr(c.arr.l, dim) + " = " + c.arr.r + ";\n")
+					cdd.indent(w)
 				}
-				w.WriteString("NILSLICE")
-			} else {
-				w.WriteString("})")
+				if arg.r == "" {
+					continue // Don't evaluate
+				}
+				dim := cdd.Type(w, arg.t)
+				w.WriteString(" " + dimFuncPtr(arg.l, dim) + " = " + arg.r + ";\n")
+				cdd.indent(w)
 			}
 		}
-		w.WriteByte(')')
-		if reci {
-			w.WriteString(";})")
+		w.WriteString(c.fun.l + "(")
+		for i, arg := range c.args {
+			if i > 0 {
+				w.WriteString(", ")
+			}
+			w.WriteString(arg.l)
+		}
+		w.WriteString(")")
+		if c.rcv.r != "" || c.arr.r != "" {
+			w.WriteString(";\n")
+			cdd.il--
+			cdd.indent(w)
+			w.WriteString("})")
 		}
 
 	default:
