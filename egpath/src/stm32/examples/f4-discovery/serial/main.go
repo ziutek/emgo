@@ -11,7 +11,7 @@ package main
 import (
 	"delay"
 	"runtime/noos"
-	"strconv"
+	//"fmt"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -90,7 +90,7 @@ func blink(c, d int) {
 }
 
 func sirq() {
-	// blink(Blue, -10) // Uncoment to see "hardware buffer overrun" error.
+	// blink(Blue, -10) // Uncoment to see "hardware buffer overrun".
 	s.IRQ()
 }
 
@@ -104,6 +104,8 @@ func checkErr(err error) {
 }
 
 func main() {
+	s.WriteString("\nHello!\n")
+
 	var uts [50]uint64
 	for i := range uts {
 		delay.Loop(2e3)
@@ -112,7 +114,8 @@ func main() {
 
 	s.WriteString("\nFor loop:\n")
 	for _, ut := range uts {
-		strconv.WriteUint64(s, ut, 10)
+		_ = ut
+		//fmt.Uint64(ut).Format(s, 10)
 		s.WriteString(" ns\n")
 	}
 
@@ -125,7 +128,8 @@ func main() {
 		checkErr(err)
 
 		ns := noos.Uptime()
-		strconv.WriteUint64(s, ns, 10)
+		_ = ns
+		//fmt.Uint64(ns).Format(s, 10)
 
 		s.WriteString(" ns \"")
 		s.Write(buf[:n])

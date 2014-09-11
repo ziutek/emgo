@@ -1,7 +1,6 @@
 package strconv
 
 import (
-	"io"
 	"log"
 	"unsafe"
 )

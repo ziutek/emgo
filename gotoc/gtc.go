@@ -137,11 +137,12 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	// Classify all imported packages.
 	imp := make(imports)
 	for _, cdd := range cdds {
-		if cdd.Typ == ImportDecl {
+		/*if cdd.Typ == ImportDecl {
 			// Package imported as _
+			fmt.Println(cdd.Origin.Pkg())
 			imp.add(cdd.Origin.Pkg(), false)
 			continue
-		}
+		}*/
 		for o := range cdd.DeclUses {
 			if gtc.isImported(o) {
 				imp.add(o.Pkg(), cdd.Export)

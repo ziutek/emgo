@@ -4,10 +4,11 @@ import (
 	"stm32/f4/gpio"
 	"stm32/f4/periph"
 	"stm32/f4/setup"
-	"stm32/f4/usart"
+	"stm32/f4/usarts"
+	"stm32/usart"
 )
 
-var udev = usart.USART2
+var udev = usarts.USART2
 
 func init() {
 	setup.Performance168(8)
@@ -27,7 +28,7 @@ func init() {
 	io.SetMode(rx, gpio.Alt)
 	io.SetAltFunc(rx, gpio.USART2)
 
-	udev.SetBaudRate(115200)
+	udev.SetBaudRate(115200, setup.APB1Clk)
 	udev.SetWordLen(usart.Bits8)
 	udev.SetParity(usart.None)
 	udev.SetStopBits(usart.Stop1b)
@@ -36,7 +37,7 @@ func init() {
 }
 
 func writeByte(b byte) {
-	udev.Store(b)
+	udev.Store(uint32(b))
 	for udev.Status()&usart.TxEmpty == 0 {
 	}
 }
@@ -44,7 +45,7 @@ func writeByte(b byte) {
 func readByte() byte {
 	for udev.Status()&usart.RxNotEmpty == 0 {
 	}
-	return udev.Load()
+	return byte(udev.Load())
 }
 
 func main() {

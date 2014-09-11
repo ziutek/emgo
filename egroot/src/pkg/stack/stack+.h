@@ -12,7 +12,8 @@ unsafe$Pointer stack$Alloc(int n, uintptr size) {
 	slice stack$##name(int n) {                            \
 		return (slice){stack$Alloc(n, sizeof(typ)), n, n}; \
 	}
-	
+
+_DEFFUNC(Bytes, byte)
 _DEFFUNC(Ints, int)
 _DEFFUNC(Uints, uint)
 _DEFFUNC(Uintptrs, uintptr)
@@ -34,7 +35,6 @@ _DEFFUNC(Ints, 16)
 _DEFFUNC(Ints, 32)
 _DEFFUNC(Ints, 64)
 
-_DEFFUNC(Uints, 8)
 _DEFFUNC(Uints, 16)
 _DEFFUNC(Uints, 32)
 _DEFFUNC(Uints, 64)
