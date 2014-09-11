@@ -78,12 +78,6 @@ func Utoa64(buf []byte, u uint64, base int) int {
 	return n
 }
 
-func WriteUint64(w io.Writer, u uint64, base int) (int, error) {
-	var buf [20]byte
-	first := Utoa64(buf[:], u, base)
-	return w.Write(buf[first:])
-}
-
 // Itoa64 converts i to string and returns offset to most significant digit or
 // sign.
 func Itoa64(buf []byte, i int64, base int) int {
@@ -96,12 +90,6 @@ func Itoa64(buf []byte, i int64, base int) int {
 	n := Utoa64(buf[1:], uint64(-i), base)
 	buf[n] = '-'
 	return n
-}
-
-func WriteInt64(w io.Writer, i int64, base int) (int, error) {
-	var buf [21]byte
-	first := Itoa64(buf[:], i, base)
-	return w.Write(buf[first:])
 }
 
 func Utoa(buf []byte, u uint, base int) int {

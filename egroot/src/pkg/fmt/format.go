@@ -15,7 +15,55 @@ type Formatter interface {
 	Format(w io.Writer, p ...int) (n int, err error)
 }
 
-type Uint32 uint
+type Uint64 uint64
+
+func (u Uint64) Format(w io.Writer, a ...int) (int, error) {
+	base := 10
+	if len(a) > 0 {
+		base = a[0]
+	}
+	width := 0
+	if len(a) > 1 {
+		width = a[1]
+	}
+	var buf []byte
+	if width < 20 {
+		buf = stack.Bytes(20)
+	} else {
+		buf = stack.Bytes(width)
+	}
+	first := strconv.Utoa64(buf, uint64(u), base)
+	if f := len(buf) - width; first > f {
+		first = f
+	}
+	return w.Write(buf[first:])
+}
+
+type Int64 int64
+
+func (u Int64) Format(w io.Writer, a ...int) (int, error) {
+	base := 10
+	if len(a) > 0 {
+		base = a[0]
+	}
+	width := 0
+	if len(a) > 1 {
+		width = a[1]
+	}
+	var buf []byte
+	if width < 21 {
+		buf = stack.Bytes(21)
+	} else {
+		buf = stack.Bytes(width)
+	}
+	first := strconv.Itoa64(buf, int64(u), base)
+	if f := len(buf) - width; first > f {
+		first = f
+	}
+	return w.Write(buf[first:])
+}
+
+type Uint32 uint32
 
 func (u Uint32) Format(w io.Writer, a ...int) (int, error) {
 	base := 10
@@ -61,6 +109,18 @@ func (i Int32) Format(w io.Writer, a ...int) (int, error) {
 		first = f
 	}
 	return w.Write(buf[first:])
+}
+
+type Uint16 uint16
+
+func (i Uint16) Format(w io.Writer, a ...int) (int, error) {
+	return Uint32(i).Format(w, a...)
+}
+
+type Int16 int16
+
+func (i Int16) Format(w io.Writer, a ...int) (int, error) {
+	return Int32(i).Format(w, a...)
 }
 
 type Byte byte
