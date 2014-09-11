@@ -16,6 +16,7 @@ unsafe$Pointer stack$Alloc(int n, uintptr size) {
 _DEFFUNC(Ints, int)
 _DEFFUNC(Uints, uint)
 _DEFFUNC(Uintptrs, uintptr)
+_DEFFUNC(Pointers, unsafe$Pointer)
 _DEFFUNC(Bools, bool)
 _DEFFUNC(Interfaces, interface)
 

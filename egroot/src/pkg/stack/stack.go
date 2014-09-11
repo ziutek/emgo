@@ -9,6 +9,7 @@ func Alloc(n int, size uintptr) unsafe.Pointer
 func Ints(n int) []int
 func Uints(n int) []uint
 func Uintptrs(n int) []uintptr
+func Pointers(n int) []unsafe.Pointer
 func Interfaces(n int) []interface{}
 
 func Ints8(n int) []int8
