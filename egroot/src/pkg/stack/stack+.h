@@ -1,6 +1,7 @@
 __attribute__ ((always_inline))
 extern inline
 unsafe$Pointer stack$Alloc(int n, uintptr size) {
+	size *= n;
 	unsafe$Pointer p = __builtin_alloca(size);
 	__builtin_memset(p, 0, size);
 	return p;
