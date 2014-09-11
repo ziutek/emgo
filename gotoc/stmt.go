@@ -851,14 +851,16 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 			// Variadic function.
 			cdd.indent(w)
 			dim := cdd.Type(w, c.arr.t)
-			w.WriteString(" " + dimFuncPtr(c.arr.l, dim) + " = " + c.arr.r + ";\n")
+			w.WriteString(" " + dimFuncPtr(c.arr.l, dim) + " = ")
+			w.WriteString(indent(1, c.arr.r) + ";\n")
 		}
 		if arg.r == "" {
 			continue // Don't evaluate
 		}
 		cdd.indent(w)
 		dim := cdd.Type(w, arg.t)
-		w.WriteString(" " + dimFuncPtr(arg.l, dim) + " = " + arg.r + ";\n")
+		w.WriteString(" " + dimFuncPtr(arg.l, dim) + " = ")
+		w.WriteString(indent(1, arg.r) + ";\n")
 	}
 	if c.rcv.r != "" {
 		argv = argv[1:]

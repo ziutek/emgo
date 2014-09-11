@@ -26,3 +26,8 @@ func underlying(t types.Type) types.Type {
 	}
 	return t
 }
+
+func indent(n int, s string) string {
+	nt := "\n" + strings.Repeat("\t", n)
+	return strings.Replace(s, "\n", nt, -1)
+}

@@ -363,7 +363,8 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 		}
 		if c.rcv.r != "" {
 			dim := cdd.Type(w, c.rcv.t)
-			w.WriteString(" " + dimFuncPtr(c.rcv.l, dim) + " = " + c.rcv.r + ";\n")
+			w.WriteString(" " + dimFuncPtr(c.rcv.l, dim) + " = ")
+			w.WriteString(indent(1, c.rcv.r) + ";\n")
 			cdd.indent(w)
 		}
 		if c.arr.r != "" {
@@ -375,14 +376,16 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 				if i == len(argv)-1 {
 					// Variadic function.
 					dim := cdd.Type(w, c.arr.t)
-					w.WriteString(" " + dimFuncPtr(c.arr.l, dim) + " = " + c.arr.r + ";\n")
+					w.WriteString(" " + dimFuncPtr(c.arr.l, dim) + " = ")
+					w.WriteString(indent(1, c.arr.r) + ";\n")
 					cdd.indent(w)
 				}
 				if arg.r == "" {
 					continue // Don't evaluate
 				}
 				dim := cdd.Type(w, arg.t)
-				w.WriteString(" " + dimFuncPtr(arg.l, dim) + " = " + arg.r + ";\n")
+				w.WriteString(" " + dimFuncPtr(arg.l, dim) + " = ")
+				w.WriteString(indent(1, arg.r) + ";\n")
 				cdd.indent(w)
 			}
 		}
