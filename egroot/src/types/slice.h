@@ -80,4 +80,4 @@ typedef struct {
 	n;                                               \
 })
 
-#define NILSLICE (slice){0, 0, 0}
+#define NILSLICE (slice){}

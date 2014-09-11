@@ -6,8 +6,9 @@ rm -rf egroot/pkg/* egpath/pkg/*
 
 list="
 builtin
-log
 
+log
+stack
 sync/atomic
 sync/barrier
 mmio

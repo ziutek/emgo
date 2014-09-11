@@ -1,5 +1,7 @@
 package fmt
 
+import "io"
+
 func Fprint(w io.Writer, a ...Formatter) (n int, err error) {
 	var m int
 	for _, v := range a {

@@ -3,9 +3,9 @@ typedef struct {
 	uint len;
 } string;
 
-#define EGSTR(s) ((string){(byte *)s, sizeof(s)-1})
+#define EGSTR(s) ((string){(byte*)(s), sizeof(s)-1})
 
-// #define NEWSTR(b) Memory allocation need.
+// TODO: #define NEWSTR(b)
 
 #define _SSLICE_LOW(expr, low) \
 	string s = expr;          \

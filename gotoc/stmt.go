@@ -772,8 +772,12 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 			c.args[n].l = "NILSLICE"
 			c.arr = arg{}
 			if !eval {
-				for i, a := range c.args[:n] {
-					c.args[i] = arg{nil, a.r, ""}
+				argv := c.args[:n]
+				if ri {
+					argv = argv[1:]
+				}
+				for i, a := range argv {
+					argv[i] = arg{nil, a.r, ""}
 				}
 			}
 		} else {

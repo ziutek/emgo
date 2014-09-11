@@ -6,38 +6,42 @@ unsafe$Pointer stack$alloc(int n, uintptr size) {
 	return p;
 }
 
-__attribute__ ((always_inline))
-extern inline
-slice stack$bytes(int n) {
-	return (slice){stack$alloc(n, 1), n, n};
-}
+#define _DEFFUNC(typ)                                      \
+	__attribute__ ((always_inline))                        \
+	extern inline                                          \
+	slice stack$##typ##s(int n) {                            \
+		return (slice){stack$alloc(n, sizeof(typ)), n, n}; \
+	}
+	
+_DEFFUNC(int)
+_DEFFUNC(uint)
+_DEFFUNC(uintptr)
+_DEFFUNC(bool)
+_DEFFUNC(interface)
 
-__attribute__ ((always_inline))
-extern inline
-slice stack$ints8(int n) {
-	return (slice){stack$alloc(n, 1), n, n};
-}
+#undef _DEFFUNC
 
-__attribute__ ((always_inline))
-extern inline
-slice stack$ints16(int n) {
-	return (slice){stack$alloc(n, 2), n, n};
-}
+#define _DEFFUNC(typ, bits)                           \
+	__attribute__ ((always_inline))                   \
+	extern inline                                     \
+	slice stack$##typ##s##bits(int n) {               \
+		return (slice){stack$alloc(n, bits/8), n, n}; \
+	}                                                 \
 
-__attribute__ ((always_inline))
-extern inline
-slice stack$uints16(int n) {
-	return (slice){stack$alloc(n, 2), n, n};
-}
- 
-__attribute__ ((always_inline))
-extern inline
-slice stack$ints32(int n) {
-	return (slice){stack$alloc(n, 4), n, n};
-}
+_DEFFUNC(int, 8)
+_DEFFUNC(int, 16)
+_DEFFUNC(int, 32)
+_DEFFUNC(int, 64)
 
-__attribute__ ((always_inline))
-extern inline
-slice stack$uints32(int n) {
-	return (slice){stack$alloc(n, 4), n, n};
-}
+_DEFFUNC(uint, 8)
+_DEFFUNC(uint, 16)
+_DEFFUNC(uint, 32)
+_DEFFUNC(uint, 64)
+
+_DEFFUNC(float, 32)
+_DEFFUNC(float, 64)
+
+_DEFFUNC(complex, 64)
+_DEFFUNC(complex, 128)
+
+#undef _DEFFUNC

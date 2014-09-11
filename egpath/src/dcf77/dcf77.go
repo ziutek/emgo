@@ -2,8 +2,8 @@
 package dcf77
 
 import (
+	"fmt"
 	"io"
-	"strconv"
 	"time"
 )
 
@@ -30,9 +30,9 @@ type Time struct {
 	summer         bool
 }
 
-func (t *Time) WriteText(w io.Writer) (n int, err error) {
+func (t *Time) Format(w io.Writer, a ...int) (n int, err error) {
 	var m int
-	m, err = strconv.WriteUint(w, uint32(t.year), 16)
+	m, err = fmt.Byte(t.year).Format(w, 16)
 	n += m
 	if err != nil {
 		return
@@ -42,7 +42,7 @@ func (t *Time) WriteText(w io.Writer) (n int, err error) {
 	if err != nil {
 		return
 	}
-	m, err = strconv.WriteUint(w, uint32(t.month), 16)
+	m, err = fmt.Byte(t.month).Format(w, 16)
 	n += m
 	if err != nil {
 		return
@@ -52,7 +52,7 @@ func (t *Time) WriteText(w io.Writer) (n int, err error) {
 	if err != nil {
 		return
 	}
-	m, err = strconv.WriteUint(w, uint32(t.mday), 16)
+	m, err = fmt.Byte(t.mday).Format(w, 16)
 	n += m
 	if err != nil {
 		return
@@ -62,7 +62,7 @@ func (t *Time) WriteText(w io.Writer) (n int, err error) {
 	if err != nil {
 		return
 	}
-	m, err = strconv.WriteUint(w, uint32(t.hour), 16)
+	m, err = fmt.Byte(t.hour).Format(w, 16)
 	n += m
 	if err != nil {
 		return
@@ -72,7 +72,7 @@ func (t *Time) WriteText(w io.Writer) (n int, err error) {
 	if err != nil {
 		return
 	}
-	m, err = strconv.WriteUint(w, uint32(t.min), 16)
+	m, err = fmt.Byte(t.min).Format(w, 16)
 	n += m
 	if err != nil {
 		return
@@ -82,7 +82,7 @@ func (t *Time) WriteText(w io.Writer) (n int, err error) {
 	if err != nil {
 		return
 	}
-	m, err = strconv.WriteUint(w, uint32(t.sec), 10)
+	m, err = fmt.Byte(t.sec).Format(w, 10)
 	n += m
 	if err != nil {
 		return

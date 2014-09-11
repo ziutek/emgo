@@ -53,12 +53,6 @@ func Itoa32(buf []byte, i int32, base int) int {
 	return n
 }
 
-func WriteInt32(w io.Writer, i int32, base int) (int, error) {
-	var buf [11]byte
-	first := Itoa32(buf[:], i, base)
-	return w.Write(buf[first:])
-}
-
 // Utoa64 converts u to string and returns offset to most significant digit.
 func Utoa64(buf []byte, u uint64, base int) int {
 	if base < 2 || base > len(digits) {
@@ -110,10 +104,17 @@ func WriteInt64(w io.Writer, i int64, base int) (int, error) {
 	return w.Write(buf[first:])
 }
 
+func Utoa(buf []byte, u uint, base int) int {
+	if unsafe.Sizeof(u) <= 4 {
+		return Utoa32(buf, uint32(u), base)
+	}
+	return Utoa64(buf, uint64(u), base)
+}
+
+
 func Itoa(buf []byte, i, base int) int {
 	if unsafe.Sizeof(i) <= 4 {
 		return Itoa32(buf, int32(i), base)
 	}
 	return Itoa64(buf, int64(i), base)
-
 }
