@@ -214,7 +214,7 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 			dim []string
 		)
 		if _, ok := r.Type().Underlying().(*types.Interface); ok || pnames == orgNamesI {
-			typ = "uintptr"
+			typ = "ival*"
 		} else {
 			typ, dim = cdd.TypeStr(r.Type())
 		}

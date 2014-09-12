@@ -56,6 +56,18 @@ int foo$I$F(foo$I i$, int k$) {
 	}
 	return (((int)(i$))-k$);
 }
+// decl
+int foo$I$F$0(ival* i$, int k$);
+// def
+int foo$I$F$0(ival* i$, int k$) {
+	return foo$I$F(*(foo$I*)i$, k$);
+}
+// decl
+int foo$I$F$1(ival* i$, int k$);
+// def
+int foo$I$F$1(ival* i$, int k$) {
+	return foo$I$F(*(foo$I*)i$->ptr, k$);
+}
 // end
 
 // Go code:

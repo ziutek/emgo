@@ -1,9 +1,18 @@
+type union {
+	uintptr  ptr;
+	int      i;
+	int64    i64;
+	string   str;
+	slice    sli;
+	float32  f32;
+	float64  f64;
+	complex64 c64
+} ival;
+
 typedef struct {
-	uintptr val$;
+	ival    val$;
 	uintptr typ$;
 } interface;
-
-#define INTERFACE(v, t) (interface){.val$ = (uintptr)(v), .typ$ = t}
 
 #define NILI (interface){}
 

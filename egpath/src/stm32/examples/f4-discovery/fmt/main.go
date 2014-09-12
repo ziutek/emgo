@@ -11,8 +11,7 @@ func init() {
 }
 
 func main() {
-	con.WriteString("\n\nStart:\n")
-
-	fmt.Int32(17).Format(con, 10)
-	con.WriteByte('\n')
+	con.WriteString("\nKasia ma kota!\n")
+	i := fmt.Int64(17)
+	fmt.Fprint(con, &i)
 }

@@ -14,10 +14,16 @@ void foo$T$F(foo$T t$) {
 	foo$T$F(t$);
 }
 // decl
-void foo$T$F$(uintptr t$);
+void foo$T$F$0(ival* t$);
 // def
-void foo$T$F$(uintptr t$) {
-	return foo$T$F((foo$T)t$);
+void foo$T$F$0(ival* t$) {
+	return foo$T$F(*(foo$T*)t$);
+}
+// decl
+void foo$T$F$1(ival* t$);
+// def
+void foo$T$F$1(ival* t$) {
+	return foo$T$F(*(foo$T*)t$->ptr);
 }
 // end
 
@@ -38,6 +44,18 @@ void foo$T$F(foo$T t$) {
 	foo$T *p$ = &t$;
 	foo$T$F(*p$);
 }
+// decl
+void foo$T$F$0(ival* t$);
+// def
+void foo$T$F$0(ival* t$) {
+	return foo$T$F(*(foo$T*)t$);
+}
+// decl
+void foo$T$F$1(ival* t$);
+// def
+void foo$T$F$1(ival* t$) {
+	return foo$T$F(*(foo$T*)t$->ptr);
+}
 // end
 
 // Go code:
@@ -54,6 +72,18 @@ void foo$T$F(foo$T *t$);
 // def
 void foo$T$F(foo$T *t$) {
 	foo$T$F(t$);
+}
+// decl
+void foo$T$F$0(ival* t$);
+// def
+void foo$T$F$0(ival* t$) {
+	return foo$T$F((foo$T*)t$);
+}
+// decl
+void foo$T$F$1(ival* t$);
+// def
+void foo$T$F$1(ival* t$) {
+	return foo$T$F((foo$T*)t$->ptr);
 }
 // end
 
@@ -73,5 +103,17 @@ void foo$T$F(foo$T *t$);
 void foo$T$F(foo$T *t$) {
 	foo$T v$ = *t$;
 	foo$T$F(&v$);
+}
+// decl
+void foo$T$F$0(ival* t$);
+// def
+void foo$T$F$0(ival* t$) {
+	return foo$T$F((foo$T*)t$);
+}
+// decl
+void foo$T$F$1(ival* t$);
+// def
+void foo$T$F$1(ival* t$) {
+	return foo$T$F((foo$T*)t$->ptr);
 }
 // end

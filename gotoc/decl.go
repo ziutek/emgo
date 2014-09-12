@@ -20,12 +20,16 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	fname := cdd.NameStr(f, true)
 	w := new(bytes.Buffer)
 
-	if r := sig.Recv(); r != nil && cdd.gtc.siz.Sizeof(r.Type()) < cdd.gtc.sizPtr {
-		fi := types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$", sig)
+	if r := sig.Recv(); r != nil && cdd.gtc.siz.Sizeof(r.Type()) < cdd.gtc.sizIval {
+		rtyp := r.Type()
+
+		// Method for value stored in interface variable.
+
+		fi := types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$0", sig)
 		cddi := gtc.newCDD(fi, FuncDecl, il)
+		res, params := cddi.signature(sig, true, orgNamesI)
 		cdds = append(cdds, cddi)
 		finame := cddi.NameStr(fi, true)
-		res, params := cddi.signature(sig, true, orgNamesI)
 
 		w.WriteString(res.typ)
 		w.WriteByte(' ')
@@ -37,12 +41,51 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		cddi.indent(w)
 		w.WriteString("return " + fname + "(")
 
-		typ, dim := cddi.TypeStr(r.Type())
-		w.WriteString("(" + typ + dimFuncPtr("", dim) + ")")
-		prs := make([]string, len(params))
-		for i, p := range params {
-			prs[i] = p.name
+		var cast string
+		if _, ok := r.Type().(*types.Pointer); ok {
+			ts, dim := cddi.TypeStr(rtyp)
+			cast = "(" + ts + dimFuncPtr("", dim) + ")"
+		} else {
+			ts, dim := cddi.TypeStr(types.NewPointer(rtyp))
+			cast = "*(" + ts + dimFuncPtr("", dim) + ")"
 		}
+
+		prs := make([]string, len(params))
+		prs[0] = cast + params[0].name
+		for i := 1; i < len(params); i++ {
+			prs[i] = params[i].name
+		}
+		w.WriteString(strings.Join(prs, ", "))
+
+		w.WriteString(");\n")
+		cddi.il--
+		cddi.indent(w)
+		w.WriteString("}\n")
+		cddi.copyDef(w)
+		w.Reset()
+
+		cddi.Complexity = -1
+		cddi.addObject(f, true)
+
+		// Method for pointer to value stored in interface variable.
+
+		fi = types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$1", sig)
+		cddi = gtc.newCDD(fi, FuncDecl, il)
+		res, params = cddi.signature(sig, true, orgNamesI)
+		cdds = append(cdds, cddi)
+		finame = cddi.NameStr(fi, true)
+
+		w.WriteString(res.typ)
+		w.WriteByte(' ')
+		w.WriteString(dimFuncPtr(finame+params.String(), res.dim))
+		cddi.copyDecl(w, ";\n")
+
+		w.WriteString(" {\n")
+		cddi.il++
+		cddi.indent(w)
+		w.WriteString("return " + fname + "(")
+
+		prs[0] += "->ptr"
 		w.WriteString(strings.Join(prs, ", "))
 
 		w.WriteString(");\n")

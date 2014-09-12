@@ -749,7 +749,7 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 			if c.arr.r != "" {
 				c.arr.r += ", "
 			}
-			c.arr.r += cdd.interfaceExprStr(a, c.arr.t)
+			c.arr.r += cdd.interfaceExprStr(a, c.arr.t.(*types.Array).Elem())
 			continue
 		}
 		var at types.Type

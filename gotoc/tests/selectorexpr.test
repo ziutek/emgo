@@ -80,10 +80,34 @@ void foo$T$Add(foo$T *t$, foo$T a$) {
 	*t$ += a$;
 }
 // decl
+void foo$T$Add$0(ival* t$, foo$T a$);
+// def
+void foo$T$Add$0(ival* t$, foo$T a$) {
+	return foo$T$Add((foo$T*)t$, a$);
+}
+// decl
+void foo$T$Add$1(ival* t$, foo$T a$);
+// def
+void foo$T$Add$1(ival* t$, foo$T a$) {
+	return foo$T$Add((foo$T*)t$->ptr, a$);
+}
+// decl
 void (*foo$T$F(foo$T *t$))(foo$T);
 // def
 void (*foo$T$F(foo$T *t$))(foo$T) {
 	return ({void func(foo$T _1) { return foo$T$Add(t$, _1); } func;});
+}
+// decl
+void (*foo$T$F$0(ival* t$))(foo$T);
+// def
+void (*foo$T$F$0(ival* t$))(foo$T) {
+	return foo$T$F((foo$T*)t$);
+}
+// decl
+void (*foo$T$F$1(ival* t$))(foo$T);
+// def
+void (*foo$T$F$1(ival* t$))(foo$T) {
+	return foo$T$F((foo$T*)t$->ptr);
 }
 // end
 
@@ -105,6 +129,18 @@ void foo$T$Add(foo$T *t$, foo$T a$);
 // def
 void foo$T$Add(foo$T *t$, foo$T a$) {
 	*t$ += a$;
+}
+// decl
+void foo$T$Add$0(ival* t$, foo$T a$);
+// def
+void foo$T$Add$0(ival* t$, foo$T a$) {
+	return foo$T$Add((foo$T*)t$, a$);
+}
+// decl
+void foo$T$Add$1(ival* t$, foo$T a$);
+// def
+void foo$T$Add$1(ival* t$, foo$T a$) {
+	return foo$T$Add((foo$T*)t$->ptr, a$);
 }
 // decl
 void (*foo$F())(foo$T*, foo$T);
@@ -149,5 +185,17 @@ void foo$A$F(foo$A *a$, foo$B *b$);
 // def
 void foo$A$F(foo$A *a$, foo$B *b$) {
 	foo$A$F(&b$->A, b$);
+}
+// decl
+void foo$A$F$0(ival* a$, foo$B *b$);
+// def
+void foo$A$F$0(ival* a$, foo$B *b$) {
+	return foo$A$F((foo$A*)a$, b$);
+}
+// decl
+void foo$A$F$1(ival* a$, foo$B *b$);
+// def
+void foo$A$F$1(ival* a$, foo$B *b$) {
+	return foo$A$F((foo$A*)a$->ptr, b$);
 }
 // end

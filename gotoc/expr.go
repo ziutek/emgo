@@ -936,8 +936,9 @@ func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
 	_, eii := etyp.Underlying().(*types.Interface)
 	if !eii && cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.sizPtr {
 		cdd.exit(
-			expr.Pos(), "can't assign value of type %v to interface of type %v",
-			etyp, ityp,
+			expr.Pos(), 
+			"value of type %v is too large to assign to interface variable",
+			etyp,
 		)
 	}
 
