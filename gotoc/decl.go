@@ -20,10 +20,10 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	fname := cdd.NameStr(f, true)
 	w := new(bytes.Buffer)
 
-	if r := sig.Recv(); r != nil && cdd.gtc.siz.Sizeof(r.Type()) < cdd.gtc.sizIval {
+	if r := sig.Recv(); r != nil {
 		rtyp := r.Type()
 
-		// Method for value stored in interface variable.
+		// Method for pointer to value stored in interface variable.
 
 		fi := types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$0", sig)
 		cddi := gtc.newCDD(fi, FuncDecl, il)
@@ -51,7 +51,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		}
 
 		prs := make([]string, len(params))
-		prs[0] = cast + params[0].name
+		prs[0] = cast + params[0].name + "->ptr"
 		for i := 1; i < len(params); i++ {
 			prs[i] = params[i].name
 		}
@@ -67,36 +67,39 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		cddi.Complexity = -1
 		cddi.addObject(f, true)
 
-		// Method for pointer to value stored in interface variable.
+		if cdd.gtc.siz.Sizeof(rtyp) < cdd.gtc.sizIval {
 
-		fi = types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$1", sig)
-		cddi = gtc.newCDD(fi, FuncDecl, il)
-		res, params = cddi.signature(sig, true, orgNamesI)
-		cdds = append(cdds, cddi)
-		finame = cddi.NameStr(fi, true)
+			// Method for value stored in interface variable.
 
-		w.WriteString(res.typ)
-		w.WriteByte(' ')
-		w.WriteString(dimFuncPtr(finame+params.String(), res.dim))
-		cddi.copyDecl(w, ";\n")
+			fi = types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$1", sig)
+			cddi = gtc.newCDD(fi, FuncDecl, il)
+			res, params = cddi.signature(sig, true, orgNamesI)
+			cdds = append(cdds, cddi)
+			finame = cddi.NameStr(fi, true)
 
-		w.WriteString(" {\n")
-		cddi.il++
-		cddi.indent(w)
-		w.WriteString("return " + fname + "(")
+			w.WriteString(res.typ)
+			w.WriteByte(' ')
+			w.WriteString(dimFuncPtr(finame+params.String(), res.dim))
+			cddi.copyDecl(w, ";\n")
 
-		prs[0] += "->ptr"
-		w.WriteString(strings.Join(prs, ", "))
+			w.WriteString(" {\n")
+			cddi.il++
+			cddi.indent(w)
+			w.WriteString("return " + fname + "(")
 
-		w.WriteString(");\n")
-		cddi.il--
-		cddi.indent(w)
-		w.WriteString("}\n")
-		cddi.copyDef(w)
-		w.Reset()
+			prs[0] = prs[0][:len(prs[0])-len("->ptr")]
+			w.WriteString(strings.Join(prs, ", "))
 
-		cddi.Complexity = -1
-		cddi.addObject(f, true)
+			w.WriteString(");\n")
+			cddi.il--
+			cddi.indent(w)
+			w.WriteString("}\n")
+			cddi.copyDef(w)
+			w.Reset()
+
+			cddi.Complexity = -1
+			cddi.addObject(f, true)
+		}
 	}
 
 	res, params := cdd.signature(sig, true, orgNames)

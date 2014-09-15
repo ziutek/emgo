@@ -934,9 +934,9 @@ func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
 	}
 
 	_, eii := etyp.Underlying().(*types.Interface)
-	if !eii && cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.sizPtr {
+	if !eii && cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.sizIval {
 		cdd.exit(
-			expr.Pos(), 
+			expr.Pos(),
 			"value of type %v is too large to assign to interface variable",
 			etyp,
 		)
@@ -986,27 +986,20 @@ func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
 			cdd.il++
 			cdd.indent(w)
 			w.WriteString(".interface = INTERFACE(" + e + ", " + tid + ")")
+			suff := "$1"
+			if t, ok := etyp.(*types.Pointer); ok {
+				etyp = t.Elem()
+				suff = "$0"
+			}
 			for i := 0; i < it.NumMethods(); i++ {
 				f := it.Method(i)
 				w.WriteString(",\n")
 				cdd.indent(w)
 				fname := f.Name()
 				w.WriteString("." + fname + " = ")
-				if t, ok := etyp.(*types.Pointer); ok {
-					etyp = t.Elem()
-				}
 				m := findMethod(etyp.(*types.Named), fname)
-				recv := m.Type().(*types.Signature).Recv().Type()
-				if cdd.gtc.siz.Sizeof(recv) != cdd.gtc.sizPtr {
-					cdd.Name(w, m, true)
-					w.WriteByte('$')
-					continue
-				}
-				w.WriteByte('(')
-				dim := cdd.Type(w, f.Type())
-				w.WriteString(dimFuncPtr("", dim))
-				w.WriteByte(')')
 				cdd.Name(w, m, true)
+				w.WriteString(suff)
 			}
 			w.WriteByte('\n')
 			cdd.il--
