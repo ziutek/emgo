@@ -12,6 +12,5 @@ func init() {
 
 func main() {
 	con.WriteString("\nKasia ma kota!\n")
-	i := fmt.Int64(17)
-	fmt.Fprint(con, &i)
+	fmt.Fprint(con, fmt.Int64(15))
 }

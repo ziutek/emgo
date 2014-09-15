@@ -1,7 +1,6 @@
 package noos
 
 import (
-	"log"
 	"unsafe"
 )
 
@@ -14,5 +13,5 @@ func allocBottom(sptr unsafe.Pointer, b []byte, n int, elSize, elAlign, sliAlign
 func allocTop(sptr unsafe.Pointer, b []byte, n int, elSize, elAlign, sliAlign uintptr) []byte
 
 func panicMemory() {
-	log.Panic("not enough memory for runtime initialisation")
+	panic("not enough memory for runtime initialisation")
 }

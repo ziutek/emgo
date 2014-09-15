@@ -305,6 +305,10 @@ string foo$Error$Error$1(ival* e$) {
 // decl
 error foo$ErrNoSignal;
 // def
+error foo$ErrNoSignal = (error){
+	.interface = INTERFACE(EGSTR("no signal"), 0x14061479),
+	.Error = foo$Error$Error$1
+};
 // end
 
 // Go code:
@@ -316,7 +320,7 @@ func E(e error) string {
 string foo$E(error e$);
 // def
 string foo$E(error e$) {
-	return e$.Error(e$.val$);
+	return e$.Error(&e$.val$);
 }
 // end
 
@@ -335,7 +339,7 @@ typedef struct foo$Stringer_struct foo$Stringer;
 // def
 struct foo$Stringer_struct {
 	interface;
-	string (*String)(uintptr);
+	string (*String)(ival*);
 };
 // decl
 string foo$S(foo$Stringer *s$);
@@ -343,7 +347,7 @@ string foo$S(foo$Stringer *s$);
 string foo$S(foo$Stringer *s$) {
 	return ({
 		foo$Stringer _r = (*s$);
-		_r.String(_r.val$);
+		_r.String(&_r.val$);
 	});
 }
 // end

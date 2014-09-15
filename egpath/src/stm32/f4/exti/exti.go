@@ -1,7 +1,5 @@
 package exti
 
-import "log"
-
 type Lines uint32
 
 type extiRegs struct {
@@ -79,7 +77,7 @@ func (l Lines) ClearPending() {
 
 func (l Lines) connect(port uint32) {
 	if l >= L15<<1 {
-		log.Panic("exti: only lines 0...15 can be connected to the external source")
+		panic("exti: only lines 0...15 can be connected to the external source")
 	}
 	for i := range regs2 {
 		if l&0x0f != 0 {

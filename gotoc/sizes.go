@@ -32,9 +32,7 @@
 
 package gotoc
 
-import (
-	"code.google.com/p/go.tools/go/types"
-)
+import "code.google.com/p/go.tools/go/types"
 
 type StdSizes struct {
 	WordSize int64 // word size in bytes - must be >= 4 (32bits)
@@ -135,7 +133,7 @@ func (s *StdSizes) Sizeof(T types.Type) int64 {
 		offsets := s.Offsetsof(fields)
 		return offsets[n-1] + s.Sizeof(fields[n-1].Type())
 	case *types.Interface:
-		return s.WordSize * int64(2+t.NumMethods())
+		return int64(basicSizes[types.Complex128]) + s.WordSize*int64(1+t.NumMethods())
 	}
 	return s.WordSize // catch-all
 }

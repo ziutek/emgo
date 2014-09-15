@@ -40,7 +40,7 @@ func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.S
 		tupNames: make(map[string]struct{}),
 		siz:      siz,
 		sizPtr:   siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
-		sizIval:  siz.Sizeof(types.NewSlice(types.NewStruct(nil, nil))),
+		sizIval:  siz.Sizeof(types.Typ[types.Complex128]),
 	}
 }
 

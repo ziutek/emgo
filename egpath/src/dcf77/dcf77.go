@@ -2,6 +2,7 @@
 package dcf77
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -14,13 +15,9 @@ func (e *Error) Error() string {
 }
 
 var (
-	errInit   = Error("initializing")
-	errTiming = Error("timing error")
-	errBits   = Error("error in data bits")
-
-	ErrInit   = error(&errInit)
-	ErrTiming = error(&errTiming)
-	ErrBits   = error(&errBits)
+	ErrInit   = errors.New("initializing")
+	ErrTiming = errors.New("timing error")
+	ErrBits   = errors.New("error in data bits")
 )
 
 type Time struct {

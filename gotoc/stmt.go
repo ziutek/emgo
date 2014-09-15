@@ -699,12 +699,12 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 		// Interface receiver
 		if _, ok := e.Fun.(*ast.SelectorExpr).X.(*ast.Ident); ok && !eval {
 			c.fun.l = rs + "." + fs
-			c.args[n] = arg{types.Typ[types.Uintptr], rs + ".val$", ""}
+			c.args[n] = arg{types.Typ[types.Uintptr], "&" + rs + ".val$", ""}
 			n++
 		} else {
 			c.rcv = arg{rt, "_r", rs}
 			c.fun.l = "_r." + fs
-			c.args[n] = arg{types.Typ[types.Uintptr], "_r" + ".val$", ""}
+			c.args[n] = arg{types.Typ[types.Uintptr], "&_r" + ".val$", ""}
 			n++
 		}
 	} else if rs == "" {

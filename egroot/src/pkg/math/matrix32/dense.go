@@ -1,7 +1,5 @@
 package matrix32
 
-import "log"
-
 type Dense struct {
 	v          []float32 // [row, row, ..., row]
 	rows, cols int
@@ -12,7 +10,7 @@ type Dense struct {
 func NewDense(rows, cols, stride int, v []float32) Dense {
 	n := rows * stride
 	if n > len(v) {
-		log.Panic("matrix32: rows * stride > len(v)")
+		panic("matrix32: rows * stride > len(v)")
 	}
 	return Dense{v: v, rows: rows, cols: cols, stride: stride}
 }
@@ -34,7 +32,7 @@ func (d *Dense) Zero() {
 // Identity sets d to identity matrix (panics if d isn't a square matrix).
 func (d *Dense) Identity() {
 	if d.rows != d.cols {
-		log.Panic("matrix32: attempt to create not square identity matrix")
+		panic("matrix32: attempt to create not square identity matrix")
 	}
 	d.Zero()
 	for i := 0; i < len(d.v); i += d.stride + 1 {
@@ -96,7 +94,7 @@ func (d *Dense) SetAll(a float32) {
 // Hslice returns a slice of a matrix that contains rows from start to stop - 1.
 func (d *Dense) Hslice(start, stop int) Dense {
 	if start > stop || start < 0 || stop > d.rows {
-		log.Panic("matrix32: bad indexes for horizontal slice")
+		panic("matrix32: bad indexes for horizontal slice")
 	}
 	return Dense{
 		v:      d.v[start*d.stride : stop*d.stride],
@@ -109,7 +107,7 @@ func (d *Dense) Hslice(start, stop int) Dense {
 // Vslice returns a slice of a matrix that contains cols from start to stop - 1
 func (d *Dense) Vslice(start, stop int) Dense {
 	if start > stop || start < 0 || stop > d.cols {
-		log.Panic("matrix32: bad indexes for vertical slice")
+		panic("matrix32: bad indexes for vertical slice")
 	}
 	return Dense{
 		v:      d.v[start : (d.rows-1)*d.stride+stop],
@@ -123,7 +121,7 @@ func (d *Dense) Vslice(start, stop int) Dense {
 // Hvec returns horizontal vector that refers to d. Panics if cols != stride.
 func (d *Dense) Hvec() Dense {
 	if d.cols != d.stride {
-		log.Panic("matrix32: can't convert matrix to horizontal vector: cols != stride")
+		panic("matrix32: can't convert matrix to horizontal vector: cols != stride")
 	}
 	return Dense{v: d.v, rows: 1, cols: len(d.v), stride: len(d.v)}
 }
@@ -131,7 +129,7 @@ func (d *Dense) Hvec() Dense {
 // Vvec returns vertical vector that refers to d. Panics if cols != stride.
 func (d *Dense) Vvec() Dense {
 	if d.cols != d.stride {
-		log.Panic("matrix32: can't convert matrix to vertical vector: cols != stride")
+		panic("matrix32: can't convert matrix to vertical vector: cols != stride")
 	}
 	return Dense{v: d.v, rows: len(d.v), cols: 1, stride: 1}
 }
@@ -157,6 +155,6 @@ func (d *Dense) Equal(a *Dense) bool {
 
 func (d *Dense) checkDims(a *Dense) {
 	if d.rows != a.rows || d.cols != a.cols {
-		log.Panic("matrix32: dimensions not equal")
+		panic("matrix32: dimensions not equal")
 	}
 }

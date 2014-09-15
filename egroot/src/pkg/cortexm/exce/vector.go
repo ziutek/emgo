@@ -3,7 +3,6 @@ package exce
 import (
 	"bits"
 	"builtin"
-	"log"
 	"mmio"
 	"sync/barrier"
 	"unsafe"
@@ -40,7 +39,7 @@ func UseTable(vt []Vector) {
 // UseHandler changes handler in currently used vector table.
 func (e Exce) UseHandler(handler func()) {
 	if int(e) >= len(activeVT) {
-		log.Panic("exce: vector table is too short")
+		panic("exce: vector table is too short")
 	}
 	activeVT[e] = VectorFor(handler)
 	barrier.Sync()
@@ -50,7 +49,7 @@ func (e Exce) UseHandler(handler func()) {
 // interrupt vectors.
 func NewTable(n int) []Vector {
 	if n < 0 || n > 256 {
-		log.Panic("bad vector table length")
+		panic("bad vector table length")
 	}
 	exp := 32 - bits.LeadingZeros32(uint32(n-1))
 	if exp < 5 {

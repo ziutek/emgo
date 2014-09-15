@@ -6,8 +6,8 @@ rm -rf egroot/pkg/* egpath/pkg/*
 
 list="
 builtin
+errors
 
-log
 stack
 sync/atomic
 sync/barrier

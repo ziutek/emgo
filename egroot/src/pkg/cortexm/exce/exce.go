@@ -1,7 +1,6 @@
 package exce
 
 import (
-	"log"
 	"mmio"
 	"unsafe"
 )
@@ -221,7 +220,7 @@ func (e Exce) SetPrio(p Prio) {
 		ip.setByte(e-IRQ0, byte(p))
 
 	default:
-		log.Panic("can't set priority for exception < MemFault")
+		panic("can't set priority for exception < MemFault")
 	}
 }
 

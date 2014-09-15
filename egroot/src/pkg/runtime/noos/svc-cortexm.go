@@ -3,7 +3,6 @@
 package noos
 
 import (
-	"log"
 	"unsafe"
 
 	"cortexm/exce"
@@ -44,7 +43,7 @@ func (ts *taskSched) newTask(pc uintptr, xpsr uint32, wait bool) {
 			break
 		}
 		if n == ts.curTask {
-			log.Panic("too many tasks")
+			panic("too many tasks")
 		}
 	}
 

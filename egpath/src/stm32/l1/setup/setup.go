@@ -1,16 +1,13 @@
 package setup
 
 import (
-	"log"
-
 	"stm32/l1/clock"
 	"stm32/l1/flash"
 )
 
 var (
-	SysClk  uint = 32e6 // System clock [Hz]
+	SysClk uint = 32e6 // System clock [Hz]
 )
-
 
 // Performance setups MCU for best performance (32MHz, Flash prefetch and
 // 64-bit access on).
@@ -37,7 +34,7 @@ func Performance(osc int) {
 	case 24:
 		mul = clock.PLLMul3
 	default:
-		log.Panic("wrong frequency of external resonator")
+		panic("wrong frequency of external resonator")
 	}
 
 	flash.SetAcc64(true)
@@ -86,6 +83,6 @@ func Performance(osc int) {
 	}
 
 	clock.DisableMSI()
-	
+
 	sysClkChanged()
 }

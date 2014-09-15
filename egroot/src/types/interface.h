@@ -1,4 +1,4 @@
-/*type union {
+/*typedef union {
 	unsafe$Pointer ptr
 	uintptr        uptr;
 	int            i;
@@ -10,10 +10,9 @@
 	slice          sli;
 } ival;*/
 
-type union {
+typedef union {
 	unsafe$Pointer ptr;
-	slice          sli; // Need to determine size of ival.
-	int64          i64; // Need for proper alignment of ival.
+	complex128     c128;
 } ival;
 
 typedef struct {
@@ -21,22 +20,22 @@ typedef struct {
 	uintptr typ$;
 } interface;
 
-#define INTERFACE(e, tid) ({      /
-	interface i;                  /
-	*(typeof(e)*)(&i.val$) = (e); /
-	i.typ$ = tid;                 /
-	i;                            /
+#define EQUALI(lhs, rhs) ({                         \
+	typeof(lhs) a = (lhs);                          \
+	typeof(rhs) b = (rhs);                          \
+	a.typ$ == b.typ$ && a.val$.c128 == b.val$.c128; \
+})
+
+
+#define INTERFACE(e, tid) ({              \
+	union {typeof(e) in; ival out;} cast; \
+	cast.in = (e);                        \
+	(interface){cast.out, tid};           \
 })
 
 #define NILI (interface){}
 
-#define EQUALI(lhs, rhs) ({               \
-	typeof(lhs) a = (lhs);                \
-	typeof(rhs) b = (rhs);                \
-	a.typ$ == b.typ$ && a.val$ == b.val$; \
-})
-
 typedef struct {
 	interface;
-	string (*Error)(uintptr);
+	string(*Error) (ival *);
 } error;

@@ -73,7 +73,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 
 			fi = types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$1", sig)
 			cddi = gtc.newCDD(fi, FuncDecl, il)
-			res, params = cddi.signature(sig, true, orgNamesI)
+			//res, params = cddi.signature(sig, true, orgNamesI)
 			cdds = append(cdds, cddi)
 			finame = cddi.NameStr(fi, true)
 
@@ -339,7 +339,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	if constInit {
 		w.WriteString(" = ")
 		if val != nil {
-			cdd.Expr(w, val, typ)
+			cdd.interfaceExpr(w, val, typ)
 		} else {
 			zeroVal(w, typ)
 		}
@@ -443,7 +443,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 			cdd.init = true
 			w.WriteString(name)
 			w.WriteString(" = ")
-			cdd.Expr(w, val, typ)
+			cdd.interfaceExpr(w, val, typ)
 			w.WriteString(";\n")
 		}
 		cdd.il--

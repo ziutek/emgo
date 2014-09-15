@@ -60,13 +60,13 @@ int foo$I$F(foo$I i$, int k$) {
 int foo$I$F$0(ival* i$, int k$);
 // def
 int foo$I$F$0(ival* i$, int k$) {
-	return foo$I$F(*(foo$I*)i$, k$);
+	return foo$I$F(*(foo$I*)i$->ptr, k$);
 }
 // decl
 int foo$I$F$1(ival* i$, int k$);
 // def
 int foo$I$F$1(ival* i$, int k$) {
-	return foo$I$F(*(foo$I*)i$->ptr, k$);
+	return foo$I$F(*(foo$I*)i$, k$);
 }
 // end
 

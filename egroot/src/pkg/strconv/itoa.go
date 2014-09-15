@@ -1,22 +1,19 @@
 package strconv
 
-import (
-	"log"
-	"unsafe"
-)
+import "unsafe"
 
 const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
 
 func panicIfZero(n int) {
 	if n == 0 {
-		log.Panic("strconv: buffer too short")
+		panic("strconv: buffer too short")
 	}
 }
 
 // Utoa32 converts u to string and returns offset to most significant digit.
 func Utoa32(buf []byte, u uint32, base int) int {
 	if base < 2 || base > len(digits) {
-		log.Panic("strconv: illegal base")
+		panic("strconv: illegal base")
 	}
 	b := uint32(base)
 	n := len(buf)
@@ -45,7 +42,7 @@ func Itoa32(buf []byte, i int32, base int) int {
 		return Utoa32(buf, uint32(i), base)
 	}
 	if len(buf) == 0 {
-		log.Panic("strconv: buffer too short")
+		panic("strconv: buffer too short")
 	}
 	n := Utoa32(buf[1:], uint32(-i), base)
 	buf[n] = '-'
@@ -55,7 +52,7 @@ func Itoa32(buf []byte, i int32, base int) int {
 // Utoa64 converts u to string and returns offset to most significant digit.
 func Utoa64(buf []byte, u uint64, base int) int {
 	if base < 2 || base > len(digits) {
-		log.Panic("strconv: illegal base")
+		panic("strconv: illegal base")
 	}
 	b := uint64(base)
 	n := len(buf)
@@ -84,7 +81,7 @@ func Itoa64(buf []byte, i int64, base int) int {
 		return Utoa64(buf, uint64(i), base)
 	}
 	if len(buf) == 0 {
-		log.Panic("strconv: buffer too short")
+		panic("strconv: buffer too short")
 	}
 	n := Utoa64(buf[1:], uint64(-i), base)
 	buf[n] = '-'
@@ -97,7 +94,6 @@ func Utoa(buf []byte, u uint, base int) int {
 	}
 	return Utoa64(buf, uint64(u), base)
 }
-
 
 func Itoa(buf []byte, i, base int) int {
 	if unsafe.Sizeof(i) <= 4 {

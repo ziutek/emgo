@@ -2,7 +2,6 @@ package noos
 
 import (
 	"builtin"
-	"log"
 	"sync/atomic"
 	"unsafe"
 )
@@ -14,11 +13,11 @@ const (
 )
 
 func panicClosed() {
-	log.Panic("send: closed channel")
+	panic("send: closed channel")
 }
 
 func panicCloseNil() {
-	log.Panic("close: nil channel")
+	panic("close: nil channel")
 }
 
 func makeChan(cap int, size, align uintptr) (c builtin.Chan) {
