@@ -75,3 +75,14 @@ bool foo$Neq(string s1$, string s2$) {
 	return !equals(s1$, s2$);
 }
 // end
+
+// Go code:
+var b = []byte("blaaa")
+// C code:
+// decl
+slice foo$b;
+// def
+slice foo$b;
+// init
+	foo$b = BYTES(EGSTR("blaaa"));
+// end

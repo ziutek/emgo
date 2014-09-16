@@ -410,7 +410,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 		case *types.Slice:
 			switch underlying(cdd.exprType(arg)).(type) {
 			case *types.Basic: // string
-				w.WriteString("NEWSTR(")
+				w.WriteString("BYTES(")
 				cdd.Expr(w, arg, typ)
 				w.WriteByte(')')
 

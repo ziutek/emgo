@@ -351,3 +351,55 @@ string foo$S(foo$Stringer *s$) {
 	});
 }
 // end
+
+// Go code:
+type Reader interface {
+	Read([]byte) (int, error)
+}
+
+type Writer interface {
+	Write([]byte) (int, error)
+}
+
+type ReadWriter interface {
+	Reader
+	Writer
+}
+// C code:
+// decl
+struct int$$error_struct;
+typedef struct int$$error_struct int$$error;
+// def
+#ifndef int$$error$
+#define int$$error$
+struct int$$error_struct {
+	int _0;
+	error _1;
+};
+#endif
+// decl
+struct foo$Reader_struct;
+typedef struct foo$Reader_struct foo$Reader;
+// def
+struct foo$Reader_struct {
+	interface;
+	int$$error (*Read)(ival*, slice);
+};
+// decl
+struct foo$Writer_struct;
+typedef struct foo$Writer_struct foo$Writer;
+// def
+struct foo$Writer_struct {
+	interface;
+	int$$error (*Write)(ival*, slice);
+};
+// decl
+struct foo$ReadWriter_struct;
+typedef struct foo$ReadWriter_struct foo$ReadWriter;
+// def
+struct foo$ReadWriter_struct {
+	interface;
+	int$$error (*Read)(ival*, slice);
+	int$$error (*Write)(ival*, slice);
+};
+// end

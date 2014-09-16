@@ -700,13 +700,12 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 		if _, ok := e.Fun.(*ast.SelectorExpr).X.(*ast.Ident); ok && !eval {
 			c.fun.l = rs + "." + fs
 			c.args[n] = arg{types.Typ[types.Uintptr], "&" + rs + ".val$", ""}
-			n++
 		} else {
 			c.rcv = arg{rt, "_r", rs}
 			c.fun.l = "_r." + fs
 			c.args[n] = arg{types.Typ[types.Uintptr], "&_r" + ".val$", ""}
-			n++
 		}
+		n++
 	} else if rs == "" {
 		if eval {
 			// Call of function or function variable.
@@ -773,7 +772,7 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 			c.arr = arg{}
 			if !eval {
 				argv := c.args[:n]
-				if ri {
+				if rs != "" {
 					argv = argv[1:]
 				}
 				for i, a := range argv {
