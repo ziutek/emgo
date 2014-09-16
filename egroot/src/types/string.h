@@ -8,19 +8,19 @@ typedef struct {
 // TODO: #define NEWSTR(b)
 
 #define _SSLICE_LOW(expr, low) \
-	string s = expr;          \
-	uint l = low;             \
+	string s = expr;           \
+	uint l = low;              \
 	s.str = s.str + l
 
 #define SSLICEL(expr, low) ({ \
-	_SSLICE_LOW(expr, low);    \
+	_SSLICE_LOW(expr, low);   \
 	s.len -= l;               \
 	s;                        \
 })
 
 #define SSLICELH(expr, low, high) ({ \
-	_SSLICE_LOW(expr, low);           \
-	s.len = high - l;            \
+	_SSLICE_LOW(expr, low);          \
+	s.len = high - l;                \
 	s;                               \
 })
 
@@ -34,4 +34,10 @@ typedef struct {
 	int n = (dst.len < src.len) ? dst.len : src.len; \
 	memmove(dst.arr, src.str, n);                    \
 	n;                                               \
+})
+
+#define BYTES(s) ({                                           \
+	slice b = (slice){__builtin_alloca(s.len), s.len, s.len}; \
+	__builtin_memcpy(b.arr, s.str, s.len);                    \
+	b;                                                        \
 })

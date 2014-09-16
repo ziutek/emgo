@@ -7,3 +7,8 @@ type Reader interface {
 type Writer interface {
 	Write([]byte) (int, error)
 }
+
+type ReadWriter interface {
+	Reader
+	Writer
+}

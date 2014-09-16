@@ -3,7 +3,6 @@ typedef __INT16_TYPE__ int16;
 typedef __INT32_TYPE__ int32;
 typedef __INT64_TYPE__ int64;
 
-typedef __UINT8_TYPE__ byte;
 typedef __UINT8_TYPE__ uint8;
 typedef __UINT16_TYPE__ uint16;
 typedef __UINT32_TYPE__ uint32;
@@ -34,6 +33,8 @@ typedef double _Complex complex128;
 #endif
 
 typedef uint8 bool;
+typedef uint8 byte;
+typedef int32 rune;
 
 #define true (1)
 #define false (0)

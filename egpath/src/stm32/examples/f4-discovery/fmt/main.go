@@ -11,6 +11,20 @@ func init() {
 }
 
 func main() {
-	con.WriteString("\nKasia ma kota!\n")
-	fmt.Fprint(con, fmt.Int64(15))
+	con.WriteString("fmt test:\n")
+	end := fmt.Str("$\n")
+
+	i := fmt.Int64(15)
+	i.Format(con, 10, 5)
+	end.Format(con)
+	i.Format(con, 10, -5)
+	end.Format(con)
+
+	s := fmt.Str("abcd")
+	s.Format(con, 11)
+	end.Format(con)
+	s.Format(con, -11)
+	end.Format(con)
+
+	fmt.Fprint(con, s, fmt.T, i, fmt.N)
 }
