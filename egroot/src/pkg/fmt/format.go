@@ -40,9 +40,12 @@ func writeNum(w io.Writer, buf []byte, first, width int, alignr bool) (n int, er
 	if n, err = w.Write(buf[first:]); err != nil {
 		return
 	}
-	if f < first {
-		var m int
-		m, err = w.Write(buf[f:first])
+	if m := first - f; m > 0 {
+		spaces := stack.Bytes(m)
+		for i := range spaces {
+			spaces[i] = ' '
+		}
+		m, err = w.Write(spaces)
 		n += m
 	}
 	return
@@ -190,7 +193,16 @@ func (r Rune) Format(w io.Writer, a ...int) (int, error) {
 }
 
 const (
+	A Rune = '\a'
+	B Rune = '\b'
+	F Rune = '\f'
 	N Rune = '\n'
 	R Rune = '\r'
+	S Rune = ' '
 	T Rune = '\t'
+	V Rune = '\v'
 )
+
+func Err(e error) Str {
+	return Str(e.Error())
+}

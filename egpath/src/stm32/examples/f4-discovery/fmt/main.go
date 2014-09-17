@@ -19,6 +19,10 @@ func main() {
 	end.Format(con)
 	i.Format(con, 10, -5)
 	end.Format(con)
+	i.Format(con, -10, 5)
+	end.Format(con)
+	i.Format(con, -10, -5)
+	end.Format(con)
 
 	s := fmt.Str("abcd")
 	s.Format(con, 11)

@@ -12,6 +12,11 @@ func panicIfZero(n int) {
 
 // Utoa32 converts u to string and returns offset to most significant digit.
 func Utoa32(buf []byte, u uint32, base int) int {
+	z := byte(' ')
+	if base < 0 {
+		z = '0'
+		base = -base
+	}
 	if base < 2 || base > len(digits) {
 		panic("strconv: illegal base")
 	}
@@ -30,7 +35,7 @@ func Utoa32(buf []byte, u uint32, base int) int {
 		buf[n] = '0'
 	}
 	for k := 0; k < n; k++ {
-		buf[k] = ' '
+		buf[k] = z
 	}
 	return n
 }
@@ -51,6 +56,11 @@ func Itoa32(buf []byte, i int32, base int) int {
 
 // Utoa64 converts u to string and returns offset to most significant digit.
 func Utoa64(buf []byte, u uint64, base int) int {
+	z := byte(' ')
+	if base < 0 {
+		z = '0'
+		base = -base
+	}
 	if base < 2 || base > len(digits) {
 		panic("strconv: illegal base")
 	}
@@ -69,7 +79,7 @@ func Utoa64(buf []byte, u uint64, base int) int {
 		buf[n] = '0'
 	}
 	for k := 0; k < n; k++ {
-		buf[k] = ' '
+		buf[k] = z
 	}
 	return n
 }

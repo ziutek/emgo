@@ -2,7 +2,7 @@ package main
 
 import (
 	"delay"
-	"strconv"
+	"fmt"
 	"time"
 
 	"dcf77"
@@ -37,9 +37,13 @@ func init() {
 	periph.APB2ClockDisable(periph.SysCfg)
 }
 
-func blink(led int) {
+func blink(led, dly int) {
 	leds.SetBit(led)
-	delay.Loop(1e6)
+	if dly < 0 {
+		delay.Loop(-dly * 1e4)
+	} else {
+		delay.Millisec(dly)
+	}
 	leds.ClearBit(led)
 }
 
@@ -48,23 +52,22 @@ var d = dcf77.NewDecoder()
 func edgeISR() {
 	t := time.Now()
 	exti.L1.ClearPending()
+	blink(Blue, -50)
 	d.Edge(t, gpio.C.Bit(1))
 }
 
 func main() {
 	for {
 		p := d.Pulse()
-		strconv.WriteInt64(con, time.Now().UnixNano(), 10)
-		con.WriteByte(' ')
-		strconv.WriteInt64(con, p.Stamp.UnixNano(), 10)
-		con.WriteByte(' ')
+		now := fmt.Int64(time.Now().UnixNano())
+		stamp := fmt.Int64(p.Stamp.UnixNano())
+		fmt.Fprint(con, now, fmt.S, stamp, fmt.S)
 		if p.Err != nil {
-			blink(Red)
-			con.WriteString(p.Err.Error())
+			blink(Red, 50)
+			fmt.Fprint(con, fmt.Err(p.Err), fmt.N)
 		} else {
-			blink(Green)
-			p.Time.WriteText(con)
+			blink(Green, 50)
+			fmt.Fprint(con, p.Time, fmt.N)
 		}
-		con.WriteByte('\n')
 	}
 }
