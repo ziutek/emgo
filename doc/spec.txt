@@ -8,7 +8,6 @@ In Go, variable declared in function can be allocated on the stack or on the hea
 2. Non-empty strings are concatanated. 
 3. Builtin append function is called and there is not enough space in destination.
 4. An element to map is added or removed.
-5. A value of size greater than size of uintptr is assigned to interface variable.
 
 Current allocator is trivial and doesn't contain GC. This isn't big disadventage for many embeded applications that need allocation only during startup. They often run on MCU that has only few kilobytes of SRAM and in many cases they must respond in realtime. The simple "stop the world GC" can't be used and much sophisticated one consumes to much Flash/SRAM.
 

@@ -31,4 +31,7 @@ func main() {
 	end.Format(con)
 
 	fmt.Fprint(con, s, fmt.T, i, fmt.N)
+	fmt.Fprintf(con, "%v:\t:%v\n", s, i)
+	fmt.Fprintf(con, "%v %v %v %v\n", s, i)
+	fmt.Fprintf(con, "%v\n", s, s, i)
 }

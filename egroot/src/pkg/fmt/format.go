@@ -149,9 +149,9 @@ func (i Int) Format(w io.Writer, a ...int) (int, error) {
 	return Int64(i).Format(w, a...)
 }
 
-type Str string
+type Bytes []byte
 
-func (s Str) Format(w io.Writer, a ...int) (n int, err error) {
+func (b Bytes) Format(w io.Writer, a ...int) (n int, err error) {
 	width := 0
 	if len(a) > 0 {
 		width = a[0]
@@ -161,7 +161,7 @@ func (s Str) Format(w io.Writer, a ...int) (n int, err error) {
 		width = -width
 	}
 	var buf []byte
-	if n := width - len(s); n > 0 {
+	if n := width - len(b); n > 0 {
 		buf = stack.Bytes(n)
 		for i := range buf {
 			buf[i] = ' '
@@ -173,9 +173,9 @@ func (s Str) Format(w io.Writer, a ...int) (n int, err error) {
 		if err != nil {
 			return
 		}
-		m, err = w.Write([]byte(s))
+		m, err = w.Write(b)
 	} else {
-		n, err = w.Write([]byte(s))
+		n, err = w.Write(b)
 		if err != nil {
 			return
 		}
@@ -183,6 +183,12 @@ func (s Str) Format(w io.Writer, a ...int) (n int, err error) {
 	}
 	n += m
 	return
+}
+
+type Str string
+
+func (s Str) Format(w io.Writer, a ...int) (int, error) {
+	return Bytes(s).Format(w, a...)
 }
 
 type Rune rune
