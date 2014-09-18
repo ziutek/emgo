@@ -27,10 +27,10 @@ typedef struct {
 })
 
 
-#define INTERFACE(e, tid) ({              \
-	union {typeof(e) in; ival out;} cast; \
-	cast.in = (e);                        \
-	(interface){cast.out, tid};           \
+#define INTERFACE(e, tid) ({                   \
+	union {typeof(e) in; ival out;} cast = {}; \
+	cast.in = (e);                             \
+	(interface){cast.out, tid};                \
 })
 
 #define NILI (interface){}
