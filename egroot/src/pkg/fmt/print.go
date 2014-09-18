@@ -21,8 +21,8 @@ func findVerb(f string) (start int, verb byte, flags string) {
 			return
 		}
 	}
-	var end int
-	for end = start + 1; end < len(f); end++ {
+	end := start + 1
+	for ; end < len(f); end++ {
 		c := f[end]
 		if c >= '0' && c <= '9' {
 			continue
