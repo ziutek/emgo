@@ -1,7 +1,7 @@
 package main
 
 import (
-	"strconv"
+	"fmt"
 	"unsafe"
 
 	"stm32/l1/setup"
@@ -11,18 +11,14 @@ import (
 var st = stlink.Term
 
 func printa(s string, gs, ga, cs, ca uintptr) {
-	var buf [3]byte
-	st.WriteString(s)
-	strconv.Utoa(buf[:], uint32(gs), 10)
-	st.Write(buf[:])
-	strconv.Utoa(buf[:], uint32(ga), 10)
-	st.Write(buf[:])
-	st.WriteString("   ")
-	strconv.Utoa(buf[:], uint32(cs), 10)
-	st.Write(buf[:])
-	strconv.Utoa(buf[:], uint32(ca), 10)
-	st.Write(buf[:])
-	st.WriteByte('\n')
+	fmt.Fprint(
+		st,
+		fmt.Str(s),
+		fmt.Uint(gs), fmt.Uint(ga),
+		fmt.T,
+		fmt.Uint(cs), fmt.Uint(ca),
+		fmt.N,
+	)
 }
 
 type S16 struct {

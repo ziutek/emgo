@@ -10,8 +10,8 @@ package main
 
 import (
 	"delay"
+	"fmt"
 	"runtime/noos"
-	//"fmt"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -32,7 +32,7 @@ const (
 var (
 	leds = gpio.D
 	udev = usarts.USART2
-	s    = serial.NewSerial(udev, 80, 8)
+	s    = serial.NewSerial(udev, 80, 80)
 )
 
 func init() {
@@ -106,7 +106,7 @@ func checkErr(err error) {
 func main() {
 	s.WriteString("\nHello!\n")
 
-	var uts [50]uint64
+	var uts [10]uint64
 	for i := range uts {
 		delay.Loop(2e3)
 		uts[i] = noos.Uptime()
@@ -115,7 +115,7 @@ func main() {
 	s.WriteString("\nFor loop:\n")
 	for _, ut := range uts {
 		_ = ut
-		//fmt.Uint64(ut).Format(s, 10)
+		fmt.Uint64(ut).Format(s, 10, -12)
 		s.WriteString(" ns\n")
 	}
 
@@ -129,7 +129,7 @@ func main() {
 
 		ns := noos.Uptime()
 		_ = ns
-		//fmt.Uint64(ns).Format(s, 10)
+		fmt.Uint64(ns).Format(s, 10, -12)
 
 		s.WriteString(" ns \"")
 		s.Write(buf[:n])
