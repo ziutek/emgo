@@ -12,6 +12,8 @@
 builtin$Memset:
 .thumb_func
 memset:
+	// Use ip as dst. r0 will be returned unmodified.
+	mov ip, r0
 	and  r1, 0xff
 	orr  r1, r1, r1, lsl 8
 	orr  r1, r1, r1, lsl 16

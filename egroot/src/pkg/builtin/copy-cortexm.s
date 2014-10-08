@@ -17,9 +17,11 @@
 memmove:
 .thumb_func
 memcpy:
+	// Use ip as dst. r0 will be returned unmodified.
+	mov ip, r0
 	// TODO: Check will be better to always
 	// use forward copy on non-overlaping data.
-	cmp  r0, r1
+	cmp  ip, r1
 	blo  10f
 
 // Forward copy
@@ -29,8 +31,8 @@ memcpy:
 	blo    5f
 
 	// calculate number of bytes to copy
-	// to make dst (r0) word aligned
-	ands   r3, r0, 3
+	// to make dst (ip) word aligned
+	ands   r3, ip, 3
 	itt    ne
 	rsbne  r3, 4
 	bne    5f
@@ -40,7 +42,7 @@ memcpy:
 	subs   r2, 4
 	ittt   hs
 	ldrhs  r3, [r1], 4
-	strhs  r3, [r0], 4
+	strhs  r3, [ip], 4
 	bhs    6b
 
 	adds  r2, 4
@@ -59,13 +61,13 @@ memcpy:
 	.byte  (1f-0b)/2
 1:
 	ldrb  r3, [r1], 1
-	strb  r3, [r0], 1
+	strb  r3, [ip], 1
 2:
 	ldrb  r3, [r1], 1
-	strb  r3, [r0], 1
+	strb  r3, [ip], 1
 3:
 	ldrb  r3, [r1], 1
-	strb  r3, [r0], 1
+	strb  r3, [ip], 1
 4:
 	bne  6b
 9:
@@ -74,7 +76,7 @@ memcpy:
 // Backward copy:
 10:
 	add  r1, r2
-	add  r0, r2
+	add  ip, r2
 
 	cmp    r2, 4
 	itt    lo
@@ -82,8 +84,8 @@ memcpy:
 	blo    5f
 
 	// calculate number of bytes to copy
-	// to make dst (r0) word aligned
-	ands  r3, r0, 3
+	// to make dst (ip) word aligned
+	ands  r3, ip, 3
 	bne   5f
 
 	// copy words
@@ -91,7 +93,7 @@ memcpy:
 	subs   r2, 4
 	ittt   hs
 	ldrhs  r3, [r1, -4]!
-	strhs  r3, [r0, -4]!
+	strhs  r3, [ip, -4]!
 	bhs    6b
 
 	adds  r2, 4
@@ -110,13 +112,13 @@ memcpy:
 	.byte  (1f-0b)/2
 1:
 	ldrb  r3, [r1, -1]!
-	strb  r3, [r0, -1]!
+	strb  r3, [ip, -1]!
 2:
 	ldrb  r3, [r1, -1]!
-	strb  r3, [r0, -1]!
+	strb  r3, [ip, -1]!
 3:
 	ldrb  r3, [r1, -1]!
-	strb  r3, [r0, -1]!
+	strb  r3, [ip, -1]!
 4:
 	bne  6b
 9:
