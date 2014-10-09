@@ -18,7 +18,7 @@ func main() {
 	num := buf[:7]
 
 	for i := 0; ; i++ {
-		n := strconv.Itoa(num, int32(i), 10)
+		n := strconv.Itoa(num, i, 10)
 		st.Write(num[n:])
 		st.WriteString(": ")
 

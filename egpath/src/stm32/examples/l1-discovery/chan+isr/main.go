@@ -41,6 +41,8 @@ func init() {
 	exti.L0.IntEnable()
 	irq.Ext0.UseHandler(buttonHandler)
 	irq.Ext0.Enable()
+	
+	periph.APB2ClockDisable(periph.SysCfg)
 }
 
 var c = make(chan int, 3)

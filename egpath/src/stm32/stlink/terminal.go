@@ -1,4 +1,7 @@
 // Package stlink provides STM32 ST-LINK debuging functions.
+// This package is demonstration only (there are bugs in this package or in
+// st-term that sometimes cause locking terminal) so better use one of your
+// MCU's UART and serial package.
 package stlink
 
 import "sync/barrier"

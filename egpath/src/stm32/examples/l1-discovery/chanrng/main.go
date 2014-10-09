@@ -1,31 +1,50 @@
 package main
 
 import (
+	"delay"
+
+	"stm32/l1/gpio"
+	"stm32/l1/periph"
 	"stm32/l1/setup"
-	"stm32/stlink"
 )
 
-func gen(c chan<- byte, b byte) {
+func gen(c chan<- int, v int) {
 	for {
-		c <- b
+		c <- v
 	}
 }
+
+var leds = gpio.B
+
+const (
+	Blue  = 6
+	Green = 7
+)
 
 func main() {
 	setup.Performance(0)
 
-	c0 := make(chan byte, 2)
-	c1 := make(chan byte, 2)
+	periph.AHBClockEnable(periph.GPIOB)
+	periph.AHBReset(periph.GPIOB)
 
-	go gen(c0, '0')
-	go gen(c1, '1')
+	leds.SetMode(Blue, gpio.Out)
+	leds.SetMode(Green, gpio.Out)
+
+	cb := make(chan int, 2)
+	cg := make(chan int, 2)
+
+	go gen(cg, Green)
+	go gen(cb, Blue)
 
 	for {
-		var b byte
+		var led int
 		select {
-		case b = <-c0:
-		case b = <-c1:
+		case led = <-cg:
+		case led = <-cb:
 		}
-		stlink.Term.WriteByte(b)
+		leds.SetBit(led)
+		delay.Millisec(100)
+		leds.ClearBit(led)
+		delay.Millisec(100)
 	}
 }
