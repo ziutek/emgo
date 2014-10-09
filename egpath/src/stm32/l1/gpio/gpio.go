@@ -154,3 +154,27 @@ func (g *Port) Load() uint16 {
 func (g *Port) Bit(n int) bool {
 	return g.id&(uint32(1)<<uint(n)) != 0
 }
+
+// AltFunc returns current alternate function for n-th bit in port g.
+func (g *Port) AltFunc(n int) AltFunc {
+	var af uint32
+	if n < 8 {
+		af = g.afl
+	} else {
+		af = g.afh
+		n -= 8
+	}
+	n *= 4
+	return AltFunc(af>>uint(n)) & 0xf
+}
+
+// SetAltFunc sets alternate function af for n-th bit in port g.
+func (g *Port) SetAltFunc(n int, af AltFunc) {
+	n *= 4
+	if n < 32 {
+		g.afl = g.afl&^(0xf<<uint(n)) | uint32(af)<<uint(n)
+	} else {
+		n -= 32
+		g.afh = g.afh&^(0xf<<uint(n)) | uint32(af)<<uint(n)
+	}
+}

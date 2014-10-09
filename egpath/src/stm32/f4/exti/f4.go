@@ -39,7 +39,7 @@ var (
 	regs2 = (*[4]mmio.Reg32)(unsafe.Pointer(uintptr(0x40013808)))
 )
 
-// Connect connects port to exti lines. periph.SysCfg should
+// Connect connects port to exti L0-L15 lines. periph.SysCfg should
 // be enabled before use this method.
 func (l Lines) Connect(port *gpio.Port) {
 	l.connect(uint32(port.Number()))

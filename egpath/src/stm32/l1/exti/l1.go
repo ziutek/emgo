@@ -26,11 +26,12 @@ const (
 	L15
 	LPVD
 	LRTCAlarm
-	LOTGFS
-	LEth
-	LOTGHS
+	LUSBFS
 	LTampStamp
 	LRTCWkup
+	LComp1
+	LComp2
+	LCA
 	LAll Lines = (1 << iota) - 1
 )
 
@@ -39,7 +40,7 @@ var (
 	regs2 = (*[4]mmio.Reg32)(unsafe.Pointer(uintptr(0x40010008)))
 )
 
-// Connect connects port to exti lines. periph.SysCfg should
+// Connect connects port to exti L0-L15 lines. periph.SysCfg should
 // be enabled before use this method.
 func (l Lines) Connect(port *gpio.Port) {
 	l.connect(uint32(port.Number()))
