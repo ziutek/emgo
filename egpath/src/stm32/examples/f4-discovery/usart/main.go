@@ -18,15 +18,15 @@ func init() {
 	periph.APB1ClockEnable(periph.USART2)
 	periph.APB1Reset(periph.USART2)
 
-	io, tx, rx := gpio.A, 2, 3
+	port, tx, rx := gpio.A, 2, 3
 
-	io.SetMode(tx, gpio.Alt)
-	io.SetOutType(tx, gpio.PushPullOut)
-	io.SetPull(tx, gpio.PullUp)
-	io.SetOutSpeed(tx, gpio.Fast)
-	io.SetAltFunc(tx, gpio.USART2)
-	io.SetMode(rx, gpio.Alt)
-	io.SetAltFunc(rx, gpio.USART2)
+	port.SetMode(tx, gpio.Alt)
+	port.SetOutType(tx, gpio.PushPullOut)
+	port.SetPull(tx, gpio.PullUp)
+	port.SetOutSpeed(tx, gpio.Fast)
+	port.SetAltFunc(tx, gpio.USART2)
+	port.SetMode(rx, gpio.Alt)
+	port.SetAltFunc(rx, gpio.USART2)
 
 	udev.SetBaudRate(115200, setup.APB1Clk)
 	udev.SetWordLen(usart.Bits8)

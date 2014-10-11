@@ -4,7 +4,7 @@
 // 3.3V TTL serial adapter (eg. FT232RL, CP2102 based). Warninig! If you use
 // USB to RS232 it can destroy your Discovery board.
 
-// Connct adapter's GND, Rx and TX pins respectively to Discovery's GND, PA2,
+// Connct adapter's GND, Rx and Tx pins respectively to Discovery's GND, PA2,
 // PA3 pins.
 package main
 

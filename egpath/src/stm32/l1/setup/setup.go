@@ -6,7 +6,9 @@ import (
 )
 
 var (
-	SysClk uint = 32e6 // System clock [Hz]
+	SysClk  uint // System clock [Hz]
+	APB1Clk uint // APB1 clock [Hz]
+	APB2Clk uint // APB2 clock [Hz]
 )
 
 // Performance setups MCU for best performance (32MHz, Flash prefetch and
@@ -15,6 +17,8 @@ var (
 // Allowed values: 2, 3, 4, 6, 8, 12, 16, 24. Use 0 to select internal HSI
 // oscilator as system clock source.
 func Performance(osc int) {
+	SysClk = 32e6
+
 	var mul clock.PLLMul
 	switch osc {
 	case 2:
@@ -37,11 +41,19 @@ func Performance(osc int) {
 		panic("wrong frequency of external resonator")
 	}
 
+	// Set HSI as system clock source
+	clock.EnableHSI()
+	clock.SetSysClock(clock.HSI)
+	for clock.SysClock() != clock.HSI {
+	}
+
 	flash.SetAcc64(true)
 	for !flash.Acc64() {
 	}
 	flash.SetLatency(1) // need for 2.0-3.6V and 16-32MHz
 	flash.SetPrefetch(true)
+
+	// Be sure that flash latency is set before incrase frequency.
 	for flash.Latency() != 1 {
 	}
 
@@ -51,9 +63,7 @@ func Performance(osc int) {
 	clock.ResetCFGR()
 	clock.ResetCIR()
 
-	if osc == 0 {
-		clock.EnableHSI()
-	} else {
+	if osc != 0 {
 		clock.EnableHSE()
 	}
 
@@ -61,6 +71,8 @@ func Performance(osc int) {
 	clock.SetPrescalerAHB(clock.AHBDiv1)
 	clock.SetPrescalerAPB1(clock.APBDiv1)
 	clock.SetPrescalerAPB2(clock.APBDiv1)
+	APB1Clk = SysClk
+	APB2Clk = SysClk
 
 	if osc == 0 {
 		for !clock.HSIReady() {

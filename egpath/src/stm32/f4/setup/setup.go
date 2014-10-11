@@ -47,7 +47,7 @@ func Performance(osc, mul, sdiv int) {
 	flash.SetPrefetch(true)
 	flash.SetICache(true)
 	flash.SetDCache(true)
-
+	
 	// Be sure that flash latency is set before incrase frequency.
 	for flash.Latency() != lat {
 	}
