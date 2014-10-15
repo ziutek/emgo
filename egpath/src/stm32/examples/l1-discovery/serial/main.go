@@ -4,66 +4,55 @@
 // 3.3V TTL serial adapter (eg. FT232RL, CP2102 based). Warninig! If you use
 // USB to RS232 it can destroy your Discovery board.
 
-// Connct adapter's GND, Rx and Tx pins respectively to Discovery's GND, PA2,
-// PA3 pins.
+// Connct adapter's GND, Rx and Tx pins respectively to Discovery's GND, PB10,
+// PB11 pins.
 package main
 
 import (
 	"delay"
-	"fmt"
-	"runtime/noos"
+	//"fmt"
+	//"runtime/noos"
 
-	"stm32/f4/gpio"
-	"stm32/f4/irqs"
-	"stm32/f4/periph"
-	"stm32/f4/setup"
-	"stm32/f4/usarts"
+	"stm32/l1/gpio"
+	"stm32/l1/irqs"
+	"stm32/l1/periph"
+	"stm32/l1/setup"
+	"stm32/l1/usarts"
 	"stm32/serial"
 	"stm32/usart"
 )
 
 const (
-	Green = 12 + iota
-	Orange
-	Red
-	Blue
+	Blue  = 6
+	Green = 7
 )
 
 var (
-	leds = gpio.D
-	udev = usarts.USART2
-	s    = serial.NewSerial(udev, 80, 8)
+	leds = gpio.B
+	udev = usarts.USART3
+	s    = serial.NewSerial(udev, 16, 4)
 )
 
 func init() {
-	setup.Performance168(8)
+	setup.Performance(0)
 
-	// LEDS
+	periph.AHBClockEnable(periph.GPIOB)
+	periph.AHBReset(periph.GPIOB)
+	periph.APB1ClockEnable(periph.USART3)
+	periph.APB1Reset(periph.USART3)
 
-	periph.AHB1ClockEnable(periph.GPIOD)
-	periph.AHB1Reset(periph.GPIOD)
-
-	leds.SetMode(Green, gpio.Out)
-	leds.SetMode(Orange, gpio.Out)
-	leds.SetMode(Red, gpio.Out)
 	leds.SetMode(Blue, gpio.Out)
+	leds.SetMode(Green, gpio.Out)
 
-	// USART
-
-	periph.AHB1ClockEnable(periph.GPIOA)
-	periph.AHB1Reset(periph.GPIOA)
-	periph.APB1ClockEnable(periph.USART2)
-	periph.APB1Reset(periph.USART2)
-
-	port, tx, rx := gpio.A, 2, 3
+	port, tx, rx := gpio.B, 10, 11
 
 	port.SetMode(tx, gpio.Alt)
 	port.SetOutType(tx, gpio.PushPullOut)
 	port.SetPull(tx, gpio.PullUp)
-	port.SetOutSpeed(tx, gpio.Fast)
-	port.SetAltFunc(tx, gpio.USART2)
+	port.SetOutSpeed(tx, gpio.Medium)
+	port.SetAltFunc(tx, gpio.USART3)
 	port.SetMode(rx, gpio.Alt)
-	port.SetAltFunc(rx, gpio.USART2)
+	port.SetAltFunc(rx, gpio.USART3)
 
 	udev.SetBaudRate(115200, setup.APB1Clk)
 	udev.SetWordLen(usart.Bits8)
@@ -73,8 +62,8 @@ func init() {
 	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	irqs.USART2.UseHandler(sirq)
-	irqs.USART2.Enable()
+	irqs.USART3.UseHandler(sirq)
+	irqs.USART3.Enable()
 
 	s.SetUnix(true)
 }
@@ -90,13 +79,13 @@ func blink(c, d int) {
 }
 
 func sirq() {
-	// blink(Blue, -10) // Uncoment to see "hardware buffer overrun".
+	blink(Blue, -2) // Uncoment to see "hardware buffer overrun".
 	s.IRQ()
 }
 
 func checkErr(err error) {
 	if err != nil {
-		blink(Red, 10)
+		//blink(Blue, 10)
 		s.WriteString("\nError: ")
 		s.WriteString(err.Error())
 		s.WriteByte('\n')
@@ -106,7 +95,7 @@ func checkErr(err error) {
 func main() {
 	s.WriteString("\nHello!\n")
 
-	var uts [10]uint64
+	/*var uts [5]uint64
 	for i := range uts {
 		delay.Loop(2e3)
 		uts[i] = noos.Uptime()
@@ -117,21 +106,21 @@ func main() {
 		_ = ut
 		fmt.Uint64(ut).Format(s, 10, -12)
 		s.WriteString(" ns\n")
-	}
+	}*/
 
 	s.WriteString("Echo:\n")
-	s.Flush()
+	//s.Flush()
 
-	var buf [40]byte
+	var buf [8]byte
 	for {
 		n, err := s.Read(buf[:])
 		checkErr(err)
 
-		ns := noos.Uptime()
+		/*ns := noos.Uptime()
 		_ = ns
 		fmt.Uint64(ns).Format(s, 10, -12)
 
-		s.WriteString(" ns \"")
+		s.WriteString(" ns \"")*/
 		s.Write(buf[:n])
 		s.WriteString("\"\n")
 

@@ -41,11 +41,11 @@ func Performance(osc int) {
 		panic("wrong frequency of external resonator")
 	}
 
-	// Set HSI as system clock source
-	clock.EnableHSI()
-	clock.SetSysClock(clock.HSI)
-	for clock.SysClock() != clock.HSI {
-	}
+	// Set MSI as system clock source
+	/*clock.EnableMSI()
+	clock.SetSysClock(clock.MSI)
+	for clock.SysClock() != clock.MSI {
+	}*/
 
 	flash.SetAcc64(true)
 	for !flash.Acc64() {

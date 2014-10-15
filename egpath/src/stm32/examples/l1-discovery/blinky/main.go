@@ -8,7 +8,7 @@ import (
 	"stm32/l1/setup"
 )
 
-var LED = gpio.B
+var leds = gpio.B
 
 const (
 	Blue  = 6
@@ -21,18 +21,18 @@ func init() {
 	periph.AHBClockEnable(periph.GPIOB)
 	periph.AHBReset(periph.GPIOB)
 
-	LED.SetMode(Blue, gpio.Out)
-	LED.SetMode(Green, gpio.Out)
+	leds.SetMode(Blue, gpio.Out)
+	leds.SetMode(Green, gpio.Out)
 }
 
 func main() {
 	for {
-		LED.ClearBit(Blue)
-		LED.SetBit(Green)
+		leds.ClearBit(Blue)
+		leds.SetBit(Green)
 		delay.Millisec(1000)
 
-		LED.ClearBit(Green)
-		LED.SetBit(Blue)
+		leds.ClearBit(Green)
+		leds.SetBit(Blue)
 		delay.Millisec(1000)
 	}
 }

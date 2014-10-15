@@ -22,10 +22,10 @@ const (
 	DMA1Chan6
 	DMA1Chan7
 	ADC1
-	OTG
-	OTGLP
+	USBHP
+	USBLP
 	DAC
-	CompCA
+	Comp
 	Ext9_5
 	LCD
 	Tim9
