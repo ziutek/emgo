@@ -20,6 +20,20 @@ var (
 // the formula: sysclk = 2 * mul / sdiv. Performance ensures that pheripheral
 // clock used by SDIO, RNG and USBFS is equal to 48 MHz (required by USBFS).
 func Performance(osc, mul, sdiv int) {
+	// Reset clock subsystem
+	clock.ResetCR()
+	clock.ResetPLLCFGR()
+	clock.ResetCFGR()
+	clock.ResetCIR()
+
+	// Set HSI as temporary system clock source.
+	clock.EnableHSI()
+	for !clock.HSIReady() {
+	}
+	clock.SetSysClock(clock.HSI)
+	for clock.SysClock() != clock.HSI {
+	}
+	
 	if osc < 4 || osc > 26 || osc&1 != 0 {
 		panic("wrong frequency of external resonator")
 	}
@@ -33,10 +47,9 @@ func Performance(osc, mul, sdiv int) {
 		panic("wrong PLL divider for SysClk")
 	}
 
-	// Set HSI as system clock source
-	clock.EnableHSI()
-	clock.SetSysClock(clock.HSI)
-	for clock.SysClock() != clock.HSI {
+	// HSE needs millisecondss to stabilize, so enable it now.
+	if osc != 0 {
+		clock.EnableHSE()
 	}
 
 	sysclk := 2 * mul / sdiv
@@ -50,16 +63,6 @@ func Performance(osc, mul, sdiv int) {
 	
 	// Be sure that flash latency is set before incrase frequency.
 	for flash.Latency() != lat {
-	}
-
-	// Reset clock subsystem
-	clock.ResetCR()
-	clock.ResetPLLCFGR()
-	clock.ResetCFGR()
-	clock.ResetCIR()
-
-	if osc != 0 {
-		clock.EnableHSE()
 	}
 
 	// Configure clocks for AHB, APB1, APB2 bus.

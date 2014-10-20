@@ -1,4 +1,4 @@
-// Package mem provides more controll to memory allocation.
+// Package mem provides more controll to memory allocation (not implemented!).
 package mem
 
 import "builtin"

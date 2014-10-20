@@ -10,8 +10,8 @@ package main
 
 import (
 	"delay"
-	//"fmt"
-	//"runtime/noos"
+	"fmt"
+	"runtime/noos"
 
 	"stm32/l1/gpio"
 	"stm32/l1/irqs"
@@ -30,7 +30,7 @@ const (
 var (
 	leds = gpio.B
 	udev = usarts.USART3
-	s    = serial.NewSerial(udev, 16, 4)
+	s    = serial.NewSerial(udev, 80, 8)
 )
 
 func init() {
@@ -54,7 +54,7 @@ func init() {
 	port.SetMode(rx, gpio.Alt)
 	port.SetAltFunc(rx, gpio.USART3)
 
-	udev.SetBaudRate(115200, setup.APB1Clk)
+	udev.SetBaudRate(9600, setup.APB1Clk)
 	udev.SetWordLen(usart.Bits8)
 	udev.SetParity(usart.None)
 	udev.SetStopBits(usart.Stop1b)
@@ -73,19 +73,19 @@ func blink(c, d int) {
 	if d > 0 {
 		delay.Millisec(d)
 	} else {
-		delay.Loop(-1e4 * d)
+		delay.Loop(-2e3 * d)
 	}
 	leds.ClearBit(c)
 }
 
 func sirq() {
-	blink(Blue, -2) // Uncoment to see "hardware buffer overrun".
+	//blink(Blue, -10) // Uncoment to see "hardware buffer overrun".
 	s.IRQ()
 }
 
 func checkErr(err error) {
 	if err != nil {
-		//blink(Blue, 10)
+		blink(Blue, 10)
 		s.WriteString("\nError: ")
 		s.WriteString(err.Error())
 		s.WriteByte('\n')
@@ -95,32 +95,31 @@ func checkErr(err error) {
 func main() {
 	s.WriteString("\nHello!\n")
 
-	/*var uts [5]uint64
-	for i := range uts {
+	var uts [5]uint64
+	/*for i := range uts {
 		delay.Loop(2e3)
 		uts[i] = noos.Uptime()
-	}
-
-	s.WriteString("\nFor loop:\n")
-	for _, ut := range uts {
-		_ = ut
-		fmt.Uint64(ut).Format(s, 10, -12)
-		s.WriteString(" ns\n")
 	}*/
 
+	s.WriteString("\nFor loop:\n")
+
+	for _, ut := range uts {
+		fmt.Uint64(ut).Format(s, 10, -12)
+		s.WriteString(" ns\n")
+	}
+
 	s.WriteString("Echo:\n")
-	//s.Flush()
+	s.Flush()
 
 	var buf [8]byte
 	for {
 		n, err := s.Read(buf[:])
 		checkErr(err)
 
-		/*ns := noos.Uptime()
-		_ = ns
+		ns := noos.Uptime()
 		fmt.Uint64(ns).Format(s, 10, -12)
 
-		s.WriteString(" ns \"")*/
+		s.WriteString(" ns \"")
 		s.Write(buf[:n])
 		s.WriteString("\"\n")
 

@@ -56,7 +56,7 @@ func NewTable(n int) []Vector {
 		exp = 5
 	}
 	m := 1 << exp
-	vsize := unsafe.Sizeof(Vector{})
-	vt := (*[256]Vector)(builtin.Alloc(m, vsize, uintptr(m)*vsize))
+	tsize := uintptr(m) * unsafe.Sizeof(Vector{})
+	vt := (*[256]Vector)(builtin.Alloc(1, tsize, tsize))
 	return vt[:n]
 }

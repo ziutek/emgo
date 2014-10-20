@@ -146,7 +146,7 @@ func SetPLLMul(mul PLLMul) {
 // Allowed values: 2, 3, 4.
 // SysClock frequency should avoid exceeding 32 MHz.
 func SetPLLDiv(div int) {
-	c.cfgr = c.cfgr&^(3<<22) | uint32(div)<<22
+	c.cfgr = c.cfgr&^(3<<22) | uint32(div-1)<<22
 }
 
 type AHBDiv byte

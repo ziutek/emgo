@@ -17,8 +17,22 @@ var (
 // Allowed values: 2, 3, 4, 6, 8, 12, 16, 24. Use 0 to select internal HSI
 // oscilator as system clock source.
 func Performance(osc int) {
-	SysClk = 32e6
+	// Reset clock subsystem
+	clock.ResetCR()
+	clock.ResetICSCR()
+	clock.ResetCFGR()
+	clock.ResetCIR()
 
+	// Set HSI as temporary system clock source.
+	clock.EnableHSI()
+	for !clock.HSIReady() {
+	}
+	clock.SetSysClock(clock.HSI)
+	for clock.SysClock() != clock.HSI {
+	}
+	clock.DisableMSI()
+
+	// Set mul to obtain PLLVCO=96MHz (need by USB)
 	var mul clock.PLLMul
 	switch osc {
 	case 2:
@@ -36,16 +50,15 @@ func Performance(osc int) {
 	case 16, 0:
 		mul = clock.PLLMul6
 	case 24:
-		mul = clock.PLLMul3
+		mul = clock.PLLMul4
 	default:
 		panic("wrong frequency of external resonator")
 	}
 
-	// Set MSI as system clock source
-	/*clock.EnableMSI()
-	clock.SetSysClock(clock.MSI)
-	for clock.SysClock() != clock.MSI {
-	}*/
+	// HSE needs milliseconds to stabilize, so enable it now.
+	if osc != 0 {
+		clock.EnableHSE()
+	}
 
 	flash.SetAcc64(true)
 	for !flash.Acc64() {
@@ -57,26 +70,15 @@ func Performance(osc int) {
 	for flash.Latency() != 1 {
 	}
 
-	// Reset clock subsystem
-	clock.ResetCR()
-	clock.ResetICSCR()
-	clock.ResetCFGR()
-	clock.ResetCIR()
-
-	if osc != 0 {
-		clock.EnableHSE()
-	}
-
 	// Configure maximum clocks frequency (32 MHz) for AHB, APB1, APB2 bus.
 	clock.SetPrescalerAHB(clock.AHBDiv1)
 	clock.SetPrescalerAPB1(clock.APBDiv1)
 	clock.SetPrescalerAPB2(clock.APBDiv1)
+	SysClk = 32e6
 	APB1Clk = SysClk
 	APB2Clk = SysClk
 
 	if osc == 0 {
-		for !clock.HSIReady() {
-		}
 		clock.SetPLLClock(clock.SrcHSI)
 	} else {
 		for !clock.HSEReady() {
@@ -84,7 +86,7 @@ func Performance(osc int) {
 		clock.SetPLLClock(clock.SrcHSE)
 	}
 	clock.SetPLLMul(mul)
-	clock.SetPLLDiv(2)
+	clock.SetPLLDiv(3)
 	clock.EnableMainPLL()
 	for !clock.MainPLLReady() {
 	}
@@ -93,8 +95,6 @@ func Performance(osc int) {
 	clock.SetSysClock(clock.PLL)
 	for clock.SysClock() != clock.PLL {
 	}
-
-	clock.DisableMSI()
 
 	sysClkChanged()
 }

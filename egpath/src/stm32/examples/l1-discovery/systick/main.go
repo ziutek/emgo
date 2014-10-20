@@ -54,7 +54,7 @@ func main() {
 	vt[exce.NMI] = exce.VectorFor(defaultHandler)
 	vt[exce.HardFault] = exce.VectorFor(defaultHandler)
 	vt[exce.SysTick] = exce.VectorFor(sysTickHandler)
-	exce.UseTable(vt[:])
+	exce.UseTable(vt)
 
 	_, _, tenms := systick.Calib()
 	tenms *= 10 // stm32l1 returns value for 1 ms not for 10ms.

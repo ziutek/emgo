@@ -7,7 +7,6 @@ const (
 	MemStack     = -1
 )
 
-// Alloc is used for dynamic memory allocation. Its deffinition will be changed
-// in the future to accept pointer to some TypeInfo struct instead of size and
-// align.
-var Alloc func(n int, size, align uintptr) unsafe.Pointer
+// Alloc is used for dynamic memory allocation. It alloates memory for n elements of
+// specified size and alignment.
+var Alloc func(n int, esize, ealign uintptr) unsafe.Pointer
