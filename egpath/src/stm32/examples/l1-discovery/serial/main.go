@@ -54,7 +54,7 @@ func init() {
 	port.SetMode(rx, gpio.Alt)
 	port.SetAltFunc(rx, gpio.USART3)
 
-	udev.SetBaudRate(9600, setup.APB1Clk)
+	udev.SetBaudRate(115200, setup.APB1Clk)
 	udev.SetWordLen(usart.Bits8)
 	udev.SetParity(usart.None)
 	udev.SetStopBits(usart.Stop1b)
@@ -96,10 +96,10 @@ func main() {
 	s.WriteString("\nHello!\n")
 
 	var uts [5]uint64
-	/*for i := range uts {
+	for i := range uts {
 		delay.Loop(2e3)
 		uts[i] = noos.Uptime()
-	}*/
+	}
 
 	s.WriteString("\nFor loop:\n")
 

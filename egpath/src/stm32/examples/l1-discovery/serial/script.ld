@@ -1,4 +1,4 @@
-StackExp = 10; /* 1 KiB */
+StackExp = 11; /* 1 KiB */
 StackFrac = 8;  /* 8/8 */
 MaxTasks = 1;
 IRTExp = 6; /* Up to 64 exceptions/interrupts */
