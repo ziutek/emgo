@@ -107,15 +107,20 @@ func (ts *taskSched) init() {
 	if Heap == nil {
 		panicMemory()
 	}
+	
 
-	// Use PSP as stack pointer for thread mode.
+	// Use PSP as stack pointer for thread mode. Current (zero) task has stack
+	// at top of the stacks area.
 	cortexm.SetPSP(unsafe.Pointer(cortexm.MSP()))
 	barrier.Sync()
 	cortexm.SetCtrl(cortexm.Ctrl() | cortexm.UsePSP)
 	cortexm.ISB()
 
-	// Now MSP is used only by exceptions handlers.
-	cortexm.SetMSP(unsafe.Pointer(initSP(len(ts.tasks))))
+	// Now MSP is used only by exceptions handlers. MSP points to stack at
+	// boottom of stacks area, which is at the same time, the beginning of the
+	// RAM, so stack overflow in exception handler is always caught (even if MPU
+	// isn't used).
+	cortexm.SetMSP(unsafe.Pointer(stackTop(len(ts.tasks))))
 
 	// Setup interrupt table.
 	// Consider setup at link time using GCC weak functions to support Cortex-M0

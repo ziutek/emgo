@@ -12,7 +12,7 @@ func stackEnd() uintptr
 
 var stackCap = uintptr((1 << stackExp()) * stackFrac() / 8)
 
-func initSP(i int) uintptr {
+func stackTop(i int) uintptr {
 	return stackEnd() - uintptr(i)*stackCap
 }
 

@@ -47,7 +47,7 @@ func (ts *taskSched) newTask(pc uintptr, xpsr uint32, wait bool) {
 		}
 	}
 
-	sf, sp := allocStackFrame(initSP(n))
+	sf, sp := allocStackFrame(stackTop(n))
 	ts.tasks[n].init()
 	ts.tasks[n].sp = sp
 
