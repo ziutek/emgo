@@ -116,15 +116,15 @@ func (ts *taskSched) init() {
 	cortexm.SetCtrl(cortexm.Ctrl() | cortexm.UsePSP)
 	cortexm.ISB()
 
-	// Now MSP is used only by exceptions handlers. MSP points to stack at
-	// boottom of stacks area, which is at the same time, the beginning of the
-	// RAM, so stack overflow in exception handler is always caught (even if MPU
-	// isn't used).
+	// Use MSP only for exceptions handlers. MSP will point to stack at boottom 
+	// of stacks area, which is at the same time, the beginning of the RAM, so
+	// stack overflow in exception handler is always caught (even if MPU isn't
+	// used).
 	cortexm.SetMSP(unsafe.Pointer(stackTop(len(ts.tasks))))
 
 	// Setup interrupt table.
 	// Consider setup at link time using GCC weak functions to support Cortex-M0
-	// and (in case of Cortex-M3,4) to allow vector load on the ICode bus
+	// and (in case of Cortex-M3,4) to allow vector load on ICode bus
 	// simultaneously with registers stacking on DCode bus.
 	vt[exce.NMI] = exce.VectorFor(nmiHandler)
 	vt[exce.HardFault] = exce.VectorFor(hardFaultHandler)
@@ -156,44 +156,4 @@ func (ts *taskSched) init() {
 
 	tasker.forceNext = -1
 	tasker.run()
-}
-
-func nmiHandler() {
-	for {
-	}
-}
-
-type cfs struct {
-	mmfs uint8  `C:"volatile"`
-	bfs  uint8  `C:"volatile"`
-	ufs  uint16 `C:"volatile"`
-}
-
-var cfsr = (*cfs)(unsafe.Pointer(uintptr(0xe000ed28)))
-
-func hardFaultHandler() {
-	for {
-	}
-}
-
-func memFaultHandler() {
-	mmfs := cfsr.mmfs
-	_ = mmfs
-	for {
-	}
-}
-
-func busFaultHandler() {
-	bfs := cfsr.bfs
-	_ = bfs
-	for {
-	}
-}
-
-func usageFaultHandler() {
-	ufs := cfsr.ufs
-	pfp := (*stackFrame)(unsafe.Pointer(cortexm.PSP()))
-	_, _ = ufs, pfp
-	for {
-	}
 }
