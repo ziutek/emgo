@@ -9,6 +9,7 @@ import (
 
 	"cortexm"
 	"cortexm/exce"
+	"cortexm/mpu"
 )
 
 type taskState byte
@@ -107,7 +108,6 @@ func (ts *taskSched) init() {
 	if Heap == nil {
 		panicMemory()
 	}
-	
 
 	// Use PSP as stack pointer for thread mode. Current (zero) task has stack
 	// at top of the stacks area.
@@ -116,7 +116,7 @@ func (ts *taskSched) init() {
 	cortexm.SetCtrl(cortexm.Ctrl() | cortexm.UsePSP)
 	cortexm.ISB()
 
-	// Use MSP only for exceptions handlers. MSP will point to stack at boottom 
+	// Use MSP only for exceptions handlers. MSP will point to stack at boottom
 	// of stacks area, which is at the same time, the beginning of the RAM, so
 	// stack overflow in exception handler is always caught (even if MPU isn't
 	// used).
@@ -126,11 +126,11 @@ func (ts *taskSched) init() {
 	// Consider setup at link time using GCC weak functions to support Cortex-M0
 	// and (in case of Cortex-M3,4) to allow vector load on ICode bus
 	// simultaneously with registers stacking on DCode bus.
-	vt[exce.NMI] = exce.VectorFor(nmiHandler)
-	vt[exce.HardFault] = exce.VectorFor(hardFaultHandler)
-	vt[exce.MemFault] = exce.VectorFor(memFaultHandler)
-	vt[exce.BusFault] = exce.VectorFor(busFaultHandler)
-	vt[exce.UsageFault] = exce.VectorFor(usageFaultHandler)
+	vt[exce.NMI] = exce.VectorFor(NMIHandler)
+	vt[exce.HardFault] = exce.VectorFor(FaultHandler)
+	vt[exce.MemManage] = exce.VectorFor(FaultHandler)
+	vt[exce.BusFault] = exce.VectorFor(FaultHandler)
+	vt[exce.UsageFault] = exce.VectorFor(FaultHandler)
 	vt[exce.SVCall] = exce.VectorFor(svcHandler)
 	vt[exce.PendSV] = exce.VectorFor(pendSVHandler)
 	vt[exce.SysTick] = exce.VectorFor(sysTickHandler)
@@ -142,9 +142,13 @@ func (ts *taskSched) init() {
 	for irq := exce.IRQ0; int(irq) < len(vt); irq++ {
 		irq.SetPrio((exce.Lowest + exce.Highest) / 2)
 	}
-	exce.MemFault.Enable()
+	exce.MemManage.Enable()
 	exce.BusFault.Enable()
 	exce.UsageFault.Enable()
+
+	// Setup MPU.
+	mpu.SetMode(mpu.PrivDef)
+	//mpu.Enable()
 
 	// Start SysTick before setup taskInfo for initial task to
 	// allow correct rng seed.
@@ -156,4 +160,7 @@ func (ts *taskSched) init() {
 
 	tasker.forceNext = -1
 	tasker.run()
+
+	// Leave privilege level.
+	//cortexm.SetCtrl(cortexm.Ctrl() | cortexm.Unpriv)
 }

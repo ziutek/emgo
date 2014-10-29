@@ -15,7 +15,7 @@ const (
 	Reset      Exce = iota + 1 // prio -3 (fixed)
 	NMI                        // prio -2 (fixed)
 	HardFault                  // prio -1 (fixed)
-	MemFault                   // prio 0
+	MemManage                  // prio 0
 	BusFault                   // prio 1
 	UsageFault                 // prio 2
 	_
@@ -48,7 +48,7 @@ var (
 // Enable enables handler for irq.
 func (e Exce) Enable() {
 	switch {
-	case e >= MemFault && e <= UsageFault:
+	case e >= MemManage && e <= UsageFault:
 		shcs.SetBit(int(18 - UsageFault + e))
 	case e >= IRQ0:
 		ise.setBit(e - IRQ0)
@@ -58,7 +58,7 @@ func (e Exce) Enable() {
 // Enabled returns true if handler for irq is enabled.
 func (e Exce) Enabled() bool {
 	switch {
-	case e >= MemFault && e <= UsageFault:
+	case e >= MemManage && e <= UsageFault:
 		return shcs.Bit(int(18 - UsageFault + e))
 	case e >= IRQ0:
 		return ise.bit(e - IRQ0)
@@ -74,7 +74,7 @@ func (e Exce) Enabled() bool {
 // in one step.
 func (e Exce) Disable() {
 	switch {
-	case e >= MemFault && e <= UsageFault:
+	case e >= MemManage && e <= UsageFault:
 		shcs.ClearBit(int(18 - UsageFault + e))
 	case e >= IRQ0:
 		ice.setBit(e - IRQ0)
@@ -90,7 +90,7 @@ func (e Exce) Pending() bool {
 	case NMI:
 		return ics.Bit(31)
 
-	case MemFault:
+	case MemManage:
 		return shcs.Bit(13)
 
 	case BusFault:
@@ -121,7 +121,7 @@ func (e Exce) SetPending() {
 	case NMI:
 		ics.SetBit(31)
 
-	case MemFault:
+	case MemManage:
 		shcs.SetBit(13)
 
 	case BusFault:
@@ -148,7 +148,7 @@ func (e Exce) ClearPending() {
 		return
 	}
 	switch e {
-	case MemFault:
+	case MemManage:
 		shcs.ClearBit(13)
 
 	case BusFault:
@@ -174,7 +174,7 @@ func (e Exce) Active() bool {
 		return iab.bit(e - IRQ0)
 	}
 	switch e {
-	case MemFault:
+	case MemManage:
 		return shcs.Bit(0)
 
 	case BusFault:
@@ -203,8 +203,8 @@ func (e Exce) Active() bool {
 // respectively.
 func (e Exce) Prio() Prio {
 	switch {
-	case e >= MemFault && e < IRQ0:
-		return Prio(shp.byte(e - MemFault))
+	case e >= MemManage && e < IRQ0:
+		return Prio(shp.byte(e - MemManage))
 	case e >= IRQ0:
 		return Prio(ip.byte(e - IRQ0))
 	}
@@ -213,8 +213,8 @@ func (e Exce) Prio() Prio {
 
 func (e Exce) SetPrio(p Prio) {
 	switch {
-	case e >= MemFault && e < IRQ0:
-		shp.setByte(e-MemFault, byte(p))
+	case e >= MemManage && e < IRQ0:
+		shp.setByte(e-MemManage, byte(p))
 
 	case e >= IRQ0:
 		ip.setByte(e-IRQ0, byte(p))

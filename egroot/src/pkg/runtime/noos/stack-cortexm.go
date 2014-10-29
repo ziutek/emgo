@@ -2,7 +2,10 @@
 
 package noos
 
-import "unsafe"
+import (
+	"unsafe"
+	"cortexm/exce"
+)
 
 func stackExp() uint
 
@@ -16,16 +19,8 @@ func stackTop(i int) uintptr {
 	return stackEnd() - uintptr(i)*stackCap
 }
 
-type stackFrame struct {
-	r    [4]uintptr
-	ip   uintptr
-	lr   uintptr
-	pc   uintptr
-	xpsr uint32
-}
-
-func allocStackFrame(sp uintptr) (*stackFrame, uintptr) {
-	sp -= unsafe.Sizeof(stackFrame{})
-	return (*stackFrame)(unsafe.Pointer(sp)), sp
+func allocStackFrame(sp uintptr) (*exce.StackFrame, uintptr) {
+	sp -= unsafe.Sizeof(exce.StackFrame{})
+	return (*exce.StackFrame)(unsafe.Pointer(sp)), sp
 }
 

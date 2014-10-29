@@ -38,7 +38,7 @@ const (
 	HFNM Flags = 1 << (iota + 1)
 	// If PRIVDEF is set the default memory map is used as background region for
 	// privileged software access.
-	PRIVDEF
+	PrivDef
 )
 
 // SetMode sets flags that globally determine the behavior of the MPU.
@@ -76,7 +76,7 @@ const (
 	Prwr_ Attr = 2 << 24 // Priv-RW, Unpriv-RO.
 	Prwrw Attr = 3 << 24 // Priv-RW, Unpriv-RW.
 
-	Xn Attr = 1 << 28 // Instruction Access Disable.
+	Xn Attr = 1 << 28 // Instruction access disable.
 )
 
 // SetTex sets type extension in a.
@@ -89,11 +89,29 @@ func (a Attr) Tex() byte {
 	return byte(a>>19) & 7
 }
 
-// SetRegion setups region rn at address addr of size 1<<sizeExp.
-// Any bit set in disable excludes 1/8 of memory (subregion) from region rn.
-// Only regions of size >= 256B can be divided to subregions. The least
-// significant bit of disable controls the first subregion. attr specifies
-// attributes for region rn.
-func SetRegion(rn int, addr uintptr, sizeExp int, disable byte, attr Attr) {
+// Region represents MPU region number.
+type Region int
 
+// Enable setups region rn at address addr of size 1<<sizeExp.
+// Any bit set in srd excludes 1/8 of  (subregion) from region rn.
+// Only regions of size >= 256B can be divided to subregions. The least
+// significant bit of srd controls the first subregion. attr specifies
+// attributes for region rn.
+func (rn Region) Enable(addr uintptr, sizeExp int, srd byte, attr Attr) {
+	if sizeExp < 5 || sizeExp > 32 {
+		panic("mpu: bad region size")
+	}
+	if addr<<uint(32-sizeExp) != 0 {
+		panic("mpu: unaligned base address")
+	}
+	r.rn = uint32(rn)
+	r.rba = uint32(addr)
+	sizeEnable := uint32(sizeExp)<<1 - 1 // Adjust size and set enable bit.
+	r.ras = uint32(attr) + uint32(srd)<<8 + sizeEnable
+}
+
+func (rn Region) Disable() {
+	r.rn = uint32(rn)
+	r.rba = 0
+	r.ras = 0
 }

@@ -36,6 +36,10 @@ func PSP() uintptr
 
 func SetPSP(p unsafe.Pointer)
 
+func LR() uint32
+
+func SetLR(r uint32)
+
 type Control uint32
 
 const (

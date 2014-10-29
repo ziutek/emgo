@@ -120,6 +120,20 @@ void cortexm$SetPSP(unsafe$Pointer p) {
 
 __attribute__ ((always_inline))
 extern inline
+uint32 cortexm$LR() {
+	uint32 r;
+	asm volatile ("mov %0, lr" : "=r" (r));
+	return r;
+}
+
+__attribute__ ((always_inline))
+extern inline
+void cortexm$SetLR(uint32 r) {
+	asm volatile ("mov lr, %0" :: "r" (r) : "lr");
+}
+
+__attribute__ ((always_inline))
+extern inline
 cortexm$Control cortexm$Ctrl() {
 	cortexm$Control c;
 	asm volatile ("mrs %0, control" : "=r" (c));

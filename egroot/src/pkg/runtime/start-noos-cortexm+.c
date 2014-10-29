@@ -2,6 +2,7 @@
 // +build cortexm0 cortexm3 cortexm4 cortexm4f
 
 #include "builtin.h"
+#include "runtime/noos.h"
 
 int main$init();
 int main$main();
@@ -13,8 +14,8 @@ extern byte BSSRAM, BSSSize;
 extern byte StackEnd;
 
 void runtime$Start() {
-	memmove(&DataRAM, &DataLoad, (uint)(&DataSize));
-	memset(&BSSRAM, 0, (uint)(&BSSSize));
+	memmove(&DataRAM, &DataLoad, (uint) (&DataSize));
+	memset(&BSSRAM, 0, (uint) (&BSSSize));
 
 	runtime$init();
 	main$init();
@@ -23,16 +24,10 @@ void runtime$Start() {
 	for (;;);
 }
 
-static
-void defaultHandler() {
-	for (;;) {
-	}
-}
-
 __attribute__ ((section(".vectors")))
-uint32 *cortexm$startup$vectors[4]  = {
-		(uint32 *) &StackEnd,      // MSP
-		(uint32 *) runtime$Start,  // entry point
-		(uint32 *) defaultHandler, // NMI
-		(uint32 *) defaultHandler, // hard fault
+uint32 *cortexm$startup$vectors[4] = {
+	(uint32 *) & StackEnd,	              // MSP
+	(uint32 *) runtime$Start,	          // entry point
+	(uint32 *) runtime$noos$NMIHandler,   // NMI
+	(uint32 *) runtime$noos$FaultHandler, // HardFault
 };
