@@ -162,5 +162,5 @@ func (ts *taskSched) init() {
 	tasker.run()
 
 	// Leave privilege level.
-	//cortexm.SetCtrl(cortexm.Ctrl() | cortexm.Unpriv)
+	cortexm.SetCtrl(cortexm.Ctrl() | cortexm.Unpriv)
 }
