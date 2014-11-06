@@ -13,12 +13,23 @@ var errnos = []string{
 const (
 	NEWTASK = iota
 	DELTASK
-	NEXTTASK
+	TASKREADY
 	WAITEVENT
 )
 
-func Syscall0(trap uintptr) (uintptr, Errno)
+func syscall0(trap uintptr) (uintptr, Errno)
 
-func Syscall1(trap, a1 uintptr) (uintptr, Errno)
+func syscall1(trap, a1 uintptr) (uintptr, Errno)
 
-func NewTask(wait bool)
+func syscall2(trap, a1, a2 uintptr) (uintptr, Errno)
+
+// NewTask creates new task that starts execution at pc. If wait is true
+// tasker stops and waits until new task will call TaskReady.
+func NewTask(pc uintptr, wait bool) Errno {
+	var w uintptr
+	if wait {
+		w = 1
+	}
+	_, err := syscall2(NEWTASK, pc, w)
+	return err
+}
