@@ -1,9 +1,6 @@
 // +build noos
 // +build cortexm0 cortexm3 cortexm4 cortexm4f
 
-#include "builtin.h"
-#include "runtime/noos.h"
-
 int main$init();
 int main$main();
 
