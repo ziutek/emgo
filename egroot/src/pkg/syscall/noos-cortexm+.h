@@ -1,7 +1,8 @@
 // +build noos
 // +build cortexm0 cortexm3 cortexm4 cortexm4f
 
-static inline
+__attribute__ ((always_inline))
+extern inline
 uintptr$$syscall$Errno syscall$syscall0(uintptr trap) {
 	register uintptr r0 asm("r0") = trap;
 	register uintptr r1 asm("r1");
@@ -14,7 +15,8 @@ uintptr$$syscall$Errno syscall$syscall0(uintptr trap) {
 	return (uintptr$$syscall$Errno){r0, r1};
 }
 
-static inline
+__attribute__ ((always_inline))
+extern inline
 uintptr$$syscall$Errno syscall$syscall1(uintptr trap, uintptr a1) {
 	register uintptr r0 asm("r0") = trap;
 	register uintptr r1 asm("r1") = a1;
@@ -27,7 +29,8 @@ uintptr$$syscall$Errno syscall$syscall1(uintptr trap, uintptr a1) {
 	return (uintptr$$syscall$Errno){r0, r1};
 }
 
-static inline
+__attribute__ ((always_inline))
+extern inline
 uintptr$$syscall$Errno syscall$syscall2(uintptr trap, uintptr a1, uintptr a2) {
 	register uintptr r0 asm("r0") = trap;
 	register uintptr r1 asm("r1") = a1;
