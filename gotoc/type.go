@@ -295,18 +295,19 @@ func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var
 		)
 	}
 
-	if _, ok := cdd.gtc.tupNames[tupName]; ok {
+	if o, ok := cdd.gtc.tuples[tupName]; ok {
+		cdd.DeclUses[o] = true
 		return
 	}
 
-	cdd.gtc.tupNames[tupName] = struct{}{}
-
 	s := types.NewStruct(fields, nil)
 	o := types.NewTypeName(tup.At(0).Pos(), cdd.gtc.pkg, tupName, s)
+	cdd.gtc.tuples[tupName] = o
 	acd := cdd.gtc.newCDD(o, TypeDecl, 0)
 	acd.structDecl(new(bytes.Buffer), tupName, s)
-	cdd.DeclUses[o] = true
 	cdd.acds = append(cdd.acds, acd)
+	
+	cdd.DeclUses[o] = true
 
 	return
 }
