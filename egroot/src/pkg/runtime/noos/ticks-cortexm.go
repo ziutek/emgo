@@ -9,6 +9,8 @@ import (
 	"sync/barrier"
 )
 
+var sysClk uint
+
 func sysTickStart() {
 	// Defaults:
 	// One context switch per 1e6 SysTicks (70/s for 70 Mhz, 168/s for 168 MHz)

@@ -2,11 +2,14 @@
 
 package setup
 
-import "runtime/noos"
+import (
+	"runtime/noos"
+	"syscall"
+)
 
 func sysClkChanged() {
 	if noos.MaxTasks() == 0 {
 		return
 	}
-	noos.SetSysClk(SysClk)
+	syscall.SetSysClock(SysClk)
 }

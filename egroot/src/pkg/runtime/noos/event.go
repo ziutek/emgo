@@ -4,6 +4,7 @@ import (
 	"sync/atomic"
 	"sync/barrier"
 	"unsafe"
+	"syscall"
 )
 
 // An Event represents an event that gorutine or ISR can send and gorutine (but
@@ -49,7 +50,9 @@ func (e Event) Send() {
 // gorutine so the information about sended events, that Wait hasn't waited for,
 // is lost. Compiler doesn't reorder Wait with any memory operation that is
 // before or after it in the program code.
-func (e Event) Wait()
+func (e Event) Wait() {
+	syscall.EventWait(uintptr(e))
+}
 
 // Sum returns logical sum of events.
 // Sending the sum of events is equal to send all that events at once. Waiting

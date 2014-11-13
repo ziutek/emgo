@@ -3,13 +3,13 @@
 package noos
 
 import (
-	"math/rand"
-	"sync/barrier"
-	"unsafe"
-
 	"cortexm"
 	"cortexm/exce"
 	"cortexm/mpu"
+	"math/rand"
+	"sync/barrier"
+	"syscall"
+	"unsafe"
 )
 
 type taskState byte
@@ -17,6 +17,7 @@ type taskState byte
 const (
 	taskEmpty taskState = iota
 	taskReady
+	taskLocked
 	taskWaitEvent
 )
 
@@ -26,15 +27,16 @@ const (
 // after the register set stacked by tasker. pendSVHandler can use two least
 // significant bits of sp for its flags.
 type taskInfo struct {
-	sp    uintptr
-	event Event
-	rng   rand.XorShift64
-	flags taskState
-	prio  uint8
+	rng    rand.XorShift64
+	sp     uintptr
+	event  Event
+	parent int16
+	flags  taskState
+	prio   uint8
 }
 
-func (ti *taskInfo) init() {
-	*ti = taskInfo{prio: 255}
+func (ti *taskInfo) init(parent int) {
+	*ti = taskInfo{parent: int16(parent), prio: 255}
 	ti.rng.Seed(Uptime())
 }
 
@@ -49,7 +51,6 @@ func (ti *taskInfo) setState(s taskState) {
 type taskSched struct {
 	tasks     []taskInfo
 	curTask   int
-	forceNext int
 	onSysTick bool
 }
 
@@ -155,12 +156,83 @@ func (ts *taskSched) init() {
 	sysTickStart()
 
 	// Set taskInfo for initial (current) task.
-	ts.tasks[0].init()
+	ts.tasks[0].init(0)
 	ts.tasks[0].setState(taskReady)
 
-	tasker.forceNext = -1
 	tasker.run()
 
-	// Leave privilege level.
+	// Leave privileged level.
 	cortexm.SetCtrl(cortexm.Ctrl() | cortexm.Unpriv)
+}
+
+func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err syscall.Errno) {
+	n := ts.curTask
+	for {
+		if n++; n >= len(ts.tasks) {
+			n = 0
+		}
+		if ts.tasks[n].state() == taskEmpty {
+			break
+		}
+		if n == ts.curTask {
+			return 0, syscall.ENORES
+		}
+	}
+
+	sf, sp := allocStackFrame(stackTop(n))
+	sf.PSR = psr // Use parent's PSR as initial PSR for new task.
+	sf.PC = pc
+
+	newt := &ts.tasks[n]
+	newt.init(ts.curTask)
+	newt.sp = sp
+	newt.setState(taskReady)
+
+	if lock {
+		ts.tasks[ts.curTask].setState(taskLocked)
+		exce.PendSV.SetPending()
+	}
+
+	return n + 1, syscall.OK
+}
+
+func (ts *taskSched) delTask(tid int) syscall.Errno {
+	n := ts.curTask
+	if tid != 0 {
+		n = tid - 1.
+	}
+	if n >= len(ts.tasks) || ts.tasks[n].state() == taskEmpty {
+		return syscall.ENFOUND
+	}
+	ts.tasks[n].setState(taskEmpty)
+	for i := range ts.tasks {
+		if t := &ts.tasks[i]; int(t.parent) == n {
+			t.parent = -1
+		}
+	}
+	if n == ts.curTask {
+		exce.PendSV.SetPending()
+	}
+	return syscall.OK
+}
+
+func (ts *taskSched) unlockParent() {
+	parent := ts.tasks[ts.curTask].parent
+	if parent == -1 {
+		return
+	}
+	if pt := &ts.tasks[parent]; pt.state() == taskLocked {
+		pt.setState(taskReady)
+	}
+}
+
+func (ts *taskSched) waitEvent(e Event) {
+	t := &ts.tasks[ts.curTask]
+	if e == 0 || t.event&e != 0 {
+		t.event = 0
+		return
+	}
+	t.setState(taskWaitEvent)
+	t.event = e
+	exce.PendSV.SetPending()
 }

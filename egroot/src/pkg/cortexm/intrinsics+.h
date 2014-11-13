@@ -158,6 +158,6 @@ void cortexm$ISB() {
 	asm volatile ("isb");
 }
 
-#define cortexm$SVC(imm) asm volatile ("svc %0" :: "i" (imm))
+#define cortexm$SVC(imm) asm volatile ("svc %0" :: "I" (imm))
 
-#define cortexm$BKPT(imm) asm volatile ("bkpt %0" :: "i" (imm))
+#define cortexm$BKPT(imm) asm volatile ("bkpt %0" :: "I" (imm))

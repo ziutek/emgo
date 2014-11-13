@@ -13,7 +13,8 @@ runtime$noos$FaultHandler:
 	ite    eq
 	mrseq  r1, msp
 	mrsne  r1, psp
-	bkpt   1
+0:  bkpt   1
+	b      0b
 
 // Now R0 and R1 contain useful information.
 
