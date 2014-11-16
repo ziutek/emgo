@@ -2,15 +2,18 @@
 
 package delay
 
-import "runtime/noos"
+import (
+	"runtime/noos"
+	"syscall"
+)
 
 func millisec(ms int) {
 	if ms == 0 {
 		return
 	}
-	end := noos.Uptime() + uint64(ms*1e6)
+	end := syscall.Uptime() + uint64(ms)*1e6
 	te := noos.TickEvent()
-	for noos.Uptime() < end {
+	for syscall.Uptime() < end {
 		te.Wait()
 	}
 }
