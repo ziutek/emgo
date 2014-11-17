@@ -10,6 +10,8 @@ const (
 	TASKUNLOCK = builtin.TASKUNLOCK
 	EVENTWAIT  = iota
 	SETSYSCLK
+	UPTIME
+	SETISR
 )
 
 // NewTask creates new task that starts execute f. If lock is true tasker stops
@@ -43,3 +45,12 @@ func SetSysClock(hz uint) Errno {
 	_, err := builtin.Syscall1(SETSYSCLK, uintptr(hz))
 	return Errno(err)
 }
+
+// Uptime returns how long system is running (in nanosecond). Time when system
+// was in deep sleep state can be included or not.
+func Uptime() uint64 {
+	return builtin.Syscall0u64(UPTIME)
+}
+
+// SetISR sets f as exception handler for e.
+//func SetISR(

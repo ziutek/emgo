@@ -37,7 +37,7 @@ type taskInfo struct {
 
 func (ti *taskInfo) init(parent int) {
 	*ti = taskInfo{parent: int16(parent), prio: 255}
-	ti.rng.Seed(Uptime())
+	ti.rng.Seed(uptime())
 }
 
 func (ti *taskInfo) state() taskState {

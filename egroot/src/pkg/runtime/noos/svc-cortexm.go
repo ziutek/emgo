@@ -9,34 +9,39 @@ import (
 )
 
 var syscalls = [...]func(*exce.StackFrame){
-	syscall.NEWTASK:    newTask,
-	syscall.DELTASK:    delTask,
-	syscall.TASKUNLOCK: taskUnlock,
-	syscall.EVENTWAIT:  eventWait,
-	syscall.SETSYSCLK:  setSysClock,
+	syscall.NEWTASK:    scNewTask,
+	syscall.DELTASK:    scDelTask,
+	syscall.TASKUNLOCK: scTaskUnlock,
+	syscall.EVENTWAIT:  scEventWait,
+	syscall.SETSYSCLK:  scSetSysClock,
+	syscall.UPTIME:     scUptime,
 }
 
-func newTask(fp *exce.StackFrame) {
+func scNewTask(fp *exce.StackFrame) {
 	tid, err := tasker.newTask(fp.R[0], fp.PSR, fp.R[1] != 0)
 	fp.R[0], fp.R[1] = uintptr(tid), uintptr(err)
 }
 
-func delTask(fp *exce.StackFrame) {
+func scDelTask(fp *exce.StackFrame) {
 	err := tasker.delTask(int(fp.R[0]))
 	fp.R[0] = uintptr(err)
 }
 
-func taskUnlock(fp *exce.StackFrame) {
+func scTaskUnlock(fp *exce.StackFrame) {
 	tasker.unlockParent()
 }
 
-func eventWait(fp *exce.StackFrame) {
+func scEventWait(fp *exce.StackFrame) {
 	tasker.waitEvent(Event(fp.R[0]))
 }
 
-func setSysClock(fp *exce.StackFrame) {
+func scSetSysClock(fp *exce.StackFrame) {
 	sysClk = uint(fp.R[0])
 	setTickPeriod()
+}
+
+func scUptime(fp *exce.StackFrame) {
+	*(*uint64)(unsafe.Pointer(fp)) = uptime()
 }
 
 // svcHandler calls sv with SVC caller's stack frame.

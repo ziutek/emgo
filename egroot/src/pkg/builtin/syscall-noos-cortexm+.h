@@ -7,7 +7,7 @@
 	asm volatile (                 \
 		"svc %2"                   \
 		: "=r" (r0), "=r" (r1)     \
-		: "I" (trap)               \
+		: "i" (trap)               \
 		: "memory"                 \
 	);                             \
 	(uintptr$$uintptr){r0, r1};    \
@@ -19,7 +19,7 @@
 	asm volatile (                      \
 		"svc %2"                        \
 		: "+r" (r0), "=r" (r1)          \
-		: "I" (trap)                    \
+		: "i" (trap)                    \
 		: "memory"                      \
 	);                                  \
 	(uintptr$$uintptr){r0, r1};         \
@@ -31,56 +31,24 @@
 	asm volatile (                        \
 		"svc %2"                          \
 		: "+r" (r0), "+r" (r1)            \
-		: "I" (trap)                      \
+		: "i" (trap)                      \
 		: "memory"                        \
 	);                                    \
 	(uintptr$$uintptr){r0, r1};           \
 })
 
-
-/*
-// Version that uses r0 for syscall number.
-
-__attribute__ ((always_inline))
-extern inline
-uintptr$$uintptr builtin$Syscall0(uintptr trap) {
-	register uintptr r0 asm("r0") = trap;
-	register uintptr r1 asm("r1");
-	asm volatile (
-		"svc 0"
-		: "+r" (r0), "=r" (r1)
-		:
-		: "memory"
-	);
-	return (uintptr$$uintptr){r0, r1};
-}
-
-__attribute__ ((always_inline))
-extern inline
-uintptr$$uintptr builtin$Syscall1(uintptr trap, uintptr a1) {
-	register uintptr r0 asm("r0") = trap;
-	register uintptr r1 asm("r1") = a1;
-	asm volatile (
-		"svc 1"
-		: "+r" (r0), "+r" (r1)
-		:
-		: "memory"
-	);
-	return (uintptr$$uintptr){r0, r1};
-}
-
-__attribute__ ((always_inline))
-extern inline
-uintptr$$uintptr builtin$Syscall2(uintptr trap, uintptr a1, uintptr a2) {
-	register uintptr r0 asm("r0") = trap;
-	register uintptr r1 asm("r1") = a1;
-	register uintptr r2 asm("r2") = a2;
-	asm volatile (
-		"svc 2"
-		: "+r" (r0), "+r" (r1)
-		: "r" (r2)
-		: "memory"
-	);
-	return (uintptr$$uintptr){r0, r1};
-}
-*/
+// uint64 in register
+//
+// ARM EABI tells that 64bit operand is stored in even:odd register pair. But
+// I'm unsure, does `register uint64 r asm("r0")` means that r ocupies r0:r1
+// even if r isn't an operand nor a return value of function.
+#define builtin$Syscall0u64(trap) ({ \
+	register uint64 r asm("r0");     \
+	asm volatile (                   \
+		"svc %1"                     \
+		: "=r" (r)                   \
+		: "i" (trap)                 \
+		: "memory"                   \
+	);                               \
+	r;                               \
+})

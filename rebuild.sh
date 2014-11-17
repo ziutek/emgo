@@ -20,6 +20,7 @@ cortexm/exce
 cortexm/systick
 cortexm/sleep
 
+syscall
 runtime/noos
 sync
 runtime
