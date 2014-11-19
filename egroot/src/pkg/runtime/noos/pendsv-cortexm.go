@@ -4,7 +4,7 @@ package noos
 
 import (
 	"arch/cortexm/sleep"
-	"sync/atomic"
+	"syscall"
 )
 
 // pendSVHandler calls nextTask with PSP for current task. It performs
@@ -15,8 +15,8 @@ func pendSVHandler()
 // TODO: better scheduler
 func nextTask(sp uintptr) uintptr {
 again:
-	if ereg := atomic.SwapUintptr((*uintptr)(&eventReg), 0); ereg != 0 {
-		tasker.deliverEvent(Event(ereg))
+	if ereg := syscall.TakeEventReg(); ereg != 0 {
+		tasker.deliverEvent(syscall.Event(ereg))
 	}
 	n := tasker.curTask
 	for {

@@ -3,6 +3,7 @@ package noos
 import (
 	"sync/atomic"
 	"sync/barrier"
+	"syscall"
 	"unsafe"
 )
 
@@ -47,7 +48,7 @@ func delWaiter(head **waiter, w *waiter) bool {
 }
 
 type chanS struct {
-	event Event // Event must be the first field (see chanSelect).
+	event syscall.Event // Event must be the first field (see chanSelect).
 	src   *waiter
 	dst   *waiter
 	state int32
@@ -55,7 +56,7 @@ type chanS struct {
 
 func makeChanS() *chanS {
 	c := new(chanS)
-	c.event = AssignEvent()
+	c.event = syscall.AssignEvent()
 	return c
 }
 

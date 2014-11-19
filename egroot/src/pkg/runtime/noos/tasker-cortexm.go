@@ -29,7 +29,7 @@ const (
 type taskInfo struct {
 	rng    rand.XorShift64
 	sp     uintptr
-	event  Event
+	event  syscall.Event
 	parent int16
 	flags  taskState
 	prio   uint8
@@ -66,7 +66,7 @@ func (ts *taskSched) stop() {
 	barrier.Memory()
 }
 
-func (ts *taskSched) deliverEvent(e Event) {
+func (ts *taskSched) deliverEvent(e syscall.Event) {
 	for i := range ts.tasks {
 		t := &ts.tasks[i]
 		switch t.state() {
@@ -226,7 +226,7 @@ func (ts *taskSched) unlockParent() {
 	}
 }
 
-func (ts *taskSched) waitEvent(e Event) {
+func (ts *taskSched) waitEvent(e syscall.Event) {
 	t := &ts.tasks[ts.curTask]
 	if e == 0 || t.event&e != 0 {
 		t.event = 0

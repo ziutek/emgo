@@ -13,7 +13,7 @@ const (
 	UPTIME
 	SETIRQENA
 	SETIRQPRIO
-	SETISR
+	SETIRQHANDLER
 	IRQSTATUS
 )
 
@@ -37,11 +37,6 @@ func TaskUnlock() {
 	builtin.Syscall0(TASKUNLOCK)
 }
 
-// EventWait waits for event e.
-func EventWait(e uintptr) {
-	builtin.Syscall1(EVENTWAIT, e)
-}
-
 // SetSysClock informs runtime about current system clock frequency.
 // It should be called at every system clock change.
 func SetSysClock(hz uint) Errno {
@@ -57,9 +52,18 @@ func Uptime() uint64 {
 
 // SetIRQEna enables or disables irq.
 func SetIRQEna(irq int, ena bool) Errno {
-	_, err := builtin.Syscall1(SETIRQENA, b2p(ena))
+	_, err := builtin.Syscall2(SETIRQENA, uintptr(irq), b2p(ena))
 	return Errno(err)
 }
 
 // SetIRQPrio sets priority for irq.
-func SetIRQPrio(irq, prio int)
+func SetIRQPrio(irq, prio int) Errno {
+	_, err := builtin.Syscall2(SETIRQPRIO, uintptr(irq), uintptr(prio))
+	return Errno(err)
+}
+
+// SetIRQHandler sets f as handler function for irq.
+func SetIRQHandler(irq int, f func()) Errno {
+	_, err := builtin.Syscall2(SETIRQHANDLER, uintptr(irq), f2p(f))
+	return Errno(err)
+}

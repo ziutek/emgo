@@ -3,6 +3,7 @@ package noos
 import (
 	"builtin"
 	"sync/atomic"
+	"syscall"
 	"unsafe"
 )
 
@@ -71,13 +72,13 @@ func selectComm(comms []*builtin.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Point
 	}
 	// Blocking select.
 	var (
-		e   Event
+		e   syscall.Event
 		sel int32
 		w   waiter
 	)
 	for _, comm := range comms {
 		if comm.C != nil {
-			e = e.Sum(*(*Event)(comm.C))
+			e = e.Sum(*(*syscall.Event)(comm.C))
 		}
 	}
 	w.addr = unsafe.Pointer(&sel)

@@ -3,7 +3,7 @@
 package sync
 
 import (
-	"runtime/noos"
+	"syscall"
 	"sync/atomic"
 	"sync/barrier"
 )
@@ -15,7 +15,7 @@ type mutex struct {
 func (m *Mutex) lock() {
 	state := atomic.LoadUintptr(&m.state)
 	if state == 0 {
-		state = uintptr(noos.AssignEventFlag())
+		state = uintptr(syscall.AssignEventFlag())
 		if !atomic.CompareAndSwapUintptr(&m.state, 0, state) {
 			state = m.state
 		}
@@ -25,7 +25,7 @@ func (m *Mutex) lock() {
 		if atomic.CompareAndSwapUintptr(&m.state, unlocked, locked) {
 			return
 		}
-		noos.Event(unlocked).Wait()
+		syscall.Event(unlocked).Wait()
 	}
 }
 
@@ -35,5 +35,5 @@ func (m *Mutex) unlock() {
 	if atomic.AddUintptr(&m.state, ^uintptr(0)) != unlocked {
 		panic("sync: unlock of unlocked mutex")
 	}
-	noos.Event(unlocked).Send()
+	syscall.Event(unlocked).Send()
 }

@@ -5,6 +5,7 @@ import (
 	"builtin"
 	"sync/atomic"
 	"sync/barrier"
+	"syscall"
 	"unsafe"
 )
 
@@ -31,7 +32,7 @@ func alignUp(p, a uintptr) uintptr {
 }
 
 type chanA struct {
-	event  Event // Event must be the first field - see chanSelect.
+	event  syscall.Event // Event must be the first field - see chanSelect.
 	tosend uintptr
 	torecv uintptr
 	cap    uintptr
@@ -44,7 +45,7 @@ type chanA struct {
 
 func makeChanA(cap int, size, align uintptr) *chanA {
 	c := new(chanA)
-	c.event = AssignEvent()
+	c.event = syscall.AssignEvent()
 	c.cap = uintptr(cap)
 	c.mask = ^uintptr(0) >> (bits.LeadingZerosPtr(c.cap-1) - 1)
 	c.step = alignUp(size, align)

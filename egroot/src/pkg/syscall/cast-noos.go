@@ -2,5 +2,5 @@
 
 package syscall
 
-func b2p(b bool) uintptr
-func f2p(f func()) uintptr
+func b2p(bool) uintptr
+func f2p(func()) uintptr

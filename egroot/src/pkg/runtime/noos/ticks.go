@@ -1,8 +1,10 @@
 package noos
 
-var tickEvent = AssignEvent()
+import "syscall"
+
+var tickEvent = syscall.AssignEvent()
 
 // TickEvent returns event that is sended at every tasker interrupt.
-func TickEvent() Event {
+func TickEvent() syscall.Event {
 	return tickEvent
 }

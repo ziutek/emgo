@@ -134,7 +134,7 @@ void arch$ortexm$SetLR(uint32 r) {
 
 __attribute__ ((always_inline))
 extern inline
-arch$cortexm$Control cortexm$Ctrl() {
+arch$cortexm$Control arch$cortexm$Ctrl() {
 	arch$cortexm$Control c;
 	asm volatile ("mrs %0, control" : "=r" (c));
 	return c;
