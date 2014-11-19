@@ -41,9 +41,7 @@ func sysTickHandler() {
 	atomic.StoreUintptr(&ticksABA, aba)
 	tickEvent.Send()
 
-	if tasker.onSysTick {
-		exce.PendSV.SetPending()
-	}
+	exce.PendSV.SetPending()
 }
 
 func uptime() uint64 {

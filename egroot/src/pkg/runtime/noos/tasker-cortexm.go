@@ -37,7 +37,7 @@ type taskInfo struct {
 
 func (ti *taskInfo) init(parent int) {
 	*ti = taskInfo{parent: int16(parent), prio: 255}
-	ti.rng.Seed(uptime())
+	ti.rng.Seed(uptime()+1)
 }
 
 func (ti *taskInfo) state() taskState {
@@ -51,20 +51,9 @@ func (ti *taskInfo) setState(s taskState) {
 type taskSched struct {
 	tasks     []taskInfo
 	curTask   int
-	onSysTick bool
 }
 
 var tasker taskSched
-
-func (ts *taskSched) run() {
-	barrier.Memory()
-	ts.onSysTick = true
-}
-
-func (ts *taskSched) stop() {
-	ts.onSysTick = false
-	barrier.Memory()
-}
 
 func (ts *taskSched) deliverEvent(e syscall.Event) {
 	for i := range ts.tasks {
@@ -151,15 +140,12 @@ func (ts *taskSched) init() {
 	mpu.SetMode(mpu.PrivDef)
 	//mpu.Enable()
 
-	// Start SysTick before setup taskInfo for initial task to
-	// allow correct rng seed.
-	sysTickStart()
-
 	// Set taskInfo for initial (current) task.
 	ts.tasks[0].init(0)
 	ts.tasks[0].setState(taskReady)
 
-	tasker.run()
+	// Run tasker.
+	sysTickStart()
 
 	// Leave privileged level.
 	cortexm.SetCtrl(cortexm.Ctrl() | cortexm.Unpriv)
