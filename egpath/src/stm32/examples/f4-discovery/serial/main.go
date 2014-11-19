@@ -11,7 +11,7 @@ package main
 import (
 	"delay"
 	"fmt"
-	"runtime/noos"
+	"rtos"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -73,8 +73,8 @@ func init() {
 	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	irqs.USART2.UseHandler(sirq)
-	irqs.USART2.Enable()
+	rtos.IRQ(irqs.USART2).UseHandler(sirq)
+	rtos.IRQ(irqs.USART2).Enable()
 
 	s.SetUnix(true)
 }
@@ -90,7 +90,7 @@ func blink(c, d int) {
 }
 
 func sirq() {
-	// blink(Blue, -10) // Uncoment to see "hardware buffer overrun".
+	//blink(Blue, -10) // Uncoment to see "hardware buffer overrun".
 	s.IRQ()
 }
 
@@ -104,19 +104,27 @@ func checkErr(err error) {
 }
 
 func main() {
-	s.WriteString("\nHello!\n")
-
 	var uts [10]uint64
+
+	// Following loop disassembled:
+	// 0b:
+	//   svc	5
+	//   strd	r0, r1, [r3, #8]!
+	//	 ldr	r2, [sp, #52]
+	//   cmp	r3, r2
+	//   bne.n  0b
 	for i := range uts {
-		delay.Loop(2e3)
-		uts[i] = noos.Uptime()
+		uts[i] = rtos.Uptime()
 	}
 
-	s.WriteString("\nFor loop:\n")
-	for _, ut := range uts {
-		_ = ut
-		fmt.Uint64(ut).Format(s, 10, -12)
-		s.WriteString(" ns\n")
+	s.WriteString("\nrtos.Uptime() in loop:\n")
+	for i, ut := range uts {
+		fmt.Int64(ut).Format(s, 10, -12)
+		s.WriteString(" ns")
+		if i > 0 {
+			fmt.Fprintf(s, " (dt = %v ns)", fmt.Int64(ut-uts[i-1]))
+		}
+		s.WriteByte('\n')
 	}
 
 	s.WriteString("Echo:\n")
@@ -127,8 +135,7 @@ func main() {
 		n, err := s.Read(buf[:])
 		checkErr(err)
 
-		ns := noos.Uptime()
-		_ = ns
+		ns := rtos.Uptime()
 		fmt.Uint64(ns).Format(s, 10, -12)
 
 		s.WriteString(" ns \"")

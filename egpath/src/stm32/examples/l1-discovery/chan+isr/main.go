@@ -8,10 +8,11 @@ package main
 
 import (
 	"delay"
+	"rtos"
 
 	"stm32/l1/exti"
 	"stm32/l1/gpio"
-	"stm32/l1/irq"
+	"stm32/l1/irqs"
 	"stm32/l1/periph"
 	"stm32/l1/setup"
 )
@@ -39,9 +40,9 @@ func init() {
 	exti.L0.Connect(gpio.A)
 	exti.L0.RiseTrigEnable()
 	exti.L0.IntEnable()
-	irq.Ext0.UseHandler(buttonHandler)
-	irq.Ext0.Enable()
-	
+	rtos.IRQ(irqs.Ext0).UseHandler(buttonHandler)
+	rtos.IRQ(irqs.Ext0).Enable()
+
 	periph.APB2ClockDisable(periph.SysCfg)
 }
 

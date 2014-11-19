@@ -6,9 +6,9 @@ package main
 import (
 	"sync/barrier"
 
-	"cortexm/exce"
-	"cortexm/sleep"
-	"cortexm/systick"
+	"arch/cortexm/exce"
+	"arch/cortexm/sleep"
+	"arch/cortexm/systick"
 
 	"stm32/l1/gpio"
 	"stm32/l1/periph"

@@ -19,10 +19,10 @@ runtime$noos$FaultHandler:
 // Now R0 and R1 contain useful information.
 
 // R0 contains exception number:
-// 3: HardFault  - see cortexm$exce$FSR->HFS
-// 4: MemManage  - see cortexm$exce$FSR->MMS, cortexm$exce$FSR->MMA
-// 5: BusFault   - see cortexm$exce$FSR->BFS, cortexm$exce$FSR->BFA
-// 6: UsageFault - see cortexm$exce$FSR->UFS
+// 3: HardFault  - see arch$cortexm$exce$FSR->HFS
+// 4: MemManage  - see arch$cortexm$exce$FSR->MMS, arch$cortexm$exce$FSR->MMA
+// 5: BusFault   - see arch$cortexm$exce$FSR->BFS, arch$cortexm$exce$FSR->BFA
+// 6: UsageFault - see arch$cortexm$exce$FSR->UFS
 
 // R1 should contain pointer to the exception stack frame:
 // (R1) -> [R0, R1, R2, R3, IP, LR, PC, PSR]
@@ -31,5 +31,5 @@ runtime$noos$FaultHandler:
 // 2. Thumb bit in PSR
 // 3. IPSR in PSR
 
-// To print stack frame in gdb use: p /x *(cortexm$exce$StackFrame*)($r1)
-// To see line where PC points to: b * ((cortexm$exce$StackFrame*)($r1))->PC
+// To print stack frame in gdb use: p /x *(arch$cortexm$exce$StackFrame*)($r1)
+// To see line where PC points to: b * ((arch$cortexm$exce$StackFrame*)($r1))->PC

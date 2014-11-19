@@ -3,6 +3,7 @@ package main
 import (
 	"delay"
 	"fmt"
+	"rtos"
 	"time"
 
 	"dcf77"
@@ -31,8 +32,8 @@ func init() {
 	exti.L1.RiseTrigEnable()
 	exti.L1.FallTrigEnable()
 	exti.L1.IntEnable()
-	irqs.Ext1.UseHandler(edgeISR)
-	irqs.Ext1.Enable()
+	rtos.IRQ(irqs.Ext1).UseHandler(edgeISR)
+	rtos.IRQ(irqs.Ext1).Enable()
 
 	periph.APB2ClockDisable(periph.SysCfg)
 }

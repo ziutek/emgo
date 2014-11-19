@@ -11,7 +11,7 @@ package main
 import (
 	"delay"
 	"fmt"
-	"runtime/noos"
+	"rtos"
 
 	"stm32/l1/gpio"
 	"stm32/l1/irqs"
@@ -62,8 +62,8 @@ func init() {
 	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	irqs.USART3.UseHandler(sirq)
-	irqs.USART3.Enable()
+	rtos.IRQ(irqs.USART3).UseHandler(sirq)
+	rtos.IRQ(irqs.USART3).Enable()
 
 	s.SetUnix(true)
 }
@@ -93,30 +93,38 @@ func checkErr(err error) {
 }
 
 func main() {
-	s.WriteString("\nHello!\n")
+	var uts [10]uint64
 
-	var uts [5]uint64
+	// Following loop disassembled:
+	// 0b:
+	//   svc	5
+	//   strd	r0, r1, [r3, #8]!
+	//	 ldr	r2, [sp, #52]
+	//   cmp	r3, r2
+	//   bne.n  0b
 	for i := range uts {
-		delay.Loop(2e3)
-		uts[i] = noos.Uptime()
+		uts[i] = rtos.Uptime()
 	}
 
-	s.WriteString("\nFor loop:\n")
-
-	for _, ut := range uts {
-		fmt.Uint64(ut).Format(s, 10, -12)
-		s.WriteString(" ns\n")
+	s.WriteString("\nrtos.Uptime() in loop:\n")
+	for i, ut := range uts {
+		fmt.Int64(ut).Format(s, 10, -12)
+		s.WriteString(" ns")
+		if i > 0 {
+			fmt.Fprintf(s, " (dt = %v ns)", fmt.Int64(ut-uts[i-1]))
+		}
+		s.WriteByte('\n')
 	}
 
 	s.WriteString("Echo:\n")
 	s.Flush()
 
-	var buf [8]byte
+	var buf [40]byte
 	for {
 		n, err := s.Read(buf[:])
 		checkErr(err)
 
-		ns := noos.Uptime()
+		ns := rtos.Uptime()
 		fmt.Uint64(ns).Format(s, 10, -12)
 
 		s.WriteString(" ns \"")

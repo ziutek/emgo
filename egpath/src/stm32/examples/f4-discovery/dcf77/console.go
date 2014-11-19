@@ -1,6 +1,8 @@
 package main
 
 import (
+	"rtos"
+
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
 	"stm32/f4/periph"
@@ -41,8 +43,8 @@ func initConsole() {
 	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	irqs.USART2.UseHandler(conISR)
-	irqs.USART2.Enable()
+	rtos.IRQ(irqs.USART2).UseHandler(conISR)
+	rtos.IRQ(irqs.USART2).Enable()
 
 	con.SetUnix(true)
 }

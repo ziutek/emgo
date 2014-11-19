@@ -5,25 +5,19 @@ import (
 	"unsafe"
 
 	"stm32/l1/setup"
-	"stm32/stlink"
 )
 
 var st = stlink.Term
 
 func printa(s string, gs, ga, cs, ca uintptr) {
-	fmt.Str(s).Format(st)
-	fmt.T.Format(st)
-	fmt.Uint(gs).Format(st)
-	fmt.N.Format(st)
-	fmt.Fprint(st, fmt.Str(s), fmt.Uint(gs), fmt.N)
-	/*fmt.Fprint(
+	fmt.Fprint(
 		st,
 		fmt.Str(s),
 		fmt.Uint(gs), fmt.Uint(ga),
 		fmt.T,
 		fmt.Uint(cs), fmt.Uint(ca),
 		fmt.N,
-	)*/
+	)
 }
 
 type S16 struct {
