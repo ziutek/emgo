@@ -8,11 +8,6 @@ const (
 	Lowest  Prio = 255
 )
 
-// Same returns true if priority p is equal to o.
-func (p Prio) Same(o Prio) bool {
-	return p == o
-}
-
 // Lower resturns true if priority p is lower than o.
 func (p Prio) Lower(o Prio) bool {
 	return p > o

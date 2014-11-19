@@ -2,7 +2,7 @@
 
 package noos
 
-import "cortexm/fpu"
+import "arch/cortexm/fpu"
 
 func initCPU() {
 	fpu.SetAccess(fpu.Full)

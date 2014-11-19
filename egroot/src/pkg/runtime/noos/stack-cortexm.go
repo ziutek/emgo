@@ -3,8 +3,8 @@
 package noos
 
 import (
+	"arch/cortexm/exce"
 	"unsafe"
-	"cortexm/exce"
 )
 
 func stackExp() uint
@@ -23,4 +23,3 @@ func allocStackFrame(sp uintptr) (*exce.StackFrame, uintptr) {
 	sp -= unsafe.Sizeof(exce.StackFrame{})
 	return (*exce.StackFrame)(unsafe.Pointer(sp)), sp
 }
-

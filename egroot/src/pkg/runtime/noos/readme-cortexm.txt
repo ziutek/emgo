@@ -15,7 +15,7 @@ Defines the maximum number of tasks.
 
 MaxTasks == 0 means:
 
-- no tasks (gorutines),
+- no tasks (no gorutines),
 - one stack (uses MSP),
 - runtime doesn't touch any peripherals,
 - program runs in privileged mode.

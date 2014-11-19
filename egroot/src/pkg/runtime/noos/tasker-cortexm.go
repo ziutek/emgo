@@ -3,9 +3,9 @@
 package noos
 
 import (
-	"cortexm"
-	"cortexm/exce"
-	"cortexm/mpu"
+	"arch/cortexm"
+	"arch/cortexm/exce"
+	"arch/cortexm/mpu"
 	"math/rand"
 	"sync/barrier"
 	"syscall"

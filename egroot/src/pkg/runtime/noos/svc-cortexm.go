@@ -3,7 +3,7 @@
 package noos
 
 import (
-	"cortexm/exce"
+	"arch/cortexm/exce"
 	"syscall"
 	"unsafe"
 )

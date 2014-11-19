@@ -3,7 +3,7 @@
 package noos
 
 import (
-	"cortexm"
+	"arch/cortexm"
 )
 
 func NMIHandler() {

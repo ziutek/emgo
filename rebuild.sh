@@ -14,11 +14,11 @@ sync/barrier
 mmio
 bits
 
-cortexm
-cortexm/fpu
-cortexm/exce
-cortexm/systick
-cortexm/sleep
+arch/cortexm
+arch/cortexm/fpu
+arch/cortexm/exce
+arch/cortexm/systick
+arch/cortexm/sleep
 
 syscall
 runtime/noos

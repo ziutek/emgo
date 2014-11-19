@@ -1,6 +1,6 @@
 package irqs
 
-import "cortexm/exce"
+import "arch/cortexm/exce"
 
 const (
 	WinWdg = exce.IRQ0 + iota

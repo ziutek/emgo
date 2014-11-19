@@ -3,8 +3,8 @@
 package noos
 
 import (
-	"cortexm/exce"
-	"cortexm/systick"
+	"arch/cortexm/exce"
+	"arch/cortexm/systick"
 	"sync/atomic"
 	"sync/barrier"
 )

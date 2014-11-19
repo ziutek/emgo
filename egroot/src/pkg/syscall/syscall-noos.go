@@ -11,7 +11,10 @@ const (
 	EVENTWAIT  = iota
 	SETSYSCLK
 	UPTIME
+	SETIRQENA
+	SETIRQPRIO
 	SETISR
+	IRQSTATUS
 )
 
 // NewTask creates new task that starts execute f. If lock is true tasker stops
@@ -52,5 +55,11 @@ func Uptime() uint64 {
 	return builtin.Syscall0u64(UPTIME)
 }
 
-// SetISR sets f as exception handler for e.
-//func SetISR(
+// SetIRQEna enables or disables irq.
+func SetIRQEna(irq int, ena bool) Errno {
+	_, err := builtin.Syscall1(SETIRQENA, b2p(ena))
+	return Errno(err)
+}
+
+// SetIRQPrio sets priority for irq.
+func SetIRQPrio(irq, prio int)

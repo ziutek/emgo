@@ -3,7 +3,7 @@
 package noos
 
 import (
-	"cortexm/sleep"
+	"arch/cortexm/sleep"
 	"sync/atomic"
 )
 
