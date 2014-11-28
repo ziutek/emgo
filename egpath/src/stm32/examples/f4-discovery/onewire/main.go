@@ -14,9 +14,11 @@ import (
 	"stm32/f4/periph"
 	"stm32/f4/setup"
 	"stm32/f4/usarts"
-	"stm32/onewire"
+	"stm32/onedrv"
 	"stm32/serial"
 	"stm32/usart"
+
+	"onewire"
 )
 
 const (
@@ -141,22 +143,12 @@ func ok() {
 }
 
 func main() {
-	m := onewire.NewMasterSerial(one, setup.APB2Clk)
+	drv := onedrv.UARTDriver{Serial: one, Clock: setup.APB2Clk}
+	m := onewire.Master{Driver: &drv}
 
-	term.WriteString("Reseting 1-wire bus...\n")
-	checkErr(m.Reset())
-	ok()
+	term.WriteString("Reading ROM code (only one device allowed)...\n")
+	d, err := m.ReadROM()
+	checkErr(err)
 
-	term.WriteString("Reading address...\n")
-	checkErr(m.SendByte(onewire.ReadROM))
-
-	for i := 0; i < 8; i++ {
-		b, err := m.ReadByte()
-		checkErr(err)
-		if i != 0 {
-			term.WriteByte('-')
-		}
-		fmt.Byte(b).Format(term, 16)
-	}
-	term.WriteByte('\n')
+	fmt.Fprint(term, d, fmt.N)
 }
