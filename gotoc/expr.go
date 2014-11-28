@@ -516,7 +516,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			w.WriteByte(']')
 		}
 		w.WriteString(" = ")
-		cdd.Expr(w, e.Value, nilT)
+		cdd.interfaceExpr(w, e.Value, nilT)
 
 	case *ast.ParenExpr:
 		w.WriteByte('(')
@@ -587,9 +587,9 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 				w.WriteString(", ")
 			}
 			if nilT != nil {
-				cdd.Expr(w, el, nilT)
+				cdd.interfaceExpr(w, el, nilT)
 			} else {
-				cdd.Expr(w, el, underlying(typ).(*types.Struct).Field(i).Type())
+				cdd.interfaceExpr(w, el, underlying(typ).(*types.Struct).Field(i).Type())
 			}
 		}
 
