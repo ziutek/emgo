@@ -1,17 +1,10 @@
-// +build noos
-
-package runtime
+package noos
 
 import (
 	"builtin"
-	"runtime/noos"
 	"sync"
 	"unsafe"
 )
-
-// This file imports noos package into runtime.
-// Additonaly it contains things that can't be placed in noos package because
-// of dependency loops.
 
 func alignUp(p, a uintptr) uintptr {
 	a--
@@ -26,13 +19,13 @@ func alloc(n int, size, align uintptr) unsafe.Pointer {
 	size = alignUp(size, align) * uintptr(n)
 
 	hm.Lock()
-	h := uintptr(unsafe.Pointer(&noos.Heap[0]))
+	h := uintptr(unsafe.Pointer(&Heap[0]))
 	p := alignUp(h, align)
 	m := size + (p - h)
-	if m > uintptr(len(noos.Heap)) {
+	if m > uintptr(len(Heap)) {
 		panic("out of memory")
 	}
-	noos.Heap = noos.Heap[m:]
+	Heap = Heap[m:]
 	hm.Unlock()
 
 	builtin.Memset(unsafe.Pointer(p), 0, size)

@@ -26,11 +26,6 @@ func atomicToggleBit(addr *uint32, n uintptr) {
 	}
 }
 
-func alignUp(p, a uintptr) uintptr {
-	a--
-	return (p + a) &^ a
-}
-
 type chanA struct {
 	event  syscall.Event // Event must be the first field - see chanSelect.
 	tosend uintptr
