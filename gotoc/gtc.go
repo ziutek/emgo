@@ -33,14 +33,14 @@ func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.S
 	c := make(chan int, 1)
 	go nextIntGen(c)
 	return &GTC{
-		fset:     fset,
-		pkg:      pkg,
-		ti:       ti,
-		nextInt:  c,
-		tuples: make(map[string]types.Object),
-		siz:      siz,
-		sizPtr:   siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
-		sizIval:  siz.Sizeof(types.Typ[types.Complex128]),
+		fset:    fset,
+		pkg:     pkg,
+		ti:      ti,
+		nextInt: c,
+		tuples:  make(map[string]types.Object),
+		siz:     siz,
+		sizPtr:  siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
+		sizIval: siz.Sizeof(types.Typ[types.Complex128]),
 	}
 }
 
@@ -85,16 +85,6 @@ func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 
 type imports map[*types.Package]bool
 
-func (i imports) add(pkg *types.Package, export bool) {
-	if e, ok := i[pkg]; ok {
-		if !e && export {
-			i[pkg] = true
-		}
-	} else {
-		i[pkg] = export
-	}
-}
-
 // Translate translates files to C source.
 // It writes results of translation to:
 //	wh - C header, contains exported and inlined declarations translated to C,
@@ -138,21 +128,27 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 	// Classify all imported packages.
 	imp := make(imports)
+	for _, p := range gtc.pkg.Imports() {
+		imp[p] = false
+	}
+
 	for _, cdd := range cdds {
 		/*if cdd.Typ == ImportDecl {
 			// Package imported as _
-			fmt.Println(cdd.Origin.Pkg())
+			//fmt.Println(cdd.Origin.Pkg())
 			imp.add(cdd.Origin.Pkg(), false)
 			continue
 		}*/
 		for o := range cdd.DeclUses {
 			if gtc.isImported(o) {
-				imp.add(o.Pkg(), cdd.Export)
+				if cdd.Export {
+					imp[o.Pkg()] = true
+				}
 			}
 		}
 		for o := range cdd.FuncBodyUses {
-			if gtc.isImported(o) {
-				imp.add(o.Pkg(), cdd.Export && cdd.Inline)
+			if gtc.isImported(o) && cdd.Export && cdd.Inline {
+				imp[o.Pkg()] = true
 			}
 		}
 	}

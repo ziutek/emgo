@@ -196,8 +196,8 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 	switch d.Tok {
 	case token.IMPORT:
-		/*// Only for unrefferenced imports
-		for _, s := range d.Specs {
+		// Only for unrefferenced imports
+		/*for _, s := range d.Specs {
 			is := s.(*ast.ImportSpec)
 			if is.Name != nil && is.Name.Name == "_" {
 				fmt.Println("is:", is.Name, is.Path)
