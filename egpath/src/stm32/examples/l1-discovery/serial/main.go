@@ -47,7 +47,7 @@ func init() {
 	port, tx, rx := gpio.B, 10, 11
 
 	port.SetMode(tx, gpio.Alt)
-	port.SetOutType(tx, gpio.PushPullOut)
+	port.SetOutType(tx, gpio.PushPull)
 	port.SetPull(tx, gpio.PullUp)
 	port.SetOutSpeed(tx, gpio.Medium)
 	port.SetAltFunc(tx, gpio.USART3)

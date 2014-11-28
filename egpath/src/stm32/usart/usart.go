@@ -134,6 +134,18 @@ func (u *Dev) SetStopBits(sb StopBits) {
 	u.c2 = u.c2&^(3<<12) | uint32(sb)<<12
 }
 
+func (u *Dev) HalfDuplex() bool {
+	return u.c3|(1<<3) != 0
+}
+
+func (u *Dev) SetHalfDuplex(hd bool) {
+	if hd {
+		u.c3 |= 1 << 3
+	} else {
+		u.c3 &^= 1 << 3
+	}
+}
+
 func (u *Dev) Store(d uint32) {
 	u.d = d
 }

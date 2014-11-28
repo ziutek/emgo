@@ -5,14 +5,14 @@ import (
 	"stm32/usart"
 )
 
-// Serial wraps usart.Dev to provide high level interface to send and receive
+// Dev wraps usart.Dev to provide high level interface to send and receive
 // data using standard Read*/Write* methods family.
 //
 // It expects that provided usart.Dev is properly configured, has RxNotEmpty
 // interrupt enabled and any other interrupts disabled. On its own Serial uses
 // Status, Load, Store, EnableIRQs, DisableIRQs methods (last two are used to
 // enable/disable TxEmpty and TxDone interrupts).
-type Serial struct {
+type Dev struct {
 	dev    *usart.Dev
 	rx     chan uint16
 	tx     chan uint16
@@ -21,10 +21,10 @@ type Serial struct {
 	flush  bool
 }
 
-// NewSerial creates new Serial for USART device with Rx/Tx buffer of specified
+// New creates new Dev for USART device with Rx/Tx buffer of specified
 // lengths in 9-bit words.
-func NewSerial(dev *usart.Dev, rxlen, txlen int) *Serial {
-	s := new(Serial)
+func New(dev *usart.Dev, rxlen, txlen int) *Dev {
+	s := new(Dev)
 	s.dev = dev
 	s.rx = make(chan uint16, rxlen)
 	s.tx = make(chan uint16, txlen)
@@ -64,7 +64,7 @@ func (e Error) Error() string {
 const flushReq = 1 << 15
 
 // IRQ should be called by USART interrupt handler.
-func (s *Serial) IRQ() {
+func (s *Dev) IRQ() {
 	st := s.dev.Status()
 	if st&usart.RxNotEmpty != 0 {
 		d := s.dev.Load() & 0x1ff
@@ -112,7 +112,7 @@ func (s *Serial) IRQ() {
 
 // Flush waits for complete transmission of last word (including its stop bits)
 // written to s.
-func (s *Serial) Flush() error {
+func (s *Dev) Flush() error {
 	s.tx <- flushReq
 	<-s.txdone
 	return nil
@@ -121,18 +121,18 @@ func (s *Serial) Flush() error {
 // SetUnix enabls/disables unix text mode. If enabled, every readed '\r' is
 // translated to '\n' and  every writed '\n' is translated to "\r\n". This
 // simple translation works well for many terminal emulators but not for all.
-func (s *Serial) SetUnix(enable bool) {
+func (s *Dev) SetUnix(enable bool) {
 	s.unix = enable
 }
 
 // WriteBits can write 9-bit words to s. Text mode doesn't affect written data.
-func (s *Serial) WriteBits(d uint16) error {
+func (s *Dev) WriteBits(d uint16) error {
 	s.tx <- d & 0x1ff
 	s.dev.EnableIRQs(usart.TxEmptyIRQ)
 	return nil
 }
 
-func (s *Serial) WriteByte(b byte) error {
+func (s *Dev) WriteByte(b byte) error {
 	if s.unix && b == '\n' {
 		s.WriteBits('\r')
 	}
@@ -149,11 +149,11 @@ func split(d16 uint16) (d9 uint16, err error) {
 }
 
 // ReadBits can read 9-bit words from s. Text mode doesn't affect read data.
-func (s *Serial) ReadBits() (uint16, error) {
+func (s *Dev) ReadBits() (uint16, error) {
 	return split(<-s.rx)
 }
 
-func (s *Serial) byte(d uint16) byte {
+func (s *Dev) byte(d uint16) byte {
 	b := byte(d)
 	if s.unix && b == '\r' {
 		b = '\n'
@@ -161,12 +161,12 @@ func (s *Serial) byte(d uint16) byte {
 	return b
 }
 
-func (s *Serial) ReadByte() (byte, error) {
+func (s *Dev) ReadByte() (byte, error) {
 	d, err := s.ReadBits()
 	return s.byte(d), err
 }
 
-func (s *Serial) Write(buf []byte) (int, error) {
+func (s *Dev) Write(buf []byte) (int, error) {
 	for i, b := range buf {
 		if err := s.WriteByte(b); err != nil {
 			return i + 1, err
@@ -175,7 +175,7 @@ func (s *Serial) Write(buf []byte) (int, error) {
 	return len(buf), nil
 }
 
-func (s *Serial) WriteString(str string) (int, error) {
+func (s *Dev) WriteString(str string) (int, error) {
 	for i := 0; i < len(str); i++ {
 		if e := s.WriteByte(str[i]); e != nil {
 			return i + 1, e
@@ -184,7 +184,7 @@ func (s *Serial) WriteString(str string) (int, error) {
 	return len(str), nil
 }
 
-func (s *Serial) Read(buf []byte) (n int, err error) {
+func (s *Dev) Read(buf []byte) (n int, err error) {
 	if len(buf) == 0 {
 		return
 	}
@@ -209,4 +209,9 @@ func (s *Serial) Read(buf []byte) (n int, err error) {
 		}
 	}
 	return
+}
+
+// USART returns wrapped USART device.
+func (s *Dev) USART() *usart.Dev {
+	return s.dev
 }

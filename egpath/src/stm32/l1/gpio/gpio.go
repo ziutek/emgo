@@ -67,8 +67,8 @@ func (g *Port) SetMode(n int, mode Mode) {
 type OutType byte
 
 const (
-	PushPullOut OutType = iota
-	OpenDrainOut
+	PushPull OutType = iota
+	OpenDrain
 )
 
 // OutType returns current type of n-th output bit
