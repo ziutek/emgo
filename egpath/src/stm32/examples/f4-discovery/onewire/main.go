@@ -151,4 +151,10 @@ func main() {
 	checkErr(err)
 
 	fmt.Fprint(term, d, fmt.N)
+
+	term.WriteString("Searching for all devices on the bus...\n")
+	found := func(d onewire.Dev) {
+		fmt.Fprint(term, d, fmt.N)
+	}
+	checkErr(m.Search(found, false))
 }

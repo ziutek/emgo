@@ -18,7 +18,7 @@ func (m *Master) ReadROM() (Dev, error) {
 	if err := m.Reset(); err != nil {
 		return 0, err
 	}
-	if err := m.SendByte(readROM); err != nil {
+	if err := m.WriteByte(readROM); err != nil {
 		return 0, err
 	}
 	var rom uint64

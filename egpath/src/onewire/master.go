@@ -4,8 +4,8 @@ type Master struct {
 	Driver
 }
 
-// SendByte sends byte b on 1-wire bus.
-func (m *Master) SendByte(b byte) error {
+// WriteByte writes byte b to 1-wire bus.
+func (m *Master) WriteByte(b byte) error {
 	for i := 0; i < 8; i++ {
 		if err := m.SendBit(b & 1); err != nil {
 			return err
