@@ -55,6 +55,7 @@ stm32/l1/irqs
 stm32/l1/usarts
 
 dcf77
+onewire
 "
 
 for p in $list; do 

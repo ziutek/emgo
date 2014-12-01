@@ -146,15 +146,22 @@ func main() {
 	drv := onedrv.UARTDriver{Serial: one, Clock: setup.APB2Clk}
 	m := onewire.Master{Driver: &drv}
 
-	term.WriteString("Reading ROM code (only one device allowed)...\n")
+	term.WriteString("Searching for all devices on the bus...\n")
+	s := onewire.MakeSearch(false)
+	for m.SearchNext(&s) {
+		var crc byte
+		for i := 0; i < 7; i++ {
+			crc = onewire.CRC8(crc, byte(s.Dev()>>uint(i*8)))
+		}
+		fmt.Fprint(term, s.Dev(), fmt.Str(" crc:"))
+		fmt.Byte(crc).Format(term, 16)
+		term.WriteByte('\n')
+	}
+	checkErr(s.Err())
+
+	term.WriteString("Reading ROM code (valid if only one device connected)...\n")
 	d, err := m.ReadROM()
 	checkErr(err)
 
 	fmt.Fprint(term, d, fmt.N)
-
-	term.WriteString("Searching for all devices on the bus...\n")
-	found := func(d onewire.Dev) {
-		fmt.Fprint(term, d, fmt.N)
-	}
-	checkErr(m.Search(found, false))
 }
