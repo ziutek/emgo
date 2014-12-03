@@ -72,7 +72,7 @@ typedef builtin$Chan chan;
 		comms[i] = &arr[i];                                     \
 	}                                                           \
 	unsafe$Pointer$$unsafe$Pointer$$uintptr r = builtin$Select( \
-		ASLICE(n, comms), dflt                                  \
+		(slice){comms, n, n}, dflt                              \
 	);                                                          \
 	goto *r._0
 

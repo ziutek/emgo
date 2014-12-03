@@ -404,11 +404,10 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 			}
 
 		case *types.Array:
-			w.WriteString("ACPY(")
 			w.WriteString(name)
-			w.WriteString(", ")
+			w.WriteString(" = ")
 			cdd.Expr(w, val, typ)
-			w.WriteString(");\n")
+			w.WriteString(";\n")
 
 		case *types.Pointer:
 			u, ok := val.(*ast.UnaryExpr)

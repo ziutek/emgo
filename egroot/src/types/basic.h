@@ -48,4 +48,3 @@ typedef struct{} empty;
 #define nil (0)
 
 #define len(v) (v.len)
-#define ACPY(dst, src) memmove(dst, src, sizeof(dst))

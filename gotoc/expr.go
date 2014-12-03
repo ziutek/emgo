@@ -560,11 +560,11 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 
 		switch t := underlying(typ).(type) {
 		case *types.Array:
-			w.WriteString("(")
-			dim := cdd.Type(w, t.Elem())
-			dim = append([]string{"[]"}, dim...)
-			w.WriteString("(" + dimFuncPtr("", dim) + "))")
-			w.WriteByte('{')
+			w.WriteByte('(')
+			dim := cdd.Type(w, typ)
+			w.WriteString(dimFuncPtr("", dim))
+			w.WriteByte(')')
+			w.WriteString("{{")
 			nilT = t.Elem()
 		case *types.Slice:
 			w.WriteString("(slice){(")
@@ -594,6 +594,9 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		}
 
 		switch underlying(typ).(type) {
+		case *types.Array:
+			w.WriteString("}}")
+
 		case *types.Slice:
 			w.WriteByte('}')
 			plen := ", " + strconv.Itoa(len(e.Elts))
@@ -650,7 +653,10 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 		typ = pt.Elem()
 	}
 
-	var indT types.Type
+	var (
+		indT types.Type
+		arr bool
+	)
 
 	switch t := typ.Underlying().(type) {
 	case *types.Basic: // string
@@ -666,6 +672,7 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 
 	case *types.Array:
 		w.WriteString(xs)
+		arr = true
 
 	case *types.Map:
 		indT = t.Key()
@@ -677,6 +684,9 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 
 	if isPtr {
 		w.WriteByte(')')
+	}
+	if arr {
+		w.WriteString(".arr")
 	}
 	w.WriteByte('[')
 	cdd.Expr(w, idx, indT)

@@ -7,9 +7,19 @@ func F(a [4]byte) (r byte) {
 }
 // C code:
 // decl
-byte foo$F(byte a$[4]);
+struct $4_$byte_struct;
+typedef struct $4_$byte_struct $4_$byte;
 // def
-byte foo$F(byte a$[4]) {
+#ifndef $4_$byte$
+#define $4_$byte$
+struct $4_$byte_struct {
+	byte arr[4];
+};
+#endif
+// decl
+byte foo$F($4_$byte a$);
+// def
+byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
@@ -34,9 +44,19 @@ func F(a [4]byte) (r byte) {
 }
 // C code:
 // decl
-byte foo$F(byte a$[4]);
+struct $4_$byte_struct;
+typedef struct $4_$byte_struct $4_$byte;
 // def
-byte foo$F(byte a$[4]) {
+#ifndef $4_$byte$
+#define $4_$byte$
+struct $4_$byte_struct {
+	byte arr[4];
+};
+#endif
+// decl
+byte foo$F($4_$byte a$);
+// def
+byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
@@ -64,15 +84,25 @@ func F(a [4]byte) (r byte) {
 }
 // C code:
 // decl
-byte foo$F(byte a$[4]);
+struct $4_$byte_struct;
+typedef struct $4_$byte_struct $4_$byte;
 // def
-byte foo$F(byte a$[4]) {
+#ifndef $4_$byte$
+#define $4_$byte$
+struct $4_$byte_struct {
+	byte arr[4];
+};
+#endif
+// decl
+byte foo$F($4_$byte a$);
+// def
+byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
 			int k$ = 0;
 			for (; k$ < 4; ++k$) {
-				byte v$ = a$[k$];
+				byte v$ = a$.arr[k$];
 				{
 					if ((r$>4)) {
 						continue;
@@ -100,15 +130,25 @@ func F(a [4]byte) (r byte) {
 }
 // C code:
 // decl
-byte foo$F(byte a$[4]);
+struct $4_$byte_struct;
+typedef struct $4_$byte_struct $4_$byte;
 // def
-byte foo$F(byte a$[4]) {
+#ifndef $4_$byte$
+#define $4_$byte$
+struct $4_$byte_struct {
+	byte arr[4];
+};
+#endif
+// decl
+byte foo$F($4_$byte a$);
+// def
+byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
 			int _$ = 0;
 			for (; _$ < 4; ++_$) {
-				byte v$ = a$[_$];
+				byte v$ = a$.arr[_$];
 				{
 					if ((r$>4)) {
 						break;
@@ -133,9 +173,19 @@ func F(a [4]byte) (r byte) {
 }
 // C code:
 // decl
-byte foo$F(byte a$[4]);
+struct $4_$byte_struct;
+typedef struct $4_$byte_struct $4_$byte;
 // def
-byte foo$F(byte a$[4]) {
+#ifndef $4_$byte$
+#define $4_$byte$
+struct $4_$byte_struct {
+	byte arr[4];
+};
+#endif
+// decl
+byte foo$F($4_$byte a$);
+// def
+byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
@@ -161,9 +211,19 @@ func F(a [4]byte) (r byte) {
 }
 // C code:
 // decl
-byte foo$F(byte a$[4]);
+struct $4_$byte_struct;
+typedef struct $4_$byte_struct $4_$byte;
 // def
-byte foo$F(byte a$[4]) {
+#ifndef $4_$byte$
+#define $4_$byte$
+struct $4_$byte_struct {
+	byte arr[4];
+};
+#endif
+// decl
+byte foo$F($4_$byte a$);
+// def
+byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
@@ -193,9 +253,19 @@ loop:
 }
 // C code:
 // decl
-byte foo$F(byte a$[4]);
+struct $4_$byte_struct;
+typedef struct $4_$byte_struct $4_$byte;
 // def
-byte foo$F(byte a$[4]) {
+#ifndef $4_$byte$
+#define $4_$byte$
+struct $4_$byte_struct {
+	byte arr[4];
+};
+#endif
+// decl
+byte foo$F($4_$byte a$);
+// def
+byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 	loop$:;
@@ -234,9 +304,19 @@ loop:
 }
 // C code:
 // decl
-byte foo$F(byte a$[4]);
+struct $4_$byte_struct;
+typedef struct $4_$byte_struct $4_$byte;
 // def
-byte foo$F(byte a$[4]) {
+#ifndef $4_$byte$
+#define $4_$byte$
+struct $4_$byte_struct {
+	byte arr[4];
+};
+#endif
+// decl
+byte foo$F($4_$byte a$);
+// def
+byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 	loop$:;

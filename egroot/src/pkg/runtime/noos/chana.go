@@ -34,7 +34,7 @@ type chanA struct {
 	mask   uintptr
 	step   uintptr
 	buf    unsafe.Pointer
-	rd     *[1 << 30]uint32
+	rd     *[1 << 28]uint32
 	closed int32
 }
 
@@ -49,7 +49,7 @@ func makeChanA(cap int, size, align uintptr) *chanA {
 	if rdlen*32 < cap {
 		rdlen++
 	}
-	c.rd = (*[1 << 30]uint32)(builtin.Alloc(rdlen, 4, 4))
+	c.rd = (*[1 << 28]uint32)(builtin.Alloc(rdlen, 4, 4))
 	return c
 }
 

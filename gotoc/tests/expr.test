@@ -9,8 +9,8 @@ func CompositeLitSlice() int {
 int foo$CompositeLitSlice();
 // def
 int foo$CompositeLitSlice() {
-	slice a$ = ((slice){(int[][2]){((int([])){1, 2}), ((int([])){3, 4}), ((int([])){4, 5})}, 3, 3});
-	slice b$ = ((slice){(int(*[])[2]){&((int(*)[2])a$.arr)[0], &((int(*)[2])a$.arr)[1], &((int(*)[2])a$.arr)[2]}, 3, 3});
+	slice a$ = ((slice){($2_$int[]){(($2_$int){{1, 2}}), (($2_$int){{3, 4}}), (($2_$int){{4, 5}})}, 3, 3});
+	slice b$ = ((slice){($2_$int*[]){&(($2_$int*)a$.arr)[0], &(($2_$int*)a$.arr)[1], &(($2_$int*)a$.arr)[2]}, 3, 3});
 	return len(b$);
 }
 // end

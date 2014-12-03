@@ -47,32 +47,32 @@ typedef struct {
 
 #define ASLICEL(len, expr, low) \
 	(slice){                    \
-		&(expr)[low],           \
+		&(expr).arr[low],       \
 		len-low,                \
 		len-low,                \
 	}
 
 #define ASLICELH(len, expr, low, high) \
-	(slice){                      \
-		&(expr)[low],             \
-		high-low,                 \
-		len-low                   \
+	(slice){                           \
+		&(expr).arr[low],              \
+		high-low,                      \
+		len-low                        \
 	}
 	
 #define ASLICELHM(expr, low, high, max) \
 	(slice){                            \
-		&(expr)[low],                   \
+		&(expr).arr[low],               \
 		high-low,                       \
 		max-low                         \
 	}
 	
-#define ASLICE(len, expr) (slice){expr, len, len}
+#define ASLICE(len, expr) (slice){(expr).arr, len, len}
 
-#define ASLICEH(len, expr, high) (slice){expr, high, len}
+#define ASLICEH(len, expr, high) (slice){(expr).arr, high, len}
 	
 // #define ASLICEM(expr, max) Go 1.2 doesn't allow [::max].
 	
-#define ASLICEHM(expr, high, max) (slice){expr, high, max}
+#define ASLICEHM(expr, high, max) (slice){(expr).arr, high, max}
 
 #define SLICPY(typ, dst, src) ({                     \
 	int n = (dst.len < src.len) ? dst.len : src.len; \

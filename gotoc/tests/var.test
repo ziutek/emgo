@@ -11,11 +11,21 @@ int foo$A = 3;
 var A = []int{1, 2, 3}
 // C code:
 // decl
-int array0[3];
+struct $3_$int_struct;
+typedef struct $3_$int_struct $3_$int;
 // def
-int array0[3];
+#ifndef $3_$int$
+#define $3_$int$
+struct $3_$int_struct {
+	int arr[3];
+};
+#endif
+// decl
+$3_$int array0;
+// def
+$3_$int array0;
 // init
-	ACPY(array0, ((int([])){1, 2, 3}));
+	array0 = (($3_$int){{1, 2, 3}});
 // decl
 slice foo$A;
 // def
@@ -28,11 +38,21 @@ slice foo$A;
 var A = []int{10: 1, 20: 2, 30: 3}
 // C code:
 // decl
-int array0[31];
+struct $31_$int_struct;
+typedef struct $31_$int_struct $31_$int;
 // def
-int array0[31];
+#ifndef $31_$int$
+#define $31_$int$
+struct $31_$int_struct {
+	int arr[31];
+};
+#endif
+// decl
+$31_$int array0;
+// def
+$31_$int array0;
 // init
-	ACPY(array0, ((int([])){[10] = 1, [20] = 2, [30] = 3}));
+	array0 = (($31_$int){{[10] = 1, [20] = 2, [30] = 3}});
 // decl
 slice foo$A;
 // def
@@ -45,11 +65,21 @@ slice foo$A;
 var A = []int{1, 2, 30: 3, 4}
 // C code:
 // decl
-int array0[32];
+struct $32_$int_struct;
+typedef struct $32_$int_struct $32_$int;
 // def
-int array0[32];
+#ifndef $32_$int$
+#define $32_$int$
+struct $32_$int_struct {
+	int arr[32];
+};
+#endif
+// decl
+$32_$int array0;
+// def
+$32_$int array0;
 // init
-	ACPY(array0, ((int([])){1, 2, [30] = 3, 4}));
+	array0 = (($32_$int){{1, 2, [30] = 3, 4}});
 // decl
 slice foo$A;
 // def

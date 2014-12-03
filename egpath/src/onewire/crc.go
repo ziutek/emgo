@@ -1,5 +1,6 @@
 package onewire
 
+// x^8+x^5+x^4+1
 func CRC8(crc byte, data ...byte) byte {
 	for _, b := range data {
 		for i := 0; i < 8; i++ {
@@ -14,6 +15,7 @@ func CRC8(crc byte, data ...byte) byte {
 	return crc
 }
 
+// x^16+x^15+x^2+1
 func CRC16(crc uint16, data ...uint16) uint16 {
 	for _, w := range data {
 		for i := 0; i < 8; i++ {

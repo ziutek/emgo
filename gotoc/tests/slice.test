@@ -4,9 +4,19 @@ func ArrayToSlice(a [3]int) []int {
 }
 // C code:
 // decl
-slice foo$ArrayToSlice(int a$[3]);
+struct $3_$int_struct;
+typedef struct $3_$int_struct $3_$int;
 // def
-slice foo$ArrayToSlice(int a$[3]) {
+#ifndef $3_$int$
+#define $3_$int$
+struct $3_$int_struct {
+	int arr[3];
+};
+#endif
+// decl
+slice foo$ArrayToSlice($3_$int a$);
+// def
+slice foo$ArrayToSlice($3_$int a$) {
 	return ASLICE(3, a$);
 }
 // end
@@ -22,9 +32,19 @@ func ArrayToSlice(a [3]int) []int {
 }
 // C code:
 // decl
-slice foo$ArrayToSlice(int a$[3]);
+struct $3_$int_struct;
+typedef struct $3_$int_struct $3_$int;
 // def
-slice foo$ArrayToSlice(int a$[3]) {
+#ifndef $3_$int$
+#define $3_$int$
+struct $3_$int_struct {
+	int arr[3];
+};
+#endif
+// decl
+slice foo$ArrayToSlice($3_$int a$);
+// def
+slice foo$ArrayToSlice($3_$int a$) {
 	slice b$ = ASLICELH(3, a$, 0, 3);
 	b$ = ASLICEH(3, a$, 3);
 	b$ = ASLICEL(3, a$, 0);
@@ -40,9 +60,19 @@ func ArrayPtrToSlice(a *[3]int) []int {
 }
 // C code:
 // decl
-slice foo$ArrayPtrToSlice(int (*a$)[3]);
+struct $3_$int_struct;
+typedef struct $3_$int_struct $3_$int;
 // def
-slice foo$ArrayPtrToSlice(int (*a$)[3]) {
+#ifndef $3_$int$
+#define $3_$int$
+struct $3_$int_struct {
+	int arr[3];
+};
+#endif
+// decl
+slice foo$ArrayPtrToSlice($3_$int *a$);
+// def
+slice foo$ArrayPtrToSlice($3_$int *a$) {
 	return ASLICE(3, (*a$));
 }
 // end
