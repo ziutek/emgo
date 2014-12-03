@@ -782,7 +782,7 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 		} else {
 			c.args[n].t = types.NewSlice(c.arr.t.(*types.Array).Elem())
 			c.args[n].l = "ASLICE(" + strconv.Itoa(len(e.Args)-alen+1) + ", _a)"
-			c.arr.r = "{" + c.arr.r + "}"
+			c.arr.r = "{{" + c.arr.r + "}}"
 		}
 		n++
 	}

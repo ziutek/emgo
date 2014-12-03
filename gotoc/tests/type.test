@@ -15,3 +15,152 @@ struct int$$int_struct {
 // decl
 typedef int$$int (*foo$F)(int, int);
 // end
+
+// Go code:
+type A [4]int
+// C code:
+// decl
+struct $4_$int_struct;
+typedef struct $4_$int_struct $4_$int;
+// def
+#ifndef $4_$int$
+#define $4_$int$
+struct $4_$int_struct {
+	int arr[4];
+};
+#endif
+// decl
+typedef $4_$int foo$A;
+// end
+
+// Go code:
+type AP [4]*int
+// C code:
+// decl
+struct $4_$$8$int_struct;
+typedef struct $4_$$8$int_struct $4_$$8$int;
+// def
+#ifndef $4_$$8$int$
+#define $4_$$8$int$
+struct $4_$$8$int_struct {
+	int *arr[4];
+};
+#endif
+// decl
+typedef $4_$$8$int foo$AP;
+// end
+
+// Go code:
+type PA *[4]int
+// C code:
+// decl
+struct $4_$int_struct;
+typedef struct $4_$int_struct $4_$int;
+// def
+#ifndef $4_$int$
+#define $4_$int$
+struct $4_$int_struct {
+	int arr[4];
+};
+#endif
+// decl
+typedef $4_$int *foo$PA;
+// end
+
+// Go code:
+type PAP *[4]*int
+// C code:
+// decl
+struct $4_$$8$int_struct;
+typedef struct $4_$$8$int_struct $4_$$8$int;
+// def
+#ifndef $4_$$8$int$
+#define $4_$$8$int$
+struct $4_$$8$int_struct {
+	int *arr[4];
+};
+#endif
+// decl
+typedef $4_$$8$int *foo$PAP;
+// end
+
+// Go code:
+type AA [4][3]int
+// C code:
+// decl
+struct $3_$int_struct;
+typedef struct $3_$int_struct $3_$int;
+// def
+#ifndef $3_$int$
+#define $3_$int$
+struct $3_$int_struct {
+	int arr[3];
+};
+#endif
+// decl
+struct $4_$$3_$int_struct;
+typedef struct $4_$$3_$int_struct $4_$$3_$int;
+// def
+#ifndef $4_$$3_$int$
+#define $4_$$3_$int$
+struct $4_$$3_$int_struct {
+	$3_$int arr[4];
+};
+#endif
+// decl
+typedef $4_$$3_$int foo$AA;
+// end
+
+// Go code:
+type PAA *[4][3]int
+// C code:
+// decl
+struct $3_$int_struct;
+typedef struct $3_$int_struct $3_$int;
+// def
+#ifndef $3_$int$
+#define $3_$int$
+struct $3_$int_struct {
+	int arr[3];
+};
+#endif
+// decl
+struct $4_$$3_$int_struct;
+typedef struct $4_$$3_$int_struct $4_$$3_$int;
+// def
+#ifndef $4_$$3_$int$
+#define $4_$$3_$int$
+struct $4_$$3_$int_struct {
+	$3_$int arr[4];
+};
+#endif
+// decl
+typedef $4_$$3_$int *foo$PAA;
+// end
+
+// Go code:
+type PAPA *[4]*[3]int
+// C code:
+// decl
+struct $3_$int_struct;
+typedef struct $3_$int_struct $3_$int;
+// def
+#ifndef $3_$int$
+#define $3_$int$
+struct $3_$int_struct {
+	int arr[3];
+};
+#endif
+// decl
+struct $4_$$8$$3_$int_struct;
+typedef struct $4_$$8$$3_$int_struct $4_$$8$$3_$int;
+// def
+#ifndef $4_$$8$$3_$int$
+#define $4_$$8$$3_$int$
+struct $4_$$8$$3_$int_struct {
+	$3_$int *arr[4];
+};
+#endif
+// decl
+typedef $4_$$8$$3_$int *foo$PAPA;
+// end

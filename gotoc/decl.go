@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -452,6 +453,8 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	return
 }
 
+var tare = regexp.MustCompile(`(\$\$)|(^\$[0-9]+_\$.)`)
+
 func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) {
 	n := w.Len()
 
@@ -467,9 +470,9 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) {
 	cdd.copyDecl(w, ";\n")
 	w.Truncate(n)
 
-	tuple := strings.Contains(name, "$$")
+	tuparr := tare.MatchString(name)
 
-	if tuple {
+	if tuparr {
 		cdd.indent(w)
 		w.WriteString("#ifndef " + name + "$\n")
 		cdd.indent(w)
@@ -481,7 +484,7 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) {
 	w.WriteByte('_')
 	cdd.Type(w, typ)
 	w.WriteString(";\n")
-	if tuple {
+	if tuparr {
 		cdd.indent(w)
 		w.WriteString("#endif\n")
 	}

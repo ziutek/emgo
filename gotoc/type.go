@@ -87,9 +87,10 @@ writeType:
 		w.WriteByte('}')
 
 	case *types.Array:
-		dim = append(dim, "["+strconv.FormatInt(t.Len(), 10)+"]")
+		/*dim = append(dim, "["+strconv.FormatInt(t.Len(), 10)+"]")
 		d := cdd.Type(w, t.Elem())
-		dim = append(dim, d...)
+		dim = append(dim, d...)*/
+		w.WriteString(cdd.arrayName(t))
 
 	case *types.Slice:
 		w.WriteString("slice")
@@ -267,13 +268,25 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 	return
 }
 
-// BUG: this mapping can be ambiguous.
-func symToDol(r rune) rune {
-	switch r {
-	case '*', '(', ')', '[', ']':
-		return '$'
+func escape(s string) (ret string) {
+	for {
+		i := strings.IndexAny(s, "*()")
+		if i == -1 {
+			break
+		}
+		ret += s[:i]
+		switch s[i] {
+		case '*':
+			ret += "$8$"
+		case '(':
+			ret += "$9$"
+		default:
+			ret += "$0$"
+		}
+		s = s[i+1:]
 	}
-	return r
+	ret += s
+	return
 }
 
 func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var) {
@@ -285,7 +298,7 @@ func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var
 		name, dim := cdd.TypeStr(tup.At(i).Type())
 		tupName += dimFuncPtr(name, dim)
 	}
-	tupName = strings.Map(symToDol, tupName)
+	tupName = escape(tupName)
 
 	fields = make([]*types.Var, n)
 	for i := 0; i < n; i++ {
@@ -306,8 +319,33 @@ func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var
 	acd := cdd.gtc.newCDD(o, TypeDecl, 0)
 	acd.structDecl(new(bytes.Buffer), tupName, s)
 	cdd.acds = append(cdd.acds, acd)
-	
+
 	cdd.DeclUses[o] = true
 
 	return
+}
+
+func (cdd *CDD) arrayName(a *types.Array) string {
+	l := strconv.FormatInt(a.Len(), 10)
+	name, dim := cdd.TypeStr(a.Elem())
+	name = dimFuncPtr(name, dim)
+	name = "$" + l + "_$" + escape(name)
+
+	if o, ok := cdd.gtc.arrays[name]; ok {
+		cdd.DeclUses[o] = true
+		return name
+	}
+
+	f := types.NewField(0, cdd.gtc.pkg, "arr["+l+"]", a.Elem(), false)
+	s := types.NewStruct([]*types.Var{f}, nil)
+	o := types.NewTypeName(0, cdd.gtc.pkg, name, s)
+
+	cdd.gtc.arrays[name] = o
+	acd := cdd.gtc.newCDD(o, TypeDecl, 0)
+	acd.structDecl(new(bytes.Buffer), name, s)
+	cdd.acds = append(cdd.acds, acd)
+
+	cdd.DeclUses[o] = true
+
+	return name
 }

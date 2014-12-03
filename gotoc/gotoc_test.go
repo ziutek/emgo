@@ -142,14 +142,12 @@ type simpleDecl struct {
 
 var tabSimpleDecl = []simpleDecl{
 	{"type P *int", "typedef int *foo$P;"},
-	{"type A [4]int", "typedef int foo$A[4];"},
-	{"type AP [4]*int", "typedef int *foo$AP[4];"},
-	{"type PA *[4]int", "typedef int (*foo$PA)[4];"},
+	/*{"type PA *[4]int", "typedef int (*foo$PA)[4];"},
 	{"type PAP *[4]*int", "typedef int *(*foo$PAP)[4];"},
 	{"type AA [4][3]int", "typedef int foo$AA[4][3];"},
 	{"type PAA *[4][3]int", "typedef int (*foo$PAA)[4][3];"},
 	{"type PAPA *[4]*[3]int", "typedef int (*(*foo$PAPA)[4])[3];"},
-	{"type PAPAP *[4]*[3]*int", "typedef int *(*(*foo$PAPAP)[4])[3];"},
+	{"type PAPAP *[4]*[3]*int", "typedef int *(*(*foo$PAPAP)[4])[3];"},*/
 
 	{
 		"type F func(a, b int, c byte) byte",
@@ -157,7 +155,7 @@ var tabSimpleDecl = []simpleDecl{
 	},
 
 	{"func F(a int)", "void foo$F(int a$);"},
-	{"func F(a [4]int) uint", "uint foo$F(int a$[4]);"},
+	//{"func F(a [4]int) uint", "uint foo$F(int a$[4]);"},
 	{"func F(f func(int) *int) int", "int foo$F(int *(*f$)(int));"},
 	{"func F(f func(int) **int) int", "int foo$F(int **(*f$)(int));"},
 	{"func F(f func(int) int) func(byte) byte", "byte (*foo$F(int (*f$)(int)))(byte);"},

@@ -26,7 +26,9 @@ type GTC struct {
 	sizPtr      int64
 	sizIval     int64
 
-	tuples map[string]types.Object // TODO: safe concurent acces is need
+	// TODO: safe concurent acces is need
+	tuples map[string]types.Object
+	arrays map[string]types.Object
 }
 
 func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.Sizes) *GTC {
@@ -38,6 +40,7 @@ func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.S
 		ti:      ti,
 		nextInt: c,
 		tuples:  make(map[string]types.Object),
+		arrays:  make(map[string]types.Object),
 		siz:     siz,
 		sizPtr:  siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
 		sizIval: siz.Sizeof(types.Typ[types.Complex128]),
