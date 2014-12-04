@@ -149,13 +149,7 @@ func main() {
 	term.WriteString("Searching for all devices on the bus...\n")
 	s := onewire.MakeSearch(false)
 	for m.SearchNext(&s) {
-		var crc byte
-		for i := 0; i < 7; i++ {
-			crc = onewire.CRC8(crc, byte(s.Dev()>>uint(i*8)))
-		}
-		fmt.Fprint(term, s.Dev(), fmt.Str(" crc:"))
-		fmt.Byte(crc).Format(term, 16)
-		term.WriteByte('\n')
+		fmt.Fprint(term, s.Dev(), fmt.N)
 	}
 	checkErr(s.Err())
 

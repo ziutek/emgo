@@ -14,20 +14,18 @@ const (
 	convertT = 0x44
 )
 
-func (m *Master) ReadROM() (Dev, error) {
-	if err := m.Reset(); err != nil {
-		return 0, err
+func (m *Master) ReadROM() (d Dev, err error) {
+	if err = m.Reset(); err != nil {
+		return
 	}
-	if err := m.WriteByte(readROM); err != nil {
-		return 0, err
+	if err = m.WriteByte(readROM); err != nil {
+		return
 	}
-	var rom uint64
-	for i := uint(0); i < 64; i += 8 {
-		b, err := m.ReadByte()
+	for k := range d {
+		d[k], err = m.ReadByte()
 		if err != nil {
-			return 0, err
+			return
 		}
-		rom |= uint64(b) << i
 	}
-	return Dev(rom), nil
+	return
 }

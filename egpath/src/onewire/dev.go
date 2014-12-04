@@ -5,17 +5,20 @@ import (
 	"io"
 )
 
-type Dev uint64
+type Dev [8]byte
 
 func (d Dev) Format(w io.Writer, p ...int) (n int, err error) {
-	crc := fmt.Byte(d >> 56)
-	family := fmt.Byte(d)
-	serial := fmt.Uint64(d>>8) & 0xffffffffffff
 	sep := fmt.Rune('-')
-
-	for _, f := range []fmt.Formatter{crc, sep, serial, sep, family} {
+	for i, b := range d {
 		var m int
-		m, err = f.Format(w, 16)
+		if i != 0 {
+			m, err = sep.Format(w)
+			n += m
+			if err != nil {
+				return
+			}
+		}
+		m, err = fmt.Byte(b).Format(w, 16)
 		n += m
 		if err != nil {
 			return
