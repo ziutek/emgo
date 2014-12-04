@@ -15,7 +15,7 @@ func CRC8(crc byte, data ...byte) byte {
 	return crc
 }
 
-// CRC16 with poly: x^16+x^15+x^2+1 -> 0x4003==inv(0xc002<<1)
+// CRC16 with poly: x^16+x^15+x^2+1 -> 0x4003==inv(0xc002)
 func CRC16(crc uint16, data ...uint16) uint16 {
 	for _, w := range data {
 		for i := 0; i < 16; i++ {
