@@ -703,7 +703,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 		sx = "(*" + sx + ")"
 	}
 
-	switch t := typ.(type) {
+	switch t := underlying(typ).(type) {
 	case *types.Slice:
 		if e.Low == nil && e.High == nil && e.Max == nil {
 			w.WriteString(sx)

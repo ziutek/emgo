@@ -290,14 +290,14 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		xl := ""
 
 		array := false
-		switch t := xt.(type) {
+		switch t := underlying(xt).(type) {
 		case *types.Array:
 			array = true
 			xl = strconv.FormatInt(t.Len(), 10)
 
 		case *types.Pointer:
 			array = true
-			xl = strconv.FormatInt(t.Elem().(*types.Array).Len(), 10)
+			xl = strconv.FormatInt(underlying(t.Elem()).(*types.Array).Len(), 10)
 		}
 
 		if v, ok := s.Value.(*ast.Ident); ok && v.Name == "_" {
@@ -319,7 +319,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			xl = "len(" + xs + ")"
 		}
 
-		switch xt.(type) {
+		switch t := underlying(xt).(type) {
 		case *types.Slice, *types.Array, *types.Pointer:
 			cdd.indent(w)
 
@@ -343,9 +343,8 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 				cdd.indent(w)
 				if s.Tok == token.DEFINE {
-					t := xt
-					if pt, ok := xt.(*types.Pointer); ok {
-						t = pt.Elem()
+					if pt, ok := t.(*types.Pointer); ok {
+						t = underlying(pt.Elem())
 					}
 					vt := t.(interface {
 						Elem() types.Type
