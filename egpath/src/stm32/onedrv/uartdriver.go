@@ -30,7 +30,7 @@ func (d *UARTDriver) sendRecv(slot byte) (byte, error) {
 	return d.Serial.ReadByte()
 }
 
-func (d *UARTDriver) SendBit(bit byte) error {
+func (d *UARTDriver) WriteBit(bit byte) error {
 	if bit != 0 {
 		bit = 0xff
 	}
@@ -44,7 +44,7 @@ func (d *UARTDriver) SendBit(bit byte) error {
 	return nil
 }
 
-func (d *UARTDriver) RecvBit() (byte, error) {
+func (d *UARTDriver) ReadBit() (byte, error) {
 	r, err := d.sendRecv(0xff)
 	if err != nil {
 		return 0, err

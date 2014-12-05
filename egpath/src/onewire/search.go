@@ -1,20 +1,25 @@
 package onewire
 
 type Search struct {
+	// Parameters:
+	typ Type
+	cmd byte
+
+	// State:
 	err   error
 	dev   Dev
 	lastd int8
-	cmd   byte
 }
 
 func (s *Search) Reset() {
-	s.dev = Dev{}
 	s.err = nil
+	s.dev = Dev{}
 	s.lastd = -1
 }
 
-func (s *Search) Init(alarm bool) {
+func (s *Search) Init(typ Type, alarm bool) {
 	s.Reset()
+	s.typ = typ
 	if alarm {
 		s.cmd = alarmSearch
 	} else {
@@ -22,9 +27,9 @@ func (s *Search) Init(alarm bool) {
 	}
 }
 
-func MakeSearch(alarm bool) Search {
+func NewSearch(typ Type, alarm bool) Search {
 	var s Search
-	s.Init(alarm)
+	s.Init(typ, alarm)
 	return s
 }
 
@@ -37,11 +42,11 @@ func (s *Search) Err() error {
 }
 
 func (m *Master) nextBit() (bit, neg byte, err error) {
-	bit, err = m.RecvBit()
+	bit, err = m.ReadBit()
 	if err != nil {
 		return
 	}
-	neg, err = m.RecvBit()
+	neg, err = m.ReadBit()
 	if err != nil {
 		return
 	}
@@ -66,8 +71,31 @@ func (m *Master) SearchNext(s *Search) bool {
 	if s.err = m.WriteByte(s.cmd); s.err != nil {
 		return false
 	}
+	k := 0
+	if s.typ != 0 {
+		for i := 0; i < 8; i++ {
+			nb := byte(s.typ>>uint(i)) & 1
+			bit, cmp, err := m.nextBit()
+			if err != nil {
+				s.err = err
+				return false
+			}
+			switch bit {
+			case cmp, nb:
+				// Discrepancy or good bit.
+			default:
+				// Wrong bit: not found.
+				return false
+			}
+			if s.err = m.WriteBit(nb); s.err != nil {
+				return false
+			}
+		}
+		s.dev[k] = byte(s.typ)
+		k++
+	}
 	last0 := -1
-	for k := range s.dev {
+	for k < len(s.dev) {
 		for i := 0; i < 8; i++ {
 			bit, cmp, err := m.nextBit()
 			if err != nil {
@@ -78,7 +106,7 @@ func (m *Master) SearchNext(s *Search) bool {
 			b := byte(1) << uint(i)
 			switch bit {
 			case cmp:
-				// discrepancy
+				// Discrepancy.
 				switch {
 				case i > int(s.lastd):
 					// Take 0-dir.
@@ -97,13 +125,14 @@ func (m *Master) SearchNext(s *Search) bool {
 				}
 			case 0:
 				*dp &^= b
-			case 1:
+			default: // 1
 				*dp |= b
 			}
-			if s.err = m.SendBit(bit); s.err != nil {
+			if s.err = m.WriteBit(bit); s.err != nil {
 				return false
 			}
 		}
+		k++
 	}
 	if CRC8(0, s.dev[:7]...) != s.dev[7] {
 		s.err = ErrCRC

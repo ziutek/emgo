@@ -10,6 +10,6 @@ var (
 
 type Driver interface {
 	Reset() error
-	SendBit(bit byte) error
-	RecvBit() (bit byte, err error)
+	ReadBit() (bit byte, err error)
+	WriteBit(bit byte) error
 }

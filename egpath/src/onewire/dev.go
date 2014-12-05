@@ -26,3 +26,9 @@ func (d Dev) Format(w io.Writer, p ...int) (n int, err error) {
 	}
 	return
 }
+
+type Type byte
+
+func (d Dev) Type() Type {
+	return Type(d[0])
+}

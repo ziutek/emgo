@@ -43,3 +43,14 @@ func (m *Master) MatchROM(d Dev) error {
 	}
 	return nil
 }
+
+// SkipROM can be used to address all devices on the bus simultaneously.
+func (m *Master) SkipROM(d Dev) error {
+	if err := m.Reset(); err != nil {
+		return err
+	}
+	if err := m.WriteByte(skipROM); err != nil {
+		return err
+	}
+	return nil
+}

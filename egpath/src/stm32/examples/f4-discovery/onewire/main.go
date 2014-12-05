@@ -147,15 +147,22 @@ func main() {
 	m := onewire.Master{Driver: &drv}
 
 	term.WriteString("Searching for all devices on the bus...\n")
-	s := onewire.MakeSearch(false)
+	s := onewire.NewSearch(onewire.DS18B20, false)
 	for m.SearchNext(&s) {
-		fmt.Fprint(term, s.Dev(), fmt.N)
+		d := s.Dev()
+		fmt.Fprint(term, fmt.Str("Found: "), d, fmt.N)
+		term.WriteString(" Sending ConvertT command:\n")
+		checkErr(m.MatchROM(d))
+		checkErr(m.ConvertT())
+		for {
+			term.WriteString("  waiting 100ms\n")
+			delay.Millisec(100)
+			b, err := m.ReadBit()
+			checkErr(err)
+			if b != 0 {
+				break
+			}
+		}
 	}
 	checkErr(s.Err())
-
-	term.WriteString("Reading ROM code (valid if only one device connected)...\n")
-	d, err := m.ReadROM()
-	checkErr(err)
-
-	fmt.Fprint(term, d, fmt.N)
 }
