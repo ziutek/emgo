@@ -25,3 +25,43 @@ const (
 func (m *Master) ConvertT() error {
 	return m.WriteByte(convertT)
 }
+
+func (m *Master) WriteScratchpad(th, tl, cfg byte) error {
+	if err := m.WriteByte(writeScratchpad); err != nil {
+		return err
+	}
+	_, err := m.Write([]byte{th, tl, cfg})
+	return err
+}
+
+type Scratchpad [9]byte
+
+func (s *Scratchpad) Temp16(typ Type) (int, error) {
+	switch typ {
+	case DS18B20, DS1822:
+		return int(uint(s[1])<<8 + uint(s[0])), nil
+	}
+	return 0x1000, ErrDevType
+}
+
+func (s *Scratchpad) Temp(typ Type) (float32, error) {
+	t16, err := s.Temp16(typ)
+	return float32(t16) * 0.0625, err
+}
+
+func (s *Scratchpad) CRC() byte {
+	return s[8]
+}
+
+func (m *Master) ReadScratchpad() (s Scratchpad, err error) {
+	if err = m.WriteByte(readScratchpad); err != nil {
+		return
+	}
+	if _, err = m.ReadFull(s[:]); err != nil {
+		return
+	}
+	if CRC8(0, s[:8]) != s.CRC() {
+		err = ErrCRC
+	}
+	return
+}

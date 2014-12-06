@@ -27,3 +27,24 @@ func (m *Master) ReadByte() (byte, error) {
 	}
 	return byte(b), nil
 }
+
+func (m *Master) Write(data []byte) (int, error) {
+	for n, b := range data {
+		if err := m.WriteByte(b); err != nil {
+			return n, err
+		}
+	}
+	return len(data), nil
+}
+
+func (m *Master) ReadFull(data []byte) (int, error) {
+	for n := range data {
+		b, err := m.ReadByte()
+		if err != nil {
+			return n, err
+		}
+		data[n] = b
+	}
+	return len(data), nil
+
+}

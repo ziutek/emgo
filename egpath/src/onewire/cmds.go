@@ -19,12 +19,7 @@ func (m *Master) ReadROM() (d Dev, err error) {
 	if err = m.WriteByte(readROM); err != nil {
 		return
 	}
-	for k := range d {
-		d[k], err = m.ReadByte()
-		if err != nil {
-			return
-		}
-	}
+	_, err = m.ReadFull(d[:])
 	return
 }
 
@@ -36,16 +31,12 @@ func (m *Master) MatchROM(d Dev) error {
 	if err := m.WriteByte(matchROM); err != nil {
 		return err
 	}
-	for _, b := range d {
-		if err := m.WriteByte(b); err != nil {
-			return err
-		}
-	}
-	return nil
+	_, err := m.Write(d[:])
+	return err
 }
 
 // SkipROM can be used to address all devices on the bus simultaneously.
-func (m *Master) SkipROM(d Dev) error {
+func (m *Master) SkipROM() error {
 	if err := m.Reset(); err != nil {
 		return err
 	}

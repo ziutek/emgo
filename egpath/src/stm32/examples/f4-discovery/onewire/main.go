@@ -145,17 +145,18 @@ func ok() {
 func main() {
 	drv := onedrv.UARTDriver{Serial: one, Clock: setup.APB2Clk}
 	m := onewire.Master{Driver: &drv}
+	dtypes := []onewire.Type{onewire.DS18S20, onewire.DS18B20, onewire.DS1822}
 
-	term.WriteString("Searching for all devices on the bus...\n")
-	s := onewire.NewSearch(onewire.DS18B20, false)
-	for m.SearchNext(&s) {
-		d := s.Dev()
-		fmt.Fprint(term, fmt.Str("Found: "), d, fmt.N)
-		term.WriteString(" Sending ConvertT command:\n")
-		checkErr(m.MatchROM(d))
+	// This algorithm doesn't work in case of parasite power mode.
+	for {
+		term.WriteString(
+			"\nSending ConvertT command on the bus (SkipROM addressing).",
+		)
+		checkErr(m.SkipROM())
 		checkErr(m.ConvertT())
+		term.WriteString("\nWaiting until all devices finish the conversion")
 		for {
-			term.WriteString("  waiting 100ms\n")
+			term.WriteByte('.')
 			delay.Millisec(100)
 			b, err := m.ReadBit()
 			checkErr(err)
@@ -163,6 +164,26 @@ func main() {
 				break
 			}
 		}
+		term.WriteString("\nSearching for temperature sensors:\n")
+		for _, typ := range dtypes {
+			s := onewire.NewSearch(typ, false)
+			for m.SearchNext(&s) {
+				d := s.Dev()
+				fmt.Fprint(term, d, fmt.Str(": "))
+				checkErr(m.MatchROM(d))
+				s, err := m.ReadScratchpad()
+				checkErr(err)
+				t, err := s.Temp16(typ)
+				checkErr(err)
+				fmt.Fprint(
+					term,
+					fmt.Int(t/16), fmt.Rune('.'), fmt.Int(t>>3&1*5),
+					fmt.Str(" C\n"),
+				)
+			}
+			checkErr(s.Err())
+		}
+		term.WriteString("Done.\n")
+		delay.Millisec(5e3)
 	}
-	checkErr(s.Err())
 }

@@ -134,7 +134,7 @@ func (m *Master) SearchNext(s *Search) bool {
 		}
 		k++
 	}
-	if CRC8(0, s.dev[:7]...) != s.dev[7] {
+	if CRC8(0, s.dev[:7]) != s.dev[7] {
 		s.err = ErrCRC
 		return false
 	}
