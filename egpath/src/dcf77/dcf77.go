@@ -29,7 +29,7 @@ type Time struct {
 
 func (t Time) Format(w io.Writer, a ...int) (n int, err error) {
 	var m int
-	m, err = fmt.Byte(t.year).Format(w, -16, -2)
+	m, err = fmt.Byte(t.year).Format(w, -2, -16)
 	n += m
 	if err != nil {
 		return
@@ -39,7 +39,7 @@ func (t Time) Format(w io.Writer, a ...int) (n int, err error) {
 	if err != nil {
 		return
 	}
-	m, err = fmt.Byte(t.month).Format(w, -16, -2)
+	m, err = fmt.Byte(t.month).Format(w, -2, -16)
 	n += m
 	if err != nil {
 		return
@@ -49,7 +49,7 @@ func (t Time) Format(w io.Writer, a ...int) (n int, err error) {
 	if err != nil {
 		return
 	}
-	m, err = fmt.Byte(t.mday).Format(w, -16, -2)
+	m, err = fmt.Byte(t.mday).Format(w, -2, -16)
 	n += m
 	if err != nil {
 		return
@@ -59,7 +59,7 @@ func (t Time) Format(w io.Writer, a ...int) (n int, err error) {
 	if err != nil {
 		return
 	}
-	m, err = fmt.Byte(t.hour).Format(w, -16, -2)
+	m, err = fmt.Byte(t.hour).Format(w, -2, -16)
 	n += m
 	if err != nil {
 		return
@@ -69,7 +69,7 @@ func (t Time) Format(w io.Writer, a ...int) (n int, err error) {
 	if err != nil {
 		return
 	}
-	m, err = fmt.Byte(t.min).Format(w, -16, -2)
+	m, err = fmt.Byte(t.min).Format(w, -2, -16)
 	n += m
 	if err != nil {
 		return
@@ -79,7 +79,7 @@ func (t Time) Format(w io.Writer, a ...int) (n int, err error) {
 	if err != nil {
 		return
 	}
-	m, err = fmt.Byte(t.sec).Format(w, -10, -2)
+	m, err = fmt.Byte(t.sec).Format(w, -2, -10)
 	n += m
 	if err != nil {
 		return

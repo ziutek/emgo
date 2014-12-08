@@ -18,7 +18,7 @@ func (d Dev) Format(w io.Writer, p ...int) (n int, err error) {
 				return
 			}
 		}
-		m, err = fmt.Byte(b).Format(w, 16)
+		m, err = fmt.Byte(b).Format(w, -2, -16)
 		n += m
 		if err != nil {
 			return

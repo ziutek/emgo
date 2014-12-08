@@ -17,13 +17,13 @@ func main() {
 	s := fmt.Str("abcd")
 	i := fmt.Int64(15)
 
-	i.Format(con, 10, 5)
+	i.Format(con, 5, 10)
 	end.Format(con)
-	i.Format(con, 10, -5)
+	i.Format(con, -5, 10)
 	end.Format(con)
-	i.Format(con, -10, 5)
+	i.Format(con, 5, -10)
 	end.Format(con)
-	i.Format(con, -10, -5)
+	i.Format(con, -5, -10)
 	end.Format(con)
 
 	s.Format(con, 11)
@@ -38,4 +38,5 @@ func main() {
 
 	fmt.Fprintf(con, "%v %v %v %v\n", s, i)
 	fmt.Fprintf(con, "%v\n", s, s, i)
+	fmt.Fprint(con, fmt.N)
 }

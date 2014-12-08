@@ -16,22 +16,22 @@ type Formatter interface {
 	Format(w io.Writer, p ...int) (n int, err error)
 }
 
-func params(a []int) (base, width int, alignr bool) {
-	base = 10
+func params(a []int, dbase int) (width int, alignr bool, base int) {
 	if len(a) > 0 {
-		base = a[0]
+		width = a[0]
 	}
-	if len(a) > 1 {
-		width = a[1]
-	}
-	if alignr = width < 0; alignr {
+	if alignr = (width < 0); alignr {
 		width = -width
+	}
+	base = dbase
+	if len(a) > 1 {
+		base = a[1]
 	}
 	return
 }
 func writeNum(w io.Writer, buf []byte, first, width int, alignr bool) (n int, err error) {
 	f := len(buf) - width
-	if first < f {
+	if f > first {
 		f = first
 	}
 	if alignr {
@@ -54,7 +54,7 @@ func writeNum(w io.Writer, buf []byte, first, width int, alignr bool) (n int, er
 type Uint64 uint64
 
 func (u Uint64) Format(w io.Writer, a ...int) (int, error) {
-	base, width, alignr := params(a)
+	width, alignr, base := params(a, 10)
 	var buf []byte
 	if width < 20 {
 		buf = stack.Bytes(20)
@@ -68,7 +68,7 @@ func (u Uint64) Format(w io.Writer, a ...int) (int, error) {
 type Int64 int64
 
 func (i Int64) Format(w io.Writer, a ...int) (int, error) {
-	base, width, alignr := params(a)
+	width, alignr, base := params(a, 10)
 	var buf []byte
 	if width < 21 {
 		buf = stack.Bytes(21)
@@ -82,7 +82,7 @@ func (i Int64) Format(w io.Writer, a ...int) (int, error) {
 type Uint32 uint32
 
 func (u Uint32) Format(w io.Writer, a ...int) (int, error) {
-	base, width, alignr := params(a)
+	width, alignr, base := params(a, 10)
 	var buf []byte
 	if width < 10 {
 		buf = stack.Bytes(10)
@@ -96,7 +96,7 @@ func (u Uint32) Format(w io.Writer, a ...int) (int, error) {
 type Int32 int32
 
 func (i Int32) Format(w io.Writer, a ...int) (int, error) {
-	base, width, alignr := params(a)
+	width, alignr, base := params(a, 10)
 	var buf []byte
 	if width < 11 {
 		buf = stack.Bytes(11)
@@ -138,6 +138,29 @@ func (u Uint) Format(w io.Writer, a ...int) (int, error) {
 		return Uint32(u).Format(w, a...)
 	}
 	return Uint64(u).Format(w, a...)
+}
+
+type Uintptr uintptr
+
+func (u Uintptr) Format(w io.Writer, a ...int) (int, error) {
+	width, alignr, base := params(a, 16)
+	var buf []byte
+	need := 20
+	if unsafe.Sizeof(u) <= 4 {
+		need = 10
+	}
+	if width < need {
+		buf = stack.Bytes(need)
+	} else {
+		buf = stack.Bytes(width)
+	}
+	var first int
+	if unsafe.Sizeof(u) <= 4 {
+		first = strconv.Utoa32(buf, uint32(u), base)
+	} else {
+		first = strconv.Utoa64(buf, uint64(u), base)
+	}
+	return writeNum(w, buf, first, width, alignr)
 }
 
 type Int int

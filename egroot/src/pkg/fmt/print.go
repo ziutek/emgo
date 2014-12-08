@@ -17,7 +17,7 @@ func Fprint(w io.Writer, a ...Formatter) (n int, err error) {
 func findVerb(f string) (start int, verb byte, flags string) {
 	for f[start] != '%' {
 		start++
-		if start == len(f) {
+		if start >= len(f) {
 			return
 		}
 	}
