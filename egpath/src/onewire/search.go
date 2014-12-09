@@ -80,11 +80,8 @@ func (m *Master) SearchNext(s *Search) bool {
 				s.err = err
 				return false
 			}
-			switch bit {
-			case cmp, nb:
-				// Discrepancy or good bit.
-			default:
-				// Wrong bit: not found.
+			if bit != nb && bit != cmp {
+				// There is no device with nb bit.
 				return false
 			}
 			if s.err = m.WriteBit(nb); s.err != nil {
