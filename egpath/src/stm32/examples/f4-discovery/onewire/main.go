@@ -147,6 +147,10 @@ func main() {
 	m := onewire.Master{Driver: &drv}
 	dtypes := []onewire.Type{onewire.DS18S20, onewire.DS18B20, onewire.DS1822}
 
+	term.WriteString("\nConfigure all DS18B20, DS1822 to 10bit resolution.\n")
+	checkErr(m.SkipROM())
+	checkErr(m.WriteScratchpad(127, -128, onewire.T10bit))
+
 	// This algorithm doesn't work in case of parasite power mode.
 	for {
 		term.WriteString(
@@ -156,8 +160,8 @@ func main() {
 		checkErr(m.ConvertT())
 		term.WriteString("\nWaiting until all devices finish the conversion")
 		for {
+			delay.Millisec(50)
 			term.WriteByte('.')
-			delay.Millisec(100)
 			b, err := m.ReadBit()
 			checkErr(err)
 			if b != 0 {
@@ -184,6 +188,6 @@ func main() {
 			checkErr(s.Err())
 		}
 		term.WriteString("Done.\n")
-		delay.Millisec(5e3)
+		delay.Millisec(4e3)
 	}
 }
