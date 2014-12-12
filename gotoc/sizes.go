@@ -32,7 +32,7 @@
 
 package gotoc
 
-import "code.google.com/p/go.tools/go/types"
+import "golang.org/x/tools/go/types"
 
 type StdSizes struct {
 	WordSize int64 // word size in bytes - must be >= 4 (32bits)

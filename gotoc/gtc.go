@@ -11,8 +11,8 @@ import (
 	"os"
 	"strconv"
 
-	"code.google.com/p/go.tools/go/exact"
-	"code.google.com/p/go.tools/go/types"
+	"golang.org/x/tools/go/exact"
+	"golang.org/x/tools/go/types"
 )
 
 // GTC stores information from type checker need for translation.

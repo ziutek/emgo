@@ -6,7 +6,7 @@ import (
 	"go/token"
 	"strconv"
 
-	"code.google.com/p/go.tools/go/types"
+	"golang.org/x/tools/go/types"
 )
 
 func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, tup *types.Tuple) (end bool) {
