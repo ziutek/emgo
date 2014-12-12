@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"code.google.com/p/go.tools/go/importer"
-	"code.google.com/p/go.tools/go/types"
+	"golang.org/x/tools/go/importer"
+	"golang.org/x/tools/go/types"
 )
 
 type Importer struct {

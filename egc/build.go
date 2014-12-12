@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"code.google.com/p/go.tools/go/importer"
-	"code.google.com/p/go.tools/go/types"
+	"golang.org/x/tools/go/importer"
+	"golang.org/x/tools/go/types"
 
 	"github.com/ziutek/emgo/gotoc"
 )
