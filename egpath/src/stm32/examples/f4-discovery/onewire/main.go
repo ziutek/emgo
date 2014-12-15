@@ -1,7 +1,4 @@
 // This example shows how to use USART as 1-wire master.
-//
-// Connct adapter's GND, Rx and Tx pins respectively to Discovery's GND, PD8,
-// PD9 pins.
 package main
 
 import (
