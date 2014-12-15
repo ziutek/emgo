@@ -1,4 +1,4 @@
-#include <types/types.h>
+#include <internal/types.h>
 
 bool equals(string s1, string s2) {
 	if (s1.len != s2.len) {

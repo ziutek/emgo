@@ -1,6 +1,6 @@
 // +build cortexm0 cortexm3 cortexm4 cortexm4f
 
-#include <types/types.h>
+#include <internal/types.h>
 #include <builtin.h>
 #include <runtime/noos.h>
 
