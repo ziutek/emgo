@@ -10,7 +10,7 @@ import (
 
 var buildCtx = build.Context{
 	Compiler:    "gc",
-	ReleaseTags: []string{"go1.1", "go1.2"},
+	ReleaseTags: []string{"go1.1", "go1.2", "go1.3", "go1.4"},
 	CgoEnabled:  false,
 }
 

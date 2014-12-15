@@ -157,7 +157,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 	_, err := io.WriteString(
 		wc,
-		"#include <types/types.h>\n#include <builtin.h>\n",
+		"#include <internal/types.h>\n#include <builtin.h>\n",
 	)
 	if err != nil {
 		return err
