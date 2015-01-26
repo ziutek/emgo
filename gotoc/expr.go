@@ -888,15 +888,9 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 		}
 	case *types.Interface:
 		nilv := "NILI"
-		sel := ""
-		if !t.Empty() {
-			sel = ".interface"
-		}
 		if op == "!=" {
 			w.WriteByte('!')
 		}
-		lhs += sel
-		rhs += sel
 		if rtyp == unil {
 			rhs = nilv
 		} else if ltyp == unil {
@@ -954,7 +948,7 @@ func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
 		)
 	}
 	if it.Empty() {
-		w.WriteString("INTERFACE(" + e + ", nil")
+		w.WriteString("INTERFACE(" + e + ", nil)")
 		return
 	}
 	itname := cdd.itabName(ityp, etyp)
@@ -1070,19 +1064,20 @@ func (cdd *CDD) itabName(ityp, etyp types.Type) string {
 	itname := iname + "$$$" + dimFuncPtr(ename, dim)
 	itname = escape(itname)
 	if o, ok := cdd.gtc.itables[itname]; ok {
-		cdd.DeclUses[o] = true
+		cdd.addObject(o, true)
 		return itname
 	}
 	v := types.NewVar(0, cdd.gtc.pkg, itname, ityp)
 	cdd.gtc.itables[itname] = v
 	cdd.addObject(v, true)
 	acd := cdd.gtc.newCDD(v, VarDecl, 0)
+	acd.Weak = true
 	acd.addObject(in.Obj(), true)
 	cdd.acds = append(cdd.acds, acd)
 	cdd = nil
 	w := new(bytes.Buffer)
-	w.WriteString(iname + " " + itname)
-	acd.copyDecl(w, " __attribute__((__weak__));\n")
+	w.WriteString("const " + iname + " " + itname)
+	acd.copyDecl(w, ";\n")
 	w.WriteString(" = {\n")
 	acd.il++
 	suff := "$1"

@@ -29,6 +29,7 @@ type CDD struct {
 
 	Typ    DeclType
 	Export bool
+	Weak   bool
 	Inline bool // set by DetermineInline()
 
 	Decl     []byte
@@ -42,7 +43,7 @@ type CDD struct {
 	init  bool // true if generated code will be placed in init() function
 	fbody bool // true if translation process in function body
 	dfsm  int8
-	
+
 	acds []*CDD // additional CDDs
 }
 
@@ -84,7 +85,7 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 		return nil
 	}
 
-	prefix := ""
+	var prefix string
 
 	switch cdd.Typ {
 	case FuncDecl:
@@ -96,7 +97,7 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 
 	case VarDecl:
 		if cdd.Export {
-			prefix = "extern "
+			prefix += "extern "
 		} else {
 			return nil
 		}
@@ -140,7 +141,9 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 		}
 
 	case VarDecl:
-		if !cdd.Export {
+		if cdd.Weak {
+			prefix = "__attribute__((__weak__))\n"
+		} else if !cdd.Export {
 			prefix = "static "
 		}
 
@@ -175,6 +178,10 @@ func (cdd *CDD) DetermineInline() {
 
 func (cdd *CDD) addObject(o types.Object, direct bool) {
 	if o == cdd.Origin {
+		return
+	}
+	if o.Pkg() == nil {
+		// Don't save references for builtin objects (eg: error type)
 		return
 	}
 	if cdd.init && !cdd.gtc.isImported(o) {

@@ -147,6 +147,9 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		for o := range cdd.DeclUses {
 			if gtc.isImported(o) {
 				if cdd.Export {
+					if o.Pkg() == nil {
+							fmt.Printf("nil pkg: %#v\n", o)
+					}
 					imp[o.Pkg()] = true
 				}
 			}

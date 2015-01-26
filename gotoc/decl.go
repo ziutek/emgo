@@ -472,7 +472,6 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) {
 	w.Truncate(n)
 
 	tuparr := tare.MatchString(name)
-
 	if tuparr {
 		cdd.indent(w)
 		w.WriteString("#ifndef " + name + "$\n")

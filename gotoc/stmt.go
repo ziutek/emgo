@@ -69,6 +69,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				cdd.FuncBodyUses[u] = typPtr
 			}
 			w.Write(c.Decl)
+			cdd.acds = append(cdd.acds, c.acds...)
 		}
 		for _, c := range cdds {
 			w.Write(c.Def)
@@ -695,13 +696,18 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 	c.args = make([]arg, n)
 	n = 0
 	if ri {
+		in, ok := rt.(*types.Named)
+		if !ok {
+			panic("unimplemented: call method of unnamed interface")
+		}
 		// Interface receiver
+		cast := "((" + cdd.NameStr(in.Obj(), false) + "*)("
 		if _, ok := e.Fun.(*ast.SelectorExpr).X.(*ast.Ident); ok && !eval {
-			c.fun.l = rs + "." + fs
+			c.fun.l = cast + rs + ".itab$))->" + fs
 			c.args[n] = arg{types.Typ[types.Uintptr], "&" + rs + ".val$", ""}
 		} else {
 			c.rcv = arg{rt, "_r", rs}
-			c.fun.l = "_r." + fs
+			c.fun.l = cast + "_r.itab$))->" + fs
 			c.args[n] = arg{types.Typ[types.Uintptr], "&_r" + ".val$", ""}
 		}
 		n++

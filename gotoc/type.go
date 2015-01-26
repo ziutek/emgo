@@ -326,20 +326,16 @@ func (cdd *CDD) arrayName(a *types.Array) string {
 	name = "$" + l + "_$" + escape(name)
 
 	if o, ok := cdd.gtc.arrays[name]; ok {
-		cdd.DeclUses[o] = true
+		cdd.addObject(o, true)
 		return name
 	}
-
 	f := types.NewField(0, cdd.gtc.pkg, "arr["+l+"]", a.Elem(), false)
 	s := types.NewStruct([]*types.Var{f}, nil)
 	o := types.NewTypeName(0, cdd.gtc.pkg, name, s)
-
 	cdd.gtc.arrays[name] = o
+	cdd.addObject(o, true)
 	acd := cdd.gtc.newCDD(o, TypeDecl, 0)
-	acd.structDecl(new(bytes.Buffer), name, s)
 	cdd.acds = append(cdd.acds, acd)
-
-	cdd.DeclUses[o] = true
-
+	acd.structDecl(new(bytes.Buffer), name, s)
 	return name
 }
