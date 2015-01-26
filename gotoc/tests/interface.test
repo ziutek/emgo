@@ -23,7 +23,6 @@ struct foo$A_struct;
 typedef struct foo$A_struct foo$A;
 // def
 struct foo$A_struct {
-	interface;
 	interface (*Elem)(ival*, int);
 	int (*Len)(ival*);
 };
@@ -51,7 +50,7 @@ int foo$Array$Len$1(ival* a$) {
 interface foo$Array$Elem(foo$Array *a$, int i$);
 // def
 interface foo$Array$Elem(foo$Array *a$, int i$) {
-	return INTERFACE(((int*)(*a$).arr)[i$], 0x19100092);
+	return INTERFACE(((int*)(*a$).arr)[i$], nil;
 }
 // decl
 interface foo$Array$Elem$0(ival* a$, int i$);
@@ -66,25 +65,28 @@ interface foo$Array$Elem$1(ival* a$, int i$) {
 	return foo$Array$Elem((foo$Array*)a$, i$);
 }
 // decl
-foo$A foo$Array$A(foo$Array *a$);
+foo$A foo$A$$$$8$foo$Array __attribute__((__weak__));
 // def
-foo$A foo$Array$A(foo$Array *a$) {
-	return (foo$A){
-		.interface = INTERFACE(a$, 0xe2fae8e6),
-		.Elem = foo$Array$Elem$0,
-		.Len = foo$Array$Len$0
-	};
+foo$A foo$A$$$$8$foo$Array = {
+	foo$Array$Elem$0,
+	foo$Array$Len$0
+};
+// decl
+interface foo$Array$A(foo$Array *a$);
+// def
+interface foo$Array$A(foo$Array *a$) {
+	return INTERFACE(a$, &foo$A$$$$8$foo$Array);
 }
 // decl
-foo$A foo$Array$A$0(ival* a$);
+interface foo$Array$A$0(ival* a$);
 // def
-foo$A foo$Array$A$0(ival* a$) {
+interface foo$Array$A$0(ival* a$) {
 	return foo$Array$A((foo$Array*)a$->ptr);
 }
 // decl
-foo$A foo$Array$A$1(ival* a$);
+interface foo$Array$A$1(ival* a$);
 // def
-foo$A foo$Array$A$1(ival* a$) {
+interface foo$Array$A$1(ival* a$) {
 	return foo$Array$A((foo$Array*)a$);
 }
 // end
@@ -109,7 +111,6 @@ struct foo$Stringer_struct;
 typedef struct foo$Stringer_struct foo$Stringer;
 // def
 struct foo$Stringer_struct {
-	interface;
 	string (*String)(ival*);
 };
 // decl
@@ -132,27 +133,11 @@ string foo$B$String$1(ival* b$);
 string foo$B$String$1(ival* b$) {
 	return foo$B$String(*(foo$B*)b$);
 }
-// decl
-foo$Stringer foo$B$Str(foo$B b$);
+foo$Stringer foo$Stringer$$$foo$B __attribute__((__weak__));
 // def
-foo$Stringer foo$B$Str(foo$B b$) {
-	return (foo$Stringer){
-		.interface = INTERFACE(b$, 0x91ea9690),
-		.String = foo$B$String$1
-	};
-}
-// decl
-foo$Stringer foo$B$Str$0(ival* b$);
-// def
-foo$Stringer foo$B$Str$0(ival* b$) {
-	return foo$B$Str(*(foo$B*)b$->ptr);
-}
-// decl
-foo$Stringer foo$B$Str$1(ival* b$);
-// def
-foo$Stringer foo$B$Str$1(ival* b$) {
-	return foo$B$Str(*(foo$B*)b$);
-}
+foo$Stringer foo$Stringer$$$foo$B = {
+	foo$B$String$1
+};
 // end
 
 // Go code:

@@ -197,15 +197,17 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 	switch d.Tok {
 	case token.IMPORT:
-		// Only for unrefferenced imports
-		/*for _, s := range d.Specs {
-			is := s.(*ast.ImportSpec)
-			if is.Name != nil && is.Name.Name == "_" {
-				fmt.Println("is:", is.Name, is.Path)
-				cdd := gtc.newCDD(gtc.object(is.Name), ImportDecl, il)
-				cdds = append(cdds, cdd)
+		/*
+			// Only for unrefferenced imports
+			for _, s := range d.Specs {
+				is := s.(*ast.ImportSpec)
+				if is.Name != nil && is.Name.Name == "_" {
+					fmt.Println("is:", is.Name, is.Path)
+					cdd := gtc.newCDD(gtc.object(is.Name), ImportDecl, il)
+					cdds = append(cdds, cdd)
+				}
 			}
-		}*/
+		*/
 
 	case token.CONST:
 		for _, s := range d.Specs {
@@ -481,7 +483,11 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) {
 	w.WriteString("struct ")
 	w.WriteString(name)
 	w.WriteByte('_')
-	cdd.Type(w, typ)
+	if it, ok := typ.(*types.Interface); ok {
+		cdd.iface(w, it)
+	} else {
+		cdd.Type(w, typ)
+	}
 	w.WriteString(";\n")
 	if tuparr {
 		cdd.indent(w)
@@ -501,6 +507,5 @@ func (cc *GTC) Decl(decl ast.Decl, il int) []*CDD {
 	case *ast.GenDecl:
 		return cc.GenDecl(d, il)
 	}
-
 	panic(fmt.Sprint("Unknown declaration: ", decl))
 }

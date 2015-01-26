@@ -46,11 +46,10 @@ writeType:
 		}
 
 	case *types.Named:
-		tn := t.Obj()
-		if tn.Name() == "error" {
-			w.WriteString("error")
+		if _, ok := t.Underlying().(*types.Interface); ok {
+			w.WriteString("interface")
 		} else {
-			cdd.Name(w, tn, direct)
+			cdd.Name(w, t.Obj(), direct)
 		}
 
 	case *types.Pointer:
@@ -87,9 +86,6 @@ writeType:
 		w.WriteByte('}')
 
 	case *types.Array:
-		/*dim = append(dim, "["+strconv.FormatInt(t.Len(), 10)+"]")
-		d := cdd.Type(w, t.Elem())
-		dim = append(dim, d...)*/
 		w.WriteString(cdd.arrayName(t))
 
 	case *types.Slice:
@@ -108,28 +104,26 @@ writeType:
 		dim = append(dim, res.dim...)
 
 	case *types.Interface:
-		if t.NumMethods() == 0 {
-			w.WriteString("interface")
-			break
-		}
-		w.WriteString("struct {\n")
-		cdd.il++
-		cdd.indent(w)
-		w.WriteString("interface;\n")
-		for i := 0; i < t.NumMethods(); i++ {
-			cdd.indent(w)
-			f := t.Method(i)
-			d := cdd.Type(w, f.Type())
-			w.WriteString(" " + dimFuncPtr(f.Name(), d) + ";\n")
-		}
-		cdd.il--
-		cdd.indent(w)
-		w.WriteByte('}')
+		w.WriteString("interface")
 
 	default:
 		fmt.Fprintf(w, "<%T>", t)
 	}
 	return
+}
+
+func (cdd *CDD) iface(w *bytes.Buffer, it *types.Interface) {
+	w.WriteString("struct {\n")
+	cdd.il++
+	for i := 0; i < it.NumMethods(); i++ {
+		cdd.indent(w)
+		f := it.Method(i)
+		d := cdd.Type(w, f.Type())
+		w.WriteString(" " + dimFuncPtr(f.Name(), d) + ";\n")
+	}
+	cdd.il--
+	cdd.indent(w)
+	w.WriteByte('}')
 }
 
 func (cdd *CDD) TypeStr(typ types.Type) (string, []string) {

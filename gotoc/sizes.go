@@ -133,7 +133,7 @@ func (s *StdSizes) Sizeof(T types.Type) int64 {
 		offsets := s.Offsetsof(fields)
 		return offsets[n-1] + s.Sizeof(fields[n-1].Type())
 	case *types.Interface:
-		return int64(basicSizes[types.Complex128]) + s.WordSize*int64(1+t.NumMethods())
+		return int64(basicSizes[types.Complex128]) + s.WordSize
 	}
 	return s.WordSize // catch-all
 }
