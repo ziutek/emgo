@@ -4,8 +4,8 @@ typedef union {
 } ival;
 
 typedef struct {
-	ival           val$;
-	unsafe$Pointer itab$;
+	ival       val$;
+ 	const void *itab$;
 } interface;
 
 #define EQUALI(lhs, rhs) ({                           \

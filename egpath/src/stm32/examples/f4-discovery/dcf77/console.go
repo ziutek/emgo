@@ -14,7 +14,7 @@ import (
 
 var (
 	udev = usarts.USART2
-	con  = serial.NewSerial(udev, 80, 8)
+	con  = serial.New(udev, 80, 8)
 )
 
 func initConsole() {

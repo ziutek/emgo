@@ -32,7 +32,7 @@ const (
 var (
 	leds = gpio.D
 	udev = usarts.USART2
-	s    = serial.NewSerial(udev, 80, 8)
+	s    = serial.New(udev, 80, 8)
 )
 
 func init() {
@@ -107,7 +107,7 @@ func main() {
 	var uts [10]uint64
 
 	// Following loop disassembled:
-	// 0b:
+	// 0:
 	//   svc	5
 	//   strd	r0, r1, [r3, #8]!
 	//	 ldr	r2, [sp, #52]
