@@ -6,6 +6,16 @@ func CompositeLitSlice() int {
 }
 // C code:
 // decl
+struct $2_$int_struct;
+typedef struct $2_$int_struct $2_$int;
+// def
+#ifndef $2_$int$
+#define $2_$int$
+struct $2_$int_struct {
+	int arr[2];
+};
+#endif
+// decl
 int foo$CompositeLitSlice();
 // def
 int foo$CompositeLitSlice() {

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"hash/crc32"
-	"hash/crc64"
 	"io"
 	"os"
 	"strconv"
@@ -378,20 +376,4 @@ func (gtc *GTC) notImplemented(n ast.Node, tl ...types.Type) {
 		fmt.Fprintf(os.Stderr, "	in case of: %T\n", t)
 	}
 	os.Exit(1)
-}
-
-var (
-	crc32tab = crc32.MakeTable(crc32.Castagnoli)
-	crc64tab = crc64.MakeTable(crc64.ECMA)
-)
-
-// BUG: CRC isn't good for type id
-func (gtc *GTC) typeHash(typ string, dim []string) uint64 {
-	buf := new(bytes.Buffer)
-	buf.WriteString(typ)
-	buf.WriteString(dimFuncPtr("", dim))
-	if gtc.sizPtr == 4 {
-		return uint64(crc32.Checksum(buf.Bytes(), crc32tab))
-	}
-	return crc64.Checksum(buf.Bytes(), crc64tab)
 }

@@ -92,9 +92,9 @@ func NotNil(e error) bool {
 }
 // C code:
 // decl
-bool foo$NotNil(error e$);
+bool foo$NotNil(interface e$);
 // def
-bool foo$NotNil(error e$) {
-	return !EQUALI(NILI, e$.interface);
+bool foo$NotNil(interface e$) {
+	return !EQUALI(NILI, e$);
 }
 // end

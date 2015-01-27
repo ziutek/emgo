@@ -123,10 +123,7 @@ loop:
 			}
 			return i
 		case <-c2:
-			if i == 0 {
-				continue loop
-			}
-			return i
+			continue loop
 		}
 	}
 	return 0
@@ -171,10 +168,7 @@ int foo$S(chan c1$, chan c2$) {
 				}
 				case1:{
 					SELRECV(1);
-					if ((i$ == 0)) {
-						goto loop$_continue;
-					}
-					return i$;
+					goto loop$_continue;
 					break;
 				}
 			}}

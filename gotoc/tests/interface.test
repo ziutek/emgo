@@ -50,7 +50,7 @@ int foo$Array$Len$1(ival* a$) {
 interface foo$Array$Elem(foo$Array *a$, int i$);
 // def
 interface foo$Array$Elem(foo$Array *a$, int i$) {
-	return INTERFACE(((int*)(*a$).arr)[i$], nil;
+	return INTERFACE(((int*)(*a$).arr)[i$], nil);
 }
 // decl
 interface foo$Array$Elem$0(ival* a$, int i$);
@@ -65,9 +65,9 @@ interface foo$Array$Elem$1(ival* a$, int i$) {
 	return foo$Array$Elem((foo$Array*)a$, i$);
 }
 // decl
-foo$A foo$A$$$$8$foo$Array __attribute__((__weak__));
+const foo$A foo$A$$$$8$foo$Array;
 // def
-foo$A foo$A$$$$8$foo$Array = {
+const foo$A foo$A$$$$8$foo$Array = {
 	foo$Array$Elem$0,
 	foo$Array$Len$0
 };
@@ -133,11 +133,30 @@ string foo$B$String$1(ival* b$);
 string foo$B$String$1(ival* b$) {
 	return foo$B$String(*(foo$B*)b$);
 }
-foo$Stringer foo$Stringer$$$foo$B __attribute__((__weak__));
+// decl
+const foo$Stringer foo$Stringer$$$foo$B;
 // def
-foo$Stringer foo$Stringer$$$foo$B = {
+const foo$Stringer foo$Stringer$$$foo$B = {
 	foo$B$String$1
 };
+// decl
+interface foo$B$Str(foo$B b$);
+// def
+interface foo$B$Str(foo$B b$) {
+	return INTERFACE(b$, &foo$Stringer$$$foo$B);
+}
+// decl
+interface foo$B$Str$0(ival* b$);
+// def
+interface foo$B$Str$0(ival* b$) {
+	return foo$B$Str(*(foo$B*)b$->ptr);
+}
+// decl
+interface foo$B$Str$1(ival* b$);
+// def
+interface foo$B$Str$1(ival* b$) {
+	return foo$B$Str(*(foo$B*)b$);
+}
 // end
 
 // Go code:
@@ -159,7 +178,6 @@ struct foo$A_struct;
 typedef struct foo$A_struct foo$A;
 // def
 struct foo$A_struct {
-	interface;
 	string (*A)(ival*);
 };
 // decl
@@ -167,21 +185,14 @@ struct foo$AB_struct;
 typedef struct foo$AB_struct foo$AB;
 // def
 struct foo$AB_struct {
-	interface;
 	string (*A)(ival*);
 	int (*B)(ival*);
 };
 // decl
-foo$A foo$ToA(foo$AB ab$);
+interface foo$ToA(interface ab$);
 // def
-foo$A foo$ToA(foo$AB ab$) {
-	return ({
-		foo$AB e = ab$;
-		(foo$A){
-			.interface = e.interface,
-			.A = e.A
-		}
-	});
+interface foo$ToA(interface ab$) {
+	return ab$;
 }
 // end
 
@@ -206,7 +217,6 @@ struct foo$A_struct;
 typedef struct foo$A_struct foo$A;
 // def
 struct foo$A_struct {
-	interface;
 	int$$int (*A)(ival*);
 };
 // end
@@ -248,14 +258,17 @@ foo$Error foo$errNoSignal;
 // def
 foo$Error foo$errNoSignal = EGSTR("no signal");
 // decl
-error foo$ErrNoSignal;
+const error error$$$$8$foo$Error;
 // def
-error foo$ErrNoSignal;
+const error error$$$$8$foo$Error = {
+	foo$Error$Error$0
+};
+// decl
+interface foo$ErrNoSignal;
+// def
+interface foo$ErrNoSignal;
 // init
-	foo$ErrNoSignal = (error){
-		.interface = INTERFACE(&foo$errNoSignal, 0x101c7c62),
-		.Error = foo$Error$Error$0
-	};
+	foo$ErrNoSignal = INTERFACE(&foo$errNoSignal, &error$$$$8$foo$Error);
 // end
 
 // Go code:
@@ -288,12 +301,15 @@ string foo$Error$Error$1(ival* e$) {
 	return foo$Error$Error(*(foo$Error*)e$);
 }
 // decl
-error foo$ErrNoSignal;
+const error error$$$foo$Error;
 // def
-error foo$ErrNoSignal = (error){
-	.interface = INTERFACE(EGSTR("no signal"), 0x14061479),
-	.Error = foo$Error$Error$1
+const error error$$$foo$Error = {
+	foo$Error$Error$1
 };
+// decl
+interface foo$ErrNoSignal;
+// def
+interface foo$ErrNoSignal = INTERFACE(EGSTR("no signal"), &error$$$foo$Error);
 // end
 
 // Go code:
@@ -302,10 +318,10 @@ func E(e error) string {
 }
 // C code:
 // decl
-string foo$E(error e$);
+string foo$E(interface e$);
 // def
-string foo$E(error e$) {
-	return e$.Error(&e$.val$);
+string foo$E(interface e$) {
+	return ((error*)(e$.itab$))->Error(&e$.val$);
 }
 // end
 
@@ -323,16 +339,15 @@ struct foo$Stringer_struct;
 typedef struct foo$Stringer_struct foo$Stringer;
 // def
 struct foo$Stringer_struct {
-	interface;
 	string (*String)(ival*);
 };
 // decl
-string foo$S(foo$Stringer *s$);
+string foo$S(interface *s$);
 // def
-string foo$S(foo$Stringer *s$) {
+string foo$S(interface *s$) {
 	return ({
-		foo$Stringer _r = (*s$);
-		_r.String(&_r.val$);
+		interface _r = (*s$);
+		((foo$Stringer*)(_r.itab$))->String(&_r.val$);
 	});
 }
 // end
@@ -352,14 +367,14 @@ type ReadWriter interface {
 }
 // C code:
 // decl
-struct int$$error_struct;
-typedef struct int$$error_struct int$$error;
+struct int$$interface_struct;
+typedef struct int$$interface_struct int$$interface;
 // def
-#ifndef int$$error$
-#define int$$error$
-struct int$$error_struct {
+#ifndef int$$interface$
+#define int$$interface$
+struct int$$interface_struct {
 	int _0;
-	error _1;
+	interface _1;
 };
 #endif
 // decl
@@ -367,24 +382,21 @@ struct foo$Reader_struct;
 typedef struct foo$Reader_struct foo$Reader;
 // def
 struct foo$Reader_struct {
-	interface;
-	int$$error (*Read)(ival*, slice);
+	int$$interface (*Read)(ival*, slice);
 };
 // decl
 struct foo$Writer_struct;
 typedef struct foo$Writer_struct foo$Writer;
 // def
 struct foo$Writer_struct {
-	interface;
-	int$$error (*Write)(ival*, slice);
+	int$$interface (*Write)(ival*, slice);
 };
 // decl
 struct foo$ReadWriter_struct;
 typedef struct foo$ReadWriter_struct foo$ReadWriter;
 // def
 struct foo$ReadWriter_struct {
-	interface;
-	int$$error (*Read)(ival*, slice);
-	int$$error (*Write)(ival*, slice);
+	int$$interface (*Read)(ival*, slice);
+	int$$interface (*Write)(ival*, slice);
 };
 // end
