@@ -2,7 +2,7 @@
 
 set -e
 
-setsid openocd -f oocd-stlink.cfg >/dev/null 2>&1 </dev/null &
+setsid openocd -f oocd-stlink-v2-1.cfg >/dev/null 2>&1 </dev/null &
 
 trap /bin/true INT
 
