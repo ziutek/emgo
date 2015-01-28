@@ -28,6 +28,7 @@ type GTC struct {
 	tuples  map[string]types.Object
 	arrays  map[string]types.Object
 	itables map[string]types.Object
+	tinfos  map[string]types.Object
 }
 
 func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.Sizes) *GTC {
@@ -41,6 +42,7 @@ func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.S
 		tuples:  make(map[string]types.Object),
 		arrays:  make(map[string]types.Object),
 		itables: make(map[string]types.Object),
+		tinfos:  make(map[string]types.Object),
 		siz:     siz,
 		sizPtr:  siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
 		sizIval: siz.Sizeof(types.Typ[types.Complex128]),
@@ -146,7 +148,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 			if gtc.isImported(o) {
 				if cdd.Export {
 					if o.Pkg() == nil {
-							fmt.Printf("nil pkg: %#v\n", o)
+						fmt.Printf("nil pkg: %#v\n", o)
 					}
 					imp[o.Pkg()] = true
 				}

@@ -22,7 +22,3 @@ typedef struct {
 })
 
 #define NILI (interface){}
-
-typedef struct {
-	string (*Error)(ival *);
-} error;

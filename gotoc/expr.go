@@ -968,8 +968,7 @@ func (cdd *CDD) itabName(ityp, etyp types.Type) string {
 	}
 	iname := cdd.NameStr(in.Obj(), false)
 	ename, dim := cdd.TypeStr(etyp)
-	itname := iname + "$$$" + dimFuncPtr(ename, dim)
-	itname = escape(itname)
+	itname := iname + "$$" + escape(dimFuncPtr(ename, dim)) + "$$"
 	if o, ok := cdd.gtc.itables[itname]; ok {
 		cdd.addObject(o, true)
 		return itname
@@ -978,29 +977,30 @@ func (cdd *CDD) itabName(ityp, etyp types.Type) string {
 	cdd.gtc.itables[itname] = v
 	cdd.addObject(v, true)
 	acd := cdd.gtc.newCDD(v, VarDecl, 0)
-	acd.Weak = true
-	acd.addObject(in.Obj(), true)
 	cdd.acds = append(cdd.acds, acd)
 	cdd = nil
+	acd.Weak = true
+	acd.addObject(in.Obj(), true)
 	w := new(bytes.Buffer)
 	w.WriteString("const " + iname + " " + itname)
 	acd.copyDecl(w, ";\n")
 	w.WriteString(" = {\n")
 	acd.il++
 	suff := "$1"
+	ptr := "false"
 	if t, ok := etyp.(*types.Pointer); ok {
 		etyp = t.Elem()
 		suff = "$0"
+		ptr = "true"
 	}
+	acd.indent(w)
+	w.WriteString("{&" + acd.tinfo(etyp) + ", " + ptr + "}")
 	it := ityp.Underlying().(*types.Interface)
 	for i := 0; i < it.NumMethods(); i++ {
 		f := it.Method(i)
-		if i != 0 {
-			w.WriteString(",\n")
-		}
+		w.WriteString(",\n")
 		acd.indent(w)
 		fname := f.Name()
-		//w.WriteString("." + fname + " = ")
 		m := findMethod(etyp.(*types.Named), fname)
 		acd.Name(w, m, true)
 		w.WriteString(suff)
@@ -1010,4 +1010,38 @@ func (cdd *CDD) itabName(ityp, etyp types.Type) string {
 	w.WriteString("};\n")
 	acd.copyDef(w)
 	return itname
+}
+
+func (cdd *CDD) tinfo(typ types.Type) string {
+	tname, dim := cdd.TypeStr(typ)
+	tname = escape(dimFuncPtr(tname, dim)) + "$$"
+	if o, ok := cdd.gtc.tinfos[tname]; ok {
+		if o != nil {
+			cdd.addObject(o, true)
+		}
+		return tname
+	}
+	v := types.NewVar(0, cdd.gtc.pkg, tname, typ)
+	cdd.gtc.itables[tname] = v
+	cdd.addObject(v, true)
+	acd := cdd.gtc.newCDD(v, VarDecl, 0)
+	cdd.acds = append(cdd.acds, acd)
+	cdd = nil
+	acd.Weak = true
+	if nt, ok := typ.(*types.Named); ok {
+		acd.addObject(nt.Obj(), true)
+	}
+	w := new(bytes.Buffer)
+	w.WriteString("const tinfo " + tname)
+	acd.copyDecl(w, ";\n")
+	w.WriteString(" = {\n")
+	acd.il++
+	acd.indent(w)
+	w.WriteString(strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
+	acd.indent(w)
+	w.WriteString("EGSTR(\"" + typ.String() + "\")\n")
+	acd.il--
+	w.WriteString("};\n")
+	acd.copyDef(w)
+	return tname
 }

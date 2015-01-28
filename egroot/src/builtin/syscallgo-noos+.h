@@ -5,7 +5,7 @@
 		call;                                 \
 		builtin$Syscall1(builtin$DELTASK, 0); \
 	}                                         \
-	newTask(func, lock);                                \
+	newTask(func, lock);                      \
 } while(0)
 
 static

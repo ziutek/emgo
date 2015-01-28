@@ -115,6 +115,8 @@ writeType:
 func (cdd *CDD) iface(w *bytes.Buffer, it *types.Interface) {
 	w.WriteString("struct {\n")
 	cdd.il++
+	cdd.indent(w)
+	w.WriteString("ithead h$;\n")
 	for i := 0; i < it.NumMethods(); i++ {
 		cdd.indent(w)
 		f := it.Method(i)
