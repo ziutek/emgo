@@ -34,7 +34,7 @@ func Performance(osc, mul, sdiv int) {
 	for clock.SysClock() != clock.HSI {
 	}
 	
-	if osc < 4 || osc > 26 || osc&1 != 0 {
+	if osc != 0 && (osc < 4 || osc > 26 || osc&1 != 0) {
 		panic("wrong frequency of external resonator")
 	}
 	if mul < 96 || mul > 216 || mul%24 != 0 {
