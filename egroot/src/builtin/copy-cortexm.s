@@ -7,10 +7,10 @@
 // a microcontroler with small SRAM and instructions read
 // from Flash (all Flash acceleration on).
 
-// void memmove(unsafe_Pointer dst, unsafe.Pointer, src, uint n)
+// unsafe$Pointer memmove(unsafe$Pointer dst, unsafe$Pointer, src, uint n)
 .global memmove
 
-// void memcpy(unsafe.Pointer dst, unsafe.Pointer src, uint n)
+// unsafe$Pointer memcpy(unsafe$Pointer dst, unsafe$Pointer src, uint n)
 .global memcpy
 
 .thumb_func

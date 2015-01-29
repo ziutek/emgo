@@ -5,7 +5,7 @@
 // func Memset(s unsafe.Pointer, b byte, n uintptr)
 .global builtin$Memset
 
-// void memset(unsafe$Pointer s, byte b, uintptr n)
+// unsafe$Pointer memset(unsafe$Pointer s, byte b, uintptr n)
 .global memset
 
 .thumb_func

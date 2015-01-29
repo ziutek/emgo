@@ -8,13 +8,19 @@
 runtime$noos$FaultHandler:
 	// At this point a lot of things can be broken so don't touch
 	// stack nor memory. Do only few things that helps debuging.
-	mrs    r0, ipsr
-	tst    lr, 4
-	ite    eq
-	mrseq  r1, msp
-	mrsne  r1, psp
-0:  bkpt   1
-	b      0b
+	mov   r0, lr
+	movs  r1, #4
+	tst   r0, r1
+	bne   0f
+
+	mrs  r1, msp
+	b    1f
+0:
+	mrs  r1, psp
+1:
+	mrs   r0, ipsr
+2:  bkpt  1
+	b     2b
 
 // Now R0 and R1 contain useful information.
 
