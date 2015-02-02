@@ -11,7 +11,7 @@ type extiRegs struct {
 	p    Lines `C:"volatile"`
 }
 
-func IntEnabled() Lines {
+func IntrEnabled() Lines {
 	return regs1.im
 }
 
