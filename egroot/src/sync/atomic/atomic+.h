@@ -1,3 +1,5 @@
+// +build !cortexm0
+
 #define  MMODEL __ATOMIC_RELAXED
 
 __attribute__ ((always_inline))

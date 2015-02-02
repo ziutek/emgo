@@ -13,7 +13,7 @@ builtin$Memset:
 .thumb_func
 memset:
 	cmp  r2, 0
-	bne  1f
+	beq  1f
 
 	mov  r3, r0
 0:
