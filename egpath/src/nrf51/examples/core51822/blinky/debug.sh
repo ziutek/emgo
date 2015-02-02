@@ -10,6 +10,7 @@ arm-none-eabi-gdb --tui \
 	-ex "target extended-remote localhost:3333" \
 	-ex "set remote hardware-breakpoint-limit 4" \
 	-ex "set remote hardware-watchpoint-limit 2" \
+	-ex "monitor reset halt" \
 	main.elf
 
 killall openocd
