@@ -1,18 +1,18 @@
 __attribute__ ((always_inline))
 extern inline
-void arch$cortexm$exce$Disable() {
+void arch$cortexm$exce$DisablePri() {
 	asm volatile ("cpsid i");
 }
 
 __attribute__ ((always_inline))
 extern inline
-void arch$cortexm$exce$Enable() {
+void arch$cortexm$exce$EnablePri() {
 	asm volatile ("cpsie i");
 }
 
 __attribute__ ((always_inline))
 extern inline
-bool arch$cortexm$exce$Disabled() {
+bool arch$cortexm$exce$DisabledPri() {
 	bool b;
 	asm volatile ("msr primask, %0" : "=r" (b));
 	return b;
@@ -20,19 +20,19 @@ bool arch$cortexm$exce$Disabled() {
 
 __attribute__ ((always_inline))
 extern inline
-void arch$cortexm$exce$DisableFaults() {
+void arch$cortexm$exce$Disable() {
 	asm volatile ("cpsid f");
 }
 
 __attribute__ ((always_inline))
 extern inline
-void arch$cortexm$exce$EnableFaults() {
+void arch$cortexm$exce$Enable() {
 	asm volatile ("cpsie f");
 }
 
 __attribute__ ((always_inline))
 extern inline
-bool arch$cortexm$exce$FaultsDisabled() {
+bool arch$cortexm$exce$Disabled() {
 	bool b;
 	asm volatile ("msr faultmask, %0" : "=r" (b));
 	return b;
