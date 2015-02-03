@@ -7,3 +7,8 @@ import "syscall"
 func Uptime() uint64 {
 	return syscall.Uptime()
 }
+
+// SleepUntil sleeps task until Uptime() < end.
+func SleepUntil(end uint64) {
+	sleepUntil(end)
+}
