@@ -1,7 +1,6 @@
 package main
 
 import (
-	"delay"
 	"rtos"
 	"sync/atomic"
 )
@@ -21,8 +20,7 @@ func waterIRQ() {
 
 const (
 	period = 500 // ms
-	scale  = 100
-	max    = 1000
+	scale  = 40
 )
 
 func waterTask() {
@@ -35,35 +33,36 @@ func waterTask() {
 			r0, r1, r2 = r2, r0, r1
 			<-waterSig
 		}
-		wf := int(atomic.SwapInt32(&waterCnt, 0))
-		if wf == 0 {
+		ht := int(atomic.SwapInt32(&waterCnt, 0))
+		if ht == 0 {
 			continue
 		}
 
-		end := rtos.Uptime() + period*1e6
-		wf = wf * scale / period
-		if wf > max {
-			wf = max
+		start := rtos.Uptime()
+		ht *= scale // Heat time (if ht>period more than one heater is need).
+		if ht > 3*period {
+			// Only 3 heaters are connected.
+			ht = 3 * period
 			blue.On()
 		}
 
 		switch {
-		case wf <= max/3:
+		case ht <= period:
 			ssrPort.SetBits(1 << r0)
-			delay.Millisec(period * wf / (max / 3))
+			rtos.SleepUntil(start + uint64(ht)*1e6)
 			ssrPort.ClearBit(r0)
-		case wf <= max*2/3:
+		case ht <= 2*period:
 			ssrPort.SetBits(1<<r0 | 1<<r1)
-			delay.Millisec(period * (wf - max/3) / (max / 3))
+			rtos.SleepUntil(start + uint64(ht-period)*1e6)
 			ssrPort.ClearBit(r1)
 		default:
 			ssrPort.SetBits(1<<r0 | 1<<r1 | 1<<r2)
-			delay.Millisec(period * (wf - max*2/3) / (max / 3))
+			rtos.SleepUntil(start + uint64(ht-2*period)*1e6)
 			ssrPort.ClearBit(r2)
 		}
 
 		blue.Off()
-		rtos.SleepUntil(end)
+		rtos.SleepUntil(start + period*1e6)
 		ssrPort.ClearBits(1<<r0 | 1<<r1 | 1<<r2)
 	}
 }
