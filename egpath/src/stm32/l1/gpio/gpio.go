@@ -53,15 +53,15 @@ const (
 )
 
 // Mode returns I/O mode for n-th bit
-func (g *Port) Mode(n int) Mode {
+func (g *Port) Mode(n uint) Mode {
 	n *= 2
-	return Mode(g.mode>>uint(n)) & 3
+	return Mode(g.mode>>n) & 3
 }
 
 // SetMode sets I/O mode for n-th bit
-func (g *Port) SetMode(n int, mode Mode) {
+func (g *Port) SetMode(n uint, mode Mode) {
 	n *= 2
-	g.mode = g.mode&^(3<<uint(n)) | uint32(mode)<<uint(n)
+	g.mode = g.mode&^(3<<n) | uint32(mode)<<n
 }
 
 type OutType byte
@@ -72,27 +72,27 @@ const (
 )
 
 // OutType returns current type of n-th output bit
-func (g *Port) OutType(n int) OutType {
-	return OutType(g.otype>>uint(n)) & 1
+func (g *Port) OutType(n uint) OutType {
+	return OutType(g.otype>>n) & 1
 }
 
 // SetOuttype sets type for n-th output bit
-func (g *Port) SetOutType(n int, ot OutType) {
-	g.otype = g.otype&^(1<<uint(n)) | uint32(ot)<<uint(n)
+func (g *Port) SetOutType(n uint, ot OutType) {
+	g.otype = g.otype&^(1<<n) | uint32(ot)<<n
 }
 
 type Speed byte
 
 // OutSpeed return current speed for n-th output bit
-func (g *Port) OutSpeed(n int) Speed {
+func (g *Port) OutSpeed(n uint) Speed {
 	n *= 2
-	return Speed(g.ospeed>>uint(n)) & 3
+	return Speed(g.ospeed>>n) & 3
 }
 
 // SetOutSpeed sets speed for n-th output bit
-func (g *Port) SetOutSpeed(n int, speed Speed) {
+func (g *Port) SetOutSpeed(n uint, speed Speed) {
 	n *= 2
-	g.ospeed = g.ospeed&^(3<<uint(n)) | uint32(speed)<<uint(n)
+	g.ospeed = g.ospeed&^(3<<n) | uint32(speed)<<n
 }
 
 type Pull byte
@@ -104,25 +104,25 @@ const (
 )
 
 // Pull returns current pull state of of n-th output bit.
-func (g *Port) Pull(n int) Pull {
+func (g *Port) Pull(n uint) Pull {
 	n *= 2
-	return Pull(g.pupd>>uint(n)) & 3
+	return Pull(g.pupd>>n) & 3
 }
 
 // SetPull sets internal pull-up/pull-down cirquits for n-th output bit.
-func (g *Port) SetPull(n int, pull Pull) {
+func (g *Port) SetPull(n uint, pull Pull) {
 	n *= 2
-	g.pupd = g.pupd&^(3<<uint(n)) | uint32(pull)<<uint(n)
+	g.pupd = g.pupd&^(3<<n) | uint32(pull)<<n
 }
 
 // SetBit sets n-th output bit to 1
-func (g *Port) SetBit(n int) {
-	g.bsr = uint32(1) << uint(n)
+func (g *Port) SetBit(n uint) {
+	g.bsr = uint32(1) << n
 }
 
 // ClearBit sets n-th output bit to 0
-func (g *Port) ClearBit(n int) {
-	g.bsr = uint32(0x10000) << uint(n)
+func (g *Port) ClearBit(n uint) {
+	g.bsr = uint32(0x10000) << n
 }
 
 // SetBits sets output bits on positions specified by bits to 1
@@ -151,12 +151,12 @@ func (g *Port) Load() uint16 {
 	return uint16(g.id)
 }
 
-func (g *Port) Bit(n int) bool {
-	return g.id&(uint32(1)<<uint(n)) != 0
+func (g *Port) Bit(n uint) bool {
+	return g.id&(uint32(1)<<n) != 0
 }
 
 // AltFunc returns current alternate function for n-th bit in port g.
-func (g *Port) AltFunc(n int) AltFunc {
+func (g *Port) AltFunc(n uint) AltFunc {
 	var af uint32
 	if n < 8 {
 		af = g.afl
@@ -165,16 +165,16 @@ func (g *Port) AltFunc(n int) AltFunc {
 		n -= 8
 	}
 	n *= 4
-	return AltFunc(af>>uint(n)) & 0xf
+	return AltFunc(af>>n) & 0xf
 }
 
 // SetAltFunc sets alternate function af for n-th bit in port g.
-func (g *Port) SetAltFunc(n int, af AltFunc) {
+func (g *Port) SetAltFunc(n uint, af AltFunc) {
 	n *= 4
 	if n < 32 {
-		g.afl = g.afl&^(0xf<<uint(n)) | uint32(af)<<uint(n)
+		g.afl = g.afl&^(0xf<<n) | uint32(af)<<n
 	} else {
 		n -= 32
-		g.afh = g.afh&^(0xf<<uint(n)) | uint32(af)<<uint(n)
+		g.afh = g.afh&^(0xf<<n) | uint32(af)<<n
 	}
 }
