@@ -38,7 +38,7 @@ func init() {
 	periph.APB2ClockDisable(periph.SysCfg)
 }
 
-func blink(led, dly int) {
+func blink(led uint, dly int) {
 	leds.SetBit(led)
 	if dly < 0 {
 		delay.Loop(-dly * 1e4)

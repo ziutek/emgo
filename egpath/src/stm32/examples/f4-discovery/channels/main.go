@@ -11,7 +11,7 @@ import (
 var LED = gpio.D
 
 const (
-	Green = 12 + iota
+	Green uint = 12 + iota
 	Orange
 	Red
 	Blue
@@ -29,7 +29,7 @@ func init() {
 	LED.SetMode(Blue, gpio.Out)
 }
 
-func toggle(led, d int) {
+func toggle(led uint, d int) {
 	LED.SetBit(led)
 	delay.Millisec(d)
 	LED.ClearBit(led)
@@ -38,7 +38,7 @@ func toggle(led, d int) {
 
 const dly = 100
 
-func blink(color <-chan int, end chan<- struct{}) {
+func blink(color <-chan uint, end chan<- struct{}) {
 	for {
 		led, ok := <-color
 		if !ok {
@@ -50,7 +50,7 @@ func blink(color <-chan int, end chan<- struct{}) {
 }
 
 func main() {
-	color := make(chan int, 10)
+	color := make(chan uint, 10)
 	end := make(chan struct{}, 3)
 
 	// Consumers

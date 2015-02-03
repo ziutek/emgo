@@ -46,7 +46,7 @@ func init() {
 	periph.APB2ClockDisable(periph.SysCfg)
 }
 
-var c = make(chan int, 3)
+var c = make(chan uint, 3)
 
 func buttonHandler() {
 	exti.L0.ClearPending()
@@ -60,7 +60,7 @@ func buttonHandler() {
 	}
 }
 
-func toggle(led int) {
+func toggle(led uint) {
 	LED.SetBit(led)
 	delay.Millisec(500)
 	LED.ClearBit(led)

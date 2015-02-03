@@ -30,7 +30,7 @@ const (
 var (
 	leds = gpio.B
 	udev = usarts.USART3
-	s    = serial.NewSerial(udev, 80, 8)
+	s    = serial.New(udev, 80, 8)
 )
 
 func init() {
@@ -44,7 +44,7 @@ func init() {
 	leds.SetMode(Blue, gpio.Out)
 	leds.SetMode(Green, gpio.Out)
 
-	port, tx, rx := gpio.B, 10, 11
+	port, tx, rx := gpio.B, uint(10), uint(11)
 
 	port.SetMode(tx, gpio.Alt)
 	port.SetOutType(tx, gpio.PushPull)
@@ -68,7 +68,7 @@ func init() {
 	s.SetUnix(true)
 }
 
-func blink(c, d int) {
+func blink(c uint, d int) {
 	leds.SetBit(c)
 	if d > 0 {
 		delay.Millisec(d)
