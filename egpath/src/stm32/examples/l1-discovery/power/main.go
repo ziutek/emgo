@@ -21,10 +21,10 @@ var (
 const (
 	blue  = LED(6)
 	green = LED(7)
-	water = 9
-	ssr0  = 6
-	ssr1  = 7
-	ssr2  = 8
+	water = uint(9)
+	ssr0  = uint(6)
+	ssr1  = uint(7)
+	ssr2  = uint(8)
 )
 
 func init() {
@@ -37,8 +37,8 @@ func init() {
 	periph.AHBReset(gpiop)
 
 	// Setup LEDs output.
-	ledsPort.SetMode(int(green), gpio.Out)
-	ledsPort.SetMode(int(blue), gpio.Out)
+	ledsPort.SetMode(uint(green), gpio.Out)
+	ledsPort.SetMode(uint(blue), gpio.Out)
 	// Setup SSR output
 	ssrPort.SetMode(ssr0, gpio.Out)
 	ssrPort.SetMode(ssr1, gpio.Out)
