@@ -23,12 +23,3 @@ func (led LED) Blink(ms int) {
 	}
 	led.Off()
 }
-
-func beep(ms int) {
-	for ; ms > 0; ms--{
-		buzzPort.SetBit(buzz)
-		delay.Millisec(1)
-		buzzPort.ClearBit(buzz)
-		delay.Millisec(1)
-	}
-}

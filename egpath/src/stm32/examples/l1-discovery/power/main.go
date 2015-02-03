@@ -14,15 +14,17 @@ import (
 var (
 	ledsPort  = gpio.B
 	waterPort = gpio.B
-	buzzPort  = gpio.B
-	waterExti = exti.L8
+	waterExti = exti.L9
+	ssrPort   = gpio.C
 )
 
 const (
 	blue  = LED(6)
 	green = LED(7)
-	water = 8
-	buzz  = 9
+	water = 9
+	ssr0  = 6
+	ssr1  = 7
+	ssr2  = 8
 )
 
 func init() {
@@ -30,20 +32,22 @@ func init() {
 
 	periph.APB2ClockEnable(periph.SysCfg)
 	periph.APB2Reset(periph.SysCfg)
-	gpiop := ledsPort.Periph() | waterPort.Periph() | buzzPort.Periph()
+	gpiop := ledsPort.Periph() | waterPort.Periph() | ssrPort.Periph()
 	periph.AHBClockEnable(gpiop)
 	periph.AHBReset(gpiop)
 
-	// Setup LEDs
+	// Setup LEDs output.
 	ledsPort.SetMode(int(green), gpio.Out)
 	ledsPort.SetMode(int(blue), gpio.Out)
-	// Setup buzzer
-	buzzPort.SetMode(buzz, gpio.Out)
+	// Setup SSR output
+	ssrPort.SetMode(ssr0, gpio.Out)
+	ssrPort.SetMode(ssr1, gpio.Out)
+	ssrPort.SetMode(ssr2, gpio.Out)
 
 	// Setup external interrupt source: water flow sensor.
 	waterPort.SetMode(water, gpio.In)
 	waterPort.SetPull(water, gpio.PullUp) // Noise prevention.
-	waterExti.Connect(gpio.B)
+	waterExti.Connect(waterPort)
 	waterExti.FallTrigEnable()
 	waterExti.IntEnable()
 	rtos.IRQ(irqs.Ext9_5).UseHandler(ext9_5__ISR)

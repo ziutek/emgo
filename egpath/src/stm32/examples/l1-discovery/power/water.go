@@ -16,30 +16,30 @@ func waterIRQ() {
 	case waterSig <- struct{}{}:
 	default:
 	}
-	if waterCnt&1 != 0 {
-		blue.Off()
-	} else {
-		blue.On()
-	}
 }
+
+const (
+	period = 500
+	max    = period * 3 / 4
+)
 
 func waterTask() {
 	for {
-		if atomic.LoadInt32(&waterCnt) == 0 {
-			blue.Off()
-			<-waterSig
+		<-waterSig
+		wf := int(atomic.SwapInt32(&waterCnt, 0))
+		if wf == 0 {
+			continue
 		}
-		wf := int(atomic.SwapInt32(&waterCnt, 0)) * 16
-		green.On()
-		if wf > 500 {
-			wf = 500
-			beep(100)
-			delay.Millisec(wf - 100)
-		} else {
-			delay.Millisec(wf)
+		wf *= 13
+		if wf > max {
+			wf = max
+			blue.On()
 		}
-		green.Off()
-		delay.Millisec(500 - wf)
+		ssrPort.SetBits(1<<ssr0 | 1<<ssr1 | 1<<ssr2)
+		delay.Millisec(wf)
+		ssrPort.ClearBits(1<<ssr0 | 1<<ssr1 | 1<<ssr2)
+		blue.Off()
+		delay.Millisec(period - wf)
 
 	}
 }
