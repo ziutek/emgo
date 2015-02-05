@@ -89,7 +89,6 @@ func init() {
 
 	port.SetMode(tx, gpio.Alt)
 	port.SetOutType(tx, gpio.OpenDrain)
-	port.SetOutSpeed(tx, gpio.Fast)
 	port.SetAltFunc(tx, gpio.USART6)
 
 	ow.SetWordLen(usart.Bits8)

@@ -29,7 +29,7 @@ func waterTask() {
 		select {
 		case <-waterSig:
 		default:
-			// Shuffle relays when iddle ot evenly use all heaters.
+			// Shuffle relays when iddle to evenly use all heaters.
 			r0, r1, r2 = r2, r0, r1
 			<-waterSig
 		}
@@ -48,7 +48,7 @@ func waterTask() {
 
 		switch {
 		case ht <= period:
-			ssrPort.SetBits(1 << r0)
+			ssrPort.SetBit(r0)
 			rtos.SleepUntil(start + uint64(ht)*1e6)
 			ssrPort.ClearBit(r0)
 		case ht <= 2*period:
