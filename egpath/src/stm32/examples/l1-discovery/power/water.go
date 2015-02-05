@@ -10,6 +10,7 @@ var (
 	waterCnt int32
 )
 
+// waterIRQ is called for every pulse from water flow sensor.
 func waterIRQ() {
 	atomic.AddInt32(&waterCnt, 1)
 	select {
