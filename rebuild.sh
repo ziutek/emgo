@@ -19,6 +19,8 @@ arch/cortexm/fpu
 arch/cortexm/exce
 arch/cortexm/systick
 arch/cortexm/sleep
+arch/cortexm/debug
+arch/cortexm/debug/itm
 
 syscall
 runtime/noos
