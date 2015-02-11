@@ -6,7 +6,7 @@ type Reg8 struct {
 	r uint8 `C:"volatile"`
 }
 
-func NewReg8(addr uintptr) *Reg8 {
+func PtrReg8(addr uintptr) *Reg8 {
 	return (*Reg8)(unsafe.Pointer(addr))
 }
 
@@ -42,7 +42,7 @@ type Reg16 struct {
 	r uint16 `C:"volatile"`
 }
 
-func NewReg16(addr uintptr) *Reg16 {
+func PtrReg16(addr uintptr) *Reg16 {
 	return (*Reg16)(unsafe.Pointer(addr))
 }
 
@@ -78,7 +78,7 @@ type Reg32 struct {
 	r uint32 `C:"volatile"`
 }
 
-func NewReg32(addr uintptr) *Reg32 {
+func PtrReg32(addr uintptr) *Reg32 {
 	return (*Reg32)(unsafe.Pointer(addr))
 }
 

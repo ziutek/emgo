@@ -19,7 +19,7 @@ func VectorFor(handler func()) Vector {
 }
 
 var (
-	vto      = mmio.NewReg32(0xe000ed08)
+	vto      = mmio.PtrReg32(0xe000ed08)
 	activeVT []Vector
 )
 

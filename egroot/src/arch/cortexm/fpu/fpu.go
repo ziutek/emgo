@@ -3,7 +3,7 @@ package fpu
 
 import "mmio"
 
-var cpac = mmio.NewReg32(0xe000ed88)
+var cpac = mmio.PtrReg32(0xe000ed88)
 
 type Perm uint32
 
@@ -21,7 +21,7 @@ func Access() Perm {
 	return Perm(cpac.LoadBits(3 << 20))
 }
 
-var fpcc = mmio.NewReg32(0xe000ef34)
+var fpcc = mmio.PtrReg32(0xe000ef34)
 
 // SPFlags control/describe FPU state preservation behavior during exception
 // handling.
@@ -50,4 +50,4 @@ func SP() SPFlags {
 	return SPFlags(fpcc.Load())
 }
 
-var fpca = mmio.NewReg32(0xe000ef38)
+var fpca = mmio.PtrReg32(0xe000ef38)

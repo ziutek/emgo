@@ -2,7 +2,7 @@ package sleep
 
 import "mmio"
 
-var scr = mmio.NewReg32(0xe000ed10)
+var scr = mmio.PtrReg32(0xe000ed10)
 
 func EventOnPend() bool {
 	return scr.Bit(4)
