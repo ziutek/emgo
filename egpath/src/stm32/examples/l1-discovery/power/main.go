@@ -15,6 +15,7 @@ import (
 
 var (
 	ledsPort  = gpio.B
+	heatPort  = gpio.C
 	waterPort = gpio.B
 	waterExti = exti.L9
 	ssrPort   = gpio.C
@@ -26,6 +27,10 @@ var (
 const (
 	blue  = LED(6)
 	green = LED(7)
+
+	heat0 = uint(0)
+	heat1 = uint(1)
+
 	water = uint(9)
 	ssr0  = uint(6)
 	ssr1  = uint(7)
@@ -40,7 +45,7 @@ func init() {
 	periph.APB1Reset(periph.USART3)
 	periph.APB2ClockEnable(periph.SysCfg)
 	periph.APB2Reset(periph.SysCfg)
-	gpiop := ledsPort.Periph() | waterPort.Periph() | ssrPort.Periph() | onewPort.Periph()
+	gpiop := ledsPort.Periph() | heatPort.Periph() | waterPort.Periph() | ssrPort.Periph() | onewPort.Periph()
 	periph.AHBClockEnable(gpiop)
 	periph.AHBReset(gpiop)
 
@@ -48,6 +53,11 @@ func init() {
 
 	ledsPort.SetMode(uint(green), gpio.Out)
 	ledsPort.SetMode(uint(blue), gpio.Out)
+
+	// Setup heating output.
+
+	heatPort.SetMode(heat0, gpio.Out)
+	heatPort.SetMode(heat1, gpio.Out)
 
 	// Setup SSR output.
 
@@ -98,5 +108,6 @@ func usart3__ISR() {
 }
 
 func main() {
+	heatingTask()
 	waterTask()
 }

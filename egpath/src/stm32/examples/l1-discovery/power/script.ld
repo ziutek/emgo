@@ -1,6 +1,6 @@
 StackExp = 10; /* 1 KiB */
 StackFrac = 8; /* 8/8 */
-MaxTasks = 3;
+MaxTasks = 2;
 IRTExp = 7; /* Up to 128 exceptions/interrupts */
 
 INCLUDE stm32/l152_b
