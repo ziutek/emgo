@@ -7,7 +7,7 @@ import (
 )
 
 type regs struct {
-	stim [256]Port
+	stim [256]mmio.Reg32
 	_    [640]uint32
 	te   [8]mmio.Reg32
 	_    [8]uint32
@@ -72,60 +72,58 @@ func SetPrivMask(mask uint32) {
 	irs.tp.Store(mask)
 }
 
-// StimEnabled returns true if n-th stimulus port is enabled.
-func StimEnabled(n int) bool {
-	bit := n & 31
-	n >>= 5
-	return irs.te[n].Bit(bit)
+type Port int
+
+// Enabled returns true if port is enabled.
+func (p Port) Enabled() bool {
+	bit := int(p & 31)
+	p >>= 5
+	return irs.te[p].Bit(bit)
 }
 
-// StimEnable enables n-th stimulus por.
-func StimEnable(n int) {
-	bit := n & 31
-	n >>= 5
-	irs.te[n].SetBit(bit)
+// Enable enables stimulus por.
+func (p Port) Enable() {
+	bit := int(p & 31)
+	p >>= 5
+	irs.te[p].SetBit(bit)
 }
 
-// StimDisable disables n-th stimulus por.
-func StimDisable(n int) {
-	bit := n & 31
-	n >>= 5
-	irs.te[n].ClearBit(bit)
-}
-
-// StimPort returns pointer to n-th stimulus port.
-func StimPort(n int) *Port {
-	return &irs.stim[n]
-}
-
-type Port struct {
-	r uint32 `C:"volatile"`
+// Disable enables stimulus por.
+func (p Port) Disable() {
+	bit := int(p & 31)
+	p >>= 5
+	irs.te[p].ClearBit(bit)
 }
 
 // Ready returns true if port can accept data.
-func (p *Port) Ready() bool {
-	return p.r&1 != 0
+func (p Port) Ready() bool {
+	return irs.stim[p].Bit(0)
 }
 
 // Store8 stores byte into p.
-func (p *Port) Store8(b byte) {
-	mmio.PtrReg8(uintptr(unsafe.Pointer(p))).Store(b)
+func (p Port) Store8(b byte) {
+	mmio.PtrReg8(uintptr(unsafe.Pointer(&irs.stim[p]))).Store(b)
 }
 
 // Store16 stores half-word into p.
-func (p *Port) Store16(h uint16) {
-	mmio.PtrReg16(uintptr(unsafe.Pointer(p))).Store(h)
+func (p Port) Store16(h uint16) {
+	mmio.PtrReg16(uintptr(unsafe.Pointer(&irs.stim[p]))).Store(h)
 }
 
 // Store32 stores word into p.
-func (p *Port) Store32(w uint32) {
-	mmio.PtrReg32(uintptr(unsafe.Pointer(p))).Store(w)
+func (p Port) Store32(w uint32) {
+	irs.stim[p].Store(w)
 }
 
 // Write implements io.Writer interface.
-func (p *Port) Write(data []byte) (int, error) {
+func (p Port) Write(data []byte) (int, error) {
+loop:
 	for _, b := range data {
 		for !p.Ready() {
+			if !p.Enabled() || Ctrl()&ITMEna == 0 {
+				// Silently discard data.
+				break loop
+			}
 		}
 		p.Store8(b)
 	}
@@ -133,9 +131,14 @@ func (p *Port) Write(data []byte) (int, error) {
 }
 
 // WriteString implements io.StringWriter interface.
-func (p *Port) WriteString(s string) (int, error) {
+func (p Port) WriteString(s string) (int, error) {
+loop:
 	for i := 0; i < len(s); i++ {
 		for !p.Ready() {
+			if !p.Enabled() || Ctrl()&ITMEna == 0 {
+				// Silently discard data.
+				break loop
+			}
 		}
 		p.Store8(s[i])
 	}

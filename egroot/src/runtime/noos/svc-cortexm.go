@@ -100,7 +100,7 @@ func scDebugOut(fp *exce.StackFrame) {
 		fp.R[1] = uintptr(syscall.EPERM)
 		return
 	}
-	n, _ := itm.StimPort(port).Write(data)
+	n, _ := itm.Port(port).Write(data)
 	fp.R[0] = uintptr(n)
 	fp.R[1] = uintptr(syscall.OK)
 }
