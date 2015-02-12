@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"go/ast"
+	"go/token"
 	"strconv"
 
 	"golang.org/x/tools/go/exact"
@@ -921,38 +922,43 @@ func findMethod(t *types.Named, name string) *types.Func {
 	return nil
 }
 
-func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
-	etyp := cdd.exprType(expr)
-	e := cdd.ExprStr(expr, ityp)
+func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, ityp types.Type) {
 	if ityp == nil || etyp == nil {
-		w.WriteString(e)
+		w.WriteString(es)
 		return
 	}
 	it, ok := ityp.Underlying().(*types.Interface)
 	if !ok {
-		w.WriteString(e)
+		w.WriteString(es)
 		return
 	}
 	if b, ok := (etyp).(*types.Basic); ok && b.Kind() == types.UntypedNil {
-		w.WriteString(e)
+		w.WriteString(es)
 		return
 	}
 	if _, eii := etyp.Underlying().(*types.Interface); eii {
-		w.WriteString(e)
+		w.WriteString(es)
 		return
 	} else if cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.sizIval {
 		cdd.exit(
-			expr.Pos(),
+			epos,
 			"value of type %v is too large to assign to interface variable",
 			etyp,
 		)
 	}
 	if it.Empty() {
-		w.WriteString("INTERFACE(" + e + ", nil)")
+		w.WriteString("INTERFACE(" + es + ", nil)")
 		return
 	}
 	itname := cdd.itabName(ityp, etyp)
-	w.WriteString("INTERFACE(" + e + ", &" + itname + ")")
+	w.WriteString("INTERFACE(" + es + ", &" + itname + ")")
+}
+
+func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
+	es := cdd.ExprStr(expr, ityp)
+	etyp := cdd.exprType(expr)
+	epos := expr.Pos()
+	cdd.interfaceES(w, es, epos, etyp, ityp)
 }
 
 func (cdd *CDD) interfaceExprStr(expr ast.Expr, ityp types.Type) string {

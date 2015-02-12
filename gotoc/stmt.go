@@ -21,13 +21,40 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 
 	case 1:
 		w.WriteString("return ")
-		var retTyp types.Type
 		if tup.Len() != 1 {
-			retTyp = tup
+			retTyp := tup
+			eTyp := cdd.exprType(s.Results[0])
+			if !types.Identical(retTyp, eTyp) {
+				w.WriteString("({\n")
+				cdd.il++
+				cdd.indent(w)
+				tn, fields := cdd.tupleName(eTyp.(*types.Tuple))
+				tmp := "tmp" + cdd.gtc.uniqueId()
+				w.WriteString(tn + " " + tmp + " = ")
+				cdd.Expr(w, s.Results[0], eTyp)
+				w.WriteString(";\n")
+				cdd.indent(w)
+				w.WriteString("(" + resultT + "){")
+				for i, v := range fields {
+					if i != 0 {
+						w.WriteString(", ")
+					}
+					tmpf := tmp + "." + v.Name()
+					cdd.interfaceES(
+						w, tmpf, s.Pos(), v.Type(), tup.At(i).Type(),
+					)
+				}
+				w.WriteString("};\n")
+				cdd.il--
+				cdd.indent(w)
+				w.WriteString("})")
+			} else {
+				cdd.Expr(w, s.Results[0], retTyp)
+			}
 		} else {
-			retTyp = tup.At(0).Type()
+			retTyp := tup.At(0).Type()
+			cdd.interfaceExpr(w, s.Results[0], retTyp)
 		}
-		cdd.interfaceExpr(w, s.Results[0], retTyp)
 		w.WriteString(";\n")
 
 	default:

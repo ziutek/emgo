@@ -23,6 +23,7 @@ struct foo$A_struct;
 typedef struct foo$A_struct foo$A;
 // def
 struct foo$A_struct {
+	ithead h$;
 	interface (*Elem)(ival*, int);
 	int (*Len)(ival*);
 };
@@ -65,9 +66,17 @@ interface foo$Array$Elem$1(ival* a$, int i$) {
 	return foo$Array$Elem((foo$Array*)a$, i$);
 }
 // decl
-const foo$A foo$A$$$$8$foo$Array;
+const tinfo foo$Array$$;
 // def
-const foo$A foo$A$$$$8$foo$Array = {
+const tinfo foo$Array$$ = {
+	12,
+	EGSTR("foo.Array")
+};
+// decl
+const foo$A foo$A$$$8$foo$Array$$;
+// def
+const foo$A foo$A$$$8$foo$Array$$ = {
+	{&foo$Array$$, true},
 	foo$Array$Elem$0,
 	foo$Array$Len$0
 };
@@ -75,7 +84,7 @@ const foo$A foo$A$$$$8$foo$Array = {
 interface foo$Array$A(foo$Array *a$);
 // def
 interface foo$Array$A(foo$Array *a$) {
-	return INTERFACE(a$, &foo$A$$$$8$foo$Array);
+	return INTERFACE(a$, &foo$A$$$8$foo$Array$$);
 }
 // decl
 interface foo$Array$A$0(ival* a$);
