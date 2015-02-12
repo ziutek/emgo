@@ -4,6 +4,7 @@ package noos
 
 import (
 	"arch/cortexm"
+	"arch/cortexm/debug/itm"
 	"arch/cortexm/exce"
 	"syscall"
 	"unsafe"
@@ -19,6 +20,8 @@ var syscalls = [...]func(*exce.StackFrame){
 	syscall.SETIRQENA:     scSetIRQEna,
 	syscall.SETIRQPRIO:    scSetIRQPrio,
 	syscall.SETIRQHANDLER: scSetIRQHandler,
+	syscall.IRQSTATUS:     nil,
+	syscall.DEBUGOUT:      scDebugOut,
 }
 
 func unpriv() bool {
@@ -86,6 +89,19 @@ func scSetIRQHandler(fp *exce.StackFrame) {
 		return
 	}
 	irq.UseHandler(h)
+	fp.R[1] = uintptr(syscall.OK)
+}
+
+func scDebugOut(fp *exce.StackFrame) {
+	port := int(fp.R[0])
+	data := (*[1 << 30]byte)(unsafe.Pointer(fp.R[1]))[:fp.R[2]:fp.R[2]]
+	if unpriv() && port != 1 && port != 2 {
+		fp.R[0] = 0
+		fp.R[1] = uintptr(syscall.EPERM)
+		return
+	}
+	n, _ := itm.StimPort(port).Write(data)
+	fp.R[0] = uintptr(n)
 	fp.R[1] = uintptr(syscall.OK)
 }
 

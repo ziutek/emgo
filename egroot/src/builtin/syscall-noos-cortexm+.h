@@ -37,6 +37,20 @@
 	(uintptr$$uintptr){r0, r1};           \
 })
 
+#define builtin$Syscall3(trap, a1, a2, a3) ({ \
+	register uintptr r0 asm("r0") = a1;       \
+	register uintptr r1 asm("r1") = a2;       \
+	register uintptr r2 asm("r2") = a3;       \
+	asm volatile (                            \
+		"svc %3"                              \
+		: "+r" (r0), "+r" (r1), "+r" (r2)     \
+		: "i" (trap)                          \
+		: "memory"                            \
+	);                                        \
+	(uintptr$$uintptr){r0, r1};               \
+})
+
+
 // uint64 in register
 //
 // ARM EABI tells that 64bit operand is stored in even:odd register pair. But

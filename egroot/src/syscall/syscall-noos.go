@@ -2,7 +2,10 @@
 
 package syscall
 
-import "builtin"
+import (
+	"builtin"
+	"unsafe"
+)
 
 const (
 	NEWTASK    = builtin.NEWTASK
@@ -15,6 +18,7 @@ const (
 	SETIRQPRIO
 	SETIRQHANDLER
 	IRQSTATUS
+	DEBUGOUT
 )
 
 // NewTask creates new task that starts execute f. If lock is true tasker stops
@@ -66,4 +70,19 @@ func SetIRQPrio(irq, prio int) Errno {
 func SetIRQHandler(irq int, f func()) Errno {
 	_, err := builtin.Syscall2(SETIRQHANDLER, uintptr(irq), f2p(f))
 	return Errno(err)
+}
+
+// DebugOut allows write debug informations.
+func DebugOut(port int, data []byte) (int, Errno) {
+	n, err := builtin.Syscall3(
+		DEBUGOUT,
+		uintptr(port), uintptr(unsafe.Pointer(&data[0])), uintptr(len(data)),
+	)
+	return int(n), Errno(err)
+}
+
+// DebugOutString allows write debug message.
+func DebugOutString(port int, s string) (int, Errno) {
+	data := (*[]byte)(unsafe.Pointer(&s))
+	return DebugOut(port, *data)
 }
