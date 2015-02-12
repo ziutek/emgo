@@ -25,17 +25,24 @@ var (
 )
 
 const (
+	// ledsPort
 	blue  = LED(6)
 	green = LED(7)
 
+	// heatPort
 	heat0 = uint(0)
 	heat1 = uint(1)
 
+	// waterPort
 	water = uint(9)
-	ssr0  = uint(6)
-	ssr1  = uint(7)
-	ssr2  = uint(8)
-	onew  = uint(10)
+
+	// ssrPort
+	ssr0 = uint(6)
+	ssr1 = uint(7)
+	ssr2 = uint(8)
+
+	// onewPort
+	onew = uint(10)
 )
 
 func init() {
@@ -45,7 +52,11 @@ func init() {
 	periph.APB1Reset(periph.USART3)
 	periph.APB2ClockEnable(periph.SysCfg)
 	periph.APB2Reset(periph.SysCfg)
-	gpiop := ledsPort.Periph() | heatPort.Periph() | waterPort.Periph() | ssrPort.Periph() | onewPort.Periph()
+	gpiop := ledsPort.Periph() |
+		heatPort.Periph() |
+		waterPort.Periph() |
+		ssrPort.Periph() |
+		onewPort.Periph()
 	periph.AHBClockEnable(gpiop)
 	periph.AHBReset(gpiop)
 
@@ -108,6 +119,6 @@ func usart3__ISR() {
 }
 
 func main() {
-	heatingTask()
+	go heatingTask()
 	waterTask()
 }
