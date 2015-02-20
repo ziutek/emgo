@@ -14,6 +14,8 @@ import (
 )
 
 var (
+	buttnPort = gpio.A
+	buttnExti = exti.L0
 	ledsPort  = gpio.B
 	heatPort  = gpio.C
 	waterPort = gpio.B
@@ -25,6 +27,9 @@ var (
 )
 
 const (
+	// butnPort
+	buttn = uint(0)
+
 	// ledsPort
 	blue  = LED(6)
 	green = LED(7)
@@ -32,6 +37,7 @@ const (
 	// heatPort
 	heat0 = uint(0)
 	heat1 = uint(1)
+	heat2 = uint(2)
 
 	// waterPort
 	water = uint(9)
@@ -52,13 +58,26 @@ func init() {
 	periph.APB1Reset(periph.USART3)
 	periph.APB2ClockEnable(periph.SysCfg)
 	periph.APB2Reset(periph.SysCfg)
-	gpiop := ledsPort.Periph() |
+	gpiop := buttnPort.Periph() |
+		ledsPort.Periph() |
 		heatPort.Periph() |
 		waterPort.Periph() |
 		ssrPort.Periph() |
 		onewPort.Periph()
 	periph.AHBClockEnable(gpiop)
 	periph.AHBReset(gpiop)
+
+	// Setup SWO.
+	gpio.B.SetMode(3, gpio.Alt)
+	gpio.B.SetAltFunc(3, gpio.Sys)
+
+	// Setup button input.
+	buttnPort.SetMode(buttn, gpio.In)
+	buttnExti.Connect(buttnPort)
+	buttnExti.FallTrigEnable()
+	buttnExti.IntEnable()
+	rtos.IRQ(irqs.Ext0).UseHandler(ext0__ISR)
+	rtos.IRQ(irqs.Ext0).Enable()
 
 	// Setup LEDs output.
 
@@ -69,6 +88,7 @@ func init() {
 
 	heatPort.SetMode(heat0, gpio.Out)
 	heatPort.SetMode(heat1, gpio.Out)
+	heatPort.SetMode(heat2, gpio.Out)
 
 	// Setup SSR output.
 
@@ -104,6 +124,11 @@ func init() {
 	rtos.IRQ(irqs.USART3).Enable()
 
 	periph.APB2ClockDisable(periph.SysCfg)
+}
+
+func ext0__ISR() {
+	exti.L0.ClearPending()
+	buttonIRQ()
 }
 
 func ext9_5__ISR() {

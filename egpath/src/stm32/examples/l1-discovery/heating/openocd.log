@@ -1,0 +1,34 @@
+Info : Unable to match requested speed 300 kHz, using 240 kHz
+Info : Unable to match requested speed 300 kHz, using 240 kHz
+Info : clock speed 240 kHz
+Info : STLINK v2 JTAG v23 API v2 SWIM v0 VID 0x0483 PID 0x3748
+Info : using stlink api v2
+Info : Target voltage: 2.929833
+Info : stm32l1.cpu: hardware has 6 breakpoints, 4 watchpoints
+Info : accepting 'gdb' connection from pipe
+Info : STM32L flash size is 128kb, base address is 0x8000000
+undefined debug reason 7 - target needs reset
+target state: halted
+target halted due to debug-request, current mode: Handler SysTick
+xPSR: 0x6100000f pc: 0x08001280 msp: 0x200003c8
+Info : Unable to match requested speed 300 kHz, using 240 kHz
+Info : Unable to match requested speed 300 kHz, using 240 kHz
+adapter speed: 240 kHz
+target state: halted
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x08001bc4 msp: 0x20000c00
+Error: jtag status contains invalid mode value - communication failure
+Polling target stm32l1.cpu failed, GDB will be halted. Polling again in 100ms
+Info : Previous state query failed, trying to reconnect
+Error: jtag status contains invalid mode value - communication failure
+Polling target stm32l1.cpu failed, GDB will be halted. Polling again in 300ms
+Info : Previous state query failed, trying to reconnect
+Error: jtag status contains invalid mode value - communication failure
+Polling target stm32l1.cpu failed, GDB will be halted. Polling again in 700ms
+gdb detached
+in procedure 'resume'
+
+gdb detached
+in procedure 'resume'
+
+Info : dropped 'gdb' connection

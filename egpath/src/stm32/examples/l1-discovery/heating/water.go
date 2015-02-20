@@ -32,12 +32,14 @@ func waterTask() {
 		default:
 			// Shuffle relays when iddle to evenly use all heaters.
 			r0, r1, r2 = r2, r0, r1
+			atomic.StoreInt32(&waterPrio, 0)
 			<-waterSig
 		}
 		ht := int(atomic.SwapInt32(&waterCnt, 0))
 		if ht == 0 {
 			continue
 		}
+		atomic.StoreInt32(&waterPrio, 1)
 
 		start := rtos.Uptime()
 		ht *= scale // Heat time (if ht>period more than one heater is need).
