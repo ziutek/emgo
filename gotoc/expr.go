@@ -1018,6 +1018,28 @@ func (cdd *CDD) itabName(ityp, etyp types.Type) string {
 	return itname
 }
 
+var basicKinds = []string{
+	"Invalid",
+	"Bool",
+	"Int",
+	"Int8",
+	"Int16",
+	"Int32",
+	"Int64",
+	"Uint",
+	"Uint8",
+	"Uint16",
+	"Uint32",
+	"Uint64",
+	"Uintptr",
+	"Float32",
+	"Float64",
+	"Complex64",
+	"Complex128",
+	"String",
+	"UnsafePointer",
+}
+
 func (cdd *CDD) tinfo(typ types.Type) string {
 	tname, dim := cdd.TypeStr(typ)
 	tname = escape(dimFuncPtr(tname, dim)) + "$$"
@@ -1045,7 +1067,36 @@ func (cdd *CDD) tinfo(typ types.Type) string {
 	acd.indent(w)
 	w.WriteString(strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
 	acd.indent(w)
-	w.WriteString("EGSTR(\"" + typ.String() + "\")\n")
+	w.WriteString("EGSTR(\"" + typ.String() + "\"),\n")
+	acd.indent(w)
+	var kind string
+	switch t := typ.Underlying().(type) {
+	case *types.Basic:
+		k := t.Kind()
+		if k < types.Invalid || k >= types.UntypedBool {
+			panic(k)
+		}
+		kind = basicKinds[k]
+	case *types.Array:
+		kind = "Array"
+	case *types.Chan:
+		kind = "Chan"
+	case *types.Signature:
+		kind = "Func"
+	case *types.Interface:
+		kind = "Interface"
+	case *types.Map:
+		kind = "Map"
+	case *types.Pointer:
+		kind = "Ptr"
+	case *types.Slice:
+		kind = "Slice"
+	case *types.Struct:
+		kind = "Struct"
+	default:
+		panic(t)
+	}
+	w.WriteString(kind + "\n")
 	acd.il--
 	w.WriteString("};\n")
 	acd.copyDef(w)

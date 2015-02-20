@@ -70,7 +70,8 @@ const tinfo foo$Array$$;
 // def
 const tinfo foo$Array$$ = {
 	12,
-	EGSTR("foo.Array")
+	EGSTR("foo.Array"),
+	Slice
 };
 // decl
 const foo$A foo$A$$$8$foo$Array$$;

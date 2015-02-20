@@ -3,19 +3,24 @@ package builtin
 type Type struct {
 	size uintptr
 	name string
+	kind byte
+}
+
+func (t *Type) Kind() byte {
+	return t.kind
+}
+
+func (t *Type) Size() uintptr {
+	return t.size
+}
+
+func (t *Type) Name() string {
+	return t.name
 }
 
 type ITHead struct {
-	typ *Type `C:"const"`
-	ptr bool
-}
-
-func (ith *ITHead) Size() uintptr {
-	return ith.typ.size
-}
-
-func (ith *ITHead) Name() string {
-	return ith.typ.name
+	*Type `C:"const"`
+	ptr   bool
 }
 
 func (ith *ITHead) Ptr() bool {
