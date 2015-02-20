@@ -14,8 +14,3 @@ func (d Debug) Write(b []byte) (int, error) {
 func (d Debug) WriteString(s string) (int, error) {
 	return syscall.DebugOutString(int(d), s)
 }
-
-const (
-	DbgOut Debug = 1
-	DbgErr Debug = 2
-)
