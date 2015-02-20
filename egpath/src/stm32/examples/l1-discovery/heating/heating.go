@@ -15,7 +15,7 @@ func buttonIRQ() {
 func heatingTask() {
 	for {
 		rtos.Debug(0).WriteString("Hello debugger!\n")
-		green.Blink(50)
+		green.Blink(10)
 
 		hl := atomic.LoadInt32(&hlevel)
 		if hl == 0 || atomic.LoadInt32(&waterPrio) != 0 {
