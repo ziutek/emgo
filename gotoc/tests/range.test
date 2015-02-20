@@ -24,7 +24,7 @@ byte foo$F($4_$byte a$) {
 	{
 		{
 			int k$ = 0;
-			for (; k$ < 4; ++k$) {
+			for (;k$ < 4; ++k$) {
 				r$ += ((byte)(k$));
 			}
 		}
@@ -61,7 +61,7 @@ byte foo$F($4_$byte a$) {
 	{
 		{
 			int k$ = 0;
-			for (; k$ < 4; ++k$) {
+			for (;k$ < 4; ++k$) {
 				r$ += ((byte)(k$));
 			}
 		}
@@ -101,7 +101,7 @@ byte foo$F($4_$byte a$) {
 	{
 		{
 			int k$ = 0;
-			for (; k$ < 4; ++k$) {
+			for (;k$ < 4; ++k$) {
 				byte v$ = a$.arr[k$];
 				{
 					if ((r$>4)) {
@@ -147,7 +147,7 @@ byte foo$F($4_$byte a$) {
 	{
 		{
 			int _$ = 0;
-			for (; _$ < 4; ++_$) {
+			for (;_$ < 4; ++_$) {
 				byte v$ = a$.arr[_$];
 				{
 					if ((r$>4)) {
@@ -191,7 +191,7 @@ byte foo$F($4_$byte a$) {
 		{
 			slice x = ASLICEL(4, a$, 1);
 			int k$ = 0;
-			for (; k$ < len(x); ++k$) {
+			for (;k$ < len(x); ++k$) {
 				r$ += ((byte)(k$));
 			}
 		}
@@ -229,7 +229,7 @@ byte foo$F($4_$byte a$) {
 		{
 			slice x = ASLICEL(4, a$, 1);
 			int k$ = 0;
-			for (; k$ < len(x); ++k$) {
+			for (;k$ < len(x); ++k$) {
 				r$ += ((byte)(k$));
 			}
 		}
@@ -272,8 +272,7 @@ byte foo$F($4_$byte a$) {
 		{
 			slice x = ASLICEL(4, a$, 1);
 			int k$ = 0;
-		loop$_continue:;
-			for (; k$ < len(x); ++k$) {
+			for (;k$ < len(x); ++k$) {
 				byte v$ = ((byte*)x.arr)[k$];
 				{
 					if ((r$>4)) {
@@ -281,6 +280,7 @@ byte foo$F($4_$byte a$) {
 					}
 					r$ += (((byte)(k$))+v$);
 				}
+			loop$_continue:;
 			}
 		}
 	loop$_break:;
@@ -323,8 +323,7 @@ byte foo$F($4_$byte a$) {
 		{
 			slice x = ASLICEL(4, a$, 1);
 			int _$ = 0;
-		loop$_continue:;
-			for (; _$ < len(x); ++_$) {
+			for (;_$ < len(x); ++_$) {
 				byte v$ = ((byte*)x.arr)[_$];
 				{
 					if ((r$>4)) {
@@ -332,6 +331,43 @@ byte foo$F($4_$byte a$) {
 					}
 					r$ += v$;
 				}
+			loop$_continue:;
+			}
+		}
+	loop$_break:;
+		goto end;
+	}
+end:
+	return r$;
+}
+// end
+
+// Go code:
+func F(a []byte) (r byte) {
+loop:
+	for range a[1:] {
+		r++
+		continue loop
+	}
+	return
+}
+// C code:
+// decl
+byte foo$F(slice a$);
+// def
+byte foo$F(slice a$) {
+	byte r$ = 0;
+	{
+	loop$:;
+		{
+			slice x = SLICEL(a$, byte*, 1);
+			_$ = 0;
+			for (;_$ < len(x); ++_$) {
+				{
+					++(r$);
+					goto loop$_continue;
+				}
+			loop$_continue:;
 			}
 		}
 	loop$_break:;

@@ -347,28 +347,31 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			xl = "len(" + xs + ")"
 		}
 
+		var ks string
+
 		switch t := underlying(xt).(type) {
 		case *types.Slice, *types.Array, *types.Pointer:
 			cdd.indent(w)
 
-			ks := cdd.ExprStr(s.Key, nil)
-
+			if s.Key == nil {
+				ks = "_$"
+			} else {
+				ks = cdd.ExprStr(s.Key, nil)
+			}
 			if s.Tok == token.DEFINE {
 				w.WriteString("int ")
 			}
 			w.WriteString(ks + " = 0;\n")
 
-			if label != "" {
-				cdd.label(w, label, "_continue")
-			}
-
 			cdd.indent(w)
-			w.WriteString("for (; " + ks + " < " + xl + "; ++" + ks + ") ")
+			w.WriteString("for (;" + ks + " < " + xl + "; ++" + ks + ") ")
 
-			if s.Value != nil {
+			if s.Value != nil || label != "" {
 				w.WriteString("{\n")
 				cdd.il++
+			}
 
+			if s.Value != nil {
 				cdd.indent(w)
 				if s.Tok == token.DEFINE {
 					if pt, ok := t.(*types.Pointer); ok {
@@ -387,18 +390,23 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				w.WriteString(" = ")
 				cdd.indexExpr(w, xt, xs, s.Key)
 				w.WriteString(";\n")
-
-				cdd.indent(w)
 			}
 
 		default:
 			cdd.notImplemented(s, xt)
 		}
 
+		if s.Value != nil || label != "" {
+			cdd.indent(w)
+		}
+
 		updateEnd(cdd.BlockStmt(w, s.Body, resultT, tup))
 		w.WriteByte('\n')
 
-		if s.Value != nil {
+		if label != "" {
+			cdd.label(w, label, "_continue")
+		}
+		if s.Value != nil || label != "" {
 			cdd.il--
 			cdd.indent(w)
 			w.WriteString("}\n")
