@@ -90,7 +90,7 @@ func Switch(i int) int {
 int foo$Switch(int i$);
 // def
 int foo$Switch(int i$) {
-	while ((i$<10)) {
+	for (;(i$<10);) {
 		switch(0){case 0:{
 			int tag = i$;
 			if ((tag == 1)) {

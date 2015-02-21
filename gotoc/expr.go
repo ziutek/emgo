@@ -694,6 +694,12 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 	w.WriteByte(']')
 }
 
+func (cdd *CDD) indexExprStr(typ types.Type, xs string, idx ast.Expr) string {
+	buf := new(bytes.Buffer)
+	cdd.indexExpr(buf, typ, xs, idx)
+	return buf.String()
+}
+
 func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 	sx := cdd.ExprStr(e.X, nil)
 

@@ -377,3 +377,96 @@ end:
 	return r$;
 }
 // end
+
+// Go code:
+func F(c <-chan byte) (r byte) {
+	for v := range c {
+		r+= v
+		continue
+	}
+	return
+}
+// C code:
+// decl
+struct byte$$bool_struct;
+typedef struct byte$$bool_struct byte$$bool;
+// def
+#ifndef byte$$bool$
+#define byte$$bool$
+struct byte$$bool_struct {
+	byte _0;
+	bool _1;
+};
+#endif
+// decl
+byte foo$F(chan c$);
+// def
+byte foo$F(chan c$) {
+	byte r$ = 0;
+	{
+		{
+			for (;;) {
+				byte$$bool vok = RECVOK(byte$$bool, c$);
+				if (!vok._1) break;
+				byte v$ = vok._0;
+				{
+					r$ += v$;
+					continue;
+				}
+			}
+		}
+		goto end;
+	}
+end:
+	return r$;
+}
+// end
+
+// Go code:
+func F(c *<-chan byte) (r byte) {
+loop:
+	for v := range *c {
+		r+= v
+		continue loop
+	}
+	return
+}
+// C code:
+// decl
+struct byte$$bool_struct;
+typedef struct byte$$bool_struct byte$$bool;
+// def
+#ifndef byte$$bool$
+#define byte$$bool$
+struct byte$$bool_struct {
+	byte _0;
+	bool _1;
+};
+#endif
+// decl
+byte foo$F(chan *c$);
+// def
+byte foo$F(chan *c$) {
+	byte r$ = 0;
+	{
+	loop$:;
+		{
+			chan x = *c$;
+			for (;;) {
+				byte$$bool vok = RECVOK(byte$$bool, x);
+				if (!vok._1) break;
+				byte v$ = vok._0;
+				{
+					r$ += v$;
+					goto loop$_continue;
+				}
+			loop$_continue:;
+			}
+		}
+	loop$_break:;
+		goto end;
+	}
+end:
+	return r$;
+}
+// end

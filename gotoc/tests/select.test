@@ -147,31 +147,34 @@ int foo$S(chan c1$, chan c2$) {
 	int d$ = 0;
 	{
 	loop$:;
-		loop$_continue: while (true) {
-			switch(0){case 0:{
-				__label__ case0, case1;
-				RECVINIT(0, c1$, int);
-				RECVINIT(1, c2$, int);
-				SELECT(
-					RECVCOMM(0),
-					RECVCOMM(1)
-				);
-				case0:{
-					int$$bool tmp0 = SELRECVOK(0);
-					int i$ = tmp0._0;
-					bool ok$ = tmp0._1;
-					if (((i$ == 0)||!ok$)) {
-						goto loop$_break;
+		for (;;) {
+			{
+				switch(0){case 0:{
+					__label__ case0, case1;
+					RECVINIT(0, c1$, int);
+					RECVINIT(1, c2$, int);
+					SELECT(
+						RECVCOMM(0),
+						RECVCOMM(1)
+					);
+					case0:{
+						int$$bool tmp0 = SELRECVOK(0);
+						int i$ = tmp0._0;
+						bool ok$ = tmp0._1;
+						if (((i$ == 0)||!ok$)) {
+							goto loop$_break;
+						}
+						return i$;
+						break;
 					}
-					return i$;
-					break;
-				}
-				case1:{
-					SELRECV(1);
-					goto loop$_continue;
-					break;
-				}
-			}}
+					case1:{
+						SELRECV(1);
+						goto loop$_continue;
+						break;
+					}
+				}}
+			}
+		loop$_continue:;
 		}
 	loop$_break:;
 		return 0;
