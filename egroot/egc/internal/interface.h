@@ -21,4 +21,9 @@ typedef struct {
 	(interface){cast.out, itab};               \
 })
 
+#define IVAL(i, typ) ({                          \
+	union {ival in; typeof(typ) out;} cast = {}; \
+	cast.in = (i).val$;                          \
+	cast.out;                                    \
+})
 #define NILI (interface){}

@@ -114,3 +114,112 @@ int foo$Switch(int i$) {
 	return i$;
 }
 // end
+
+
+// Go code:
+func Switch(i *interface{}) bool {
+	switch  (*i).(type) {
+	case string:
+		return false
+	case []byte:
+		return true
+	default:
+		return false
+	}
+	switch v := (*i).(type) {
+	case bool:
+		return v
+	case int:
+		return v == 1
+	default:
+		return false
+	}
+}
+// C code:
+// decl
+const tinfo string$$;
+// def
+const tinfo string$$ = {
+	.name = EGSTR("string"),
+	.size = 8,
+	.kind = String
+};
+// decl
+const tinfo byte$$;
+// def
+const tinfo byte$$ = {
+	.name = EGSTR("byte"),
+	.size = 1,
+	.kind = Uint8
+};
+// decl
+const tinfo slice$$byte$$;
+// def
+const tinfo *slice$$byte$$00[] = {&byte$$};
+const tinfo slice$$byte$$ = {
+	.name = EGSTR("[]byte"),
+	.size = 12,
+	.kind = Slice,
+	.elem = CSLICE(1, slice$$byte$$00)
+};
+// decl
+const tinfo bool$$;
+// def
+const tinfo bool$$ = {
+	.name = EGSTR("bool"),
+	.size = 1,
+	.kind = Bool
+};
+// decl
+const tinfo int$$;
+// def
+const tinfo int$$ = {
+	.name = EGSTR("int"),
+	.size = 4,
+	.kind = Int
+};
+// decl
+bool foo$Switch(interface *i$);
+// def
+bool foo$Switch(interface *i$) {
+	switch(0){case 0:{
+		interface tag = (*i$);
+		if (TINFO(tag) == &string$$) {
+			return false;
+			break;
+		}
+		if (TINFO(tag) == &slice$$byte$$) {
+			return true;
+			break;
+		}
+		{
+			return false;
+			break;
+		}
+	}}
+	switch(0){case 0:{
+		interface tag = (*i$);
+		if (TINFO(tag) == &bool$$) {
+			bool v$ = IVAL(tag, bool);
+			{
+				return v$;
+			}
+			break;
+		}
+		if (TINFO(tag) == &int$$) {
+			int v$ = IVAL(tag, int);
+			{
+				return (v$ == 1);
+			}
+			break;
+		}
+		{
+			interface v$ = tag;
+			{
+				return false;
+			}
+			break;
+		}
+	}}
+}
+// end

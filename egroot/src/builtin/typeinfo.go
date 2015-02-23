@@ -1,9 +1,10 @@
 package builtin
 
 type Type struct {
-	size uintptr
 	name string
+	size uintptr
 	kind byte
+	elem []*Type `C:"const"`
 }
 
 func (t *Type) Kind() byte {
@@ -20,9 +21,4 @@ func (t *Type) Name() string {
 
 type ITHead struct {
 	*Type `C:"const"`
-	ptr   bool
-}
-
-func (ith *ITHead) Ptr() bool {
-	return ith.ptr
 }

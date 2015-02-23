@@ -60,7 +60,7 @@ writeType:
 
 	case *types.Struct:
 		if t.NumFields() == 0 {
-			w.WriteString("empty")
+			w.WriteString("structE")
 			break
 		}
 		w.WriteString("struct {\n")

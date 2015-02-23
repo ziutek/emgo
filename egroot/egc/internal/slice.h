@@ -68,6 +68,8 @@ typedef struct {
 	
 #define ASLICE(len, expr) (slice){(expr).arr, len, len}
 
+#define CSLICE(len, expr) (slice){(expr), len, len}
+
 #define ASLICEH(len, expr, high) (slice){(expr).arr, high, len}
 	
 // #define ASLICEM(expr, max) Go 1.2 doesn't allow [::max].

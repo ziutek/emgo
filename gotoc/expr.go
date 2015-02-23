@@ -106,10 +106,10 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 }
 
 func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, direct bool) {
-	if obj == nil {
+	/*if obj == nil {
 		w.WriteByte('_')
 		return
-	}
+	}*/
 	switch o := obj.(type) {
 	case *types.PkgName:
 		// Imported package name in SelectorExpr: pkgname.Name
@@ -498,8 +498,15 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 	case *ast.Ident:
 		if e.Name == "nil" {
 			cdd.Nil(w, nilT)
-		} else {
-			cdd.Name(w, cdd.object(e), true)
+			break
+		}
+		if o := cdd.object(e); o != nil {
+			cdd.Name(w, o, true)
+			break
+		}
+		w.WriteString(e.Name)
+		if e.Name != "_" {
+			w.WriteByte('$')
 		}
 
 	case *ast.IndexExpr:
@@ -933,8 +940,7 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 		w.WriteString(es)
 		return
 	}
-	it, ok := ityp.Underlying().(*types.Interface)
-	if !ok {
+	if _, ok := ityp.Underlying().(*types.Interface); !ok {
 		w.WriteString(es)
 		return
 	}
@@ -951,10 +957,6 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 			"value of type %v is too large to assign to interface variable",
 			etyp,
 		)
-	}
-	if it.Empty() {
-		w.WriteString("INTERFACE(" + es + ", nil)")
-		return
 	}
 	itname := cdd.itabName(ityp, etyp)
 	w.WriteString("INTERFACE(" + es + ", &" + itname + ")")
@@ -974,11 +976,23 @@ func (cdd *CDD) interfaceExprStr(expr ast.Expr, ityp types.Type) string {
 }
 
 func (cdd *CDD) itabName(ityp, etyp types.Type) string {
-	in, ok := ityp.(*types.Named)
-	if !ok {
-		panic("unimplemented: assignment to an unnamed interface")
+	var (
+		obj   types.Object
+		iname string
+	)
+	switch it := ityp.(type) {
+	case *types.Named:
+		obj = it.Obj()
+		iname = cdd.NameStr(obj, false)
+	case *types.Interface:
+		if it.NumMethods() != 0 {
+			panic("unimplemented: assignment to an unnamed interface")
+		}
+		iname = "interfaceE"
+	default:
+		panic(it)
 	}
-	iname := cdd.NameStr(in.Obj(), false)
+
 	ename, dim := cdd.TypeStr(etyp)
 	itname := iname + "$$" + escape(dimFuncPtr(ename, dim)) + "$$"
 	if o, ok := cdd.gtc.itables[itname]; ok {
@@ -992,21 +1006,19 @@ func (cdd *CDD) itabName(ityp, etyp types.Type) string {
 	cdd.acds = append(cdd.acds, acd)
 	cdd = nil
 	acd.Weak = true
-	acd.addObject(in.Obj(), true)
+	acd.addObject(obj, true)
 	w := new(bytes.Buffer)
 	w.WriteString("const " + iname + " " + itname)
 	acd.copyDecl(w, ";\n")
 	w.WriteString(" = {\n")
 	acd.il++
-	suff := "$1"
-	ptr := "false"
-	if t, ok := etyp.(*types.Pointer); ok {
-		etyp = t.Elem()
-		suff = "$0"
-		ptr = "true"
-	}
 	acd.indent(w)
-	w.WriteString("{&" + acd.tinfo(etyp) + ", " + ptr + "}")
+	w.WriteString("{&" + acd.tinfo(etyp) + "}")
+	suff := "$1"
+	if pt, ok := etyp.(*types.Pointer); ok {
+		suff = "$0"
+		etyp = pt.Elem()
+	}
 	it := ityp.Underlying().(*types.Interface)
 	for i := 0; i < it.NumMethods(); i++ {
 		f := it.Method(i)
@@ -1046,17 +1058,29 @@ var basicKinds = []string{
 	"UnsafePointer",
 }
 
+func (cdd *CDD) tiname(typ types.Type) string {
+	name, dim := cdd.TypeStr(typ)
+	name = escape(dimFuncPtr(name, dim)) + "$$"
+	switch t := typ.(type) {
+	case *types.Slice:
+		return name + cdd.tiname(t.Elem())
+	case *types.Chan:
+		return name + cdd.tiname(t.Elem())
+	case *types.Map:
+		return name + cdd.tiname(t.Key()) + cdd.tiname(t.Elem())
+	default:
+		return name
+	}
+}
+
 func (cdd *CDD) tinfo(typ types.Type) string {
-	tname, dim := cdd.TypeStr(typ)
-	tname = escape(dimFuncPtr(tname, dim)) + "$$"
+	tname := cdd.tiname(typ)
 	if o, ok := cdd.gtc.tinfos[tname]; ok {
-		if o != nil {
-			cdd.addObject(o, true)
-		}
+		cdd.addObject(o, true)
 		return tname
 	}
 	v := types.NewVar(0, cdd.gtc.pkg, tname, typ)
-	cdd.gtc.itables[tname] = v
+	cdd.gtc.tinfos[tname] = v
 	cdd.addObject(v, true)
 	acd := cdd.gtc.newCDD(v, VarDecl, 0)
 	cdd.acds = append(cdd.acds, acd)
@@ -1071,11 +1095,13 @@ func (cdd *CDD) tinfo(typ types.Type) string {
 	w.WriteString(" = {\n")
 	acd.il++
 	acd.indent(w)
-	w.WriteString(strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
+	w.WriteString(".name = EGSTR(\"" + typ.String() + "\"),\n")
 	acd.indent(w)
-	w.WriteString("EGSTR(\"" + typ.String() + "\"),\n")
-	acd.indent(w)
-	var kind string
+	w.WriteString(".size = " + strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
+	var (
+		kind string
+		elem []string
+	)
 	switch t := typ.Underlying().(type) {
 	case *types.Basic:
 		k := t.Kind()
@@ -1095,16 +1121,51 @@ func (cdd *CDD) tinfo(typ types.Type) string {
 		kind = "Map"
 	case *types.Pointer:
 		kind = "Ptr"
+		elem = []string{acd.tinfo(t.Elem())}
 	case *types.Slice:
 		kind = "Slice"
+		elem = []string{acd.tinfo(t.Elem())}
 	case *types.Struct:
 		kind = "Struct"
+		elem = make([]string, t.NumFields())
+		for i := range elem {
+			elem[i] = acd.tinfo(t.Field(i).Type())
+		}
 	default:
 		panic(t)
 	}
-	w.WriteString(kind + "\n")
+	acd.indent(w)
+	w.WriteString(".kind = " + kind)
+	if len(elem) > 0 {
+		w.WriteString(",\n")
+		acd.indent(w)
+		w.WriteString(".elem = CSLICE(")
+		w.WriteString(strconv.Itoa(len(elem)))
+		w.WriteString(", ")
+		w.WriteString(tname)
+		w.WriteString("00)")
+	}
+	w.WriteByte('\n')
 	acd.il--
+	acd.indent(w)
 	w.WriteString("};\n")
 	acd.copyDef(w)
+	if len(elem) == 0 {
+		return tname
+	}
+	w.Reset()
+	acd.indent(w)
+	w.WriteString("const tinfo *")
+	w.WriteString(tname)
+	w.WriteString("00[] = {")
+	for i, e := range elem {
+		if i != 0 {
+			w.WriteString(", ")
+		}
+		w.WriteByte('&')
+		w.WriteString(e)
+	}
+	w.WriteString("};\n")
+	acd.Def = append(w.Bytes(), acd.Def...)
 	return tname
 }

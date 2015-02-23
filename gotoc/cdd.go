@@ -177,7 +177,7 @@ func (cdd *CDD) DetermineInline() {
 }
 
 func (cdd *CDD) addObject(o types.Object, direct bool) {
-	if o == cdd.Origin {
+	if o == cdd.Origin || o == nil {
 		return
 	}
 	if o.Pkg() == nil {

@@ -370,9 +370,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			}
 			group = (s.Value != nil || label != "")
 			if group {
-			w.WriteString("{\n")
-			cdd.il++
-		}
+				w.WriteString("{\n")
+				cdd.il++
+			}
 
 		case *types.Chan:
 			tup := types.NewTuple(
@@ -395,7 +395,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		default:
 			cdd.notImplemented(s, xt)
 		}
-		
+
 		if s.Value != nil {
 			cdd.indent(w)
 			if s.Tok == token.DEFINE {
@@ -465,7 +465,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			cdd.indent(w)
 
 			cs := stmt.(*ast.CaseClause)
-			if cs.List != nil {
+			if len(cs.List) > 0 {
 				w.WriteString("if (")
 				for i, e := range cs.List {
 					if i != 0 {
@@ -494,6 +494,92 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				cdd.indent(w)
 				w.WriteString("break;\n")
 			}
+
+			cdd.il--
+			cdd.indent(w)
+			w.WriteString("}\n")
+		}
+
+		cdd.il--
+		cdd.indent(w)
+		w.WriteString("}}\n")
+
+		if label != "" {
+			cdd.label(w, label, "_break")
+		}
+
+	case *ast.TypeSwitchStmt:
+		w.WriteString("switch(0){case 0:{\n")
+		cdd.il++
+
+		if s.Init != nil {
+			cdd.indent(w)
+			updateEnd(cdd.Stmt(w, s.Init, "", resultT, tup))
+		}
+		var (
+			x   ast.Expr
+			lhs string
+		)
+		switch a := s.Assign.(type) {
+		case *ast.ExprStmt:
+			x = a.X.(*ast.TypeAssertExpr).X
+		case *ast.AssignStmt:
+			x = a.Rhs[0].(*ast.TypeAssertExpr).X
+			lhs = cdd.ExprStr(a.Lhs[0], nil)
+		default:
+			panic(a)
+		}
+		ityp := cdd.exprType(x)
+		cdd.indent(w)
+		cdd.varDecl(w, cdd.exprType(x), false, "tag", x)
+		for _, stmt := range s.Body.List {
+			cdd.indent(w)
+			cs := stmt.(*ast.CaseClause)
+			first := ityp
+			if cs.List != nil {
+				w.WriteString("if (")
+				for i, e := range cs.List {
+					et := cdd.exprType(e)
+					if i == 0 {
+						if len(cs.List) == 1 {
+							first = et
+						}
+					} else {
+						w.WriteString(" || ")
+					}
+					w.WriteString("TINFO(tag) == &")
+					w.WriteString(cdd.tinfo(et))
+				}
+				w.WriteString(") ")
+			}
+			w.WriteString("{\n")
+			cdd.il++
+			if lhs != "" {
+				typ, dim := cdd.TypeStr(first)
+				cdd.indent(w)
+				w.WriteString(typ + " " + dimFuncPtr(lhs, dim))
+				w.WriteString(" = ")
+				if _, ok := underlying(first).(*types.Interface); ok {
+					w.WriteString("tag")
+				} else {
+					w.WriteString("IVAL(tag, " + typ + dimFuncPtr("", dim) + ")")
+				}
+				w.WriteString(";\n")
+				cdd.indent(w)
+				w.WriteString("{\n")
+				cdd.il++
+			}
+			for _, s := range cs.Body {
+				cdd.indent(w)
+				updateEnd(cdd.Stmt(w, s, "", resultT, tup))
+			}
+			if lhs != "" {
+				cdd.il--
+				cdd.indent(w)
+				w.WriteString("}\n")
+			}
+			cdd.indent(w)
+			w.WriteString("break;\n")
 
 			cdd.il--
 			cdd.indent(w)

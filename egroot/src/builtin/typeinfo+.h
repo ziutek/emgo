@@ -3,6 +3,10 @@
 
 typedef struct {
 	ithead h$;
+} interfaceE;
+
+typedef struct {
+	ithead h$;
 	string(*Error) (ival *);
 } error;
 
@@ -35,3 +39,5 @@ enum {
 	Struct,
 	UnsafePointer,
 };
+
+#define TINFO(i) (((const ithead*)(i).itab$)->Type)

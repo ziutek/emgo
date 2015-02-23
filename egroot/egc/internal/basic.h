@@ -39,7 +39,7 @@ typedef int32 rune;
 #define true (1)
 #define false (0)
 
-typedef struct{} empty;
+typedef struct{} structE;
 
 #define complex(re, im) ((re)+1.i*(im))
 #define real(c) (__real__(c))
