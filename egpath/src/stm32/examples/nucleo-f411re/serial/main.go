@@ -38,7 +38,7 @@ func init() {
 	periph.APB1ClockEnable(periph.USART2)
 	periph.APB1Reset(periph.USART2)
 
-	port, tx, rx := gpio.A, 2, 3
+	port, tx, rx := gpio.A, uint(2), uint(3)
 
 	port.SetMode(tx, gpio.Alt)
 	port.SetOutType(tx, gpio.PushPull)
@@ -62,7 +62,7 @@ func init() {
 	s.SetUnix(true)
 }
 
-func blink(c, d int) {
+func blink(c uint, d int) {
 	leds.SetBit(c)
 	if d > 0 {
 		delay.Millisec(d)
@@ -107,6 +107,31 @@ func main() {
 		}
 		s.WriteByte('\n')
 	}
+	
+	var i interface{}
+	a := 4
+	i = fmt.Int(a)
+	switch v := i.(type) {
+	case bool:
+		s.WriteString("bool")
+		if v {
+			s.WriteString(" true")
+		} else {
+			s.WriteString(" false")
+		}
+	case int:
+		s.WriteString("int")
+		fmt.Int(v).Format(s, -20)
+	case *int:
+		s.WriteString("*int")
+		fmt.Int(*v).Format(s, -20)
+	case fmt.Int:
+		s.WriteString("fmt.Int")
+		v.Format(s, -10)
+	default:
+		s.WriteString("unk")
+	}
+	s.WriteByte('\n')
 
 	s.WriteString("Echo:\n")
 	s.Flush()
