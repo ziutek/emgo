@@ -79,12 +79,6 @@ void foo$T$F$0(ival* t$);
 void foo$T$F$0(ival* t$) {
 	return foo$T$F((foo$T*)t$->ptr);
 }
-// decl
-void foo$T$F$1(ival* t$);
-// def
-void foo$T$F$1(ival* t$) {
-	return foo$T$F((foo$T*)t$);
-}
 // end
 
 // Go code:
@@ -109,11 +103,5 @@ void foo$T$F$0(ival* t$);
 // def
 void foo$T$F$0(ival* t$) {
 	return foo$T$F((foo$T*)t$->ptr);
-}
-// decl
-void foo$T$F$1(ival* t$);
-// def
-void foo$T$F$1(ival* t$) {
-	return foo$T$F((foo$T*)t$);
 }
 // end

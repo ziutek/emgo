@@ -24,7 +24,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	if r := sig.Recv(); r != nil {
 		rtyp := r.Type()
 
-		// Method for pointer to value stored in interface variable.
+		// Method for pointer receiver..
 
 		fi := types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$0", sig)
 		cddi := gtc.newCDD(fi, FuncDecl, il)
@@ -43,7 +43,8 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		w.WriteString("return " + fname + "(")
 
 		var cast string
-		if _, ok := r.Type().(*types.Pointer); ok {
+		_, ptrrecv := r.Type().(*types.Pointer)
+		if ptrrecv {
 			ts, dim := cddi.TypeStr(rtyp)
 			cast = "(" + ts + dimFuncPtr("", dim) + ")"
 		} else {
@@ -68,9 +69,9 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		cddi.Complexity = -1
 		cddi.addObject(f, true)
 
-		if cdd.gtc.siz.Sizeof(rtyp) < cdd.gtc.sizIval {
+		if !ptrrecv && cdd.gtc.siz.Sizeof(rtyp) < cdd.gtc.sizIval {
 
-			// Method for value stored in interface variable.
+			// Method for receiver passed by value.
 
 			fi = types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$1", sig)
 			cddi = gtc.newCDD(fi, FuncDecl, il)
