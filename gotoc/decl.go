@@ -300,7 +300,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 }
 
 func zeroVal(w *bytes.Buffer, typ types.Type) {
-	switch t := underlying(typ).(type) {
+	switch t := typ.Underlying().(type) {
 	case *types.Struct, *types.Array, *types.Slice, *types.Chan, *types.Interface:
 		w.WriteString("{}")
 
@@ -358,7 +358,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 		// Runtime initialisation
 		assign := false
 
-		switch t := underlying(typ).(type) {
+		switch t := typ.Underlying().(type) {
 		case *types.Slice:
 			switch vt := val.(type) {
 			case *ast.CompositeLit:

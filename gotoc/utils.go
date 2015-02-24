@@ -3,8 +3,6 @@ package gotoc
 import (
 	"io"
 	"strings"
-
-	"golang.org/x/tools/go/types"
 )
 
 func upath(path string) string {
@@ -18,13 +16,6 @@ func write(s string, ws ...io.Writer) error {
 		}
 	}
 	return nil
-}
-
-func underlying(t types.Type) types.Type {
-	if n, ok := t.(*types.Named); ok {
-		t = n.Underlying()
-	}
-	return t
 }
 
 func indent(n int, s string) string {

@@ -313,14 +313,14 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		xl := ""
 
 		array := false
-		switch t := underlying(xt).(type) {
+		switch t := xt.Underlying().(type) {
 		case *types.Array:
 			array = true
 			xl = strconv.FormatInt(t.Len(), 10)
 
 		case *types.Pointer:
 			array = true
-			xl = strconv.FormatInt(underlying(t.Elem()).(*types.Array).Len(), 10)
+			xl = strconv.FormatInt(t.Elem().Underlying().(*types.Array).Len(), 10)
 		}
 
 		if v, ok := s.Value.(*ast.Ident); ok && v.Name == "_" {
@@ -347,7 +347,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			group  bool
 		)
 
-		t := underlying(xt)
+		t := xt.Underlying()
 
 		cdd.indent(w)
 		switch ct := t.(type) {
@@ -400,7 +400,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			cdd.indent(w)
 			if s.Tok == token.DEFINE {
 				if pt, ok := t.(*types.Pointer); ok {
-					t = underlying(pt.Elem())
+					t = pt.Elem().Underlying()
 				}
 				vt := t.(interface {
 					Elem() types.Type
@@ -559,7 +559,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				cdd.indent(w)
 				w.WriteString(typ + " " + dimFuncPtr(lhs, dim))
 				w.WriteString(" = ")
-				if _, ok := underlying(first).(*types.Interface); ok {
+				if _, ok := first.Underlying().(*types.Interface); ok {
 					w.WriteString("tag")
 				} else {
 					w.WriteString("IVAL(tag, " + typ + dimFuncPtr("", dim) + ")")

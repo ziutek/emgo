@@ -174,7 +174,7 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun, recvt t
 		} else {
 			s += "."
 		}
-		f := underlying(rt).(*types.Struct).Field(id)
+		f := rt.Underlying().(*types.Struct).Field(id)
 		s += f.Name()
 		rt = f.Type()
 	}
@@ -243,7 +243,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 
 	switch name {
 	case "len":
-		switch t := underlying(cdd.exprType(args[0])).(type) {
+		switch t := cdd.exprType(args[0]).Underlying().(type) {
 		case *types.Slice, *types.Basic: // Basic == String
 			return "len", ""
 
@@ -259,7 +259,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 		}
 
 	case "cap":
-		switch t := underlying(cdd.exprType(args[0])).(type) {
+		switch t := cdd.exprType(args[0]).Underlying().(type) {
 		case *types.Slice:
 			return "cap", ""
 
@@ -271,7 +271,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 		}
 
 	case "copy":
-		switch t := underlying(cdd.exprType(args[1])).(type) {
+		switch t := cdd.exprType(args[1]).Underlying().(type) {
 		case *types.Basic: // string
 			return "STRCPY", ""
 
@@ -292,7 +292,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 		a0t := cdd.exprType(args[0])
 		args[0] = nil
 
-		switch t := underlying(a0t).(type) {
+		switch t := a0t.Underlying().(type) {
 		case *types.Slice:
 			typ, dim := cdd.TypeStr(t.Elem())
 			name := "MAKESLI"
@@ -407,9 +407,9 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 
 	default:
 		arg := e.Args[0]
-		switch typ := underlying(t).(type) {
+		switch typ := t.Underlying().(type) {
 		case *types.Slice:
-			switch underlying(cdd.exprType(arg)).(type) {
+			switch cdd.exprType(arg).Underlying().(type) {
 			case *types.Basic: // string
 				w.WriteString("BYTES(")
 				cdd.Expr(w, arg, typ)
@@ -566,7 +566,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 
 		typ := cdd.exprType(e)
 
-		switch t := underlying(typ).(type) {
+		switch t := typ.Underlying().(type) {
 		case *types.Array:
 			w.WriteByte('(')
 			dim := cdd.Type(w, typ)
@@ -597,11 +597,11 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			if nilT != nil {
 				cdd.interfaceExpr(w, el, nilT)
 			} else {
-				cdd.interfaceExpr(w, el, underlying(typ).(*types.Struct).Field(i).Type())
+				cdd.interfaceExpr(w, el, typ.Underlying().(*types.Struct).Field(i).Type())
 			}
 		}
 
-		switch underlying(typ).(type) {
+		switch typ.Underlying().(type) {
 		case *types.Array:
 			w.WriteString("}}")
 
@@ -717,7 +717,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 		sx = "(*" + sx + ")"
 	}
 
-	switch t := underlying(typ).(type) {
+	switch t := typ.Underlying().(type) {
 	case *types.Slice:
 		if e.Low == nil && e.High == nil && e.Max == nil {
 			w.WriteString(sx)
@@ -858,7 +858,7 @@ func (cdd *CDD) ExprStr(expr ast.Expr, nilT types.Type) string {
 }
 
 func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
-	switch underlying(t).(type) {
+	switch t.Underlying().(type) {
 	case *types.Slice:
 		w.WriteString("NILSLICE")
 
@@ -889,7 +889,7 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 	if typ == unil {
 		typ = rtyp
 	}
-	switch t := underlying(typ).(type) {
+	switch t := typ.Underlying().(type) {
 	case *types.Slice:
 		nilv := "nil"
 		sel := ".arr"
@@ -941,14 +941,17 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 		return
 	}
 	if _, ok := ityp.Underlying().(*types.Interface); !ok {
+		// Expr. result isn't an interface.
 		w.WriteString(es)
 		return
 	}
 	if b, ok := (etyp).(*types.Basic); ok && b.Kind() == types.UntypedNil {
+		// Expr. result is nil interface.
 		w.WriteString(es)
 		return
 	}
 	if _, eii := etyp.Underlying().(*types.Interface); eii {
+		// BUG: implict interface conversion is far more complicated.
 		w.WriteString(es)
 		return
 	} else if cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.sizIval {
