@@ -1008,7 +1008,8 @@ func (cdd *CDD) itabName(ityp, etyp types.Type) string {
 	acd.Weak = true
 	acd.addObject(obj, true)
 	w := new(bytes.Buffer)
-	w.WriteString("const " + iname + " " + itname)
+	w.WriteString("__attribute__((weak)) const\n")
+	w.WriteString(iname + " " + itname)
 	acd.copyDecl(w, ";\n")
 	w.WriteString(" = {\n")
 	acd.il++
@@ -1090,7 +1091,8 @@ func (cdd *CDD) tinfo(typ types.Type) string {
 		acd.addObject(nt.Obj(), true)
 	}
 	w := new(bytes.Buffer)
-	w.WriteString("const tinfo " + tname)
+	w.WriteString("__attribute__((weak)) const\n")
+	w.WriteString("tinfo " + tname)
 	acd.copyDecl(w, ";\n")
 	w.WriteString(" = {\n")
 	acd.il++
@@ -1155,9 +1157,8 @@ func (cdd *CDD) tinfo(typ types.Type) string {
 	}
 	w.Reset()
 	acd.indent(w)
-	w.WriteString("const tinfo *")
-	w.WriteString(tname)
-	w.WriteString("00[] = {")
+	w.WriteString("__attribute__((weak)) const\n")
+	w.WriteString("tinfo *" + tname + "00[] = {")
 	for i, e := range elem {
 		if i != 0 {
 			w.WriteString(", ")

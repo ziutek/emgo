@@ -107,26 +107,6 @@ func F(n int, a ...int) {
 }
 // C code:
 // decl
-struct $1_$int_struct;
-typedef struct $1_$int_struct $1_$int;
-// def
-#ifndef $1_$int$
-#define $1_$int$
-struct $1_$int_struct {
-	int arr[1];
-};
-#endif
-// decl
-struct $2_$int_struct;
-typedef struct $2_$int_struct $2_$int;
-// def
-#ifndef $2_$int$
-#define $2_$int$
-struct $2_$int_struct {
-	int arr[2];
-};
-#endif
-// decl
 void foo$F(int n$, slice a$);
 // def
 void foo$F(int n$, slice a$) {
@@ -139,22 +119,22 @@ void foo$F(int n$, slice a$) {
 		GO(wrap(_0), true);
 	}
 	{
-		void wrap(int _0, $1_$int _a) {
+		void wrap(int _0) {
 			goready();
-			foo$F(_0, ASLICE(1, _a));
+			foo$F(_0, CSLICE(1, _a));
 		}
 		int _0 = 20;
-		$1_$int _a = {{0}};
-		GO(wrap(_0, _a), true);
+		int _a[] = {0};
+		GO(wrap(_0), true);
 	}
 	{
-		void wrap(int _0, $2_$int _a) {
+		void wrap(int _0) {
 			goready();
-			foo$F(_0, ASLICE(2, _a));
+			foo$F(_0, CSLICE(2, _a));
 		}
 		int _0 = 30;
-		$2_$int _a = {{0, 1}};
-		GO(wrap(_0, _a), true);
+		int _a[] = {0, 1};
+		GO(wrap(_0), true);
 	}
 	{
 		void wrap(int _0, slice _1) {

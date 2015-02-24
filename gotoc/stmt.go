@@ -879,9 +879,8 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 	alen := tup.Len()
 	variadic := sig.Variadic() && !e.Ellipsis.IsValid()
 	if variadic {
-		et := tup.At(alen - 1).Type().(*types.Slice).Elem()
-		c.arr.t = types.NewArray(et, int64(len(e.Args)-alen+1))
-		c.arr.l = "_a"
+		c.arr.t = tup.At(alen - 1).Type().(*types.Slice).Elem()
+		c.arr.l = "_a[]"
 	}
 	for i, a := range e.Args {
 		if a == nil {
@@ -892,7 +891,7 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 			if c.arr.r != "" {
 				c.arr.r += ", "
 			}
-			c.arr.r += cdd.interfaceExprStr(a, c.arr.t.(*types.Array).Elem())
+			c.arr.r += cdd.interfaceExprStr(a, c.arr.t)
 			continue
 		}
 		var at types.Type
@@ -924,9 +923,8 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 				}
 			}
 		} else {
-			c.args[n].t = types.NewSlice(c.arr.t.(*types.Array).Elem())
-			c.args[n].l = "ASLICE(" + strconv.Itoa(len(e.Args)-alen+1) + ", _a)"
-			c.arr.r = "{{" + c.arr.r + "}}"
+			c.args[n].l = "CSLICE(" + strconv.Itoa(len(e.Args)-alen+1) + ", _a)"
+			c.arr.r = "{" + c.arr.r + "}"
 		}
 		n++
 	}

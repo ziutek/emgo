@@ -137,43 +137,54 @@ func Switch(i *interface{}) bool {
 }
 // C code:
 // decl
-const tinfo string$$;
+__attribute__((weak)) const
+tinfo string$$;
 // def
-const tinfo string$$ = {
+__attribute__((weak)) const
+tinfo string$$ = {
 	.name = EGSTR("string"),
 	.size = 8,
 	.kind = String
 };
 // decl
-const tinfo byte$$;
+__attribute__((weak)) const
+tinfo byte$$;
 // def
-const tinfo byte$$ = {
+__attribute__((weak)) const
+tinfo byte$$ = {
 	.name = EGSTR("byte"),
 	.size = 1,
 	.kind = Uint8
 };
 // decl
-const tinfo slice$$byte$$;
+__attribute__((weak)) const
+tinfo slice$$byte$$;
 // def
-const tinfo *slice$$byte$$00[] = {&byte$$};
-const tinfo slice$$byte$$ = {
+__attribute__((weak)) const
+tinfo *slice$$byte$$00[] = {&byte$$};
+__attribute__((weak)) const
+tinfo slice$$byte$$ = {
 	.name = EGSTR("[]byte"),
 	.size = 12,
 	.kind = Slice,
 	.elem = CSLICE(1, slice$$byte$$00)
 };
 // decl
-const tinfo bool$$;
+__attribute__((weak)) const
+tinfo bool$$;
 // def
-const tinfo bool$$ = {
+__attribute__((weak)) const
+tinfo bool$$ = {
 	.name = EGSTR("bool"),
 	.size = 1,
 	.kind = Bool
 };
 // decl
-const tinfo int$$;
+__attribute__((weak)) const
+tinfo int$$;
 // def
-const tinfo int$$ = {
+__attribute__((weak)) const
+tinfo int$$ = {
 	.name = EGSTR("int"),
 	.size = 4,
 	.kind = Int
