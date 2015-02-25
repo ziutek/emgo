@@ -37,7 +37,7 @@ type taskInfo struct {
 
 func (ti *taskInfo) init(parent int) {
 	*ti = taskInfo{parent: int16(parent), prio: 255}
-	ti.rng.Seed(uptime()+1)
+	ti.rng.Seed(uptime() + 1)
 }
 
 func (ti *taskInfo) state() taskState {
@@ -49,8 +49,8 @@ func (ti *taskInfo) setState(s taskState) {
 }
 
 type taskSched struct {
-	tasks     []taskInfo
-	curTask   int
+	tasks   []taskInfo
+	curTask int
 }
 
 var tasker taskSched
@@ -77,27 +77,36 @@ func (ts *taskSched) deliverEvent(e syscall.Event) {
 func irtExp() uint
 
 func (ts *taskSched) init() {
-	var vt []exce.Vector
-	vtlen := 1 << irtExp()
-	vtsize := vtlen * int(unsafe.Sizeof(exce.Vector{}))
+	/*
+		var vt []exce.Vector
+		vtlen := 1 << irtExp()
+		vtsize := vtlen * int(unsafe.Sizeof(exce.Vector{}))
 
-	Heap = allocTop(
-		unsafe.Pointer(&vt), Heap,
-		vtlen, unsafe.Sizeof(exce.Vector{}), unsafe.Alignof(exce.Vector{}),
-		uintptr(vtsize),
-	)
-	if Heap == nil {
-		panicMemory()
-	}
+		Heap = allocTop(
+			unsafe.Pointer(&vt), Heap,
+			vtlen, unsafe.Sizeof(exce.Vector{}), unsafe.Alignof(exce.Vector{}),
+			uintptr(vtsize),
+		)
+		if Heap == nil {
+			panicMemory()
+		}
+	*/
 
-	Heap = allocTop(
-		unsafe.Pointer(&ts.tasks), Heap,
-		MaxTasks(), unsafe.Sizeof(taskInfo{}), unsafe.Alignof(taskInfo{}),
-		unsafe.Alignof(taskInfo{}),
-	)
-	if Heap == nil {
-		panicMemory()
-	}
+	// Need to be first allocation to satisfy NVIC allignment restrictions.
+	vt := make([]exce.Vector, 1<<irtExp())
+
+	/*
+		Heap = allocTop(
+			unsafe.Pointer(&ts.tasks), Heap,
+			MaxTasks(), unsafe.Sizeof(taskInfo{}), unsafe.Alignof(taskInfo{}),
+			unsafe.Alignof(taskInfo{}),
+		)
+		if Heap == nil {
+			panicMemory()
+		}
+	*/
+
+	ts.tasks = make([]taskInfo, MaxTasks())
 
 	// Use PSP as stack pointer for thread mode. Current (zero) task has stack
 	// at top of the stacks area.

@@ -2,7 +2,7 @@ package noos
 
 import (
 	"builtin"
-	"sync"
+	"sync/atomic"
 	"unsafe"
 )
 
@@ -11,27 +11,66 @@ func alignUp(p, a uintptr) uintptr {
 	return (p + a) &^ a
 }
 
-var hm sync.Mutex
+func alignDown(p, a uintptr) uintptr {
+	return p &^ (a - 1)
+}
 
-// alloc is trivial memory allocator.
+func panicMemory() {
+	panic("out of memory")
+}
+
+var (
+	aHeapBegin = heapBegin()
+	aHeapEnd   = heapEnd()
+)
+
+func allocBottom(n int, size, align uintptr) unsafe.Pointer {
+	for {
+		hb := atomic.LoadUintptr(&aHeapBegin)
+		he := atomic.LoadUintptr(&aHeapEnd)
+		if hb < heapBegin() || he > heapEnd() || hb > he {
+			panicMemory()
+		}
+		p := alignUp(hb, align)
+		newhb := p + size
+		if atomic.CompareAndSwapUintptr(&aHeapBegin, hb, newhb) {
+			he := atomic.LoadUintptr(&aHeapEnd)
+			if newhb < heapBegin() || newhb > he {
+				panicMemory()
+			}
+			return unsafe.Pointer(p)
+		}
+	}
+}
+
+func allocTop(n int, size, align uintptr) unsafe.Pointer {
+	for {
+		hb := atomic.LoadUintptr(&aHeapBegin)
+		he := atomic.LoadUintptr(&aHeapEnd)
+		if hb < heapBegin() || he > heapEnd() || hb > he {
+			panicMemory()
+		}
+		p := alignDown(he-size, align)
+		if atomic.CompareAndSwapUintptr(&aHeapEnd, he, p) {
+			hb := atomic.LoadUintptr(&aHeapBegin)
+			if p > heapEnd() || hb > p {
+				panicMemory()
+			}
+			return unsafe.Pointer(p)
+		}
+	}
+}
+
+// alloc is trivial, non-blocking memory allocator.
 // For now there is no way to deallocate memory allocated by alloc.
 func alloc(n int, size, align uintptr) unsafe.Pointer {
 	size = alignUp(size, align) * uintptr(n)
-
-	hm.Lock()
-	h := uintptr(unsafe.Pointer(&Heap[0]))
-	p := alignUp(h, align)
-	m := size + (p - h)
-	if m > uintptr(len(Heap)) {
-		panic("out of memory")
+	var p unsafe.Pointer
+	if unpriv() {
+		p = allocBottom(n, size, align)
+	} else {
+		p = allocTop(n, size, align)
 	}
-	Heap = Heap[m:]
-	hm.Unlock()
-
-	builtin.Memset(unsafe.Pointer(p), 0, size)
-	return unsafe.Pointer(p)
-}
-
-func init() {
-	builtin.Alloc = alloc
+	builtin.Memset(p, 0, size)
+	return p
 }

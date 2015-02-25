@@ -106,8 +106,3 @@ func selectComm(comms []*builtin.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Point
 	}
 	return
 }
-
-func init() {
-	builtin.MakeChan = makeChan
-	builtin.Select = selectComm
-}
