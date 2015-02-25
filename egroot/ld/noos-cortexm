@@ -41,6 +41,6 @@ SECTIONS {
 }
 
 HeapBegin = BSSRAM + BSSSize;
-HeapSize = ORIGIN(RAM) + LENGTH(RAM) - HeapBegin;
+HeapEnd = ORIGIN(RAM) + LENGTH(RAM);
 
 ENTRY(runtime$noos$Start)
