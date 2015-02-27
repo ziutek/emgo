@@ -954,15 +954,27 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 		// BUG: implict interface conversion is far more complicated.
 		w.WriteString(es)
 		return
-	} else if cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.sizIval {
+	}
+	if cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.sizIval {
 		cdd.exit(
 			epos,
 			"value of type %v is too large to assign to interface variable",
 			etyp,
 		)
 	}
-	itname := cdd.itabName(ityp, etyp)
-	w.WriteString("INTERFACE(" + es + ", &" + itname + ")")
+	w.WriteString("INTERFACE(" + es + ", ")
+	switch it := ityp.(type) {
+	case *types.Named:
+		w.WriteString("ITABLE(&" + cdd.tinfo(it) + ", &" + cdd.tinfo(etyp) + ")")
+	case *types.Interface:
+		if it.NumMethods() != 0 {
+			cdd.exit(epos, "not supported assignment to an unnamed interface")
+		}
+		w.WriteString("&" + cdd.tinfo(etyp))
+	default:
+		panic(it)
+	}
+	w.WriteByte(')')
 }
 
 func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
@@ -976,68 +988,6 @@ func (cdd *CDD) interfaceExprStr(expr ast.Expr, ityp types.Type) string {
 	buf := new(bytes.Buffer)
 	cdd.interfaceExpr(buf, expr, ityp)
 	return buf.String()
-}
-
-func (cdd *CDD) itabName(ityp, etyp types.Type) string {
-	var (
-		obj   types.Object
-		iname string
-	)
-	switch it := ityp.(type) {
-	case *types.Named:
-		obj = it.Obj()
-		iname = cdd.NameStr(obj, false)
-	case *types.Interface:
-		if it.NumMethods() != 0 {
-			panic("unimplemented: assignment to an unnamed interface")
-		}
-		iname = "interfaceE"
-	default:
-		panic(it)
-	}
-
-	ename, dim := cdd.TypeStr(etyp)
-	itname := iname + "$$" + escape(dimFuncPtr(ename, dim)) + "$$"
-	if o, ok := cdd.gtc.itables[itname]; ok {
-		cdd.addObject(o, true)
-		return itname
-	}
-	v := types.NewVar(0, cdd.gtc.pkg, itname, ityp)
-	cdd.gtc.itables[itname] = v
-	cdd.addObject(v, true)
-	acd := cdd.gtc.newCDD(v, VarDecl, 0)
-	cdd.acds = append(cdd.acds, acd)
-	cdd = nil
-	acd.Weak = true
-	acd.addObject(obj, true)
-	w := new(bytes.Buffer)
-	w.WriteString("__attribute__((weak)) const\n")
-	w.WriteString(iname + " " + itname)
-	acd.copyDecl(w, ";\n")
-	w.WriteString(" = {\n")
-	acd.il++
-	acd.indent(w)
-	w.WriteString("{&" + acd.tinfo(etyp) + "}")
-	suff := "$1"
-	if pt, ok := etyp.(*types.Pointer); ok {
-		suff = "$0"
-		etyp = pt.Elem()
-	}
-	it := ityp.Underlying().(*types.Interface)
-	for i := 0; i < it.NumMethods(); i++ {
-		f := it.Method(i)
-		w.WriteString(",\n")
-		acd.indent(w)
-		fname := f.Name()
-		m := findMethod(etyp.(*types.Named), fname)
-		acd.Name(w, m, true)
-		w.WriteString(suff)
-	}
-	w.WriteByte('\n')
-	acd.il--
-	w.WriteString("};\n")
-	acd.copyDef(w)
-	return itname
 }
 
 var basicKinds = []string{
@@ -1063,6 +1013,10 @@ var basicKinds = []string{
 }
 
 func (cdd *CDD) tiname(typ types.Type) string {
+	if _, ok := typ.Underlying().(*types.Interface); ok {
+		obj := typ.(*types.Named).Obj()
+		return cdd.NameStr(obj, false) + "$$"
+	}
 	name, dim := cdd.TypeStr(typ)
 	name = escape(dimFuncPtr(name, dim)) + "$$"
 	switch t := typ.(type) {
@@ -1173,3 +1127,67 @@ func (cdd *CDD) tinfo(typ types.Type) string {
 	acd.Def = append(w.Bytes(), acd.Def...)
 	return tname
 }
+
+/*
+func (cdd *CDD) itabName(ityp, etyp types.Type) string {
+	var (
+		obj   types.Object
+		iname string
+	)
+	switch it := ityp.(type) {
+	case *types.Named:
+		obj = it.Obj()
+		iname = cdd.NameStr(obj, false)
+	case *types.Interface:
+		if it.NumMethods() != 0 {
+			panic("unimplemented: assignment to an unnamed interface")
+		}
+		iname = "interfaceE"
+	default:
+		panic(it)
+	}
+
+	ename, dim := cdd.TypeStr(etyp)
+	itname := iname + "$$" + escape(dimFuncPtr(ename, dim)) + "$$"
+	if o, ok := cdd.gtc.itables[itname]; ok {
+		cdd.addObject(o, true)
+		return itname
+	}
+	v := types.NewVar(0, cdd.gtc.pkg, itname, ityp)
+	cdd.gtc.itables[itname] = v
+	cdd.addObject(v, true)
+	acd := cdd.gtc.newCDD(v, VarDecl, 0)
+	cdd.acds = append(cdd.acds, acd)
+	cdd = nil
+	acd.Weak = true
+	acd.addObject(obj, true)
+	w := new(bytes.Buffer)
+	w.WriteString("__attribute__((weak)) const\n")
+	w.WriteString(iname + " " + itname)
+	acd.copyDecl(w, ";\n")
+	w.WriteString(" = {\n")
+	acd.il++
+	acd.indent(w)
+	w.WriteString("{&" + acd.tinfo(etyp) + "}")
+	suff := "$1"
+	if pt, ok := etyp.(*types.Pointer); ok {
+		suff = "$0"
+		etyp = pt.Elem()
+	}
+	it := ityp.Underlying().(*types.Interface)
+	for i := 0; i < it.NumMethods(); i++ {
+		f := it.Method(i)
+		w.WriteString(",\n")
+		acd.indent(w)
+		fname := f.Name()
+		m := findMethod(etyp.(*types.Named), fname)
+		acd.Name(w, m, true)
+		w.WriteString(suff)
+	}
+	w.WriteByte('\n')
+	acd.il--
+	w.WriteString("};\n")
+	acd.copyDef(w)
+	return itname
+}
+*/

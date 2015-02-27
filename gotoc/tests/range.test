@@ -189,9 +189,9 @@ byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
-			slice x = ASLICEL(4, a$, 1);
+			slice _x = ASLICEL(4, a$, 1);
 			int k$ = 0;
-			for (;k$ < len(x); ++k$) {
+			for (;k$ < len(_x); ++k$) {
 				r$ += ((byte)(k$));
 			}
 		}
@@ -227,9 +227,9 @@ byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
-			slice x = ASLICEL(4, a$, 1);
+			slice _x = ASLICEL(4, a$, 1);
 			int k$ = 0;
-			for (;k$ < len(x); ++k$) {
+			for (;k$ < len(_x); ++k$) {
 				r$ += ((byte)(k$));
 			}
 		}
@@ -270,10 +270,10 @@ byte foo$F($4_$byte a$) {
 	{
 	loop$:;
 		{
-			slice x = ASLICEL(4, a$, 1);
+			slice _x = ASLICEL(4, a$, 1);
 			int k$ = 0;
-			for (;k$ < len(x); ++k$) {
-				byte v$ = ((byte*)x.arr)[k$];
+			for (;k$ < len(_x); ++k$) {
+				byte v$ = ((byte*)_x.arr)[k$];
 				{
 					if ((r$>4)) {
 						goto loop$_continue;
@@ -321,10 +321,10 @@ byte foo$F($4_$byte a$) {
 	{
 	loop$:;
 		{
-			slice x = ASLICEL(4, a$, 1);
+			slice _x = ASLICEL(4, a$, 1);
 			int _$ = 0;
-			for (;_$ < len(x); ++_$) {
-				byte v$ = ((byte*)x.arr)[_$];
+			for (;_$ < len(_x); ++_$) {
+				byte v$ = ((byte*)_x.arr)[_$];
 				{
 					if ((r$>4)) {
 						goto loop$_break;
@@ -360,9 +360,9 @@ byte foo$F(slice a$) {
 	{
 	loop$:;
 		{
-			slice x = SLICEL(a$, byte*, 1);
+			slice _x = SLICEL(a$, byte*, 1);
 			_$ = 0;
-			for (;_$ < len(x); ++_$) {
+			for (;_$ < len(_x); ++_$) {
 				{
 					++(r$);
 					goto loop$_continue;
@@ -406,9 +406,9 @@ byte foo$F(chan c$) {
 	{
 		{
 			for (;;) {
-				byte$$bool vok = RECVOK(byte$$bool, c$);
-				if (!vok._1) break;
-				byte v$ = vok._0;
+				byte$$bool _vok = RECVOK(byte$$bool, c$);
+				if (!_vok._1) break;
+				byte v$ = _vok._0;
 				{
 					r$ += v$;
 					continue;
@@ -451,11 +451,11 @@ byte foo$F(chan *c$) {
 	{
 	loop$:;
 		{
-			chan x = *c$;
+			chan _x = *c$;
 			for (;;) {
-				byte$$bool vok = RECVOK(byte$$bool, x);
-				if (!vok._1) break;
-				byte v$ = vok._0;
+				byte$$bool _vok = RECVOK(byte$$bool, _x);
+				if (!_vok._1) break;
+				byte v$ = _vok._0;
 				{
 					r$ += v$;
 					goto loop$_continue;

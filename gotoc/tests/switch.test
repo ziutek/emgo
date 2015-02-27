@@ -14,8 +14,8 @@ int foo$Switch(int i$);
 // def
 int foo$Switch(int i$) {
 	switch(0){case 0:{
-		bool tag = true;
-		if ((tag == ((i$+1)<2))) {
+		bool _tag = true;
+		if ((_tag == ((i$+1)<2))) {
 			++(i$);
 			break;
 		}
@@ -46,12 +46,12 @@ int foo$Switch(int i$);
 // def
 int foo$Switch(int i$) {
 	switch(0){case 0:{
-		int tag = i$;
-		if ((tag == 1)) {
+		int _tag = i$;
+		if ((_tag == 1)) {
 			return 10;
 			break;
 		}
-		if ((tag == 2)) {
+		if ((_tag == 2)) {
 			return 20;
 			break;
 		}
@@ -92,16 +92,16 @@ int foo$Switch(int i$);
 int foo$Switch(int i$) {
 	for (;(i$<10);) {
 		switch(0){case 0:{
-			int tag = i$;
-			if ((tag == 1)) {
+			int _tag = i$;
+			if ((_tag == 1)) {
 				i$ += 1;
 			}
-			if ((tag == 2)) {
+			if ((_tag == 2)) {
 				i$ += 2;
 				continue;
 				break;
 			}
-			if ((tag == 3)) {
+			if ((_tag == 3)) {
 				return i$;
 				break;
 			}
@@ -194,12 +194,12 @@ bool foo$Switch(interface *i$);
 // def
 bool foo$Switch(interface *i$) {
 	switch(0){case 0:{
-		interface tag = (*i$);
-		if (TINFO(tag) == &string$$) {
+		interface _tag = (*i$);
+		if (_tag.itab == &string$$) {
 			return false;
 			break;
 		}
-		if (TINFO(tag) == &slice$$byte$$) {
+		if (_tag.itab == &slice$$byte$$) {
 			return true;
 			break;
 		}
@@ -209,23 +209,23 @@ bool foo$Switch(interface *i$) {
 		}
 	}}
 	switch(0){case 0:{
-		interface tag = (*i$);
-		if (TINFO(tag) == &bool$$) {
-			bool v$ = IVAL(tag, bool);
+		interface _tag = (*i$);
+		if (_tag.itab == &bool$$) {
+			bool v$ = IVAL(_tag, bool);
 			{
 				return v$;
 			}
 			break;
 		}
-		if (TINFO(tag) == &int$$) {
-			int v$ = IVAL(tag, int);
+		if (_tag.itab == &int$$) {
+			int v$ = IVAL(_tag, int);
 			{
 				return (v$ == 1);
 			}
 			break;
 		}
 		{
-			interface v$ = tag;
+			interface v$ = _tag;
 			{
 				return false;
 			}

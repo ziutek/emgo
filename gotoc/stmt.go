@@ -309,7 +309,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteString("{\n")
 		cdd.il++
 		xt := cdd.exprType(s.X)
-		xs := "x"
+		xs := "_x"
 		xl := ""
 
 		array := false
@@ -383,12 +383,12 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			w.WriteString("for (;;) {\n")
 			cdd.il++
 			cdd.indent(w)
-			w.WriteString(tn + " vok = RECVOK(" + tn + ", " + xs + ");\n")
+			w.WriteString(tn + " _vok = RECVOK(" + tn + ", " + xs + ");\n")
 			cdd.indent(w)
-			w.WriteString("if (!vok._1) break;\n")
+			w.WriteString("if (!_vok._1) break;\n")
 			s.Value = s.Key
 			if s.Value != nil {
-				vs = "vok._0"
+				vs = "_vok._0"
 			}
 			group = true
 
@@ -455,10 +455,10 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		var typ types.Type
 		if s.Tag != nil {
 			typ = cdd.exprType(s.Tag)
-			cdd.varDecl(w, typ, false, "tag", s.Tag)
+			cdd.varDecl(w, typ, false, "_tag", s.Tag)
 		} else {
 			typ = types.Typ[types.Bool]
-			w.WriteString("bool tag = true;\n")
+			w.WriteString("bool _tag = true;\n")
 		}
 
 		for _, stmt := range s.Body.List {
@@ -471,7 +471,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					if i != 0 {
 						w.WriteString(" || ")
 					}
-					eq(w, "tag", "==", cdd.ExprStr(e, typ), typ, typ)
+					eq(w, "_tag", "==", cdd.ExprStr(e, typ), typ, typ)
 				}
 				w.WriteString(") ")
 			}
@@ -531,7 +531,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 		ityp := cdd.exprType(x)
 		cdd.indent(w)
-		cdd.varDecl(w, cdd.exprType(x), false, "tag", x)
+		cdd.varDecl(w, cdd.exprType(x), false, "_tag", x)
 		for _, stmt := range s.Body.List {
 			cdd.indent(w)
 			cs := stmt.(*ast.CaseClause)
@@ -547,7 +547,11 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					} else {
 						w.WriteString(" || ")
 					}
-					w.WriteString("TINFO(tag) == &")
+					if it, ok := ityp.(*types.Interface); ok && it.NumMethods() == 0 {
+						w.WriteString("_tag.itab == &")
+					} else {
+						w.WriteString("TINFO(_tag) == &")
+					}
 					w.WriteString(cdd.tinfo(et))
 				}
 				w.WriteString(") ")
@@ -560,9 +564,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				w.WriteString(typ + " " + dimFuncPtr(lhs, dim))
 				w.WriteString(" = ")
 				if _, ok := first.Underlying().(*types.Interface); ok {
-					w.WriteString("tag")
+					w.WriteString("_tag")
 				} else {
-					w.WriteString("IVAL(tag, " + typ + dimFuncPtr("", dim) + ")")
+					w.WriteString("IVAL(_tag, " + typ + dimFuncPtr("", dim) + ")")
 				}
 				w.WriteString(";\n")
 				cdd.indent(w)
