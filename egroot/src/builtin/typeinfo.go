@@ -5,7 +5,6 @@ import "unsafe"
 type Method struct {
 	name  string
 	param []*Type `C:"const"`
-	fptr  unsafe.Pointer
 }
 
 type Type struct {
@@ -13,7 +12,8 @@ type Type struct {
 	size uintptr
 	kind byte
 	elem []*Type `C:"const"`
-	mset []Method
+	mset []*Method
+	fptr [1 << 28]unsafe.Pointer
 }
 
 func (t *Type) Kind() byte {
@@ -28,7 +28,19 @@ func (t *Type) Name() string {
 	return t.name
 }
 
+func (t *Type) Methods() []Method {
+	return t.mset
+}
+
 type ItHead struct {
 	*Type `C:"const"`
-	// ItHead size must be n * sizeof(uintptr)
 }
+
+type Itable struct {
+	Head ItHead
+	Func [1 << 28]unsafe.Pointer
+}
+
+// GetItable should return itable for given interface and non-interface type
+// pair. It is always called with etyp assignable to ityp.
+var GetItable func(ityp, etyp *Type) *Itable
