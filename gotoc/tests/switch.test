@@ -195,11 +195,11 @@ bool foo$Switch(interface *i$);
 bool foo$Switch(interface *i$) {
 	switch(0){case 0:{
 		interface _tag = (*i$);
-		if (_tag.itab == &string$$) {
+		if (_tag.itab$ == &string$$) {
 			return false;
 			break;
 		}
-		if (_tag.itab == &slice$$byte$$) {
+		if (_tag.itab$ == &slice$$byte$$) {
 			return true;
 			break;
 		}
@@ -210,14 +210,14 @@ bool foo$Switch(interface *i$) {
 	}}
 	switch(0){case 0:{
 		interface _tag = (*i$);
-		if (_tag.itab == &bool$$) {
+		if (_tag.itab$ == &bool$$) {
 			bool v$ = IVAL(_tag, bool);
 			{
 				return v$;
 			}
 			break;
 		}
-		if (_tag.itab == &int$$) {
+		if (_tag.itab$ == &int$$) {
 			int v$ = IVAL(_tag, int);
 			{
 				return (v$ == 1);

@@ -548,7 +548,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 						w.WriteString(" || ")
 					}
 					if it, ok := ityp.(*types.Interface); ok && it.NumMethods() == 0 {
-						w.WriteString("_tag.itab == &")
+						w.WriteString("_tag.itab$ == &")
 					} else {
 						w.WriteString("TINFO(_tag) == &")
 					}

@@ -1,9 +1,5 @@
-#define ithead builtin$ITHead
+#define ithead builtin$ItHead
 #define tinfo  builtin$Type
-
-typedef struct {
-	ithead h$;
-} interfaceE;
 
 typedef struct {
 	ithead h$;
@@ -41,3 +37,21 @@ enum {
 };
 
 #define TINFO(i) (((const ithead*)(i).itab$)->Type)
+
+#define IASSIGN(expr, etyp, ityp) INTERFACE(          \
+	expr,                                             \
+	builtin$GetItable((void*)&ityp, (void*)&etyp).arr \
+)
+
+#define ICONVERTI(iexpr, ityp) ({                            \
+	interface e = iexpr;                                     \
+	(interface){                                             \
+		e.val$,                                              \
+		builtin$GetItable((void*)&ityp, (void*)TINFO(e)).arr \
+	);                                                       \
+})
+
+#define ICONVERTE(iexpr) ({        \
+	interface e = iexpr;           \
+	(interface){e.val$, TINFO(e)}; \
+})

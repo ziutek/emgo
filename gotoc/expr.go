@@ -941,7 +941,7 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 		return
 	}
 	if _, ok := ityp.Underlying().(*types.Interface); !ok {
-		// Expr. result isn't an interface.
+		// Result isn't an interface.
 		w.WriteString(es)
 		return
 	}
@@ -950,9 +950,22 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 		w.WriteString(es)
 		return
 	}
-	if _, eii := etyp.Underlying().(*types.Interface); eii {
-		// BUG: implict interface conversion is far more complicated.
-		w.WriteString(es)
+	if it, ok := ityp.(*types.Interface); ok && it.NumMethods() != 0 {
+		cdd.exit(epos, "not supported assignment to non-empty unnamed interface")
+	}
+	if et, eii := etyp.Underlying().(*types.Interface); eii {
+		if types.Identical(ityp.Underlying(), et) {
+			w.WriteString(es)
+			return
+		}
+		switch it := ityp.(type) {
+		case *types.Named:
+			w.WriteString("ICONVERTI(" + es + ",  " + cdd.tinfo(it) + ")")
+		case *types.Interface:
+			w.WriteString("ICONVERTE(" + es + ")")
+		default:
+			panic(it)
+		}
 		return
 	}
 	if cdd.gtc.siz.Sizeof(etyp) > cdd.gtc.sizIval {
@@ -962,19 +975,15 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 			etyp,
 		)
 	}
-	w.WriteString("INTERFACE(" + es + ", ")
 	switch it := ityp.(type) {
 	case *types.Named:
-		w.WriteString("ITABLE(&" + cdd.tinfo(it) + ", &" + cdd.tinfo(etyp) + ")")
+		ets, its := cdd.tinfo(etyp), cdd.tinfo(it)
+		w.WriteString("IASSIGN(" + es + ", " + ets + ", " + its + ")")
 	case *types.Interface:
-		if it.NumMethods() != 0 {
-			cdd.exit(epos, "not supported assignment to an unnamed interface")
-		}
-		w.WriteString("&" + cdd.tinfo(etyp))
+		w.WriteString("INTERFACE(" + es + ", &" + cdd.tinfo(etyp) + ")")
 	default:
 		panic(it)
 	}
-	w.WriteByte(')')
 }
 
 func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {

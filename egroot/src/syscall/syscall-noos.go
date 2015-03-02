@@ -25,7 +25,7 @@ const (
 // scheduling current task and waits until new task will call TaskUnlock. When
 // success it returns TID of new task.
 func NewTask(f func(), lock bool) (int, Errno) {
-	tid, err := builtin.Syscall2(NEWTASK, f2p(f), b2p(lock))
+	tid, err := builtin.Syscall2(NEWTASK, f2u(f), b2u(lock))
 	return int(tid), Errno(err)
 }
 
@@ -56,7 +56,7 @@ func Uptime() uint64 {
 
 // SetIRQEna enables or disables irq.
 func SetIRQEna(irq int, ena bool) Errno {
-	_, err := builtin.Syscall2(SETIRQENA, uintptr(irq), b2p(ena))
+	_, err := builtin.Syscall2(SETIRQENA, uintptr(irq), b2u(ena))
 	return Errno(err)
 }
 
@@ -68,7 +68,7 @@ func SetIRQPrio(irq, prio int) Errno {
 
 // SetIRQHandler sets f as handler function for irq.
 func SetIRQHandler(irq int, f func()) Errno {
-	_, err := builtin.Syscall2(SETIRQHANDLER, uintptr(irq), f2p(f))
+	_, err := builtin.Syscall2(SETIRQHANDLER, uintptr(irq), f2u(f))
 	return Errno(err)
 }
 

@@ -14,7 +14,6 @@ typedef struct {
 	a.itab$ == b.itab$ && a.val$.c128 == b.val$.c128; \
 })
 
-
 #define INTERFACE(e, itab) ({                  \
 	union {typeof(e) in; ival out;} cast = {}; \
 	cast.in = (e);                             \
