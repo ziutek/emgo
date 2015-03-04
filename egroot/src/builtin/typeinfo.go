@@ -3,17 +3,16 @@ package builtin
 import "unsafe"
 
 type Method struct {
-	name  string
-	param []*Type `C:"const"`
+	_ byte
 }
 
 type Type struct {
-	name string
-	size uintptr
-	kind byte
-	elem []*Type `C:"const"`
-	mset []*Method
-	fptr [1 << 28]unsafe.Pointer
+	name    string
+	size    uintptr
+	kind    byte
+	elems   []*Type `C:"const"`
+	methods []*Method
+	fns     [0]unsafe.Pointer
 }
 
 func (t *Type) Kind() byte {
@@ -28,19 +27,62 @@ func (t *Type) Name() string {
 	return t.name
 }
 
-func (t *Type) Methods() []Method {
-	return t.mset
+func (t *Type) Elems() []*Type {
+	return t.elems
+}
+
+func (t *Type) Methods() []*Method {
+	return t.methods
+}
+
+func (t *Type) Fns() []unsafe.Pointer {
+	return t.fns[:len(t.methods)]
 }
 
 type ItHead struct {
-	*Type `C:"const"`
+	typ *Type `C:"const"`
+}
+
+func (ith *ItHead) Type() *Type {
+	// ith.typ is read-only (can be in ROM).
+	return (*Type)(unsafe.Pointer(ith.typ))
 }
 
 type Itable struct {
-	Head ItHead
-	Func [1 << 28]unsafe.Pointer
+	head ItHead
+	fns  [0]unsafe.Pointer
 }
 
-// GetItable should return itable for given interface and non-interface type
+func (it *Itable) Head() *ItHead {
+	return &it.head
+}
+
+func (it *Itable) Fns() []unsafe.Pointer {
+	return it.fns[:len(it.head.typ.methods)]
+}
+
+// NewItable allocates and initializes new itable.
+// etyp must be assignable to ityp.
+func NewItable(ityp, etyp *Type) *Itable {
+	const hlen = int((unsafe.Sizeof(ItHead{}) + unsafe.Sizeof(uintptr(0)) - 1) / unsafe.Sizeof(uintptr(0)))
+	sli := make([]uintptr, hlen+len(ityp.methods))
+	itab := (*Itable)(unsafe.Pointer(&sli[0]))
+	itab.head.typ = etyp
+	e := 0
+	itabFns := itab.Fns()
+	etypFns := etyp.Fns()
+	for i, m := range ityp.methods {
+		for etyp.methods[e] != m {
+			e++
+		}
+		itabFns[i] = etypFns[e]
+		e++
+	}
+	return itab
+}
+
+// ItableFor should return itable for given interface and non-interface type
 // pair. It is always called with etyp assignable to ityp.
-var GetItable func(ityp, etyp *Type) *Itable
+// To allow assign/assert to interfaces in interrupt handlers ItableFor must
+// be implemented in nonblocking way.
+var ItableFor func(ityp, etyp *Type) *Itable

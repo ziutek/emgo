@@ -29,6 +29,7 @@ type GTC struct {
 	arrays  map[string]types.Object
 	itables map[string]types.Object
 	tinfos  map[string]types.Object
+	minfos  map[string]types.Object
 }
 
 func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.Sizes) *GTC {

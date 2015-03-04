@@ -1068,7 +1068,7 @@ func (cdd *CDD) tinfo(typ types.Type) string {
 	w.WriteString(".size = " + strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
 	var (
 		kind string
-		elem []string
+		elems []string
 	)
 	switch t := typ.Underlying().(type) {
 	case *types.Basic:
@@ -1089,114 +1089,66 @@ func (cdd *CDD) tinfo(typ types.Type) string {
 		kind = "Map"
 	case *types.Pointer:
 		kind = "Ptr"
-		elem = []string{acd.tinfo(t.Elem())}
+		elems = []string{acd.tinfo(t.Elem())}
 	case *types.Slice:
 		kind = "Slice"
-		elem = []string{acd.tinfo(t.Elem())}
+		elems = []string{acd.tinfo(t.Elem())}
 	case *types.Struct:
 		kind = "Struct"
-		elem = make([]string, t.NumFields())
-		for i := range elem {
-			elem[i] = acd.tinfo(t.Field(i).Type())
+		elems = make([]string, t.NumFields())
+		for i := range elems {
+			elems[i] = acd.tinfo(t.Field(i).Type())
 		}
 	default:
 		panic(t)
 	}
 	acd.indent(w)
 	w.WriteString(".kind = " + kind)
-	if len(elem) > 0 {
+	if len(elems) > 0 {
 		w.WriteString(",\n")
 		acd.indent(w)
-		w.WriteString(".elem = CSLICE(")
-		w.WriteString(strconv.Itoa(len(elem)))
+		w.WriteString(".elems = CSLICE(")
+		w.WriteString(strconv.Itoa(len(elems)))
 		w.WriteString(", ")
 		w.WriteString(tname)
-		w.WriteString("00)")
+		w.WriteString("0)")
 	}
 	w.WriteByte('\n')
+	
+	
 	acd.il--
 	acd.indent(w)
 	w.WriteString("};\n")
 	acd.copyDef(w)
-	if len(elem) == 0 {
+	if len(elems) > 0 {
+		w.Reset()
+		acd.indent(w)
+		w.WriteString("__attribute__((weak)) const\n")
+		w.WriteString("tinfo *" + tname + "0[] = {")
+		for i, e := range elems {
+			if i != 0 {
+				w.WriteString(", ")
+			}
+			w.WriteByte('&')
+			w.WriteString(e)
+		}
+		w.WriteString("};\n")
+		acd.Def = append(w.Bytes(), acd.Def...)
+	}
+	nt, ok := typ.(*types.Named)
+	if !ok || nt.NumMethods() == 0 {
+		return tname
+	}
+	if _, ok = nt.Underlying().(*types.Interface); ok {
 		return tname
 	}
 	w.Reset()
-	acd.indent(w)
 	w.WriteString("__attribute__((weak)) const\n")
-	w.WriteString("tinfo *" + tname + "00[] = {")
-	for i, e := range elem {
-		if i != 0 {
-			w.WriteString(", ")
-		}
-		w.WriteByte('&')
-		w.WriteString(e)
+	w.WriteString("minfo *" + tname + "1[] = {")
+	for i := 0; i < nt.NumMethods(); i++ {
+
 	}
 	w.WriteString("};\n")
 	acd.Def = append(w.Bytes(), acd.Def...)
 	return tname
 }
-
-/*
-func (cdd *CDD) itabName(ityp, etyp types.Type) string {
-	var (
-		obj   types.Object
-		iname string
-	)
-	switch it := ityp.(type) {
-	case *types.Named:
-		obj = it.Obj()
-		iname = cdd.NameStr(obj, false)
-	case *types.Interface:
-		if it.NumMethods() != 0 {
-			panic("unimplemented: assignment to an unnamed interface")
-		}
-		iname = "interfaceE"
-	default:
-		panic(it)
-	}
-
-	ename, dim := cdd.TypeStr(etyp)
-	itname := iname + "$$" + escape(dimFuncPtr(ename, dim)) + "$$"
-	if o, ok := cdd.gtc.itables[itname]; ok {
-		cdd.addObject(o, true)
-		return itname
-	}
-	v := types.NewVar(0, cdd.gtc.pkg, itname, ityp)
-	cdd.gtc.itables[itname] = v
-	cdd.addObject(v, true)
-	acd := cdd.gtc.newCDD(v, VarDecl, 0)
-	cdd.acds = append(cdd.acds, acd)
-	cdd = nil
-	acd.Weak = true
-	acd.addObject(obj, true)
-	w := new(bytes.Buffer)
-	w.WriteString("__attribute__((weak)) const\n")
-	w.WriteString(iname + " " + itname)
-	acd.copyDecl(w, ";\n")
-	w.WriteString(" = {\n")
-	acd.il++
-	acd.indent(w)
-	w.WriteString("{&" + acd.tinfo(etyp) + "}")
-	suff := "$1"
-	if pt, ok := etyp.(*types.Pointer); ok {
-		suff = "$0"
-		etyp = pt.Elem()
-	}
-	it := ityp.Underlying().(*types.Interface)
-	for i := 0; i < it.NumMethods(); i++ {
-		f := it.Method(i)
-		w.WriteString(",\n")
-		acd.indent(w)
-		fname := f.Name()
-		m := findMethod(etyp.(*types.Named), fname)
-		acd.Name(w, m, true)
-		w.WriteString(suff)
-	}
-	w.WriteByte('\n')
-	acd.il--
-	w.WriteString("};\n")
-	acd.copyDef(w)
-	return itname
-}
-*/
