@@ -76,6 +76,13 @@ func (cdd *CDD) copyDef(b *bytes.Buffer) {
 	cdd.Def = append([]byte(nil), b.Bytes()...)
 }
 
+func (cdd *CDD) prependDef(b *bytes.Buffer) {
+	newDef := make([]byte, b.Len()+len(cdd.Def))
+	copy(newDef, b.Bytes())
+	copy(newDef[b.Len():], cdd.Def)
+	cdd.Def = newDef
+}
+
 func (cdd *CDD) copyInit(b *bytes.Buffer) {
 	cdd.Init = append([]byte(nil), b.Bytes()...)
 }

@@ -38,6 +38,12 @@ SECTIONS {
 	
 	BSSRAM = ADDR(.bss);
 	BSSSize = SIZEOF(.bss);
+	
+	.unused : {
+		. = ALIGN(4);
+		*(.unused .unused.*)
+		. = ALIGN(4);
+	} >RAM
 }
 
 HeapBegin = BSSRAM + BSSSize;

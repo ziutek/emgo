@@ -44,6 +44,7 @@ func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.S
 		arrays:  make(map[string]types.Object),
 		itables: make(map[string]types.Object),
 		tinfos:  make(map[string]types.Object),
+		minfos:  make(map[string]types.Object),
 		siz:     siz,
 		sizPtr:  siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
 		sizIval: siz.Sizeof(types.Typ[types.Complex128]),

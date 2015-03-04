@@ -1,10 +1,12 @@
-static inline
-uintptr syscall$b2p(bool b) {
+__attribute__ ((always_inline))
+extern inline
+uintptr syscall$b2u(bool b) {
 	return (uintptr)(b);
 }
 
-static inline
-uintptr syscall$f2p(void (*f)()) {
+__attribute__ ((always_inline))
+extern inline
+uintptr syscall$f2u(void (*f)()) {
 	union {void (*in)(); uintptr out;} cast;
 	cast.in = f;
 	return cast.out;

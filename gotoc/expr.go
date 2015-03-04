@@ -1067,8 +1067,9 @@ func (cdd *CDD) tinfo(typ types.Type) string {
 	acd.indent(w)
 	w.WriteString(".size = " + strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
 	var (
-		kind string
-		elems []string
+		kind    string
+		elems   []string
+		methods []string
 	)
 	switch t := typ.Underlying().(type) {
 	case *types.Basic:
@@ -1113,13 +1114,54 @@ func (cdd *CDD) tinfo(typ types.Type) string {
 		w.WriteString(tname)
 		w.WriteString("0)")
 	}
+
+	nt, mok := typ.(*types.Named)
+	if mok {
+		mok = (nt.NumMethods() > 0)
+	}
+	if mok {
+		if _, ok := nt.Underlying().(*types.Interface); ok {
+			mok = false
+		}
+	}
+	if mok {
+		methods = make([]string, nt.NumMethods())
+		for i := range methods {
+			methods[i] = acd.miname(nt.Method(i))
+		}
+		w.WriteString(",\n")
+		acd.indent(w)
+		w.WriteString(".methods = CSLICE(")
+		w.WriteString(strconv.Itoa(len(methods)))
+		w.WriteString(", ")
+		w.WriteString(tname)
+		w.WriteString("1)")
+	}
 	w.WriteByte('\n')
-	
-	
 	acd.il--
 	acd.indent(w)
 	w.WriteString("};\n")
 	acd.copyDef(w)
+
+	if len(methods) > 0 {
+		w.Reset()
+		w.WriteString("__attribute__((weak)) const\n")
+		w.WriteString("minfo *" + tname + "1[] = {\n")
+		acd.il++
+		acd.indent(w)
+		for i, m := range methods {
+			if i != 0 {
+				w.WriteString(", \n")
+			}
+			w.WriteByte('&')
+			w.WriteString(m)
+		}
+		w.WriteByte('\n')
+		acd.il--
+		acd.indent(w)
+		w.WriteString("};\n")
+		acd.prependDef(w)
+	}
 	if len(elems) > 0 {
 		w.Reset()
 		acd.indent(w)
@@ -1133,22 +1175,42 @@ func (cdd *CDD) tinfo(typ types.Type) string {
 			w.WriteString(e)
 		}
 		w.WriteString("};\n")
-		acd.Def = append(w.Bytes(), acd.Def...)
+		acd.prependDef(w)
 	}
-	nt, ok := typ.(*types.Named)
-	if !ok || nt.NumMethods() == 0 {
-		return tname
-	}
-	if _, ok = nt.Underlying().(*types.Interface); ok {
-		return tname
-	}
-	w.Reset()
-	w.WriteString("__attribute__((weak)) const\n")
-	w.WriteString("minfo *" + tname + "1[] = {")
-	for i := 0; i < nt.NumMethods(); i++ {
-
-	}
-	w.WriteString("};\n")
-	acd.Def = append(w.Bytes(), acd.Def...)
 	return tname
+}
+
+func (cdd *CDD) prname(tup *types.Tuple) string {
+	var prname string
+	for i := 0; i < tup.Len(); i++ {
+		prname += cdd.tiname(tup.At(i).Type())
+	}
+	return prname
+}
+
+func (cdd *CDD) miname(f *types.Func) string {
+	var mname string
+	sig := f.Type().(*types.Signature)
+	mname = f.Name() + "$$$" + cdd.prname(sig.Params())
+	if sig.Variadic() {
+		mname += "variadic$$"
+	}
+	mname += "$" + cdd.prname(sig.Results())
+	if o, ok := cdd.gtc.minfos[mname]; ok {
+		cdd.addObject(o, true)
+		return mname
+	}
+	v := types.NewVar(0, cdd.gtc.pkg, mname, sig)
+	cdd.gtc.minfos[mname] = v
+	cdd.addObject(v, true)
+	acd := cdd.gtc.newCDD(v, VarDecl, 0)
+	cdd.acds = append(cdd.acds, acd)
+	cdd = nil
+	acd.Weak = true
+	w := new(bytes.Buffer)
+	w.WriteString("__attribute__((weak,section(\".unused\"))) const\n")
+	w.WriteString("minfo " + mname)
+	acd.copyDecl(w, ";\n")
+	acd.Def = acd.Decl
+	return mname
 }
