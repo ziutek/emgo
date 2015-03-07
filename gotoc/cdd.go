@@ -148,7 +148,9 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 		}
 
 	case VarDecl:
-		if !cdd.Weak && !cdd.Export {
+		if cdd.Weak {
+			prefix = "__attribute__((weak)) "
+		} else if !cdd.Export {
 			prefix = "static "
 		}
 

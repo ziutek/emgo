@@ -107,7 +107,7 @@ func main() {
 		}
 		s.WriteByte('\n')
 	}
-	
+
 	var i interface{}
 	a := 4
 	i = fmt.Int(a)

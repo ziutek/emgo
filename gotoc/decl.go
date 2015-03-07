@@ -69,7 +69,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 		cddi.Complexity = -1
 		cddi.addObject(f, true)
 
-		if !ptrrecv && cdd.gtc.siz.Sizeof(rtyp) < cdd.gtc.sizIval {
+		if !ptrrecv && cdd.gtc.siz.Sizeof(rtyp) <= cdd.gtc.sizIval {
 
 			// Method for receiver passed by value.
 
@@ -286,8 +286,14 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				w.WriteString(dimFuncPtr(name, dim))
 				cdd.copyDecl(w, ";\n")
 			}
+			typ := to.Type()
 			w.Reset()
-
+			cdd.tinfo(w, typ)
+			if _, ok := typ.Underlying().(*types.Pointer); !ok {
+				w.Reset()
+				cdd.tinfo(w, types.NewPointer(typ))
+			}
+			w.Reset()
 			cdds = append(cdds, cdd)
 		}
 

@@ -552,7 +552,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					} else {
 						w.WriteString("TINFO(_tag) == &")
 					}
-					w.WriteString(cdd.tinfo(et))
+					w.WriteString(cdd.tinameDU(et))
 				}
 				w.WriteString(") ")
 			}
@@ -1055,8 +1055,13 @@ func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string, tu
 			updateEnd(cdd.Stmt(w, s.Stmt, label, resultT, tup))
 
 		default:
+			m := w.Len()
 			cdd.indent(w)
+			n := w.Len()
 			updateEnd(cdd.Stmt(w, s, "", resultT, tup))
+			if w.Len() == n {
+				w.Truncate(m)
+			}
 		}
 	}
 	cdd.il--

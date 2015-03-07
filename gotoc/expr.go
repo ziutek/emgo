@@ -925,7 +925,7 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 	w.WriteString("(" + lhs + " " + op + " " + rhs + ")")
 }
 
-func findMethod(t *types.Named, name string) *types.Func {
+/*func findMethod(t *types.Named, name string) *types.Func {
 	for i := 0; i < t.NumMethods(); i++ {
 		f := t.Method(i)
 		if f.Name() == name {
@@ -933,7 +933,7 @@ func findMethod(t *types.Named, name string) *types.Func {
 		}
 	}
 	return nil
-}
+}*/
 
 func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, ityp types.Type) {
 	if ityp == nil || etyp == nil {
@@ -960,7 +960,7 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 		}
 		switch it := ityp.(type) {
 		case *types.Named:
-			w.WriteString("ICONVERTI(" + es + ",  " + cdd.tinfo(it) + ")")
+			w.WriteString("ICONVERTI(" + es + ",  " + cdd.tinameDU(it) + ")")
 		case *types.Interface:
 			w.WriteString("ICONVERTE(" + es + ")")
 		default:
@@ -977,10 +977,10 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 	}
 	switch it := ityp.(type) {
 	case *types.Named:
-		ets, its := cdd.tinfo(etyp), cdd.tinfo(it)
+		ets, its := cdd.tinameDU(etyp), cdd.tinameDU(it)
 		w.WriteString("IASSIGN(" + es + ", " + ets + ", " + its + ")")
 	case *types.Interface:
-		w.WriteString("INTERFACE(" + es + ", &" + cdd.tinfo(etyp) + ")")
+		w.WriteString("INTERFACE(" + es + ", &" + cdd.tinameDU(etyp) + ")")
 	default:
 		panic(it)
 	}
@@ -997,220 +997,4 @@ func (cdd *CDD) interfaceExprStr(expr ast.Expr, ityp types.Type) string {
 	buf := new(bytes.Buffer)
 	cdd.interfaceExpr(buf, expr, ityp)
 	return buf.String()
-}
-
-var basicKinds = []string{
-	"Invalid",
-	"Bool",
-	"Int",
-	"Int8",
-	"Int16",
-	"Int32",
-	"Int64",
-	"Uint",
-	"Uint8",
-	"Uint16",
-	"Uint32",
-	"Uint64",
-	"Uintptr",
-	"Float32",
-	"Float64",
-	"Complex64",
-	"Complex128",
-	"String",
-	"UnsafePointer",
-}
-
-func (cdd *CDD) tiname(typ types.Type) string {
-	if _, ok := typ.Underlying().(*types.Interface); ok {
-		obj := typ.(*types.Named).Obj()
-		return cdd.NameStr(obj, false) + "$$"
-	}
-	name, dim := cdd.TypeStr(typ)
-	name = escape(dimFuncPtr(name, dim)) + "$$"
-	switch t := typ.(type) {
-	case *types.Slice:
-		return name + cdd.tiname(t.Elem())
-	case *types.Chan:
-		return name + cdd.tiname(t.Elem())
-	case *types.Map:
-		return name + cdd.tiname(t.Key()) + cdd.tiname(t.Elem())
-	default:
-		return name
-	}
-}
-
-func (cdd *CDD) tinfo(typ types.Type) string {
-	tname := cdd.tiname(typ)
-	if o, ok := cdd.gtc.tinfos[tname]; ok {
-		cdd.addObject(o, true)
-		return tname
-	}
-	v := types.NewVar(0, cdd.gtc.pkg, tname, typ)
-	cdd.gtc.tinfos[tname] = v
-	cdd.addObject(v, true)
-	acd := cdd.gtc.newCDD(v, VarDecl, 0)
-	cdd.acds = append(cdd.acds, acd)
-	cdd = nil
-	acd.Weak = true
-	if nt, ok := typ.(*types.Named); ok {
-		acd.addObject(nt.Obj(), true)
-	}
-	w := new(bytes.Buffer)
-	w.WriteString("__attribute__((weak)) const\n")
-	w.WriteString("tinfo " + tname)
-	acd.copyDecl(w, ";\n")
-	w.WriteString(" = {\n")
-	acd.il++
-	acd.indent(w)
-	w.WriteString(".name = EGSTR(\"" + typ.String() + "\"),\n")
-	acd.indent(w)
-	w.WriteString(".size = " + strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
-	var (
-		kind    string
-		elems   []string
-		methods []string
-	)
-	switch t := typ.Underlying().(type) {
-	case *types.Basic:
-		k := t.Kind()
-		if k < types.Invalid || k >= types.UntypedBool {
-			panic(k)
-		}
-		kind = basicKinds[k]
-	case *types.Array:
-		kind = "Array"
-	case *types.Chan:
-		kind = "Chan"
-	case *types.Signature:
-		kind = "Func"
-	case *types.Interface:
-		kind = "Interface"
-	case *types.Map:
-		kind = "Map"
-	case *types.Pointer:
-		kind = "Ptr"
-		elems = []string{acd.tinfo(t.Elem())}
-	case *types.Slice:
-		kind = "Slice"
-		elems = []string{acd.tinfo(t.Elem())}
-	case *types.Struct:
-		kind = "Struct"
-		elems = make([]string, t.NumFields())
-		for i := range elems {
-			elems[i] = acd.tinfo(t.Field(i).Type())
-		}
-	default:
-		panic(t)
-	}
-	acd.indent(w)
-	w.WriteString(".kind = " + kind)
-	if len(elems) > 0 {
-		w.WriteString(",\n")
-		acd.indent(w)
-		w.WriteString(".elems = CSLICE(")
-		w.WriteString(strconv.Itoa(len(elems)))
-		w.WriteString(", ")
-		w.WriteString(tname)
-		w.WriteString("0)")
-	}
-
-	nt, mok := typ.(*types.Named)
-	if mok {
-		mok = (nt.NumMethods() > 0)
-	}
-	if mok {
-		if _, ok := nt.Underlying().(*types.Interface); ok {
-			mok = false
-		}
-	}
-	if mok {
-		methods = make([]string, nt.NumMethods())
-		for i := range methods {
-			methods[i] = acd.miname(nt.Method(i))
-		}
-		w.WriteString(",\n")
-		acd.indent(w)
-		w.WriteString(".methods = CSLICE(")
-		w.WriteString(strconv.Itoa(len(methods)))
-		w.WriteString(", ")
-		w.WriteString(tname)
-		w.WriteString("1)")
-	}
-	w.WriteByte('\n')
-	acd.il--
-	acd.indent(w)
-	w.WriteString("};\n")
-	acd.copyDef(w)
-
-	if len(methods) > 0 {
-		w.Reset()
-		w.WriteString("__attribute__((weak)) const\n")
-		w.WriteString("minfo *" + tname + "1[] = {\n")
-		acd.il++
-		acd.indent(w)
-		for i, m := range methods {
-			if i != 0 {
-				w.WriteString(", \n")
-			}
-			w.WriteByte('&')
-			w.WriteString(m)
-		}
-		w.WriteByte('\n')
-		acd.il--
-		acd.indent(w)
-		w.WriteString("};\n")
-		acd.prependDef(w)
-	}
-	if len(elems) > 0 {
-		w.Reset()
-		acd.indent(w)
-		w.WriteString("__attribute__((weak)) const\n")
-		w.WriteString("tinfo *" + tname + "0[] = {")
-		for i, e := range elems {
-			if i != 0 {
-				w.WriteString(", ")
-			}
-			w.WriteByte('&')
-			w.WriteString(e)
-		}
-		w.WriteString("};\n")
-		acd.prependDef(w)
-	}
-	return tname
-}
-
-func (cdd *CDD) prname(tup *types.Tuple) string {
-	var prname string
-	for i := 0; i < tup.Len(); i++ {
-		prname += cdd.tiname(tup.At(i).Type())
-	}
-	return prname
-}
-
-func (cdd *CDD) miname(f *types.Func) string {
-	var mname string
-	sig := f.Type().(*types.Signature)
-	mname = f.Name() + "$$$" + cdd.prname(sig.Params())
-	if sig.Variadic() {
-		mname += "variadic$$"
-	}
-	mname += "$" + cdd.prname(sig.Results())
-	if o, ok := cdd.gtc.minfos[mname]; ok {
-		cdd.addObject(o, true)
-		return mname
-	}
-	v := types.NewVar(0, cdd.gtc.pkg, mname, sig)
-	cdd.gtc.minfos[mname] = v
-	cdd.addObject(v, true)
-	acd := cdd.gtc.newCDD(v, VarDecl, 0)
-	cdd.acds = append(cdd.acds, acd)
-	cdd = nil
-	acd.Weak = true
-	w := new(bytes.Buffer)
-	w.WriteString("__attribute__((weak,section(\".unused\"))) const\n")
-	w.WriteString("minfo " + mname)
-	acd.copyDecl(w, ";\n")
-	acd.Def = acd.Decl
-	return mname
 }

@@ -62,5 +62,6 @@ onewire
 
 for p in $list; do 
 	echo $p
+	#egc -O g $p
 	egc $p
 done

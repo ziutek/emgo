@@ -1,10 +1,17 @@
 #define ithead builtin$ItHead
-#define tinfo  builtin$Type
-#define minfo  builtin$Method
+
+struct minfo {
+	builtin$Method;
+};
+
+struct tinfo {
+	builtin$Type;
+	unsafe$Pointer imethods[];
+};
 
 typedef struct {
 	ithead h$;
-	string(*Error) (ival *);
+	string (*Error)(ival *);
 } error;
 
 enum {
