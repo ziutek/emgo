@@ -86,3 +86,44 @@ func NewItable(ityp, etyp *Type) *Itable {
 // To allow assign/assert to interfaces in interrupt handlers ItableFor must
 // be implemented in nonblocking way.
 var ItableFor func(ityp, etyp *Type) *Itable
+
+type generateBasicTinfos struct {
+	_ *bool
+	_ *int
+	_ *int8
+	_ *int16
+	_ *int32
+	_ *int64
+	_ *uint
+	_ *uint8
+	_ *uint16
+	_ *uint32
+	_ *uint64
+	_ *uintptr
+	_ *float32
+	_ *float64
+	_ *complex64
+	_ *complex128
+	_ *string
+	_ *unsafe.Pointer
+	_ *error
+	_ []bool
+	_ []int
+	_ []int8
+	_ []int16
+	_ []int32
+	_ []int64
+	_ []uint
+	_ []uint8
+	_ []uint16
+	_ []uint32
+	_ []uint64
+	_ []uintptr
+	_ []float32
+	_ []float64
+	_ []complex64
+	_ []complex128
+	_ []string
+	_ []unsafe.Pointer
+	_ []error
+}

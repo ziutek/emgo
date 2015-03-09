@@ -136,43 +136,6 @@ func (s sampleDecl) notMatch(section, cdd, c string) error {
 	return errors.New(buf.String())
 }
 
-type simpleDecl struct {
-	g, c string
-}
-
-var tabSimpleDecl = []simpleDecl{
-	{"type P *int", "typedef int *foo$P;"},
-	/*{"type PA *[4]int", "typedef int (*foo$PA)[4];"},
-	{"type PAP *[4]*int", "typedef int *(*foo$PAP)[4];"},
-	{"type AA [4][3]int", "typedef int foo$AA[4][3];"},
-	{"type PAA *[4][3]int", "typedef int (*foo$PAA)[4][3];"},
-	{"type PAPA *[4]*[3]int", "typedef int (*(*foo$PAPA)[4])[3];"},
-	{"type PAPAP *[4]*[3]*int", "typedef int *(*(*foo$PAPAP)[4])[3];"},*/
-
-	{
-		"type F func(a, b int, c byte) byte",
-		"typedef byte (*foo$F)(int, int, byte);",
-	},
-
-	{"func F(a int)", "void foo$F(int a$);"},
-	//{"func F(a [4]int) uint", "uint foo$F(int a$[4]);"},
-	{"func F(f func(int) *int) int", "int foo$F(int *(*f$)(int));"},
-	{"func F(f func(int) **int) int", "int foo$F(int **(*f$)(int));"},
-	{"func F(f func(int) int) func(byte) byte", "byte (*foo$F(int (*f$)(int)))(byte);"},
-}
-
-func TestSimpleDecl(t *testing.T) {
-	for i, s := range tabSimpleDecl {
-		sd := sampleDecl{
-			filePos: "simple:" + strconv.Itoa(i),
-			goDecl:  s.g + "\n",
-			c:       []*ddi{{decl: s.c + "\n"}},
-		}
-		if err := sd.testDecl(); err != nil {
-			t.Error(err)
-		}
-	}
-}
 
 func TestDeclFiles(t *testing.T) {
 	dname := "tests"

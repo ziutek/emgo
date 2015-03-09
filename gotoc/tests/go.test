@@ -40,6 +40,43 @@ func (i I) F(k int) int {
 }
 // C code:
 // decl
+__attribute__((section(".unused"))) const
+minfo F$$$int$$$int$$;
+// def
+__attribute__((section(".unused"))) const
+minfo F$$$int$$$int$$;
+// decl
+const
+tinfo foo$I$$;
+// def
+const
+tinfo foo$I$$ = {
+	{
+		.name = EGSTR("foo.I"),
+		.size = 4,
+		.kind = Int,
+		.methods = CSLICE(1, ((const minfo*[]){
+			&F$$$int$$$int$$
+		}))
+	}, {
+		foo$I$F$1
+	}
+};
+// decl
+const
+tinfo $8$foo$I$$;
+// def
+const
+tinfo $8$foo$I$$ = {
+	{
+		.size = 4,
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$I$$
+		}))
+	}
+};
+// decl
 typedef int foo$I;
 // decl
 int foo$I$F(foo$I i$, int k$);

@@ -75,7 +75,7 @@ writeType:
 			d := cdd.Type(w, f.Type())
 			w.WriteByte(' ')
 			name := dimFuncPtr(f.Name(), d)
-			if name == "_" {
+			if f.Name() == "_" {
 				name += strconv.Itoa(i) + "$"
 			}
 			w.WriteString(name + ";\n")
@@ -343,10 +343,6 @@ func (cdd *CDD) arrayName(a *types.Array) string {
 }
 
 func (cdd *CDD) tiname(typ types.Type) string {
-	if _, ok := typ.Underlying().(*types.Interface); ok {
-		obj := typ.(*types.Named).Obj()
-		return cdd.NameStr(obj, false) + "$$"
-	}
 	switch t := typ.(type) {
 	case *types.Pointer:
 		return escape("*") + cdd.tiname(t.Elem())
@@ -358,8 +354,24 @@ func (cdd *CDD) tiname(typ types.Type) string {
 		return "chan$$" + cdd.tiname(t.Elem())
 	case *types.Map:
 		return "map$$" + cdd.tiname(t.Key()) + cdd.tiname(t.Elem())
+	case *types.Named:
+		obj := t.Obj()
+		name := cdd.NameStr(obj, false)
+		if cdd.gtc.isLocal(obj) {
+			name = upath(obj.Pkg().Path()) + "$" + name + "$" +
+				strconv.Itoa(int(obj.Pos()))
+		} else {
+			name += "$$"
+		}
+		return name
 	default:
 		name, _ := cdd.TypeStr(typ)
+		switch name {
+		case "byte":
+			name = "uint8"
+		case "rune":
+			name = "int32"
+		}
 		return name + "$$"
 	}
 }
@@ -388,6 +400,27 @@ var basicKinds = []string{
 
 func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	tname := cdd.tiname(typ)
+	basic := false
+
+	switch t := typ.(type) {
+	case *types.Basic:
+		basic = true
+	case *types.Pointer, *types.Slice:
+		switch p := t.(interface {
+			Elem() types.Type
+		}).Elem().(type) {
+		case *types.Basic:
+			basic = true
+		case *types.Named:
+			basic = (p.Obj().Pkg() == nil)
+		}
+	case *types.Named:
+		basic = (t.Obj().Pkg() == nil)
+	}
+	if basic && cdd.gtc.pkg.Path() != "builtin" {
+		// Generate tinfo for "basic" types only in builtin package.
+		return tname
+	}
 	if o, ok := cdd.gtc.tinfos[tname]; ok {
 		cdd.addObject(o, true)
 		return tname
@@ -411,8 +444,10 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	acd.indent(w)
 	w.WriteString("{\n")
 	acd.il++
-	acd.indent(w)
-	w.WriteString(".name = EGSTR(\"" + typ.String() + "\"),\n")
+	if named {
+		acd.indent(w)
+		w.WriteString(".name = EGSTR(\"" + typ.String() + "\"),\n")
+	}
 	acd.indent(w)
 	w.WriteString(".size = " + strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
 	var (
@@ -458,9 +493,20 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		acd.indent(w)
 		w.WriteString(".elems = CSLICE(")
 		w.WriteString(strconv.Itoa(len(elems)))
-		w.WriteString(", ")
-		w.WriteString(tname)
-		w.WriteString("0)")
+		w.WriteString(", ((const tinfo*[]){\n")
+		acd.il++
+		for i, e := range elems {
+			if i != 0 {
+				w.WriteString(",\n")
+			}
+			acd.indent(w)
+			w.WriteByte('&')
+			w.WriteString(acd.tinameDU(e))
+		}
+		w.WriteByte('\n')
+		acd.il--
+		acd.indent(w)
+		w.WriteString("}))")
 	}
 	// BUG: Following code doesn't work in case of structs that contains embeded
 	// types with methods. Use types.MethodSet to fix it.
@@ -475,10 +521,9 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	} else {
 		suff = "$1"
 	}
-	acd.Weak = true
+	acd.Export = basic
+	acd.Weak = !basic && !named
 	if named {
-		// set acd.Weak to false in case of builtin named type (eg. error).
-		acd.Weak = (nt.Obj().Pkg() == nil)
 		if it, _ = nt.Underlying().(*types.Interface); it == nil {
 			methods = make([]*types.Func, 0, nt.NumMethods())
 			for i := 0; i < cap(methods); i++ {
@@ -499,9 +544,20 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		acd.indent(w)
 		w.WriteString(".methods = CSLICE(")
 		w.WriteString(strconv.Itoa(len(methods)))
-		w.WriteString(", ")
-		w.WriteString(tname)
-		w.WriteString("1)")
+		w.WriteString(", ((const minfo*[]){\n")
+		acd.il++
+		for i, m := range methods {
+			if i != 0 {
+				w.WriteString(",\n")
+			}
+			acd.indent(w)
+			w.WriteByte('&')
+			w.WriteString(acd.minfo(m))
+		}
+		w.WriteByte('\n')
+		acd.il--
+		acd.indent(w)
+		w.WriteString("}))")
 		if it == nil {
 			w.WriteByte('\n')
 			acd.il--
@@ -526,54 +582,6 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	acd.indent(w)
 	w.WriteString("};\n")
 	acd.copyDef(w)
-
-	if len(elems) > 0 {
-		v := types.NewVar(0, acd.gtc.pkg, tname+"0", typ)
-		acd.addObject(v, true)
-		aac := acd.gtc.newCDD(v, VarDecl, 0)
-		acd.acds = append(acd.acds, aac)
-		aac.Weak = acd.Weak
-		w.Reset()
-		aac.indent(w)
-		w.WriteString("const\ntinfo *" + tname + "0[]")
-		aac.copyDecl(w, ";\n")
-		w.WriteString(" = {")
-		for i, e := range elems {
-			if i != 0 {
-				w.WriteString(", ")
-			}
-			w.WriteByte('&')
-			w.WriteString(aac.tinameDU(e))
-		}
-		w.WriteString("};\n")
-		aac.copyDef(w)
-	}
-	if len(methods) > 0 {
-		v := types.NewVar(0, acd.gtc.pkg, tname+"1", typ)
-		acd.addObject(v, true)
-		aac := acd.gtc.newCDD(v, VarDecl, 0)
-		acd.acds = append(acd.acds, aac)
-		aac.Weak = acd.Weak
-		w.Reset()
-		aac.indent(w)
-		w.WriteString("const\nminfo *" + tname + "1[]")
-		aac.copyDecl(w, ";\n")
-		w.WriteString(" = {\n")
-		aac.il++
-		for i, m := range methods {
-			if i != 0 {
-				w.WriteString(", \n")
-			}
-			aac.indent(w)
-			w.WriteByte('&')
-			w.WriteString(aac.minfo(m))
-		}
-		w.WriteByte('\n')
-		aac.il--
-		aac.indent(w)
-		w.WriteString("};\n")
-		aac.copyDef(w)
-	}
 	return tname
 }
 
@@ -583,7 +591,6 @@ func (cdd *CDD) tinameDU(typ types.Type) string {
 		t = p.Elem()
 	}
 	if n, ok := t.(*types.Named); !ok || n.Obj().Pkg() == nil {
-		// Unnamed (eg: int) or builtin named type (eg: error).
 		return cdd.tinfo(new(bytes.Buffer), typ)
 	}
 	return cdd.tiname(typ)

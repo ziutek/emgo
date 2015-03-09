@@ -1,19 +1,6 @@
 // Go code:
 type F func(a, b int) (x, y int)
 // C code:
-// decl
-struct int$$int_struct;
-typedef struct int$$int_struct int$$int;
-// def
-#ifndef int$$int$
-#define int$$int$
-struct int$$int_struct {
-	int _0;
-	int _1;
-};
-#endif
-// decl
-typedef int$$int (*foo$F)(int, int);
 // end
 
 // Go code:
