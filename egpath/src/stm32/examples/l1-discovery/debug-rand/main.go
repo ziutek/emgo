@@ -2,13 +2,13 @@ package main
 
 import (
 	"math/rand"
+	"rtos"
 	"strconv"
 
 	"stm32/l1/setup"
-	"stm32/stlink"
 )
 
-var st = stlink.Term
+var dbg = rtos.Debug(0)
 
 func main() {
 	setup.Performance(0)
@@ -21,8 +21,8 @@ func main() {
 	rnd.Seed(1)
 
 	for {
-		strconv.Utoa(buf[:], rnd.Uint32(), 10)
-		st.Write(buf[:])
-		st.WriteByte('\n')
+		strconv.Utoa(buf[:], uint(rnd.Uint32()), 10)
+		dbg.Write(buf[:])
+		dbg.WriteByte('\n')
 	}
 }

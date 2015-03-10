@@ -3,15 +3,16 @@ package main
 import (
 	"fmt"
 	"unsafe"
+	"rtos"
 
 	"stm32/l1/setup"
 )
 
-var st = stlink.Term
+var dbg = rtos.Debug(0)
 
 func printa(s string, gs, ga, cs, ca uintptr) {
 	fmt.Fprint(
-		st,
+		dbg,
 		fmt.Str(s),
 		fmt.Uint(gs), fmt.Uint(ga),
 		fmt.T,
@@ -59,9 +60,9 @@ func AlignS64() uintptr
 func main() {
 	setup.Performance(0)
 
-	st.WriteString("Data size/alignment\n\n")
-	st.WriteString("Type    Emgo       C\n")
-	st.WriteString("---------------------\n")
+	dbg.WriteString("Data size/alignment\n\n")
+	dbg.WriteString("Type    Emgo       C\n")
+	dbg.WriteString("---------------------\n")
 	var b byte
 	printa(
 		"byte  ",
