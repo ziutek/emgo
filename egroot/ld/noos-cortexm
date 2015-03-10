@@ -8,7 +8,10 @@ SECTIONS {
 	
 	.rodata : {
 		. = ALIGN(4);
-		*(.rodata .rodata.*) /* Read only data */
+		*(
+			SORT_BY_ALIGNMENT(.rodata)
+			SORT_BY_ALIGNMENT(.rodata.*)
+		)
 		. = ALIGN(4);
 		__exidx_end = .;
 	} >loadTo
@@ -22,7 +25,10 @@ SECTIONS {
     
 	.data : {
 		. = ALIGN(4);
-		*(.data .data.*)
+		*(
+			SORT_BY_ALIGNMENT(.data)
+			SORT_BY_ALIGNMENT(.data.*)
+		)
 		. = ALIGN(4);
 	} >RAM AT>loadTo
 	
@@ -32,21 +38,27 @@ SECTIONS {
 	
 	.bss : {
 		. = ALIGN(4);
-		*(.bss .bss.*)
+		*(
+			SORT_BY_ALIGNMENT(.bss)
+			SORT_BY_ALIGNMENT(.bss.*)
+		)
 		. = ALIGN(4);
 	} >RAM
 	
 	BSSRAM = ADDR(.bss);
 	BSSSize = SIZEOF(.bss);
-	
-	.unused : {
-		. = ALIGN(4);
-		*(.unused .unused.*)
-		. = ALIGN(4);
-	} >RAM
-}
 
-HeapBegin = BSSRAM + BSSSize;
-HeapEnd = ORIGIN(RAM) + LENGTH(RAM);
+	HeapBegin = BSSRAM + BSSSize;
+	HeapEnd = ORIGIN(RAM) + LENGTH(RAM);
+	
+	.unused HeapEnd : {
+		. = ALIGN(4);
+		*(
+			SORT_BY_ALIGNMENT(.unused)
+			SORT_BY_ALIGNMENT(.unused.*)
+		)
+		. = ALIGN(4);
+	}
+}
 
 ENTRY(runtime$noos$Start)
