@@ -10,6 +10,36 @@ func F() int {
 }
 // C code:
 // decl
+const
+tinfo foo$S$$;
+// def
+const
+tinfo foo$S$$ = {
+	{
+		.name = EGSTR("foo.S"),
+		.size = 8,
+		.kind = Struct,
+		.elems = CSLICE(2, ((const tinfo*[]){
+			&int$$,
+			&int$$
+		}))
+	}
+};
+// decl
+const
+tinfo $8$foo$S$$;
+// def
+const
+tinfo $8$foo$S$$ = {
+	{
+		.size = 4,
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$S$$
+		}))
+	}
+};
+// decl
 struct foo$S_struct;
 typedef struct foo$S_struct foo$S;
 // def
@@ -65,12 +95,54 @@ func (t *T) F() func(T) {
 	// This isn't correct Emgo code. t.Addr can't be
 	// returned from F because it is implemented in C
 	// as embeded function that refers to local variable t.
-	// This will be correct when func will be simple
-	// closure (planned in next-gen of gotoc) but now it is
-	// simply a pointer to the function.
 	return t.Add
 }
 // C code:
+// decl
+const
+tinfo foo$T$$;
+// def
+const
+tinfo foo$T$$ = {
+	{
+		.name = EGSTR("foo.T"),
+		.size = 4,
+		.kind = Int
+	}
+};
+// decl
+__attribute__((section(".unused"))) const
+minfo Add$$$foo$T$$$;
+// def
+__attribute__((section(".unused"))) const
+minfo Add$$$foo$T$$$;
+// decl
+__attribute__((section(".unused"))) const
+minfo F$$$$func$$$foo$T$$$;
+// def
+__attribute__((section(".unused"))) const
+minfo F$$$$func$$$foo$T$$$;
+// decl
+const
+tinfo $8$foo$T$$;
+// def
+const
+tinfo $8$foo$T$$ = {
+	{
+		.size = 4,
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$T$$
+		})),
+		.methods = CSLICE(2, ((const minfo*[]){
+			&Add$$$foo$T$$$,
+			&F$$$$func$$$foo$T$$$
+		}))
+	}, {
+		foo$T$Add$0,
+		foo$T$F$0
+	}
+};
 // decl
 typedef int foo$T;
 // decl
@@ -111,6 +183,43 @@ func F() func(*T, T) {
 }
 // C code:
 // decl
+const
+tinfo foo$T$$;
+// def
+const
+tinfo foo$T$$ = {
+	{
+		.name = EGSTR("foo.T"),
+		.size = 4,
+		.kind = Int
+	}
+};
+// decl
+__attribute__((section(".unused"))) const
+minfo Add$$$foo$T$$$;
+// def
+__attribute__((section(".unused"))) const
+minfo Add$$$foo$T$$$;
+// decl
+const
+tinfo $8$foo$T$$;
+// def
+const
+tinfo $8$foo$T$$ = {
+	{
+		.size = 4,
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$T$$
+		})),
+		.methods = CSLICE(1, ((const minfo*[]){
+			&Add$$$foo$T$$$
+		}))
+	}, {
+		foo$T$Add$0
+	}
+};
+// decl
 typedef int foo$T;
 // decl
 void foo$T$Add(foo$T *t$, foo$T a$);
@@ -145,8 +254,47 @@ type B struct {
 func (a *A) F(b *B) {
 	b.F(b)
 }
-
 // C code:
+// decl
+const
+tinfo foo$A$$;
+// def
+const
+tinfo foo$A$$ = {
+	{
+		.name = EGSTR("foo.A"),
+		.size = 4,
+		.kind = Struct,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&int$$
+		}))
+	}
+};
+// decl
+__attribute__((section(".unused"))) const
+minfo F$$$$8$foo$B$$$;
+// def
+__attribute__((section(".unused"))) const
+minfo F$$$$8$foo$B$$$;
+// decl
+const
+tinfo $8$foo$A$$;
+// def
+const
+tinfo $8$foo$A$$ = {
+	{
+		.size = 4,
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$A$$
+		})),
+		.methods = CSLICE(1, ((const minfo*[]){
+			&F$$$$8$foo$B$$$
+		}))
+	}, {
+		foo$A$F$0
+	}
+};
 // decl
 struct foo$A_struct;
 typedef struct foo$A_struct foo$A;
@@ -154,24 +302,4 @@ typedef struct foo$A_struct foo$A;
 struct foo$A_struct {
 	int Fa;
 };
-// decl
-struct foo$B_struct;
-typedef struct foo$B_struct foo$B;
-// def
-struct foo$B_struct {
-	foo$A A;
-	int Fb;
-};
-// decl
-void foo$A$F(foo$A *a$, foo$B *b$);
-// def
-void foo$A$F(foo$A *a$, foo$B *b$) {
-	foo$A$F(&b$->A, b$);
-}
-// decl
-void foo$A$F$0(ival* a$, foo$B *b$);
-// def
-void foo$A$F$0(ival* a$, foo$B *b$) {
-	return foo$A$F((foo$A*)a$->ptr, b$);
-}
 // end

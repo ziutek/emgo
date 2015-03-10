@@ -137,59 +137,6 @@ func Switch(i *interface{}) bool {
 }
 // C code:
 // decl
-__attribute__((weak)) const
-tinfo string$$;
-// def
-__attribute__((weak)) const
-tinfo string$$ = {
-	.name = EGSTR("string"),
-	.size = 8,
-	.kind = String
-};
-// decl
-__attribute__((weak)) const
-tinfo byte$$;
-// def
-__attribute__((weak)) const
-tinfo byte$$ = {
-	.name = EGSTR("byte"),
-	.size = 1,
-	.kind = Uint8
-};
-// decl
-__attribute__((weak)) const
-tinfo slice$$byte$$;
-// def
-__attribute__((weak)) const
-tinfo *slice$$byte$$00[] = {&byte$$};
-__attribute__((weak)) const
-tinfo slice$$byte$$ = {
-	.name = EGSTR("[]byte"),
-	.size = 12,
-	.kind = Slice,
-	.elem = CSLICE(1, slice$$byte$$00)
-};
-// decl
-__attribute__((weak)) const
-tinfo bool$$;
-// def
-__attribute__((weak)) const
-tinfo bool$$ = {
-	.name = EGSTR("bool"),
-	.size = 1,
-	.kind = Bool
-};
-// decl
-__attribute__((weak)) const
-tinfo int$$;
-// def
-__attribute__((weak)) const
-tinfo int$$ = {
-	.name = EGSTR("int"),
-	.size = 4,
-	.kind = Int
-};
-// decl
 bool foo$Switch(interface *i$);
 // def
 bool foo$Switch(interface *i$) {
@@ -199,7 +146,7 @@ bool foo$Switch(interface *i$) {
 			return false;
 			break;
 		}
-		if (_tag.itab$ == &slice$$byte$$) {
+		if (_tag.itab$ == &slice$$uint8$$) {
 			return true;
 			break;
 		}
