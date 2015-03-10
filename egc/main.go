@@ -76,12 +76,12 @@ func main() {
 	tmpDir, err = ioutil.TempDir("", "eg-build")
 	if err != nil {
 		logErr(err)
-		return
+		os.Exit(1)
 	}
 	defer os.RemoveAll(tmpDir)
 
 	if err = egc(path); err != nil {
 		logErr(err)
-		return
+		os.Exit(1)
 	}
 }
