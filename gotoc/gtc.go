@@ -24,6 +24,8 @@ type GTC struct {
 	sizPtr      int64
 	sizIval     int64
 
+	msetc types.MethodSetCache
+
 	// TODO: safe concurent acces is need
 	tuples  map[string]types.Object
 	arrays  map[string]types.Object
@@ -380,4 +382,8 @@ func (gtc *GTC) notImplemented(n ast.Node, tl ...types.Type) {
 		fmt.Fprintf(os.Stderr, "	in case of: %T\n", t)
 	}
 	os.Exit(1)
+}
+
+func (gtc *GTC) methodSet(t types.Type) *types.MethodSet {
+	return gtc.msetc.MethodSet(t)
 }

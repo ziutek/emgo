@@ -400,21 +400,27 @@ var basicKinds = []string{
 
 func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	tname := cdd.tiname(typ)
-	basic := false
-
+	var basic, named bool
 	switch t := typ.(type) {
 	case *types.Basic:
 		basic = true
-	case *types.Pointer, *types.Slice:
-		switch p := t.(interface {
-			Elem() types.Type
-		}).Elem().(type) {
+	case *types.Pointer:
+		switch e := t.Elem().(type) {
 		case *types.Basic:
 			basic = true
 		case *types.Named:
-			basic = (p.Obj().Pkg() == nil)
+			named = true
+			basic = (e.Obj().Pkg() == nil)
+		}
+	case *types.Slice:
+		switch e := t.Elem().(type) {
+		case *types.Basic:
+			basic = true
+		case *types.Named:
+			basic = (e.Obj().Pkg() == nil)
 		}
 	case *types.Named:
+		named = true
 		basic = (t.Obj().Pkg() == nil)
 	}
 	if basic && cdd.gtc.pkg.Path() != "builtin" {
@@ -430,12 +436,11 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	cdd.addObject(v, true)
 	acd := cdd.gtc.newCDD(v, VarDecl, 0)
 	cdd.acds = append(cdd.acds, acd)
+
 	cdd = nil
 
-	nt, named := typ.(*types.Named)
-	if named {
-		acd.addObject(nt.Obj(), true)
-	}
+	acd.Export = basic
+	acd.Weak = !basic && !named
 	w.WriteString("const\ntinfo ")
 	w.WriteString(tname)
 	acd.copyDecl(w, ";\n")
@@ -444,9 +449,10 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	acd.indent(w)
 	w.WriteString("{\n")
 	acd.il++
-	if named {
+	if nt, ok := typ.(*types.Named); ok {
+		acd.addObject(nt.Obj(), true)
 		acd.indent(w)
-		w.WriteString(".name = EGSTR(\"" + typ.String() + "\"),\n")
+		w.WriteString(".name = EGSTR(\"" + nt.String() + "\"),\n")
 	}
 	acd.indent(w)
 	w.WriteString(".size = " + strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
@@ -508,69 +514,41 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		acd.indent(w)
 		w.WriteString("}))")
 	}
-	// BUG: Following code doesn't work in case of structs that contains embeded
-	// types with methods. Use types.MethodSet to fix it.
-	var (
-		suff    string
-		methods []*types.Func
-		it      *types.Interface
-	)
-	if t, ok := typ.(*types.Pointer); ok {
-		nt, named = t.Elem().(*types.Named)
-		suff = "$0"
-	} else {
-		suff = "$1"
-	}
-	acd.Export = basic
-	acd.Weak = !basic && !named
-	if named {
-		if it, _ = nt.Underlying().(*types.Interface); it == nil {
-			methods = make([]*types.Func, 0, nt.NumMethods())
-			for i := 0; i < cap(methods); i++ {
-				m := nt.Method(i)
-				if types.Identical(m.Type().(*types.Signature).Recv().Type(), typ) {
-					methods = append(methods, m)
-				}
-			}
-		} else {
-			methods = make([]*types.Func, it.NumMethods())
-			for i := range methods {
-				methods[i] = it.Method(i)
-			}
-		}
-	}
-	if len(methods) > 0 {
+	// TODO: cdd.gtc.siz.Sizeof(rtyp) <= cdd.gtc.sizIval
+	mset := acd.gtc.methodSet(typ)
+	_, isi := typ.Underlying().(*types.Interface)
+	if mset.Len() > 0 && (isi || acd.gtc.siz.Sizeof(typ) <= acd.gtc.sizIval) {
+		acd.Weak = false
 		w.WriteString(",\n")
 		acd.indent(w)
 		w.WriteString(".methods = CSLICE(")
-		w.WriteString(strconv.Itoa(len(methods)))
+		w.WriteString(strconv.Itoa(mset.Len()))
 		w.WriteString(", ((const minfo*[]){\n")
 		acd.il++
-		for i, m := range methods {
+		for i := 0; i < mset.Len(); i++ {
 			if i != 0 {
 				w.WriteString(",\n")
 			}
 			acd.indent(w)
 			w.WriteByte('&')
-			w.WriteString(acd.minfo(m))
+			w.WriteString(acd.minfo(mset.At(i).Obj().(*types.Func)))
 		}
 		w.WriteByte('\n')
 		acd.il--
 		acd.indent(w)
 		w.WriteString("}))")
-		if it == nil {
+		if !isi {
 			w.WriteByte('\n')
 			acd.il--
 			acd.indent(w)
 			w.WriteString("}, {\n")
 			acd.il++
-			for i, m := range methods {
+			for i := 0; i < mset.Len(); i++ {
 				if i != 0 {
 					w.WriteString(",\n")
 				}
 				acd.indent(w)
-				acd.Name(w, m, true)
-				w.WriteString(suff)
+				w.WriteString(acd.imethod(mset.At(i)))
 			}
 		}
 	}
@@ -633,4 +611,60 @@ func (cdd *CDD) signame(sig *types.Signature) string {
 		signame += "variadic$$"
 	}
 	return signame + "$" + cdd.prname(sig.Results())
+}
+
+func (cdd *CDD) imethod(sel *types.Selection) string {
+	rcv := sel.Recv()
+	fun := sel.Obj().(*types.Func)
+	sig := fun.Type().(*types.Signature)
+	var fname string
+	if p, ok := rcv.(*types.Pointer); ok {
+		fname, _ = cdd.TypeStr(p.Elem())
+		fname += "$" + fun.Name() + "$0"
+	} else {
+		fname, _ = cdd.TypeStr(rcv)
+		fname += "$" + fun.Name() + "$1"
+	}
+	fi := types.NewFunc(fun.Pos(), fun.Pkg(), fname, sig)
+	//cdd.addObject(fi, false) - commented to avoid export fi.
+	acd := cdd.gtc.newCDD(fi, FuncDecl, 0)
+	cdd.acds = append(cdd.acds, acd)
+
+	cdd = nil
+
+	w := new(bytes.Buffer)
+	res, params := acd.signature(sig, true, orgNamesI)
+
+	w.WriteString(res.typ)
+	w.WriteByte(' ')
+	w.WriteString(dimFuncPtr(fname+params.String(), res.dim))
+	acd.copyDecl(w, ";\n")
+
+	w.WriteString(" {\n")
+	acd.il++
+
+	acd.indent(w)
+	w.WriteString("return ")
+	acd.Name(w, fun, true)
+	w.WriteString("(((")
+
+	if _, ok := rcv.(*types.Pointer); ok {
+		ts, dim := acd.TypeStr(rcv)
+		w.WriteString(ts + dimFuncPtr("", dim) + ")")
+		w.WriteString(params[0].name + "->ptr")
+	} else {
+		ts, dim := acd.TypeStr(types.NewPointer(rcv))
+		w.WriteString(ts + dimFuncPtr("", dim) + ")")
+		w.WriteString(params[0].name)
+	}
+	w.WriteByte(')')
+
+	w.WriteString(");\n")
+
+	acd.il--
+	acd.indent(w)
+	w.WriteString("}\n")
+	acd.copyDef(w)
+
+	return fname
 }

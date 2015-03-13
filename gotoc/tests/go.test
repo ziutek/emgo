@@ -73,7 +73,12 @@ tinfo $8$foo$I$$ = {
 		.kind = Ptr,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&foo$I$$
+		})),
+		.methods = CSLICE(1, ((const minfo*[]){
+			&F$$$int$$$int$$
 		}))
+	}, {
+		foo$I$F$0
 	}
 };
 // decl

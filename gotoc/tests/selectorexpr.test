@@ -302,4 +302,53 @@ typedef struct foo$A_struct foo$A;
 struct foo$A_struct {
 	int Fa;
 };
+// decl
+const
+tinfo foo$B$$;
+// def
+const
+tinfo foo$B$$ = {
+	{
+		.name = EGSTR("foo.B"),
+		.size = 8,
+		.kind = Struct,
+		.elems = CSLICE(2, ((const tinfo*[]){
+			&foo$A$$,
+			&int$$
+		}))
+	}
+};
+// decl
+const
+tinfo $8$foo$B$$;
+// def
+const
+tinfo $8$foo$B$$ = {
+	{
+		.size = 4,
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$B$$
+		})),
+		.methods = CSLICE(1, ((const minfo*[]){
+			&F$$$$8$foo$B$$$
+		}))
+	}, {
+		foo$B$F$0
+	}
+};
+// decl
+struct foo$B_struct;
+typedef struct foo$B_struct foo$B;
+// def
+struct foo$B_struct {
+	foo$A A;
+	int Fb;
+};
+// decl
+void foo$A$F(foo$A *a$, foo$B *b$);
+// def
+void foo$A$F(foo$A *a$, foo$B *b$) {
+	foo$A$F(&b$->A, b$);
+}
 // end
