@@ -220,9 +220,11 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 		case numNames:
 			pname = "_0"
 		case orgNames, orgNamesI:
-			pname = cdd.NameStr(r, true)
+			if pname = cdd.NameStr(r, true); pname == "" {
+				pname = "_0"
+			}
 		}
-		if pname == "" {
+		if pname == "" && pnames != orgNamesI {
 			prms = append(
 				prms,
 				param{typ: typ + dimFuncPtr("%s", dim)},
@@ -244,7 +246,10 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 				pname = "_" + strconv.Itoa(i+1)
 			case orgNames, orgNamesI:
 				pname = cdd.NameStr(v, true)
-				if pname == "_$" {
+				switch pname {
+				case "":
+					pname = "_" + strconv.Itoa(i+1)
+				case "_$":
 					pname = "unused" + cdd.gtc.uniqueId()
 				}
 			}
@@ -514,7 +519,6 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		acd.indent(w)
 		w.WriteString("}))")
 	}
-	// TODO: cdd.gtc.siz.Sizeof(rtyp) <= cdd.gtc.sizIval
 	mset := acd.gtc.methodSet(typ)
 	_, isi := typ.Underlying().(*types.Interface)
 	if mset.Len() > 0 && (isi || acd.gtc.siz.Sizeof(typ) <= acd.gtc.sizIval) {
@@ -625,7 +629,7 @@ func (cdd *CDD) imethod(sel *types.Selection) string {
 		fname, _ = cdd.TypeStr(rcv)
 		fname += "$" + fun.Name() + "$1"
 	}
-	fi := types.NewFunc(fun.Pos(), fun.Pkg(), fname, sig)
+	fi := types.NewFunc(fun.Pos(), cdd.Origin.Pkg(), fname, sig)
 	//cdd.addObject(fi, false) - commented to avoid export fi.
 	acd := cdd.gtc.newCDD(fi, FuncDecl, 0)
 	cdd.acds = append(cdd.acds, acd)
@@ -643,21 +647,59 @@ func (cdd *CDD) imethod(sel *types.Selection) string {
 	w.WriteString(" {\n")
 	acd.il++
 
-	acd.indent(w)
-	w.WriteString("return ")
-	acd.Name(w, fun, true)
-	w.WriteString("(((")
+	var s string
 
 	if _, ok := rcv.(*types.Pointer); ok {
 		ts, dim := acd.TypeStr(rcv)
-		w.WriteString(ts + dimFuncPtr("", dim) + ")")
-		w.WriteString(params[0].name + "->ptr")
+		s = "((" + ts + dimFuncPtr("", dim) + ")" + params[0].name + "->ptr)"
 	} else {
 		ts, dim := acd.TypeStr(types.NewPointer(rcv))
-		w.WriteString(ts + dimFuncPtr("", dim) + ")")
-		w.WriteString(params[0].name)
+		s = "(*(" + ts + dimFuncPtr("", dim) + ")" + params[0].name + ")"
 	}
-	w.WriteByte(')')
+	index := sel.Index()
+
+	for _, id := range index[:len(index)-1] {
+		if p, ok := rcv.(*types.Pointer); ok {
+			rcv = p.Elem()
+			s += "->"
+		} else {
+			s += "."
+		}
+		f := rcv.Underlying().(*types.Struct).Field(id)
+		s += f.Name()
+		rcv = f.Type()
+	}
+
+	if _, ok := rcv.Underlying().(*types.Interface); ok {
+		acd.indent(w)
+		acd.Type(w, rcv)
+		w.WriteString(" _r = " + s + ";\n")
+		acd.indent(w)
+		w.WriteString("return ((")
+		acd.Name(w, rcv.(*types.Named).Obj(), false)
+		w.WriteString("*)_r.itab$)->")
+		w.WriteString(fun.Name())
+		w.WriteString("(&_r.val$")
+	} else {
+		acd.indent(w)
+		w.WriteString("return ")
+		acd.Name(w, fun, true)
+		w.WriteByte('(')
+		_, sigpr := sig.Recv().Type().(*types.Pointer)
+		if _, ok := rcv.(*types.Pointer); ok {
+			if !sigpr {
+				w.WriteByte('*')
+			}
+		} else {
+			if sigpr {
+				w.WriteByte('&')
+			}
+		}
+		w.WriteString(s)
+	}
+	for i := 1; i < len(params); i++ {
+		w.WriteString(", " + params[i].name)
+	}
 
 	w.WriteString(");\n")
 

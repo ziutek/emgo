@@ -7,7 +7,6 @@ import (
 	"go/token"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"golang.org/x/tools/go/exact"
 	"golang.org/x/tools/go/types"
@@ -20,89 +19,6 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	cdds = append(cdds, cdd)
 	fname := cdd.NameStr(f, true)
 	w := new(bytes.Buffer)
-
-	if r := sig.Recv(); r != nil {
-		rtyp := r.Type()
-
-		// Method for pointer receiver..
-
-		fi := types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$0", sig)
-		cddi := gtc.newCDD(fi, FuncDecl, il)
-		res, params := cddi.signature(sig, true, orgNamesI)
-		cdds = append(cdds, cddi)
-		finame := cddi.NameStr(fi, true)
-
-		w.WriteString(res.typ)
-		w.WriteByte(' ')
-		w.WriteString(dimFuncPtr(finame+params.String(), res.dim))
-		cddi.copyDecl(w, ";\n")
-
-		w.WriteString(" {\n")
-		cddi.il++
-		cddi.indent(w)
-		w.WriteString("return " + fname + "(")
-
-		var cast string
-		_, ptrrecv := r.Type().(*types.Pointer)
-		if ptrrecv {
-			ts, dim := cddi.TypeStr(rtyp)
-			cast = "(" + ts + dimFuncPtr("", dim) + ")"
-		} else {
-			ts, dim := cddi.TypeStr(types.NewPointer(rtyp))
-			cast = "*(" + ts + dimFuncPtr("", dim) + ")"
-		}
-
-		prs := make([]string, len(params))
-		prs[0] = cast + params[0].name + "->ptr"
-		for i := 1; i < len(params); i++ {
-			prs[i] = params[i].name
-		}
-		w.WriteString(strings.Join(prs, ", "))
-
-		w.WriteString(");\n")
-		cddi.il--
-		cddi.indent(w)
-		w.WriteString("}\n")
-		cddi.copyDef(w)
-		w.Reset()
-
-		cddi.Complexity = -1
-		cddi.addObject(f, true)
-
-		if !ptrrecv && cdd.gtc.siz.Sizeof(rtyp) <= cdd.gtc.sizIval {
-
-			// Method for receiver passed by value.
-
-			fi = types.NewFunc(d.Pos(), f.Pkg(), f.Name()+"$1", sig)
-			cddi = gtc.newCDD(fi, FuncDecl, il)
-			//res, params = cddi.signature(sig, true, orgNamesI)
-			cdds = append(cdds, cddi)
-			finame = cddi.NameStr(fi, true)
-
-			w.WriteString(res.typ)
-			w.WriteByte(' ')
-			w.WriteString(dimFuncPtr(finame+params.String(), res.dim))
-			cddi.copyDecl(w, ";\n")
-
-			w.WriteString(" {\n")
-			cddi.il++
-			cddi.indent(w)
-			w.WriteString("return " + fname + "(")
-
-			prs[0] = prs[0][:len(prs[0])-len("->ptr")]
-			w.WriteString(strings.Join(prs, ", "))
-
-			w.WriteString(");\n")
-			cddi.il--
-			cddi.indent(w)
-			w.WriteString("}\n")
-			cddi.copyDef(w)
-			w.Reset()
-
-			cddi.Complexity = -1
-			cddi.addObject(f, true)
-		}
-	}
 
 	res, params := cdd.signature(sig, true, orgNames)
 
@@ -461,7 +377,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	return
 }
 
-var tare = regexp.MustCompile(`(\$\$)|(^\$[0-9]+_\$.)`)
+var tuparrRe = regexp.MustCompile(`(\$\$)|(^\$[0-9]+_\$.)`)
 
 func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) {
 	n := w.Len()
@@ -478,7 +394,7 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) {
 	cdd.copyDecl(w, ";\n")
 	w.Truncate(n)
 
-	tuparr := tare.MatchString(name)
+	tuparr := tuparrRe.MatchString(name)
 	if tuparr {
 		cdd.indent(w)
 		w.WriteString("#ifndef " + name + "$\n")

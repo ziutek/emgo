@@ -844,13 +844,13 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 			panic("unimplemented: call method of unnamed interface")
 		}
 		// Interface receiver
-		cast := "((" + cdd.NameStr(in.Obj(), false) + "*)("
+		cast := "((" + cdd.NameStr(in.Obj(), false) + "*)"
 		if _, ok := e.Fun.(*ast.SelectorExpr).X.(*ast.Ident); ok && !eval {
-			c.fun.l = cast + rs + ".itab$))->" + fs
+			c.fun.l = cast + "(" + rs + ".itab$))->" + fs
 			c.args[n] = arg{types.Typ[types.Uintptr], "&" + rs + ".val$", ""}
 		} else {
 			c.rcv = arg{rt, "_r", rs}
-			c.fun.l = cast + "_r.itab$))->" + fs
+			c.fun.l = cast + "_r.itab$)->" + fs
 			c.args[n] = arg{types.Typ[types.Uintptr], "&_r" + ".val$", ""}
 		}
 		n++
