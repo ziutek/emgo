@@ -6,6 +6,7 @@ package main
 import (
 	"delay"
 	"fmt"
+	"reflect"
 	"rtos"
 
 	"stm32/f4/gpio"
@@ -131,6 +132,12 @@ func main() {
 	default:
 		s.WriteString("unk")
 	}
+	s.WriteString("\nReflection:\n")
+	s.WriteString(reflect.TypeOf(i).String())
+	s.WriteString("  kind: ")
+	s.WriteString(reflect.TypeOf(i).Kind().String())
+	s.WriteByte('\n')
+	s.WriteString(reflect.TypeOf(a).String())
 	s.WriteByte('\n')
 
 	s.WriteString("Echo:\n")
