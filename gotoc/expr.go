@@ -925,18 +925,8 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 	w.WriteString("(" + lhs + " " + op + " " + rhs + ")")
 }
 
-/*func findMethod(t *types.Named, name string) *types.Func {
-	for i := 0; i < t.NumMethods(); i++ {
-		f := t.Method(i)
-		if f.Name() == name {
-			return f
-		}
-	}
-	return nil
-}*/
-
 func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, ityp types.Type) {
-	if ityp == nil || etyp == nil {
+	if ityp == nil || etyp == nil || types.Identical(ityp, etyp){
 		w.WriteString(es)
 		return
 	}
@@ -950,21 +940,21 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 		w.WriteString(es)
 		return
 	}
-	if it, ok := ityp.(*types.Interface); ok && it.NumMethods() != 0 {
+	iempty := (cdd.gtc.methodSet(ityp).Len() == 0)
+	if _, ok := ityp.(*types.Interface); ok && !iempty {
 		cdd.exit(epos, "not supported assignment to non-empty unnamed interface")
 	}
-	if et, eii := etyp.Underlying().(*types.Interface); eii {
-		if types.Identical(ityp.Underlying(), et) {
+	if _, ok := etyp.Underlying().(*types.Interface); ok {
+		eempty := (cdd.gtc.methodSet(etyp).Len() == 0)
+		switch {
+		case iempty && eempty:
 			w.WriteString(es)
-			return
-		}
-		switch it := ityp.(type) {
-		case *types.Named:
-			w.WriteString("ICONVERTI(" + es + ",  " + cdd.tinameDU(it) + ")")
-		case *types.Interface:
-			w.WriteString("ICONVERTE(" + es + ")")
+		case iempty:
+			w.WriteString("ICONVERTIE(" + es + ")")
+		case eempty:
+			w.WriteString("ICONVERTEI(" + es + ",  " + cdd.tinameDU(ityp) +")")
 		default:
-			panic(it)
+			w.WriteString("ICONVERTII(" + es + ",  " + cdd.tinameDU(ityp) + ")")
 		}
 		return
 	}
@@ -975,14 +965,11 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 			etyp,
 		)
 	}
-	switch it := ityp.(type) {
-	case *types.Named:
-		ets, its := cdd.tinameDU(etyp), cdd.tinameDU(it)
-		w.WriteString("IASSIGN(" + es + ", " + ets + ", " + its + ")")
-	case *types.Interface:
+	if iempty {
 		w.WriteString("INTERFACE(" + es + ", &" + cdd.tinameDU(etyp) + ")")
-	default:
-		panic(it)
+	} else {
+		ets, its := cdd.tinameDU(etyp), cdd.tinameDU(ityp)
+		w.WriteString("IASSIGN(" + es + ", " + ets + ", " + its + ")")
 	}
 }
 

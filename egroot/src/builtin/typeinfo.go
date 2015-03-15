@@ -44,7 +44,7 @@ type ItHead struct {
 }
 
 func (ith *ItHead) Type() *Type {
-	// ith.typ is read-only (can be in ROM).
+	// ith.typ is read-only (can be plced in ROM).
 	return (*Type)(unsafe.Pointer(ith.typ))
 }
 
@@ -79,6 +79,31 @@ func NewItable(ityp, etyp *Type) *Itable {
 		e++
 	}
 	return itab
+}
+
+// Implements returns true if t has all methods that ityp has. If ityp is
+// interface type then Implements returns true if t implements ityp.
+func (t *Type) Implements(ityp *Type) bool {
+	if len(ityp.methods) == 0 {
+		return true
+	}
+	if t == nil || len(t.methods) < len(ityp.methods) {
+		return false
+	}
+	k := 0
+	for _, im := range ityp.methods {
+		for {
+			if k >= len(t.methods) {
+				return false
+			}
+			m := t.methods[k]
+			k++
+			if m == im {
+				break
+			}
+		}
+	}
+	return true
 }
 
 // ItableFor should return itable for given interface and non-interface type

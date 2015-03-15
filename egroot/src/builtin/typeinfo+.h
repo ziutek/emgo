@@ -44,22 +44,36 @@ enum {
 	UnsafePointer,
 };
 
-#define TINFO(i) (((const ithead*)(i).itab$)->Type)
+#define TINFO(i) (((const ithead*)(i).itab$)->typ)
 
-#define IASSIGN(expr, etyp, ityp) INTERFACE(      \
-	expr,                                         \
-	builtin$ItableFor((void*)&ityp, (void*)&etyp) \
+#define IASSIGN(expr, etyp, ityp) INTERFACE(        \
+	expr,                                           \
+	builtin$ItableFor((tinfo*)&ityp, (tinfo*)&etyp) \
 )
 
-#define ICONVERTI(iexpr, ityp) ({                        \
-	interface e = iexpr;                                 \
-	(interface){                                         \
-		e.val$,                                          \
-		builtin$ItableFor((void*)&ityp, (void*)TINFO(e)) \
-	);                                                   \
-})
-
-#define ICONVERTE(iexpr) ({        \
+#define ICONVERTIE(iexpr) ({       \
 	interface e = iexpr;           \
 	(interface){e.val$, TINFO(e)}; \
 })
+
+#define ICONVERTEI(iexpr, ityp) ({                          \
+	interface e = iexpr;                                    \
+	(interface){                                            \
+		e.val$,                                             \
+		builtin$ItableFor((tinfo*)&ityp, (tinfo*)(e.itab$)) \
+	};                                                      \
+})
+
+
+#define ICONVERTII(iexpr, ityp) ({                         \
+	interface e = iexpr;                                   \
+	(interface){                                           \
+		e.val$,                                            \
+		builtin$ItableFor((tinfo*)&ityp, (tinfo*)TINFO(e)) \
+	};                                                     \
+})
+
+static inline
+bool implements(const builtin$Type* t, const builtin$Type * it) {
+	return builtin$Type$Implements((builtin$Type*)t, (builtin$Type*)it);
+}

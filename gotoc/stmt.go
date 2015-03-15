@@ -530,41 +530,58 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			panic(a)
 		}
 		ityp := cdd.exprType(x)
+		iempty := (cdd.gtc.methodSet(ityp).Len() == 0)
 		cdd.indent(w)
 		cdd.varDecl(w, cdd.exprType(x), false, "_tag", x)
 		for _, stmt := range s.Body.List {
 			cdd.indent(w)
 			cs := stmt.(*ast.CaseClause)
-			first := ityp
+			caseTyp := ityp
 			if cs.List != nil {
 				w.WriteString("if (")
 				for i, e := range cs.List {
 					et := cdd.exprType(e)
 					if i == 0 {
 						if len(cs.List) == 1 {
-							first = et
+							caseTyp = et
 						}
 					} else {
 						w.WriteString(" || ")
 					}
-					if it, ok := ityp.(*types.Interface); ok && it.NumMethods() == 0 {
-						w.WriteString("_tag.itab$ == &")
-					} else {
-						w.WriteString("TINFO(_tag) == &")
+					switch et.Underlying().(type) {
+					case *types.Interface:
+						if cdd.gtc.methodSet(et).Len() == 0 {
+							w.WriteString("true")
+							break
+						}
+						w.WriteString("implements(")
+						if iempty {
+							w.WriteString("_tag.itab$, &")
+						} else {
+							w.WriteString("TINFO(_tag), &")
+						}
+						w.WriteString(cdd.tinameDU(et))
+						w.WriteByte(')')
+					default:
+						if iempty {
+							w.WriteString("_tag.itab$ == &")
+						} else {
+							w.WriteString("TINFO(_tag) == &")
+						}
+						w.WriteString(cdd.tinameDU(et))
 					}
-					w.WriteString(cdd.tinameDU(et))
 				}
 				w.WriteString(") ")
 			}
 			w.WriteString("{\n")
 			cdd.il++
 			if lhs != "" {
-				typ, dim := cdd.TypeStr(first)
+				typ, dim := cdd.TypeStr(caseTyp)
 				cdd.indent(w)
 				w.WriteString(typ + " " + dimFuncPtr(lhs, dim))
 				w.WriteString(" = ")
-				if _, ok := first.Underlying().(*types.Interface); ok {
-					w.WriteString("_tag")
+				if _, ok := caseTyp.Underlying().(*types.Interface); ok {
+					cdd.interfaceES(w, "_tag", cs.Case, ityp, caseTyp)
 				} else {
 					w.WriteString("IVAL(_tag, " + typ + dimFuncPtr("", dim) + ")")
 				}

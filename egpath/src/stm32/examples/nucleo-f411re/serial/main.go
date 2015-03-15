@@ -6,7 +6,6 @@ package main
 import (
 	"delay"
 	"fmt"
-	"reflect"
 	"rtos"
 
 	"stm32/f4/gpio"
@@ -108,37 +107,6 @@ func main() {
 		}
 		s.WriteByte('\n')
 	}
-
-	var i interface{}
-	a := 4
-	i = fmt.Int(a)
-	switch v := i.(type) {
-	case bool:
-		s.WriteString("bool")
-		if v {
-			s.WriteString(" true")
-		} else {
-			s.WriteString(" false")
-		}
-	case int:
-		s.WriteString("int")
-		fmt.Int(v).Format(s, -20)
-	case *int:
-		s.WriteString("*int")
-		fmt.Int(*v).Format(s, -20)
-	case fmt.Int:
-		s.WriteString("fmt.Int")
-		v.Format(s, -10)
-	default:
-		s.WriteString("unk")
-	}
-	s.WriteString("\nReflection:\n")
-	s.WriteString(reflect.TypeOf(i).String())
-	s.WriteString("  kind: ")
-	s.WriteString(reflect.TypeOf(i).Kind().String())
-	s.WriteByte('\n')
-	s.WriteString(reflect.TypeOf(a).String())
-	s.WriteByte('\n')
 
 	s.WriteString("Echo:\n")
 	s.Flush()
