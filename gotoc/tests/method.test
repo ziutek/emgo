@@ -6,25 +6,11 @@ func (t T) F() {
 }
 // C code:
 // decl
-typedef byte foo$T;
-// decl
-void foo$T$F(foo$T t$);
+__attribute__((section(".unused"))) const
+minfo F$$$$;
 // def
-void foo$T$F(foo$T t$) {
-	foo$T$F(t$);
-}
-// decl
-void foo$T$F$0(ival* t$);
-// def
-void foo$T$F$0(ival* t$) {
-	return foo$T$F(*(foo$T*)t$->ptr);
-}
-// decl
-void foo$T$F$1(ival* t$);
-// def
-void foo$T$F$1(ival* t$) {
-	return foo$T$F(*(foo$T*)t$);
-}
+__attribute__((section(".unused"))) const
+minfo F$$$$;
 // end
 
 // Go code:

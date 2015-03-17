@@ -51,12 +51,9 @@ SECTIONS {
 	HeapBegin = BSSRAM + BSSSize;
 	HeapEnd = ORIGIN(RAM) + LENGTH(RAM);
 	
-	.unused HeapEnd : {
+	.noload HeapEnd : {
 		. = ALIGN(4);
-		*(
-			SORT_BY_ALIGNMENT(.unused)
-			SORT_BY_ALIGNMENT(.unused.*)
-		)
+		*(.noload .noload.*)
 		. = ALIGN(4);
 	}
 }

@@ -601,9 +601,9 @@ func (cdd *CDD) minfo(f *types.Func) string {
 	cdd.acds = append(cdd.acds, acd)
 	cdd = nil
 	acd.Weak = true
+	acd.NoLoad = true
 	w := new(bytes.Buffer)
-	w.WriteString("__attribute__((section(\".unused\"))) const\n")
-	w.WriteString("minfo " + mname)
+	w.WriteString("const minfo " + mname)
 	acd.copyDecl(w, ";\n")
 	acd.Def = acd.Decl
 	return mname

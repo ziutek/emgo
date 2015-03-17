@@ -1,6 +1,6 @@
 #!/bin/sh
 
-arm-none-eabi-objcopy -O binary -R .unused main.elf main.bin
+arm-none-eabi-objcopy -O binary -R .noload main.elf main.bin
 addr=0x20000000
 if [ $# -eq 1 -a "$1" = 'flash' ]; then
 	addr=0x8000000
