@@ -131,53 +131,11 @@ func Switch(i *interface{}) bool {
 		return v
 	case int:
 		return v == 1
+	case error:
+		return v.Error() == nil
 	default:
 		return false
 	}
 }
 // C code:
-// decl
-bool foo$Switch(interface *i$);
-// def
-bool foo$Switch(interface *i$) {
-	switch(0){case 0:{
-		interface _tag = (*i$);
-		if (_tag.itab$ == &string$$) {
-			return false;
-			break;
-		}
-		if (_tag.itab$ == &slice$$uint8$$) {
-			return true;
-			break;
-		}
-		{
-			return false;
-			break;
-		}
-	}}
-	switch(0){case 0:{
-		interface _tag = (*i$);
-		if (_tag.itab$ == &bool$$) {
-			bool v$ = IVAL(_tag, bool);
-			{
-				return v$;
-			}
-			break;
-		}
-		if (_tag.itab$ == &int$$) {
-			int v$ = IVAL(_tag, int);
-			{
-				return (v$ == 1);
-			}
-			break;
-		}
-		{
-			interface v$ = _tag;
-			{
-				return false;
-			}
-			break;
-		}
-	}}
-}
 // end

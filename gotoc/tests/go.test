@@ -40,103 +40,14 @@ func (i I) F(k int) int {
 }
 // C code:
 // decl
-__attribute__((section(".unused"))) const
-minfo F$$$int$$$int$$;
+const minfo F$$$int$$$int$$;
 // def
-__attribute__((section(".unused"))) const
-minfo F$$$int$$$int$$;
-// decl
-const
-tinfo foo$I$$;
-// def
-const
-tinfo foo$I$$ = {
-	{
-		.name = EGSTR("foo.I"),
-		.size = 4,
-		.kind = Int,
-		.methods = CSLICE(1, ((const minfo*[]){
-			&F$$$int$$$int$$
-		}))
-	}, {
-		foo$I$F$1
-	}
-};
-// decl
-const
-tinfo $8$foo$I$$;
-// def
-const
-tinfo $8$foo$I$$ = {
-	{
-		.size = 4,
-		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$I$$
-		})),
-		.methods = CSLICE(1, ((const minfo*[]){
-			&F$$$int$$$int$$
-		}))
-	}, {
-		foo$I$F$0
-	}
-};
-// decl
-typedef int foo$I;
-// decl
-int foo$I$F(foo$I i$, int k$);
-// def
-int foo$I$F(foo$I i$, int k$) {
-	{
-		void wrap(foo$I _r, int _0) {
-			goready();
-			foo$I$F(_r, _0);
-		}
-		foo$I _r = i$;
-		int _0 = (((int)(i$))*k$);
-		GO(wrap(_r, _0), true);
-	}
-	return (((int)(i$))-k$);
-}
-// decl
-int foo$I$F$0(ival* i$, int k$);
-// def
-int foo$I$F$0(ival* i$, int k$) {
-	return foo$I$F(*(foo$I*)i$->ptr, k$);
-}
+const minfo F$$$int$$$int$$;
 // decl
 int foo$I$F$1(ival* i$, int k$);
 // def
 int foo$I$F$1(ival* i$, int k$) {
-	return foo$I$F(*(foo$I*)i$, k$);
-}
-// end
-
-// Go code:
-func F(a []byte) func([]byte) {
-	go F(a[1:])(a[:1])
-	return func(b []byte) {F(b)}
-}
-// C code:
-// decl
-void (*foo$F(slice a$))(slice);
-// def
-void (*foo$F(slice a$))(slice) {
-	{
-		void wrap(void (*_f)(slice), slice _0) {
-			goready();
-			_f(_0);
-		}
-		void (*_f)(slice) = foo$F(SLICEL(a$, byte*, 1));
-		slice _0 = SLICEH(a$, 1);
-		GO(wrap(_f, _0), true);
-	}
-	return ({
-		void func$(slice b$) {
-			foo$F(b$);
-		}
-		func$;
-	});
+	return foo$I$F((*(foo$I*)i$), k$);
 }
 // end
 
