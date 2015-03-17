@@ -10,14 +10,11 @@ func F() int {
 }
 // C code:
 // decl
-const
-tinfo foo$S$$;
+const tinfo foo$S$$;
 // def
-const
-tinfo foo$S$$ = {
+const tinfo foo$S$$ = {
 	{
 		.name = EGSTR("foo.S"),
-		.size = 8,
 		.kind = Struct,
 		.elems = CSLICE(2, ((const tinfo*[]){
 			&int$$,
@@ -26,13 +23,10 @@ tinfo foo$S$$ = {
 	}
 };
 // decl
-const
-tinfo $8$foo$S$$;
+const tinfo $8$foo$S$$;
 // def
-const
-tinfo $8$foo$S$$ = {
+const tinfo $8$foo$S$$ = {
 	{
-		.size = 4,
 		.kind = Ptr,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&foo$S$$
@@ -99,37 +93,39 @@ func (t *T) F() func(T) {
 }
 // C code:
 // decl
-const
-tinfo foo$T$$;
+const tinfo foo$T$$;
 // def
-const
-tinfo foo$T$$ = {
+const tinfo foo$T$$ = {
 	{
 		.name = EGSTR("foo.T"),
-		.size = 4,
 		.kind = Int
 	}
 };
 // decl
-__attribute__((section(".unused"))) const
-minfo Add$$$foo$T$$$;
+const minfo Add$$$foo$T$$$;
 // def
-__attribute__((section(".unused"))) const
-minfo Add$$$foo$T$$$;
+const minfo Add$$$foo$T$$$;
 // decl
-__attribute__((section(".unused"))) const
-minfo F$$$$func$$$foo$T$$$;
+const minfo F$$$$func$$$foo$T$$$;
 // def
-__attribute__((section(".unused"))) const
-minfo F$$$$func$$$foo$T$$$;
+const minfo F$$$$func$$$foo$T$$$;
 // decl
-const
-tinfo $8$foo$T$$;
+void foo$T$Add$0(ival* t$, foo$T a$);
 // def
-const
-tinfo $8$foo$T$$ = {
+void foo$T$Add$0(ival* t$, foo$T a$) {
+	return foo$T$Add(((foo$T*)t$->ptr), a$);
+}
+// decl
+void (*foo$T$F$0(ival* t$))(foo$T);
+// def
+void (*foo$T$F$0(ival* t$))(foo$T) {
+	return foo$T$F(((foo$T*)t$->ptr));
+}
+// decl
+const tinfo $8$foo$T$$;
+// def
+const tinfo $8$foo$T$$ = {
 	{
-		.size = 4,
 		.kind = Ptr,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&foo$T$$
@@ -152,22 +148,10 @@ void foo$T$Add(foo$T *t$, foo$T a$) {
 	*t$ += a$;
 }
 // decl
-void foo$T$Add$0(ival* t$, foo$T a$);
-// def
-void foo$T$Add$0(ival* t$, foo$T a$) {
-	return foo$T$Add((foo$T*)t$->ptr, a$);
-}
-// decl
 void (*foo$T$F(foo$T *t$))(foo$T);
 // def
 void (*foo$T$F(foo$T *t$))(foo$T) {
 	return ({void func(foo$T _1) { return foo$T$Add(t$, _1); } func;});
-}
-// decl
-void (*foo$T$F$0(ival* t$))(foo$T);
-// def
-void (*foo$T$F$0(ival* t$))(foo$T) {
-	return foo$T$F((foo$T*)t$->ptr);
 }
 // end
 
@@ -183,31 +167,29 @@ func F() func(*T, T) {
 }
 // C code:
 // decl
-const
-tinfo foo$T$$;
+const tinfo foo$T$$;
 // def
-const
-tinfo foo$T$$ = {
+const tinfo foo$T$$ = {
 	{
 		.name = EGSTR("foo.T"),
-		.size = 4,
 		.kind = Int
 	}
 };
 // decl
-__attribute__((section(".unused"))) const
-minfo Add$$$foo$T$$$;
+const minfo Add$$$foo$T$$$;
 // def
-__attribute__((section(".unused"))) const
-minfo Add$$$foo$T$$$;
+const minfo Add$$$foo$T$$$;
 // decl
-const
-tinfo $8$foo$T$$;
+void foo$T$Add$0(ival* t$, foo$T a$);
 // def
-const
-tinfo $8$foo$T$$ = {
+void foo$T$Add$0(ival* t$, foo$T a$) {
+	return foo$T$Add(((foo$T*)t$->ptr), a$);
+}
+// decl
+const tinfo $8$foo$T$$;
+// def
+const tinfo $8$foo$T$$ = {
 	{
-		.size = 4,
 		.kind = Ptr,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&foo$T$$
@@ -226,12 +208,6 @@ void foo$T$Add(foo$T *t$, foo$T a$);
 // def
 void foo$T$Add(foo$T *t$, foo$T a$) {
 	*t$ += a$;
-}
-// decl
-void foo$T$Add$0(ival* t$, foo$T a$);
-// def
-void foo$T$Add$0(ival* t$, foo$T a$) {
-	return foo$T$Add((foo$T*)t$->ptr, a$);
 }
 // decl
 void (*foo$F())(foo$T*, foo$T);
@@ -256,14 +232,11 @@ func (a *A) F(b *B) {
 }
 // C code:
 // decl
-const
-tinfo foo$A$$;
+const tinfo foo$A$$;
 // def
-const
-tinfo foo$A$$ = {
+const tinfo foo$A$$ = {
 	{
 		.name = EGSTR("foo.A"),
-		.size = 4,
 		.kind = Struct,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&int$$
@@ -271,19 +244,20 @@ tinfo foo$A$$ = {
 	}
 };
 // decl
-__attribute__((section(".unused"))) const
-minfo F$$$$8$foo$B$$$;
+const minfo F$$$$8$foo$B$$$;
 // def
-__attribute__((section(".unused"))) const
-minfo F$$$$8$foo$B$$$;
+const minfo F$$$$8$foo$B$$$;
 // decl
-const
-tinfo $8$foo$A$$;
+void foo$A$F$0(ival* a$, foo$B *b$);
 // def
-const
-tinfo $8$foo$A$$ = {
+void foo$A$F$0(ival* a$, foo$B *b$) {
+	return foo$A$F(((foo$A*)a$->ptr), b$);
+}
+// decl
+const tinfo $8$foo$A$$;
+// def
+const tinfo $8$foo$A$$ = {
 	{
-		.size = 4,
 		.kind = Ptr,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&foo$A$$
@@ -303,14 +277,11 @@ struct foo$A_struct {
 	int Fa;
 };
 // decl
-const
-tinfo foo$B$$;
+const tinfo foo$B$$;
 // def
-const
-tinfo foo$B$$ = {
+const tinfo foo$B$$ = {
 	{
 		.name = EGSTR("foo.B"),
-		.size = 8,
 		.kind = Struct,
 		.elems = CSLICE(2, ((const tinfo*[]){
 			&foo$A$$,
@@ -319,13 +290,16 @@ tinfo foo$B$$ = {
 	}
 };
 // decl
-const
-tinfo $8$foo$B$$;
+void foo$B$F$0(ival* a$, foo$B *b$);
 // def
-const
-tinfo $8$foo$B$$ = {
+void foo$B$F$0(ival* a$, foo$B *b$) {
+	return foo$A$F(&((foo$B*)a$->ptr)->A, b$);
+}
+// decl
+const tinfo $8$foo$B$$;
+// def
+const tinfo $8$foo$B$$ = {
 	{
-		.size = 4,
 		.kind = Ptr,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&foo$B$$

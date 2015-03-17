@@ -8,19 +8,25 @@ type Method struct {
 
 type Type struct {
 	name    string
-	size    uintptr
-	kind    byte
+	kind    int
 	elems   []*Type `C:"const"`
 	methods []*Method
 	fns     [0]unsafe.Pointer
 }
 
-func (t *Type) Kind() byte {
+func (t *Type) Kind() int {
+	if t.kind < 0 {
+		// Array
+		return -1
+	}
 	return t.kind
 }
 
-func (t *Type) Size() uintptr {
-	return t.size
+func (t *Type) Len() int {
+	if t.kind < 0 {
+		return -1 - t.kind
+	}
+	return 0
 }
 
 func (t *Type) Name() string {

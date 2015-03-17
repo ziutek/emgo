@@ -6,41 +6,58 @@ func (t T) F() {
 }
 // C code:
 // decl
-__attribute__((section(".unused"))) const
-minfo F$$$$;
+const minfo F$$$$;
 // def
-__attribute__((section(".unused"))) const
-minfo F$$$$;
-// end
-
-// Go code:
-type T int
-
-func (t T) F() {
-	p := &t
-	p.F()
-}
-// C code:
-// decl
-typedef int foo$T;
-// decl
-void foo$T$F(foo$T t$);
-// def
-void foo$T$F(foo$T t$) {
-	foo$T *p$ = &t$;
-	foo$T$F(*p$);
-}
-// decl
-void foo$T$F$0(ival* t$);
-// def
-void foo$T$F$0(ival* t$) {
-	return foo$T$F(*(foo$T*)t$->ptr);
-}
+const minfo F$$$$;
 // decl
 void foo$T$F$1(ival* t$);
 // def
 void foo$T$F$1(ival* t$) {
-	return foo$T$F(*(foo$T*)t$);
+	return foo$T$F((*(foo$T*)t$));
+}
+// decl
+const tinfo foo$T$$;
+// def
+const tinfo foo$T$$ = {
+	{
+		.name = EGSTR("foo.T"),
+		.kind = Uint8,
+		.methods = CSLICE(1, ((const minfo*[]){
+			&F$$$$
+		}))
+	}, {
+		foo$T$F$1
+	}
+};
+// decl
+void foo$T$F$0(ival* t$);
+// def
+void foo$T$F$0(ival* t$) {
+	return foo$T$F(*((foo$T*)t$->ptr));
+}
+// decl
+const tinfo $8$foo$T$$;
+// def
+const tinfo $8$foo$T$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$T$$
+		})),
+		.methods = CSLICE(1, ((const minfo*[]){
+			&F$$$$
+		}))
+	}, {
+		foo$T$F$0
+	}
+};
+// decl
+typedef byte foo$T;
+// decl
+void foo$T$F(foo$T t$);
+// def
+void foo$T$F(foo$T t$) {
+	foo$T$F(t$);
 }
 // end
 
@@ -49,8 +66,45 @@ type T int
 
 func (t *T) F() {
 	t.F()
+	v := *t
+	v.F()
 }
 // C code:
+// decl
+const tinfo foo$T$$;
+// def
+const tinfo foo$T$$ = {
+	{
+		.name = EGSTR("foo.T"),
+		.kind = Int
+	}
+};
+// decl
+const minfo F$$$$;
+// def
+const minfo F$$$$;
+// decl
+void foo$T$F$0(ival* t$);
+// def
+void foo$T$F$0(ival* t$) {
+	return foo$T$F(((foo$T*)t$->ptr));
+}
+// decl
+const tinfo $8$foo$T$$;
+// def
+const tinfo $8$foo$T$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$T$$
+		})),
+		.methods = CSLICE(1, ((const minfo*[]){
+			&F$$$$
+		}))
+	}, {
+		foo$T$F$0
+	}
+};
 // decl
 typedef int foo$T;
 // decl
@@ -58,36 +112,7 @@ void foo$T$F(foo$T *t$);
 // def
 void foo$T$F(foo$T *t$) {
 	foo$T$F(t$);
-}
-// decl
-void foo$T$F$0(ival* t$);
-// def
-void foo$T$F$0(ival* t$) {
-	return foo$T$F((foo$T*)t$->ptr);
-}
-// end
-
-// Go code:
-type T int
-
-func (t *T) F() {
-	v := *t
-	v.F()
-}
-// C code:
-// decl
-typedef int foo$T;
-// decl
-void foo$T$F(foo$T *t$);
-// def
-void foo$T$F(foo$T *t$) {
 	foo$T v$ = *t$;
 	foo$T$F(&v$);
-}
-// decl
-void foo$T$F$0(ival* t$);
-// def
-void foo$T$F$0(ival* t$) {
-	return foo$T$F((foo$T*)t$->ptr);
 }
 // end

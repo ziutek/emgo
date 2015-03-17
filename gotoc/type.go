@@ -405,31 +405,31 @@ var basicKinds = []string{
 
 func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	tname := cdd.tiname(typ)
-	var basic, named bool
+	var builtin, named bool
 	switch t := typ.(type) {
 	case *types.Basic:
-		basic = true
+		builtin = true
 	case *types.Pointer:
 		switch e := t.Elem().(type) {
 		case *types.Basic:
-			basic = true
+			builtin = true
 		case *types.Named:
 			named = true
-			basic = (e.Obj().Pkg() == nil)
+			builtin = (e.Obj().Pkg() == nil)
 		}
 	case *types.Slice:
 		switch e := t.Elem().(type) {
 		case *types.Basic:
-			basic = true
+			builtin = true
 		case *types.Named:
-			basic = (e.Obj().Pkg() == nil)
+			builtin = (e.Obj().Pkg() == nil)
 		}
 	case *types.Named:
 		named = true
-		basic = (t.Obj().Pkg() == nil)
+		builtin = (t.Obj().Pkg() == nil)
 	}
-	if basic && cdd.gtc.pkg.Path() != "builtin" {
-		// Generate tinfo for "basic" types only in builtin package.
+	if builtin && cdd.gtc.pkg.Path() != "builtin" {
+		// Generate tinfo for "builtin" types only in builtin package.
 		return tname
 	}
 	if o, ok := cdd.gtc.tinfos[tname]; ok {
@@ -444,9 +444,9 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 
 	cdd = nil
 
-	acd.Export = basic
-	acd.Weak = !basic && !named
-	w.WriteString("const\ntinfo ")
+	acd.Export = builtin
+	acd.Weak = !builtin && !named
+	w.WriteString("const tinfo ")
 	w.WriteString(tname)
 	acd.copyDecl(w, ";\n")
 	w.WriteString(" = {\n")
@@ -459,8 +459,8 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		acd.indent(w)
 		w.WriteString(".name = EGSTR(\"" + nt.String() + "\"),\n")
 	}
-	acd.indent(w)
-	w.WriteString(".size = " + strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
+	//acd.indent(w)
+	//w.WriteString(".size = " + strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
 	var (
 		kind  string
 		elems []types.Type
@@ -473,15 +473,18 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		}
 		kind = basicKinds[k]
 	case *types.Array:
-		kind = "Array"
+		kind = "Array - " + strconv.FormatInt(t.Len(), 10)
+		elems = []types.Type{t.Elem()}
 	case *types.Chan:
 		kind = "Chan"
+		elems = []types.Type{t.Elem()}
 	case *types.Signature:
 		kind = "Func"
 	case *types.Interface:
 		kind = "Interface"
 	case *types.Map:
 		kind = "Map"
+		elems = []types.Type{t.Key(), t.Elem()}
 	case *types.Pointer:
 		kind = "Ptr"
 		elems = []types.Type{t.Elem()}

@@ -36,14 +36,11 @@ func CompositeLitStruct() int {
 }
 // C code:
 // decl
-const
-tinfo foo$S$$51;
+const tinfo foo$S$$51;
 // def
-const
-tinfo foo$S$$51 = {
+const tinfo foo$S$$51 = {
 	{
 		.name = EGSTR("foo.S"),
-		.size = 8,
 		.kind = Struct,
 		.elems = CSLICE(2, ((const tinfo*[]){
 			&int$$,
@@ -52,13 +49,10 @@ tinfo foo$S$$51 = {
 	}
 };
 // decl
-const
-tinfo $8$foo$S$$51;
+const tinfo $8$foo$S$$51;
 // def
-const
-tinfo $8$foo$S$$51 = {
+const tinfo $8$foo$S$$51 = {
 	{
-		.size = 4,
 		.kind = Ptr,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&foo$S$$51

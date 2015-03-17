@@ -1,6 +1,39 @@
 // Go code:
 type F func(a, b int) (x, y int)
 // C code:
+// decl
+struct int$$int_struct;
+typedef struct int$$int_struct int$$int;
+// def
+#ifndef int$$int$
+#define int$$int$
+struct int$$int_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+const tinfo foo$F$$;
+// def
+const tinfo foo$F$$ = {
+	{
+		.name = EGSTR("foo.F"),
+		.kind = Func
+	}
+};
+// decl
+const tinfo $8$foo$F$$;
+// def
+const tinfo $8$foo$F$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$F$$
+		}))
+	}
+};
+// decl
+typedef int$$int (*foo$F)(int, int);
 // end
 
 // Go code:
@@ -16,6 +49,29 @@ struct $4_$int_struct {
 	int arr[4];
 };
 #endif
+// decl
+const tinfo foo$A$$;
+// def
+const tinfo foo$A$$ = {
+	{
+		.name = EGSTR("foo.A"),
+		.kind = Array - 4,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&int$$
+		}))
+	}
+};
+// decl
+const tinfo $8$foo$A$$;
+// def
+const tinfo $8$foo$A$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$A$$
+		}))
+	}
+};
 // decl
 typedef $4_$int foo$A;
 // end
@@ -34,6 +90,29 @@ struct $4_$$8$int_struct {
 };
 #endif
 // decl
+const tinfo foo$AP$$;
+// def
+const tinfo foo$AP$$ = {
+	{
+		.name = EGSTR("foo.AP"),
+		.kind = Array - 4,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&$8$int$$
+		}))
+	}
+};
+// decl
+const tinfo $8$foo$AP$$;
+// def
+const tinfo $8$foo$AP$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$AP$$
+		}))
+	}
+};
+// decl
 typedef $4_$$8$int foo$AP;
 // end
 
@@ -51,6 +130,29 @@ struct $4_$int_struct {
 };
 #endif
 // decl
+const tinfo $4_$int$$;
+// def
+const tinfo $4_$int$$ = {
+	{
+		.kind = Array - 4,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&int$$
+		}))
+	}
+};
+// decl
+const tinfo foo$PA$$;
+// def
+const tinfo foo$PA$$ = {
+	{
+		.name = EGSTR("foo.PA"),
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&$4_$int$$
+		}))
+	}
+};
+// decl
 typedef $4_$int *foo$PA;
 // end
 
@@ -67,6 +169,29 @@ struct $4_$$8$int_struct {
 	int *arr[4];
 };
 #endif
+// decl
+const tinfo $4_$$8$int$$;
+// def
+const tinfo $4_$$8$int$$ = {
+	{
+		.kind = Array - 4,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&$8$int$$
+		}))
+	}
+};
+// decl
+const tinfo foo$PAP$$;
+// def
+const tinfo foo$PAP$$ = {
+	{
+		.name = EGSTR("foo.PAP"),
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&$4_$$8$int$$
+		}))
+	}
+};
 // decl
 typedef $4_$$8$int *foo$PAP;
 // end
@@ -95,6 +220,40 @@ struct $4_$$3_$int_struct {
 };
 #endif
 // decl
+const tinfo $3_$int$$;
+// def
+const tinfo $3_$int$$ = {
+	{
+		.kind = Array - 3,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&int$$
+		}))
+	}
+};
+// decl
+const tinfo foo$AA$$;
+// def
+const tinfo foo$AA$$ = {
+	{
+		.name = EGSTR("foo.AA"),
+		.kind = Array - 4,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&$3_$int$$
+		}))
+	}
+};
+// decl
+const tinfo $8$foo$AA$$;
+// def
+const tinfo $8$foo$AA$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$AA$$
+		}))
+	}
+};
+// decl
 typedef $4_$$3_$int foo$AA;
 // end
 
@@ -122,6 +281,40 @@ struct $4_$$3_$int_struct {
 };
 #endif
 // decl
+const tinfo $3_$int$$;
+// def
+const tinfo $3_$int$$ = {
+	{
+		.kind = Array - 3,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&int$$
+		}))
+	}
+};
+// decl
+const tinfo $4_$$3_$int$$;
+// def
+const tinfo $4_$$3_$int$$ = {
+	{
+		.kind = Array - 4,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&$3_$int$$
+		}))
+	}
+};
+// decl
+const tinfo foo$PAA$$;
+// def
+const tinfo foo$PAA$$ = {
+	{
+		.name = EGSTR("foo.PAA"),
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&$4_$$3_$int$$
+		}))
+	}
+};
+// decl
 typedef $4_$$3_$int *foo$PAA;
 // end
 
@@ -148,6 +341,51 @@ struct $4_$$8$$3_$int_struct {
 	$3_$int *arr[4];
 };
 #endif
+// decl
+const tinfo $3_$int$$;
+// def
+const tinfo $3_$int$$ = {
+	{
+		.kind = Array - 3,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&int$$
+		}))
+	}
+};
+// decl
+const tinfo $8$$3_$int$$;
+// def
+const tinfo $8$$3_$int$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&$3_$int$$
+		}))
+	}
+};
+// decl
+const tinfo $4_$$8$$3_$int$$;
+// def
+const tinfo $4_$$8$$3_$int$$ = {
+	{
+		.kind = Array - 4,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&$8$$3_$int$$
+		}))
+	}
+};
+// decl
+const tinfo foo$PAPA$$;
+// def
+const tinfo foo$PAPA$$ = {
+	{
+		.name = EGSTR("foo.PAPA"),
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&$4_$$8$$3_$int$$
+		}))
+	}
+};
 // decl
 typedef $4_$$8$$3_$int *foo$PAPA;
 // end

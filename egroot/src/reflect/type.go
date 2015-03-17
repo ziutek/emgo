@@ -4,7 +4,7 @@ import (
 	"builtin"
 )
 
-type Kind byte
+type Kind int
 
 const (
 	Invalid Kind = iota
@@ -24,7 +24,6 @@ const (
 	Float64
 	Complex64
 	Complex128
-	Array
 	Chan
 	Func
 	Interface
@@ -34,9 +33,12 @@ const (
 	String
 	Struct
 	UnsafePointer
+	
+	Array Kind = -1
 )
 
 var kindNames = [...]string{
+	"array",
 	"invalid",
 	"bool",
 	"int",
@@ -54,7 +56,6 @@ var kindNames = [...]string{
 	"float64",
 	"complex64",
 	"complex128",
-	"array",
 	"chan",
 	"func",
 	"interface",
@@ -67,8 +68,8 @@ var kindNames = [...]string{
 }
 
 func (k Kind) String() string {
-	if k < 0 || int(k) >= len(kindNames) {
-		k = 0
+	if k++; k < 0 || int(k) >= len(kindNames) {
+		k = 1
 	}
 	return kindNames[k]
 }

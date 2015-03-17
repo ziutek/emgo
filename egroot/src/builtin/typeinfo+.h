@@ -32,7 +32,6 @@ enum {
 	Float64,
 	Complex64,
 	Complex128,
-	Array,
 	Chan,
 	Func,
 	Interface,
@@ -42,6 +41,8 @@ enum {
 	String,
 	Struct,
 	UnsafePointer,
+	
+	Array = -1
 };
 
 #define TINFO(i) (((const ithead*)(i).itab$)->typ)

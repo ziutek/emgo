@@ -2,14 +2,11 @@
 type S struct {a, b int}
 // C code:
 // decl
-const
-tinfo foo$S$$;
+const tinfo foo$S$$;
 // def
-const
-tinfo foo$S$$ = {
+const tinfo foo$S$$ = {
 	{
 		.name = EGSTR("foo.S"),
-		.size = 8,
 		.kind = Struct,
 		.elems = CSLICE(2, ((const tinfo*[]){
 			&int$$,
@@ -18,13 +15,10 @@ tinfo foo$S$$ = {
 	}
 };
 // decl
-const
-tinfo $8$foo$S$$;
+const tinfo $8$foo$S$$;
 // def
-const
-tinfo $8$foo$S$$ = {
+const tinfo $8$foo$S$$ = {
 	{
-		.size = 4,
 		.kind = Ptr,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&foo$S$$
@@ -50,14 +44,11 @@ type S struct {
 }
 // C code:
 // decl
-const
-tinfo foo$S$$;
+const tinfo foo$S$$;
 // def
-const
-tinfo foo$S$$ = {
+const tinfo foo$S$$ = {
 	{
 		.name = EGSTR("foo.S"),
-		.size = 4,
 		.kind = Struct,
 		.elems = CSLICE(4, ((const tinfo*[]){
 			&uint8$$,
@@ -68,13 +59,10 @@ tinfo foo$S$$ = {
 	}
 };
 // decl
-const
-tinfo $8$foo$S$$;
+const tinfo $8$foo$S$$;
 // def
-const
-tinfo $8$foo$S$$ = {
+const tinfo $8$foo$S$$ = {
 	{
-		.size = 4,
 		.kind = Ptr,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&foo$S$$
@@ -111,25 +99,19 @@ struct uint$$int$$byte_struct {
 };
 #endif
 // decl
-const
-tinfo func$$$int$$int$$$uint$$int$$uint8$$;
+const tinfo func$$$int$$int$$$uint$$int$$uint8$$;
 // def
-const
-tinfo func$$$int$$int$$$uint$$int$$uint8$$ = {
+const tinfo func$$$int$$int$$$uint$$int$$uint8$$ = {
 	{
-		.size = 4,
 		.kind = Func
 	}
 };
 // decl
-const
-tinfo foo$S$$;
+const tinfo foo$S$$;
 // def
-const
-tinfo foo$S$$ = {
+const tinfo foo$S$$ = {
 	{
 		.name = EGSTR("foo.S"),
-		.size = 4,
 		.kind = Struct,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&func$$$int$$int$$$uint$$int$$uint8$$
@@ -137,13 +119,10 @@ tinfo foo$S$$ = {
 	}
 };
 // decl
-const
-tinfo $8$foo$S$$;
+const tinfo $8$foo$S$$;
 // def
-const
-tinfo $8$foo$S$$ = {
+const tinfo $8$foo$S$$ = {
 	{
-		.size = 4,
 		.kind = Ptr,
 		.elems = CSLICE(1, ((const tinfo*[]){
 			&foo$S$$

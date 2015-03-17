@@ -123,6 +123,8 @@ func Switch(i *interface{}) bool {
 		return false
 	case []byte:
 		return true
+	case error:
+		return false
 	default:
 		return false
 	}
@@ -132,10 +134,65 @@ func Switch(i *interface{}) bool {
 	case int:
 		return v == 1
 	case error:
-		return v.Error() == nil
+		return v.Error() == ""
 	default:
 		return false
 	}
 }
 // C code:
+// decl
+bool foo$Switch(interface *i$);
+// def
+bool foo$Switch(interface *i$) {
+	switch(0){case 0:{
+		interface _tag = (*i$);
+		if (_tag.itab$ == &string$$) {
+			return false;
+			break;
+		}
+		if (_tag.itab$ == &slice$$uint8$$) {
+			return true;
+			break;
+		}
+		if (implements(_tag.itab$, &error$$)) {
+			return false;
+			break;
+		}
+		{
+			return false;
+			break;
+		}
+	}}
+	switch(0){case 0:{
+		interface _tag = (*i$);
+		if (_tag.itab$ == &bool$$) {
+			bool v$ = IVAL(_tag, bool);
+			{
+				return v$;
+			}
+			break;
+		}
+		if (_tag.itab$ == &int$$) {
+			int v$ = IVAL(_tag, int);
+			{
+				return (v$ == 1);
+			}
+			break;
+		}
+		if (implements(_tag.itab$, &error$$)) {
+			interface v$ = ICONVERTEI(_tag,  error$$);
+			{
+				return equals(((error*)(v$.itab$))->Error(&v$.val$), EGSTR(""));
+			}
+			break;
+		}
+		{
+			interface v$ = _tag;
+			{
+				return false;
+			}
+			break;
+		}
+	}}
+}
 // end
