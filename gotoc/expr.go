@@ -464,9 +464,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		w.WriteString("(" + lhs + op + rhs + ")")
 
 	case *ast.UnaryExpr:
-		op := e.Op.String()
-
-		if op == "<-" {
+		if e.Op == token.ARROW {
 			t := cdd.exprType(e.X).(*types.Chan).Elem()
 			if tup, ok := cdd.exprType(e).(*types.Tuple); ok {
 				tn, _ := cdd.tupleName(tup)
@@ -485,8 +483,12 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			}
 			break
 		}
-
-		if op == "^" {
+		if e.Op == token.AND {
+			cdd.ptrExpr(w, e.X)
+			break
+		}
+		op := e.Op.String()
+		if e.Op == token.XOR {
 			op = "~"
 		}
 		w.WriteString(op)
@@ -600,21 +602,30 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 	return
 }
 
-func (cdd *CDD) clArrayLen(elems []ast.Expr) int64 {
-	if len(elems) == 0 {
-		return 0
+func (cdd *CDD) newVar(name string, typ types.Type, global bool, val ast.Expr) {
+	var pos token.Pos
+	if val != nil {
+		pos = val.Pos()
 	}
-	if _, ok := elems[0].(*ast.KeyValueExpr); !ok {
-		return int64(len(elems))
+	o := types.NewVar(pos, cdd.gtc.pkg, name, typ)
+	if global {
+		cdd.gtc.pkg.Scope().Insert(o)
 	}
-	var n int64
-	for _, e := range elems {
-		key := e.(*ast.KeyValueExpr).Key
-		if v, _ := exact.Int64Val(cdd.gtc.exprValue(key)); v > n {
-			n = v
-		}
+	acd := cdd.gtc.newCDD(o, VarDecl, 0)
+	cdd.acds = append(cdd.acds, acd)
+	acd.varDecl(new(bytes.Buffer), typ, name, val)
+}
+
+func (cdd *CDD) ptrExpr(w *bytes.Buffer, e ast.Expr) {
+	w.WriteByte('&')
+	cl, ok := e.(*ast.CompositeLit)
+	if !ok || cdd.Typ != VarDecl || !cdd.gtc.isGlobal(cdd.Origin) {
+		cdd.Expr(w, e, nil)
+		return
 	}
-	return n + 1
+	name := "_cl" + cdd.gtc.uniqueId()
+	w.WriteString(name)
+	cdd.newVar(name, cdd.exprType(cl), true, cl)
 }
 
 func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Type) {
@@ -623,7 +634,7 @@ func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Ty
 	switch t := typ.Underlying().(type) {
 	case *types.Array:
 		if !cdd.constInit {
-			w.WriteByte('(')
+			w.WriteString("((")
 			dim := cdd.Type(w, typ)
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteByte(')')
@@ -631,6 +642,9 @@ func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Ty
 		w.WriteString("{{")
 		cdd.elts(w, e.Elts, t.Elem(), nil)
 		w.WriteString("}}")
+		if !cdd.constInit {
+			w.WriteByte(')')
+		}
 
 	case *types.Slice:
 		alen := cdd.clArrayLen(e.Elts)
@@ -646,32 +660,47 @@ func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Ty
 			break
 		}
 
-		aname := "array" + cdd.gtc.uniqueId()
+		aname := "_cl" + cdd.gtc.uniqueId()
 		w.WriteString("{&" + aname + ", " + slen + ", " + slen + "}")
 
 		typ := types.NewArray(t.Elem(), alen)
 		tv := cdd.gtc.ti.Types[e]
 		tv.Type = typ
 		cdd.gtc.ti.Types[e] = tv
-		o := types.NewVar(e.Lbrace, cdd.gtc.pkg, aname, typ)
-		cdd.gtc.pkg.Scope().Insert(o)
-		acd := cdd.gtc.newCDD(o, VarDecl, 0)
-		cdd.acds = append(cdd.acds, acd)
-		acd.varDecl(new(bytes.Buffer), typ, aname, e)
+		cdd.newVar(aname, typ, true, e)
 
 	case *types.Struct:
 		if !cdd.constInit {
-			w.WriteByte('(')
+			w.WriteString("((")
 			cdd.Type(w, typ)
 			w.WriteByte(')')
 		}
 		w.WriteByte('{')
 		cdd.elts(w, e.Elts, nil, t)
 		w.WriteByte('}')
-
+		if !cdd.constInit {
+			w.WriteByte(')')
+		}
 	default:
 		cdd.notImplemented(e, t)
 	}
+}
+
+func (cdd *CDD) clArrayLen(elems []ast.Expr) int64 {
+	if len(elems) == 0 {
+		return 0
+	}
+	if _, ok := elems[0].(*ast.KeyValueExpr); !ok {
+		return int64(len(elems))
+	}
+	var n int64
+	for _, e := range elems {
+		key := e.(*ast.KeyValueExpr).Key
+		if v, _ := exact.Int64Val(cdd.gtc.exprValue(key)); v > n {
+			n = v
+		}
+	}
+	return n + 1
 }
 
 func (cdd *CDD) elts(w *bytes.Buffer, elts []ast.Expr, nilT types.Type, st *types.Struct) {

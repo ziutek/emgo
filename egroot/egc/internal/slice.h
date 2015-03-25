@@ -45,36 +45,39 @@ typedef struct {
 	s;                              \
 })
 
-#define ASLICEL(len, expr, low) \
-	(slice){                    \
-		&(expr).arr[low],       \
-		len-low,                \
-		len-low,                \
-	}
+#define ASLICEL(len, expr, low) ( \
+	(slice){                      \
+		&(expr).arr[low],         \
+		len-low,                  \
+		len-low,                  \
+	}                             \
+)
 
-#define ASLICELH(len, expr, low, high) \
-	(slice){                           \
-		&(expr).arr[low],              \
-		high-low,                      \
-		len-low                        \
-	}
+#define ASLICELH(len, expr, low, high) ( \
+	(slice){                             \
+		&(expr).arr[low],                \
+		high-low,                        \
+		len-low                          \
+	}                                    \
+)
+
+#define ASLICELHM(expr, low, high, max) ( \
+	(slice){                              \
+		&(expr).arr[low],                 \
+		high-low,                         \
+		max-low                           \
+	}                                     \
+)
 	
-#define ASLICELHM(expr, low, high, max) \
-	(slice){                            \
-		&(expr).arr[low],               \
-		high-low,                       \
-		max-low                         \
-	}
-	
-#define ASLICE(len, expr) (slice){(expr).arr, len, len}
+#define ASLICE(len, expr) ((slice){(expr).arr, len, len})
 
-#define CSLICE(len, expr) (slice){(expr), len, len}
+#define CSLICE(len, expr) ((slice){(expr), len, len})
 
-#define ASLICEH(len, expr, high) (slice){(expr).arr, high, len}
+#define ASLICEH(len, expr, high) ((slice){(expr).arr, high, len})
 	
 // #define ASLICEM(expr, max) Go 1.2 doesn't allow [::max].
 	
-#define ASLICEHM(expr, high, max) (slice){(expr).arr, high, max}
+#define ASLICEHM(expr, high, max) ((slice){(expr).arr, high, max})
 
 #define SLICPY(typ, dst, src) ({                     \
 	int n = (dst.len < src.len) ? dst.len : src.len; \
@@ -82,4 +85,4 @@ typedef struct {
 	n;                                               \
 })
 
-#define NILSLICE (slice){}
+#define NILSLICE ((slice){})

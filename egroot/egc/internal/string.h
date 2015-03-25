@@ -4,9 +4,6 @@ typedef struct {
 } string;
 
 #define EGSTR(s) ((string){(byte*)(s), sizeof(s)-1})
-#define EGISTR(s) {(byte*)(s), sizeof(s)-1}
-
-// TODO: #define NEWSTR(b)
 
 #define _SSLICE_LOW(expr, low) \
 	string s = expr;           \

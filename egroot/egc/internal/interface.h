@@ -25,4 +25,4 @@ typedef struct {
 	cast.in = (i).val$;                          \
 	cast.out;                                    \
 })
-#define NILI (interface){}
+#define NILI ((interface){})

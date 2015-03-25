@@ -245,7 +245,7 @@ func zeroVal(w *bytes.Buffer, typ types.Type) {
 }
 
 func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Expr) {
-	global := cdd.Typ == VarDecl && cdd.gtc.isGlobal(cdd.Origin)
+	global := (cdd.Typ == VarDecl) && cdd.gtc.isGlobal(cdd.Origin)
 	dim := cdd.Type(w, typ)
 	w.WriteByte(' ')
 	w.WriteString(dimFuncPtr(name, dim))
@@ -279,9 +279,15 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Ex
 }
 
 // isConstExpr returns true if val can be represented as C constant expr.
+// typ is destination type.
 func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) bool {
 	if cdd.exprValue(val) != nil {
 		return true
+	}
+	if _, ok := typ.Underlying().(*types.Interface); ok {
+		if !types.Identical(typ, cdd.exprType(val)) {
+			return false
+		}
 	}
 	switch v := val.(type) {
 	case *ast.Ident:
@@ -317,13 +323,21 @@ func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) bool {
 			}
 			if _, ok := v.Elts[0].(*ast.KeyValueExpr); ok {
 				for _, e := range v.Elts {
+					key := e.(*ast.KeyValueExpr).Key.(*ast.Ident).Name
+					var elemt types.Type
+					for i := 0; i < t.NumFields(); i++ {
+						if t.Field(i).Name() == key {
+							elemt = t.Field(i).Type()
+							break
+						}
+					}
 					if !cdd.isConstExpr(e.(*ast.KeyValueExpr).Value, elemt) {
 						return false
 					}
 				}
 			} else {
 				for i, e := range v.Elts {
-					if !cdd.isConstExpr(e, t.Field(i).Type() {
+					if !cdd.isConstExpr(e, t.Field(i).Type()) {
 						return false
 					}
 				}
@@ -334,10 +348,6 @@ func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) bool {
 		}
 	}
 	return false
-	/*cdd.exit(
-		val.Pos(),
-		"'%s' can not be a global initializer\n", types.ExprString(val),
-	)*/
 }
 
 /*

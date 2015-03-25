@@ -81,15 +81,13 @@ type Stringer interface {
 	String() string
 }
 
-var t = T{7, 8, S{"bar"}}
-
 var ivals = [...]interface{}{
 	1,
 	byte(2),
 	uintptr(3),
 	rtos.Debug(4),
 	T{5, 6, S{"foo"}},
-	&t,
+	&T{7, 8, S{"bar"}},
 	nil,
 }
 
