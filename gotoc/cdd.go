@@ -33,17 +33,18 @@ type CDD struct {
 	NoLoad bool
 	Inline bool // set by DetermineInline()
 
-	Decl     []byte
-	Def      []byte
-	Init     []byte
-	InitNext *CDD
+	Decl []byte
+	Def  []byte
+	Init []byte
+	//InitNext *CDD
 
 	gtc *GTC
 	il  int // indentation level
 
-	init  bool // true if generated code will be placed in init() function
-	fbody bool // true if translation process in function body
-	dfsm  int8
+	initFunc  bool // true if generated code will be placed in init() function
+	fbody     bool // true if translation process in function body
+	constInit bool // true if constant initialisation of variable
+	dfsm      int8
 
 	acds []*CDD // additional CDDs
 }
@@ -200,9 +201,9 @@ func (cdd *CDD) addObject(o types.Object, direct bool) {
 		// Don't save references for builtin objects (eg: error type)
 		return
 	}
-	if cdd.init && !cdd.gtc.isImported(o) {
-		// Don't save references to package objects if used in init() function.
-		// This is mainly for global variables initialization in init().
+	if cdd.initFunc && !cdd.gtc.isImported(o) {
+		// Don't save references to objects from current package
+		// if used in init() function.
 		return
 	}
 	if cdd.fbody {
@@ -261,10 +262,19 @@ func (cdd *CDD) exit(pos token.Pos, f string, a ...interface{}) {
 func (cdd *CDD) notImplemented(n ast.Node, tl ...types.Type) {
 	cdd.gtc.notImplemented(n, tl...)
 }
+
 func (cdd *CDD) AllCDDS() (cdds []*CDD) {
 	for _, a := range cdd.acds {
 		cdds = append(cdds, a.AllCDDS()...)
 	}
 	cdds = append(cdds, cdd)
 	return
+}
+
+func (cdd *CDD) writeInits(w *bytes.Buffer) {
+	for i := len(cdd.acds); i > 0; {
+		i--
+		cdd.acds[i].writeInits(w)
+	}
+	w.Write(cdd.Init)
 }

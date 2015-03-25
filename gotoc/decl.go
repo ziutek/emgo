@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strconv"
 
-	"golang.org/x/tools/go/exact"
 	"golang.org/x/tools/go/types"
 )
 
@@ -26,9 +25,9 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	w.WriteByte(' ')
 	w.WriteString(dimFuncPtr(fname+params.String(), res.dim))
 
-	cdd.init = (f.Name() == "init" && sig.Recv() == nil && !cdd.gtc.isLocal(f))
+	cdd.initFunc = (f.Name() == "init" && sig.Recv() == nil && !cdd.gtc.isLocal(f))
 
-	if !cdd.init {
+	if !cdd.initFunc {
 		cdd.copyDecl(w, ";\n")
 	}
 
@@ -103,7 +102,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 	}
 	cdd.copyDef(w)
 
-	if cdd.init {
+	if cdd.initFunc {
 		cdd.Init = []byte("\t" + fname + "();\n")
 	}
 	return
@@ -174,7 +173,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				} else {
 					indent = true
 				}
-				cdd.varDecl(w, v.Type(), cdd.gtc.isGlobal(v), name, val)
+				cdd.varDecl(w, v.Type(), name, val)
 				w.Reset()
 				cdds = append(cdds, cdd)
 			}
@@ -245,7 +244,104 @@ func zeroVal(w *bytes.Buffer, typ types.Type) {
 	}
 }
 
-func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name string, val ast.Expr) {
+func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Expr) {
+	global := cdd.Typ == VarDecl && cdd.gtc.isGlobal(cdd.Origin)
+	dim := cdd.Type(w, typ)
+	w.WriteByte(' ')
+	w.WriteString(dimFuncPtr(name, dim))
+	if global {
+		cdd.copyDecl(w, ";\n") // Global variables may need declaration
+		cdd.constInit = (val == nil || cdd.isConstExpr(val, typ))
+		if !cdd.constInit {
+			w.WriteString(";\n")
+			cdd.copyDef(w)
+			w.Reset()
+			cdd.il++
+			cdd.indent(w)
+			w.WriteString(name)
+		}
+	}
+
+	w.WriteString(" = ")
+	if val != nil {
+		cdd.interfaceExpr(w, val, typ)
+	} else {
+		zeroVal(w, typ)
+	}
+	w.WriteString(";\n")
+
+	if global && !cdd.constInit {
+		cdd.il--
+		cdd.copyInit(w)
+	} else {
+		cdd.copyDef(w)
+	}
+}
+
+// isConstExpr returns true if val can be represented as C constant expr.
+func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) bool {
+	if cdd.exprValue(val) != nil {
+		return true
+	}
+	switch v := val.(type) {
+	case *ast.Ident:
+		return (v.Name == "nil")
+	case *ast.UnaryExpr:
+		return v.Op == token.AND
+	case *ast.CompositeLit:
+		switch t := typ.Underlying().(type) {
+		case *types.Slice:
+			return true
+		case *types.Array:
+			if len(v.Elts) == 0 {
+				return true
+			}
+			elemt := t.Elem()
+			if _, ok := v.Elts[0].(*ast.KeyValueExpr); ok {
+				for _, e := range v.Elts {
+					if !cdd.isConstExpr(e.(*ast.KeyValueExpr).Value, elemt) {
+						return false
+					}
+				}
+			} else {
+				for _, e := range v.Elts {
+					if !cdd.isConstExpr(e, elemt) {
+						return false
+					}
+				}
+			}
+			return true
+		case *types.Struct:
+			if len(v.Elts) == 0 {
+				return true
+			}
+			if _, ok := v.Elts[0].(*ast.KeyValueExpr); ok {
+				for _, e := range v.Elts {
+					if !cdd.isConstExpr(e.(*ast.KeyValueExpr).Value, elemt) {
+						return false
+					}
+				}
+			} else {
+				for i, e := range v.Elts {
+					if !cdd.isConstExpr(e, t.Field(i).Type() {
+						return false
+					}
+				}
+			}
+			return true
+		default:
+			cdd.gtc.notImplemented(val, typ)
+		}
+	}
+	return false
+	/*cdd.exit(
+		val.Pos(),
+		"'%s' can not be a global initializer\n", types.ExprString(val),
+	)*/
+}
+
+/*
+func (cdd *CDD) varDeclOld(w *bytes.Buffer, typ types.Type, global bool, name string, val ast.Expr) {
 
 	dim := cdd.Type(w, typ)
 	w.WriteByte(' ')
@@ -376,6 +472,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, global bool, name strin
 	}
 	return
 }
+*/
 
 var tuparrRe = regexp.MustCompile(`(\$\$)|(^\$[0-9]+_\$.)`)
 

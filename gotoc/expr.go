@@ -562,61 +562,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.notImplemented(e)
 
 	case *ast.CompositeLit:
-		w.WriteByte('(')
-
-		typ := cdd.exprType(e)
-
-		switch t := typ.Underlying().(type) {
-		case *types.Array:
-			w.WriteByte('(')
-			dim := cdd.Type(w, typ)
-			w.WriteString(dimFuncPtr("", dim))
-			w.WriteByte(')')
-			w.WriteString("{{")
-			nilT = t.Elem()
-		case *types.Slice:
-			w.WriteString("(slice){(")
-			dim := cdd.Type(w, t.Elem())
-			dim = append([]string{"[]"}, dim...)
-			w.WriteString(dimFuncPtr("", dim))
-			w.WriteString("){")
-			nilT = t.Elem()
-		case *types.Struct:
-			w.WriteByte('(')
-			cdd.Type(w, typ)
-			w.WriteString("){")
-			nilT = nil
-		default:
-			cdd.notImplemented(e, t)
-		}
-
-		for i, el := range e.Elts {
-			if i > 0 {
-				w.WriteString(", ")
-			}
-			if nilT != nil {
-				cdd.interfaceExpr(w, el, nilT)
-			} else {
-				cdd.interfaceExpr(w, el, typ.Underlying().(*types.Struct).Field(i).Type())
-			}
-		}
-
-		switch typ.Underlying().(type) {
-		case *types.Array:
-			w.WriteString("}}")
-
-		case *types.Slice:
-			w.WriteByte('}')
-			plen := ", " + strconv.Itoa(len(e.Elts))
-			w.WriteString(plen)
-			w.WriteString(plen)
-			w.WriteByte('}')
-
-		default:
-			w.WriteByte('}')
-		}
-
-		w.WriteByte(')')
+		cdd.compositeLit(w, e, nilT)
 
 	case *ast.FuncLit:
 		fname := "func"
@@ -652,6 +598,93 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		fmt.Fprintf(w, "!%v<%T>!", e, e)
 	}
 	return
+}
+
+func (cdd *CDD) clArrayLen(elems []ast.Expr) int64 {
+	if len(elems) == 0 {
+		return 0
+	}
+	if _, ok := elems[0].(*ast.KeyValueExpr); !ok {
+		return int64(len(elems))
+	}
+	var n int64
+	for _, e := range elems {
+		key := e.(*ast.KeyValueExpr).Key
+		if v, _ := exact.Int64Val(cdd.gtc.exprValue(key)); v > n {
+			n = v
+		}
+	}
+	return n + 1
+}
+
+func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Type) {
+	typ := cdd.exprType(e)
+
+	switch t := typ.Underlying().(type) {
+	case *types.Array:
+		if !cdd.constInit {
+			w.WriteByte('(')
+			dim := cdd.Type(w, typ)
+			w.WriteString(dimFuncPtr("", dim))
+			w.WriteByte(')')
+		}
+		w.WriteString("{{")
+		cdd.elts(w, e.Elts, t.Elem(), nil)
+		w.WriteString("}}")
+
+	case *types.Slice:
+		alen := cdd.clArrayLen(e.Elts)
+		slen := strconv.FormatInt(alen, 10)
+		if !cdd.constInit {
+			w.WriteString("CSLICE(" + slen + ", ((")
+			dim := cdd.Type(w, t.Elem())
+			dim = append([]string{"[]"}, dim...)
+			w.WriteString(dimFuncPtr("", dim))
+			w.WriteString("){")
+			cdd.elts(w, e.Elts, t.Elem(), nil)
+			w.WriteString("}))")
+			break
+		}
+
+		aname := "array" + cdd.gtc.uniqueId()
+		w.WriteString("{&" + aname + ", " + slen + ", " + slen + "}")
+
+		typ := types.NewArray(t.Elem(), alen)
+		tv := cdd.gtc.ti.Types[e]
+		tv.Type = typ
+		cdd.gtc.ti.Types[e] = tv
+		o := types.NewVar(e.Lbrace, cdd.gtc.pkg, aname, typ)
+		cdd.gtc.pkg.Scope().Insert(o)
+		acd := cdd.gtc.newCDD(o, VarDecl, 0)
+		cdd.acds = append(cdd.acds, acd)
+		acd.varDecl(new(bytes.Buffer), typ, aname, e)
+
+	case *types.Struct:
+		if !cdd.constInit {
+			w.WriteByte('(')
+			cdd.Type(w, typ)
+			w.WriteByte(')')
+		}
+		w.WriteByte('{')
+		cdd.elts(w, e.Elts, nil, t)
+		w.WriteByte('}')
+
+	default:
+		cdd.notImplemented(e, t)
+	}
+}
+
+func (cdd *CDD) elts(w *bytes.Buffer, elts []ast.Expr, nilT types.Type, st *types.Struct) {
+	for i, el := range elts {
+		if i > 0 {
+			w.WriteString(", ")
+		}
+		if nilT != nil {
+			cdd.interfaceExpr(w, el, nilT)
+		} else {
+			cdd.interfaceExpr(w, el, st.Field(i).Type())
+		}
+	}
 }
 
 func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Expr) {
@@ -926,7 +959,7 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 }
 
 func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, ityp types.Type) {
-	if ityp == nil || etyp == nil || types.Identical(ityp, etyp){
+	if ityp == nil || etyp == nil || types.Identical(ityp, etyp) {
 		w.WriteString(es)
 		return
 	}
@@ -952,7 +985,7 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 		case iempty:
 			w.WriteString("ICONVERTIE(" + es + ")")
 		case eempty:
-			w.WriteString("ICONVERTEI(" + es + ",  " + cdd.tinameDU(ityp) +")")
+			w.WriteString("ICONVERTEI(" + es + ",  " + cdd.tinameDU(ityp) + ")")
 		default:
 			w.WriteString("ICONVERTII(" + es + ",  " + cdd.tinameDU(ityp) + ")")
 		}

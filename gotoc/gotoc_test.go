@@ -53,7 +53,7 @@ func (s sampleDecl) testDecl() error {
 	gtc := gotoc.NewGTC(fset, pkg, ti, &gotoc.StdSizes{4, 8})
 	var cdds []*gotoc.CDD
 	for _, d := range f.Decls {
-		for _, cdd :=  range gtc.Decl(d, 0) {
+		for _, cdd := range gtc.Decl(d, 0) {
 			cdds = append(cdds, cdd.AllCDDS()...)
 		}
 	}
@@ -135,7 +135,6 @@ func (s sampleDecl) notMatch(section, cdd, c string) error {
 	buf.WriteString("// end")
 	return errors.New(buf.String())
 }
-
 
 func TestDeclFiles(t *testing.T) {
 	dname := "tests"

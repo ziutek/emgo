@@ -11,27 +11,9 @@ int foo$A = 3;
 var A = []int{1, 2, 3}
 // C code:
 // decl
-struct $3_$int_struct;
-typedef struct $3_$int_struct $3_$int;
-// def
-#ifndef $3_$int$
-#define $3_$int$
-struct $3_$int_struct {
-	int arr[3];
-};
-#endif
-// decl
-$3_$int array0;
-// def
-$3_$int array0;
-// init
-	array0 = (($3_$int){{1, 2, 3}});
-// decl
 slice foo$A;
 // def
-slice foo$A;
-// init
-	foo$A = ASLICE(3, array0);
+slice foo$A = ((slice){(int[]){1, 2, 3}, 3, 3});
 // end
 
 // Go code:

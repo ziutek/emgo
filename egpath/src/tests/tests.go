@@ -1,26 +1,7 @@
 package tests
 
-type Int int
+var s = [][]int{{11: 3}, {13: Int()}}
 
-func (i Int) Get() int {
-	return int(i)
-}
-
-func (i *Int) Set(v1, v2 int) {
-	*i = Int(v1 + v2)
-}
-
-type T struct {
-	Int
-}
-
-type Terr struct {
-	T
-	error
-}
-
-func f(t *Terr) string {
-	s := t.error.Error()
-	s = t.Error()
-	return s
+func Int() int {
+	return 1
 }

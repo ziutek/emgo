@@ -306,11 +306,13 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 	for _, i := range gtc.ti.InitOrder {
 		for _, l := range i.Lhs {
-			cdd := cddm[l]
-			for cdd != nil {
+			if cdd := cddm[l]; cdd != nil {
+				cdd.writeInits(buf)
+			}
+			/*for cdd != nil {
 				buf.Write(cdd.Init)
 				cdd = cdd.InitNext
-			}
+			}*/
 		}
 	}
 	for _, cdd := range fcs {
