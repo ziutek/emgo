@@ -98,6 +98,14 @@ func (t Type) Kind() Kind {
 	return Kind(t.b.Kind())
 }
 
+// Len returns length of array.
+func (t Type) Len() int {
+	if t.Kind() != Array {
+		panic("reflect: not array")
+	}
+	return t.b.Len()
+} 
+
 // Name returns name of type within its package. It returns empty string if t
 // is not valid or represents unnamed type.
 func (t Type) Name() string {
@@ -134,3 +142,4 @@ func (t Type) NumElems() int {
 func (t Type) Elem(i int) Type {
 	return Type{t.b.Elems()[i]}
 }
+

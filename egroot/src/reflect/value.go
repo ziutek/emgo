@@ -1,5 +1,7 @@
 package reflect
 
+import "unsafe"
+
 type Value struct {
 	val complex128
 	typ Type
@@ -7,7 +9,8 @@ type Value struct {
 
 func valueOf(i interface{}) Value
 
-// ValueOf returns a new Value initialized to the concrete value stored in i. ValueOf(nil) returns the zero Value.
+// ValueOf returns a new Value initialized to the concrete value stored in i.
+// ValueOf(nil) returns the zero Value.
 func ValueOf(i interface{}) Value {
 	return valueOf(i)
 }
@@ -31,4 +34,42 @@ func (v Value) Type() Type {
 // Kind returns kind od v. If v is zero Value, Kind returns Invalid.
 func (v Value) Kind() Kind {
 	return v.typ.Kind()
+}
+
+// Int returns underlying value of v as an int64.
+// It panics if kind of v isn't Int, Int8, Int16, Int32, Int64.
+func (v Value) Int() int64 {
+	p := unsafe.Pointer(&v.val)
+	switch v.Kind() {
+	case Int:
+		return int64(*(*int)(p))
+	case Int8:
+		return int64(*(*int8)(p))
+	case Int16:
+		return int64(*(*int16)(p))
+	case Int32:
+		return int64(*(*int32)(p))
+	case Int64:
+		return *(*int64)(p)
+	}
+	panic("reflect: not signed int")
+}
+
+// Uint returns underlying value of v as an uint64.
+// It panics if kind of v isn't Uint, Uint8, Uint16, Uint32, Uint64.
+func (v Value) Uint() uint64 {
+	p := unsafe.Pointer(&v.val)
+	switch v.Kind() {
+	case Uint:
+		return uint64(*(*uint)(p))
+	case Uint8:
+		return uint64(*(*uint8)(p))
+	case Uint16:
+		return uint64(*(*uint16)(p))
+	case Uint32:
+		return uint64(*(*uint32)(p))
+	case Uint64:
+		return *(*uint64)(p)
+	}
+	panic("reflect: not unsigned int")
 }
