@@ -335,6 +335,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			if s.Value != nil || !array {
 				cdd.indent(w)
 				cdd.varDecl(w, xt, xs, e)
+				w.WriteByte('\n')
 			}
 		}
 
@@ -456,6 +457,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		if s.Tag != nil {
 			typ = cdd.exprType(s.Tag)
 			cdd.varDecl(w, typ, "_tag", s.Tag)
+			w.WriteByte('\n')
 		} else {
 			typ = types.Typ[types.Bool]
 			w.WriteString("bool _tag = true;\n")
@@ -533,6 +535,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		iempty := (cdd.gtc.methodSet(ityp).Len() == 0)
 		cdd.indent(w)
 		cdd.varDecl(w, cdd.exprType(x), "_tag", x)
+		w.WriteByte('\n')
 		for _, stmt := range s.Body.List {
 			cdd.indent(w)
 			cs := stmt.(*ast.CaseClause)

@@ -11,9 +11,23 @@ int foo$A = 3;
 var A = []int{1, 2, 3}
 // C code:
 // decl
+struct $3_$int_struct;
+typedef struct $3_$int_struct $3_$int;
+// def
+#ifndef $3_$int$
+#define $3_$int$
+struct $3_$int_struct {
+	int arr[3];
+};
+#endif
+// decl
+$3_$int _cl0;
+// def
+$3_$int _cl0 = {{1, 2, 3}};
+// decl
 slice foo$A;
 // def
-slice foo$A = ((slice){(int[]){1, 2, 3}, 3, 3});
+slice foo$A = {&_cl0, 3, 3};
 // end
 
 // Go code:
@@ -30,17 +44,13 @@ struct $31_$int_struct {
 };
 #endif
 // decl
-$31_$int array0;
+$31_$int _cl0;
 // def
-$31_$int array0;
-// init
-	array0 = (($31_$int){{[10] = 1, [20] = 2, [30] = 3}});
+$31_$int _cl0 = {{[10] = 1, [20] = 2, [30] = 3}};
 // decl
 slice foo$A;
 // def
-slice foo$A;
-// init
-	foo$A = ASLICE(31, array0);
+slice foo$A = {&_cl0, 31, 31};
 // end
 
 // Go code:
@@ -57,23 +67,43 @@ struct $32_$int_struct {
 };
 #endif
 // decl
-$32_$int array0;
+$32_$int _cl0;
 // def
-$32_$int array0;
-// init
-	array0 = (($32_$int){{1, 2, [30] = 3, 4}});
+$32_$int _cl0 = {{1, 2, [30] = 3, 4}};
 // decl
 slice foo$A;
 // def
-slice foo$A;
-// init
-	foo$A = ASLICE(32, array0);
+slice foo$A = {&_cl0, 32, 32};
 // end
 
 // Go code:
 type S struct{a, b int}
 var p = &S{a: 1}
 // C code:
+// decl
+const tinfo foo$S$$;
+// def
+const tinfo foo$S$$ = {
+	{
+		.name = EGSTR("foo.S"),
+		.kind = Struct,
+		.elems = CSLICE(2, ((const tinfo*[]){
+			&int$$,
+			&int$$
+		}))
+	}
+};
+// decl
+const tinfo $8$foo$S$$;
+// def
+const tinfo $8$foo$S$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$S$$
+		}))
+	}
+};
 // decl
 struct foo$S_struct;
 typedef struct foo$S_struct foo$S;
@@ -83,17 +113,13 @@ struct foo$S_struct {
 	int b;
 };
 // decl
-foo$S cl0;
+foo$S _cl0;
 // def
-foo$S cl0;
-// init
-	cl0 = ((foo$S){.a = 1});
+foo$S _cl0 = {.a = 1};
 // decl
 foo$S *foo$p;
 // def
-foo$S *foo$p;
-// init
-	foo$p = &cl0;
+foo$S *foo$p = &_cl0;
 // end
 
 // Go code:

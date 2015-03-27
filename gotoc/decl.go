@@ -268,8 +268,11 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Ex
 	} else {
 		zeroVal(w, typ)
 	}
-	w.WriteString(";\n")
-
+	w.WriteByte(';')
+	if cdd.Typ != VarDecl {
+		return
+	}
+	w.WriteByte('\n')
 	if global && !cdd.constInit {
 		cdd.il--
 		cdd.copyInit(w)
@@ -303,14 +306,12 @@ func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) bool {
 				return true
 			}
 			elemt := t.Elem()
-			if _, ok := v.Elts[0].(*ast.KeyValueExpr); ok {
-				for _, e := range v.Elts {
-					if !cdd.isConstExpr(e.(*ast.KeyValueExpr).Value, elemt) {
+			for _, e := range v.Elts {
+				if kv, ok := e.(*ast.KeyValueExpr); ok {
+					if !cdd.isConstExpr(kv.Value, elemt) {
 						return false
 					}
-				}
-			} else {
-				for _, e := range v.Elts {
+				} else {
 					if !cdd.isConstExpr(e, elemt) {
 						return false
 					}
@@ -349,140 +350,6 @@ func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) bool {
 	}
 	return false
 }
-
-/*
-func (cdd *CDD) varDeclOld(w *bytes.Buffer, typ types.Type, global bool, name string, val ast.Expr) {
-
-	dim := cdd.Type(w, typ)
-	w.WriteByte(' ')
-	w.WriteString(dimFuncPtr(name, dim))
-
-	constInit := true // true if C declaration can init value
-
-	if global {
-		cdd.copyDecl(w, ";\n") // Global variables may need declaration
-		if val != nil {
-			if i, ok := val.(*ast.Ident); !ok || i.Name != "nil" {
-				constInit = cdd.exprValue(val) != nil
-			}
-		}
-	}
-
-	if constInit {
-		w.WriteString(" = ")
-		if val != nil {
-			cdd.interfaceExpr(w, val, typ)
-		} else {
-			zeroVal(w, typ)
-		}
-	}
-	w.WriteString(";\n")
-	cdd.copyDef(w)
-
-	if !constInit {
-		w.Reset()
-		cdd.il++
-		cdd.indent(w)
-
-		// Runtime initialisation
-		assign := false
-
-		switch t := typ.Underlying().(type) {
-		case *types.Slice:
-			switch vt := val.(type) {
-			case *ast.CompositeLit:
-				aname := "array" + cdd.gtc.uniqueId()
-				var n int64
-				for _, elem := range vt.Elts {
-					switch e := elem.(type) {
-					case *ast.KeyValueExpr:
-						val := cdd.exprValue(e.Key)
-						if val == nil {
-							panic("slice: composite literal with non-constant key")
-						}
-						m, ok := exact.Int64Val(val)
-						if !ok {
-							panic("slice: can't convert " + val.String() + " to int64")
-						}
-						m++
-						if m > n {
-							n = m
-						}
-					default:
-						n++
-					}
-				}
-
-				at := types.NewArray(t.Elem(), n)
-				o := types.NewVar(vt.Lbrace, cdd.gtc.pkg, aname, at)
-				cdd.gtc.pkg.Scope().Insert(o)
-				acd := cdd.gtc.newCDD(o, VarDecl, cdd.il-1)
-				av := *vt
-				cdd.gtc.ti.Types[&av] = types.TypeAndValue{Type: at} // BUG: thread-unsafe
-				acd.varDecl(new(bytes.Buffer), o.Type(), cdd.gtc.isGlobal(o), aname, &av)
-				cdd.InitNext = acd
-				cdd.acds = append(cdd.acds, acd)
-
-				w.WriteString(name)
-				w.WriteString(" = ASLICE(")
-				w.WriteString(strconv.FormatInt(at.Len(), 10))
-				w.WriteString(", ")
-				w.WriteString(aname)
-				w.WriteString(");\n")
-
-			default:
-				assign = true
-			}
-
-		case *types.Array:
-			w.WriteString(name)
-			w.WriteString(" = ")
-			cdd.Expr(w, val, typ)
-			w.WriteString(";\n")
-
-		case *types.Pointer:
-			u, ok := val.(*ast.UnaryExpr)
-			if !ok {
-				assign = true
-				break
-			}
-			c, ok := u.X.(*ast.CompositeLit)
-			if !ok {
-				assign = true
-				break
-			}
-			cname := "cl" + cdd.gtc.uniqueId()
-			ct := cdd.exprType(c)
-			o := types.NewVar(c.Lbrace, cdd.gtc.pkg, cname, ct)
-			cdd.gtc.pkg.Scope().Insert(o)
-			acd := cdd.gtc.newCDD(o, VarDecl, cdd.il-1)
-			acd.varDecl(new(bytes.Buffer), o.Type(), cdd.gtc.isGlobal(o), cname, c)
-			cdd.InitNext = acd
-			cdd.acds = append(cdd.acds, acd)
-
-			w.WriteString(name)
-			w.WriteString(" = &")
-			w.WriteString(cname)
-			w.WriteString(";\n")
-
-		default:
-			assign = true
-		}
-
-		if assign {
-			// Ordinary assignment gos to the init() function
-			cdd.init = true
-			w.WriteString(name)
-			w.WriteString(" = ")
-			cdd.interfaceExpr(w, val, typ)
-			w.WriteString(";\n")
-		}
-		cdd.il--
-		cdd.copyInit(w)
-	}
-	return
-}
-*/
 
 var tuparrRe = regexp.MustCompile(`(\$\$)|(^\$[0-9]+_\$.)`)
 

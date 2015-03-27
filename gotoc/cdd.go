@@ -43,7 +43,7 @@ type CDD struct {
 
 	initFunc  bool // true if generated code will be placed in init() function
 	fbody     bool // true if translation process in function body
-	constInit bool // true if constant initialisation of variable
+	constInit bool
 	dfsm      int8
 
 	acds []*CDD // additional CDDs

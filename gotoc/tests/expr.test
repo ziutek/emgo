@@ -19,8 +19,8 @@ struct $2_$int_struct {
 int foo$CompositeLitSlice();
 // def
 int foo$CompositeLitSlice() {
-	slice a$ = ((slice){($2_$int[]){(($2_$int){{1, 2}}), (($2_$int){{3, 4}}), (($2_$int){{4, 5}})}, 3, 3});
-	slice b$ = ((slice){($2_$int*[]){&(($2_$int*)a$.arr)[0], &(($2_$int*)a$.arr)[1], &(($2_$int*)a$.arr)[2]}, 3, 3});
+	slice a$ = CSLICE(3, (($2_$int[]){(($2_$int){{1, 2}}), (($2_$int){{3, 4}}), (($2_$int){{4, 5}})}));
+	slice b$ = CSLICE(3, (($2_$int*[]){&(($2_$int*)a$.arr)[0], &(($2_$int*)a$.arr)[1], &(($2_$int*)a$.arr)[2]}));
 	return len(b$);
 }
 // end
@@ -123,4 +123,12 @@ int foo$F() {
 	a$ = tmp0;
 	return a$;
 }
+// end
+
+// Go code:
+func F(v interface{}) (int, bool) {
+	i, ok := v.(int)
+	return i, ok
+}
+// C code:
 // end

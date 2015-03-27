@@ -561,7 +561,50 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.Expr(w, e.X, nil)
 
 	case *ast.TypeAssertExpr:
-		cdd.notImplemented(e)
+		w.WriteString("({\n")
+		cdd.il++
+		ityp := cdd.exprType(e.X)
+		cdd.indent(w)
+		cdd.varDecl(w, ityp, "_i", e.X)
+		w.WriteByte('\n')
+		cdd.indent(w)
+		w.WriteString("bool _ok = ")
+		//etyp := cdd.exprType(e)
+		iempty := (cdd.gtc.methodSet(ityp).Len() == 0)
+		typ := cdd.exprType(e.Type)
+		if _, ok := typ.Underlying().(*types.Interface); ok {
+			if cdd.gtc.methodSet(typ).Len() == 0 {
+				w.WriteString("true;\n")
+			} else {
+				w.WriteString("implements(")
+				if iempty {
+					w.WriteString("_i.itab$, &")
+				} else {
+					w.WriteString("TINFO(_i), &")
+				}
+				w.WriteString(cdd.tinameDU(typ))
+				w.WriteString(");\n")
+			}
+			cdd.indent(w)
+			cdd.interfaceES(w, "_i", e.Pos(), ityp, typ)
+		} else {
+			if iempty {
+				w.WriteString("_i.itab$ == &")
+			} else {
+				w.WriteString("TINFO(_i) == &")
+			}
+			w.WriteString(cdd.tinameDU(typ))
+			w.WriteString(";\n")
+
+			cdd.indent(w)
+			w.WriteString("IVAL(_i, ")
+			dim := cdd.Type(w, typ)
+			w.WriteString(dimFuncPtr("", dim))
+			w.WriteByte(')')
+		}
+		cdd.il--
+		cdd.indent(w)
+		w.WriteString("})")
 
 	case *ast.CompositeLit:
 		cdd.compositeLit(w, e, nilT)
@@ -659,7 +702,6 @@ func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Ty
 			w.WriteString("}))")
 			break
 		}
-
 		aname := "_cl" + cdd.gtc.uniqueId()
 		w.WriteString("{&" + aname + ", " + slen + ", " + slen + "}")
 
@@ -690,17 +732,17 @@ func (cdd *CDD) clArrayLen(elems []ast.Expr) int64 {
 	if len(elems) == 0 {
 		return 0
 	}
-	if _, ok := elems[0].(*ast.KeyValueExpr); !ok {
-		return int64(len(elems))
-	}
-	var n int64
+	var n, k int64
 	for _, e := range elems {
-		key := e.(*ast.KeyValueExpr).Key
-		if v, _ := exact.Int64Val(cdd.gtc.exprValue(key)); v > n {
-			n = v
+		if kv, ok := e.(*ast.KeyValueExpr); ok {
+			k, _ = exact.Int64Val(cdd.gtc.exprValue(kv.Key))
+
+		}
+		if k++; k > n {
+			n = k
 		}
 	}
-	return n + 1
+	return n
 }
 
 func (cdd *CDD) elts(w *bytes.Buffer, elts []ast.Expr, nilT types.Type, st *types.Struct) {
