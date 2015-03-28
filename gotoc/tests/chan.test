@@ -53,9 +53,9 @@ int$$bool foo$R(chan c$) {
 	int i$ = 0;
 	bool ok$ = false;
 	{
-		int$$bool tmp0 = RECVOK(int$$bool, c$);
-		i$ = tmp0._0;
-		ok$ = tmp0._1;
+		int$$bool _tmp0 = RECVOK(int$$bool, c$);
+		i$ = _tmp0._0;
+		ok$ = _tmp0._1;
 		goto end;
 	}
 end:

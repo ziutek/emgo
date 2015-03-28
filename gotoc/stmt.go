@@ -29,7 +29,7 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 				cdd.il++
 				cdd.indent(w)
 				tn, fields := cdd.tupleName(eTyp.(*types.Tuple))
-				tmp := "tmp" + cdd.gtc.uniqueId()
+				tmp := "_tmp" + cdd.gtc.uniqueId()
 				w.WriteString(tn + " " + tmp + " = ")
 				cdd.Expr(w, s.Results[0], eTyp)
 				w.WriteString(";\n")
@@ -110,12 +110,14 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 		if rhsIsTuple {
 			tup := cdd.exprType(s.Rhs[0]).(*types.Tuple)
-			tupName, _ := cdd.tupleName(tup)
+			/*tupName, _ := cdd.tupleName(tup)
 			w.WriteString(tupName)
-			tupName = "tmp" + cdd.gtc.uniqueId()
+			tupName = "_tmp" + cdd.gtc.uniqueId()
 			w.WriteString(" " + tupName + " = ")
-			cdd.Expr(w, s.Rhs[0], nil)
-			w.WriteString(";\n")
+			cdd.Expr(w, s.Rhs[0], nil)*/
+			tupName := "_tmp" + cdd.gtc.uniqueId()
+			cdd.varDecl(w, tup, tupName, s.Rhs[0])
+			w.WriteByte('\n')
 			cdd.indent(w)
 			for i, n := 0, tup.Len(); i < n; i++ {
 				rhs[i] = tupName + "._" + strconv.Itoa(i)
@@ -176,7 +178,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					w.WriteString(");\n")
 				} else {
 					dim := cdd.Type(w, t)
-					tmp := "tmp" + cdd.gtc.uniqueId()
+					tmp := "_tmp" + cdd.gtc.uniqueId()
 					w.WriteString(" " + dimFuncPtr(tmp, dim))
 					w.WriteString(" = " + rhs[i] + ";\n")
 					rhs[i] = tmp
@@ -776,7 +778,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 						tup = cdd.exprType(s.Rhs[0]).(*types.Tuple)
 						tupName, _ := cdd.tupleName(tup)
 						w.WriteString(tupName + " ")
-						tmp = "tmp" + cdd.gtc.uniqueId()
+						tmp = "_tmp" + cdd.gtc.uniqueId()
 						w.WriteString(tmp + " = ")
 					}
 					w.WriteString("SELRECVOK(" + strconv.Itoa(i) + ");\n")

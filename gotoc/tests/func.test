@@ -22,10 +22,10 @@ byte$$byte foo$F(int a$, int b$) {
 	byte x$ = 0;
 	byte y$ = 0;
 	{
-		byte tmp0 = (((byte)(a$))+y$);
-		byte tmp1 = (((byte)(b$))+x$);
-		x$ = tmp0;
-		y$ = tmp1;
+		byte _tmp0 = (((byte)(a$))+y$);
+		byte _tmp1 = (((byte)(b$))+x$);
+		x$ = _tmp0;
+		y$ = _tmp1;
 		goto end;
 	}
 end:
@@ -57,9 +57,9 @@ int$$int foo$F(int a$, int b$) {
 	int x$ = 0;
 	int y$ = 0;
 	{
-		int$$int tmp0 = foo$F(a$, b$);
-		x$ = tmp0._0;
-		y$ = tmp0._1;
+		int$$int _tmp0 = foo$F(a$, b$);
+		x$ = _tmp0._0;
+		y$ = _tmp0._1;
 		goto end;
 	}
 end:
@@ -125,8 +125,8 @@ int$$int foo$F(int a$, int b$) {
 	int x$ = 0;
 	int y$ = 0;
 	{
-		int$$int tmp0 = foo$F(a$, b$);
-		int c$ = tmp0._0;
+		int$$int _tmp0 = foo$F(a$, b$);
+		int c$ = _tmp0._0;
 		return (int$$int){c$, (a$+b$)};
 	}
 }

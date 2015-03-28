@@ -23,7 +23,28 @@ var (
 var A = []int{1, 2, 30: 3, 4, 20: 5, 6}
 */
 
-func f(v interface{}) (int, bool) {
+func f1(v interface{}) (int, bool) {
 	i, ok := v.(int)
 	return i, ok
+}
+
+func f2(v interface{}) int {
+	return v.(int)
+}
+
+func f3(v interface{}) (error, bool) {
+	e, ok := v.(error)
+	return e, ok
+}
+
+func f4(v interface{}) error {
+	return v.(error)
+}
+
+func f5(e error) interface{} {
+	return e.(interface{})
+}
+
+func f6(e error) error {
+	return e.(error)
 }

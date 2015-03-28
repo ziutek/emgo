@@ -39,9 +39,9 @@ int$$int foo$F();
 // def
 int$$int foo$F() {
 	int a$ = 1;
-	int$$int tmp0 = foo$F();
-	a$ = tmp0._0;
-	int b$ = tmp0._1;
+	int$$int _tmp0 = foo$F();
+	a$ = _tmp0._0;
+	int b$ = _tmp0._1;
 	return (int$$int){a$, b$};
 }
 // end

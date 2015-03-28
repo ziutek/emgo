@@ -105,6 +105,10 @@ writeType:
 
 	case *types.Interface:
 		w.WriteString("interface")
+		
+	case *types.Tuple:
+		tn, _ := cdd.tupleName(t)
+		w.WriteString(tn)
 
 	default:
 		fmt.Fprintf(w, "<%T>", t)

@@ -569,7 +569,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		w.WriteByte('\n')
 		cdd.indent(w)
 		w.WriteString("bool _ok = ")
-		//etyp := cdd.exprType(e)
+		etyp := cdd.exprType(e)
 		iempty := (cdd.gtc.methodSet(ityp).Len() == 0)
 		typ := cdd.exprType(e.Type)
 		if _, ok := typ.Underlying().(*types.Interface); ok {
@@ -586,21 +586,40 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 				w.WriteString(");\n")
 			}
 			cdd.indent(w)
-			cdd.interfaceES(w, "_i", e.Pos(), ityp, typ)
+			if t, ok := etyp.(*types.Tuple); ok {
+				tn, _ := cdd.tupleName(t)
+				w.WriteString("(" + tn + "){")
+				cdd.interfaceES(w, "_i", e.Pos(), ityp, typ)
+				w.WriteString(", _ok};\n")
+			} else {
+				w.WriteString("if (!_ok) panicIC();\n")
+				cdd.indent(w)
+				cdd.interfaceES(w, "_i", e.Pos(), ityp, typ)
+				w.WriteString(";\n")
+			}
 		} else {
 			if iempty {
-				w.WriteString("_i.itab$ == &")
+				w.WriteString("(_i.itab$ == &")
 			} else {
-				w.WriteString("TINFO(_i) == &")
+				w.WriteString("(TINFO(_i) == &")
 			}
 			w.WriteString(cdd.tinameDU(typ))
-			w.WriteString(";\n")
-
+			w.WriteString(");\n")
 			cdd.indent(w)
-			w.WriteString("IVAL(_i, ")
-			dim := cdd.Type(w, typ)
-			w.WriteString(dimFuncPtr("", dim))
-			w.WriteByte(')')
+			if t, ok := etyp.(*types.Tuple); ok {
+				tn, _ := cdd.tupleName(t)
+				w.WriteString("(" + tn + "){IVAL(_i, ")
+				dim := cdd.Type(w, typ)
+				w.WriteString(dimFuncPtr("", dim))
+				w.WriteString("), _ok};\n")
+			} else {
+				w.WriteString("if (!_ok) panicIC();\n")
+				cdd.indent(w)
+				w.WriteString("IVAL(_i, ")
+				dim := cdd.Type(w, typ)
+				w.WriteString(dimFuncPtr("", dim))
+				w.WriteString(");\n")
+			}
 		}
 		cdd.il--
 		cdd.indent(w)

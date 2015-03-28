@@ -75,9 +75,9 @@ int foo$S(chan c1$, chan c2$) {
 				break;
 			}
 			case3:{
-				int$$bool tmp0 = SELRECVOK(3);
-				int i$ = tmp0._0;
-				bool ok$ = tmp0._1;
+				int$$bool _tmp0 = SELRECVOK(3);
+				int i$ = _tmp0._0;
+				bool ok$ = _tmp0._1;
 				if (!ok$) {
 					break;
 				}
@@ -85,8 +85,8 @@ int foo$S(chan c1$, chan c2$) {
 				break;
 			}
 			case4:{
-				int$$bool tmp1 = SELRECVOK(4);
-				int i$ = tmp1._0;
+				int$$bool _tmp1 = SELRECVOK(4);
+				int i$ = _tmp1._0;
 				return i$;
 				break;
 			}
@@ -158,9 +158,9 @@ int foo$S(chan c1$, chan c2$) {
 						RECVCOMM(1)
 					);
 					case0:{
-						int$$bool tmp0 = SELRECVOK(0);
-						int i$ = tmp0._0;
-						bool ok$ = tmp0._1;
+						int$$bool _tmp0 = SELRECVOK(0);
+						int i$ = _tmp0._0;
+						bool ok$ = _tmp0._1;
 						if (((i$ == 0)||!ok$)) {
 							goto loop$_break;
 						}

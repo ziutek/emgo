@@ -98,8 +98,8 @@ int$$int foo$F();
 // def
 int$$int foo$F() {
 	int a$ = 0;
-	int$$int tmp0 = foo$F();
-	a$ = tmp0._0;
+	int$$int _tmp0 = foo$F();
+	a$ = _tmp0._0;
 	return (int$$int){a$, a$};
 }
 // end
@@ -118,9 +118,9 @@ int foo$F() {
 	int a$ = 1;
 	(void)((foo$F()+foo$F()));
 	(void)((3*foo$F()));
-	int tmp0 = 2;
+	int _tmp0 = 2;
 	(void)((3*foo$F()));
-	a$ = tmp0;
+	a$ = _tmp0;
 	return a$;
 }
 // end
@@ -131,4 +131,96 @@ func F(v interface{}) (int, bool) {
 	return i, ok
 }
 // C code:
+// decl
+struct int$$bool_struct;
+typedef struct int$$bool_struct int$$bool;
+// def
+#ifndef int$$bool$
+#define int$$bool$
+struct int$$bool_struct {
+	int _0;
+	bool _1;
+};
+#endif
+// decl
+int$$bool foo$F(interface v$);
+// def
+int$$bool foo$F(interface v$) {
+	int$$bool _tmp0 = ({
+		interface _i = v$;
+		bool _ok = (_i.itab$ == &int$$);
+		(int$$bool){IVAL(_i, int), _ok};
+	});
+	int i$ = _tmp0._0;
+	bool ok$ = _tmp0._1;
+	return (int$$bool){i$, ok$};
+}
+// end
+
+// Go code:
+func F(v interface{}) int {
+	return v.(int)
+}
+// C code:
+// decl
+int foo$F(interface v$);
+// def
+int foo$F(interface v$) {
+	return ({
+		interface _i = v$;
+		bool _ok = (_i.itab$ == &int$$);
+		if (!_ok) panicIC();
+		IVAL(_i, int);
+	});
+}
+// end
+
+// Go code:
+func F(v interface{}) (error, bool) {
+	e, ok := v.(error)
+	return e, ok
+}
+// C code:
+// decl
+struct interface$$bool_struct;
+typedef struct interface$$bool_struct interface$$bool;
+// def
+#ifndef interface$$bool$
+#define interface$$bool$
+struct interface$$bool_struct {
+	interface _0;
+	bool _1;
+};
+#endif
+// decl
+interface$$bool foo$F(interface v$);
+// def
+interface$$bool foo$F(interface v$) {
+	interface$$bool _tmp0 = ({
+		interface _i = v$;
+		bool _ok = implements(_i.itab$, &error$$);
+		(interface$$bool){ICONVERTEI(_i,  error$$), _ok};
+	});
+	interface e$ = _tmp0._0;
+	bool ok$ = _tmp0._1;
+	return (interface$$bool){e$, ok$};
+}
+// end
+
+// Go code:
+func F(v interface{}) error {
+	return v.(error)
+}
+// C code:
+// decl
+interface foo$F(interface v$);
+// def
+interface foo$F(interface v$) {
+	return ({
+		interface _i = v$;
+		bool _ok = implements(_i.itab$, &error$$);
+		if (!_ok) panicIC();
+		ICONVERTEI(_i,  error$$);
+	});
+}
 // end
