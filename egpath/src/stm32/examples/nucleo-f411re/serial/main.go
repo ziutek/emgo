@@ -5,8 +5,9 @@ package main
 
 import (
 	"delay"
-	"fmt"
+	//"fmt"
 	"rtos"
+	"strconv"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -85,44 +86,42 @@ func checkErr(err error) {
 }
 
 func main() {
-	var uts [10]uint64
+	s.WriteString("\nstrconv test:\n\n")
+	var buf [10]byte
 
-	// Following loop disassembled:
-	// 0:
-	//   svc	5
-	//   strd	r0, r1, [r3, #8]!
-	//	 ldr	r2, [sp, #52]
-	//   cmp	r3, r2
-	//   bne.n  0b
-	for i := range uts {
-		uts[i] = rtos.Uptime()
-	}
+	s.WriteString("-----------------\n")
 
-	s.WriteString("\nrtos.Uptime() in loop:\n")
-	for i, ut := range uts {
-		fmt.Int64(ut).Format(s, -12)
-		s.WriteString(" ns")
-		if i > 0 {
-			fmt.Fprintf(s, " (dt = %v ns)", fmt.Int64(ut-uts[i-1]))
-		}
-		s.WriteByte('\n')
-	}
+	start := strconv.FormatUint(buf[:], 123456, 10)
+	s.WriteByte('|')
+	s.Write(buf[:])
+	s.WriteString("|\n|")
+	s.Write(buf[start:])
+	s.WriteString("|\n")
 
-	s.WriteString("Echo:\n")
-	s.Flush()
+	s.WriteString("-----------------\n")
 
-	var buf [40]byte
-	for {
-		n, err := s.Read(buf[:])
-		checkErr(err)
+	end := strconv.FormatUint(buf[:], 123456, -10)
+	s.WriteByte('|')
+	s.Write(buf[:])
+	s.WriteString("|\n|")
+	s.Write(buf[:end])
+	s.WriteString("|\n")
 
-		ns := rtos.Uptime()
-		fmt.Uint64(ns).Format(s, -12)
+	s.WriteString("-----------------\n")
 
-		s.WriteString(" ns \"")
-		s.Write(buf[:n])
-		s.WriteString("\"\n")
+	start = strconv.FormatInt(buf[:], -123456, 10)
+	s.WriteByte('|')
+	s.Write(buf[:])
+	s.WriteString("|\n|")
+	s.Write(buf[start:])
+	s.WriteString("|\n")
 
-		blink(Green, 10)
-	}
+	s.WriteString("-----------------\n")
+
+	end = strconv.FormatInt(buf[:], -123456, -10)
+	s.WriteByte('|')
+	s.Write(buf[:])
+	s.WriteString("|\n|")
+	s.Write(buf[:end])
+	s.WriteString("|\n")
 }
