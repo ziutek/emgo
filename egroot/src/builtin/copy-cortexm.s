@@ -18,10 +18,10 @@ memmove:
 .thumb_func
 memcpy:
 	// Use ip as dst. r0 will be returned unmodified.
-	mov ip, r0
+	mov  ip, r0
 	// TODO: Check will be better to always
 	// use forward copy on non-overlaping data.
-	cmp  ip, r1
+	cmp  r1, r0
 	blo  10f
 
 // Forward copy

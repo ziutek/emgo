@@ -17,7 +17,7 @@ memcpy:
 	bx lr
 0:	
 	mov  ip, r0
-	cmp  r0, r1
+	cmp  r1, r0
 	blo  2f
 
 // Forward copy
