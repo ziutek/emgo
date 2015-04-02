@@ -8,20 +8,14 @@ func panicBuffer() {
 	panic("strconv: buffer too short")
 }
 
-func panicBase() {
-	panic("strconv: unsupported base")
-}
-
-func checkBase(base int) (int, bool) {
-	move := false
+func fixBase(base int) int {
 	if base < 0 {
 		base = -base
-		move = true
 	}
 	if base < 2 || base > len(digits) {
-		panicBase()
+		panic("strconv: unsupported base")
 	}
-	return base, move
+	return base
 }
 
 func finish(buf []byte, n int, move bool) int {
@@ -49,14 +43,9 @@ func finish(buf []byte, n int, move bool) int {
 	return n
 }
 
-// FormatUint32 stores text representation of u in buf using 2 <= |base| <= 36.
-// Unused portion of the buffer is filed with spaces. If base > 0 then formatted
-// value is right-justified and FormatUint32 returns offset to its first char.
-// If base < 0 then formatted value is left-justified and FormatUint32 returns
-// its length.
+// FormatUint32 works like FormatInt.
 func FormatUint32(buf []byte, u uint32, base int) int {
-	base, move := checkBase(base)
-	b := uint32(base)
+	b := uint32(fixBase(base))
 	n := len(buf)
 	for u != 0 {
 		if n == 0 {
@@ -67,10 +56,10 @@ func FormatUint32(buf []byte, u uint32, base int) int {
 		buf[n] = digits[u-newU*b]
 		u = newU
 	}
-	return finish(buf, n, move)
+	return finish(buf, n, base < 0)
 }
 
-// FormatInt32 works like FormatUint32.
+// FormatInt32 works like FormatInt.
 func FormatInt32(buf []byte, i int32, base int) int {
 	if i >= 0 {
 		return FormatUint32(buf, uint32(i), base)
@@ -89,10 +78,9 @@ func FormatInt32(buf []byte, i int32, base int) int {
 	return n
 }
 
-// FormatUint64 works like FormatUint32
+// FormatUint64 works like FormatInt.
 func FormatUint64(buf []byte, u uint64, base int) int {
-	base, move := checkBase(base)
-	b := uint64(base)
+	b := uint64(fixBase(base))
 	n := len(buf)
 	for u != 0 {
 		if n == 0 {
@@ -103,10 +91,10 @@ func FormatUint64(buf []byte, u uint64, base int) int {
 		buf[n] = digits[u-newU*b]
 		u = newU
 	}
-	return finish(buf, n, move)
+	return finish(buf, n, base < 0)
 }
 
-// FormatInt64 works like FormatUint32.
+// FormatInt64 works like FormatInt.
 func FormatInt64(buf []byte, i int64, base int) int {
 	if i >= 0 {
 		return FormatUint64(buf, uint64(i), base)
@@ -125,6 +113,7 @@ func FormatInt64(buf []byte, i int64, base int) int {
 	return n
 }
 
+// FormatUint works like FormatInt.
 func FormatUint(buf []byte, u uint, base int) int {
 	if unsafe.Sizeof(u) <= 4 {
 		return FormatUint32(buf, uint32(u), base)
@@ -132,6 +121,11 @@ func FormatUint(buf []byte, u uint, base int) int {
 	return FormatUint64(buf, uint64(u), base)
 }
 
+// FormatInt stores text representation of u in buf using 2 <= |base| <= 36.
+// Unused portion of the buffer is filed with spaces.
+// If base > 0 then formatted value is right-justified and FormatInt returns
+// offset to its first char. If base < 0 then formatted value is left-justified
+// and FormatInt returns its length.
 func FormatInt(buf []byte, i, base int) int {
 	if unsafe.Sizeof(i) <= 4 {
 		return FormatInt32(buf, int32(i), base)
