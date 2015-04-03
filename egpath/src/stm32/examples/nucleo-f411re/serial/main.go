@@ -5,9 +5,8 @@ package main
 
 import (
 	"delay"
-	//"fmt"
+	"fmt"
 	"rtos"
-	"strconv"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -86,42 +85,7 @@ func checkErr(err error) {
 }
 
 func main() {
-	s.WriteString("\nstrconv test:\n\n")
-	var buf [10]byte
-
-	s.WriteString("-----------------\n")
-
-	start := strconv.FormatUint(buf[:], 123456, 10)
-	s.WriteByte('|')
-	s.Write(buf[:])
-	s.WriteString("|\n|")
-	s.Write(buf[start:])
-	s.WriteString("|\n")
-
-	s.WriteString("-----------------\n")
-
-	end := strconv.FormatUint(buf[:], 123456, -10)
-	s.WriteByte('|')
-	s.Write(buf[:])
-	s.WriteString("|\n|")
-	s.Write(buf[:end])
-	s.WriteString("|\n")
-
-	s.WriteString("-----------------\n")
-
-	start = strconv.FormatInt(buf[:], -123456, 10)
-	s.WriteByte('|')
-	s.Write(buf[:])
-	s.WriteString("|\n|")
-	s.Write(buf[start:])
-	s.WriteString("|\n")
-
-	s.WriteString("-----------------\n")
-
-	end = strconv.FormatInt(buf[:], -123456, -10)
-	s.WriteByte('|')
-	s.Write(buf[:])
-	s.WriteString("|\n|")
-	s.Write(buf[:end])
-	s.WriteString("|\n")
+	i := int(-10)
+	u := uint(12)
+	fmt.Fprint(s, "i = ", i, " u = ", u, " nil = ", nil, "\n")
 }

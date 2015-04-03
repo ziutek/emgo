@@ -1,11 +1,11 @@
 typedef union {
 	unsafe$Pointer ptr;
-	complex128     c128;
+	complex128 c128;
 } ival;
 
 typedef struct {
-	ival       val$;
- 	const void *itab$;
+	ival val$;
+	const void *itab$;
 } interface;
 
 #define EQUALI(lhs, rhs) ({                           \
@@ -14,15 +14,12 @@ typedef struct {
 	a.itab$ == b.itab$ && a.val$.c128 == b.val$.c128; \
 })
 
-#define INTERFACE(e, itab) ({                  \
-	union {typeof(e) in; ival out;} cast = {}; \
-	cast.in = (e);                             \
-	(interface){cast.out, itab};               \
+#define CAST(t, e) ({                               \
+	union {typeof(e) in; typeof(t) out;} cast = {}; \
+	cast.in = (e);                                  \
+	cast.out;                                       \
 })
 
-#define IVAL(i, typ) ({                          \
-	union {ival in; typeof(typ) out;} cast = {}; \
-	cast.in = (i).val$;                          \
-	cast.out;                                    \
-})
+#define INTERFACE(e, itab) ((interface){CAST(ival, e), itab})
+#define IVAL(i, typ) CAST(typ, (i).val$)
 #define NILI ((interface){})

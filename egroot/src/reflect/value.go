@@ -73,3 +73,12 @@ func (v Value) Uint() uint64 {
 	}
 	panic("reflect: not unsigned int")
 }
+
+// String returns underlying value of v as a string.
+// It panic if kind of v isn't String.
+func (v Value) String() string {
+	if v.Kind() != String {
+		panic("reflect: string")
+	}
+	return *(*string)(unsafe.Pointer(&v.val))
+}

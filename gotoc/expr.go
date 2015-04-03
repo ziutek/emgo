@@ -425,12 +425,12 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 			cdd.interfaceExpr(w, arg, t)
 
 		default:
-			w.WriteString("((")
+			w.WriteString("CAST(")
 			dim := cdd.Type(w, t)
 			w.WriteString(dimFuncPtr("", dim))
-			w.WriteString(")(")
+			w.WriteString(", ")
 			cdd.Expr(w, arg, t)
-			w.WriteString("))")
+			w.WriteString(")")
 		}
 	}
 }

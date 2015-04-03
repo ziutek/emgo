@@ -7,8 +7,6 @@ uintptr syscall$b2u(bool b) {
 __attribute__ ((always_inline))
 extern inline
 uintptr syscall$f2u(void (*f)()) {
-	union {void (*in)(); uintptr out;} cast;
-	cast.in = f;
-	return cast.out;
+	return CAST(uintptr, f);
 }
 
