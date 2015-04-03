@@ -4,16 +4,12 @@ import "unsafe"
 
 const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
 
-func panicBuffer() {
-	panic("strconv: buffer too short")
-}
-
 func fixBase(base int) int {
 	if base < 0 {
 		base = -base
 	}
 	if base < 2 || base > len(digits) {
-		panic("strconv: unsupported base")
+		panicBase()
 	}
 	return base
 }

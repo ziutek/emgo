@@ -36,6 +36,13 @@ func (v Value) Kind() Kind {
 	return v.typ.Kind()
 }
 
+func (v Value) Bool() bool {
+	if v.Kind() != Bool {
+		panic("reflect: not bool")
+	}
+	return *(*bool)(unsafe.Pointer(&v.val))
+}
+
 // Int returns underlying value of v as an int64.
 // It panics if kind of v isn't Int, Int8, Int16, Int32, Int64.
 func (v Value) Int() int64 {
@@ -78,7 +85,40 @@ func (v Value) Uint() uint64 {
 // It panic if kind of v isn't String.
 func (v Value) String() string {
 	if v.Kind() != String {
-		panic("reflect: string")
+		panic("reflect: not string")
 	}
 	return *(*string)(unsafe.Pointer(&v.val))
 }
+
+const notASCMS = "reflect: not array, slice, chan, map, string"
+
+func panicASCMS() {
+	panic(notASCMS)
+}
+
+func panicASC() {
+	panic(notASCMS[:25])
+}
+
+func (v Value) Len() int {
+	p := unsafe.Pointer(&v.val)
+	switch v.Kind() {
+	case Array:
+		return v.Type().Len()
+	case Slice:
+		return len(*(*[]int)(p))
+	case Chan:
+		return len(*(*chan int)(p))
+	case Map:
+		// BUG: Not implemented
+		return -1
+	case String:
+		return len(*(*string)(p))
+	}
+	panicASCMS()
+	return 0
+}
+
+/*func (v Value) Index() Value {
+	return
+}*/

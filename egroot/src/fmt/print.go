@@ -46,6 +46,12 @@ func (p *printer) Flag(c int) bool {
 }
 
 func (p *printer) format(i interface{}) (int, error) {
+	switch f := i.(type) {
+	case error:
+		return p.WriteString(f.Error())
+	case Stringer:
+		return p.WriteString(f.String())
+	}
 	var (
 		buf [65]byte
 		n   int
@@ -54,8 +60,8 @@ func (p *printer) format(i interface{}) (int, error) {
 	switch v.Kind() {
 	case reflect.Invalid:
 		return p.WriteString("<nil>")
-	case reflect.String:
-		return p.WriteString(v.String())
+	case reflect.Bool:
+		n = strconv.FormatBool(buf[:], v.Bool(), 2)
 	case reflect.Int:
 		n = strconv.FormatInt(buf[:], int(v.Int()), 10)
 	case reflect.Int8, reflect.Int16, reflect.Int32:
@@ -68,6 +74,8 @@ func (p *printer) format(i interface{}) (int, error) {
 		n = strconv.FormatUint32(buf[:], uint32(v.Uint()), 10)
 	case reflect.Uint64:
 		n = strconv.FormatUint64(buf[:], uint64(v.Uint()), 10)
+	case reflect.String:
+		return p.WriteString(v.String())
 	}
 	return p.Write(buf[n:])
 }

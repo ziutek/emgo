@@ -47,4 +47,4 @@ typedef struct{} structE;
 
 #define nil (0)
 
-#define len(v) (v.len)
+#define len(v) ((v).len)

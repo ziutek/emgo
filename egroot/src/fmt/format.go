@@ -11,7 +11,8 @@ type State interface {
 	Flag(c int) bool
 }
 
-// Stringer can be implemented by value to provide its string representation.
+// Stringer can be implemented by value to provide its custom string
+// representation.
 type Stringer interface {
     String() string
 }

@@ -85,7 +85,13 @@ func checkErr(err error) {
 }
 
 func main() {
-	i := int(-10)
+	i := -10
 	u := uint(12)
-	fmt.Fprint(s, "i = ", i, " u = ", u, " nil = ", nil, "\n")
+	fmt.Fprint(s, "i = ", i, " u = ", u, "\n")
+
+	b := true
+	fmt.Fprint(s, "b = ", b, " nil = ", nil, "\n")
+
+	//sli := []int{1, 2, 3}
+	//fmt.Fprint(s, "sli = ", sli, "\n")
 }
