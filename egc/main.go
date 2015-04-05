@@ -46,6 +46,7 @@ var (
 	tmpDir    string
 	verbosity int
 	optLevel  string
+	disableBC bool
 )
 
 func usage() {
@@ -56,6 +57,7 @@ func usage() {
 func main() {
 	flag.IntVar(&verbosity, "v", 0, "Verbosity level [0...2]")
 	flag.StringVar(&optLevel, "O", "s", "GCC optimization level")
+	flag.BoolVar(&disableBC, "B", false, "Disable bounds checking")
 	flag.Usage = usage
 	flag.Parse()
 	args := flag.Args()

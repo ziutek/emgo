@@ -25,7 +25,7 @@ byte foo$F($4_$byte a$) {
 		{
 			int k$ = 0;
 			for (;k$ < 4; ++k$) {
-				r$ += ((byte)(k$));
+				r$ += CAST(byte, k$);
 			}
 		}
 		goto end;
@@ -62,7 +62,7 @@ byte foo$F($4_$byte a$) {
 		{
 			int k$ = 0;
 			for (;k$ < 4; ++k$) {
-				r$ += ((byte)(k$));
+				r$ += CAST(byte, k$);
 			}
 		}
 		goto end;
@@ -102,12 +102,12 @@ byte foo$F($4_$byte a$) {
 		{
 			int k$ = 0;
 			for (;k$ < 4; ++k$) {
-				byte v$ = a$.arr[k$];
+				byte v$ = AIDX(a$, k$);
 				{
 					if ((r$>4)) {
 						continue;
 					}
-					r$ += (((byte)(k$))+v$);
+					r$ += (CAST(byte, k$)+v$);
 				}
 			}
 		}
@@ -148,7 +148,7 @@ byte foo$F($4_$byte a$) {
 		{
 			int _$ = 0;
 			for (;_$ < 4; ++_$) {
-				byte v$ = a$.arr[_$];
+				byte v$ = AIDX(a$, _$);
 				{
 					if ((r$>4)) {
 						break;
@@ -192,7 +192,7 @@ byte foo$F($4_$byte a$) {
 			slice _x = ASLICEL(4, a$, 1);
 			int k$ = 0;
 			for (;k$ < len(_x); ++k$) {
-				r$ += ((byte)(k$));
+				r$ += CAST(byte, k$);
 			}
 		}
 		goto end;
@@ -230,7 +230,7 @@ byte foo$F($4_$byte a$) {
 			slice _x = ASLICEL(4, a$, 1);
 			int k$ = 0;
 			for (;k$ < len(_x); ++k$) {
-				r$ += ((byte)(k$));
+				r$ += CAST(byte, k$);
 			}
 		}
 		goto end;
@@ -273,12 +273,12 @@ byte foo$F($4_$byte a$) {
 			slice _x = ASLICEL(4, a$, 1);
 			int k$ = 0;
 			for (;k$ < len(_x); ++k$) {
-				byte v$ = ((byte*)_x.arr)[k$];
+				byte v$ = SLIDX(byte*, _x, k$);
 				{
 					if ((r$>4)) {
 						goto loop$_continue;
 					}
-					r$ += (((byte)(k$))+v$);
+					r$ += (CAST(byte, k$)+v$);
 				}
 			loop$_continue:;
 			}
@@ -324,7 +324,7 @@ byte foo$F($4_$byte a$) {
 			slice _x = ASLICEL(4, a$, 1);
 			int _$ = 0;
 			for (;_$ < len(_x); ++_$) {
-				byte v$ = ((byte*)_x.arr)[_$];
+				byte v$ = SLIDX(byte*, _x, _$);
 				{
 					if ((r$>4)) {
 						goto loop$_break;

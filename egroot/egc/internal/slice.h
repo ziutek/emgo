@@ -4,85 +4,177 @@ typedef struct {
 	uintptr cap;
 } slice;
 
-#define _SLICE_LOW(expr, typ, low) \
-	slice s = expr;                \
-	uint l = low;                  \
-	s.arr = ((typ)s.arr) + l
-	
-#define SLICEL(expr, typ, low) ({ \
-	_SLICE_LOW(expr, typ, low);   \
+
+#define SLICEL(slx, typ, lowx) ({ \
+	slice s = slx;                \
+	uintptr l = lowx;             \
+	s.arr = ((typ)s.arr) + l;     \
 	s.len -= l;                   \
 	s.cap -= l;                   \
 	s;                            \
 })
 
-#define SLICELH(expr, typ, low, high) ({ \
-	_SLICE_LOW(expr, typ, low);          \
-	s.len = high - l;                    \
-	s.cap -= l;                          \
-	s;                                   \
+#define SLICELC(slx, typ, lowx) ({ \
+	slice s = slx;                 \
+	uintptr l = lowx;              \
+	if (l > s.len) panicIndex();   \
+	s.arr = ((typ)s.arr) + l;      \
+	s.len -= l;                    \
+	s.cap -= l;                    \
+	s;                             \
 })
 
-#define SLICELHM(expr, typ, low, high, max) ({ \
-	_SLICE_LOW(expr, typ, low);                \
-	s.len = high - l;                          \
-	s.cap = max - l;                           \
-	s;                                         \
+#define SLICELH(slx, typ, lowx, highx) ({ \
+	slice s = slx;                        \
+	uintptr l = lowx;                     \
+	s.arr = ((typ)s.arr) + l;             \
+	s.len = (highx) - l;                  \
+	s.cap -= l;                           \
+	s;                                    \
 })
 
-#define __SLICEH(expr, high) ({ \
-	slice __s = expr;           \
-	s.len = high;               \
-	s;                          \
-})
-	
-// #define SLICEM(expr, max) Go 1.2 doesn't allow [::max].
-	
-#define SLICEHM(expr, high, max) ({ \
-	slice s = expr;                 \
-	s.len = high;                   \
-	s.cap = max;                    \
-	s;                              \
+#define SLICELHC(slx, typ, lowx, highx) ({ \
+	slice s = slx;                         \
+	uintptr l = lowx;                      \
+	uintptr h = highx;                     \
+	if (l > h || h > s.cap) panicIndex();  \
+	s.arr = ((typ)s.arr) + l;              \
+	s.len = h - l;                         \
+	s.cap -= l;                            \
+	s;                                     \
 })
 
-#define ASLICEL(len, expr, low) ( \
-	(slice){                      \
-		&(expr).arr[low],         \
-		len-low,                  \
-		len-low,                  \
-	}                             \
-)
+#define SLICELHM(slx, typ, lowx, highx, maxx) ({            \
+	uintptr l = lowx;                                       \
+	(slice){((typ)(slx).arr) + l, (highx) - l, (maxx) - l}; \
+})
 
-#define ASLICELH(len, expr, low, high) ( \
-	(slice){                             \
-		&(expr).arr[low],                \
-		high-low,                        \
-		len-low                          \
-	}                                    \
-)
+#define SLICELHMC(slx, typ, lowx, highx, maxx) ({  \
+	slice s = slx;                                 \
+	uintptr l = lowx;                              \
+	uintptr h = highx;                             \
+	uintptr m = maxx;                              \
+	if (l > h || h > m || m > s.cap) panicIndex(); \
+	s.arr = ((typ)s.arr) + l;                      \
+	s.len = h - l;                                 \
+	s.cap = m - l;                                 \
+	s;                                             \
+})
 
-#define ASLICELHM(expr, low, high, max) ( \
-	(slice){                              \
-		&(expr).arr[low],                 \
-		high-low,                         \
-		max-low                           \
-	}                                     \
-)
+#define SLICEH(slx, highx) ({ \
+	slice s = slx;            \
+	s.len = highx;            \
+	s;                        \
+})
+
+#define SLICEHC(slx, highx) ({   \
+	slice s = slx;               \
+	uintptr h = highx            \
+	if (h > s.cap) panicIndex(); \
+	s.len = h;                   \
+	s;                           \
+})
+
+// #define SLICEM(slx, maxx) Go 1.2 doesn't allow [::max].
 	
-#define ASLICE(len, expr) ((slice){(expr).arr, len, len})
+#define SLICEHM(slx, highx, maxx) ((slice){(slx).arr, highx, maxx})             
 
-#define CSLICE(len, expr) ((slice){(expr), len, len})
+#define SLICEHMC(slx, highx, maxx) ({     \
+	slice s = slx;                        \
+	uintptr h = highx;                    \
+	uintptr m = maxx;                     \
+	if (h > m || m > s.cap) panicIndex(); \
+	s.len = h;                            \
+	s.cap = m;                            \
+	s;                                    \
+})
 
-#define ASLICEH(len, expr, high) ((slice){(expr).arr, high, len})
+#define _ALEN(arx) (sizeof(arx) / sizeof((arx).arr[0]))
+
+#define ASLICEL(arx, lowx) ({           \
+	uintptr l = lowx;                   \
+	uintptr newl = _ALEN(arx) - l;      \
+	(slice){(arx).arr + l, newl, newl}; \
+})
+
+#define ASLICELC(arx, lowx) ({          \
+	uintptr l = lowx;                   \
+	if (l > _ALEN(arx)) panicIndex();   \
+	uintptr newl = _ALEN(arx) - l;      \
+	(slice){(arx).arr + l, newl, newl}; \
+})
+
+#define ASLICELH(arx, lowx, highx) ({                    \
+	uintptr l = lowx;                                    \
+	(slice){(arx).arr + l, (highx) - l, _ALEN(arx) - l}; \
+})
+
+#define ASLICELHC(arx, lowx, highx) ({              \
+	uintptr l = lowx;                               \
+	uintptr h = highx;                              \
+	if (l > h || h > _ALEN(arx)) panicIndex();      \
+	(slice){(arx).arr + l, h - l, _ALEN(arx) - l};  \
+})
+
+#define ASLICELHM(arx, lowx, highx, maxx) ({         \
+	uintptr l = lowx;                                \
+	(slice){(arx).arr + l, (highx) - l, (maxx) - l}; \
+})
 	
-// #define ASLICEM(expr, max) Go 1.2 doesn't allow [::max].
+#define ASLICELHMC(arx, lowx, highx, maxx) ({           \
+	uintptr l = lowx;                                   \
+	uintptr h = highx;                                  \
+	uintptr m = maxx;                                   \
+	if (l > h || h > m || m > _ALEN(arx)) panicIndex(); \
+	(slice){(arx).arr + l, h - l, m - l};               \
+})
 	
-#define ASLICEHM(expr, high, max) ((slice){(expr).arr, high, max})
+#define ASLICE(arx) ((slice){(arx).arr, _ALEN(arx), _ALEN(arx)})
 
-#define SLICPY(typ, dst, src) ({                     \
-	int n = (dst.len < src.len) ? dst.len : src.len; \
-	memmove(dst.arr, src.arr, n * sizeof(typ));      \
-	n;                                               \
+#define CSLICE(len, ptrx) ((slice){(ptrx), len, len})
+
+#define ASLICEH(arx, highx) ((slice){(arx).arr, highx, _ALEN(arx)})
+
+#define ASLICEHC(arx, highx) ({        \
+	uintptr h = highx;                 \
+	if (h > _ALEN(arx)) panicIndex();  \
+	(slice){(arx).arr, h, _ALEN(arx)}; \
+})
+
+// #define ASLICEM(arx, max) Go 1.2 doesn't allow [::max].
+	
+#define ASLICEHM(arx, highx, maxx) ((slice){(arx).arr, highx, maxx})
+
+#define ASLICEHMC(arx, highx, maxx) ({         \
+	uintptr h = highx;                         \
+	uintptr m = maxx;                          \
+	if (h > m || m > _ALEN(arx)) panicIndex(); \
+	(slice){(arx).arr, h, m};                  \
+})
+
+#define SLICPY(typ, dstx, srcx) ({            \
+	slice d = dstx;                           \
+	slice s = srcx;                           \
+	uint n = (d.len < s.len) ? d.len : s.len; \
+	memmove(d.arr, s.arr, n * sizeof(typ));   \
+	n;                                        \
 })
 
 #define NILSLICE ((slice){})
+
+#define SLIDX(typ, slx, idx) (((typ)(slx).arr)[idx])
+
+#define SLIDXC(typ, slx, idx)  ({ \
+	slice s = slx;                \
+	uintptr i = idx;              \
+	if (i >= s.len) panicIndex(); \
+	(typ)s.arr + i;               \
+})[0]
+
+#define AIDX(arx, idx) ((arx).arr[idx])
+
+#define AIDXC(arx, idx) ({             \
+	uintptr i = idx;                   \
+	if (i >= _ALEN(arx)) panicIndex(); \
+	(arx).arr + i;                     \
+})[0]

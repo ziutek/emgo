@@ -9,3 +9,7 @@ void panic(interface i) {
 void panicIC() {
 	panic(INTERFACE(EGSTR("interface conversion"), &string$$));
 }
+
+void panicIndex() {
+	panic(INTERFACE(EGSTR("index out of range"), &string$$));
+}

@@ -117,7 +117,7 @@ func main() {
 		var buf [20]byte
 		switch u := iv.(type) {
 		case byte:
-			n := strconv.Utoa(buf[:], uint(u), 10)
+			n := strconv.FormatUint(buf[:], uint(u), 10)
 			s.Write(buf[n:])
 		case Stringer:
 			s.WriteString(u.String())

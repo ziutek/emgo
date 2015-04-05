@@ -88,10 +88,9 @@ func main() {
 	i := -10
 	u := uint(12)
 	fmt.Fprint(s, "i = ", i, " u = ", u, "\n")
-
+	sli := []int{1, 2, 3}
 	b := true
-	fmt.Fprint(s, "b = ", b, " nil = ", nil, "\n")
-
-	//sli := []int{1, 2, 3}
-	//fmt.Fprint(s, "sli = ", sli, "\n")
+	k, _ := fmt.Fprint(s, "b = ", b, " nil = ", nil, "\n")
+	i = sli[k]
+	fmt.Fprint(s, "sli[2] = ", i, "\n")
 }

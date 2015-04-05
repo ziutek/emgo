@@ -180,6 +180,7 @@ func compile(bp *build.Package) error {
 
 	gtc := gotoc.NewGTC(fset, pkg, ti, tc.Sizes)
 	gtc.SetInlineThres(12)
+	gtc.SetBoundsCheck(!disableBC)
 	if err = gtc.Translate(wh, wc, flist); err != nil {
 		return err
 	}

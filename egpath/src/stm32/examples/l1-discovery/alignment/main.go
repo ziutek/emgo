@@ -11,14 +11,7 @@ import (
 var dbg = rtos.Debug(0)
 
 func printa(s string, gs, ga, cs, ca uintptr) {
-	fmt.Fprint(
-		dbg,
-		fmt.Str(s),
-		fmt.Uint(gs), fmt.Uint(ga),
-		fmt.T,
-		fmt.Uint(cs), fmt.Uint(ca),
-		fmt.N,
-	)
+	fmt.Fprint(dbg, s, gs, " ", ga, "\t", cs, " ", ca, "\n")
 }
 
 type S16 struct {

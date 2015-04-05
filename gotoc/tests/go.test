@@ -97,9 +97,9 @@ int foo$I$F(foo$I i$, int k$) {
 			foo$I$F(_r, _0);
 		}
 		foo$I _r = i$;
-		int _0 = (((int)(i$))*k$);
+		int _0 = (CAST(int, i$)*k$);
 		GO(wrap(_r, _0), true);
 	}
-	return (((int)(i$))-k$);
+	return (CAST(int, i$)-k$);
 }
 // end

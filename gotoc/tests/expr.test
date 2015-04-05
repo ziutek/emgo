@@ -20,7 +20,7 @@ int foo$CompositeLitSlice();
 // def
 int foo$CompositeLitSlice() {
 	slice a$ = CSLICE(3, (($2_$int[]){(($2_$int){{1, 2}}), (($2_$int){{3, 4}}), (($2_$int){{4, 5}})}));
-	slice b$ = CSLICE(3, (($2_$int*[]){&(($2_$int*)a$.arr)[0], &(($2_$int*)a$.arr)[1], &(($2_$int*)a$.arr)[2]}));
+	slice b$ = CSLICE(3, (($2_$int*[]){&SLIDX($2_$int*, a$, 0), &SLIDX($2_$int*, a$, 1), &SLIDX($2_$int*, a$, 2)}));
 	return len(b$);
 }
 // end

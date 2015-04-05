@@ -22,8 +22,8 @@ byte$$byte foo$F(int a$, int b$) {
 	byte x$ = 0;
 	byte y$ = 0;
 	{
-		byte _tmp0 = (((byte)(a$))+y$);
-		byte _tmp1 = (((byte)(b$))+x$);
+		byte _tmp0 = (CAST(byte, a$)+y$);
+		byte _tmp1 = (CAST(byte, b$)+x$);
 		x$ = _tmp0;
 		y$ = _tmp1;
 		goto end;
@@ -97,7 +97,7 @@ struct $2_$int_struct {
 int$$int foo$F($2_$int a$);
 // def
 int$$int foo$F($2_$int a$) {
-	return (int$$int){a$.arr[0], a$.arr[1]};
+	return (int$$int){AIDX(a$, 0), AIDX(a$, 1)};
 }
 // end
 

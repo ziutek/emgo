@@ -19,6 +19,7 @@ type GTC struct {
 	pkg         *types.Package
 	ti          *types.Info
 	inlineThres int
+	boundsCheck bool
 	nextInt     chan int
 	siz         types.Sizes
 	sizPtr      int64
@@ -56,6 +57,10 @@ func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.S
 func (cc *GTC) SetInlineThres(thres int) {
 	cc.inlineThres = thres
 }
+
+func (cc *GTC) SetBoundsCheck(bc bool) {
+	cc.boundsCheck = bc
+} 
 
 func (gtc *GTC) File(f *ast.File) (cdds []*CDD) {
 	for _, d := range f.Decls {

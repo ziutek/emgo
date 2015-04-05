@@ -780,48 +780,46 @@ func (cdd *CDD) elts(w *bytes.Buffer, elts []ast.Expr, nilT types.Type, st *type
 func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Expr) {
 	pt, isPtr := typ.(*types.Pointer)
 	if isPtr {
-		w.WriteString("(*")
 		typ = pt.Elem()
 	}
-
-	var (
-		indT types.Type
-		arr  bool
-	)
+	var indT types.Type
 
 	switch t := typ.Underlying().(type) {
 	case *types.Basic: // string
-		w.WriteString(xs + ".str")
-
+		if cdd.gtc.boundsCheck {
+			w.WriteString("STRIDXC(")
+		} else {
+			w.WriteString("STRIDX(")
+		}
 	case *types.Slice:
-		w.WriteString("((")
+		if cdd.gtc.boundsCheck {
+			w.WriteString("SLIDXC(")
+		} else {
+			w.WriteString("SLIDX(")
+		}
 		dim := cdd.Type(w, t.Elem())
 		dim = append([]string{"*"}, dim...)
 		w.WriteString(dimFuncPtr("", dim))
-		w.WriteByte(')')
-		w.WriteString(xs + ".arr)")
-
+		w.WriteString(", ")
 	case *types.Array:
-		w.WriteString(xs)
-		arr = true
-
+		if cdd.gtc.boundsCheck {
+			w.WriteString("AIDXC(")
+		} else {
+			w.WriteString("AIDX(")
+		}
 	case *types.Map:
 		indT = t.Key()
 		cdd.notImplemented(&ast.IndexExpr{}, t)
-
 	default:
 		panic(t)
 	}
-
 	if isPtr {
-		w.WriteByte(')')
+		w.WriteByte('*')
 	}
-	if arr {
-		w.WriteString(".arr")
-	}
-	w.WriteByte('[')
+	w.WriteString(xs)
+	w.WriteString(", ")
 	cdd.Expr(w, idx, indT)
-	w.WriteByte(']')
+	w.WriteByte(')')
 }
 
 func (cdd *CDD) indexExprStr(typ types.Type, xs string, idx ast.Expr) string {
@@ -839,139 +837,79 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 		typ = pt.Elem()
 		sx = "(*" + sx + ")"
 	}
-
+	var slice *types.Slice
+	empty := e.Low == nil && e.High == nil && e.Max == nil
 	switch t := typ.Underlying().(type) {
-	case *types.Slice:
-		if e.Low == nil && e.High == nil && e.Max == nil {
-			w.WriteString(sx)
-			break
+	case *types.Array:
+		if empty {
+			w.WriteString("ASLICE(" + sx + ")")
+			return
 		}
-
-		if e.Low != nil {
-			switch {
-			case e.High == nil && e.Max == nil:
-				w.WriteString("SLICEL(")
-
-			case e.High != nil && e.Max == nil:
-				w.WriteString("SLICELH(")
-
-			case e.High == nil && e.Max != nil:
-				w.WriteString("SLICEM(")
-
-			default:
-				w.WriteString("SLICELHM(")
-			}
+		w.WriteByte('A')
+	case *types.Basic: // string
+		if empty {
 			w.WriteString(sx)
+			return
+		}
+		w.WriteByte('S')
+	case *types.Slice:
+		if empty {
+			w.WriteString(sx)
+			return
+		}
+		slice = t
+	}
+	w.WriteString("SLICE")
+	if e.Low != nil {
+		switch {
+		case e.High == nil && e.Max == nil:
+			w.WriteByte('L')
+		case e.High != nil && e.Max == nil:
+			w.WriteString("LH")
+		case e.High == nil && e.Max != nil:
+			w.WriteByte('M')
+		default:
+			w.WriteString("LHM")
+		}
+		if cdd.gtc.boundsCheck {
+			w.WriteString("C(")
+		} else {
+			w.WriteByte('(')
+		}
+		w.WriteString(sx)
+		if slice != nil {
 			w.WriteString(", ")
-			dim := cdd.Type(w, t.Elem())
+			dim := cdd.Type(w, slice.Elem())
 			dim = append([]string{"*"}, dim...)
 			w.WriteString(dimFuncPtr("", dim))
-			w.WriteString(", ")
-			cdd.Expr(w, e.Low, nil)
-		} else {
-			switch {
-			case e.High != nil && e.Max == nil:
-				w.WriteString("SLICEH(")
-
-			case e.High == nil && e.Max != nil:
-				w.WriteString("SLICEM(")
-
-			default:
-				w.WriteString("SLICEHM(")
-			}
-			w.WriteString(sx)
 		}
-
-		if e.High != nil {
-			w.WriteString(", ")
-			cdd.Expr(w, e.High, nil)
-		}
-		if e.Max != nil {
-			w.WriteString(", ")
-			cdd.Expr(w, e.Max, nil)
-		}
-
-		w.WriteByte(')')
-
-	case *types.Array:
-		alen := strconv.FormatInt(t.Len(), 10) + ", "
-		if e.Low != nil {
-			switch {
-			case e.High == nil && e.Max == nil:
-				w.WriteString("ASLICEL(" + alen)
-
-			case e.High != nil && e.Max == nil:
-				w.WriteString("ASLICELH(" + alen)
-
-			case e.High == nil && e.Max != nil:
-				w.WriteString("ASLICEM(")
-
-			default:
-				w.WriteString("ASLICELHM(")
-			}
-			w.WriteString(sx)
-			w.WriteString(", ")
-			cdd.Expr(w, e.Low, nil)
-		} else {
-			switch {
-			case e.High == nil && e.Max == nil:
-				w.WriteString("ASLICE(" + alen)
-
-			case e.High != nil && e.Max == nil:
-				w.WriteString("ASLICEH(" + alen)
-
-			case e.High == nil && e.Max != nil:
-				w.WriteString("ASLICEM(")
-
-			default:
-				w.WriteString("ASLICEHM(")
-			}
-			w.WriteString(sx)
-		}
-
-		if e.High != nil {
-			w.WriteString(", ")
-			cdd.Expr(w, e.High, nil)
-		}
-		if e.Max != nil {
-			w.WriteString(", ")
-			cdd.Expr(w, e.Max, nil)
-		}
-
-		w.WriteByte(')')
-
-	case *types.Basic: // string
-		if e.Low == nil && e.High == nil {
-			w.WriteString(sx)
-			break
-		}
+		w.WriteString(", ")
+		cdd.Expr(w, e.Low, nil)
+	} else {
 		switch {
-		case e.Low == nil:
-			w.WriteString("SSLICEH(")
-
-		case e.High == nil:
-			w.WriteString("SSLICEL(")
-
+		case e.High != nil && e.Max == nil:
+			w.WriteByte('H')
+		case e.High == nil && e.Max != nil:
+			w.WriteByte('M')
 		default:
-			w.WriteString("SSLICELH(")
+			w.WriteString("HM")
 		}
-
+		if cdd.gtc.boundsCheck {
+			w.WriteString("C(")
+		} else {
+			w.WriteByte('(')
+		}
 		w.WriteString(sx)
-
-		if e.Low != nil {
-			w.WriteString(", ")
-			cdd.Expr(w, e.Low, nil)
-		}
-		if e.High != nil {
-			w.WriteString(", ")
-			cdd.Expr(w, e.High, nil)
-		}
-
-		w.WriteByte(')')
-
-	default:
-		panic(e)
 	}
+	if e.High != nil {
+		w.WriteString(", ")
+		cdd.Expr(w, e.High, nil)
+	}
+	if e.Max != nil {
+		w.WriteString(", ")
+		cdd.Expr(w, e.Max, nil)
+	}
+	w.WriteByte(')')
 }
 
 func (cdd *CDD) ExprStr(expr ast.Expr, nilT types.Type) string {

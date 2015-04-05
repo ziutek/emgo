@@ -9,7 +9,6 @@ void panic(interface i);
 __attribute__ ((noreturn))
 void panicIC();
 
-
 #define NEW(typ) (typ*) builtin$Alloc(1, sizeof(typ), __alignof__(typ))
 
 #define MAKESLI(typ, l) (slice){							\
