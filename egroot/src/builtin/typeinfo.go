@@ -42,7 +42,7 @@ func (t *Type) Methods() []*Method {
 }
 
 func (t *Type) Fns() []unsafe.Pointer {
-	return t.fns[:len(t.methods)]
+	return (*[1 << 28]unsafe.Pointer)(unsafe.Pointer(&t.fns))[:len(t.methods)]
 }
 
 type ItHead struct {
@@ -64,7 +64,7 @@ func (it *Itable) Head() *ItHead {
 }
 
 func (it *Itable) Fns() []unsafe.Pointer {
-	return it.fns[:len(it.head.typ.methods)]
+	return (*[1 << 28]unsafe.Pointer)(unsafe.Pointer(&it.fns))[:len(it.head.typ.methods)]
 }
 
 // NewItable allocates and initializes new itable.
