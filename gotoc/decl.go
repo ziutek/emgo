@@ -134,7 +134,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 				// All constants in expressions are evaluated so
 				// only exported constants need be translated to C
-				if !c.Exported() {
+				if gtc.isLocal(c) || !c.Exported() {
 					continue
 				}
 

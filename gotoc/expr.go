@@ -48,23 +48,16 @@ func writeInt(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 }
 
 func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
-	n, _ := exact.Int64Val(exact.Num(ev))
-	if n < 0 {
-		w.WriteByte('(')
-	}
-	w.WriteString(strconv.FormatInt(n, 10))
-	d, _ := exact.Int64Val(exact.Denom(ev))
-	if d != 1 {
-		w.WriteByte('/')
-		w.WriteString(strconv.FormatInt(d, 10))
-	}
-	w.WriteByte('.')
+	w.WriteByte('(')
 	if k == types.Float32 {
+		f, _ := exact.Float32Val(ev)
+		w.WriteString(strconv.FormatFloat(float64(f), 'g', -1, 32))
 		w.WriteByte('F')
+	} else {
+		f, _ := exact.Float64Val(ev)
+		w.WriteString(strconv.FormatFloat(f, 'g', -1, 64))
 	}
-	if n < 0 {
-		w.WriteByte(')')
-	}
+	w.WriteByte(')')
 }
 
 func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
