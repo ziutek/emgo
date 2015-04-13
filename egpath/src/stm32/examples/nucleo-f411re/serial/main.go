@@ -7,6 +7,7 @@ import (
 	"delay"
 	"fmt"
 	"rtos"
+	"strconv"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -85,12 +86,13 @@ func checkErr(err error) {
 }
 
 func main() {
-	i := -10
-	u := uint(12)
-	fmt.Fprint(s, "i = ", i, " u = ", u, "\n")
-	sli := []int{1, 2, 3}
-	b := true
-	k, _ := fmt.Fprint(s, "b = ", b, " nil = ", nil, "\n")
-	i = sli[k]
-	fmt.Fprint(s, "sli[2] = ", i, "\n")
+	const (
+		SmallestNormal         = 2.2250738585072014e-308 * 4
+		SmallestNonzeroFloat64 = 4.940656458412465441765687928682213723651e-324
+	)
+
+	lf, le, uf, ue := strconv.Show(SmallestNormal)
+
+	fmt.Fprint(s, "low = ", lf, "p", le, "\n")
+	fmt.Fprint(s, "up  = ", uf, "p", ue, "\n")
 }
