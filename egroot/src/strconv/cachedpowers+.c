@@ -2,7 +2,7 @@
 
 static const
 uint64 significands[] = {
-	0xfa8fd5a0081c028,	// -348
+	0xfa8fd5a0081c0288,	// -348
 	0xbaaee17fa23ebf76,	// -340
 	0x8b16fb203055ac76,	// -332
 	0xcf42894a5dce35ea,	// -324
