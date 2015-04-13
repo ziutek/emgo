@@ -51,35 +51,25 @@ func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 	w.WriteByte('(')
 	if k == types.Float32 {
 		f, _ := exact.Float32Val(ev)
-		w.WriteString(strconv.FormatFloat(float64(f), 'g', -1, 32))
+		w.WriteString(strconv.FormatFloat(float64(f), 'e', -1, 32))
 		w.WriteByte('F')
 	} else {
 		f, _ := exact.Float64Val(ev)
-		w.WriteString(strconv.FormatFloat(f, 'g', -1, 64))
+		w.WriteString(strconv.FormatFloat(f, 'e', -1, 64))
 	}
 	w.WriteByte(')')
 }
 
 func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 	k := t.Underlying().(*types.Basic).Kind()
-
-	// TODO: use t instead ev.Kind() in following switch
-	switch ev.Kind() {
-	case exact.Int:
+	switch {
+	case k <= types.Bool || k == types.UntypedBool:
+		w.WriteString(ev.String())
+	case k <= types.Uintptr || k == types.UntypedInt || k == types.UntypedRune:
 		writeInt(w, ev, k)
-
-	case exact.Float:
+	case k <= types.Float64 || k == types.UntypedFloat:
 		writeFloat(w, ev, k)
-
-	case exact.Complex:
-		switch k {
-		case types.Complex64:
-			k = types.Float32
-		case types.Complex128:
-			k = types.Float64
-		default:
-			k = types.UntypedFloat
-		}
+	case k <= types.Complex128 || k == types.UntypedComplex:
 		writeFloat(w, exact.Real(ev), k)
 		im := exact.Imag(ev)
 		if exact.Sign(im) != -1 {
@@ -87,13 +77,12 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 		}
 		writeFloat(w, im, k)
 		w.WriteByte('i')
-
-	case exact.String:
+	case k == types.String || k == types.UntypedString:
 		w.WriteString("EGSTR(")
 		w.WriteString(ev.String())
 		w.WriteByte(')')
-
 	default:
+		fmt.Println("Kind", k)
 		w.WriteString(ev.String())
 	}
 }
