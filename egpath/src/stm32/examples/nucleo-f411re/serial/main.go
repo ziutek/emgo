@@ -87,12 +87,19 @@ func checkErr(err error) {
 
 func main() {
 	const (
-		SmallestNormal         = 2.2250738585072014e-308 * 4
+		SmallestNormal         = 2.2250738585072014e-308
 		SmallestNonzeroFloat64 = 4.940656458412465441765687928682213723651e-324
 	)
 
-	lf, le, uf, ue := strconv.Show(SmallestNormal)
+	f := SmallestNonzeroFloat64
 
-	fmt.Fprint(s, "low = ", lf, "p", le, "\n")
-	fmt.Fprint(s, "up  = ", uf, "p", ue, "\n")
+	wf, we, df, de := strconv.Show(f)
+
+	fmt.Fprint(s, "w = ", wf, "p", we, "\n")
+	fmt.Fprint(s, "d  = ", df, "p", de, "\n")
+
+	var buf [50]byte
+	n := strconv.FormatFloat64(buf[:], f)
+	s.Write(buf[:n])
+	s.WriteString("\n\n")
 }

@@ -73,7 +73,7 @@ func (p *printer) format(i interface{}) (int, error) {
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
 		n = strconv.FormatUint32(buf[:], uint32(v.Uint()), 10)
 	case reflect.Uint64:
-		n = strconv.FormatUint64(buf[:], uint64(v.Uint()), 10)
+		n = strconv.FormatUint64(buf[:], uint64(v.Uint()), 16)
 	case reflect.String:
 		return p.WriteString(v.String())
 	}

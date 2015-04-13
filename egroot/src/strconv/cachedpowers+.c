@@ -182,7 +182,13 @@ int16 exponents[] = {
 	1066	// 340
 };
 
-strconv$diyfp cachedPower(int exp10) {
-	int i = (exp10 + 348) >> 3;
-	return (strconv$diyfp){significands[i], exponents[i]};
+static inline
+uint64 strconv$cachedFrac(int i) {
+	return significands[i];
 }
+
+static inline
+int strconv$cachedExp(int i) {
+	return exponents[i];
+}
+
