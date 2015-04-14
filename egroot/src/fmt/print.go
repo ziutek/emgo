@@ -61,19 +61,19 @@ func (p *printer) format(i interface{}) (int, error) {
 	case reflect.Invalid:
 		return p.WriteString("<nil>")
 	case reflect.Bool:
-		n = strconv.FormatBool(buf[:], v.Bool(), 2)
+		n = strconv.FormatBool(buf[:], v.Bool(), -2)
 	case reflect.Int:
-		n = strconv.FormatInt(buf[:], int(v.Int()), 10)
+		n = strconv.FormatInt(buf[:], int(v.Int()), -10)
 	case reflect.Int8, reflect.Int16, reflect.Int32:
-		n = strconv.FormatInt32(buf[:], int32(v.Int()), 10)
+		n = strconv.FormatInt32(buf[:], int32(v.Int()), -10)
 	case reflect.Int64:
-		n = strconv.FormatInt64(buf[:], int64(v.Int()), 10)
+		n = strconv.FormatInt64(buf[:], int64(v.Int()), -10)
 	case reflect.Uint:
-		n = strconv.FormatUint(buf[:], uint(v.Uint()), 10)
+		n = strconv.FormatUint(buf[:], uint(v.Uint()), -10)
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		n = strconv.FormatUint32(buf[:], uint32(v.Uint()), 10)
+		n = strconv.FormatUint32(buf[:], uint32(v.Uint()), -10)
 	case reflect.Uint64:
-		n = strconv.FormatUint64(buf[:], uint64(v.Uint()), 16)
+		n = strconv.FormatUint64(buf[:], uint64(v.Uint()), -10)
 	case reflect.String:
 		return p.WriteString(v.String())
 	}

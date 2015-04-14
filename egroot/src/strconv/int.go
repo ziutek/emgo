@@ -52,7 +52,7 @@ func FormatUint32(buf []byte, u uint32, base int) int {
 		buf[n] = digits[u-newU*b]
 		u = newU
 	}
-	return finish(buf, n, base < 0)
+	return finish(buf, n, base > 0)
 }
 
 // FormatInt32 works like FormatInt.
@@ -65,11 +65,11 @@ func FormatInt32(buf []byte, i int32, base int) int {
 	}
 	n := FormatUint32(buf[1:], uint32(-i), base)
 	if base > 0 {
-		buf[0] = ' '
-		buf[n] = '-'
-	} else {
 		buf[0] = '-'
 		n++
+	} else {
+		buf[0] = ' '
+		buf[n] = '-'
 	}
 	return n
 }
@@ -87,7 +87,7 @@ func FormatUint64(buf []byte, u uint64, base int) int {
 		buf[n] = digits[u-newU*b]
 		u = newU
 	}
-	return finish(buf, n, base < 0)
+	return finish(buf, n, base > 0)
 }
 
 // FormatInt64 works like FormatInt.
@@ -100,11 +100,11 @@ func FormatInt64(buf []byte, i int64, base int) int {
 	}
 	n := FormatUint64(buf[1:], uint64(-i), base)
 	if base > 0 {
-		buf[0] = ' '
-		buf[n] = '-'
-	} else {
 		buf[0] = '-'
 		n++
+	} else {
+		buf[0] = ' '
+		buf[n] = '-'
 	}
 	return n
 }
@@ -119,9 +119,9 @@ func FormatUint(buf []byte, u uint, base int) int {
 
 // FormatInt stores text representation of u in buf using 2 <= |base| <= 36.
 // Unused portion of the buffer is filed with spaces.
-// If base > 0 then formatted value is right-justified and FormatInt returns
-// offset to its first char. If base < 0 then formatted value is left-justified
-// and FormatInt returns its length.
+// If base > 0 then formatted value is left-justified and FormatInt returns
+// its length. If base < 0 then formatted value is right-justified and
+// FormatInt returns offset to its first char.
 func FormatInt(buf []byte, i, base int) int {
 	if unsafe.Sizeof(i) <= 4 {
 		return FormatInt32(buf, int32(i), base)

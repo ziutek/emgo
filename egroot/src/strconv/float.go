@@ -102,7 +102,7 @@ func cachedPower(exp, alpha, gamma int) (diyfp, int) {
 			break
 		}
 	}
-	return diyfp{cachedFrac(i), ce}, exp10start + i*exp10step
+	return diyfp{cachedFrac(i), ce}, -(exp10start + i*exp10step)
 }
 
 func Show(f64 float64) (uint64, int, uint64, int) {
@@ -136,7 +136,7 @@ func FormatFloat64(buf []byte, f64 float64) int {
 	c10, exp10 := cachedPower(w.e, -59, -32)
 	d := multiply(w, c10)
 	e := uint(-d.e)
-	n += FormatUint32(buf[n:], uint32(d.f>>e), -10)
+	n += FormatUint32(buf[n:], uint32(d.f>>e), 10)
 	buf[n] = '.'
 	n++
 	mask := uint64(1)<<e - 1
@@ -148,6 +148,6 @@ func FormatFloat64(buf []byte, f64 float64) int {
 	}
 	buf[n] = 'e'
 	n++
-	n += FormatInt(buf[n:], -exp10, -10)
+	n += FormatInt(buf[n:], exp10, 10)
 	return n
 }

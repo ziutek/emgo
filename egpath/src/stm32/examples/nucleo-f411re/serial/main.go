@@ -91,6 +91,8 @@ func main() {
 		SmallestNonzeroFloat64 = 4.940656458412465441765687928682213723651e-324
 	)
 
+	fmt.Fprint(s, true, " ", 12, "\n")
+
 	f := SmallestNonzeroFloat64
 
 	wf, we, df, de := strconv.Show(f)
