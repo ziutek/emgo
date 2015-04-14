@@ -41,7 +41,7 @@ func multiply(x, y diyfp) diyfp {
 	}
 }
 
-func normalDiyfp(f64 float64) diyfp {
+func makediyfp(f64 float64) diyfp {
 	bits := math.Float64bits(f64)
 	frac := bits & (1<<52 - 1)
 	exp := int(bits>>52) & (1<<11 - 1)
@@ -51,31 +51,21 @@ func normalDiyfp(f64 float64) diyfp {
 		exp -= 1023 + 52
 		frac += 1 << 52
 	}
-	return normalize(diyfp{frac, exp})
+	return diyfp{frac, exp}
 }
 
-func normalBounds(f64 float64) (lower, upper diyfp) {
-	bits := math.Float64bits(f64)
-	frac := bits & (1<<52 - 1)
-	exp := int(bits>>52) & (1<<11 - 1)
-	if exp == 0 {
-		exp = 1 - (1023 + 52)
+func bounds(f64 float64) (lower, upper diyfp) {
+	w := makediyfp(f64)
+	if w.f != 1<<52 || w.e == 1-(1023+52) {
+		lower.f = 2*w.f - 1
+		lower.e = w.e - 1
 	} else {
-		exp -= 1023 + 52
-		frac += 1 << 52
-	}
-	if frac != 1<<52 || exp == 1-(1023+52) {
-		lower.f = 2*frac - 1
-		lower.e = exp - 1
-	} else {
-		// f64 = (1<<52)*2^exp; predecessor(f64) = (1<<53-1)*2^(exp-1).
+		// f64 = (1<<52)*2^w.e; predecessor(f64) = (1<<53-1)*2^(w.e-1).
 		lower.f = 4*(1<<52) - 1
-		lower.e = exp - 2
+		lower.e = w.e - 2
 	}
-	upper.f = 2*frac + 1
-	upper.e = exp - 1
-	lower = normalize(lower)
-	upper = normalize(upper)
+	upper.f = 2*w.f + 1
+	upper.e = w.e - 1
 	return
 }
 
@@ -106,7 +96,7 @@ func cachedPower(exp, alpha, gamma int) (diyfp, int) {
 }
 
 func Show(f64 float64) (uint64, int, uint64, int) {
-	w := normalDiyfp(f64)
+	w := normalize(makediyfp(f64))
 	c10, _ := cachedPower(w.e, -59, -32)
 	d := multiply(w, c10)
 	return w.f, w.e, d.f, d.e
@@ -132,22 +122,29 @@ func FormatFloat64(buf []byte, f64 float64) int {
 		return n + copy(buf[n:], "NaN")
 	}
 	// Grisu algorithm.
-	w := normalDiyfp(f64)
+	w := normalize(makediyfp(f64))
 	c10, exp10 := cachedPower(w.e, -59, -32)
 	d := multiply(w, c10)
 	e := uint(-d.e)
 	n += FormatUint32(buf[n:], uint32(d.f>>e), 10)
-	buf[n] = '.'
-	n++
 	mask := uint64(1)<<e - 1
 	f := d.f & mask
 	for ; n < 20; n++ {
 		f *= 10
 		buf[n] = '0' + byte(f>>e)
 		f &= mask
+		exp10--
 	}
 	buf[n] = 'e'
 	n++
 	n += FormatInt(buf[n:], exp10, 10)
 	return n
+}
+
+func grisu2(buf []byte, f64 float64) int {
+	low, hig := bounds(makediyfp(f64))
+	low, hig = normalize(low), normalize(hig)
+	c10, exp10 := cachedPower(hig.e, -59, -32)
+	
+	return 0
 }
