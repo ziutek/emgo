@@ -53,7 +53,7 @@ func (p *printer) format(i interface{}) (int, error) {
 		return p.WriteString(f.String())
 	}
 	var (
-		buf [65]byte
+		buf [24]byte
 		n   int
 	)
 	v := reflect.ValueOf(i)
@@ -67,13 +67,16 @@ func (p *printer) format(i interface{}) (int, error) {
 	case reflect.Int8, reflect.Int16, reflect.Int32:
 		n = strconv.FormatInt32(buf[:], int32(v.Int()), -10)
 	case reflect.Int64:
-		n = strconv.FormatInt64(buf[:], int64(v.Int()), -10)
+		n = strconv.FormatInt64(buf[:], v.Int(), -10)
 	case reflect.Uint:
 		n = strconv.FormatUint(buf[:], uint(v.Uint()), -10)
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
 		n = strconv.FormatUint32(buf[:], uint32(v.Uint()), -10)
 	case reflect.Uint64:
-		n = strconv.FormatUint64(buf[:], uint64(v.Uint()), -10)
+		n = strconv.FormatUint64(buf[:], v.Uint(), -10)
+	case reflect.Float32, reflect.Float64:
+		n = strconv.FormatFloat64(buf[:], v.Float(), 'e', 6)
+		return p.Write(buf[:n])
 	case reflect.String:
 		return p.WriteString(v.String())
 	}

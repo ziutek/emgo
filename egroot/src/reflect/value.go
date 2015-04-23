@@ -81,6 +81,19 @@ func (v Value) Uint() uint64 {
 	panic("reflect: not unsigned int")
 }
 
+// Float returns underlying value of v as an float64.
+// It panics if kind of v isn't Float32, Float64.
+func (v Value) Float() float64 {
+	p := unsafe.Pointer(&v.val)
+	switch v.Kind() {
+	case Float32:
+		return float64(*(*float32)(p))
+	case Float64:
+		return *(*float64)(p)
+	}
+	panic("reflect: not float")
+}
+
 // String returns underlying value of v as a string.
 // It panic if kind of v isn't String.
 func (v Value) String() string {

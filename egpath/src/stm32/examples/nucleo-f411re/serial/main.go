@@ -91,17 +91,31 @@ func main() {
 		SmallestNonzeroFloat64 = 4.940656458412465441765687928682213723651e-324
 	)
 
-	fmt.Fprint(s, true, " ", 12, "\n")
+	fmt.Fprint(s, "\n", true, " ", 12, "\n")
 
-	f := SmallestNonzeroFloat64
+	var buf [40]byte
 
-	wf, we, df, de := strconv.Show(f)
+	strconv.FormatBool(buf[:], true, -2)
+	s.Write(buf[:])
+	s.WriteByte('\n')
 
-	fmt.Fprint(s, "w = ", wf, "p", we, "\n")
-	fmt.Fprint(s, "d  = ", df, "p", de, "\n")
+	strconv.FormatInt(buf[:], 123456, -10)
+	s.Write(buf[:])
+	s.WriteByte('\n')
 
-	var buf [50]byte
-	n := strconv.FormatFloat64(buf[:], f)
-	s.Write(buf[:n])
-	s.WriteString("\n\n")
+	strconv.FormatFloat64(buf[:], SmallestNonzeroFloat64, -'e', 7)
+	s.Write(buf[:])
+	s.WriteByte('\n')
+
+	strconv.FormatFloat64(buf[:], 0, -'e', 0)
+	s.Write(buf[:])
+	s.WriteByte('\n')
+
+	for i := 0; i < 10; i++ {
+		strconv.FormatFloat64(buf[:], 1234.56789, -'e', i)
+		s.Write(buf[:])
+		s.WriteByte('\n')
+	}
+
+	fmt.Fprint(s, "v = ", -6.4321e-3, "\n")
 }

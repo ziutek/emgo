@@ -1,6 +1,9 @@
 package strconv
 
-import "unsafe"
+import (
+	"bytes"
+	"unsafe"
+)
 
 const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
 
@@ -14,7 +17,7 @@ func fixBase(base int) int {
 	return base
 }
 
-func finish(buf []byte, n int, move bool) int {
+func finish(buf []byte, n int, right bool) int {
 	if n == len(buf) {
 		if n == 0 {
 			panicBuffer()
@@ -25,17 +28,12 @@ func finish(buf []byte, n int, move bool) int {
 	if n == 0 {
 		return 0
 	}
-	i := 0
-	end := n
-	if move {
-		i = copy(buf, buf[n:])
-		end = len(buf)
-		n = i
+	if right {
+		bytes.Fill(buf[:n], ' ')
+		return n
 	}
-	for i < end {
-		buf[i] = ' '
-		i++
-	}
+	n = copy(buf, buf[n:])
+	bytes.Fill(buf[n:], ' ')
 	return n
 }
 
@@ -52,7 +50,7 @@ func FormatUint32(buf []byte, u uint32, base int) int {
 		buf[n] = digits[u-newU*b]
 		u = newU
 	}
-	return finish(buf, n, base > 0)
+	return finish(buf, n, base < 0)
 }
 
 // FormatInt32 works like FormatInt.
@@ -87,7 +85,7 @@ func FormatUint64(buf []byte, u uint64, base int) int {
 		buf[n] = digits[u-newU*b]
 		u = newU
 	}
-	return finish(buf, n, base > 0)
+	return finish(buf, n, base < 0)
 }
 
 // FormatInt64 works like FormatInt.

@@ -1,5 +1,7 @@
 package strconv
 
+import "bytes"
+
 func panicBuffer() {
 	panic("strconv: buffer too short")
 }
@@ -40,20 +42,13 @@ func FormatBool(buf []byte, b bool, base int) int {
 	} else {
 		str = "0false"[m:][:n]
 	}
-	var i, n, end int
-	if right {
-		end = len(buf) - len(str)
-		n = end
-		copy(buf[end:], str)
-	} else {
-		i = len(str)
-		n = i
-		end = len(buf)
+	if !right {
 		copy(buf, str)
+		bytes.Fill(buf[:len(str)], ' ')
+		return len(str)
 	}
-	for i < end {
-		buf[i] = ' '
-		i++
-	}
+	n := len(buf) - len(str)
+	copy(buf[n:], str)
+	bytes.Fill(buf[:n], ' ')
 	return n
 }

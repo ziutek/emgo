@@ -184,11 +184,38 @@ int16 exponents[] = {
 
 static inline
 uint64 strconv$cachedFrac(int i) {
+	if ((uint)i > sizeof(significands)/sizeof(significands[0])) {
+		panicIndex();
+	} 
 	return significands[i];
 }
 
 static inline
 int strconv$cachedExp(int i) {
+	if ((uint)i > sizeof(exponents)/sizeof(exponents[0])) {
+		panicIndex();
+	} 
 	return exponents[i];
 }
 
+static const
+uint32 tens[] = {
+	1,
+	10,
+	100,
+	1000,
+	10000,
+	100000,
+	1000000,
+	10000000,
+	100000000,
+	1000000000
+};
+
+static inline
+uint32 strconv$cachedTens(int i) {
+	if ((uint)i > sizeof(tens)/sizeof(tens[0])) {
+		panicIndex();
+	} 
+	return tens[i];
+}
