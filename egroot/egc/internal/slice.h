@@ -69,7 +69,7 @@ typedef struct {
 
 #define SLICEHC(slx, highx) ({   \
 	slice s = slx;               \
-	uintptr h = highx            \
+	uintptr h = highx;           \
 	if (h > s.cap) panicIndex(); \
 	s.len = h;                   \
 	s;                           \
