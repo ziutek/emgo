@@ -119,10 +119,9 @@ func main() {
 
 	s.WriteString("\nrtos.Uptime() in loop:\n")
 	for i, ut := range uts {
-		fmt.Int64(ut).Format(s, -12)
-		s.WriteString(" ns")
+		fmt.Fprint(s, ut, " ns")
 		if i > 0 {
-			fmt.Fprintf(s, " (dt = %v ns)", fmt.Int64(ut-uts[i-1]))
+			fmt.Fprint(s, " (dt = ", ut-uts[i-1], " ns)")
 		}
 		s.WriteByte('\n')
 	}
@@ -136,9 +135,7 @@ func main() {
 		checkErr(err)
 
 		ns := rtos.Uptime()
-		fmt.Uint64(ns).Format(s, -12)
-
-		s.WriteString(" ns \"")
+		fmt.Fprint(s, ns, " ns \"")
 		s.Write(buf[:n])
 		s.WriteString("\"\n")
 

@@ -12,31 +12,9 @@ func init() {
 
 func main() {
 	con.WriteString("fmt test:\n")
-	end := fmt.Str("$\n")
 
-	s := fmt.Str("abcd")
-	i := fmt.Int64(15)
-
-	i.Format(con, 5, 10)
-	end.Format(con)
-	i.Format(con, -5, 10)
-	end.Format(con)
-	i.Format(con, 5, -10)
-	end.Format(con)
-	i.Format(con, -5, -10)
-	end.Format(con)
-
-	s.Format(con, 11)
-	end.Format(con)
-	s.Format(con, -11)
-	end.Format(con)
-
-	fmt.Fprint(con, s, fmt.T, i, fmt.N)
-	fmt.Fprintf(con, "%v:\t:%v\n", s, i)
-
-	con.WriteString("\nSome error messages:\n\n")
-
-	fmt.Fprintf(con, "%v %v %v %v\n", s, i)
-	fmt.Fprintf(con, "%v\n", s, s, i)
-	fmt.Fprint(con, fmt.N)
+	fmt.Fprint(con, true, " ", false, "\n")
+	fmt.Fprint(con, 10, " ", -10, " ", 1234567890, " ", -1234567890, "\n")
+	fmt.Fprint(con, int64(1234567890123), " ", int64(-1234567890123), "\n")
+	fmt.Fprint(con, 123.456e-20, " ", -123.456e20, "\n")
 }
