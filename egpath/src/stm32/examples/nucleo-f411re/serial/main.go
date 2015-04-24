@@ -103,16 +103,12 @@ func main() {
 	s.Write(buf[:])
 	s.WriteByte('\n')
 
-	strconv.FormatFloat64(buf[:], SmallestNonzeroFloat64, -'e', 7)
+	strconv.FormatFloat(buf[:], 0, -'e', 0)
 	s.Write(buf[:])
 	s.WriteByte('\n')
 
-	strconv.FormatFloat64(buf[:], 0, -'e', 0)
-	s.Write(buf[:])
-	s.WriteByte('\n')
-
-	for i := 0; i < 10; i++ {
-		strconv.FormatFloat64(buf[:], 1234.56789, -'e', i)
+	for i := 0; i < 20; i++ {
+		strconv.FormatFloat(buf[:], SmallestNonzeroFloat64, -'e', i)
 		s.Write(buf[:])
 		s.WriteByte('\n')
 	}

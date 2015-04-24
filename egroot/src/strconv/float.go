@@ -32,7 +32,7 @@ func cachedPower(exp, alpha, gamma int) (diyfp, int) {
 	return diyfp{cachedFrac(i), ce}, -(exp10start + i*exp10step)
 }
 
-func specials64(buf []byte, f float64) (int, int) {
+func specials(buf []byte, f float64) (int, int) {
 	if len(buf) < 4 {
 		panicBuffer()
 	}
@@ -53,44 +53,46 @@ func specials64(buf []byte, f float64) (int, int) {
 	return n, -1
 }
 
-func round(buf []byte, prec int) int {
-sw:
-	switch b := buf[prec]; {
-	case b < '5':
+func round(buf []byte, n int, g *grisu) int {
+	if n >= 19 {
 		return 0
-	case b > '5':
+	}
+sw:
+	switch d := g.NextDigit(); {
+	case d < 5:
+		return 0
+	case d > 5:
 		break
 	default:
-		// Prefer round to even number.
-		for _, b := range buf[prec+1:] {
-			if b > '0' {
+		for i := 19 - 1 - n; i > 0; i-- {
+			if g.NextDigit() > 0 {
 				break sw
 			}
 		}
-		// For border cases prefer round to even number.
-		if buf[prec-1]&1 == 0 {
+		// For border cases prefer to round to even number.
+		if buf[n-1]&1 == 0 {
 			return 0
 		}
 	}
 	// Round up.
-	for i := prec - 1; i >= 0; i-- {
+	for i := n - 1; i >= 0; i-- {
 		if buf[i] < '9' {
 			buf[i]++
 			return 0
 		}
 		buf[i] = '0'
 	}
-	copy(buf[1:], buf[:prec-1])
+	copy(buf[1:], buf[:n-1])
 	buf[0] = '1'
 	return 1
 }
 
-func FormatFloat64(buf []byte, f float64, fmt, prec int) int {
+func FormatFloat(buf []byte, f float64, fmt, prec int) int {
 	right := fmt < 0
 	if right {
 		fmt = -fmt
 	}
-	n := formatFloat64(buf, f, fmt, prec)
+	n := formatFloat(buf, f, fmt, prec)
 	if !right {
 		bytes.Fill(buf[n:], ' ')
 		return n
@@ -101,8 +103,8 @@ func FormatFloat64(buf []byte, f float64, fmt, prec int) int {
 	return m
 }
 
-func formatFloat64(buf []byte, f float64, fmt, prec int) int {
-	n, spec := specials64(buf, f)
+func formatFloat(buf []byte, f float64, fmt, prec int) int {
+	n, spec := specials(buf, f)
 	if spec > 0 {
 		return n
 	}
@@ -114,10 +116,10 @@ func formatFloat64(buf []byte, f float64, fmt, prec int) int {
 	}
 	switch fmt {
 	case 'e', 'E':
-		prec++
+		prec++ // Add first digit.
 		l := prec + 5
 		if prec > 1 {
-			l++
+			l++ // Dot.
 		}
 		nb := buf[n:]
 		if len(nb) < l {
@@ -136,8 +138,13 @@ func formatFloat64(buf []byte, f float64, fmt, prec int) int {
 			nb[prec+2] = '+'
 			return n + len(nb)
 		}
-		exp10 := grisu(nb, f) + len(nb) - 1
-		exp10 += round(nb, prec)
+		var g grisu
+		g.Init(f)
+		for i := 0; i < prec; i++ {
+			nb[i] = byte('0' + g.NextDigit())
+		}
+		exp10 := g.Exp10() + prec - 1
+		exp10 += round(nb, prec, &g)
 		n += prec
 		if prec > 1 {
 			copy(nb[2:], nb[1:prec])
@@ -159,83 +166,5 @@ func formatFloat64(buf []byte, f float64, fmt, prec int) int {
 		}
 		return n + FormatUint(buf[n:], uint(exp10), 10)
 	}
-	panic("strconv: bad format")
-}
-
-// grisu accepts len(buf) >= 1
-func grisu(buf []byte, f64 float64) int {
-	w := normalize(makediyfp(f64))
-	c10, exp10 := cachedPower(w.e, -59, -32)
-	d := mul(w, c10)
-	e := uint(-d.e)
-	p1 := uint32(d.f >> e)
-	n := 0
-	for i := 9; i >= 0; i-- {
-		div := cachedTens(i)
-		if d := p1 / div; d != 0 || n != 0 {
-			buf[n] = byte('0' + d)
-			p1 -= d * div
-			if n++; n >= len(buf) {
-				return exp10 + i
-			}
-		}
-	}
-	mask := uint64(1)<<e - 1
-	p2 := d.f & mask
-	buf = buf[n:]
-	for n = range buf {
-		p2 *= 10
-		buf[n] = '0' + byte(p2>>e)
-		p2 &= mask
-	}
-	return exp10 - len(buf)
-}
-
-// grisu2 needs len(buf) == 18 ?????
-func grisu2(buf []byte, f64 float64) (n, exp10 int) {
-	low, hig := bounds(makediyfp(f64))
-	hig = normalize(hig)
-	low = expUp(normalize(low), hig.e)
-	var c10 diyfp
-	c10, exp10 = cachedPower(hig.e, -59, -32)
-	low = mul(low, c10)
-	hig = mul(hig, c10)
-	low.f++
-	hig.f--
-	delta := sub(hig, low)
-	// Digits generation.
-	e := uint(-hig.e)
-	mask := uint64(1)<<e - 1
-	p1 := uint32(hig.f >> e)
-	p2 := hig.f & mask
-	kappa := 10
-	for kappa > 0 {
-		kappa--
-		div := cachedTens(kappa)
-		if d := p1 / div; d != 0 || n != 0 {
-			buf[n] = byte('0' + d)
-			p1 -= d * div
-			n++
-		}
-		if uint64(p1)<<e+p2 <= delta.f {
-			goto end
-		}
-	}
-	for {
-		kappa--
-		p2 *= 10
-		if d := int(p2 >> e); d != 0 || n != 0 {
-			buf[n] = byte('0' + d)
-			n++
-		}
-		p2 &= mask
-		delta.f *= 10
-		if p2 <= delta.f {
-			break
-		}
-	}
-end:
-	// TODO: rounding
-	exp10 += kappa
-	return
+	panic("strconv: bad fmt")
 }
