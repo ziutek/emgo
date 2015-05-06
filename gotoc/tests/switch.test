@@ -119,6 +119,8 @@ int foo$Switch(int i$) {
 // Go code:
 func Switch(i *interface{}) bool {
 	switch  (*i).(type) {
+	case nil:
+		return false
 	case string:
 		return false
 	case []byte:
@@ -129,6 +131,8 @@ func Switch(i *interface{}) bool {
 		return false
 	}
 	switch v := (*i).(type) {
+	case nil:
+		return false
 	case bool:
 		return v
 	case int:
@@ -146,6 +150,10 @@ bool foo$Switch(interface *i$);
 bool foo$Switch(interface *i$) {
 	switch(0){case 0:{
 		interface _tag = (*i$);
+		if (_tag.itab$ == nil) {
+			return false;
+			break;
+		}
 		if (_tag.itab$ == &string$$) {
 			return false;
 			break;
@@ -165,6 +173,13 @@ bool foo$Switch(interface *i$) {
 	}}
 	switch(0){case 0:{
 		interface _tag = (*i$);
+		if (_tag.itab$ == nil) {
+			interface v$ = _tag;
+			{
+				return false;
+			}
+			break;
+		}
 		if (_tag.itab$ == &bool$$) {
 			bool v$ = IVAL(_tag, bool);
 			{
