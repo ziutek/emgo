@@ -48,7 +48,6 @@ func writeInt(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 }
 
 func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
-	w.WriteByte('(')
 	if k == types.Float32 {
 		f, _ := exact.Float32Val(ev)
 		w.WriteString(strconv.FormatFloat(float64(f), 'e', -1, 32))
@@ -57,7 +56,6 @@ func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 		f, _ := exact.Float64Val(ev)
 		w.WriteString(strconv.FormatFloat(f, 'e', -1, 64))
 	}
-	w.WriteByte(')')
 }
 
 func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
@@ -70,13 +68,14 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 	case k <= types.Float64 || k == types.UntypedFloat:
 		writeFloat(w, ev, k)
 	case k <= types.Complex128 || k == types.UntypedComplex:
+		w.WriteByte('(')
 		writeFloat(w, exact.Real(ev), k)
 		im := exact.Imag(ev)
 		if exact.Sign(im) != -1 {
 			w.WriteByte('+')
 		}
 		writeFloat(w, im, k)
-		w.WriteByte('i')
+		w.WriteString("i)")
 	case k == types.String || k == types.UntypedString:
 		w.WriteString("EGSTR(")
 		w.WriteString(ev.String())
