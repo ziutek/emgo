@@ -81,7 +81,7 @@ func (v Value) Uint() uint64 {
 	panic("reflect: not unsigned int")
 }
 
-// Float returns underlying value of v as an float64.
+// Float returns underlying value of v as a float64.
 // It panics if kind of v isn't Float32, Float64.
 func (v Value) Float() float64 {
 	p := unsafe.Pointer(&v.val)
@@ -92,6 +92,19 @@ func (v Value) Float() float64 {
 		return *(*float64)(p)
 	}
 	panic("reflect: not float")
+}
+
+// Complex returns underlying value of v as a complex128.
+// It panics if kind of v isn't Complex64, Complex128.
+func (v Value) Complex() complex128 {
+	p := unsafe.Pointer(&v.val)
+	switch v.Kind() {
+	case Complex64:
+		return complex128(*(*complex64)(p))
+	case Complex128:
+		return *(*complex128)(p)
+	}
+	panic("reflect: not complex")
 }
 
 // String returns underlying value of v as a string.

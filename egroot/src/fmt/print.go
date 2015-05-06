@@ -1,98 +1,46 @@
 package fmt
 
-import (
-	"io"
-	"reflect"
-	"strconv"
-)
-
-type printer struct {
-	io.Writer
-	width int
-	prec  int
-	flags string
-}
-
-func (p *printer) parse(verb string) (needWidth, needPrec bool) {
-	if len(verb) == 0 {
-		p.width = -1
-		p.prec = -1
-		p.flags = ""
-		return
-	}
-	return
-}
-
-func (p *printer) WriteString(s string) (int, error) {
-	// io.WriteString uses WriteString method if p.Writer imlements it.
-	return io.WriteString(p.Writer, s)
-}
-
-func (p *printer) Width() (int, bool) {
-	return p.width, p.width != -1
-}
-
-func (p *printer) Precision() (int, bool) {
-	return p.prec, p.prec != -1
-}
-
-func (p *printer) Flag(c int) bool {
-	for i := 0; i < len(p.flags); i++ {
-		if int(p.flags[i]) == c {
-			return true
-		}
-	}
-	return false
-}
-
-func (p *printer) format(i interface{}) (int, error) {
-	switch f := i.(type) {
-	case error:
-		return p.WriteString(f.Error())
-	case Stringer:
-		return p.WriteString(f.String())
-	}
-	var (
-		buf [24]byte
-		n   int
-	)
-	v := reflect.ValueOf(i)
-	switch v.Kind() {
-	case reflect.Invalid:
-		return p.WriteString("<nil>")
-	case reflect.Bool:
-		n = strconv.FormatBool(buf[:], v.Bool(), -2)
-	case reflect.Int:
-		n = strconv.FormatInt(buf[:], int(v.Int()), -10)
-	case reflect.Int8, reflect.Int16, reflect.Int32:
-		n = strconv.FormatInt32(buf[:], int32(v.Int()), -10)
-	case reflect.Int64:
-		n = strconv.FormatInt64(buf[:], v.Int(), -10)
-	case reflect.Uint:
-		n = strconv.FormatUint(buf[:], uint(v.Uint()), -10)
-	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		n = strconv.FormatUint32(buf[:], uint32(v.Uint()), -10)
-	case reflect.Uint64:
-		n = strconv.FormatUint64(buf[:], v.Uint(), -10)
-	case reflect.Float32, reflect.Float64:
-		n = strconv.FormatFloat(buf[:], v.Float(), 'e', 6)
-		return p.Write(buf[:n])
-	case reflect.String:
-		return p.WriteString(v.String())
-	}
-	return p.Write(buf[n:])
-}
+import "io"
 
 func Fprint(w io.Writer, a ...interface{}) (int, error) {
+	p := printer{W: w}
+	p.Parse("")
 	var n int
-	p := printer{Writer: w}
-	p.parse("")
 	for _, v := range a {
-		m, err := p.format(v)
-		n += m
-		if err != nil {
-			return n, err
+		n += p.format(v)
+		if p.Err != nil {
+			break
 		}
 	}
-	return n, nil
+	return n, p.Err
+}
+
+func Fprintln(w io.Writer, a ...interface{}) (int, error) {
+	p := printer{W: w}
+	p.Parse("")
+	var n int
+	for i, v := range a {
+		if i > 0 {
+			n += p.write([]byte{' '})
+			if p.Err != nil {
+				return n, p.Err
+			}
+		}
+		n += p.format(v)
+		if p.Err != nil {
+			return n, p.Err
+		}
+	}
+	n += p.write([]byte{'\n'})
+	return n, p.Err
+}
+
+var DefaultWriter io.Writer
+
+func Print(a ...interface{}) (int, error) {
+	return Fprint(DefaultWriter, a...)
+}
+
+func Println(a ...interface{}) (int, error) {
+	return Fprintln(DefaultWriter, a...)
 }

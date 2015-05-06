@@ -21,7 +21,7 @@ func Btoa(b bool) string {
 // base:
 //	|base| == 1: 0 / 1,
 //  |base| == 2: fales / true.
-// Unused portion of the buffer is filed with spaces.
+// Unused portion of the buffer is filled with spaces.
 // If base > 0 then formatted value is left-justified and FormatBool returns
 // its length. If base < 0 then formatted value is right-justified and
 // FormatBool returns offset to its first char.
@@ -44,7 +44,7 @@ func FormatBool(buf []byte, b bool, base int) int {
 	}
 	if !right {
 		copy(buf, str)
-		bytes.Fill(buf[:len(str)], ' ')
+		bytes.Fill(buf[len(str):], ' ')
 		return len(str)
 	}
 	n := len(buf) - len(str)

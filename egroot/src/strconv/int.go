@@ -116,7 +116,7 @@ func FormatUint(buf []byte, u uint, base int) int {
 }
 
 // FormatInt stores text representation of u in buf using 2 <= |base| <= 36.
-// Unused portion of the buffer is filed with spaces.
+// Unused portion of the buffer is filled with spaces.
 // If base > 0 then formatted value is left-justified and FormatInt returns
 // its length. If base < 0 then formatted value is right-justified and
 // FormatInt returns offset to its first char.

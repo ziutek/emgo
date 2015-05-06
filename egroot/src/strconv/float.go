@@ -87,6 +87,15 @@ sw:
 	return 1
 }
 
+// FormatBool stores text representation of f in buf using format specified by
+// fmt:
+//	|fmt| == 'b': -ddddp±ddd, BUG: unsupported
+//  |fmt| == 'e': -d.dddde±dd,
+// Unused portion of the buffer is filled with spaces.
+// If fmt > 0 then formatted value is left-justified and FormatFloat returns
+// its length. If base < 0 then formatted value is right-justified and
+// FormatFloat returns offset to its first char.
+
 func FormatFloat(buf []byte, f float64, fmt, prec int) int {
 	right := fmt < 0
 	if right {

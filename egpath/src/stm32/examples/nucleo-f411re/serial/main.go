@@ -61,6 +61,8 @@ func init() {
 	rtos.IRQ(irqs.USART2).Enable()
 
 	s.SetUnix(true)
+
+	fmt.DefaultWriter = s
 }
 
 func blink(c uint, d int) {
@@ -91,8 +93,6 @@ func main() {
 		SmallestNonzeroFloat64 = 4.940656458412465441765687928682213723651e-324
 	)
 
-	fmt.Fprint(s, "\n", true, " ", 12, "\n")
-
 	var buf [40]byte
 
 	strconv.FormatBool(buf[:], true, -2)
@@ -107,11 +107,15 @@ func main() {
 	s.Write(buf[:])
 	s.WriteByte('\n')
 
+	fmt.Println()
+
 	for i := 0; i < 20; i++ {
 		strconv.FormatFloat(buf[:], SmallestNonzeroFloat64, -'e', i)
 		s.Write(buf[:])
 		s.WriteByte('\n')
 	}
 
-	fmt.Fprint(s, "v = ", -6.4321e-3, "\n")
+	fmt.Println("b =", true, "a =", 12)
+	fmt.Println("v =", -6.4321e-3)
+	fmt.Println("cplx =", 3-3i)
 }
