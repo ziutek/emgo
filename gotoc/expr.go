@@ -484,6 +484,9 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			break
 		}
 		if o := cdd.object(e); o != nil {
+			if _, ok := o.(*types.Func); ok {
+				w.WriteByte('&')
+			}
 			cdd.Name(w, o, true)
 			break
 		}
