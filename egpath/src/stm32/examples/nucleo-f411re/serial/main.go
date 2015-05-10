@@ -120,5 +120,10 @@ func main() {
 	fmt.Println("cplx =", 3-3i)
 
 	x := []int{1, 3}
-	fmt.Println("ptr =", &x, "main() =", main, "Write", (*serial.Dev).Write)
+	fmt.Println("ptr =", &x)
+	fmt.Println("main =", main)
+	fmt.Println("serial.Dev.Write =", (*serial.Dev).Write)
+
+	var c chan int
+	fmt.Println("chan =", c)
 }

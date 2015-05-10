@@ -146,10 +146,16 @@ func (p *printer) format(i interface{}) (n int) {
 		n += p.format(imag(c))
 		n += p.write([]byte{'i', ')'})
 
-	case reflect.Func, reflect.Ptr:
+	case reflect.Chan, reflect.Func, reflect.Ptr, reflect.UnsafePointer:
+		ptr := v.Pointer()
+		if ptr == 0 {
+			str = "<nil>"
+			length = len(str)
+			break
+		}
 		p.buf[0] = '0'
 		p.buf[1] = 'x'
-		length = 2 + strconv.FormatUint(p.buf[2:], uint(v.Pointer()), 16)
+		length = 2 + strconv.FormatUint(p.buf[2:], uint(ptr), 16)
 
 	case reflect.String:
 		str = v.String()
