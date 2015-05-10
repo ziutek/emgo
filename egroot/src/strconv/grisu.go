@@ -48,15 +48,6 @@ func (g *grisu) Exp10() int {
 	return g.exp10 + g.i
 }
 
-func grisu1(buf []byte, f float64) int {
-	var g grisu
-	g.Init(f)
-	for i := range buf {
-		buf[i] = byte('0' + g.NextDigit())
-	}
-	return g.Exp10()
-}
-
 // grisu2 needs len(buf) >= 20
 func grisu2(buf []byte, f float64) (n, exp10 int) {
 	low, hig := bounds(makediyfp(f))

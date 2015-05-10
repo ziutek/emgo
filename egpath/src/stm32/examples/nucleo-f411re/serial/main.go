@@ -118,4 +118,7 @@ func main() {
 	fmt.Println("b =", true, "a =", 12)
 	fmt.Println("v =", -6.4321e-3)
 	fmt.Println("cplx =", 3-3i)
+
+	x := []int{1, 3}
+	fmt.Println("ptr =", &x, "main() =", main)
 }

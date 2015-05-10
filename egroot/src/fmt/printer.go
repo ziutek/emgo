@@ -119,9 +119,6 @@ func (p *printer) format(i interface{}) (n int) {
 		str    string
 	)
 	switch v.Kind() {
-	case reflect.String:
-		str = v.String()
-		length = len(str)
 	case reflect.Bool:
 		length = strconv.FormatBool(p.buf[:], v.Bool(), 2)
 	case reflect.Int:
@@ -148,6 +145,15 @@ func (p *printer) format(i interface{}) (n int) {
 		}
 		n += p.format(imag(c))
 		n += p.write([]byte{'i', ')'})
+
+	case reflect.Ptr:
+		p.buf[0] = '0'
+		p.buf[1] = 'x'
+		length = 2 + strconv.FormatUint(p.buf[2:], uint(v.Pointer()), 16)
+
+	case reflect.String:
+		str = v.String()
+		length = len(str)
 	}
 	left := p.Flag('-')
 	if !left {

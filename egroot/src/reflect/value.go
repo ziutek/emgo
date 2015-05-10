@@ -1,18 +1,19 @@
 package reflect
 
-import "unsafe"
+import (
+	"builtin"
+	"unsafe"
+)
 
 type Value struct {
 	val complex128
 	typ Type
 }
 
-func valueOf(i interface{}) Value
-
 // ValueOf returns a new Value initialized to the concrete value stored in i.
 // ValueOf(nil) returns the zero Value.
 func ValueOf(i interface{}) Value {
-	return valueOf(i)
+	return *(*Value)(unsafe.Pointer(&i))
 }
 
 // Zero returns value that represents zero value of type t.
@@ -107,6 +108,24 @@ func (v Value) Complex() complex128 {
 	panic("reflect: not complex")
 }
 
+// Pointer returns underlying value of v as an uintptr.
+// It panic if kind of v isn't Chan, Func, Map, Ptr, Slice or UnsafePointer.
+func (v Value) Pointer() uintptr {
+	p := unsafe.Pointer(&v.val)
+	switch v.Kind() {
+	case Func, Ptr, UnsafePointer:
+		return *(*uintptr)(p)
+	case Chan:
+		return uintptr((*builtin.Chan)(p).C)
+	case Map:
+		// BUG: Not implemented
+	case Slice:
+		s := *(*[]byte)(p)
+		return uintptr(unsafe.Pointer(&s[0]))
+	}
+	panic("reflect: not chan, func, ptr, slice")
+}
+
 // String returns underlying value of v as a string.
 // It panic if kind of v isn't String.
 func (v Value) String() string {
@@ -132,9 +151,9 @@ func (v Value) Len() int {
 	case Array:
 		return v.Type().Len()
 	case Slice:
-		return len(*(*[]int)(p))
+		return len(*(*[]byte)(p))
 	case Chan:
-		return len(*(*chan int)(p))
+		return len(*(*chan byte)(p))
 	case Map:
 		// BUG: Not implemented
 		return -1
