@@ -518,6 +518,11 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		w.WriteByte(')')
 
 	case *ast.SelectorExpr:
+		if o := cdd.object(e.Sel); o != nil {
+			if _, ok := o.(*types.Func); ok {
+				w.WriteByte('&')
+			}
+		}
 		s, fun, recvt, recvs := cdd.SelectorExprStr(e)
 		if recvt == nil {
 			w.WriteString(s)
