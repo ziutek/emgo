@@ -6,6 +6,7 @@ package main
 import (
 	"delay"
 	"fmt"
+	"io"
 	"rtos"
 	"strconv"
 
@@ -87,6 +88,16 @@ func checkErr(err error) {
 	}
 }
 
+type Bool bool
+
+func (b Bool) Format(s fmt.State, c rune) {
+	v := "fałsz"
+	if b {
+		v = "prawda"
+	}
+	io.WriteString(s, v)
+}
+
 func main() {
 	const (
 		SmallestNormal         = 2.2250738585072014e-308
@@ -115,15 +126,36 @@ func main() {
 		s.WriteByte('\n')
 	}
 
-	fmt.Println("b =", true, "a =", 12)
-	fmt.Println("v =", -6.4321e-3)
-	fmt.Println("cplx =", 3-3i)
+	var n int
+	n, _ = fmt.Println("b =", true, "a =", 12)
+	fmt.Println(n)
+
+	n, _ = fmt.Println("v =", -6.4321e-3)
+	fmt.Println(n)
+
+	n, _ = fmt.Println("cplx =", 3-3i)
+	fmt.Println(n)
 
 	x := []int{1, 3}
-	fmt.Println("ptr =", &x)
-	fmt.Println("main =", main)
-	fmt.Println("serial.Dev.Write =", (*serial.Dev).Write)
+	n, _ = fmt.Println("ptr =", &x)
+	fmt.Println(n)
+
+	n, _ = fmt.Println("main =", main)
+	fmt.Println(n)
+
+	n, _ = fmt.Println("serial.Dev.Write =", (*serial.Dev).Write)
+	fmt.Println(n)
 
 	var c chan int
-	fmt.Println("chan =", c)
+	n, _ = fmt.Println("chan =", c)
+	fmt.Println(n)
+
+	var b Bool
+	n, _ = fmt.Println("b =", b)
+	fmt.Println(n)
+
+	b = true
+	n, _ = fmt.Println("b =", b)
+	fmt.Println(n)
+
 }

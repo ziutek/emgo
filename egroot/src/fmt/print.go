@@ -4,35 +4,33 @@ import "io"
 
 func Fprint(w io.Writer, a ...interface{}) (int, error) {
 	p := printer{W: w}
-	p.Parse("")
-	var n int
+	p.parse("")
 	for _, v := range a {
-		n += p.format(v)
+		p.format('v', v)
 		if p.Err != nil {
 			break
 		}
 	}
-	return n, p.Err
+	return p.N, p.Err
 }
 
 func Fprintln(w io.Writer, a ...interface{}) (int, error) {
 	p := printer{W: w}
-	p.Parse("")
-	var n int
+	p.parse("")
 	for i, v := range a {
 		if i > 0 {
-			n += p.write([]byte{' '})
+			p.Write([]byte{' '})
 			if p.Err != nil {
-				return n, p.Err
+				return p.N, p.Err
 			}
 		}
-		n += p.format(v)
+		p.format('v', v)
 		if p.Err != nil {
-			return n, p.Err
+			return p.N, p.Err
 		}
 	}
-	n += p.write([]byte{'\n'})
-	return n, p.Err
+	p.Write([]byte{'\n'})
+	return p.N, p.Err
 }
 
 var DefaultWriter io.Writer

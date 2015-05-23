@@ -10,6 +10,7 @@ import (
 type printer struct {
 	W   io.Writer
 	Err error
+	N   int
 
 	width int
 	prec  int
@@ -17,7 +18,7 @@ type printer struct {
 	buf   [65]byte
 }
 
-func (p *printer) Parse(verb string) {
+func (p *printer) parse(verb string) {
 	if len(verb) == 0 {
 		p.width = -2
 		p.prec = -2
@@ -27,29 +28,25 @@ func (p *printer) Parse(verb string) {
 	return
 }
 
-func (p *printer) write(b []byte) (n int) {
-	if p.Err != nil {
-		return
-	}
-	n, p.Err = p.W.Write(b)
-	return
-}
-
 func (p *printer) Write(b []byte) (int, error) {
-	return p.write(b), p.Err
-}
-
-func (p *printer) writeString(s string) (n int) {
 	if p.Err != nil {
-		return
+		return 0, p.Err
 	}
-	// io.WriteString uses WriteString method if p.W imlements it.
-	n, p.Err = io.WriteString(p.W, s)
-	return
+	var n int
+	n, p.Err = p.W.Write(b)
+	p.N += n
+	return n, p.Err
 }
 
 func (p *printer) WriteString(s string) (int, error) {
-	return p.writeString(s), p.Err
+	if p.Err != nil {
+		return 0, p.Err
+	}
+	var n int
+	// io.WriteString uses WriteString method if p.W imlements it.
+	n, p.Err = io.WriteString(p.W, s)
+	p.N += n
+	return n, p.Err
 }
 
 func (p *printer) Width() (int, bool) {
@@ -77,39 +74,38 @@ func (p *printer) Flag(c int) bool {
 	return false
 }
 
-func (p *printer) padSpaces(length int) int {
+func (p *printer) padSpaces(length int) {
 	width, wok := p.Width()
 	if !wok {
-		return 0
+		return
 	}
 	width -= length
 	if width <= 0 {
-		return 0
+		return
 	}
 	spaces := [8]byte{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}
-	m := width
 	for {
-		if m > len(spaces) {
-			m -= p.write(spaces[:])
-		} else {
-			m -= p.write(spaces[:m])
-			break
+		if width <= len(spaces) {
+			p.Write(spaces[:width])
+			return
 		}
+		p.Write(spaces[:])
 		if p.Err != nil {
-			break
+			return
 		}
+		width -= len(spaces)
 	}
-	return width - m
 }
 
-func (p *printer) format(i interface{}) (n int) {
+func (p *printer) format(verb rune, i interface{}) {
 	switch f := i.(type) {
 	case nil:
 		i = "<nil>"
+	case Formatter:
+		f.Format(p, verb)
+		return
 	case error:
 		i = f.Error()
-	case Formatter:
-
 	case Stringer:
 		i = f.String()
 	}
@@ -138,13 +134,13 @@ func (p *printer) format(i interface{}) (n int) {
 		length = strconv.FormatFloat(p.buf[:], v.Float(), 'e', prec)
 	case reflect.Complex64, reflect.Complex128:
 		c := v.Complex()
-		n += p.write([]byte{'('})
-		n += p.format(real(c))
+		p.Write([]byte{'('})
+		p.format(verb, real(c))
 		if imag(c) >= 0 {
-			n += p.write([]byte{'+'})
+			p.Write([]byte{'+'})
 		}
-		n += p.format(imag(c))
-		n += p.write([]byte{'i', ')'})
+		p.format(verb, imag(c))
+		p.Write([]byte{'i', ')'})
 
 	case reflect.Chan, reflect.Func, reflect.Ptr, reflect.UnsafePointer:
 		ptr := v.Pointer()
@@ -167,17 +163,17 @@ func (p *printer) format(i interface{}) (n int) {
 	}
 	left := p.Flag('-')
 	if !left {
-		n = p.padSpaces(length)
+		p.padSpaces(length)
 	}
 	if length != 0 {
 		if len(str) != 0 {
-			n += p.writeString(str)
+			p.WriteString(str)
 		} else {
-			n += p.write(p.buf[:length])
+			p.Write(p.buf[:length])
 		}
 	}
 	if left {
-		n += p.padSpaces(length)
+		p.padSpaces(length)
 	}
 	return
 }
