@@ -58,6 +58,10 @@ func (s *StdSizes) Alignof(T types.Type) int64 {
 			}
 		}
 		return max
+	case *types.Slice:
+		// This was added to original implementation to return same value
+		// as gcc __alignof__
+		return s.WordSize
 	}
 	a := s.Sizeof(T) // may be 0
 	// spec: "For a variable x of any type: unsafe.Alignof(x) is at least 1."
