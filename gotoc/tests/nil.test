@@ -82,7 +82,7 @@ func Nil(i interface{}) bool {
 bool foo$Nil(interface i$);
 // def
 bool foo$Nil(interface i$) {
-	return EQUALI(i$, NILI);
+	return ISNILI(i$);
 }
 // end
 
@@ -95,6 +95,6 @@ func NotNil(e error) bool {
 bool foo$NotNil(interface e$);
 // def
 bool foo$NotNil(interface e$) {
-	return !EQUALI(NILI, e$);
+	return !ISNILI(e$);
 }
 // end

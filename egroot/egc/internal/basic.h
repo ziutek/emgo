@@ -48,3 +48,4 @@ typedef struct{} structE;
 #define nil (0)
 
 #define len(v) ((v).len)
+#define cap(v) ((v).cap)

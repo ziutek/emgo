@@ -951,16 +951,16 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 			rhs += sel
 		}
 	case *types.Interface:
-		nilv := "NILI"
 		if op == "!=" {
 			w.WriteByte('!')
 		}
 		if rtyp == unil {
-			rhs = nilv
+			w.WriteString("ISNILI(" + lhs + ")")
 		} else if ltyp == unil {
-			lhs = nilv
+			w.WriteString("ISNILI(" + rhs + ")")
+		} else {
+			w.WriteString("EQUALI(" + lhs + ", " + rhs + ")")
 		}
-		w.WriteString("EQUALI(" + lhs + ", " + rhs + ")")
 		return
 	case *types.Basic:
 		if t.Kind() != types.String {

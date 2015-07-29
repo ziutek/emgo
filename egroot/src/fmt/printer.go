@@ -114,25 +114,34 @@ func (p *printer) format(verb rune, i interface{}) {
 		length int
 		str    string
 	)
-	switch v.Kind() {
-	case reflect.Bool:
+	k := v.Kind()
+	switch {
+	case k == reflect.Array:
+		str = "<array>"
+		length = len(str)
+	case k == reflect.Invalid:
+		str = "<invalid>"
+		length = len(str)
+	case k == reflect.Bool:
 		length = strconv.FormatBool(p.buf[:], v.Bool(), 2)
-	case reflect.Int:
+	case k == reflect.Int:
 		length = strconv.FormatInt(p.buf[:], int(v.Int()), 10)
-	case reflect.Int8, reflect.Int16, reflect.Int32:
+	case k <= reflect.Int32:
 		length = strconv.FormatInt32(p.buf[:], int32(v.Int()), 10)
-	case reflect.Int64:
+	case k == reflect.Int64:
 		length = strconv.FormatInt64(p.buf[:], v.Int(), 10)
-	case reflect.Uint:
+	case k == reflect.Uint:
 		length = strconv.FormatUint(p.buf[:], uint(v.Uint()), 10)
-	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
+	case k <= reflect.Uint32:
 		length = strconv.FormatUint32(p.buf[:], uint32(v.Uint()), 10)
-	case reflect.Uint64:
+	case k == reflect.Uint64:
 		length = strconv.FormatUint64(p.buf[:], v.Uint(), 10)
-	case reflect.Float32, reflect.Float64:
+	case k == reflect.Uintptr:
+		length = strconv.FormatUintptr(p.buf[:], uintptr(v.Uint()), 10)
+	case k <= reflect.Float64:
 		prec, _ := p.Precision()
 		length = strconv.FormatFloat(p.buf[:], v.Float(), 'e', prec)
-	case reflect.Complex64, reflect.Complex128:
+	case k <= reflect.Complex128:
 		c := v.Complex()
 		p.Write([]byte{'('})
 		p.format(verb, real(c))
@@ -141,8 +150,15 @@ func (p *printer) format(verb rune, i interface{}) {
 		}
 		p.format(verb, imag(c))
 		p.Write([]byte{'i', ')'})
-
-	case reflect.Chan, reflect.Func, reflect.Ptr, reflect.UnsafePointer:
+	case k == reflect.Ptr:
+		if v.IsNil() {
+			str = "<nil>"
+			length = len(str)
+			break
+		}
+		p.Write([]byte{'&'})
+		// TODO ...
+	case k <= reflect.Func || k == reflect.UnsafePointer:
 		ptr := v.Pointer()
 		if ptr == 0 {
 			str = "<nil>"
@@ -151,12 +167,18 @@ func (p *printer) format(verb rune, i interface{}) {
 		}
 		p.buf[0] = '0'
 		p.buf[1] = 'x'
-		length = 2 + strconv.FormatUint(p.buf[2:], uint(ptr), 16)
+		length = 2 + strconv.FormatUintptr(p.buf[2:], ptr, 16)
+	case k == reflect.Slice:
+		p.Write([]byte{'['})
 
-	case reflect.String:
+		p.Write([]byte{']'})
+	case k == reflect.String:
 		str = v.String()
 		length = len(str)
+	case k == reflect.Struct:
+		p.Write([]byte{'{'})
 
+		p.Write([]byte{'}'})
 	default:
 		str = "<!not supported>"
 		length = len(str)

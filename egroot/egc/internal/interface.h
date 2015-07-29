@@ -34,3 +34,4 @@ typedef struct {
 #define INTERFACE(e, itab) ((interface){CAST(ival, e), itab})
 #define IVAL(i, typ) CAST(typ, (i).val$)
 #define NILI ((interface){})
+#define ISNILI(e) ((e).itab$ == nil)

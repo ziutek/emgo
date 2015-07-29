@@ -7,8 +7,10 @@ import (
 	"delay"
 	"fmt"
 	"io"
+	"reflect"
 	"rtos"
 	"strconv"
+	"unsafe"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -90,12 +92,12 @@ func checkErr(err error) {
 
 type Bool bool
 
-func (b Bool) Format(s fmt.State, c rune) {
-	v := "fałsz"
+func (b Bool) Format(st fmt.State, c rune) {
+	s := "fałsz"
 	if b {
-		v = "prawda"
+		s = "prawda"
 	}
-	io.WriteString(s, v)
+	io.WriteString(st, s)
 }
 
 func main() {
@@ -158,4 +160,42 @@ func main() {
 	n, _ = fmt.Println("b =", b)
 	fmt.Println(n)
 
+	fmt.Println(
+		"slice",
+		unsafe.Sizeof([]byte(nil)), unsafe.Alignof([]byte(nil)),
+	)
+	// BUG: this doesn't compile
+	//fmt.Println(slisiz())
+	siz, ali := slisiz()
+	fmt.Println("C slice", siz, ali)
+
+	fmt.Println(
+		"int64",
+		unsafe.Sizeof(int64(0)), unsafe.Alignof(int64(0)),
+	)
+	siz, ali = int64siz()
+	fmt.Println("C int64", siz, ali)
+
+	fmt.Println(
+		"complex128",
+		unsafe.Sizeof(complex128(0)), unsafe.Alignof(complex128(0)),
+	)
+	siz, ali = cplx128siz()
+	fmt.Println("C complex128", siz, ali)
+
+	type S struct {
+		b []byte
+		u uint32
+	}
+	fmt.Println(
+		"S",
+		unsafe.Sizeof(S{}), unsafe.Alignof(S{}),
+	)
+
+	t := reflect.TypeOf(S{})
+	fmt.Println(t, t.Size(), t.Align())
 }
+
+func slisiz() (uintptr, uintptr)
+func int64siz() (uintptr, uintptr)
+func cplx128siz() (uintptr, uintptr)
