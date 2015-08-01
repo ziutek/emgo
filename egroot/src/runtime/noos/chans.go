@@ -160,7 +160,7 @@ func (c *chanS) TrySend(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintpt
 	return nil, cagain
 }
 
-// TryRecv tries to receive a value channel and store it into variable
+// TryRecv tries to receive a value from channel and store it into variable
 // pointed by e.
 // w is used to guarantee exclusive communication in select and to signal that
 // data transfer was completed. After return, if p != nil the data transfer need

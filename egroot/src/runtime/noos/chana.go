@@ -76,7 +76,7 @@ func (c *chanA) panicIfClosed() {
 // some low priority task can be blocked for enough time (say, an hour in case
 // of 100 MHz CPU) to have a chanse to be affected.
 
-// TrySend tries to reserve place in c's internl ring buffer.
+// TrySend tries to reserve place in c's internal ring buffer.
 // After return, if p != nil then p contains pointer to the place in internal
 // buffer where data can be stored. After data store sender need to call
 // c.Done(d). If p == nil then d == cagain which means that the internal buffer

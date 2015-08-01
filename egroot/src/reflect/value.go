@@ -218,3 +218,17 @@ func (v Value) Cap() int {
 	}
 	panic(badKind)
 }
+
+func (v Value) Interface() interface{} {
+	ei := emptyI{typ: v.Type()}
+	size := ei.typ.Size()
+	if size > unsafe.Sizeof(ei.val) {
+		return nil
+	}
+	builtin.Memmove(unsafe.Pointer(&ei.val), v.ptrto(), size)
+	return *(*interface{})(unsafe.Pointer(&ei))
+}
+
+func (v Value) NumField() int {
+	return v.Type().NumField()
+}

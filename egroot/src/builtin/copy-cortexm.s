@@ -7,12 +7,17 @@
 // a microcontroler with small SRAM and instructions read
 // from Flash (all Flash acceleration on).
 
+// func Memmove(dst, src unsafe.Pointer, n uintptr)
+.global builtin$Memmove
+
 // unsafe$Pointer memmove(unsafe$Pointer dst, unsafe$Pointer, src, uint n)
 .global memmove
 
 // unsafe$Pointer memcpy(unsafe$Pointer dst, unsafe$Pointer src, uint n)
 .global memcpy
 
+.thumb_func
+builtin$Memmove:
 .thumb_func
 memmove:
 .thumb_func

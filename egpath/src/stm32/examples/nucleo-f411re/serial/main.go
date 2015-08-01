@@ -192,8 +192,10 @@ func main() {
 		unsafe.Sizeof(S{}), unsafe.Alignof(S{}),
 	)
 
-	t := reflect.TypeOf(S{})
+	v := reflect.ValueOf(3i)
+	t := v.Type()
 	fmt.Println(t, t.Size(), t.Align())
+	fmt.Println(v.Interface())
 }
 
 func slisiz() (uintptr, uintptr)
