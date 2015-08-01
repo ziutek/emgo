@@ -220,6 +220,9 @@ func (v Value) Cap() int {
 }
 
 func (v Value) Interface() interface{} {
+	if !v.IsValid() {
+		return nil
+	}
 	ei := emptyI{typ: v.Type()}
 	size := ei.typ.Size()
 	if size > unsafe.Sizeof(ei.val) {
