@@ -196,13 +196,7 @@ func main() {
 	v := reflect.ValueOf(a)
 	t := v.Type()
 	fmt.Println(t, t.Size(), t.Align())
-	fmt.Println(
-		v.Index(0).Interface(),
-		v.Index(1).Interface(),
-		v.Index(2).Interface(),
-		v.Index(3).Interface(),
-	)
-	fmt.Println(a, a[:])
+	fmt.Println(&a, a[:])
 }
 
 func slisiz() (uintptr, uintptr)

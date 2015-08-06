@@ -88,13 +88,13 @@ func (p *printer) padSpaces(length int) {
 	if width <= 0 {
 		return
 	}
-	spaces := [8]byte{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}
+	spaces := "        "
 	for {
 		if width <= len(spaces) {
-			p.Write(spaces[:width])
+			p.WriteString(spaces[:width])
 			return
 		}
-		p.Write(spaces[:])
+		p.WriteString(spaces)
 		if p.Err != nil {
 			return
 		}
@@ -133,7 +133,7 @@ func (p *printer) formatValue(verb rune, v reflect.Value) {
 	k := v.Kind()
 	switch {
 	case k == reflect.Array || k == reflect.Slice:
-		p.Write([]byte{'['})
+		p.WriteByte('[')
 		n := v.Len()
 		for i := 0; i < n; i++ {
 			if i > 0 {
@@ -141,7 +141,7 @@ func (p *printer) formatValue(verb rune, v reflect.Value) {
 			}
 			p.formatTryInterface(verb, v.Index(i))
 		}
-		p.Write([]byte{']'})
+		p.WriteByte(']')
 	case k == reflect.Invalid:
 		str = "<invalid>"
 		length = len(str)
@@ -166,21 +166,21 @@ func (p *printer) formatValue(verb rune, v reflect.Value) {
 		length = strconv.FormatFloat(p.buf[:], v.Float(), 'e', prec)
 	case k <= reflect.Complex128:
 		c := v.Complex()
-		p.Write([]byte{'('})
+		p.WriteByte('(')
 		p.format(verb, real(c))
 		if imag(c) >= 0 {
-			p.Write([]byte{'+'})
+			p.WriteByte('+')
 		}
 		p.format(verb, imag(c))
-		p.Write([]byte{'i', ')'})
+		p.WriteString("i)")
 	case k == reflect.Ptr:
 		if v.IsNil() {
 			str = "<nil>"
 			length = len(str)
 			break
 		}
-		p.Write([]byte{'&'})
-		// TODO ...
+		p.WriteByte('&')
+		p.formatValue(verb, v.Elem())
 	case k <= reflect.Func || k == reflect.UnsafePointer:
 		ptr := v.Pointer()
 		if ptr == 0 {
@@ -195,9 +195,9 @@ func (p *printer) formatValue(verb rune, v reflect.Value) {
 		str = v.String()
 		length = len(str)
 	case k == reflect.Struct:
-		p.Write([]byte{'{'})
+		p.WriteByte('{')
 
-		p.Write([]byte{'}'})
+		p.WriteByte('}')
 	default:
 		str = "<!not supported>"
 		length = len(str)

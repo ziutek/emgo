@@ -2,8 +2,8 @@
 
 set -e
 
-EGC='egc -O g'
-#EGC='egc'
+#EGC='egc -O g'
+EGC='egc'
 
 rm -rf egroot/pkg/* egpath/pkg/*
 
