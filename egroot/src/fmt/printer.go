@@ -49,6 +49,11 @@ func (p *printer) WriteString(s string) (int, error) {
 	return n, p.Err
 }
 
+func (p *printer) WriteByte(b byte) error {
+	p.Write([]byte{b})
+	return p.Err
+}
+
 func (p *printer) Width() (int, bool) {
 	set := (p.width != -2)
 	if set {
@@ -109,16 +114,34 @@ func (p *printer) format(verb rune, i interface{}) {
 	case Stringer:
 		i = f.String()
 	}
-	v := reflect.ValueOf(i)
+	p.formatValue(verb, reflect.ValueOf(i))
+}
+
+func (p *printer) formatTryInterface(verb rune, v reflect.Value) {
+	if i := v.Interface(); i != nil || !v.IsValid() {
+		p.format(verb, i)
+	} else {
+		p.formatValue(verb, v)
+	}
+}
+
+func (p *printer) formatValue(verb rune, v reflect.Value) {
 	var (
 		length int
 		str    string
 	)
 	k := v.Kind()
 	switch {
-	case k == reflect.Array:
-		str = "<array>"
-		length = len(str)
+	case k == reflect.Array || k == reflect.Slice:
+		p.Write([]byte{'['})
+		n := v.Len()
+		for i := 0; i < n; i++ {
+			if i > 0 {
+				p.WriteByte(' ')
+			}
+			p.formatTryInterface(verb, v.Index(i))
+		}
+		p.Write([]byte{']'})
 	case k == reflect.Invalid:
 		str = "<invalid>"
 		length = len(str)
@@ -168,10 +191,6 @@ func (p *printer) format(verb rune, i interface{}) {
 		p.buf[0] = '0'
 		p.buf[1] = 'x'
 		length = 2 + strconv.FormatUintptr(p.buf[2:], ptr, 16)
-	case k == reflect.Slice:
-		p.Write([]byte{'['})
-
-		p.Write([]byte{']'})
 	case k == reflect.String:
 		str = v.String()
 		length = len(str)

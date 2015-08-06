@@ -3,6 +3,7 @@ package noos
 import (
 	"bits"
 	"builtin"
+	"mem"
 	"sync/atomic"
 	"sync/barrier"
 	"syscall"
@@ -43,7 +44,7 @@ func makeChanA(cap int, size, align uintptr) *chanA {
 	c.event = syscall.AssignEvent()
 	c.cap = uintptr(cap)
 	c.mask = ^uintptr(0) >> (bits.LeadingZerosPtr(c.cap-1) - 1)
-	c.step = alignUp(size, align)
+	c.step = mem.AlignUp(size, align)
 	c.buf = builtin.Alloc(cap, size, align)
 	rdlen := cap / 32
 	if rdlen*32 < cap {

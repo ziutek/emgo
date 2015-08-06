@@ -2,6 +2,7 @@ package reflect
 
 import (
 	"builtin"
+	"mem"
 	"unsafe"
 )
 
@@ -45,12 +46,12 @@ func (v Value) Kind() Kind {
 	return v.typ.Kind()
 }
 
-func (v Value) asptr() unsafe.Pointer {
+func (v *Value) asptr() unsafe.Pointer {
 	return *(*unsafe.Pointer)(unsafe.Pointer(&v.val))
 }
 
 // ptrto always returns pointer to real value that v stores or refers to.
-func (v Value) ptrto() unsafe.Pointer {
+func (v *Value) ptrto() unsafe.Pointer {
 	if v.flags&flagIndir == 0 {
 		return unsafe.Pointer(&v.val)
 	}
@@ -178,15 +179,27 @@ func (v Value) String() string {
 	return *(*string)(v.ptrto())
 }
 
-/*func (v Value) Index(i int) Value {
-	p := unsafe.Pointer(&v.val)
-	switch v.Kind() {
-	case Array:
-	case Slice:
+func (v *Value) Index(i int) Value {
+	if uint(i) >= uint(v.Len()) {
+		panic("reflect: index out of range")
+	}
+	switch k := v.Kind(); k {
+	case Slice, Array:
+		var uptr uintptr
+		if k == Array {
+			uptr = uintptr(v.ptrto())
+		} else {
+			uptr = v.Pointer()
+		}
+		r := Value{typ: v.Type().Elem(), flags: v.flags | flagIndir}
+		uptr += mem.AlignUp(r.typ.Size(), r.typ.Align()) * uintptr(i)
+		*(*unsafe.Pointer)(unsafe.Pointer(&r.val)) = unsafe.Pointer(uptr)
+		return r
 	case String:
+		return ValueOf(v.String()[i])
 	}
 	panic(badKind)
-}*/
+}
 
 func (v Value) Len() int {
 	pt := v.ptrto()
@@ -219,6 +232,8 @@ func (v Value) Cap() int {
 	panic(badKind)
 }
 
+// Interfce returns underlying value of v as interfce{}. It returns nil if v
+// isn't valid or underlying value can't be assigned to interface{}.
 func (v Value) Interface() interface{} {
 	if !v.IsValid() {
 		return nil

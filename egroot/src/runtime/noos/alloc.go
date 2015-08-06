@@ -2,18 +2,10 @@ package noos
 
 import (
 	"builtin"
+	"mem"
 	"sync/atomic"
 	"unsafe"
 )
-
-func alignUp(p, a uintptr) uintptr {
-	a--
-	return (p + a) &^ a
-}
-
-func alignDown(p, a uintptr) uintptr {
-	return p &^ (a - 1)
-}
 
 func panicMemory() {
 	panic("out of memory")
@@ -31,7 +23,7 @@ func allocBottom(n int, size, align uintptr) unsafe.Pointer {
 		if hb < heapBegin() || he > heapEnd() || hb > he {
 			panicMemory()
 		}
-		p := alignUp(hb, align)
+		p := mem.AlignUp(hb, align)
 		newhb := p + size
 		if atomic.CompareAndSwapUintptr(&aHeapBegin, hb, newhb) {
 			he := atomic.LoadUintptr(&aHeapEnd)
@@ -50,7 +42,7 @@ func allocTop(n int, size, align uintptr) unsafe.Pointer {
 		if hb < heapBegin() || he > heapEnd() || hb > he {
 			panicMemory()
 		}
-		p := alignDown(he-size, align)
+		p := mem.AlignDown(he-size, align)
 		if atomic.CompareAndSwapUintptr(&aHeapEnd, he, p) {
 			hb := atomic.LoadUintptr(&aHeapBegin)
 			if p > heapEnd() || hb > p {
@@ -64,7 +56,7 @@ func allocTop(n int, size, align uintptr) unsafe.Pointer {
 // alloc is trivial, non-blocking memory allocator.
 // For now there is no way to deallocate memory allocated by alloc.
 func alloc(n int, size, align uintptr) unsafe.Pointer {
-	size = alignUp(size, align) * uintptr(n)
+	size = mem.AlignUp(size, align) * uintptr(n)
 	var p unsafe.Pointer
 	if unpriv() {
 		p = allocBottom(n, size, align)
