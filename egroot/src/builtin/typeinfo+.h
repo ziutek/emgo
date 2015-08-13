@@ -45,7 +45,7 @@ enum {
 	Array = -1
 };
 
-#define TINFO(i) (((const ithead*)(i).itab$)->typ)
+#define TINFO(i) (tinfo*)(((const ithead*)(i).itab$)->typ)
 
 #define IASSIGN(expr, etyp, ityp) INTERFACE(        \
 	expr,                                           \
