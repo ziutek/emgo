@@ -196,7 +196,9 @@ func main() {
 	v := reflect.ValueOf(a)
 	t := v.Type()
 	fmt.Println(t, t.Size(), t.Align())
-	fmt.Println(&a, a[:])
+	fmt.Println(&a, a[:], a)
+	fmt.Printf("Jeden\n")
+	fmt.Printf("Fead: %v\n", a)
 }
 
 func slisiz() (uintptr, uintptr)

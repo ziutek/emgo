@@ -1,17 +1,24 @@
 __attribute__ ((always_inline))
 extern inline
-unsafe$Pointer stack$Alloc(int n, uintptr size) {
+unsafe$Pointer stack$alloc(int n, uintptr size) {
 	size *= n;
 	unsafe$Pointer p = __builtin_alloca(size);
 	__builtin_memset(p, 0, size);
 	return p;
 }
 
+__attribute__ ((always_inline))
+extern inline
+uintptr stack$Alloc(int n, uintptr size) {
+	return (uintptr)(stack$alloc(n, size));
+}
+
+
 #define _DEFFUNC(name, typ)                                \
 	__attribute__ ((always_inline))                        \
 	extern inline                                          \
 	slice stack$##name(int n) {                            \
-		return (slice){stack$Alloc(n, sizeof(typ)), n, n}; \
+		return (slice){stack$alloc(n, sizeof(typ)), n, n}; \
 	}
 
 _DEFFUNC(Bytes, byte)
@@ -28,7 +35,7 @@ _DEFFUNC(Interfaces, interface)
 	__attribute__ ((always_inline))                   \
 	extern inline                                     \
 	slice stack$##name##bits(int n) {                 \
-		return (slice){stack$Alloc(n, bits/8), n, n}; \
+		return (slice){stack$alloc(n, bits/8), n, n}; \
 	}
 
 _DEFFUNC(Ints, 8)

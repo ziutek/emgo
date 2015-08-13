@@ -4,79 +4,84 @@ import (
 	"io"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
-// prineter implements State interface
-type printer struct {
-	W   io.Writer
-	Err error
-	N   int
-
-	width int
-	prec  int
+type wpf struct {
+	width int16
+	prec  int16
 	flags string
-	buf   [65]byte
 }
 
-func (p *printer) parse(verb string) {
-	if len(verb) == 0 {
-		p.width = -2
-		p.prec = -2
-		p.flags = ""
+func (wpf *wpf) parse(format string) {
+	if len(format) == 0 {
+		wpf.width = -2
+		wpf.prec = -2
+		wpf.flags = ""
 		return
 	}
 	return
 }
 
-func (p *printer) Write(b []byte) (int, error) {
-	if p.Err != nil {
-		return 0, p.Err
-	}
-	var n int
-	n, p.Err = p.W.Write(b)
-	p.N += n
-	return n, p.Err
-}
-
-func (p *printer) WriteString(s string) (int, error) {
-	if p.Err != nil {
-		return 0, p.Err
-	}
-	var n int
-	// io.WriteString uses WriteString method if p.W imlements it.
-	n, p.Err = io.WriteString(p.W, s)
-	p.N += n
-	return n, p.Err
-}
-
-func (p *printer) WriteByte(b byte) error {
-	p.Write([]byte{b})
-	return p.Err
-}
-
-func (p *printer) Width() (int, bool) {
-	set := (p.width != -2)
+func (wpf *wpf) Width() (int, bool) {
+	set := (wpf.width != -2)
 	if set {
-		return p.width, set
+		return int(wpf.width), set
 	}
 	return 0, set
 }
 
-func (p *printer) Precision() (int, bool) {
-	set := (p.prec != -2)
+func (wpf *wpf) Precision() (int, bool) {
+	set := (wpf.prec != -2)
 	if set {
-		return p.prec, set
+		return int(wpf.prec), set
 	}
 	return 6, set
 }
 
-func (p *printer) Flag(c int) bool {
-	for i := 0; i < len(p.flags); i++ {
-		if int(p.flags[i]) == c {
-			return true
-		}
+func (wpf *wpf) Flag(c int) bool {
+	return strings.IndexByte(wpf.flags, byte(c)) != -1
+}
+
+type writer struct {
+	w   io.Writer
+	err error
+	n   int
+
+	buf [65]byte
+}
+
+func (w *writer) Write(b []byte) (int, error) {
+	if w.err != nil {
+		return 0, w.err
 	}
-	return false
+	var n int
+	n, w.err = w.w.Write(b)
+	w.n += n
+	return n, w.err
+}
+
+func (w *writer) WriteString(s string) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	var n int
+	// io.WriteString uses WriteString method if w.w implements it.
+	n, w.err = io.WriteString(w.w, s)
+	w.n += n
+	return n, w.err
+}
+
+func (w *writer) WriteByte(b byte) error {
+	w.Write([]byte{b})
+	return w.err
+}
+
+// printer implements State interface.
+// Value of type printer can be assigned to interface type. 
+type printer struct {
+	*writer
+	wpf
 }
 
 func (p *printer) padSpaces(length int) {
@@ -95,7 +100,7 @@ func (p *printer) padSpaces(length int) {
 			return
 		}
 		p.WriteString(spaces)
-		if p.Err != nil {
+		if p.err != nil {
 			return
 		}
 		width -= len(spaces)
@@ -117,7 +122,7 @@ func (p *printer) format(verb rune, i interface{}) {
 	p.formatValue(verb, reflect.ValueOf(i))
 }
 
-func (p *printer) formatTryInterface(verb rune, v reflect.Value) {
+func (p *printer) tryFormatAsInterface(verb rune, v reflect.Value) {
 	if i := v.Interface(); i != nil || !v.IsValid() {
 		p.format(verb, i)
 	} else {
@@ -139,7 +144,7 @@ func (p *printer) formatValue(verb rune, v reflect.Value) {
 			if i > 0 {
 				p.WriteByte(' ')
 			}
-			p.formatTryInterface(verb, v.Index(i))
+			p.tryFormatAsInterface(verb, v.Index(i))
 		}
 		p.WriteByte(']')
 	case k == reflect.Invalid:

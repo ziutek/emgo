@@ -4,7 +4,7 @@ package stack
 
 import "unsafe"
 
-func Alloc(n int, size uintptr) unsafe.Pointer
+func Alloc(n int, size uintptr) uintptr
 
 func Ints(n int) []int
 func Uints(n int) []uint
