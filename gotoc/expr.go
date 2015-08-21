@@ -4,16 +4,15 @@ import (
 	"bytes"
 	"fmt"
 	"go/ast"
+	"go/constant"
 	"go/token"
+	"go/types"
 	"strconv"
-
-	"golang.org/x/tools/go/exact"
-	"golang.org/x/tools/go/types"
 )
 
-func writeInt(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
+func writeInt(w *bytes.Buffer, ev constant.Value, k types.BasicKind) {
 	if k == types.Uintptr {
-		u, _ := exact.Uint64Val(ev)
+		u, _ := constant.Uint64Val(ev)
 		w.WriteString("0x")
 		w.WriteString(strconv.FormatUint(u, 16))
 		return
@@ -47,18 +46,18 @@ func writeInt(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
 	}
 }
 
-func writeFloat(w *bytes.Buffer, ev exact.Value, k types.BasicKind) {
+func writeFloat(w *bytes.Buffer, ev constant.Value, k types.BasicKind) {
 	if k == types.Float32 {
-		f, _ := exact.Float32Val(ev)
+		f, _ := constant.Float32Val(ev)
 		w.WriteString(strconv.FormatFloat(float64(f), 'e', -1, 32))
 		w.WriteByte('F')
 	} else {
-		f, _ := exact.Float64Val(ev)
+		f, _ := constant.Float64Val(ev)
 		w.WriteString(strconv.FormatFloat(f, 'e', -1, 64))
 	}
 }
 
-func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
+func (cdd *CDD) Value(w *bytes.Buffer, ev constant.Value, t types.Type) {
 	k := t.Underlying().(*types.Basic).Kind()
 	switch {
 	case k <= types.Bool || k == types.UntypedBool:
@@ -69,9 +68,9 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev exact.Value, t types.Type) {
 		writeFloat(w, ev, k)
 	case k <= types.Complex128 || k == types.UntypedComplex:
 		w.WriteByte('(')
-		writeFloat(w, exact.Real(ev), k)
-		im := exact.Imag(ev)
-		if exact.Sign(im) != -1 {
+		writeFloat(w, constant.Real(ev), k)
+		im := constant.Imag(ev)
+		if constant.Sign(im) != -1 {
 			w.WriteByte('+')
 		}
 		writeFloat(w, im, k)
@@ -743,7 +742,7 @@ func (cdd *CDD) clArrayLen(elems []ast.Expr) int64 {
 	var n, k int64
 	for _, e := range elems {
 		if kv, ok := e.(*ast.KeyValueExpr); ok {
-			k, _ = exact.Int64Val(cdd.gtc.exprValue(kv.Key))
+			k, _ = constant.Int64Val(cdd.gtc.exprValue(kv.Key))
 
 		}
 		if k++; k > n {

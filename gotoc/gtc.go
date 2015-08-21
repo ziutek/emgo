@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"go/ast"
+	"go/constant"
 	"go/token"
+	"go/types"
 	"io"
 	"os"
 	"strconv"
-
-	"golang.org/x/tools/go/exact"
-	"golang.org/x/tools/go/types"
 )
 
 // GTC stores information from type checker need for translation.
@@ -24,8 +23,6 @@ type GTC struct {
 	siz         types.Sizes
 	sizPtr      int64
 	sizIval     int64
-
-	msetc types.MethodSetCache
 
 	// TODO: safe concurent acces is need
 	tuples  map[string]types.Object
@@ -60,7 +57,7 @@ func (cc *GTC) SetInlineThres(thres int) {
 
 func (cc *GTC) SetBoundsCheck(bc bool) {
 	cc.boundsCheck = bc
-} 
+}
 
 func (gtc *GTC) File(f *ast.File) (cdds []*CDD) {
 	for _, d := range f.Decls {
@@ -372,7 +369,7 @@ func (gtc *GTC) exprType(e ast.Expr) types.Type {
 	return gtc.ti.Types[e].Type
 }
 
-func (gtc *GTC) exprValue(e ast.Expr) exact.Value {
+func (gtc *GTC) exprValue(e ast.Expr) constant.Value {
 	return gtc.ti.Types[e].Value
 }
 
@@ -392,5 +389,5 @@ func (gtc *GTC) notImplemented(n ast.Node, tl ...types.Type) {
 }
 
 func (gtc *GTC) methodSet(t types.Type) *types.MethodSet {
-	return gtc.msetc.MethodSet(t)
+	return types.NewMethodSet(t)
 }

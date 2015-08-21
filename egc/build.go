@@ -8,6 +8,7 @@ import (
 	"go/build"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"io"
 	"io/ioutil"
 	"os"
@@ -15,9 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/tools/go/importer"
-	"golang.org/x/tools/go/types"
-
+	"github.com/ziutek/emgo/egc/importer"
 	"github.com/ziutek/emgo/gotoc"
 )
 
@@ -99,8 +98,8 @@ func compile(bp *build.Package) error {
 	// Type check
 
 	tc := &types.Config{
-		Import: NewImporter().Import,
-		Sizes:  sizesMap[buildCtx.GOARCH],
+		Importer: NewImporter(),
+		Sizes:    sizesMap[buildCtx.GOARCH],
 	}
 	ti := &types.Info{
 		Types:      make(map[ast.Expr]types.TypeAndValue),

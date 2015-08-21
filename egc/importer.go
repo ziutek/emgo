@@ -5,31 +5,33 @@ import (
 	"go/build"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"os"
 	"path/filepath"
 
-	"golang.org/x/tools/go/importer"
-	"golang.org/x/tools/go/types"
+	"github.com/ziutek/emgo/egc/importer"
 )
 
 type Importer struct {
-	tc types.Config // Legacy: used by importSrc.
+	tc      types.Config // Legacy: used by importSrc.
+	imports map[string]*types.Package
 }
 
 func NewImporter() *Importer {
 	imp := new(Importer)
+	imp.imports = make(map[string]*types.Package)
 	imp.tc.IgnoreFuncBodies = true
-	imp.tc.Import = imp.Import
+	imp.tc.Importer = imp
 	return imp
 }
 
-func (imp *Importer) Import(imports map[string]*types.Package, path string) (*types.Package, error) {
-	//return imp.importSrc(imports, path)
-	//return imp.importSrc1(imports, path)
-	return imp.importPkg(imports, path)
+func (imp *Importer) Import(path string) (*types.Package, error) {
+	//return imp.importSrc(path)
+	//return imp.importSrc1(path)
+	return imp.importPkg(path)
 }
 
-func (imp *Importer) importSrc(imports map[string]*types.Package, path string) (*types.Package, error) {
+func (imp *Importer) importSrc(path string) (*types.Package, error) {
 	if path == "unsafe" {
 		return types.Unsafe, nil
 	}
@@ -51,7 +53,7 @@ func (imp *Importer) importSrc(imports map[string]*types.Package, path string) (
 		return nil, err
 	}
 
-	if pkg := imports[path]; pkg != nil && pkg.Complete() {
+	if pkg := imp.imports[path]; pkg != nil && pkg.Complete() {
 		return pkg, nil
 	}
 
@@ -71,11 +73,11 @@ func (imp *Importer) importSrc(imports map[string]*types.Package, path string) (
 		return nil, err
 	}
 
-	imports[path] = pkg
+	imp.imports[path] = pkg
 	return pkg, nil
 }
 
-func (imp *Importer) importSrc1(imports map[string]*types.Package, path string) (*types.Package, error) {
+func (imp *Importer) importSrc1(path string) (*types.Package, error) {
 	if path == "unsafe" {
 		return types.Unsafe, nil
 	}
@@ -97,7 +99,7 @@ func (imp *Importer) importSrc1(imports map[string]*types.Package, path string) 
 		return nil, err
 	}
 
-	if pkg := imports[path]; pkg != nil && pkg.Complete() {
+	if pkg := imp.imports[path]; pkg != nil && pkg.Complete() {
 		return pkg, nil
 	}
 
@@ -117,11 +119,11 @@ func (imp *Importer) importSrc1(imports map[string]*types.Package, path string) 
 		return nil, err
 	}
 
-	imports[path] = pkg
+	imp.imports[path] = pkg
 	return pkg, nil
 }
 
-func (imp *Importer) importPkg(imports map[string]*types.Package, path string) (*types.Package, error) {
+func (imp *Importer) importPkg(path string) (*types.Package, error) {
 	if path == "unsafe" {
 		return types.Unsafe, nil
 	}
@@ -143,7 +145,7 @@ func (imp *Importer) importPkg(imports map[string]*types.Package, path string) (
 		return nil, err
 	}
 
-	if pkg := imports[path]; pkg != nil && pkg.Complete() {
+	if pkg := imp.imports[path]; pkg != nil && pkg.Complete() {
 		return pkg, nil
 	}
 
@@ -151,7 +153,7 @@ func (imp *Importer) importPkg(imports map[string]*types.Package, path string) (
 	if err != nil {
 		return nil, err
 	}
-	_, pkg, err := importer.ImportData(imports, buf)
+	_, pkg, err := importer.ImportData(imp.imports, buf)
 	return pkg, err
 }
 

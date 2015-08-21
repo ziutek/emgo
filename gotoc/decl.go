@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"go/types"
 	"regexp"
 	"strconv"
-
-	"golang.org/x/tools/go/types"
 )
 
 func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {

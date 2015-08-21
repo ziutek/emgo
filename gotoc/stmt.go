@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"go/ast"
 	"go/token"
+	"go/types"
 	"strconv"
-
-	"golang.org/x/tools/go/types"
 )
 
 func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, tup *types.Tuple) (end bool) {
@@ -79,8 +78,7 @@ func (cdd *CDD) label(w *bytes.Buffer, label, suffix string) {
 	cdd.il++
 }
 
-var		untypedNil = types.Typ[types.UntypedNil]
-
+var untypedNil = types.Typ[types.UntypedNil]
 
 func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup *types.Tuple) (end bool) {
 	updateEnd := func(e bool) {
@@ -550,7 +548,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				for i, e := range cs.List {
 					et := cdd.exprType(e)
 					if i == 0 {
-						if len(cs.List) == 1 && et != untypedNil  {
+						if len(cs.List) == 1 && et != untypedNil {
 							caseTyp = et
 						}
 					} else {

@@ -3,11 +3,10 @@ package gotoc
 import (
 	"bytes"
 	"fmt"
+	"go/types"
 	"reflect"
 	"strconv"
 	"strings"
-
-	"golang.org/x/tools/go/types"
 )
 
 func dimFuncPtr(name string, dim []string) string {
@@ -42,7 +41,7 @@ writeType:
 		if t.Kind() == types.UnsafePointer {
 			w.WriteString("unsafe$Pointer")
 		} else {
-			types.WriteType(w, nil, t)
+			types.WriteType(w, t, nil)
 		}
 
 	case *types.Named:
@@ -105,7 +104,7 @@ writeType:
 
 	case *types.Interface:
 		w.WriteString("interface")
-		
+
 	case *types.Tuple:
 		tn, _ := cdd.tupleName(t)
 		w.WriteString(tn)

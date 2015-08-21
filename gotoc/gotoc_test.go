@@ -8,14 +8,13 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
-
-	_ "golang.org/x/tools/go/gcimporter"
-	"golang.org/x/tools/go/types"
+	//_ "golang.org/x/tools/go/gcimporter"
 
 	"github.com/ziutek/emgo/gotoc"
 )

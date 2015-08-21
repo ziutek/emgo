@@ -3,11 +3,10 @@ package gotoc
 import (
 	"bytes"
 	"go/ast"
+	"go/constant"
 	"go/token"
+	"go/types"
 	"io"
-
-	"golang.org/x/tools/go/exact"
-	"golang.org/x/tools/go/types"
 )
 
 type DeclType int
@@ -251,7 +250,7 @@ func (cdd *CDD) exprType(e ast.Expr) types.Type {
 	return cdd.gtc.exprType(e)
 }
 
-func (cdd *CDD) exprValue(e ast.Expr) exact.Value {
+func (cdd *CDD) exprValue(e ast.Expr) constant.Value {
 	return cdd.gtc.exprValue(e)
 }
 
