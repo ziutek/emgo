@@ -116,14 +116,14 @@ func main() {
 	s.Write(buf[:])
 	s.WriteByte('\n')
 
-	strconv.FormatFloat(buf[:], 0, -'e', 0)
+	strconv.FormatFloat(buf[:], 0, -'e', 0, 64)
 	s.Write(buf[:])
 	s.WriteByte('\n')
 
 	fmt.Println()
 
 	for i := 0; i < 20; i++ {
-		strconv.FormatFloat(buf[:], SmallestNonzeroFloat64, -'e', i)
+		strconv.FormatFloat(buf[:], SmallestNonzeroFloat64, -'e', i, 64)
 		s.Write(buf[:])
 		s.WriteByte('\n')
 	}
@@ -198,7 +198,11 @@ func main() {
 	fmt.Println(t, t.Size(), t.Align())
 	fmt.Println(&a, a[:], a)
 	fmt.Printf("Jeden\n")
-	fmt.Printf("Fead: %v\n", a)
+	fmt.Printf("Type: %T Value: %v\n", a, a)
+	i := -20
+	fmt.Printf("%b %o %d %x\n", i, i, i, i)
+	f := 1.23456789e2
+	fmt.Printf("%e %b\n", f, f)
 }
 
 func slisiz() (uintptr, uintptr)

@@ -2,7 +2,6 @@ package strconv
 
 import (
 	"bits"
-	"math"
 )
 
 type diyfp struct {
@@ -39,19 +38,6 @@ func mul(x, y diyfp) diyfp {
 		ac + ad>>32 + bc>>32 + tmp>>32,
 		x.e + y.e + 64,
 	}
-}
-
-func makediyfp(f64 float64) diyfp {
-	bits := math.Float64bits(f64)
-	frac := bits & (1<<52 - 1)
-	exp := int(bits>>52) & (1<<11 - 1)
-	if exp == 0 {
-		exp = 1 - (1023 + 52)
-	} else {
-		exp -= 1023 + 52
-		frac += 1 << 52
-	}
-	return diyfp{frac, exp}
 }
 
 func bounds(w diyfp) (lower, upper diyfp) {

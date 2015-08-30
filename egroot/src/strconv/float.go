@@ -87,7 +87,7 @@ sw:
 	return 1
 }
 
-// FormatBool stores text representation of f in buf using format specified by
+// FormatFloat stores text representation of f in buf using format specified by
 // fmt:
 //	|fmt| == 'b': -ddddp±ddd, BUG: unsupported
 //  |fmt| == 'e': -d.dddde±dd,
@@ -96,12 +96,12 @@ sw:
 // its length. If base < 0 then formatted value is right-justified and
 // FormatFloat returns offset to its first char.
 
-func FormatFloat(buf []byte, f float64, fmt, prec int) int {
+func FormatFloat(buf []byte, f float64, fmt, prec, bitsize int) int {
 	right := fmt < 0
 	if right {
 		fmt = -fmt
 	}
-	n := formatFloat(buf, f, fmt, prec)
+	n := formatFloat(buf, f, fmt, prec, bitsize)
 	if !right {
 		bytes.Fill(buf[n:], ' ')
 		return n
@@ -112,7 +112,49 @@ func FormatFloat(buf []byte, f float64, fmt, prec int) int {
 	return m
 }
 
-func formatFloat(buf []byte, f float64, fmt, prec int) int {
+func frexp64(f float64) (uint64, int) {
+	bits := math.Float64bits(f)
+	frac := bits & (1<<52 - 1)
+	exp := int(bits>>52) & (1<<11 - 1)
+	if exp == 0 {
+		exp = 1 - (1023 + 52)
+	} else {
+		exp -= 1023 + 52
+		frac += 1 << 52
+	}
+	return frac, exp
+}
+
+func frexp32(f float32) (uint64, int) {
+	bits := math.Float32bits(f)
+	frac := bits & (1<<23 - 1)
+	exp := int(bits>>23) & (1<<8 - 1)
+	if exp == 0 {
+		exp = 1 - (127 + 23)
+	} else {
+		exp -= 127 + 23
+		frac += 1 << 23
+	}
+	return uint64(frac), exp
+}
+
+func formatExp(buf []byte, exp int) int {
+	n := 0
+	if exp >= 0 {
+		buf[n] = '+'
+	} else {
+		buf[n] = '-'
+		exp = -exp
+	}
+	n++
+	if exp < 10 {
+		buf[n] = '0'
+		n++
+	}
+	return n + FormatUint(buf[n:], uint(exp), 10)
+}
+
+func formatFloat(buf []byte, f float64, fmt, prec, bitsize int) int {
 	n, spec := specials(buf, f)
 	if spec > 0 {
 		return n
@@ -123,7 +165,27 @@ func formatFloat(buf []byte, f float64, fmt, prec int) int {
 	if prec < 0 {
 		panic("strconv: prec<0")
 	}
+	var (
+		frac uint64
+		exp  int
+	)
+	switch bitsize {
+	case 32:
+		frac, exp = frexp32(float32(f))
+	case 64:
+		frac, exp = frexp64(f)
+	default:
+		panic("strconv: illegal FormatFloat bitsize")
+	}
 	switch fmt {
+	case 'b':
+		n += FormatUint64(buf[n:], frac, 10)
+		if len(buf) < n+1+1+2 {
+			panicBuffer()
+		}
+		buf[n] = 'p'
+		n++
+		return n + formatExp(buf[n:], exp)
 	case 'e', 'E':
 		prec++ // Add first digit.
 		l := prec + 5
@@ -148,7 +210,7 @@ func formatFloat(buf []byte, f float64, fmt, prec int) int {
 			return n + len(nb)
 		}
 		var g grisu
-		g.Init(f)
+		g.Init(frac, exp)
 		for i := 0; i < prec; i++ {
 			nb[i] = byte('0' + g.NextDigit())
 		}
@@ -162,18 +224,7 @@ func formatFloat(buf []byte, f float64, fmt, prec int) int {
 		}
 		buf[n] = byte(fmt)
 		n++
-		if exp10 >= 0 {
-			buf[n] = '+'
-		} else {
-			buf[n] = '-'
-			exp10 = -exp10
-		}
-		n++
-		if exp10 < 10 {
-			buf[n] = '0'
-			n++
-		}
-		return n + FormatUint(buf[n:], uint(exp10), 10)
+		return n + formatExp(buf[n:], exp10)
 	}
 	panic("strconv: bad fmt")
 }

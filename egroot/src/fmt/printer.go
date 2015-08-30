@@ -78,7 +78,7 @@ func (w *writer) WriteByte(b byte) error {
 }
 
 // printer implements State interface.
-// Value of type printer can be assigned to interface type. 
+// Value of type printer can be assigned to interface type.
 type printer struct {
 	*writer
 	wpf
@@ -107,22 +107,52 @@ func (p *printer) padSpaces(length int) {
 	}
 }
 
-func (p *printer) format(verb rune, i interface{}) {
-	switch f := i.(type) {
-	case nil:
-		i = "<nil>"
-	case Formatter:
-		f.Format(p, verb)
-		return
-	case error:
-		i = f.Error()
-	case Stringer:
-		i = f.String()
+func (p *printer) Ferr(verb byte, info string, a interface{}) {
+	if a == nil {
+		a = ""
+	}
+	p.WriteString("%!")
+	if verb != 0 {
+		p.WriteByte(verb)
+	}
+	p.WriteByte('(')
+	p.WriteString(info)
+	p.parse("")
+	p.format('v', a)
+	p.WriteByte(')')
+}
+
+func (p *printer) badVerb(verb byte, v reflect.Value) {
+	p.WriteString("%!")
+	p.WriteByte(verb)
+	p.WriteByte('(')
+	p.WriteString(v.Type().String())
+	p.WriteByte('=')
+	p.formatValue('v', v)
+	p.WriteByte(')')
+}
+
+func (p *printer) format(verb byte, i interface{}) {
+	switch verb {
+	case 'T':
+		i = reflect.TypeOf(i).String()
+	default:
+		switch f := i.(type) {
+		case nil:
+			i = "<nil>"
+		case Formatter:
+			f.Format(p, rune(verb))
+			return
+		case error:
+			i = f.Error()
+		case Stringer:
+			i = f.String()
+		}
 	}
 	p.formatValue(verb, reflect.ValueOf(i))
 }
 
-func (p *printer) tryFormatAsInterface(verb rune, v reflect.Value) {
+func (p *printer) tryFormatAsInterface(verb byte, v reflect.Value) {
 	if i := v.Interface(); i != nil || !v.IsValid() {
 		p.format(verb, i)
 	} else {
@@ -130,7 +160,7 @@ func (p *printer) tryFormatAsInterface(verb rune, v reflect.Value) {
 	}
 }
 
-func (p *printer) formatValue(verb rune, v reflect.Value) {
+func (p *printer) formatValue(verb byte, v reflect.Value) {
 	var (
 		length int
 		str    string
@@ -152,23 +182,10 @@ func (p *printer) formatValue(verb rune, v reflect.Value) {
 		length = len(str)
 	case k == reflect.Bool:
 		length = strconv.FormatBool(p.buf[:], v.Bool(), 2)
-	case k == reflect.Int:
-		length = strconv.FormatInt(p.buf[:], int(v.Int()), 10)
-	case k <= reflect.Int32:
-		length = strconv.FormatInt32(p.buf[:], int32(v.Int()), 10)
-	case k == reflect.Int64:
-		length = strconv.FormatInt64(p.buf[:], v.Int(), 10)
-	case k == reflect.Uint:
-		length = strconv.FormatUint(p.buf[:], uint(v.Uint()), 10)
-	case k <= reflect.Uint32:
-		length = strconv.FormatUint32(p.buf[:], uint32(v.Uint()), 10)
-	case k == reflect.Uint64:
-		length = strconv.FormatUint64(p.buf[:], v.Uint(), 10)
-	case k == reflect.Uintptr:
-		length = strconv.FormatUintptr(p.buf[:], uintptr(v.Uint()), 10)
+	case k <= reflect.Uintptr:
+		length = p.formatIntVal(verb, v)
 	case k <= reflect.Float64:
-		prec, _ := p.Precision()
-		length = strconv.FormatFloat(p.buf[:], v.Float(), 'e', prec)
+		length = p.formatFloat(verb, v)
 	case k <= reflect.Complex128:
 		c := v.Complex()
 		p.WriteByte('(')
@@ -222,4 +239,62 @@ func (p *printer) formatValue(verb rune, v reflect.Value) {
 		p.padSpaces(length)
 	}
 	return
+}
+
+func (p *printer) formatIntVal(verb byte, v reflect.Value) int {
+	k := v.Kind()
+	base := 10
+	switch verb {
+	case 'v', 'd':
+		base = 10
+	case 'x', 'X':
+		base = 16
+	case 'b':
+		base = 2
+	case 'o':
+		base = 8
+	case 'c':
+		if k <= reflect.Int64 {
+			p.buf[0] = byte(v.Int())
+		} else {
+			p.buf[0] = byte(v.Uint())
+		}
+		return 1
+	default:
+		p.badVerb(verb, v)
+		return 0
+	}
+	switch {
+	case k == reflect.Int:
+		return strconv.FormatInt(p.buf[:], int(v.Int()), base)
+	case k <= reflect.Int32:
+		return strconv.FormatInt32(p.buf[:], int32(v.Int()), base)
+	case k == reflect.Int64:
+		return strconv.FormatInt64(p.buf[:], v.Int(), base)
+	case k == reflect.Uint:
+		return strconv.FormatUint(p.buf[:], uint(v.Uint()), base)
+	case k <= reflect.Uint32:
+		return strconv.FormatUint32(p.buf[:], uint32(v.Uint()), base)
+	case k == reflect.Uint64:
+		return strconv.FormatUint64(p.buf[:], v.Uint(), base)
+	default:
+		return strconv.FormatUintptr(p.buf[:], uintptr(v.Uint()), base)
+	}
+}
+
+func (p *printer) formatFloat(verb byte, v reflect.Value) int {
+	bitsize := 32
+	if v.Kind() == reflect.Float64 {
+		bitsize = 64
+	}
+	switch verb {
+	case 'v':
+		verb = 'e'
+	case 'e', 'E', 'b':
+	default:
+		p.badVerb(verb, v)
+		return 0
+	}
+	prec, _ := p.Precision()
+	return strconv.FormatFloat(p.buf[:], v.Float(), int(verb), prec, bitsize)
 }

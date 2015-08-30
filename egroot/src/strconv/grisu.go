@@ -11,8 +11,8 @@ type grisu struct {
 	p1    uint32
 }
 
-func (g *grisu) Init(f float64) {
-	w := normalize(makediyfp(f))
+func (g *grisu) Init(frac uint64, exp int) {
+	w := normalize(diyfp{frac, exp})
 	d, exp10 := cachedPower(w.e, -59, -32)
 	d = mul(w, d)
 
@@ -49,8 +49,8 @@ func (g *grisu) Exp10() int {
 }
 
 // grisu2 needs len(buf) >= 20
-func grisu2(buf []byte, f float64) (n, exp10 int) {
-	low, hig := bounds(makediyfp(f))
+func grisu2(buf []byte, frac uint64, exp int) (n, exp10 int) {
+	low, hig := bounds(diyfp{frac, exp})
 	hig = normalize(hig)
 	low = expUp(normalize(low), hig.e)
 	var c10 diyfp

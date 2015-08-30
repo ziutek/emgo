@@ -27,21 +27,6 @@ func findVerb(f string) (int, string, byte) {
 	return start, "", 0
 }
 
-func ferr(p printer, verb byte, info string, a interface{}) {
-	if a == nil {
-		a = ""
-	}
-	p.WriteString("%!")
-	if verb != 0 {
-		p.WriteByte(verb)
-	}
-	p.WriteByte('(')
-	p.WriteString(info)
-	p.parse("")
-	p.format('v', a)
-	p.WriteByte(')')
-}
-
 func Fprintf(w io.Writer, f string, a ...interface{}) (int, error) {
 	p, ok := w.(printer)
 	if !ok {
@@ -60,26 +45,23 @@ func Fprintf(w io.Writer, f string, a ...interface{}) (int, error) {
 			break
 		}
 		switch verb {
-		case 'v', 's', 'd', 'x', 'X', 'f':
-			if m < len(a) {
-				p.parse(flags)
-				p.format(rune(verb), a[m])
-			}
-			m++
 		case '%':
 			p.WriteByte('%')
 		case 0:
 			// Unfinished format.
-			ferr(p, 0, "UNFINISHED", nil)
+			p.Ferr(0, "UNFINISHED", nil)
 		default:
-			// Unkonown format
-			ferr(p, verb, "UNKNOWN", nil)
+			if m < len(a) {
+				p.parse(flags)
+				p.format(verb, a[m])
+			}
+			m++
 		}
 		if p.err != nil {
 			return p.n, p.err
 		}
 		if m > len(a) {
-			ferr(p, verb, "MISSING", nil)
+			p.Ferr(verb, "MISSING", nil)
 			if p.err != nil {
 				return p.n, p.err
 			}
@@ -87,7 +69,7 @@ func Fprintf(w io.Writer, f string, a ...interface{}) (int, error) {
 		f = f[start+2+len(flags):]
 	}
 	for ; m < len(a); m++ {
-		ferr(p, 0, "EXTRA ", a[m])
+		p.Ferr(0, "EXTRA ", a[m])
 		if p.err != nil {
 			break
 		}
