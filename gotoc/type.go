@@ -47,6 +47,7 @@ writeType:
 	case *types.Named:
 		if _, ok := t.Underlying().(*types.Interface); ok {
 			w.WriteString("interface")
+			cdd.addObject(t.Obj(), direct)
 		} else {
 			cdd.Name(w, t.Obj(), direct)
 		}
@@ -313,7 +314,8 @@ func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var
 	}
 
 	if o, ok := cdd.gtc.tuples[tupName]; ok {
-		cdd.DeclUses[o] = true
+		//cdd.DeclUses[o] = true
+		cdd.addObject(o, true)
 		return
 	}
 
@@ -324,7 +326,8 @@ func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var
 	acd.structDecl(new(bytes.Buffer), tupName, s)
 	cdd.acds = append(cdd.acds, acd)
 
-	cdd.DeclUses[o] = true
+	//cdd.DeclUses[o] = true
+	cdd.addObject(o, true)
 
 	return
 }
