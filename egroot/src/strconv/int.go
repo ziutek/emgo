@@ -1,136 +1,124 @@
 package strconv
 
 import (
-	"bytes"
+	"io"
 	"unsafe"
 )
 
 const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
 
-func fixBase(base int) int {
+func fixBase(base int) uint32 {
 	if base < 0 {
 		base = -base
 	}
 	if base < 2 || base > len(digits) {
 		panicBase()
 	}
-	return base
+	return uint32(base)
 }
 
-func finish(buf []byte, n int, right bool) int {
-	if n == len(buf) {
+func formatUint32(buf []byte, u, base uint32) int {
+	n := len(buf)
+	for u != 0 {
 		if n == 0 {
 			panicBuffer()
 		}
+		n--
+		newU := u / base
+		buf[n] = digits[u-newU*base]
+		u = newU
+	}
+	if n == len(buf) {
 		n--
 		buf[n] = '0'
 	}
-	if n == 0 {
-		return 0
-	}
-	if right {
-		bytes.Fill(buf[:n], ' ')
-		return n
-	}
-	n = copy(buf, buf[n:])
-	bytes.Fill(buf[n:], ' ')
 	return n
 }
 
-// FormatUint32 works like FormatInt.
-func FormatUint32(buf []byte, u uint32, base int) int {
-	b := uint32(fixBase(base))
+func formatUint64(buf []byte, u uint64, base uint32) int {
 	n := len(buf)
 	for u != 0 {
 		if n == 0 {
 			panicBuffer()
 		}
 		n--
-		newU := u / b
-		buf[n] = digits[u-newU*b]
+		newU := u / uint64(base)
+		buf[n] = digits[u-newU*uint64(base)]
 		u = newU
 	}
-	return finish(buf, n, base < 0)
-}
-
-// FormatInt32 works like FormatInt.
-func FormatInt32(buf []byte, i int32, base int) int {
-	if i >= 0 {
-		return FormatUint32(buf, uint32(i), base)
-	}
-	if len(buf) < 2 {
-		panicBuffer()
-	}
-	n := FormatUint32(buf[1:], uint32(-i), base)
-	if base > 0 {
-		buf[0] = '-'
-		n++
-	} else {
-		buf[0] = ' '
-		buf[n] = '-'
-	}
-	return n
-}
-
-// FormatUint64 works like FormatInt.
-func FormatUint64(buf []byte, u uint64, base int) int {
-	b := uint64(fixBase(base))
-	n := len(buf)
-	for u != 0 {
-		if n == 0 {
-			panicBuffer()
-		}
+	if n == len(buf) {
 		n--
-		newU := u / b
-		buf[n] = digits[u-newU*b]
-		u = newU
-	}
-	return finish(buf, n, base < 0)
-}
-
-// FormatInt64 works like FormatInt.
-func FormatInt64(buf []byte, i int64, base int) int {
-	if i >= 0 {
-		return FormatUint64(buf, uint64(i), base)
-	}
-	if len(buf) < 2 {
-		panicBuffer()
-	}
-	n := FormatUint64(buf[1:], uint64(-i), base)
-	if base > 0 {
-		buf[0] = '-'
-		n++
-	} else {
-		buf[0] = ' '
-		buf[n] = '-'
+		buf[n] = '0'
 	}
 	return n
 }
 
-// FormatInt stores text representation of i in buf using 2 <= |base| <= 36.
-// Unused portion of the buffer is filled with spaces.
-// If base > 0 then formatted value is left-justified and FormatInt returns
-// its length. If base < 0 then formatted value is right-justified and
-// FormatInt returns offset to its first char.
-func FormatInt(buf []byte, i, base int) int {
+func WriteUint32(w io.Writer, u uint32, base, width int) (int, error) {
+	var buf [32]byte
+	n := formatUint32(buf[:], u, fixBase(base))
+	return writePadded(w, buf[n:], width, base < 0)
+}
+
+func WriteInt32(w io.Writer, i int32, base, width int) (int, error) {
+	var (
+		buf [33]byte
+		n   int
+	)
+	b := fixBase(base)
+	if i >= 0 {
+		n = formatUint32(buf[:], uint32(i), b)
+	} else {
+		n = formatUint32(buf[:], uint32(-i), b) - 1
+		buf[n] = '-'
+	}
+	return writePadded(w, buf[n:], width, base < 0)
+}
+
+func WriteUint64(w io.Writer, u uint64, base, width int) (int, error) {
+	var buf [64]byte
+	n := formatUint64(buf[:], u, fixBase(base))
+	return writePadded(w, buf[n:], width, base < 0)
+}
+
+func WriteInt64(w io.Writer, i int64, base, width int) (int, error) {
+	var (
+		buf [65]byte
+		n   int
+	)
+	b := fixBase(base)
+	if i >= 0 {
+		n = formatUint64(buf[:], uint64(i), b)
+	} else {
+		n = formatUint64(buf[:], uint64(-i), b) - 1
+		buf[n] = '-'
+	}
+	return writePadded(w, buf[n:], width, base < 0)
+}
+
+// WriteInt writes text representation of i in buf using 2 <= |base| <= 36.
+// If width > 0 then written value is left-justified, if width < 0 written
+// value is right-justified. If base < 0 then right-justified value is prepended
+// with zeros, instead it is padded with spaces.
+func WriteInt(w io.Writer, i, base, width int) (int, error) {
 	if unsafe.Sizeof(i) <= 4 {
-		return FormatInt32(buf, int32(i), base)
+		return WriteInt32(w, int32(i), base, width)
+	} else {
+		return WriteInt64(w, int64(i), base, width)
 	}
-	return FormatInt64(buf, int64(i), base)
 }
 
-// FormatUint works like FormatInt.
-func FormatUint(buf []byte, u uint, base int) int {
+func WriteUint(w io.Writer, u uint, base, width int) (int, error) {
 	if unsafe.Sizeof(u) <= 4 {
-		return FormatUint32(buf, uint32(u), base)
+		return WriteUint32(w, uint32(u), base, width)
+	} else {
+		return WriteUint64(w, uint64(u), base, width)
 	}
-	return FormatUint64(buf, uint64(u), base)
 }
 
-// FormatUintptr works like FormatInt.
-func FormatUintptr(buf []byte, u uintptr, base int) int {
+func WriteUintptr(w io.Writer, u uintptr, base, width int) (int, error) {
 	if unsafe.Sizeof(u) <= 4 {
-		return FormatUint32(buf, uint32(u), base)
+		return WriteUint32(w, uint32(u), base, width)
+	} else {
+		return WriteUint64(w, uint64(u), base, width)
 	}
-	return FormatUint64(buf, uint64(u), base)
 }

@@ -1,5 +1,32 @@
 package strconv
 
+const (
+	exp10start = -348
+	exp10step  = 8
+)
+
+func cachedFrac(i int) uint64
+func cachedExp(i int) int
+func cachedTens(i int) uint32
+
+func cachedPower(exp, alpha, gamma int) (diyfp, int) {
+	exp += 64
+	exp10 := ((alpha+gamma)/2 - exp + 64 - 1) * 146 / 485
+	i := (exp10 - exp10start) / exp10step
+	var ce int
+	for {
+		ce = cachedExp(i)
+		if sum := exp + ce; sum < alpha {
+			i++
+		} else if sum > gamma {
+			i--
+		} else {
+			break
+		}
+	}
+	return diyfp{cachedFrac(i), ce}, -(exp10start + i*exp10step)
+}
+
 // grisu implements Grisu algorithm published by Florian Loitsch in paper
 // "Printing floating-point numbers quickly and accurately with integers".
 type grisu struct {

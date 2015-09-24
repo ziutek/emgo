@@ -1,54 +1,37 @@
 package strconv
 
-import "bytes"
+import (
+	"io"
+)
 
-func panicBuffer() {
-	panic("strconv: buffer too short")
-}
-
-func panicBase() {
-	panic("strconv: unsupported base")
-}
-
-func Btoa(b bool) string {
-	if b {
-		return "true"
-	}
-	return "false"
-}
-
-// FormatBool stores text representation of b in buf using format specified by
+// WriteBool writes text representation of b to w using format specified by
 // base:
 //	|base| == 1: 0 / 1,
-//  |base| == 2: fales / true.
-// Unused portion of the buffer is filled with spaces.
-// If base > 0 then formatted value is left-justified and FormatBool returns
-// its length. If base < 0 then formatted value is right-justified and
-// FormatBool returns offset to its first char.
-func FormatBool(buf []byte, b bool, base int) int {
-	right := base < 0
-	if right {
+//  |base| == 2: false / true.
+// Formatted value is extended to |width| characters. If width > 0 then spaces
+// are written after value, otherwise spaces (base > 0) or zeros (base < 0) are
+// written before it.
+func WriteBool(w io.Writer, b bool, base, width int) (int, error) {
+	zeros := base < 0
+	if zeros {
 		base = -base
 	}
-	if base != 1 && base != 2 {
+	txt := "0false1true"
+	switch base {
+	case 1:
+		if b {
+			txt = txt[6:7]
+		} else {
+			txt = txt[:1]
+		}
+	case 2:
+		if b {
+			txt = txt[7:]
+		} else {
+			txt = txt[1:6]
+		}
+	default:
 		panicBase()
 	}
-	if len(buf) < 4*base-3 {
-		panicBuffer()
-	}
-	var str string
-	if m, n := base-1, 4*(base-2)+5; b {
-		str = "1true"[m:n]
-	} else {
-		str = "0false"[m:][:n]
-	}
-	if !right {
-		copy(buf, str)
-		bytes.Fill(buf[len(str):], ' ')
-		return len(str)
-	}
-	n := len(buf) - len(str)
-	copy(buf[n:], str)
-	bytes.Fill(buf[:n], ' ')
-	return n
+	return writeStringPadded(w, txt, width, zeros)
 }

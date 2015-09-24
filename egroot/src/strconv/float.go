@@ -2,59 +2,47 @@ package strconv
 
 import (
 	"bytes"
+	"io"
 	"math"
 )
 
-const (
-	exp10start = -348
-	exp10step  = 8
-)
-
-func cachedFrac(i int) uint64
-func cachedExp(i int) int
-func cachedTens(i int) uint32
-
-func cachedPower(exp, alpha, gamma int) (diyfp, int) {
-	exp += 64
-	exp10 := ((alpha+gamma)/2 - exp + 64 - 1) * 146 / 485
-	i := (exp10 - exp10start) / exp10step
-	var ce int
-	for {
-		ce = cachedExp(i)
-		if sum := exp + ce; sum < alpha {
-			i++
-		} else if sum > gamma {
-			i--
+func specials(w io.Writer, f float64, width int) (int, error) {
+	txt := "Nan-Inf+Inf"
+	switch {
+	case math.IsNaN(f):
+		txt = txt[:3]
+	case math.IsInf(f, 0):
+		if f < 0 {
+			txt = txt[3:7]
 		} else {
-			break
+			txt = txt[7:]
 		}
+	default:
+		return 0, nil
 	}
-	return diyfp{cachedFrac(i), ce}, -(exp10start + i*exp10step)
+	return writeStringPadded(w, txt, width, false)
 }
 
-func specials(buf []byte, f float64) (int, int) {
-	if len(buf) < 4 {
-		panicBuffer()
+func formatExp(buf []byte, exp int) int {
+	neg := exp < 0
+	if neg {
+		exp = -exp
 	}
-	var n int
-	if f < 0 {
-		buf[0] = '-'
-		n++
-		f = -f
+	n := formatUint32(buf, uint32(exp), 10) - 1
+	if exp < 10 {
+		buf[n] = '0'
+		n--
 	}
-	switch {
-	case f == 0:
-		return n, 0
-	case math.IsInf(f, 0):
-		return n + copy(buf[n:], "Inf"), 1
-	case math.IsNaN(f):
-		return n + copy(buf[n:], "NaN"), 1
+	if neg {
+		buf[n] = '-'
+	} else {
+		buf[n] = '+'
 	}
-	return n, -1
+	return n
 }
 
 func round(buf []byte, n int, g *grisu) int {
-	if n >= 19 {
+	if n >= 18 {
 		return 0
 	}
 sw:
@@ -64,7 +52,7 @@ sw:
 	case d > 5:
 		break
 	default:
-		for i := 19 - 1 - n; i > 0; i-- {
+		for i := 18 - 1 - n; i > 0; i-- {
 			if g.NextDigit() > 0 {
 				break sw
 			}
@@ -87,83 +75,16 @@ sw:
 	return 1
 }
 
-// FormatFloat stores text representation of f in buf using format specified by
-// fmt:
-//	|fmt| == 'b': -ddddp±ddd, BUG: unsupported
+// WriteFloat writes text representation of f using format specified by fmt:
+//	|fmt| == 'b': -ddddp±ddd,
 //  |fmt| == 'e': -d.dddde±dd,
-// Unused portion of the buffer is filled with spaces.
-// If fmt > 0 then formatted value is left-justified and FormatFloat returns
-// its length. If base < 0 then formatted value is right-justified and
-// FormatFloat returns offset to its first char.
-
-func FormatFloat(buf []byte, f float64, fmt, prec, bitsize int) int {
-	right := fmt < 0
-	if right {
-		fmt = -fmt
+func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, error) {
+	if n, err := specials(w, f, width); n > 0 {
+		return n, err
 	}
-	n := formatFloat(buf, f, fmt, prec, bitsize)
-	if !right {
-		bytes.Fill(buf[n:], ' ')
-		return n
-	}
-	m := len(buf) - n
-	copy(buf[m:], buf[:n])
-	bytes.Fill(buf[:m], ' ')
-	return m
-}
-
-func frexp64(f float64) (uint64, int) {
-	bits := math.Float64bits(f)
-	frac := bits & (1<<52 - 1)
-	exp := int(bits>>52) & (1<<11 - 1)
-	if exp == 0 {
-		exp = 1 - (1023 + 52)
-	} else {
-		exp -= 1023 + 52
-		frac += 1 << 52
-	}
-	return frac, exp
-}
-
-func frexp32(f float32) (uint64, int) {
-	bits := math.Float32bits(f)
-	frac := bits & (1<<23 - 1)
-	exp := int(bits>>23) & (1<<8 - 1)
-	if exp == 0 {
-		exp = 1 - (127 + 23)
-	} else {
-		exp -= 127 + 23
-		frac += 1 << 23
-	}
-	return uint64(frac), exp
-}
-
-func formatExp(buf []byte, exp int) int {
-	n := 0
-	if exp >= 0 {
-		buf[n] = '+'
-	} else {
-		buf[n] = '-'
-		exp = -exp
-	}
-	n++
-	if exp < 10 {
-		buf[n] = '0'
-		n++
-	}
-	return n + FormatUint(buf[n:], uint(exp), 10)
-}
-
-func formatFloat(buf []byte, f float64, fmt, prec, bitsize int) int {
-	n, spec := specials(buf, f)
-	if spec > 0 {
-		return n
-	}
-	if n > 0 {
+	neg := math.Signbit(f)
+	if neg {
 		f = -f
-	}
-	if prec < 0 {
-		panic("strconv: prec<0")
 	}
 	var (
 		frac uint64
@@ -171,60 +92,111 @@ func formatFloat(buf []byte, f float64, fmt, prec, bitsize int) int {
 	)
 	switch bitsize {
 	case 32:
-		frac, exp = frexp32(float32(f))
+		fr, ex := math.Frexpi32(float32(f))
+		frac = uint64(fr)
+		exp = ex
 	case 64:
-		frac, exp = frexp64(f)
+		fr, ex := math.Frexpi(f)
+		frac = uint64(fr)
+		exp = ex
 	default:
-		panic("strconv: illegal FormatFloat bitsize")
+		panic("strconv: illegal bitsize")
 	}
-	switch fmt {
-	case 'b':
-		n += FormatUint64(buf[n:], frac, 10)
-		if len(buf) < n+1+1+2 {
-			panicBuffer()
-		}
+	zeros := fmt < 0
+	if zeros {
+		fmt = -fmt
+	}
+	if fmt == 'b' {
+		var buf [1 + 16 + 1 + 1 + 4]byte
+		n := formatExp(buf[:], exp) - 1
 		buf[n] = 'p'
-		n++
-		return n + formatExp(buf[n:], exp)
+		n = formatUint64(buf[:n], frac, 10)
+		if neg {
+			n--
+			buf[n] = '-'
+		}
+		return writePadded(w, buf[n:], width, zeros)
+	}
+	var ft int
+	switch fmt {
+	case 'f', 'F':
+		ft = 'f'
+		fmt--
+		prec++ // Convert prec to total number of digits.
 	case 'e', 'E':
-		prec++ // Add first digit.
-		l := prec + 5
+		ft = 'e'
+		prec++
+	case 'g', 'G':
+		ft = 'g'
+		fmt -= 2
+	default:
+		panic("strconv: bad fmt")
+	}
+	if prec < 1 {
+		prec = 1
+	} else if prec > 18 {
+		// BUG: Allow prec > 18 by simply write zeros after decimal point.
+		prec = 18
+	}
+	var (
+		buf [28]byte
+		n   int
+	)
+	if neg {
+		buf[0] = '-'
+		n++
+	}
+	if frac == 0 {
+		buf[n] = '0'
+		n++
 		if prec > 1 {
-			l++ // Dot.
+			buf[n] = '.'
+			bytes.Fill(buf[n+1:n+prec], '0')
+			n += prec
 		}
-		nb := buf[n:]
-		if len(nb) < l {
-			panicBuffer()
-		} else {
-			nb = nb[:l]
+		if ft == 'e' {
+			n += copy(buf[n:], "e+00")
 		}
-		if spec == 0 {
-			if prec == 1 {
-				return n + copy(nb, "0e+00")
-			}
-			nb = nb[:prec+1+4]
-			bytes.Fill(nb, '0')
-			nb[1] = '.'
-			nb[prec+1] = byte(fmt)
-			nb[prec+2] = '+'
-			return n + len(nb)
-		}
+	} else {
 		var g grisu
 		g.Init(frac, exp)
+		n++ // Save place for dot.
 		for i := 0; i < prec; i++ {
-			nb[i] = byte('0' + g.NextDigit())
+			buf[n+i] = byte('0' + g.NextDigit())
 		}
 		exp10 := g.Exp10() + prec - 1
-		exp10 += round(nb, prec, &g)
-		n += prec
-		if prec > 1 {
-			copy(nb[2:], nb[1:prec])
-			nb[1] = '.'
+		exp10 += round(buf[n:], prec, &g)
+		if ft == 'g' && exp10 < prec && exp10 >= -4 {
+			if exp10 >= 0 {
+				dot := n + exp10
+				copy(buf[n-1:], buf[n:dot+1])
+				if exp10 == prec-1 {
+					n += exp10
+				} else {
+					buf[dot] = '.'
+					n += prec + 1
+				}
+			} else {
+				firstd := n - exp10
+				copy(buf[firstd:], buf[n:n+prec])
+				buf[n-1] = '0'
+				buf[n] = '.'
+				bytes.Fill(buf[n+1:firstd], '0')
+				n = firstd + prec
+			}
+		} else {
+			buf[n-1] = buf[n]
+			if prec > 1 {
+				buf[n] = '.'
+			} else {
+				n-- // No dot.
+			}
+			n += prec
+			buf[n] = byte(fmt)
 			n++
+			m := formatExp(buf[n:], exp10)
+			n += copy(buf[n:], buf[n+m:])
 		}
-		buf[n] = byte(fmt)
-		n++
-		return n + formatExp(buf[n:], exp10)
 	}
-	panic("strconv: bad fmt")
+	return writePadded(w, buf[:n], width, zeros)
 }
