@@ -29,7 +29,7 @@ func NaN() float64 { return Float64frombits(uvnan) }
 
 // IsNaN reports whether f is an IEEE 754 ``not-a-number'' value.
 func IsNaN(f float64) (is bool) {
-	x := Float64bits(f);
+	x := Float64bits(f)
 	return uint32(x>>shift)&mask == mask && x != uvinf && x != uvneginf
 	// return f != f
 }
@@ -52,4 +52,9 @@ func normalize(x float64) (y float64, exp int) {
 		return x * (1 << 52), -52
 	}
 	return x, 0
+}
+
+// Signbit returns true if x is negative or negative zero.
+func Signbit(x float64) bool {
+	return Float64bits(x)&(1<<63) != 0
 }

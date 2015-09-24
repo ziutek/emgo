@@ -42,3 +42,8 @@ func normalize32(x float32) (y float32, exp int) {
 	}
 	return x, 0
 }
+
+// Signbit32 is like Signbit but for float32.
+func Signbit32(x float32) bool {
+	return Float32bits(x)&(1<<31) != 0
+}
