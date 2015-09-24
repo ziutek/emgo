@@ -22,8 +22,8 @@ byte$$byte foo$F(int a$, int b$) {
 	byte x$ = 0;
 	byte y$ = 0;
 	{
-		byte _tmp0 = (CAST(byte, a$)+y$);
-		byte _tmp1 = (CAST(byte, b$)+x$);
+		byte _tmp0 = ((byte)(a$)+y$);
+		byte _tmp1 = ((byte)(b$)+x$);
 		x$ = _tmp0;
 		y$ = _tmp1;
 		goto end;
@@ -187,5 +187,112 @@ void foo$F(int n$, slice a$) {
 		foo$F(_0, CSLICE(2, _a));
 	});
 	foo$F(40, a$);
+}
+// end
+
+// Go code:
+func F(a interface{}, b int) (int, int) {
+	return F(F(a, b))
+}
+// C code:
+// decl
+struct int$$int_struct;
+typedef struct int$$int_struct int$$int;
+// def
+#ifndef int$$int$
+#define int$$int$
+struct int$$int_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+int$$int foo$F(interface a$, int b$);
+// def
+int$$int foo$F(interface a$, int b$) {
+	return ({
+		int$$int _tup = foo$F(a$, b$);
+		foo$F(INTERFACE(_tup._0, &int$$), _tup._1);
+	});
+}
+// end
+
+// Go code:
+type S struct{}
+
+func (s S) M(a, b interface{}) (int, int) {
+	return s.M(s.M(a, b))
+}
+// C code:
+// decl
+const minfo M$$$interface$$interface$$$int$$int$$;
+// def
+const minfo M$$$interface$$interface$$$int$$int$$;
+// decl
+struct int$$int_struct;
+typedef struct int$$int_struct int$$int;
+// def
+#ifndef int$$int$
+#define int$$int$
+struct int$$int_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+int$$int foo$S$M$1(ival* s$, interface a$, interface b$);
+// def
+int$$int foo$S$M$1(ival* s$, interface a$, interface b$) {
+	return foo$S$M((*(foo$S*)s$), a$, b$);
+}
+// decl
+const tinfo foo$S$$;
+// def
+const tinfo foo$S$$ = {
+	{
+		.name = EGSTR("foo.S"),
+		.kind = Struct,
+		.methods = CSLICE(1, ((const minfo*[]){
+			&M$$$interface$$interface$$$int$$int$$
+		}))
+	}, {
+		foo$S$M$1
+	}
+};
+// decl
+int$$int foo$S$M$0(ival* s$, interface a$, interface b$);
+// def
+int$$int foo$S$M$0(ival* s$, interface a$, interface b$) {
+	return foo$S$M(*((foo$S*)s$->ptr), a$, b$);
+}
+// decl
+const tinfo $8$foo$S$$;
+// def
+const tinfo $8$foo$S$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$S$$
+		})),
+		.methods = CSLICE(1, ((const minfo*[]){
+			&M$$$interface$$interface$$$int$$int$$
+		}))
+	}, {
+		foo$S$M$0
+	}
+};
+// decl
+struct foo$S_struct;
+typedef struct foo$S_struct foo$S;
+// def
+struct foo$S_structE;
+// decl
+int$$int foo$S$M(foo$S s$, interface a$, interface b$);
+// def
+int$$int foo$S$M(foo$S s$, interface a$, interface b$) {
+	return ({
+		int$$int _tup = foo$S$M(s$, a$, b$);
+		foo$S$M(s$, INTERFACE(_tup._0, &int$$), INTERFACE(_tup._1, &int$$));
+	});
 }
 // end

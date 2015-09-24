@@ -97,9 +97,44 @@ int foo$I$F(foo$I i$, int k$) {
 			foo$I$F(_r, _0);
 		}
 		foo$I _r = i$;
-		int _0 = (CAST(int, i$)*k$);
+		int _0 = ((int)(i$)*k$);
 		GO(wrap(_r, _0), true);
 	}
-	return (CAST(int, i$)-k$);
+	return ((int)(i$)-k$);
+}
+// end
+
+// Go code:
+func F(a, b interface{}) (int, int) {
+	go F(F(a, b))
+	return 0, 0
+}
+// C code:
+// decl
+struct int$$int_struct;
+typedef struct int$$int_struct int$$int;
+// def
+#ifndef int$$int$
+#define int$$int$
+struct int$$int_struct {
+	int _0;
+	int _1;
+};
+#endif
+// decl
+int$$int foo$F(interface a$, interface b$);
+// def
+int$$int foo$F(interface a$, interface b$) {
+	{
+		void wrap(interface _0, interface _1) {
+			goready();
+			foo$F(_0, _1);
+		}
+		int$$int _tup = foo$F(a$, b$);
+		interface _0 = INTERFACE(_tup._0, &int$$);
+		interface _1 = INTERFACE(_tup._1, &int$$);
+		GO(wrap(_0, _1), true);
+	}
+	return (int$$int){0, 0};
 }
 // end

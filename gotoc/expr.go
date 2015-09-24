@@ -337,7 +337,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 	switch t := cdd.exprType(e.Fun).(type) {
 	case *types.Signature:
 		c := cdd.call(e, t, false)
-		if c.rcv.r != "" || c.arr.r != "" {
+		if c.rcv.r != "" || c.arr.r != "" || c.tup.t != nil {
 			w.WriteString("({\n")
 			cdd.il++
 			cdd.indent(w)
@@ -346,6 +346,11 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 			dim := cdd.Type(w, c.rcv.t)
 			w.WriteString(" " + dimFuncPtr(c.rcv.l, dim) + " = ")
 			w.WriteString(indent(1, c.rcv.r) + ";\n")
+			cdd.indent(w)
+		}
+		if c.tup.t != nil {
+			cdd.Type(w, c.tup.t)
+			w.WriteString(" " + c.tup.l + " = " + c.tup.r + ";\n")
 			cdd.indent(w)
 		}
 		if c.arr.r != "" {
@@ -378,7 +383,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 			w.WriteString(arg.l)
 		}
 		w.WriteString(")")
-		if c.rcv.r != "" || c.arr.r != "" {
+		if c.rcv.r != "" || c.arr.r != "" || c.tup.t != nil {
 			w.WriteString(";\n")
 			cdd.il--
 			cdd.indent(w)
@@ -1028,6 +1033,12 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 		ets, its := cdd.tinameDU(etyp), cdd.tinameDU(ityp)
 		w.WriteString("IASSIGN(" + es + ", " + ets + ", " + its + ")")
 	}
+}
+
+func (cdd *CDD) interfaceESstr(es string, epos token.Pos, etyp, ityp types.Type) string {
+	buf := new(bytes.Buffer)
+	cdd.interfaceES(buf, es, epos, etyp, ityp)
+	return buf.String()
 }
 
 func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {

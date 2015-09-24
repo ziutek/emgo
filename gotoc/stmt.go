@@ -843,6 +843,7 @@ type call struct {
 	rcv  arg
 	fun  arg
 	arr  arg
+	tup  arg
 	args []arg
 }
 
@@ -908,6 +909,28 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 	sig := ft.(*types.Signature)
 	tup := sig.Params()
 	alen := tup.Len()
+	if len(e.Args) == 1 {
+		a0 := e.Args[0]
+		if atup, _ := cdd.exprType(a0).(*types.Tuple); atup != nil {
+			c.tup.t = atup
+			c.tup.l = "_tup"
+			c.tup.r = cdd.ExprStr(a0, c.tup.t)
+			for i := 0; i < alen; i++ {
+				it := tup.At(i).Type()
+				et := atup.At(i).Type()
+				ai := "_tup._" + strconv.Itoa(i)
+				s := cdd.interfaceESstr(ai, a0.Pos(), et, it)
+				if eval || c.arr.t != nil {
+					c.args[n] = arg{it, "_" + strconv.Itoa(i), s}
+				} else {
+					c.args[n].l = s
+				}
+				n++
+			}
+			c.args = c.args[:n]
+			return c
+		}
+	}
 	variadic := sig.Variadic() && !e.Ellipsis.IsValid()
 	if variadic {
 		c.arr.t = tup.At(alen - 1).Type().(*types.Slice).Elem()
@@ -1015,6 +1038,11 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 	cdd.il--
 	cdd.indent(w)
 	w.WriteString("}\n")
+	if c.tup.t != nil {
+		cdd.indent(w)
+		cdd.Type(w, c.tup.t)
+		w.WriteString(" " + c.tup.l + " = " + c.tup.r + ";\n")
+	}
 	if c.rcv.r != "" {
 		argv = append([]arg{c.rcv}, argv...)
 	}

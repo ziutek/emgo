@@ -25,7 +25,7 @@ byte foo$F($4_$byte a$) {
 		{
 			int k$ = 0;
 			for (;k$ < 4; ++k$) {
-				r$ += CAST(byte, k$);
+				r$ += (byte)(k$);
 			}
 		}
 		goto end;
@@ -62,7 +62,7 @@ byte foo$F($4_$byte a$) {
 		{
 			int k$ = 0;
 			for (;k$ < 4; ++k$) {
-				r$ += CAST(byte, k$);
+				r$ += (byte)(k$);
 			}
 		}
 		goto end;
@@ -107,7 +107,7 @@ byte foo$F($4_$byte a$) {
 					if ((r$>4)) {
 						continue;
 					}
-					r$ += (CAST(byte, k$)+v$);
+					r$ += ((byte)(k$)+v$);
 				}
 			}
 		}
@@ -192,7 +192,7 @@ byte foo$F($4_$byte a$) {
 			slice _x = ASLICEL(a$, 1);
 			int k$ = 0;
 			for (;k$ < len(_x); ++k$) {
-				r$ += CAST(byte, k$);
+				r$ += (byte)(k$);
 			}
 		}
 		goto end;
@@ -230,7 +230,7 @@ byte foo$F($4_$byte a$) {
 			slice _x = ASLICEL(a$, 1);
 			int k$ = 0;
 			for (;k$ < len(_x); ++k$) {
-				r$ += CAST(byte, k$);
+				r$ += (byte)(k$);
 			}
 		}
 		goto end;
@@ -278,7 +278,7 @@ byte foo$F($4_$byte a$) {
 					if ((r$>4)) {
 						goto loop$_continue;
 					}
-					r$ += (CAST(byte, k$)+v$);
+					r$ += ((byte)(k$)+v$);
 				}
 			loop$_continue:;
 			}
