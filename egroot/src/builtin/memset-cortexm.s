@@ -13,7 +13,7 @@ builtin$Memset:
 .thumb_func
 memset:
 	// Use ip as dst. r0 will be returned unmodified.
-	mov ip, r0
+	mov  ip, r0
 	and  r1, 0xff
 	orr  r1, r1, r1, lsl 8
 	orr  r1, r1, r1, lsl 16
@@ -24,8 +24,8 @@ memset:
 	blo    5f
 
 	// calculate number of bytes to set
-	// to make s (r0) word aligned
-	ands   r3, r0, 3
+	// to make s (ip) word aligned
+	ands   r3, ip, 3
 	itt    ne
 	rsbne  r3, 4
 	bne    5f
@@ -34,7 +34,7 @@ memset:
 6:
 	subs   r2, 4
 	itt    hs
-	strhs  r1, [r0], 4
+	strhs  r1, [ip], 4
 	bhs    6b
 
 	adds  r2, 4
@@ -52,11 +52,11 @@ memset:
 	.byte  (2f-0b)/2
 	.byte  (1f-0b)/2
 1:
-	strb  r1, [r0], 1
+	strb  r1, [ip], 1
 2:
-	strb  r1, [r0], 1
+	strb  r1, [ip], 1
 3:
-	strb  r1, [r0], 1
+	strb  r1, [ip], 1
 4:
 	bne  6b
 9:

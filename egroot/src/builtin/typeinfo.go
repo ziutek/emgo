@@ -90,10 +90,13 @@ func NewItable(ityp, etyp *Type) *Itable {
 // Implements returns true if t has all methods that ityp has. If ityp is
 // interface type then Implements returns true if t implements ityp.
 func (t *Type) Implements(ityp *Type) bool {
+	if t == nil {
+		return false
+	}
 	if len(ityp.methods) == 0 {
 		return true
 	}
-	if t == nil || len(t.methods) < len(ityp.methods) {
+	if len(t.methods) < len(ityp.methods) {
 		return false
 	}
 	k := 0

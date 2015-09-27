@@ -45,7 +45,17 @@ enum {
 	Array = -1
 };
 
-#define TINFO(i) (tinfo*)(((const ithead*)(i).itab$)->typ)
+//#define TINFO(i) (tinfo*)(((const ithead*)((i).itab$))->typ)
+
+#define TINFO(i) ({                  \
+	const ithead *ith = (i).itab$;   \
+	const tinfo *ti = nil;           \
+	if (ith != nil) {                \
+		ti = (const tinfo*)ith->typ; \
+	}                                \
+	ti;                              \
+})
+	
 
 #define IASSIGN(expr, etyp, ityp) INTERFACE(        \
 	expr,                                           \
