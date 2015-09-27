@@ -168,8 +168,7 @@ int foo$F(interface v$);
 int foo$F(interface v$) {
 	return ({
 		interface _i = v$;
-		bool _ok = (_i.itab$ == &int$$);
-		if (!_ok) panicIC();
+		if (!(_i.itab$ == &int$$)) panicIC();
 		IVAL(_i, int);
 	});
 }
@@ -198,8 +197,10 @@ interface$$bool foo$F(interface v$);
 interface$$bool foo$F(interface v$) {
 	interface$$bool _tmp0 = ({
 		interface _i = v$;
-		bool _ok = implements(_i.itab$, &error$$);
-		(interface$$bool){ICONVERTEI(_i,  error$$), _ok};
+		interface$$bool _ret = {};
+		_ret._1 = implements(_i.itab$, &error$$);
+		if (_ret._1) _ret._0 = ICONVERTEI(_i,  error$$);
+		_ret;
 	});
 	interface e$ = _tmp0._0;
 	bool ok$ = _tmp0._1;
@@ -218,8 +219,7 @@ interface foo$F(interface v$);
 interface foo$F(interface v$) {
 	return ({
 		interface _i = v$;
-		bool _ok = implements(_i.itab$, &error$$);
-		if (!_ok) panicIC();
+		if (!implements(_i.itab$, &error$$)) panicIC();
 		ICONVERTEI(_i,  error$$);
 	});
 }

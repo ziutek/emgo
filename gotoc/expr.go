@@ -350,7 +350,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 		}
 		if c.tup.t != nil {
 			cdd.Type(w, c.tup.t)
-			w.WriteString(" " + c.tup.l + " = " + c.tup.r + ";\n")
+			w.WriteString(" " + c.tup.l + " = " + indent(1, c.tup.r) + ";\n")
 			cdd.indent(w)
 		}
 		if c.arr.r != "" {
@@ -569,52 +569,63 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.varDecl(w, ityp, "_i", e.X)
 		w.WriteByte('\n')
 		cdd.indent(w)
-		w.WriteString("bool _ok = ")
-		etyp := cdd.exprType(e)
 		iempty := (cdd.gtc.methodSet(ityp).Len() == 0)
 		typ := cdd.exprType(e.Type)
+		etup, _ := cdd.exprType(e).(*types.Tuple)
 		if _, ok := typ.Underlying().(*types.Interface); ok {
-			if cdd.gtc.methodSet(typ).Len() == 0 {
-				w.WriteString("true;\n")
+			if etup != nil {
+				tn, _ := cdd.tupleName(etup)
+				w.WriteString(tn + " _ret = {};\n")
+				cdd.indent(w)
+				w.WriteString("_ret._1 = ")
 			} else {
-				w.WriteString("implements(")
-				if iempty {
-					w.WriteString("_i.itab$, &")
-				} else {
-					w.WriteString("TINFO(_i), &")
-				}
-				w.WriteString(cdd.tinameDU(typ))
-				w.WriteString(");\n")
+				w.WriteString("if (!")
 			}
-			cdd.indent(w)
-			if t, ok := etyp.(*types.Tuple); ok {
-				tn, _ := cdd.tupleName(t)
-				w.WriteString("(" + tn + "){")
-				cdd.interfaceES(w, "_i", e.Pos(), ityp, typ)
-				w.WriteString(", _ok};\n")
+			w.WriteString("implements(")
+			if iempty {
+				w.WriteString("_i.itab$, &")
 			} else {
-				w.WriteString("if (!_ok) panicIC();\n")
+				w.WriteString("TINFO(_i), &")
+			}
+			w.WriteString(cdd.tinameDU(typ))
+			w.WriteByte(')')
+			if etup != nil {
+				w.WriteString(";\n")
+				cdd.indent(w)
+				w.WriteString("if (_ret._1) _ret._0 = ")
+				cdd.interfaceES(w, "_i", e.Pos(), ityp, typ)
+				w.WriteString(";\n")
+				cdd.indent(w)
+				w.WriteString("_ret;\n")
+			} else {
+				w.WriteString(") panicIC();\n")
 				cdd.indent(w)
 				cdd.interfaceES(w, "_i", e.Pos(), ityp, typ)
 				w.WriteString(";\n")
 			}
 		} else {
+			if etup != nil {
+				w.WriteString("bool _ok = ")
+			} else {
+				w.WriteString("if (!")
+			}
 			if iempty {
 				w.WriteString("(_i.itab$ == &")
 			} else {
 				w.WriteString("(TINFO(_i) == &")
 			}
 			w.WriteString(cdd.tinameDU(typ))
-			w.WriteString(");\n")
-			cdd.indent(w)
-			if t, ok := etyp.(*types.Tuple); ok {
-				tn, _ := cdd.tupleName(t)
+			w.WriteByte(')')
+			if etup != nil {
+				w.WriteString(";\n")
+				tn, _ := cdd.tupleName(etup)
+				cdd.indent(w)
 				w.WriteString("(" + tn + "){IVAL(_i, ")
 				dim := cdd.Type(w, typ)
 				w.WriteString(dimFuncPtr("", dim))
 				w.WriteString("), _ok};\n")
 			} else {
-				w.WriteString("if (!_ok) panicIC();\n")
+				w.WriteString(") panicIC();\n")
 				cdd.indent(w)
 				w.WriteString("IVAL(_i, ")
 				dim := cdd.Type(w, typ)

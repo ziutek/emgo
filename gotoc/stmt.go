@@ -1041,7 +1041,7 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 	if c.tup.t != nil {
 		cdd.indent(w)
 		cdd.Type(w, c.tup.t)
-		w.WriteString(" " + c.tup.l + " = " + c.tup.r + ";\n")
+		w.WriteString(" " + c.tup.l + " = " + indent(1, c.tup.r) + ";\n")
 	}
 	if c.rcv.r != "" {
 		argv = append([]arg{c.rcv}, argv...)
