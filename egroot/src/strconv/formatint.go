@@ -2,7 +2,6 @@ package strconv
 
 import (
 	"io"
-	"unsafe"
 )
 
 const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
@@ -100,7 +99,7 @@ func WriteInt64(w io.Writer, i int64, base, width int) (int, error) {
 // value is right-justified. If base < 0 then right-justified value is prepended
 // with zeros, instead it is padded with spaces.
 func WriteInt(w io.Writer, i, base, width int) (int, error) {
-	if unsafe.Sizeof(i) <= 4 {
+	if intSize <= 4 {
 		return WriteInt32(w, int32(i), base, width)
 	} else {
 		return WriteInt64(w, int64(i), base, width)
@@ -108,7 +107,7 @@ func WriteInt(w io.Writer, i, base, width int) (int, error) {
 }
 
 func WriteUint(w io.Writer, u uint, base, width int) (int, error) {
-	if unsafe.Sizeof(u) <= 4 {
+	if intSize <= 4 {
 		return WriteUint32(w, uint32(u), base, width)
 	} else {
 		return WriteUint64(w, uint64(u), base, width)
@@ -116,7 +115,7 @@ func WriteUint(w io.Writer, u uint, base, width int) (int, error) {
 }
 
 func WriteUintptr(w io.Writer, u uintptr, base, width int) (int, error) {
-	if unsafe.Sizeof(u) <= 4 {
+	if ptrSize <= 4 {
 		return WriteUint32(w, uint32(u), base, width)
 	} else {
 		return WriteUint64(w, uint64(u), base, width)

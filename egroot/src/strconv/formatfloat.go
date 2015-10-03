@@ -41,8 +41,10 @@ func formatExp(buf []byte, exp int) int {
 	return n
 }
 
+const maxprec = 19
+
 func round(buf []byte, n int, g *grisu) int {
-	if n >= 18 {
+	if n >= maxprec {
 		return 0
 	}
 sw:
@@ -52,7 +54,7 @@ sw:
 	case d > 5:
 		break
 	default:
-		for i := 18 - 1 - n; i > 0; i-- {
+		for i := maxprec - n - 1; i > 0; i-- {
 			if g.NextDigit() > 0 {
 				break sw
 			}
@@ -134,12 +136,12 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 	}
 	if prec < 1 {
 		prec = 1
-	} else if prec > 18 {
-		// BUG: Allow prec > 18 by simply write zeros after decimal point.
-		prec = 18
+	} else if prec > maxprec {
+		// BUG: Allow prec > maxprec by simply write zeros after decimal point.
+		prec = maxprec
 	}
 	var (
-		buf [28]byte
+		buf [1 + maxprec + 1 + 1 + 4]byte // len(buf) == maxprec + 7
 		n   int
 	)
 	if neg {
