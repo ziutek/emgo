@@ -19,7 +19,7 @@ type Dev struct {
 	txdone chan struct{}
 	unix   bool
 	flush  bool
-	fllf   bool
+	//fllf   bool
 }
 
 // New creates new Dev for USART device with Rx/Tx buffer of specified
@@ -126,10 +126,12 @@ func (s *Dev) SetUnix(enable bool) {
 	s.unix = enable
 }
 
+/*
 // SetFlushLF enables/disables automatic flush after every '\n'.
 func (s *Dev) SetFlushLF(enable bool) {
-	s.fllf = enabld
+	s.fllf = enable
 }
+*/
 
 // WriteBits can write 9-bit words to s. Text mode doesn't affect written data.
 func (s *Dev) WriteBits(d uint16) error {
@@ -143,9 +145,9 @@ func (s *Dev) WriteByte(b byte) error {
 		s.WriteBits('\r')
 	}
 	s.WriteBits(uint16(b))
-	if s.fllf && b == '\n' {
+	/*if s.fllf && b == '\n' {
 		s.Flush()
-	}
+	}*/
 	return nil
 }
 
