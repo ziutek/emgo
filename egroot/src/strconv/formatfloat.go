@@ -1,7 +1,6 @@
 package strconv
 
 import (
-	"bytes"
 	"io"
 	"math"
 )
@@ -20,7 +19,7 @@ func specials(w io.Writer, f float64, width int) (int, error) {
 	default:
 		return 0, nil
 	}
-	return writeStringPadded(w, txt, width, false)
+	return WriteString(w, txt, width, false)
 }
 
 func formatExp(buf []byte, exp int) int {
@@ -41,12 +40,8 @@ func formatExp(buf []byte, exp int) int {
 	return n
 }
 
-const maxprec = 19
-
-func round(buf []byte, n int, g *grisu) int {
-	if n >= maxprec {
-		return 0
-	}
+func round(buf []byte, g *grisu) int {
+	n := len(buf)
 sw:
 	switch d := g.NextDigit(); {
 	case d < 5:
@@ -54,7 +49,7 @@ sw:
 	case d > 5:
 		break
 	default:
-		for i := maxprec - n - 1; i > 0; i-- {
+		for i := maxDigits - n - 1; i > 0; i-- {
 			if g.NextDigit() > 0 {
 				break sw
 			}
@@ -77,6 +72,93 @@ sw:
 	return 1
 }
 
+const (
+	flagF = 1 << iota
+	flagE
+	flagG
+	flagNeg
+	flagRight
+	flagZeros
+)
+
+func paddBefore(w io.Writer, num, flags int) (int, error) {
+	var n int
+	if flags&flagNeg != 0 {
+		num--
+	}
+	if num > 0 && flags&flagZeros == 0 {
+		m, err := padd(w, pspaces, num)
+		n += m
+		if err != nil {
+			return n, err
+		}
+	}
+	if flags&flagNeg != 0 {
+		m, err := w.Write([]byte{'-'})
+		n += m
+		if err != nil {
+			return n, err
+		}
+	}
+	if num > 0 && flags&flagZeros != 0 {
+		m, err := padd(w, pzeros, num)
+		n += m
+		if err != nil {
+			return n, err
+		}
+	}
+	return n, nil
+}
+
+func writeZero(w io.Writer, width, prec, flags, e int) (int, error) {
+	var padn int
+	if flags&flagRight != 0 {
+		padn = width - 1
+		if prec > 0 {
+			padn -= prec + 1
+		}
+		if flags&flagE != 0 {
+			padn -= 4
+		}
+	}
+	n, err := paddBefore(w, padn, flags)
+	if err != nil {
+		return n, err
+	}
+	m, err := w.Write([]byte{'0'})
+	n += m
+	if err != nil {
+		return n, err
+	}
+	if prec > 0 {
+		m, err = w.Write([]byte{'.'})
+		n += m
+		if err != nil {
+			return n, err
+		}
+		m, err = padd(w, pzeros, prec)
+		n += m
+		if err != nil {
+			return n, err
+		}
+	}
+	if flags&flagE != 0 {
+		m, err = w.Write([]byte{byte(e), '+', '0', '0'})
+		n += m
+		if err != nil {
+			return n, err
+		}
+	}
+	if padn := width - n; padn > 0 {
+		m, err = padd(w, pspaces, padn)
+		n += m
+		if err != nil {
+			return n, err
+		}
+	}
+	return n, nil
+}
+
 // WriteFloat writes text representation of f using format specified by fmt:
 //	|fmt| == 'b': -ddddp±ddd,
 //  |fmt| == 'e': -d.dddde±dd,
@@ -84,8 +166,9 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 	if n, err := specials(w, f, width); n > 0 {
 		return n, err
 	}
-	neg := math.Signbit(f)
-	if neg {
+	var flags int
+	if math.Signbit(f) {
+		flags |= flagNeg
 		f = -f
 	}
 	var (
@@ -104,8 +187,8 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 	default:
 		panic("strconv: illegal bitsize")
 	}
-	zeros := fmt < 0
-	if zeros {
+	if fmt < 0 {
+		flags |= flagZeros
 		fmt = -fmt
 	}
 	if fmt == 'b' {
@@ -113,92 +196,172 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 		n := formatExp(buf[:], exp) - 1
 		buf[n] = 'p'
 		n = formatUint64(buf[:n], frac, 10)
-		if neg {
+		if flags&flagNeg != 0 {
 			n--
 			buf[n] = '-'
 		}
-		return writePadded(w, buf[n:], width, zeros)
+		return writePadded(w, buf[n:], width, flags&flagZeros != 0)
 	}
-	var ft int
 	switch fmt {
 	case 'f', 'F':
-		ft = 'f'
-		fmt--
-		prec++ // Convert prec to total number of digits.
+		flags |= flagF
 	case 'e', 'E':
-		ft = 'e'
-		prec++
+		flags |= flagE
 	case 'g', 'G':
-		ft = 'g'
+		flags |= flagG
 		fmt -= 2
+		prec-- // Convert prec to number of digits after decimal point.
 	default:
 		panic("strconv: bad fmt")
 	}
-	if prec < 1 {
-		prec = 1
-	} else if prec > maxprec {
-		// BUG: Allow prec > maxprec by simply write zeros after decimal point.
-		prec = maxprec
+	if width < 0 {
+		flags |= flagRight
+		width = -width
 	}
-	var (
-		buf [1 + maxprec + 1 + 1 + 4]byte // len(buf) == maxprec + 7
-		n   int
-	)
-	if neg {
-		buf[0] = '-'
-		n++
+	if prec < 0 {
+		prec = 0
 	}
 	if frac == 0 {
-		buf[n] = '0'
-		n++
-		if prec > 1 {
-			buf[n] = '.'
-			bytes.Fill(buf[n+1:n+prec], '0')
-			n += prec
-		}
-		if ft == 'e' {
-			n += copy(buf[n:], "e+00")
+		return writeZero(w, width, prec, flags, fmt)
+	}
+	var g grisu
+	dig, exp := g.Init(frac, exp)
+	var sigd int
+	if flags&flagF != 0 {
+		sigd = exp + prec
+		if sigd < 0 {
+			return writeZero(w, width, prec, flags, 0)
 		}
 	} else {
-		var g grisu
-		g.Init(frac, exp)
-		n++ // Save place for dot.
-		for i := 0; i < prec; i++ {
-			buf[n+i] = byte('0' + g.NextDigit())
+		sigd = prec + 1
+	}
+	if sigd > maxDigits {
+		sigd = maxDigits
+	}
+	var arr [1 + maxDigits]byte
+	buf := arr[1:]
+	buf[0] = byte('0' + dig)
+	for i := 1; i < sigd; i++ {
+		buf[i] = byte('0' + g.NextDigit())
+	}
+	if sigd < maxDigits {
+		exp += round(buf[:sigd], &g)
+	}
+	if flags&flagG != 0 && exp <= prec && exp >= -4 {
+		flags |= flagF
+		prec -= exp
+	}
+	var padn int
+	if flags&flagRight != 0 {
+		length := prec
+		if prec > 0 {
+			length++ // Dot
 		}
-		exp10 := g.Exp10() + prec - 1
-		exp10 += round(buf[n:], prec, &g)
-		if ft == 'g' && exp10 < prec && exp10 >= -4 {
-			if exp10 >= 0 {
-				dot := n + exp10
-				copy(buf[n-1:], buf[n:dot+1])
-				if exp10 == prec-1 {
-					n += exp10
-				} else {
-					buf[dot] = '.'
-					n += prec + 1
-				}
-			} else {
-				firstd := n - exp10
-				copy(buf[firstd:], buf[n:n+prec])
-				buf[n-1] = '0'
-				buf[n] = '.'
-				bytes.Fill(buf[n+1:firstd], '0')
-				n = firstd + prec
+		if flags&flagF != 0 && exp > 0 {
+			length += exp + 1
+		} else {
+			length++ // Digit before dot.
+		}
+		if flags&flagF == 0 {
+			length += 4
+			if exp >= 100 || exp <= -100 {
+				length++
+			}
+		}
+		padn = width - length
+	}
+	n, err := paddBefore(w, padn, flags)
+	if err != nil {
+		return n, err
+	}
+	var m int
+	if flags&flagF != 0 {
+		todot := exp + 1
+		if todot <= 0 {
+			m, err = w.Write([]byte{'0', '.'})
+			n += m
+			if err != nil {
+				return n, err
+			}
+			m, err = padd(w, pzeros, -todot)
+			prec -= m
+			n += m
+			if err != nil {
+				return n, err
+			}
+			m, err = w.Write(buf[:sigd])
+			prec -= m
+			n += m
+			if err != nil {
+				return n, err
 			}
 		} else {
-			buf[n-1] = buf[n]
-			if prec > 1 {
-				buf[n] = '.'
+			if padn = todot - sigd; padn <= 0 {
+				m, err = w.Write(buf[:todot])
+				n += m
+				if err != nil {
+					return n, err
+				}
 			} else {
-				n-- // No dot.
+				m, err = w.Write(buf[:sigd])
+				n += m
+				if err != nil {
+					return n, err
+				}
+				m, err = padd(w, pzeros, padn)
+				n += m
+				if err != nil {
+					return n, err
+				}
 			}
-			n += prec
-			buf[n] = byte(fmt)
-			n++
-			m := formatExp(buf[n:], exp10)
-			n += copy(buf[n:], buf[n+m:])
+			if prec > 0 {
+				m, err = w.Write([]byte{'.'})
+				n += m
+				if err != nil {
+					return n, err
+				}
+				if padn < 0 {
+					m, err = w.Write(buf[todot:sigd])
+					prec -= m
+					n += m
+					if err != nil {
+						return n, err
+					}
+				}
+			}
+		}
+	} else {
+		arr[0] = arr[1]
+		if prec > 0 {
+			prec -= sigd - 1
+			arr[1] = '.'
+			sigd++
+		}
+		m, err = w.Write(arr[:sigd])
+		n += m
+		if err != nil {
+			return n, err
 		}
 	}
-	return writePadded(w, buf[:n], width, zeros)
+	if prec > 0 {
+		m, err = padd(w, pzeros, prec)
+		n += m
+		if err != nil {
+			return n, err
+		}
+	}
+	if flags&flagF == 0 {
+		m = formatExp(buf, exp) - 1
+		buf[m] = byte(fmt)
+		m, err = w.Write(buf[m:])
+		n += m
+		if err != nil {
+			return n, err
+		}
+	}
+	if padn = width - n; padn > 0 {
+		m, err = padd(w, pspaces, padn)
+		n += m
+	}
+	return n, err
 }

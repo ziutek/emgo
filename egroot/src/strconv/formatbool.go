@@ -33,5 +33,5 @@ func WriteBool(w io.Writer, b bool, fmt, width int) (int, error) {
 	default:
 		panicBase()
 	}
-	return writeStringPadded(w, txt, width, zeros)
+	return WriteString(w, txt, width, zeros)
 }
