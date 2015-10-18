@@ -215,12 +215,8 @@ func (e Exce) SetPrio(p Prio) {
 	switch {
 	case e >= MemManage && e < IRQ0:
 		shp.setByte(e-MemManage, byte(p))
-
 	case e >= IRQ0:
 		ip.setByte(e-IRQ0, byte(p))
-
-	default:
-		panic("can't set priority for exception < MemFault")
 	}
 }
 

@@ -20,7 +20,7 @@ var syscalls = [...]func(*exce.StackFrame){
 	syscall.SETIRQENA:     scSetIRQEna,
 	syscall.SETIRQPRIO:    scSetIRQPrio,
 	syscall.SETIRQHANDLER: scSetIRQHandler,
-	syscall.IRQSTATUS:     nil,
+	syscall.IRQSTATUS:     scIRQStatus,
 	syscall.DEBUGOUT:      scDebugOut,
 }
 
@@ -71,7 +71,12 @@ func scSetIRQEna(fp *exce.StackFrame) {
 }
 
 func scSetIRQPrio(fp *exce.StackFrame) {
-	irq := exce.Exce(fp.R[0])
+	r0 := fp.R[0]
+	if r0 > 255 {
+		fp.R[1] = uintptr(syscall.ERANGE)
+		return
+	}
+	irq := exce.Exce(r0)
 	prio := exce.Prio(fp.R[1])
 	if irq < exce.IRQ0 && unpriv() {
 		fp.R[1] = uintptr(syscall.EPERM)
@@ -82,13 +87,33 @@ func scSetIRQPrio(fp *exce.StackFrame) {
 }
 
 func scSetIRQHandler(fp *exce.StackFrame) {
-	irq := exce.Exce(fp.R[0])
+	r0 := fp.R[0]
+	if r0 > 255 {
+		fp.R[1] = uintptr(syscall.ERANGE)
+		return
+	}
+	irq := exce.Exce(r0)
 	h := p2f(fp.R[1])
 	if irq < exce.IRQ0 && unpriv() {
 		fp.R[1] = uintptr(syscall.EPERM)
 		return
 	}
 	irq.UseHandler(h)
+	fp.R[1] = uintptr(syscall.OK)
+}
+
+func scIRQStatus(fp *exce.StackFrame) {
+	r0 := fp.R[0]
+	if r0 > 255 {
+		fp.R[1] = uintptr(syscall.ERANGE)
+		return
+	}
+	irq := exce.Exce(r0)
+	status := uintptr(irq.Prio())
+	if irq.Enabled() {
+		status = -status - 1
+	}
+	fp.R[0] = uintptr(status)
 	fp.R[1] = uintptr(syscall.OK)
 }
 
@@ -110,9 +135,9 @@ func svcHandler()
 
 // Consider pass syscall number as a parameter instead embed it into SVC
 // instruction. It take me few hours to analyze a bug caused by software
-// breakpoints: the following line returns number embeded in BKPT
-// instruction (that was inserted by gdb) instead of number in SVC
-// instruction, but gdb x command shows right values and the fun begins...
+// breakpoints: (fp.PC - 2) points to the number embeded in BKPT instruction
+// (that was inserted by gdb) instead of number in SVC instruction, but gdb x
+// command shows right value and the fun begins...
 //
 // Tried syscall number in r0.
 // Pros: avoid above issue, syscal number can be variable, only one read from
@@ -120,7 +145,6 @@ func svcHandler()
 // Cons: additional register need for syscall number, usually additional
 // mov instruction is need (+2B for any syscall), additional instruction fetch
 // from Flash + execution.
-
 func sv(fp *exce.StackFrame) {
 	trap := int(*(*byte)(unsafe.Pointer(fp.PC - 2)))
 	if trap >= len(syscalls) {

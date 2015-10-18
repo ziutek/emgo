@@ -6,11 +6,11 @@ import "syscall"
 type IRQ int
 
 func (irq IRQ) Enable() error {
-	return syscall.SetIRQEna(int(irq), true)
+	return mkerror(syscall.SetIRQEna(int(irq), true))
 }
 
 func (irq IRQ) Disable() error {
-	return syscall.SetIRQEna(int(irq), false)
+	return mkerror(syscall.SetIRQEna(int(irq), false))
 }
 
 // IPrio represents IRQ priority.
@@ -39,10 +39,22 @@ func (p IPrio) Higher(o IPrio) bool {
 
 // SetPrio sets priority for irq.
 func (irq IRQ) SetPrio(p IPrio) error {
-	return syscall.SetIRQPrio(int(irq), int(p))
+	return mkerror(syscall.SetIRQPrio(int(irq), int(p)))
 }
 
 // UseHandler sets h as handler for irq.
 func (irq IRQ) UseHandler(h func()) error {
-	return syscall.SetIRQHandler(int(irq), h)
+	return mkerror(syscall.SetIRQHandler(int(irq), h))
+}
+
+// Status returns basic information about irq.
+func (irq IRQ) Status() (prio IPrio, enabled bool, err error) {
+	s, e := syscall.IRQStatus(int(irq))
+	enabled = s < 0
+	if enabled {
+		s = -s - 1
+	}
+	prio = IPrio(s)
+	err = mkerror(e)
+	return
 }

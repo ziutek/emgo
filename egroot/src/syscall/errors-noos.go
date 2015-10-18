@@ -7,6 +7,7 @@ const (
 	ENORES
 	ENFOUND
 	EPERM
+	ERANGE
 )
 
 var errnos = []string{
@@ -14,4 +15,5 @@ var errnos = []string{
 	ENORES:  "no resources",
 	ENFOUND: "not found",
 	EPERM:   "no permissions",
+	ERANGE:  "out of range",
 }

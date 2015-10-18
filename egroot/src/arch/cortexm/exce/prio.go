@@ -17,13 +17,3 @@ func (p Prio) Lower(o Prio) bool {
 func (p Prio) Higher(o Prio) bool {
 	return p < o
 }
-
-// SetPriority sets priority level for exception.
-func (e Exce) SetPriority(prio Prio) {
-	switch {
-	case e >= MemManage && e < IRQ0:
-		shp.setByte(e-MemManage, byte(prio))
-	case e >= IRQ0:
-		ip.setByte(e-IRQ0, byte(prio))
-	}
-}
