@@ -96,8 +96,8 @@ func WriteInt64(w io.Writer, i int64, base, width int) (int, error) {
 
 // WriteInt writes text representation of i in buf using 2 <= |base| <= 36.
 // If width > 0 then written value is left-justified, if width < 0 written
-// value is right-justified. If base < 0 then right-justified value is prepended
-// with zeros, instead it is padded with spaces.
+// value is left-justified. If base < 0 then left-justified value is prepended
+// with zeros, instead it spaces are used.
 func WriteInt(w io.Writer, i, base, width int) (int, error) {
 	if intSize <= 4 {
 		return WriteInt32(w, int32(i), base, width)

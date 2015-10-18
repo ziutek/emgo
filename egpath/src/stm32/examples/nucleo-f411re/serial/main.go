@@ -100,39 +100,135 @@ func (b Bool) Format(st fmt.State, c rune) {
 	io.WriteString(st, s)
 }
 
+func nle(n int, err error) {
+	s.WriteByte('|')
+	strconv.WriteInt(s, n, 10, 0)
+	if err != nil {
+		s.WriteString(" Err: ")
+		s.WriteString(err.Error())
+	}
+	s.WriteByte('\n')
+}
+
 func main() {
 	const (
 		SmallestNormal         = 2.2250738585072014e-308
 		SmallestNonzeroFloat64 = 4.940656458412465441765687928682213723651e-324
 	)
 
-	var buf [40]byte
+	nle(strconv.WriteBool(s, true, 't', 0))
+	nle(strconv.WriteBool(s, true, 't', -10))
+	nle(strconv.WriteBool(s, true, 't', 10))
+	nle(strconv.WriteBool(s, true, -'1', -10))
+	nle(strconv.WriteBool(s, true, -'1', 10))
 
-	strconv.FormatBool(buf[:], true, -2)
-	s.Write(buf[:])
-	s.WriteByte('\n')
+	nle(strconv.WriteUint32(s, 0, 10, 0))
+	nle(strconv.WriteUint32(s, 1234567890, 10, 0))
+	nle(strconv.WriteUint32(s, 1234567890, 10, -20))
+	nle(strconv.WriteUint32(s, 1234567890, 10, 20))
+	nle(strconv.WriteUint32(s, 1234567890, -10, -20))
+	nle(strconv.WriteUint32(s, 1234567890, -10, 20))
+	nle(strconv.WriteUint32(s, 0xf0f0f0f0, 2, 0))
+	nle(strconv.WriteUint32(s, 0x12345678, 16, 0))
+	nle(strconv.WriteUint32(s, 0x12345678, 16, -20))
+	nle(strconv.WriteUint32(s, 0x12345678, 16, 20))
+	nle(strconv.WriteUint32(s, 0x12345678, -16, -20))
+	nle(strconv.WriteUint32(s, 0x12345678, -16, 20))
 
-	strconv.FormatInt(buf[:], 123456, -10)
-	s.Write(buf[:])
-	s.WriteByte('\n')
+	nle(strconv.WriteInt32(s, 0, 10, 0))
+	nle(strconv.WriteInt32(s, -1234567890, 10, 0))
+	nle(strconv.WriteInt32(s, -1234567890, 10, -20))
+	nle(strconv.WriteInt32(s, -1234567890, 10, 20))
+	nle(strconv.WriteInt32(s, -1234567890, -10, -20))
+	nle(strconv.WriteInt32(s, -1234567890, -10, 20))
+	nle(strconv.WriteInt32(s, -0x10f0f0f0, 2, 0))
+	nle(strconv.WriteInt32(s, -0x12345678, 16, 0))
+	nle(strconv.WriteInt32(s, -0x12345678, 16, -20))
+	nle(strconv.WriteInt32(s, -0x12345678, 16, 20))
+	nle(strconv.WriteInt32(s, -0x12345678, -16, -20))
+	nle(strconv.WriteInt32(s, -0x12345678, -16, 20))
 
-	strconv.FormatFloat(buf[:], 0, -'e', 0, 64)
-	s.Write(buf[:])
-	s.WriteByte('\n')
+	nle(strconv.WriteUint64(s, 0, 10, 0))
+	nle(strconv.WriteUint64(s, 12345678900987654321, 10, 0))
+	nle(strconv.WriteUint64(s, 12345678900987654321, 10, -20))
+	nle(strconv.WriteUint64(s, 12345678900987654321, 10, 20))
+	nle(strconv.WriteUint64(s, 12345678900987654321, -10, -20))
+	nle(strconv.WriteUint64(s, 12345678900987654321, -10, 20))
+	nle(strconv.WriteUint64(s, 0xf0f0f0f00f0f0f0f, 2, 0))
+	nle(strconv.WriteUint64(s, 0x1234567887654321, 16, 0))
+	nle(strconv.WriteUint64(s, 0x1234567887654321, 16, -20))
+	nle(strconv.WriteUint64(s, 0x1234567887654321, 16, 20))
+	nle(strconv.WriteUint64(s, 0x1234567887654321, -16, -20))
+	nle(strconv.WriteUint64(s, 0x1234567887654321, -16, 20))
 
-	fmt.Println()
+	nle(strconv.WriteInt64(s, 0, 10, 0))
+	nle(strconv.WriteInt64(s, -1234567890987654321, 10, 0))
+	nle(strconv.WriteInt64(s, -1234567890987654321, 10, -20))
+	nle(strconv.WriteInt64(s, -1234567890987654321, 10, 20))
+	nle(strconv.WriteInt64(s, -1234567890987654321, -10, -20))
+	nle(strconv.WriteInt64(s, -1234567890987654321, -10, 20))
+	nle(strconv.WriteInt64(s, -0x10f0f0f00f0f0f0f, 2, 0))
+	nle(strconv.WriteInt64(s, -0x1234567887654321, 16, 0))
+	nle(strconv.WriteInt64(s, -0x1234567887654321, 16, -20))
+	nle(strconv.WriteInt64(s, -0x1234567887654321, 16, 20))
+	nle(strconv.WriteInt64(s, -0x1234567887654321, -16, -20))
+	nle(strconv.WriteInt64(s, -0x1234567887654321, -16, 20))
+
+	nle(strconv.WriteFloat(s, 1.23e45, 'b', 24, 2, 32))
+	nle(strconv.WriteFloat(s, 1.23e45, 'b', -24, 2, 32))
+	nle(strconv.WriteFloat(s, 1.23e45, -'b', -24, 2, 32))
+	nle(strconv.WriteFloat(s, 1.23e45, 'b', 24, 2, 64))
+	nle(strconv.WriteFloat(s, 1.23e45, 'b', -24, 2, 64))
+	nle(strconv.WriteFloat(s, 1.23e45, -'b', -24, 2, 64))
+	nle(strconv.WriteFloat(s, -1.23e45, 'b', 24, 2, 64))
+	nle(strconv.WriteFloat(s, -1.23e45, 'b', -24, 2, 64))
+	nle(strconv.WriteFloat(s, -1.23e45, -'b', -24, 2, 64))
+
+	nle(strconv.WriteFloat(s, 1.23456e9, 'f', 24, 4, 64))
+	nle(strconv.WriteFloat(s, 1.23456e9, 'f', -24, 4, 64))
+	nle(strconv.WriteFloat(s, 1.23456e9, -'f', -24, 4, 64))
+	nle(strconv.WriteFloat(s, -1.23456e9, 'f', 24, 4, 64))
+	nle(strconv.WriteFloat(s, -1.23456e9, 'f', -24, 4, 64))
+	nle(strconv.WriteFloat(s, -1.23456e9, -'f', -24, 4, 64))
+
+	nle(strconv.WriteFloat(s, 1.23456e-6, 'f', 24, 4, 64))
+	nle(strconv.WriteFloat(s, 1.23456e-6, 'f', -24, 4, 64))
+	nle(strconv.WriteFloat(s, 1.23456e-6, -'f', -24, 4, 64))
+	nle(strconv.WriteFloat(s, -1.23456e-6, 'f', 24, 4, 64))
+	nle(strconv.WriteFloat(s, -1.23456e-6, 'f', -24, 4, 64))
+	nle(strconv.WriteFloat(s, -1.23456e-6, -'f', -24, 4, 64))
+
+	nle(strconv.WriteFloat(s, 1.23456e-6, 'f', 24, 11, 64))
+	nle(strconv.WriteFloat(s, 1.23456e-6, 'f', -24, 11, 64))
+	nle(strconv.WriteFloat(s, 1.23456e-6, -'f', -24, 11, 64))
+	nle(strconv.WriteFloat(s, -1.23456e-6, 'f', 24, 11, 64))
+	nle(strconv.WriteFloat(s, -1.23456e-6, 'f', -24, 11, 64))
+	nle(strconv.WriteFloat(s, -1.23456e-6, -'f', -24, 11, 64))
+
+	nle(strconv.WriteFloat(s, 1.235e45, 'e', 24, 3, 64))
+	nle(strconv.WriteFloat(s, 1.235e45, 'e', -24, 3, 64))
+	nle(strconv.WriteFloat(s, 1.235e45, -'e', -24, 3, 64))
+	nle(strconv.WriteFloat(s, -1.235e45, 'e', 24, 3, 64))
+	nle(strconv.WriteFloat(s, -1.235e45, 'e', -24, 3, 64))
+	nle(strconv.WriteFloat(s, -1.235e45, -'e', -24, 3, 64))
+
+	nle(strconv.WriteFloat(s, 12340, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(s, 1234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(s, 123.4, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(s, 12.34, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(s, 1.234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(s, 0.1234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(s, 0.01234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(s, 0.001234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(s, 0.0001234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(s, 0.00001234, 'g', 0, 4, 64))
 
 	for i := 0; i < 20; i++ {
-		strconv.FormatFloat(buf[:], SmallestNonzeroFloat64, -'e', i, 64)
-		s.Write(buf[:])
-		s.WriteByte('\n')
+		const f = SmallestNonzeroFloat64
+		nle(strconv.WriteFloat(s, f, 'e', -40, i, 64))
 	}
 
-	var n int
-	n, _ = fmt.Println("b =", true, "a =", 12)
-	fmt.Println(n)
-
-	n, _ = fmt.Println("v =", -6.4321e-3)
+	n, _ := fmt.Println("v =", -6.4321e-3)
 	fmt.Println(n)
 
 	n, _ = fmt.Println("cplx =", 3-3i)
@@ -164,8 +260,7 @@ func main() {
 		"slice",
 		unsafe.Sizeof([]byte(nil)), unsafe.Alignof([]byte(nil)),
 	)
-	// BUG: this doesn't compile
-	//fmt.Println(slisiz())
+
 	siz, ali := slisiz()
 	fmt.Println("C slice", siz, ali)
 
@@ -201,10 +296,25 @@ func main() {
 	fmt.Printf("Type: %T Value: %v\n", a, a)
 	i := -20
 	fmt.Printf("%b %o %d %x\n", i, i, i, i)
-	f := 1.23456789e2
-	fmt.Printf("%e %b\n", f, f)
+	f := -1.234567890123456789e20
+	fmt.Printf("|%-20.11g| |%20.10e|\n", f, f)
+	var s = "BLE(smart)"
+	fmt.Printf("|%15s|%015s|%-15s|%0-15s|\n", s, s, s, s)
+}
+
+type II struct {
+	c128 complex128
+	u32  uint32
+}
+
+type SS struct {
+	ii1 II
+	ii2 II
+	u   uint32
 }
 
 func slisiz() (uintptr, uintptr)
 func int64siz() (uintptr, uintptr)
 func cplx128siz() (uintptr, uintptr)
+func interfacesiz() (uintptr, uintptr)
+func sssize() uintptr

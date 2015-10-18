@@ -103,13 +103,12 @@ func (ts *taskSched) init() {
 	vt[exce.MemManage] = exce.VectorFor(FaultHandler)
 	vt[exce.BusFault] = exce.VectorFor(FaultHandler)
 	vt[exce.UsageFault] = exce.VectorFor(FaultHandler)
-	vt[exce.SVCall] = exce.VectorFor(svcHandler)
+	vt[exce.SVC] = exce.VectorFor(svcHandler)
 	vt[exce.PendSV] = exce.VectorFor(pendSVHandler)
 	vt[exce.SysTick] = exce.VectorFor(sysTickHandler)
 	exce.UseTable(vt)
 
 	exce.SysTick.SetPrio(exce.Highest)
-	exce.SVCall.SetPrio(exce.Lowest)
 	exce.PendSV.SetPrio(exce.Lowest)
 	for irq := exce.IRQ0; int(irq) < len(vt); irq++ {
 		irq.SetPrio((exce.Lowest + exce.Highest) / 2)
@@ -164,7 +163,7 @@ func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err sy
 	return n + 1, syscall.OK
 }
 
-func (ts *taskSched) delTask(tid int) syscall.Errno {
+func (ts *taskSched) killTask(tid int) syscall.Errno {
 	n := ts.curTask
 	if tid != 0 {
 		n = tid - 1.

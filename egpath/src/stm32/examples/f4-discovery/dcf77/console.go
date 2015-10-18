@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"rtos"
 
 	"stm32/f4/gpio"
@@ -35,7 +36,7 @@ func initConsole() {
 	port.SetMode(rx, gpio.Alt)
 	port.SetAltFunc(rx, gpio.USART2)
 
-	udev.SetBaudRate(9600, setup.APB1Clk)
+	udev.SetBaudRate(115200, setup.APB1Clk)
 	udev.SetWordLen(usart.Bits8)
 	udev.SetParity(usart.None)
 	udev.SetStopBits(usart.Stop1b)
@@ -47,6 +48,7 @@ func initConsole() {
 	rtos.IRQ(irqs.USART2).Enable()
 
 	con.SetUnix(true)
+	fmt.DefaultWriter = con
 }
 
 func conISR() {

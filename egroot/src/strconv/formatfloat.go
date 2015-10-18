@@ -77,7 +77,7 @@ const (
 	flagE
 	flagG
 	flagNeg
-	flagRight
+	flagLeft
 	flagZeros
 )
 
@@ -112,7 +112,7 @@ func paddBefore(w io.Writer, num, flags int) (int, error) {
 
 func writeZero(w io.Writer, width, prec, flags, e int) (int, error) {
 	var padn int
-	if flags&flagRight != 0 {
+	if flags&flagLeft == 0 {
 		padn = width - 1
 		if prec > 0 {
 			padn -= prec + 1
@@ -215,7 +215,7 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 		panic("strconv: bad fmt")
 	}
 	if width < 0 {
-		flags |= flagRight
+		flags |= flagLeft
 		width = -width
 	}
 	if prec < 0 {
@@ -252,7 +252,7 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 		prec -= exp
 	}
 	var padn int
-	if flags&flagRight != 0 {
+	if flags&flagLeft == 0 {
 		length := prec
 		if prec > 0 {
 			length++ // Dot

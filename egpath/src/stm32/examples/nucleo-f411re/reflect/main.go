@@ -3,7 +3,6 @@ package main
 import (
 	"reflect"
 	"rtos"
-	"strconv"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -98,30 +97,6 @@ func main() {
 		v := reflect.ValueOf(iv)
 		t := v.Type()
 		s.WriteString(t.String())
-		if name := t.Name(); len(name) != 0 {
-			s.WriteString(" (name: ")
-			s.WriteString(t.Name())
-			s.WriteByte(')')
-		}
-		if t.NumElems() != 0 {
-			s.WriteString(" {")
-			for i := 0; i < t.NumElems(); i++ {
-				if i != 0 {
-					s.WriteString(", ")
-				}
-				s.WriteString(t.Elem(i).String())
-			}
-			s.WriteByte('}')
-		}
-		s.WriteString(" = ")
-		var buf [20]byte
-		switch u := iv.(type) {
-		case byte:
-			n := strconv.FormatUint(buf[:], uint(u), 10)
-			s.Write(buf[n:])
-		case Stringer:
-			s.WriteString(u.String())
-		}
 		s.WriteByte('\n')
 	}
 }

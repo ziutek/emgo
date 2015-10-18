@@ -1,13 +1,11 @@
 package errors
 
-type strErr struct {
-	s string
-}
-
-func (e strErr) Error() string {
-	return e.s
-}
+type strerr string
 
 func New(s string) error {
-	return strErr{s}
+	return strerr(s)
+}
+
+func (e strerr) Error() string {
+	return string(e)
 }

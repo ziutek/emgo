@@ -9,7 +9,7 @@ import (
 
 const (
 	NEWTASK    = builtin.NEWTASK
-	DELTASK    = builtin.DELTASK
+	KILLTASK   = builtin.KILLTASK
 	TASKUNLOCK = builtin.TASKUNLOCK
 	EVENTWAIT  = iota
 	SETSYSCLK
@@ -29,9 +29,9 @@ func NewTask(f func(), lock bool) (int, Errno) {
 	return int(tid), Errno(err)
 }
 
-// DelTask kills task with specified tid. tid == 0 means current task.
-func DelTask(tid int) Errno {
-	_, err := builtin.Syscall1(DELTASK, uintptr(tid))
+// KillTask kills task with specified tid. tid == 0 means current task.
+func KillTask(tid int) Errno {
+	_, err := builtin.Syscall1(KILLTASK, uintptr(tid))
 	return Errno(err)
 }
 

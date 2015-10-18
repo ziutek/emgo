@@ -77,6 +77,7 @@ func init() {
 	rtos.IRQ(irqs.USART2).Enable()
 
 	term.SetUnix(true)
+	fmt.DefaultWriter = term
 
 	// 1-wire
 
@@ -125,17 +126,11 @@ func checkErr(err error) {
 	if err == nil {
 		return
 	}
-	term.WriteString(err.Error())
-	term.WriteByte('\n')
+	fmt.Println("Error: ", err)
 	for {
 		blink(Red, 100)
 		delay.Millisec(100)
 	}
-}
-
-func ok() {
-	term.WriteString("OK\n")
-	blink(Green, 50)
 }
 
 func main() {
@@ -143,7 +138,7 @@ func main() {
 	m := onewire.Master{Driver: &drv}
 	dtypes := []onewire.Type{onewire.DS18S20, onewire.DS18B20, onewire.DS1822}
 
-	term.WriteString("\nConfigure all DS18B20, DS1822 to 10bit resolution.\n")
+	fmt.Println("\nConfigure all DS18B20, DS1822 to 10bit resolution.")
 	checkErr(m.SkipROM())
 	checkErr(m.WriteScratchpad(127, -128, onewire.T10bit))
 
@@ -169,21 +164,17 @@ func main() {
 			s := onewire.NewSearch(typ, false)
 			for m.SearchNext(&s) {
 				d := s.Dev()
-				fmt.Fprint(term, d, fmt.Str(": "))
+				fmt.Print(d, ": ")
 				checkErr(m.MatchROM(d))
 				s, err := m.ReadScratchpad()
 				checkErr(err)
-				t, err := s.Temp16(typ)
+				t, err := s.Temp(typ)
 				checkErr(err)
-				fmt.Fprint(
-					term,
-					fmt.Int(t/16), fmt.Rune('.'), fmt.Int(t>>3&1*5),
-					fmt.Str(" C\n"),
-				)
+				fmt.Printf("%6.2f C\n", t)
 			}
 			checkErr(s.Err())
 		}
-		term.WriteString("Done.\n")
+		fmt.Println("Done.")
 		delay.Millisec(4e3)
 	}
 }

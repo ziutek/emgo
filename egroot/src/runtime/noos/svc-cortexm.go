@@ -12,7 +12,7 @@ import (
 
 var syscalls = [...]func(*exce.StackFrame){
 	syscall.NEWTASK:       scNewTask,
-	syscall.DELTASK:       scDelTask,
+	syscall.KILLTASK:      scKillTask,
 	syscall.TASKUNLOCK:    scTaskUnlock,
 	syscall.EVENTWAIT:     scEventWait,
 	syscall.SETSYSCLK:     scSetSysClock,
@@ -33,8 +33,8 @@ func scNewTask(fp *exce.StackFrame) {
 	fp.R[0], fp.R[1] = uintptr(tid), uintptr(err)
 }
 
-func scDelTask(fp *exce.StackFrame) {
-	err := tasker.delTask(int(fp.R[0]))
+func scKillTask(fp *exce.StackFrame) {
+	err := tasker.killTask(int(fp.R[0]))
 	fp.R[1] = uintptr(err)
 }
 

@@ -33,7 +33,7 @@ func New(dev *usart.Dev, rxlen, txlen int) *Dev {
 	return s
 }
 
-type Error uintptr
+type Error uint
 
 const (
 	ErrBufferFull Error = 1 << (9 + iota)

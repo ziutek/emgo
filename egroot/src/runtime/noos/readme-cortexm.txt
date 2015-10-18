@@ -8,7 +8,6 @@ Defines the size of the stack for one task as follows:
 
 Such a little complicated definition allows to easy use MPU (if available) for stack protection.
 
-
 #### MaxTasks
 
 Defines the maximum number of tasks.

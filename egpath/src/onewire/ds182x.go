@@ -47,8 +47,7 @@ func (m *Master) WriteScratchpad(th, tl int8, cfg byte) error {
 // Scratchpad represents 9 bytes of data that can be read from DS18x2x device.
 type Scratchpad [9]byte
 
-// Temp16 returns temperature data from s as uint16 translated to uint16 value
-// equal to T[C] * 16.
+// Temp16 returns temperature data from s as uint16 equal to T[C] * 16.
 func (s *Scratchpad) Temp16(typ Type) (int, error) {
 	switch typ {
 	case DS18B20, DS1822:

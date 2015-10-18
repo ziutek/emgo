@@ -34,8 +34,8 @@ func padd(w io.Writer, chars string, n int) (int, error) {
 }
 
 func writePadded(w io.Writer, b []byte, width int, zeros bool) (int, error) {
-	right := width < 0
-	if right {
+	left := width < 0
+	if left {
 		width = -width
 	}
 	extn := width - len(b)
@@ -43,7 +43,7 @@ func writePadded(w io.Writer, b []byte, width int, zeros bool) (int, error) {
 		m, n int
 		err  error
 	)
-	if extn > 0 && right {
+	if extn > 0 && !left {
 		if zeros {
 			if b[0] == '-' {
 				n, err = w.Write(b[:1])
@@ -68,7 +68,7 @@ func writePadded(w io.Writer, b []byte, width int, zeros bool) (int, error) {
 			return n, err
 		}
 	}
-	if extn > 0 && !right {
+	if extn > 0 && left {
 		m, err = padd(w, pspaces, extn)
 		n += m
 	}

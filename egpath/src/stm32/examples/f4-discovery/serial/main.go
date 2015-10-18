@@ -77,6 +77,7 @@ func init() {
 	rtos.IRQ(irqs.USART2).Enable()
 
 	s.SetUnix(true)
+	fmt.DefaultWriter = s
 }
 
 func blink(c uint, d int) {
@@ -117,28 +118,23 @@ func main() {
 		uts[i] = rtos.Uptime()
 	}
 
-	s.WriteString("\nrtos.Uptime() in loop:\n")
+	fmt.Println("\nrtos.Uptime() in loop:")
 	for i, ut := range uts {
-		fmt.Fprint(s, ut, " ns")
+		fmt.Print(ut, " ns")
 		if i > 0 {
-			fmt.Fprint(s, " (dt = ", ut-uts[i-1], " ns)")
+			fmt.Printf(" (dt = %d ns)", ut-uts[i-1])
 		}
-		s.WriteByte('\n')
+		fmt.Println()
 	}
 
-	s.WriteString("Echo:\n")
-	s.Flush()
+	fmt.Println("Echo:")
 
 	var buf [40]byte
 	for {
 		n, err := s.Read(buf[:])
 		checkErr(err)
-
 		ns := rtos.Uptime()
-		fmt.Fprint(s, ns, " ns \"")
-		s.Write(buf[:n])
-		s.WriteString("\"\n")
-
+		fmt.Printf(" %d ns '%s'\n", ns, buf[:n])
 		blink(Green, 10)
 	}
 }

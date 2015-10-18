@@ -60,15 +60,15 @@ func edgeISR() {
 func main() {
 	for {
 		p := d.Pulse()
-		now := fmt.Int64(time.Now().UnixNano())
-		stamp := fmt.Int64(p.Stamp.UnixNano())
-		fmt.Fprint(con, now, fmt.S, stamp, fmt.S)
+		now := time.Now().UnixNano()
+		stamp := p.Stamp.UnixNano()
+		fmt.Printf("%d %d: ", now, stamp)
 		if p.Err != nil {
 			blink(Red, 50)
-			fmt.Fprint(con, fmt.Err(p.Err), fmt.N)
+			fmt.Println(p.Err)
 		} else {
 			blink(Green, 50)
-			fmt.Fprint(con, p.Time, fmt.N)
+			fmt.Println(p.Time)
 		}
 	}
 }

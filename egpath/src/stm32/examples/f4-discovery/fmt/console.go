@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"rtos"
 
 	"stm32/f4/gpio"
@@ -47,6 +48,7 @@ func initConsole() {
 	rtos.IRQ(irqs.USART2).Enable()
 
 	con.SetUnix(true)
+	fmt.DefaultWriter = con
 }
 
 func conISR() {

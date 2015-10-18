@@ -22,7 +22,7 @@ const (
 	_
 	_
 	_
-	SVCall   // prio 3
+	SVC      // prio 3
 	DebugMon // prio 4
 	_
 	PendSV  // prio 5
@@ -99,7 +99,7 @@ func (e Exce) Pending() bool {
 	case UsageFault:
 		return shcs.Bit(12)
 
-	case SVCall:
+	case SVC:
 		return shcs.Bit(15)
 
 	case PendSV:
@@ -130,7 +130,7 @@ func (e Exce) SetPending() {
 	case UsageFault:
 		shcs.SetBit(12)
 
-	case SVCall:
+	case SVC:
 		shcs.SetBit(15)
 
 	case PendSV:
@@ -157,7 +157,7 @@ func (e Exce) ClearPending() {
 	case UsageFault:
 		shcs.ClearBit(12)
 
-	case SVCall:
+	case SVC:
 		shcs.ClearBit(15)
 
 	case PendSV:
@@ -183,7 +183,7 @@ func (e Exce) Active() bool {
 	case UsageFault:
 		return shcs.Bit(3)
 
-	case SVCall:
+	case SVC:
 		return shcs.Bit(7)
 
 	case DebugMon:

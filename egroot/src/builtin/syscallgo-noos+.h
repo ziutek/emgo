@@ -1,11 +1,11 @@
 // +build noos
 
-#define GO(call, lock) do {                   \
-	void func() {                             \
-		call;                                 \
-		builtin$Syscall1(builtin$DELTASK, 0); \
-	}                                         \
-	builtin$NewTask(func, lock);              \
+#define GO(call, lock) do {                    \
+	void func() {                              \
+		call;                                  \
+		builtin$Syscall1(builtin$KILLTASK, 0); \
+	}                                          \
+	builtin$NewTask(func, lock);               \
 } while(0)
 
 static inline

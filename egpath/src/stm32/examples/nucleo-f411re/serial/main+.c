@@ -9,3 +9,11 @@ uintptr$$uintptr main$int64siz() {
 uintptr$$uintptr main$cplx128siz() {
 	return (uintptr$$uintptr){sizeof(complex128), __alignof__(complex128)};
 }
+
+uintptr$$uintptr main$interfacesiz() {
+	return (uintptr$$uintptr){sizeof(interface), __alignof__(interface)};
+}
+
+uintptr main$sssize() {
+	return sizeof(main$SS);
+}

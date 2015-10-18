@@ -5,8 +5,8 @@ import (
 )
 
 func WriteString(w io.Writer, s string, width int, zeros bool) (int, error) {
-	right := width < 0
-	if right {
+	left := width < 0
+	if left {
 		width = -width
 	}
 	extn := width - len(s)
@@ -14,7 +14,7 @@ func WriteString(w io.Writer, s string, width int, zeros bool) (int, error) {
 		n   int
 		err error
 	)
-	if extn > 0 && right {
+	if extn > 0 && !left {
 		if zeros {
 			n, err = padd(w, pzeros, extn)
 		} else {
@@ -29,7 +29,39 @@ func WriteString(w io.Writer, s string, width int, zeros bool) (int, error) {
 	if err != nil {
 		return n, err
 	}
-	if extn > 0 && !right {
+	if extn > 0 && left {
+		m, err = padd(w, pspaces, extn)
+		n += m
+	}
+	return n, err
+}
+
+func WriteBytes(w io.Writer, s []byte, width int, zeros bool) (int, error) {
+	left := width < 0
+	if left {
+		width = -width
+	}
+	extn := width - len(s)
+	var (
+		n   int
+		err error
+	)
+	if extn > 0 && !left {
+		if zeros {
+			n, err = padd(w, pzeros, extn)
+		} else {
+			n, err = padd(w, pspaces, extn)
+		}
+		if err != nil {
+			return n, err
+		}
+	}
+	m, err := w.Write(s)
+	n += m
+	if err != nil {
+		return n, err
+	}
+	if extn > 0 && left {
 		m, err = padd(w, pspaces, extn)
 		n += m
 	}

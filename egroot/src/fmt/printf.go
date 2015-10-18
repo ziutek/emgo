@@ -76,9 +76,3 @@ func Fprintf(w io.Writer, f string, a ...interface{}) (int, error) {
 	}
 	return p.n, p.err
 }
-
-/*
-if i := strings.IndexByte("vsdxXfgboc", vc); i == -1 {
-		start = -1
-	}
-*/

@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"time"
+
 	"stm32/f4/setup"
 )
 
@@ -12,6 +14,9 @@ func init() {
 
 func main() {
 	con.WriteString("fmt test:\n")
+
+	t := time.Now()
+	fmt.Println(t)
 
 	fmt.Fprint(con, true, " ", false, "\n")
 	fmt.Fprint(con, 10, " ", -10, " ", 1234567890, " ", -1234567890, "\n")

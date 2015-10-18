@@ -7,6 +7,3 @@ package runtime
 // because of dependency loops.
 
 import _ "runtime/noos"
-
-func i() {
-}

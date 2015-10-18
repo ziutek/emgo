@@ -32,7 +32,9 @@
 
 package gotoc
 
-import "go/types"
+import (
+	"go/types"
+)
 
 type StdSizes struct {
 	WordSize int64 // word size in bytes - must be >= 4 (32bits)
@@ -123,10 +125,14 @@ func (s *StdSizes) Sizeof(T types.Type) int64 {
 			return s.WordSize * 2
 		}
 	case *types.Array:
+		n := t.Len()
+		if n == 0 {
+			return 0
+		}
 		e := t.Elem()
 		a := s.Alignof(e)
 		z := s.Sizeof(e)
-		return align(z, a) * t.Len() // may be 0
+		return align(z, a)*(n-1) + z
 	case *types.Slice:
 		return s.WordSize * 3
 	case *types.Struct:
@@ -139,9 +145,17 @@ func (s *StdSizes) Sizeof(T types.Type) int64 {
 			fields[i] = t.Field(i)
 		}
 		offsets := s.Offsetsof(fields)
-		return offsets[n-1] + s.Sizeof(fields[n-1].Type())
+		z := offsets[n-1] + s.Sizeof(fields[n-1].Type())
+		a := s.Alignof(t)
+		return align(z, a)
 	case *types.Interface:
-		return int64(basicSizes[types.Complex128]) + s.WordSize
+		const ivalsiz = 128 / 8 // complex128
+		z := int64(ivalsiz + s.WordSize)
+		a := s.WordSize
+		if ivalsiz >= s.MaxAlign {
+			a = s.MaxAlign
+		}
+		return align(z, a)
 	}
 	return s.WordSize // catch-all
 }

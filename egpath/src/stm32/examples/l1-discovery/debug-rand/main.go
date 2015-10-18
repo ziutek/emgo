@@ -13,16 +13,12 @@ var dbg = rtos.Debug(0)
 func main() {
 	setup.Performance(0)
 
-	var (
-		buf [20]byte
-		rnd rand.XorShift64
-	)
+	var rnd rand.XorShift64
 
 	rnd.Seed(1)
 
 	for {
-		strconv.FormatUint32(buf[:], rnd.Uint32(), -10)
-		dbg.Write(buf[:])
+		strconv.WriteUint32(dbg, rnd.Uint32(), 10, -10)
 		dbg.WriteByte('\n')
 	}
 }

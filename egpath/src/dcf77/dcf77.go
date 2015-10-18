@@ -4,7 +4,6 @@ package dcf77
 import (
 	"errors"
 	"fmt"
-	"io"
 	"time"
 )
 
@@ -27,70 +26,16 @@ type Time struct {
 	summer         bool
 }
 
-func (t Time) Format(w io.Writer, a ...int) (n int, err error) {
-	var m int
-	m, err = fmt.Byte(t.year).Format(w, -2, -16)
-	n += m
-	if err != nil {
-		return
-	}
-	m, err = w.Write([]byte{'-'})
-	n += m
-	if err != nil {
-		return
-	}
-	m, err = fmt.Byte(t.month).Format(w, -2, -16)
-	n += m
-	if err != nil {
-		return
-	}
-	m, err = w.Write([]byte{'-'})
-	n += m
-	if err != nil {
-		return
-	}
-	m, err = fmt.Byte(t.mday).Format(w, -2, -16)
-	n += m
-	if err != nil {
-		return
-	}
-	m, err = w.Write([]byte{' '})
-	n += m
-	if err != nil {
-		return
-	}
-	m, err = fmt.Byte(t.hour).Format(w, -2, -16)
-	n += m
-	if err != nil {
-		return
-	}
-	m, err = w.Write([]byte{':'})
-	n += m
-	if err != nil {
-		return
-	}
-	m, err = fmt.Byte(t.min).Format(w, -2, -16)
-	n += m
-	if err != nil {
-		return
-	}
-	m, err = w.Write([]byte{':'})
-	n += m
-	if err != nil {
-		return
-	}
-	m, err = fmt.Byte(t.sec).Format(w, -2, -10)
-	n += m
-	if err != nil {
-		return
-	}
+func (t Time) Format(f fmt.State, _ rune) {
 	zone := " CET"
 	if t.summer {
 		zone = " CEST"
 	}
-	m, err = w.Write([]byte(zone))
-	n += m
-	return
+	fmt.Fprintf(
+		f,
+		"%02d-%02d-%02d %02d:%02d:%02d %s",
+		t.year, t.month, t.mday, t.hour, t.min, t.sec, zone,
+	)
 }
 
 // Pulse represents information about received pulse.

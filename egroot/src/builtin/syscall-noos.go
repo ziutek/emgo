@@ -4,7 +4,7 @@ package builtin
 
 const (
 	NEWTASK = iota
-	DELTASK
+	KILLTASK
 	TASKUNLOCK
 )
 
