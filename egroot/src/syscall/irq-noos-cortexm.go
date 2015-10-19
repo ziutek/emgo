@@ -8,6 +8,7 @@ import (
 )
 
 const (
-	IRQPrioLowest = exce.Lowest
-	IRQPrioHighest = exce.Highest
+	IRQPrioLowest  = exce.PrioLowest
+	IRQPrioHighest = exce.PrioHighest
+	IRQPrioRange   = exce.PrioRange
 )

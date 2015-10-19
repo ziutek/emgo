@@ -108,10 +108,15 @@ func (ts *taskSched) init() {
 	vt[exce.SysTick] = exce.VectorFor(sysTickHandler)
 	exce.UseTable(vt)
 
-	exce.SysTick.SetPrio(exce.Highest)
-	exce.PendSV.SetPrio(exce.Lowest)
+	// After reset all exceptions have highest priority. Change this to allow:
+	// 1. PendSV can be preempt by any exception.
+	// 2. SVC can be used in external interrupt handlers but has lower priority
+	//    than SysTick
+	// 3. Priority of external interrupt can be changed to preempt SVC.
+	exce.PendSV.SetPrio(exce.PrioLowest)
+	exce.SVC.SetPrio(exce.PrioLowest + exce.PrioRange/2)
 	for irq := exce.IRQ0; int(irq) < len(vt); irq++ {
-		irq.SetPrio((exce.Lowest + exce.Highest) / 2)
+		irq.SetPrio(exce.PrioLowest + exce.PrioRange/4)
 	}
 	exce.MemManage.Enable()
 	exce.BusFault.Enable()

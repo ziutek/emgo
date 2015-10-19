@@ -1,11 +1,15 @@
 package exce
 
-// Prio represents Cortex-M setable interrupt priority.
-type Prio byte
+// Prio represents Cortex-M configurable interrupt priority. After reset all
+// configurable priorities are set to Highest (Emgo runtime or OS usually changes
+// this default values).
+type Prio int
 
 const (
-	Highest Prio = 0
-	Lowest  Prio = 255
+	PrioHighest Prio = 0
+	PrioLowest  Prio = 255
+
+	PrioRange = PrioHighest - PrioLowest
 )
 
 // Lower resturns true if priority p is lower than o.

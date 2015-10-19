@@ -12,21 +12,21 @@ type Exce byte
 
 // Cortex-M system exceptions (with they default priority levels).
 const (
-	Reset      Exce = iota + 1 // prio -3 (fixed)
-	NMI                        // prio -2 (fixed)
-	HardFault                  // prio -1 (fixed)
-	MemManage                  // prio 0
-	BusFault                   // prio 1
-	UsageFault                 // prio 2
+	Reset Exce = iota + 1
+	NMI
+	HardFault
+	MemManage
+	BusFault
+	UsageFault
 	_
 	_
 	_
 	_
-	SVC      // prio 3
-	DebugMon // prio 4
+	SVC
+	DebugMon
 	_
-	PendSV  // prio 5
-	SysTick // prio 6
+	PendSV
+	SysTick
 )
 
 // First external interrupt
@@ -208,7 +208,7 @@ func (e Exce) Prio() Prio {
 	case e >= IRQ0:
 		return Prio(ip.byte(e - IRQ0))
 	}
-	return Highest
+	return PrioHighest
 }
 
 func (e Exce) SetPrio(p Prio) {
