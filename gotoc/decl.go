@@ -283,13 +283,13 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Ex
 // isConstExpr returns true if val can be represented as C constant expr.
 // typ is destination type.
 func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) bool {
-	if cdd.exprValue(val) != nil {
-		return true
-	}
 	if _, ok := typ.Underlying().(*types.Interface); ok {
 		if !types.Identical(typ, cdd.exprType(val)) {
 			return false
 		}
+	}
+	if cdd.exprValue(val) != nil {
+		return true
 	}
 	switch v := val.(type) {
 	case *ast.Ident:
