@@ -8,14 +8,16 @@ import (
 type Debug int
 
 func (d Debug) Write(b []byte) (int, error) {
-	return syscall.DebugOut(int(d), b)
+	n, e := syscall.DebugOut(int(d), b)
+	return n, mkerror(e)
 }
 
 func (d Debug) WriteByte(b byte) error {
-	_, err := syscall.DebugOut(int(d), []byte{b})
-	return err
+	_, e := syscall.DebugOut(int(d), []byte{b})
+	return mkerror(e)
 }
 
 func (d Debug) WriteString(s string) (int, error) {
-	return syscall.DebugOutString(int(d), s)
+	n, e := syscall.DebugOutString(int(d), s)
+	return n, mkerror(e)
 }

@@ -120,7 +120,7 @@ func scIRQStatus(fp *exce.StackFrame) {
 func scDebugOut(fp *exce.StackFrame) {
 	port := fp.R[0]
 	data := (*[1 << 30]byte)(unsafe.Pointer(fp.R[1]))[:fp.R[2]:fp.R[2]]
-	if unpriv() && port > 15 {
+	if unpriv() && port >= 16 {
 		fp.R[0] = 0
 		fp.R[1] = uintptr(syscall.EPERM)
 		return

@@ -51,7 +51,7 @@ func DEMCR() DEMC {
 	return DEMC(drs.demc)
 }
 
-// SetDEMCR returns value of DEMC register.
+// SetDEMCR sets value of DEMC register.
 func SetDEMCR(v DEMC) {
 	drs.demc = uint32(v)
 }

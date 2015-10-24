@@ -41,7 +41,7 @@ func init() {
 func blink(led uint, dly int) {
 	leds.SetBit(led)
 	if dly < 0 {
-		delay.Loop(-dly * 1e4)
+		delay.Loop(-dly * 1e3)
 	} else {
 		delay.Millisec(dly)
 	}
@@ -53,7 +53,7 @@ var d = dcf77.NewDecoder()
 func edgeISR() {
 	t := time.Now()
 	exti.L1.ClearPending()
-	blink(Blue, -50)
+	blink(Blue, -100)
 	d.Edge(t, gpio.C.Bit(1))
 }
 
@@ -64,10 +64,10 @@ func main() {
 		stamp := p.Stamp.UnixNano()
 		fmt.Printf("%d %d: ", now, stamp)
 		if p.Err != nil {
-			blink(Red, 50)
+			blink(Red, 25)
 			fmt.Println(p.Err)
 		} else {
-			blink(Green, 50)
+			blink(Green, 25)
 			fmt.Println(p.Time)
 		}
 	}

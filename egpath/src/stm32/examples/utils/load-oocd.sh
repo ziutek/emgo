@@ -1,0 +1,21 @@
+#!/bin/sh
+
+arm-none-eabi-objcopy -O binary -R .noload main.elf main.bin
+addr=0x20000000
+if [ $# -eq 1 -a "$1" = 'flash' ]; then
+	addr=0x8000000
+fi
+
+if [ -n "$TRACECLKIN" ]; then
+	tpiu="tpiu config internal /dev/stdout uart off $TRACECLKIN"
+	itm='itm ports on'
+fi
+
+echo "Loading at $addr..."
+openocd -f interface/stlink-v2.cfg -f target/$TARGET.cfg \
+	-c 'init' \
+	-c 'reset init' \
+	-c "load_image main.bin $addr" \
+	-c "$tpiu" \
+	-c "$itm" \
+	-c 'reset run' |itmsplit p0:/dev/stdout /dev/stderr

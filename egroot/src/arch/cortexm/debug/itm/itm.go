@@ -115,32 +115,38 @@ func (p Port) Store32(w uint32) {
 	irs.stim[p].Store(w)
 }
 
-// Write implements io.Writer interface.
-func (p Port) Write(data []byte) (int, error) {
-loop:
-	for _, b := range data {
-		for !p.Ready() {
-			if !p.Enabled() || Ctrl()&ITMEna == 0 {
-				// Silently discard data.
-				break loop
-			}
-		}
-		p.Store8(b)
-	}
-	return len(data), nil
-}
-
 // WriteString implements io.StringWriter interface.
 func (p Port) WriteString(s string) (int, error) {
+	n := len(s)
+	i := 0
 loop:
-	for i := 0; i < len(s); i++ {
+	for n > 0 {
 		for !p.Ready() {
 			if !p.Enabled() || Ctrl()&ITMEna == 0 {
 				// Silently discard data.
 				break loop
 			}
 		}
-		p.Store8(s[i])
+		switch {
+		case n >= 4:
+			p.Store32(uint32(s[i]) + uint32(s[i+1])<<8 + uint32(s[i+2])<<16 +
+				uint32(s[i+3])<<24)
+			n -= 4
+			i += 4
+		case n >= 2:
+			p.Store16(uint16(s[i]) + uint16(s[i+1])<<8)
+			n -= 2
+			i += 2
+		default:
+			p.Store8(s[i])
+			n--
+			i++
+		}
 	}
-	return len(s), nil
+	return n + i, nil
+}
+
+// Write implements io.Writer interface.
+func (p Port) Write(b []byte) (int, error) {
+	return p.WriteString(*(*string)(unsafe.Pointer(&b)))
 }

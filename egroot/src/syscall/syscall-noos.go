@@ -77,17 +77,14 @@ func IRQStatus(irq int) (int, Errno) {
 	return int(s), Errno(e)
 }
 
-// DebugOut allows write debug informations.
-func DebugOut(port int, data []byte) (int, Errno) {
-	n, e := builtin.Syscall3(
-		DEBUGOUT,
-		uintptr(port), uintptr(unsafe.Pointer(&data[0])), uintptr(len(data)),
-	)
+// DebugOutString allows write debug message.
+func DebugOutString(port int, s string) (int, Errno) {
+	p := (*builtin.String)(unsafe.Pointer(&s))
+	n, e := builtin.Syscall3(DEBUGOUT, uintptr(port), p.Addr, p.Len)
 	return int(n), Errno(e)
 }
 
-// DebugOutString allows write debug message.
-func DebugOutString(port int, s string) (int, Errno) {
-	data := (*[]byte)(unsafe.Pointer(&s))
-	return DebugOut(port, *data)
+// DebugOut allows write debug message.
+func DebugOut(port int, b []byte) (int, Errno) {
+	return DebugOutString(port, *(*string)(unsafe.Pointer(&b)))
 }

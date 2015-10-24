@@ -20,21 +20,37 @@ var (
 )
 
 type Time struct {
-	sec, min, hour byte
-	wday, mday     byte
-	month, year    byte
-	summer         bool
+	Year   byte
+	Month  byte
+	Mday   byte
+	Wday   byte
+	Hour   byte
+	Min    byte
+	Sec    byte
+	Summer bool
+}
+
+func decodeBCD(b byte) byte {
+	return (b>>4)*10 + b&0x0f
+}
+
+func (t *Time) decodeBCD() {
+	t.Year = decodeBCD(t.Year)
+	t.Month = decodeBCD(t.Month)
+	t.Mday = decodeBCD(t.Mday)
+	t.Hour = decodeBCD(t.Hour)
+	t.Min = decodeBCD(t.Min)
 }
 
 func (t Time) Format(f fmt.State, _ rune) {
 	zone := " CET"
-	if t.summer {
+	if t.Summer {
 		zone = " CEST"
 	}
 	fmt.Fprintf(
 		f,
 		"%02d-%02d-%02d %02d:%02d:%02d %s",
-		t.year, t.month, t.mday, t.hour, t.min, t.sec, zone,
+		t.Year, t.Month, t.Mday, t.Hour, t.Min, t.Sec, zone,
 	)
 }
 
@@ -93,7 +109,7 @@ func (d *Decoder) risingEdge(dt time.Duration) (send bool) {
 		if d.sec >= 0 {
 			d.sec++
 			if d.pulse.Err == nil {
-				d.pulse.sec = byte(d.sec)
+				d.pulse.Sec = byte(d.sec)
 			}
 			send = true
 		}
@@ -143,9 +159,9 @@ func (d *Decoder) fallingEdge(dt time.Duration) (send bool) {
 	case d.sec <= 16:
 		// Don't decode.
 	case d.sec == 17:
-		d.next.summer = (bit == 1)
+		d.next.Summer = (bit == 1)
 	case d.sec == 18:
-		if d.next.summer && bit != 0 || !d.next.summer && bit != 0 {
+		if d.next.Summer == (bit == 1) {
 			send = d.error(ErrBits)
 		}
 	case d.sec == 19:
@@ -157,7 +173,7 @@ func (d *Decoder) fallingEdge(dt time.Duration) (send bool) {
 	case d.sec <= 27:
 		if bit != 0 {
 			d.ones++
-			d.next.min += 1 << uint(d.sec-21)
+			d.next.Min += 1 << uint(d.sec-21)
 		}
 	case d.sec == 28:
 		if bit != 0 {
@@ -169,7 +185,7 @@ func (d *Decoder) fallingEdge(dt time.Duration) (send bool) {
 	case d.sec <= 34:
 		if bit != 0 {
 			d.ones++
-			d.next.hour += 1 << uint(d.sec-29)
+			d.next.Hour += 1 << uint(d.sec-29)
 		}
 	case d.sec == 35:
 		if bit != 0 {
@@ -181,22 +197,22 @@ func (d *Decoder) fallingEdge(dt time.Duration) (send bool) {
 	case d.sec <= 41:
 		if bit != 0 {
 			d.ones++
-			d.next.mday += 1 << uint(d.sec-36)
+			d.next.Mday += 1 << uint(d.sec-36)
 		}
 	case d.sec <= 44:
 		if bit != 0 {
 			d.ones++
-			d.next.wday += 1 << uint(d.sec-42)
+			d.next.Wday += 1 << uint(d.sec-42)
 		}
 	case d.sec <= 49:
 		if bit != 0 {
 			d.ones++
-			d.next.month += 1 << uint(d.sec-45)
+			d.next.Month += 1 << uint(d.sec-45)
 		}
 	case d.sec <= 57:
 		if bit != 0 {
 			d.ones++
-			d.next.year += 1 << uint(d.sec-50)
+			d.next.Year += 1 << uint(d.sec-50)
 		}
 	case d.sec == 58:
 		if bit != 0 {
@@ -235,5 +251,7 @@ func (d *Decoder) Edge(t time.Time, rising bool) {
 // with period > 1 second, it should be called twice to obtain most recent
 // value.
 func (d *Decoder) Pulse() Pulse {
-	return <-d.c
+	p := <-d.c
+	p.Time.decodeBCD()
+	return p
 }

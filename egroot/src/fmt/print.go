@@ -2,6 +2,7 @@ package fmt
 
 import (
 	"io"
+	"rtos"
 	"stack"
 	"unsafe"
 )
@@ -47,7 +48,7 @@ func Fprintln(w io.Writer, a ...interface{}) (int, error) {
 	return p.n, p.err
 }
 
-var DefaultWriter io.Writer
+var DefaultWriter io.Writer = rtos.Debug(0)
 
 func Print(a ...interface{}) (int, error) {
 	return Fprint(DefaultWriter, a...)

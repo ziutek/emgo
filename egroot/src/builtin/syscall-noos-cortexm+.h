@@ -42,9 +42,9 @@
 	register uintptr r1 asm("r1") = a2;       \
 	register uintptr r2 asm("r2") = a3;       \
 	asm volatile (                            \
-		"svc %3"                              \
-		: "+r" (r0), "+r" (r1), "+r" (r2)     \
-		: "i" (trap)                          \
+		"svc %2"                              \
+		: "+r" (r0), "+r" (r1)                \
+		: "i" (trap), "r" (r2)                \
 		: "memory"                            \
 	);                                        \
 	(uintptr$$uintptr){r0, r1};               \
