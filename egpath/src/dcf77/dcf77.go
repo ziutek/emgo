@@ -2,50 +2,47 @@
 package dcf77
 
 import (
-	"errors"
 	"fmt"
 	"time"
 )
 
-type Error string
+type Error int
 
-func (e *Error) Error() string {
-	return string(*e)
-}
-
-var (
-	ErrInit   = errors.New("initializing")
-	ErrTiming = errors.New("timing error")
-	ErrBits   = errors.New("error in data bits")
+const (
+	ErrInit   = Error(-1)
+	ErrTiming = Error(-2)
+	ErrBits   = Error(-3)
 )
 
-type Time struct {
-	Year   byte
-	Month  byte
-	Mday   byte
-	Wday   byte
-	Hour   byte
-	Min    byte
-	Sec    byte
+var strerr = []string{
+	"initializing",
+	"timing error",
+	"bits error",
+}
+
+func (e Error) Error() string {
+	i := uint(-e - 1)
+	if i >= uint(len(strerr)) {
+		return "unknown"
+	}
+	return strerr[i]
+}
+
+type Date struct {
+	Year   int8
+	Month  int8
+	Mday   int8
+	Wday   int8
+	Hour   int8
+	Min    int8
+	Sec    int8
 	Summer bool
 }
 
-func decodeBCD(b byte) byte {
-	return (b>>4)*10 + b&0x0f
-}
-
-func (t *Time) decodeBCD() {
-	t.Year = decodeBCD(t.Year)
-	t.Month = decodeBCD(t.Month)
-	t.Mday = decodeBCD(t.Mday)
-	t.Hour = decodeBCD(t.Hour)
-	t.Min = decodeBCD(t.Min)
-}
-
-func (t Time) Format(f fmt.State, _ rune) {
-	zone := " CET"
+func (t Date) Format(f fmt.State, _ rune) {
+	zone := "CET"
 	if t.Summer {
-		zone = " CEST"
+		zone = "CES"
 	}
 	fmt.Fprintf(
 		f,
@@ -54,36 +51,30 @@ func (t Time) Format(f fmt.State, _ rune) {
 	)
 }
 
-// Pulse represents information about received pulse.
-type Pulse struct {
-	Time            // Received time.
-	Stamp time.Time // Local time of received pulse (rising edge).
-	Err   error
+type pulse struct {
+	stamp time.Time
+	l     uint32
+	h     uint16
+	sec   int8 // If sec < 0 thne sec can be only ErrInit or ErrTiming.
 }
 
 type Decoder struct {
-	pulse Pulse
-	next  Time
-	last  time.Time
-	sec   int
-	ones  int
-	c     chan Pulse
-}
+	// ISR fields.
+	pulse pulse
+	n     byte
 
-func (d *Decoder) error(err error) (de bool) {
-	if de = d.pulse.Err != err; de {
-		d.pulse.Err = err
-	}
-	d.sec = -1
-	d.ones = 0
-	return
+	// User fields.
+	date Date
+
+	// Common fields.
+	c chan pulse
 }
 
 // NewDecoder returns pointer to new ready to use DCF77 signal decoder.
 func NewDecoder() *Decoder {
 	d := new(Decoder)
-	d.c = make(chan Pulse, 1)
-	d.error(ErrTiming)
+	d.pulse.sec = int8(ErrInit)
+	d.c = make(chan pulse, 1)
 	return d
 }
 
@@ -106,27 +97,23 @@ func checkRising(dt64 time.Duration) int {
 func (d *Decoder) risingEdge(dt time.Duration) (send bool) {
 	switch checkRising(dt) {
 	case 0: // Ordinary pulse.
-		if d.sec >= 0 {
-			d.sec++
-			if d.pulse.Err == nil {
-				d.pulse.Sec = byte(d.sec)
-			}
-			send = true
+		d.n++
+		if d.pulse.sec >= 0 {
+			d.pulse.sec = int8(d.n)
 		}
 	case 1: // Sync pulse.
-		if d.sec >= 0 {
-			d.pulse.Time = d.next
-			d.pulse.Err = nil
+		d.n = 0
+		if d.pulse.sec >= int8(ErrInit) {
+			d.pulse.sec = 0
 		} else {
-			d.pulse.Err = ErrInit
+			d.pulse.sec = int8(ErrInit)
 		}
-		d.sec = 0
-		d.next = Time{}
-		send = true
-	default: // Error
-		send = d.error(ErrTiming)
+	default:
+		send = Error(d.pulse.sec) != ErrTiming
+		d.pulse.sec = int8(ErrTiming)
+		return
 	}
-	return
+	return Error(d.pulse.sec) >= ErrInit
 }
 
 func checkFalling(dt64 time.Duration) int {
@@ -146,96 +133,37 @@ func checkFalling(dt64 time.Duration) int {
 }
 
 func (d *Decoder) fallingEdge(dt time.Duration) (send bool) {
+	if Error(d.pulse.sec) == ErrTiming {
+		return false
+	}
 	bit := checkFalling(dt)
 	if bit < 0 {
-		send = d.error(ErrTiming)
-		return
+		d.pulse.sec = int8(ErrTiming)
+		return true
 	}
+	n := int(d.n) - 16
 	switch {
-	case d.sec == 0:
-		if bit != 0 {
-			send = d.error(ErrBits)
-		}
-	case d.sec <= 16:
-		// Don't decode.
-	case d.sec == 17:
-		d.next.Summer = (bit == 1)
-	case d.sec == 18:
-		if d.next.Summer == (bit == 1) {
-			send = d.error(ErrBits)
-		}
-	case d.sec == 19:
-		// Leap second announcement.
-	case d.sec == 20:
-		if bit == 0 {
-			send = d.error(ErrBits)
-		}
-	case d.sec <= 27:
-		if bit != 0 {
-			d.ones++
-			d.next.Min += 1 << uint(d.sec-21)
-		}
-	case d.sec == 28:
-		if bit != 0 {
-			d.ones++
-		}
-		if d.ones&1 != 0 {
-			send = d.error(ErrBits)
-		}
-	case d.sec <= 34:
-		if bit != 0 {
-			d.ones++
-			d.next.Hour += 1 << uint(d.sec-29)
-		}
-	case d.sec == 35:
-		if bit != 0 {
-			d.ones++
-		}
-		if d.ones&1 != 0 {
-			send = d.error(ErrBits)
-		}
-	case d.sec <= 41:
-		if bit != 0 {
-			d.ones++
-			d.next.Mday += 1 << uint(d.sec-36)
-		}
-	case d.sec <= 44:
-		if bit != 0 {
-			d.ones++
-			d.next.Wday += 1 << uint(d.sec-42)
-		}
-	case d.sec <= 49:
-		if bit != 0 {
-			d.ones++
-			d.next.Month += 1 << uint(d.sec-45)
-		}
-	case d.sec <= 57:
-		if bit != 0 {
-			d.ones++
-			d.next.Year += 1 << uint(d.sec-50)
-		}
-	case d.sec == 58:
-		if bit != 0 {
-			d.ones++
-		}
-		if d.ones&1 != 0 {
-			send = d.error(ErrBits)
-		}
+	case n < 0:
+		return
+	case n == 0:
+		d.pulse.l = uint32(bit)
+		d.pulse.h = 0
+	case n < 32:
+		d.pulse.l += uint32(bit << uint(n))
+	default:
+		d.pulse.h += uint16(bit << uint(n-32))
 	}
-	return
+	return false
 }
 
 // Edge should be called by interrupt handler trigered by both (rising and
 // falling) edges of DCF77 signal pulses.
 func (d *Decoder) Edge(t time.Time, rising bool) {
-	dt := t.Sub(d.last)
+	dt := t.Sub(d.pulse.stamp)
 	send := false
 	if rising {
-		d.last = t
+		d.pulse.stamp = t
 		send = d.risingEdge(dt)
-		if d.pulse.Err == nil {
-			d.pulse.Stamp = t
-		}
 	} else {
 		send = d.fallingEdge(dt)
 	}
@@ -247,11 +175,72 @@ func (d *Decoder) Edge(t time.Time, rising bool) {
 	}
 }
 
+type Pulse struct {
+	Date
+	Stamp time.Time
+}
+
+func (p *Pulse) Err() error {
+	if e := Error(p.Date.Sec); e < 0 {
+		return e
+	}
+	return nil
+}
+
+func checkParity(u, pbit uint32) bool {
+	return true
+}
+
+func decodeBCD(u uint32) (int8, bool) {
+	h := u >> 4 & 0x0f
+	l := u & 0x0f
+	return int8(h*10 + l), l < 10 // Don't check h because result is always checked.
+}
+
+func (d *Decoder) decodeDate(l, h uint32) {
+	ok := true
+	switch l >> (17 - 16) & 3 {
+	case 2:
+		d.date.Summer = false
+	case 1:
+		d.date.Summer = true
+	default:
+		ok = false
+	}
+	ok = ok && l&(1<<(20-16)) != 0
+	var o bool
+	u := l >> (21 - 16) & 0x7f
+	d.date.Min, o = decodeBCD(u)
+	ok = ok && o && d.date.Min < 60 && checkParity(u, l>>(28-16))
+	u = l >> (29 - 16) & 0x3f
+	d.date.Hour, o = decodeBCD(u)
+	ok = ok && o && d.date.Hour < 24 && checkParity(u, l>>(35-16))
+
+	u = l>>(36-16) + h<<(32-36+16)
+	d.date.Mday, o = decodeBCD(u >> (36 - 36) & 0x3f)
+	ok = ok && o && uint(d.date.Mday)-1 < 31
+	d.date.Wday = int8(l >> (42 - 16))
+	ok = ok && d.date.Wday != 0
+	d.date.Month, o = decodeBCD(u >> (45 - 36) & 0x1f)
+	ok = ok && o && uint(d.date.Month)-1 < 12
+	d.date.Year, o = decodeBCD(u >> (50 - 36))
+	ok = ok && o && uint(d.date.Year) < 100
+	ok = ok && checkParity(u&0x3fffff, u>>22)
+	if ok {
+		d.date.Sec = 0
+	} else {
+		d.date.Sec = int8(ErrBits)
+	}
+}
+
 // Pulse returns next decoded pulse. It can return buffered value, so if called
-// with period > 1 second, it should be called twice to obtain most recent
-// value.
+// with period > 1 second, it should be called twice to obtain most recent value.
 func (d *Decoder) Pulse() Pulse {
 	p := <-d.c
-	p.Time.decodeBCD()
-	return p
+	if p.sec == 0 {
+		d.decodeDate(p.l, uint32(p.h))
+	} else if d.date.Sec >= 0 || p.sec < 0 {
+		d.date.Sec = p.sec
+	}
+	return Pulse{d.date, p.stamp}
 }

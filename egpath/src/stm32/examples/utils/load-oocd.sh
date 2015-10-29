@@ -11,11 +11,12 @@ if [ -n "$TRACECLKIN" ]; then
 	itm='itm ports on'
 fi
 
-echo "Loading at $addr..."
+echo "Loading at $addr..." >/dev/stderr
 openocd -f interface/stlink-v2.cfg -f target/$TARGET.cfg \
 	-c 'init' \
 	-c 'reset init' \
 	-c "load_image main.bin $addr" \
 	-c "$tpiu" \
 	-c "$itm" \
-	-c 'reset run' |itmsplit p0:/dev/stdout /dev/stderr
+	-c 'reset run' \
+	|itmsplit p0:/dev/stdout /dev/stderr

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"delay"
 	"fmt"
 	"rtos"
 	"time"
@@ -17,6 +18,7 @@ func init() {
 	setup.Performance168(8)
 
 	initLEDs()
+	initConsole()
 
 	// Initialize DCF77 input pin.
 
@@ -36,6 +38,16 @@ func init() {
 	periph.APB2ClockDisable(periph.SysCfg)
 }
 
+func blink(led uint, dly int) {
+	leds.SetBit(led)
+	if dly < 0 {
+		delay.Loop(-dly * 1e3)
+	} else {
+		delay.Millisec(dly)
+	}
+	leds.ClearBit(led)
+}
+
 var d = dcf77.NewDecoder()
 
 func edgeISR() {
@@ -49,13 +61,14 @@ func main() {
 	for {
 		p := d.Pulse()
 		now := time.Now().UnixNano()
-		if p.Err() != nil {
-			fmt.Printf("now=%d %v\n", now, p.Err())
+		stamp := p.Stamp.UnixNano()
+		fmt.Printf("%d %d: ", now, stamp)
+		if p.Err != nil {
 			blink(Red, 25)
+			fmt.Println(p.Err)
 		} else {
-			stamp := p.Stamp.UnixNano()
-			fmt.Printf("now=%d stamp=%d dcf=%s\n", now, stamp, p.Date)
 			blink(Green, 25)
+			fmt.Println(p.Time)
 		}
 	}
 }

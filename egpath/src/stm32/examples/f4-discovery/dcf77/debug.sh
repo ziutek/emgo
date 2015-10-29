@@ -1,1 +1,1 @@
-../../utils/debug.sh
+../../utils/debug-oocd.sh

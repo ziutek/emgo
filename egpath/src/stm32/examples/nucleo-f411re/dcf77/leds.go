@@ -1,8 +1,6 @@
 package main
 
 import (
-	"delay"
-
 	"stm32/f4/gpio"
 	"stm32/f4/periph"
 )
@@ -24,14 +22,4 @@ func initLEDs() {
 	leds.SetMode(Orange, gpio.Out)
 	leds.SetMode(Red, gpio.Out)
 	leds.SetMode(Blue, gpio.Out)
-}
-
-func blink(led uint, dly int) {
-	leds.SetBit(led)
-	if dly < 0 {
-		delay.Loop(-dly * 1e3)
-	} else {
-		delay.Millisec(dly)
-	}
-	leds.ClearBit(led)
 }
