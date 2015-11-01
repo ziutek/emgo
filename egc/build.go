@@ -67,7 +67,7 @@ func compile(bp *build.Package) error {
 
 	for _, fname := range bp.GoFiles {
 		fname = filepath.Join(bp.Dir, fname)
-		f, err := parser.ParseFile(fset, fname, nil, 0)
+		f, err := parser.ParseFile(fset, fname, nil, parser.ParseComments)
 		if err != nil {
 			return err
 		}

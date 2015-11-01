@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // GTC stores information from type checker need for translation.
@@ -30,6 +31,7 @@ type GTC struct {
 	itables map[string]types.Object
 	tinfos  map[string]types.Object
 	minfos  map[string]types.Object
+	cmap    ast.CommentMap
 }
 
 func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.Sizes) *GTC {
@@ -45,6 +47,7 @@ func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.S
 		itables: make(map[string]types.Object),
 		tinfos:  make(map[string]types.Object),
 		minfos:  make(map[string]types.Object),
+		cmap:    make(ast.CommentMap),
 		siz:     siz,
 		sizPtr:  siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
 		sizIval: siz.Sizeof(types.Typ[types.Complex128]),
@@ -103,6 +106,11 @@ type imports map[*types.Package]bool
 func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	var cdds []*CDD
 
+	for _, f := range files {
+		for k, v := range ast.NewCommentMap(gtc.fset, f, f.Comments) {
+			gtc.cmap[k] = v
+		}
+	}
 	for _, f := range files {
 		// TODO: do this concurrently
 		cdds = append(cdds, gtc.File(f)...)
@@ -390,4 +398,29 @@ func (gtc *GTC) notImplemented(n ast.Node, tl ...types.Type) {
 
 func (gtc *GTC) methodSet(t types.Type) *types.MethodSet {
 	return types.NewMethodSet(t)
+}
+
+func (gtc *GTC) cattr(n ast.Node, use bool) string {
+	cg := gtc.cmap[n]
+	if cg == nil {
+		return ""
+	}
+	var ret string
+	for _, c := range cg {
+		if s := strings.TrimSpace(c.Text()); strings.HasPrefix(s, "C:") {
+			s := s[2:]
+			if s == "" {
+				gtc.exit(n.Pos(), "empty C attribute")
+			}
+			if len(ret) > 0 {
+				ret += " " + s
+			} else {
+				ret += s
+			}
+		}
+	}
+	if ret != "" && !use {
+		gtc.exit(n.Pos(), "unused C attribute: %s", ret)
+	}
+	return ret
 }

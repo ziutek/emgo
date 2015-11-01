@@ -26,6 +26,10 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 
 	cdd.initFunc = (f.Name() == "init" && sig.Recv() == nil && !cdd.gtc.isLocal(f))
 
+	if cattr := gtc.cattr(d, !cdd.initFunc); cattr != "" {
+		w.WriteByte(' ')
+		w.WriteString(cattr)
+	}
 	if !cdd.initFunc {
 		cdd.copyDecl(w, ";\n")
 	}
@@ -143,6 +147,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				cdd.Name(w, c, true)
 				w.WriteByte(' ')
 				cdd.Value(w, c.Val(), c.Type())
+				gtc.cattr(n, false)
 				cdd.copyDecl(w, "\n")
 				w.Reset()
 
@@ -172,7 +177,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				} else {
 					indent = true
 				}
-				cdd.varDecl(w, v.Type(), name, val)
+				cdd.varDecl(w, v.Type(), name, val, gtc.cattr(d, true))
 				w.Reset()
 				cdds = append(cdds, cdd)
 			}
@@ -191,13 +196,19 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 			}
 
 			switch typ := tt.(type) {
-			case *types.Struct, *types.Interface:
-				cdd.structDecl(w, name, typ)
+			case *types.Struct:
+				cdd.structDecl(w, name, typ, gtc.cattr(d, true))
+			case *types.Interface:
+				cdd.structDecl(w, name, typ, gtc.cattr(d, false))
 			default:
 				w.WriteString("typedef ")
 				dim := cdd.Type(w, typ)
 				w.WriteByte(' ')
 				w.WriteString(dimFuncPtr(name, dim))
+				if cattr := gtc.cattr(d, true); cattr != "" {
+					w.WriteByte(' ')
+					w.WriteString(cattr)
+				}
 				cdd.copyDecl(w, ";\n")
 			}
 			typ := to.Type()
@@ -243,8 +254,12 @@ func zeroVal(w *bytes.Buffer, typ types.Type) {
 	}
 }
 
-func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Expr) {
+func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Expr, cattr string) {
 	global := (cdd.Typ == VarDecl) && cdd.gtc.isGlobal(cdd.Origin)
+	if cattr != "" {
+		w.WriteString(cattr)
+		w.WriteByte(' ')
+	}
 	dim := cdd.Type(w, typ)
 	w.WriteByte(' ')
 	w.WriteString(dimFuncPtr(name, dim))
@@ -352,7 +367,7 @@ func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) bool {
 
 var tuparrRe = regexp.MustCompile(`(\$\$)|(^\$[0-9]+_\$.)`)
 
-func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) {
+func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type, cattr string) {
 	n := w.Len()
 
 	w.WriteString("struct ")
@@ -363,7 +378,10 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type) {
 	w.WriteString(name)
 	w.WriteString("_struct ")
 	w.WriteString(name)
-
+	if cattr != "" {
+		w.WriteByte(' ')
+		w.WriteString(cattr)
+	}
 	cdd.copyDecl(w, ";\n")
 	w.Truncate(n)
 

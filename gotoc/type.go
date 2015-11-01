@@ -323,7 +323,7 @@ func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var
 	o := types.NewTypeName(tup.At(0).Pos(), cdd.gtc.pkg, tupName, s)
 	cdd.gtc.tuples[tupName] = o
 	acd := cdd.gtc.newCDD(o, TypeDecl, 0)
-	acd.structDecl(new(bytes.Buffer), tupName, s)
+	acd.structDecl(new(bytes.Buffer), tupName, s, "")
 	cdd.acds = append(cdd.acds, acd)
 
 	//cdd.DeclUses[o] = true
@@ -349,7 +349,7 @@ func (cdd *CDD) arrayName(a *types.Array) string {
 	cdd.addObject(o, true)
 	acd := cdd.gtc.newCDD(o, TypeDecl, 0)
 	cdd.acds = append(cdd.acds, acd)
-	acd.structDecl(new(bytes.Buffer), name, s)
+	acd.structDecl(new(bytes.Buffer), name, s, "")
 	return name
 }
 
