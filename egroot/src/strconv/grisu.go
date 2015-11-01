@@ -16,7 +16,7 @@ func cachedPower(exp, alpha, gamma int) (diyfp, int) {
 	i := (exp10 - exp10start) / exp10step
 	var ce int
 	for {
-		ce = cachedExp(i)
+		ce = int(exponents[i])
 		if sum := exp + ce; sum < alpha {
 			i++
 		} else if sum > gamma {
@@ -25,7 +25,7 @@ func cachedPower(exp, alpha, gamma int) (diyfp, int) {
 			break
 		}
 	}
-	return diyfp{cachedFrac(i), ce}, -(exp10start + i*exp10step)
+	return diyfp{significands[i], ce}, -(exp10start + i*exp10step)
 }
 
 // grisu implements Grisu algorithm published by Florian Loitsch in paper
@@ -49,7 +49,7 @@ func (g *grisu) Init(frac uint64, exp int) (int, int) {
 	g.mask = uint64(1)<<g.e - 1
 	g.p2 = d.f & g.mask
 	for {
-		div := cachedTens(g.i)
+		div := tens[g.i]
 		dig := g.p1 / div
 		if dig != 0 {
 			g.p1 -= dig * div
@@ -62,7 +62,7 @@ func (g *grisu) Init(frac uint64, exp int) (int, int) {
 func (g *grisu) NextDigit() int {
 	if g.i > 0 {
 		g.i--
-		div := cachedTens(g.i)
+		div := tens[g.i]
 		dig := g.p1 / div
 		g.p1 -= dig * div
 		return int(dig)
@@ -97,7 +97,7 @@ func grisu2(buf []byte, frac uint64, exp int) (n, exp10 int) {
 	kappa := 10
 	for kappa > 0 {
 		kappa--
-		div := cachedTens(kappa)
+		div := tens[kappa]
 		if d := p1 / div; d != 0 || n != 0 {
 			buf[n] = byte('0' + d)
 			p1 -= d * div
