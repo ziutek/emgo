@@ -6,10 +6,6 @@ const (
 	maxDigits  = 19
 )
 
-func cachedFrac(i int) uint64
-func cachedExp(i int) int
-func cachedTens(i int) uint32
-
 func cachedPower(exp, alpha, gamma int) (diyfp, int) {
 	exp += 64
 	exp10 := ((alpha+gamma)/2 - exp + 64 - 1) * 146 / 485
