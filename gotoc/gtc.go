@@ -400,27 +400,29 @@ func (gtc *GTC) methodSet(t types.Type) *types.MethodSet {
 	return types.NewMethodSet(t)
 }
 
-func (gtc *GTC) cattr(n ast.Node, use bool) string {
-	cg := gtc.cmap[n]
-	if cg == nil {
-		return ""
-	}
+func (gtc *GTC) cattr(use bool, nodes ...ast.Node) string {
 	var ret string
-	for _, c := range cg {
-		if s := strings.TrimSpace(c.Text()); strings.HasPrefix(s, "C:") {
-			s := s[2:]
-			if s == "" {
-				gtc.exit(n.Pos(), "empty C attribute")
-			}
-			if len(ret) > 0 {
-				ret += " " + s
-			} else {
-				ret += s
+	for _, n := range nodes {
+		cg := gtc.cmap[n]
+		if cg == nil {
+			continue
+		}
+		for _, c := range cg {
+			if s := strings.TrimSpace(c.Text()); strings.HasPrefix(s, "C:") {
+				s := s[2:]
+				if s == "" {
+					gtc.exit(n.Pos(), "empty C attribute")
+				}
+				if len(ret) > 0 {
+					ret += " " + s
+				} else {
+					ret += s
+				}
 			}
 		}
 	}
 	if ret != "" && !use {
-		gtc.exit(n.Pos(), "unused C attribute: %s", ret)
+		gtc.exit(nodes[0].Pos(), "unused C attribute: %s", ret)
 	}
 	return ret
 }

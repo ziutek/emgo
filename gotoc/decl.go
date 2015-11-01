@@ -26,7 +26,7 @@ func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
 
 	cdd.initFunc = (f.Name() == "init" && sig.Recv() == nil && !cdd.gtc.isLocal(f))
 
-	if cattr := gtc.cattr(d, !cdd.initFunc); cattr != "" {
+	if cattr := gtc.cattr(!cdd.initFunc, d); cattr != "" {
 		w.WriteByte(' ')
 		w.WriteString(cattr)
 	}
@@ -131,7 +131,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 	case token.CONST:
 		for _, s := range d.Specs {
 			vs := s.(*ast.ValueSpec)
-
+			gtc.cattr(false, d, vs)
 			for _, n := range vs.Names {
 				c := gtc.object(n).(*types.Const)
 
@@ -147,7 +147,6 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				cdd.Name(w, c, true)
 				w.WriteByte(' ')
 				cdd.Value(w, c.Val(), c.Type())
-				gtc.cattr(n, false)
 				cdd.copyDecl(w, "\n")
 				w.Reset()
 
@@ -160,6 +159,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 		for _, s := range d.Specs {
 			vs := s.(*ast.ValueSpec)
 			vals := vs.Values
+			cattr := gtc.cattr(true, d, vs)
 			for i, n := range vs.Names {
 				v := gtc.object(n).(*types.Var)
 				cdd := gtc.newCDD(v, VarDecl, il)
@@ -177,7 +177,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				} else {
 					indent = true
 				}
-				cdd.varDecl(w, v.Type(), name, val, gtc.cattr(d, true))
+				cdd.varDecl(w, v.Type(), name, val, cattr)
 				w.Reset()
 				cdds = append(cdds, cdd)
 			}
@@ -197,15 +197,15 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 
 			switch typ := tt.(type) {
 			case *types.Struct:
-				cdd.structDecl(w, name, typ, gtc.cattr(d, true))
+				cdd.structDecl(w, name, typ, gtc.cattr(true, d, s))
 			case *types.Interface:
-				cdd.structDecl(w, name, typ, gtc.cattr(d, false))
+				cdd.structDecl(w, name, typ, gtc.cattr(false, d, s))
 			default:
 				w.WriteString("typedef ")
 				dim := cdd.Type(w, typ)
 				w.WriteByte(' ')
 				w.WriteString(dimFuncPtr(name, dim))
-				if cattr := gtc.cattr(d, true); cattr != "" {
+				if cattr := gtc.cattr(true, d, s); cattr != "" {
 					w.WriteByte(' ')
 					w.WriteString(cattr)
 				}
