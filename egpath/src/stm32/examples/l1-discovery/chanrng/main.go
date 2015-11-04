@@ -8,7 +8,7 @@ import (
 	"stm32/l1/setup"
 )
 
-func gen(c chan<- uint, v uint) {
+func gen(c chan<- int, v int) {
 	for {
 		c <- v
 	}
@@ -30,14 +30,14 @@ func main() {
 	leds.SetMode(Blue, gpio.Out)
 	leds.SetMode(Green, gpio.Out)
 
-	cb := make(chan uint, 2)
-	cg := make(chan uint, 2)
+	cb := make(chan int, 2)
+	cg := make(chan int, 2)
 
 	go gen(cg, Green)
 	go gen(cb, Blue)
 
 	for {
-		var led uint
+		var led int
 		select {
 		case led = <-cg:
 		case led = <-cb:

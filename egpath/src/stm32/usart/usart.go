@@ -2,14 +2,14 @@
 package usart
 
 type Dev struct {
-	s   uint32 `C:"volatile"`
-	d   uint32 `C:"volatile"`
-	br  uint32 `C:"volatile"`
-	c1  uint32 `C:"volatile"`
-	c2  uint32 `C:"volatile"`
-	c3  uint32 `C:"volatile"`
-	gtp uint32 `C:"volatile"`
-}
+	s   uint32
+	d   uint32
+	br  uint32
+	c1  uint32
+	c2  uint32
+	c3  uint32
+	gtp uint32
+} //C:volatile
 
 type Status uint32
 

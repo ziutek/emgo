@@ -26,7 +26,7 @@ func initLEDs() {
 	leds.SetMode(Blue, gpio.Out)
 }
 
-func blink(led uint, dly int) {
+func blink(led, dly int) {
 	leds.SetBit(led)
 	if dly < 0 {
 		delay.Loop(-dly * 1e3)

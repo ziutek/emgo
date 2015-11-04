@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // GTC stores information from type checker need for translation.
@@ -403,20 +404,25 @@ func (gtc *GTC) methodSet(t types.Type) *types.MethodSet {
 func (gtc *GTC) cattr(use bool, nodes ...ast.Node) string {
 	var ret string
 	for _, n := range nodes {
-		cg := gtc.cmap[n]
-		if cg == nil {
-			continue
-		}
-		for _, c := range cg {
-			if s := strings.TrimSpace(c.Text()); strings.HasPrefix(s, "C:") {
-				s := s[2:]
-				if s == "" {
-					gtc.exit(n.Pos(), "empty C attribute")
-				}
-				if len(ret) > 0 {
-					ret += " " + s
-				} else {
-					ret += s
+		for _, cg := range gtc.cmap[n] {
+			if cg == nil {
+				continue
+			}
+			for _, c := range cg.List {
+				s := strings.TrimSpace(c.Text)
+				if strings.HasPrefix(s, "//") {
+					s = strings.TrimLeftFunc(s[2:], unicode.IsSpace)
+					if strings.HasPrefix(s, "C:") {
+						s = strings.TrimLeftFunc(s[2:], unicode.IsSpace)
+						if s == "" {
+							gtc.exit(n.Pos(), "empty C attribute")
+						}
+						if len(ret) > 0 {
+							ret += " " + s
+						} else {
+							ret += s
+						}
+					}
 				}
 			}
 		}

@@ -39,7 +39,7 @@ func init() {
 	LED.SetMode(Blue, gpio.Out)
 }
 
-func blink(led uint, d int) {
+func blink(led int, d int) {
 	for {
 		LED.SetBit(led)
 		delay.Millisec(d)
@@ -49,7 +49,7 @@ func blink(led uint, d int) {
 }
 
 func toggle(m1, m2 *sync.Mutex) {
-	leds := []uint{Red, Orange, Blue}
+	leds := []int{Red, Orange, Blue}
 	i := 0
 	for {
 		m1.Lock()

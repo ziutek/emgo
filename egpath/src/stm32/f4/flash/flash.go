@@ -3,16 +3,16 @@ package flash
 import "unsafe"
 
 type regs struct {
-	acr      uint32 `C:"volatile"`
-	keyr     uint32 `C:"volatile"`
-	optkeyr  uint32 `C:"volatile"`
-	sr       uint32 `C:"volatile"`
-	cr       uint32 `C:"volatile"`
-	ar       uint32 `C:"volatile"`
-	reserved uint32 `C:"volatile"`
-	obr      uint32 `C:"volatile"`
-	wrpr     uint32 `C:"volatile"`
-}
+	acr      uint32
+	keyr     uint32
+	optkeyr  uint32
+	sr       uint32
+	cr       uint32
+	ar       uint32
+	reserved uint32
+	obr      uint32
+	wrpr     uint32
+} //C:volatile
 
 func (r *regs) acrSetBit(n uint, b bool) {
 	if b {

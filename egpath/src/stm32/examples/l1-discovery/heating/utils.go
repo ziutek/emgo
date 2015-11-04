@@ -4,14 +4,14 @@ import (
 	"delay"
 )
 
-type LED uint
+type LED int
 
 func (led LED) On() {
-	ledsPort.SetBit(uint(led))
+	ledsPort.SetBit(int(led))
 }
 
 func (led LED) Off() {
-	ledsPort.ClearBit(uint(led))
+	ledsPort.ClearBit(int(led))
 }
 
 func (led LED) Blink(ms int) {

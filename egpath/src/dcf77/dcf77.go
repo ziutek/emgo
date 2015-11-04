@@ -94,7 +94,7 @@ func checkRising(dt64 time.Duration) int {
 	return -1
 }
 
-func (d *Decoder) risingEdge(dt time.Duration) (send bool) {
+func (d *Decoder) risingEdge(dt time.Duration) {
 	switch checkRising(dt) {
 	case 0: // Ordinary pulse.
 		d.n++
@@ -109,11 +109,8 @@ func (d *Decoder) risingEdge(dt time.Duration) (send bool) {
 			d.pulse.sec = int8(ErrInit)
 		}
 	default:
-		send = Error(d.pulse.sec) != ErrTiming
 		d.pulse.sec = int8(ErrTiming)
-		return
 	}
-	return Error(d.pulse.sec) >= ErrInit
 }
 
 func checkFalling(dt64 time.Duration) int {
@@ -132,19 +129,18 @@ func checkFalling(dt64 time.Duration) int {
 	return -1
 }
 
-func (d *Decoder) fallingEdge(dt time.Duration) (send bool) {
+func (d *Decoder) fallingEdge(dt time.Duration) {
 	if Error(d.pulse.sec) == ErrTiming {
-		return false
+		return
 	}
 	bit := checkFalling(dt)
 	if bit < 0 {
 		d.pulse.sec = int8(ErrTiming)
-		return true
 	}
 	n := int(d.n) - 16
 	switch {
 	case n < 0:
-		return
+		// Skip weather and antena info.
 	case n == 0:
 		d.pulse.l = uint32(bit)
 		d.pulse.h = 0
@@ -153,21 +149,20 @@ func (d *Decoder) fallingEdge(dt time.Duration) (send bool) {
 	default:
 		d.pulse.h += uint16(bit << uint(n-32))
 	}
-	return false
 }
 
 // Edge should be called by interrupt handler trigered by both (rising and
 // falling) edges of DCF77 signal pulses.
 func (d *Decoder) Edge(t time.Time, rising bool) {
 	dt := t.Sub(d.pulse.stamp)
-	send := false
+	lastsec := d.pulse.sec
 	if rising {
 		d.pulse.stamp = t
-		send = d.risingEdge(dt)
+		d.risingEdge(dt)
 	} else {
-		send = d.fallingEdge(dt)
+		d.fallingEdge(dt)
 	}
-	if send {
+	if d.pulse.sec != lastsec {
 		select {
 		case d.c <- d.pulse:
 		default:
@@ -233,14 +228,21 @@ func (d *Decoder) decodeDate(l, h uint32) {
 	}
 }
 
-// Pulse returns next decoded pulse. It can return buffered value, so if called
-// with period > 1 second, it should be called twice to obtain most recent value.
+// Pulse returns next decoded pulse. Decoder contains internal buffer for one
+// value, so if Pulse is called with period > 1 second, it should be called
+// twice to obtain most recent value.
 func (d *Decoder) Pulse() Pulse {
-	p := <-d.c
-	if p.sec == 0 {
-		d.decodeDate(p.l, uint32(p.h))
-	} else if d.date.Sec >= 0 || p.sec < 0 {
-		d.date.Sec = p.sec
+	var p pulse
+	for {
+		p = <-d.c
+		if p.sec == 0 {
+			d.decodeDate(p.l, uint32(p.h))
+			break
+		}
+		if d.date.Sec >= 0 || p.sec < 0 {
+			d.date.Sec = p.sec
+			break
+		}
 	}
 	return Pulse{d.date, p.stamp}
 }

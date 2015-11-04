@@ -30,9 +30,6 @@ var (
 
 	ow  = usarts.USART6
 	one = serial.New(ow, 8, 8)
-
-	us   = usarts.USART2
-	term = serial.New(us, 80, 8)
 )
 
 func init() {
@@ -48,37 +45,6 @@ func init() {
 	leds.SetMode(Red, gpio.Out)
 	leds.SetMode(Blue, gpio.Out)
 
-	// USART
-
-	periph.AHB1ClockEnable(periph.GPIOA)
-	periph.AHB1Reset(periph.GPIOA)
-	periph.APB1ClockEnable(periph.USART2)
-	periph.APB1Reset(periph.USART2)
-
-	port, tx, rx := gpio.A, uint(2), uint(3)
-
-	port.SetMode(tx, gpio.Alt)
-	port.SetOutType(tx, gpio.PushPull)
-	port.SetPull(tx, gpio.PullUp)
-	port.SetOutSpeed(tx, gpio.Fast)
-	port.SetAltFunc(tx, gpio.USART2)
-	port.SetMode(rx, gpio.Alt)
-	port.SetAltFunc(rx, gpio.USART2)
-
-	us.SetBaudRate(115200, setup.APB1Clk)
-	us.SetWordLen(usart.Bits8)
-	us.SetParity(usart.None)
-	us.SetStopBits(usart.Stop1b)
-	us.SetMode(usart.Tx | usart.Rx)
-	us.EnableIRQs(usart.RxNotEmptyIRQ)
-	us.Enable()
-
-	rtos.IRQ(irqs.USART2).UseHandler(termISR)
-	rtos.IRQ(irqs.USART2).Enable()
-
-	term.SetUnix(true)
-	fmt.DefaultWriter = term
-
 	// 1-wire
 
 	periph.AHB1ClockEnable(periph.GPIOC)
@@ -86,7 +52,7 @@ func init() {
 	periph.APB2ClockEnable(periph.USART6)
 	periph.APB2Reset(periph.USART6)
 
-	port, tx = gpio.C, 6
+	port, tx := gpio.C, 6
 
 	port.SetMode(tx, gpio.Alt)
 	port.SetOutType(tx, gpio.OpenDrain)
@@ -104,20 +70,16 @@ func init() {
 	rtos.IRQ(irqs.USART6).Enable()
 }
 
-func termISR() {
-	term.IRQ()
-}
-
 func oneISR() {
 	one.IRQ()
 }
 
-func blink(c uint, d int) {
+func blink(c, dly int) {
 	leds.SetBit(c)
-	if d > 0 {
-		delay.Millisec(d)
+	if dly > 0 {
+		delay.Millisec(dly)
 	} else {
-		delay.Loop(-1e4 * d)
+		delay.Loop(-1e4 * dly)
 	}
 	leds.ClearBit(c)
 }
@@ -144,22 +106,20 @@ func main() {
 
 	// This algorithm doesn't work in case of parasite power mode.
 	for {
-		term.WriteString(
-			"\nSending ConvertT command on the bus (SkipROM addressing).",
-		)
+		fmt.Println("Sending ConvertT command on the bus (SkipROM addressing).")
 		checkErr(m.SkipROM())
 		checkErr(m.ConvertT())
-		term.WriteString("\nWaiting until all devices finish the conversion")
+		fmt.Print("Waiting until all devices finish the conversion")
 		for {
 			delay.Millisec(50)
-			term.WriteByte('.')
+			fmt.Print(".")
 			b, err := m.ReadBit()
 			checkErr(err)
 			if b != 0 {
 				break
 			}
 		}
-		term.WriteString("\nSearching for temperature sensors:\n")
+		fmt.Println("\nSearching for temperature sensors:")
 		for _, typ := range dtypes {
 			s := onewire.NewSearch(typ, false)
 			for m.SearchNext(&s) {

@@ -4,18 +4,18 @@ package mpu
 import "unsafe"
 
 type registers struct {
-	typ   uint32 `C:"volatile"`
-	ctrl  uint32 `C:"volatile"`
-	rn    uint32 `C:"volatile"`
-	rba   uint32 `C:"volatile"`
-	ras   uint32 `C:"volatile"`
-	rbaa1 uint32 `C:"volatile"`
-	rasa1 uint32 `C:"volatile"`
-	rbaa2 uint32 `C:"volatile"`
-	rasa2 uint32 `C:"volatile"`
-	rbaa3 uint32 `C:"volatile"`
-	rasa3 uint32 `C:"volatile"`
-}
+	typ   uint32
+	ctrl  uint32
+	rn    uint32
+	rba   uint32
+	ras   uint32
+	rbaa1 uint32
+	rasa1 uint32
+	rbaa2 uint32
+	rasa2 uint32
+	rbaa3 uint32
+	rasa3 uint32
+} //C:volatile
 
 var r = (*registers)(unsafe.Pointer(uintptr(0xE000ED90)))
 

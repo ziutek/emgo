@@ -3,11 +3,11 @@ package clock
 import "unsafe"
 
 type regs struct {
-	cr      uint32 `C:"volatile"`
-	pllcfgr uint32 `C:"volatile"`
-	cfgr    uint32 `C:"volatile"`
-	cir     uint32 `C:"volatile"`
-}
+	cr      uint32
+	pllcfgr uint32
+	cfgr    uint32
+	cir     uint32
+} //C:volatile
 
 var c = (*regs)(unsafe.Pointer(uintptr(0x40023800)))
 

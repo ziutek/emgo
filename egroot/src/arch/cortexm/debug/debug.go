@@ -5,11 +5,11 @@ import (
 )
 
 type regs struct {
-	dhcs uint32 `C:"volatile"`
-	dcrs uint32 `C:"volatile"`
-	dcrd uint32 `C:"volatile"`
-	demc uint32 `C:"volatile"`
-}
+	dhcs uint32
+	dcrs uint32
+	dcrd uint32
+	demc uint32
+} // C:volatile
 
 var drs = (*regs)(unsafe.Pointer(uintptr(0xe000edf0)))
 

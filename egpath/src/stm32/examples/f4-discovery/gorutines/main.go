@@ -29,7 +29,7 @@ func init() {
 	LED.SetMode(Blue, gpio.Out)
 }
 
-func blink(led uint, d int, max, inc float32) {
+func blink(led int, d int, max, inc float32) {
 	for inc < max {
 		LED.SetBit(led)
 		delay.Millisec(d)

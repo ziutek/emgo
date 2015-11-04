@@ -3,11 +3,11 @@ package systick
 import "unsafe"
 
 type systick struct {
-	csr   uint32 `C:"volatile"` // Control and Status Register
-	rvr   uint32 `C:"volatile"` // Reload Value Register
-	cvr   uint32 `C:"volatile"` // Current Value Register
-	calib uint32 `C:"volatile"` // Calibration Value Register
-}
+	csr   uint32 // Control and Status Register
+	rvr   uint32 // Reload Value Register
+	cvr   uint32 // Current Value Register
+	calib uint32 // Calibration Value Register
+} //C:volatile
 
 var stk = (*systick)(unsafe.Pointer(uintptr(0xe000e010)))
 

@@ -55,17 +55,17 @@ func waterTask() {
 			rtos.SleepUntil(start + uint64(ht)*1e6)
 			ssrPort.ClearBit(r0)
 		case ht <= 2*period:
-			ssrPort.SetBits(1<<r0 | 1<<r1)
+			ssrPort.SetBits(1<<uint(r0) | 1<<uint(r1))
 			rtos.SleepUntil(start + uint64(ht-period)*1e6)
 			ssrPort.ClearBit(r1)
 		default:
-			ssrPort.SetBits(1<<r0 | 1<<r1 | 1<<r2)
+			ssrPort.SetBits(1<<uint(r0) | 1<<uint(r1) | 1<<uint(r2))
 			rtos.SleepUntil(start + uint64(ht-2*period)*1e6)
 			ssrPort.ClearBit(r2)
 		}
 
 		blue.Off()
 		rtos.SleepUntil(start + period*1e6)
-		ssrPort.ClearBits(1<<r0 | 1<<r1 | 1<<r2)
+		ssrPort.ClearBits(1<<uint(r0) | 1<<uint(r1) | 1<<uint(r2))
 	}
 }

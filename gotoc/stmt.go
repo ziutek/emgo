@@ -333,7 +333,6 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		switch e := s.X.(type) {
 		case *ast.Ident:
 			xs = cdd.NameStr(cdd.object(e), true)
-
 		default:
 			if s.Value != nil || !array {
 				cdd.indent(w)
@@ -350,34 +349,56 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			ks, vs string
 			group  bool
 		)
-
+		key := "_"
 		t := xt.Underlying()
 
 		cdd.indent(w)
 		switch ct := t.(type) {
 		case *types.Slice, *types.Array, *types.Pointer:
-			if s.Key == nil {
-				ks = "_$"
-			} else {
+			if s.Key != nil {
 				ks = cdd.ExprStr(s.Key, nil)
+				if s.Tok == token.DEFINE {
+					key = ks
+				}
 			}
-			if s.Tok == token.DEFINE {
-				w.WriteString("int ")
-			}
-			w.WriteString(ks + " = 0;\n")
+			w.WriteString("int " + key + " = 0;\n")
 
 			cdd.indent(w)
-			w.WriteString("for (;" + ks + " < " + xl + "; ++" + ks + ") ")
-
+			w.WriteString("for (; " + key + " < " + xl + "; ++" + key + ") ")
 			if s.Value != nil {
 				vs = cdd.indexExprStr(xt, xs, s.Key)
 			}
-			group = (s.Value != nil || label != "")
+
+			group = s.Value != nil || label != "" ||
+				key != "_" && s.Tok != token.DEFINE
 			if group {
 				w.WriteString("{\n")
 				cdd.il++
 			}
+		case *types.Basic: // string
+			if s.Key != nil {
+				ks = cdd.ExprStr(s.Key, nil)
+				if s.Tok == token.DEFINE {
+					key = ks
+				}
+			}
+			w.WriteString("int " + key + " = 0;\n")
 
+			cdd.indent(w)
+			w.WriteString("rune$$int$$bool _tup;\n")
+			cdd.indent(w)
+			w.WriteString("for (; " + key + " < len(" + xs + "); " +
+				key + " += _tup._1) {\n")
+			cdd.il++
+			cdd.indent(w)
+			w.WriteString(
+				"_tup = DECODERUNE(SSLICELC(" + xs + ", " + key + "));\n",
+			)
+			if s.Value != nil {
+				vs = "_tup._0"
+			}
+
+			group = true
 		case *types.Chan:
 			tup := types.NewTuple(
 				types.NewVar(stmt.Pos(), cdd.gtc.pkg, "", ct.Elem()),
@@ -391,25 +412,32 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			cdd.indent(w)
 			w.WriteString("if (!_vok._1) break;\n")
 			s.Value = s.Key
+			s.Key = nil
 			if s.Value != nil {
 				vs = "_vok._0"
 			}
 			group = true
-
 		default:
 			cdd.notImplemented(s, xt)
 		}
-
+		if key != "_" && s.Tok != token.DEFINE {
+			cdd.indent(w)
+			w.WriteString(ks + " = " + key + ";\n")
+		}
 		if s.Value != nil {
 			cdd.indent(w)
 			if s.Tok == token.DEFINE {
 				if pt, ok := t.(*types.Pointer); ok {
 					t = pt.Elem().Underlying()
 				}
-				vt := t.(interface {
+				var dim []string
+				if et, ok := t.(interface {
 					Elem() types.Type
-				}).Elem()
-				dim := cdd.Type(w, vt)
+				}); ok {
+					dim = cdd.Type(w, et.Elem())
+				} else {
+					w.WriteString("rune")
+				}
 				w.WriteByte(' ')
 				w.WriteString(dimFuncPtr(cdd.ExprStr(s.Value, nil), dim))
 			} else {

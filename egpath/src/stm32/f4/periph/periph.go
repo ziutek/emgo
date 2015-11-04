@@ -3,31 +3,31 @@ package periph
 import "unsafe"
 
 type regs struct {
-	ahb1rst uint32 `C:"volatile"`
-	ahb2rst uint32 `C:"volatile"`
-	ahb3rst uint32 `C:"volatile"`
-	_       uint32 `C:"volatile"`
-	apb1rst uint32 `C:"volatile"`
-	apb2rst uint32 `C:"volatile"`
-	_       uint32 `C:"volatile"`
-	_       uint32 `C:"volatile"`
+	ahb1rst uint32
+	ahb2rst uint32
+	ahb3rst uint32
+	_       uint32
+	apb1rst uint32
+	apb2rst uint32
+	_       uint32
+	_       uint32
 
-	ahb1en uint32 `C:"volatile"`
-	ahb2en uint32 `C:"volatile"`
-	ahb3en uint32 `C:"volatile"`
-	_      uint32 `C:"volatile"`
-	apb1en uint32 `C:"volatile"`
-	apb2en uint32 `C:"volatile"`
-	_      uint32 `C:"volatile"`
-	_      uint32 `C:"volatile"`
+	ahb1en uint32
+	ahb2en uint32
+	ahb3en uint32
+	_      uint32
+	apb1en uint32
+	apb2en uint32
+	_      uint32
+	_      uint32
 
-	ahb1lpen uint32 `C:"volatile"`
-	ahb2lpen uint32 `C:"volatile"`
-	ahb3lpen uint32 `C:"volatile"`
-	_        uint32 `C:"volatile"`
-	apb1lpen uint32 `C:"volatile"`
-	apb2lpen uint32 `C:"volatile"`
-}
+	ahb1lpen uint32
+	ahb2lpen uint32
+	ahb3lpen uint32
+	_        uint32
+	apb1lpen uint32
+	apb2lpen uint32
+} //C:volatile
 
 var p = (*regs)(unsafe.Pointer(uintptr(0x40023810)))
 

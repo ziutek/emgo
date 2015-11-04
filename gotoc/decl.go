@@ -202,13 +202,13 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				cdd.structDecl(w, name, typ, gtc.cattr(false, d, s))
 			default:
 				w.WriteString("typedef ")
+				if cattr := gtc.cattr(true, d, s); cattr != "" {
+					w.WriteString(cattr)
+					w.WriteByte(' ')
+				}
 				dim := cdd.Type(w, typ)
 				w.WriteByte(' ')
 				w.WriteString(dimFuncPtr(name, dim))
-				if cattr := gtc.cattr(true, d, s); cattr != "" {
-					w.WriteByte(' ')
-					w.WriteString(cattr)
-				}
 				cdd.copyDecl(w, ";\n")
 			}
 			typ := to.Type()
@@ -374,14 +374,15 @@ func (cdd *CDD) structDecl(w *bytes.Buffer, name string, typ types.Type, cattr s
 	w.WriteString(name)
 	w.WriteString("_struct;\n")
 	cdd.indent(w)
-	w.WriteString("typedef struct ")
+	w.WriteString("typedef ")
+	if cattr != "" {
+		w.WriteString(cattr)
+		w.WriteByte(' ')
+	}
+	w.WriteString("struct ")
 	w.WriteString(name)
 	w.WriteString("_struct ")
 	w.WriteString(name)
-	if cattr != "" {
-		w.WriteByte(' ')
-		w.WriteString(cattr)
-	}
 	cdd.copyDecl(w, ";\n")
 	w.Truncate(n)
 

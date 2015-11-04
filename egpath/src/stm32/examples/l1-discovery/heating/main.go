@@ -28,27 +28,27 @@ var (
 
 const (
 	// butnPort
-	buttn = uint(0)
+	buttn = 0
 
 	// ledsPort
 	blue  = LED(6)
 	green = LED(7)
 
 	// heatPort
-	heat0 = uint(0)
-	heat1 = uint(1)
-	heat2 = uint(2)
+	heat0 = 0
+	heat1 = 1
+	heat2 = 2
 
 	// waterPort
-	water = uint(9)
+	water = 9
 
 	// ssrPort
-	ssr0 = uint(6)
-	ssr1 = uint(7)
-	ssr2 = uint(8)
+	ssr0 = 6
+	ssr1 = 7
+	ssr2 = 8
 
 	// onewPort
-	onew = uint(10)
+	onew = 10
 )
 
 func init() {
@@ -81,8 +81,8 @@ func init() {
 
 	// Setup LEDs output.
 
-	ledsPort.SetMode(uint(green), gpio.Out)
-	ledsPort.SetMode(uint(blue), gpio.Out)
+	ledsPort.SetMode(int(green), gpio.Out)
+	ledsPort.SetMode(int(blue), gpio.Out)
 
 	// Setup heating output.
 

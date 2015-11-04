@@ -38,9 +38,12 @@ func (cdd *CDD) Type(w *bytes.Buffer, typ types.Type) (dim []string) {
 writeType:
 	switch t := typ.(type) {
 	case *types.Basic:
-		if t.Kind() == types.UnsafePointer {
+		switch t.Kind() {
+		case types.UnsafePointer:
 			w.WriteString("unsafe$Pointer")
-		} else {
+		case types.UntypedString:
+			w.WriteString("string")
+		default:
 			types.WriteType(w, t, nil)
 		}
 
@@ -69,6 +72,7 @@ writeType:
 			f := t.Field(i)
 			cdd.indent(w)
 			if tag := t.Tag(i); tag != "" {
+				//fmt.Println(cdd.gtc.fset.Position(f.Pos()), tag)
 				w.WriteString(reflect.StructTag(tag).Get("C"))
 				w.WriteByte(' ')
 			}

@@ -24,7 +24,7 @@ byte foo$F($4_$byte a$) {
 	{
 		{
 			int k$ = 0;
-			for (;k$ < 4; ++k$) {
+			for (; k$ < 4; ++k$) {
 				r$ += (byte)(k$);
 			}
 		}
@@ -61,7 +61,7 @@ byte foo$F($4_$byte a$) {
 	{
 		{
 			int k$ = 0;
-			for (;k$ < 4; ++k$) {
+			for (; k$ < 4; ++k$) {
 				r$ += (byte)(k$);
 			}
 		}
@@ -101,7 +101,7 @@ byte foo$F($4_$byte a$) {
 	{
 		{
 			int k$ = 0;
-			for (;k$ < 4; ++k$) {
+			for (; k$ < 4; ++k$) {
 				byte v$ = AIDX(a$, k$);
 				{
 					if ((r$>4)) {
@@ -147,7 +147,7 @@ byte foo$F($4_$byte a$) {
 	{
 		{
 			int _$ = 0;
-			for (;_$ < 4; ++_$) {
+			for (; _$ < 4; ++_$) {
 				byte v$ = AIDX(a$, _$);
 				{
 					if ((r$>4)) {
@@ -191,7 +191,7 @@ byte foo$F($4_$byte a$) {
 		{
 			slice _x = ASLICEL(a$, 1);
 			int k$ = 0;
-			for (;k$ < len(_x); ++k$) {
+			for (; k$ < len(_x); ++k$) {
 				r$ += (byte)(k$);
 			}
 		}
@@ -229,7 +229,7 @@ byte foo$F($4_$byte a$) {
 		{
 			slice _x = ASLICEL(a$, 1);
 			int k$ = 0;
-			for (;k$ < len(_x); ++k$) {
+			for (; k$ < len(_x); ++k$) {
 				r$ += (byte)(k$);
 			}
 		}
@@ -272,7 +272,7 @@ byte foo$F($4_$byte a$) {
 		{
 			slice _x = ASLICEL(a$, 1);
 			int k$ = 0;
-			for (;k$ < len(_x); ++k$) {
+			for (; k$ < len(_x); ++k$) {
 				byte v$ = SLIDX(byte*, _x, k$);
 				{
 					if ((r$>4)) {
@@ -323,7 +323,7 @@ byte foo$F($4_$byte a$) {
 		{
 			slice _x = ASLICEL(a$, 1);
 			int _$ = 0;
-			for (;_$ < len(_x); ++_$) {
+			for (; _$ < len(_x); ++_$) {
 				byte v$ = SLIDX(byte*, _x, _$);
 				{
 					if ((r$>4)) {
@@ -361,8 +361,8 @@ byte foo$F(slice a$) {
 	loop$:;
 		{
 			slice _x = SLICEL(a$, byte*, 1);
-			_$ = 0;
-			for (;_$ < len(_x); ++_$) {
+			int _ = 0;
+			for (; _ < len(_x); ++_) {
 				{
 					++(r$);
 					goto loop$_continue;
@@ -375,6 +375,34 @@ byte foo$F(slice a$) {
 	}
 end:
 	return r$;
+}
+// end
+
+// Go code:
+func F(a []byte) (b byte) {
+	for _, b = range a {
+	}
+	return
+}
+// C code:
+// decl
+byte foo$F(slice a$);
+// def
+byte foo$F(slice a$) {
+	byte b$ = 0;
+	{
+		{
+			int _ = 0;
+			for (; _ < len(a$); ++_) {
+				b$ = SLIDX(byte*, a$, _);
+				{
+				}
+			}
+		}
+		goto end;
+	}
+end:
+	return b$;
 }
 // end
 
@@ -468,5 +496,80 @@ byte foo$F(chan *c$) {
 	}
 end:
 	return r$;
+}
+// end
+
+// Go code:
+func F(s string) (r rune, i int) {
+	for i, r = range s {
+		break
+	}
+	return 
+}
+// C code:
+// decl
+struct rune$$int_struct;
+typedef struct rune$$int_struct rune$$int;
+// def
+#ifndef rune$$int$
+#define rune$$int$
+struct rune$$int_struct {
+	rune _0;
+	int _1;
+};
+#endif
+// decl
+rune$$int foo$F(string s$);
+// def
+rune$$int foo$F(string s$) {
+	rune r$ = 0;
+	int i$ = 0;
+	{
+		{
+			int _ = 0;
+			rune$$int$$bool _tup;
+			for (; _ < len(s$); _ += _tup._1) {
+				_tup = DECODERUNE(SSLICELC(s$, _));
+				r$ = _tup._0;
+				{
+					break;
+				}
+			}
+		}
+		goto end;
+	}
+end:
+	return (rune$$int){r$, i$};
+}
+// end
+
+// Go code:
+func F(s string) (n int) {
+	for range s {
+		n++
+	}
+	return 
+}
+// C code:
+// decl
+int foo$F(string s$);
+// def
+int foo$F(string s$) {
+	int n$ = 0;
+	{
+		{
+			int _ = 0;
+			rune$$int$$bool _tup;
+			for (; _ < len(s$); _ += _tup._1) {
+				_tup = DECODERUNE(SSLICELC(s$, _));
+				{
+					++(n$);
+				}
+			}
+		}
+		goto end;
+	}
+end:
+	return n$;
 }
 // end

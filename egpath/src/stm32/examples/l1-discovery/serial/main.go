@@ -44,7 +44,7 @@ func init() {
 	leds.SetMode(Blue, gpio.Out)
 	leds.SetMode(Green, gpio.Out)
 
-	port, tx, rx := gpio.B, uint(10), uint(11)
+	port, tx, rx := gpio.B, 10, 11
 
 	port.SetMode(tx, gpio.Alt)
 	port.SetOutType(tx, gpio.PushPull)
@@ -68,12 +68,12 @@ func init() {
 	s.SetUnix(true)
 }
 
-func blink(c uint, d int) {
+func blink(c, dly int) {
 	leds.SetBit(c)
-	if d > 0 {
-		delay.Millisec(d)
+	if dly > 0 {
+		delay.Millisec(dly)
 	} else {
-		delay.Loop(-2e3 * d)
+		delay.Loop(-2e3 * dly)
 	}
 	leds.ClearBit(c)
 }

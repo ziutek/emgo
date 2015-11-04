@@ -3,18 +3,18 @@ package periph
 import "unsafe"
 
 type regs struct {
-	ahbrstr  uint32 `C:"volatile"`
-	apb2rstr uint32 `C:"volatile"`
-	apb1rstr uint32 `C:"volatile"`
+	ahbrstr  uint32
+	apb2rstr uint32
+	apb1rstr uint32
 
-	ahbenr  uint32 `C:"volatile"`
-	apb2enr uint32 `C:"volatile"`
-	apb1enr uint32 `C:"volatile"`
+	ahbenr  uint32
+	apb2enr uint32
+	apb1enr uint32
 
-	ahblpenr  uint32 `C:"volatile"`
-	apb2lpenr uint32 `C:"volatile"`
-	apb1lpenr uint32 `C:"volatile"`
-}
+	ahblpenr  uint32
+	apb2lpenr uint32
+	apb1lpenr uint32
+} //C:volatile
 
 var p = (*regs)(unsafe.Pointer(uintptr(0x40023810)))
 

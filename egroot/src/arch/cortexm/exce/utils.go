@@ -1,8 +1,8 @@
 package exce
 
 type bitReg struct {
-	r [8]uint32 `C:"volatile"`
-}
+	r [8]uint32
+} //C:volatile
 
 func (b *bitReg) setBit(e Exce) {
 	val := uint32(1) << (e & 31)
@@ -19,8 +19,8 @@ func (b *bitReg) bit(e Exce) bool {
 type byteReg struct {
 	// Don't use "r [60*4]byte" because Cortex-M0 doesn't support byte access
 	// to this registers.
-	r [60]uint32 `C:"volatile"`
-}
+	r [60]uint32
+} //C:volatile
 
 func (b *byteReg) setByte(e Exce, v byte) {
 	shift := (e & 3) * 8

@@ -1,12 +1,8 @@
-### Go, Emgo, C, assembler
+### Emgo, C, assembler
 
-Write your application in real Go, if you can.
+Writing part of your package in C is probably really need only if you need to use GCC embaded assembler in function that need to be inlined or access unexported variables.
 
-If you really can't use Go or you want to write protable code that can be used by both Go and Emgo (eg. portable library) write Emgo valid code. Correct Emgo code should always be valid Go code but oposite isn't true. Unfortunately, this means that there isn't possible to test Emgo code in Go enviroment.
-
-Writing part of your package in C is probably really need only when you need to talk to the linker (sections, symbols, etc.) or use C intrinsic functions. Emgo standard library tries to provide all useful intrinsics so use them instead. There is no embaded assembler in Emgo. If you really wan't to write assembly code that can access unexported variables, you should use C (GCC) and its embeded assembler.
-
-If you want to write CPU specific function in CPU specific library you are free to write it in assembly. In other cases, you can optimize some function writing it in assembly but in this case, always provide portable Emgo version of this function for other architectures.
+If you want to write CPU specific function in CPU specific library you are free to write it in assembly. In other cases, you can optimize some function writing it in assembly, but in such case always provide portable Emgo version of this function for other architectures.
 
 ### Idiomatic Emgo code
 
@@ -16,10 +12,17 @@ If you want to write CPU specific function in CPU specific library you are free 
 
 3. Don't follow coding style you can see in Go to C translator. This piece of code was born as proof of concept project without any plan and without any solid knowledge about Go parser and type checker. As my knowledge grows it evolved from very naive code to something that works but for now this isn't an example of good idiomatic Go code.
 
-### Volatile fields
+### Volatile types and variables
 
-If your CPU guarantees ordered access to I/O address spece, you can use structs with fileds taged C:"volatile" to repesent I/O registers in your program. This simplifies code and can slightly improves performance, but can cause bugs in more complicated cases.
+If your CPU guarantees ordered access to I/O address spece, you can use volatile types/variables using //C:volatile pragma. This simplifies code and can slightly improve performance, but can cause bugs in more complicated cases.
 
-Don't use volatile fields for other things. If you think that you need volatile for something other than MMIO you're wrong - use functions from atomic/sync and atomic/barrier packages instead.
+Don't use volatile types/variables for other things. If you think that you need volatile for something other than MMIO you're wrong - use functions from atomic/sync and atomic/barrier packages instead.
 
+### Constant global variables
+
+To avoid copying some global variables (especially big arrays) from Flash to RAM use //C:const pragma. C compiler will warn you if your code may modify such variables.
+
+### Line length
+
+Code in Emgo standard library avoids lines longer that 80 runes.
 --------------------------------------------------------------------------------

@@ -20,7 +20,7 @@ import (
 var LED = gpio.D
 
 const (
-	Green uint = 12 + iota
+	Green = 12 + iota
 	Orange
 	Red
 	Blue
@@ -52,7 +52,7 @@ func init() {
 }
 
 var (
-	c   = make(chan uint, 3)
+	c   = make(chan int, 3)
 	led = Green
 )
 
@@ -71,7 +71,7 @@ func buttonHandler() {
 	}
 }
 
-func toggle(led uint) {
+func toggle(led int) {
 	LED.SetBit(led)
 	delay.Millisec(500)
 	LED.ClearBit(led)

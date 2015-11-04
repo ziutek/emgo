@@ -29,14 +29,14 @@ func init() {
 	LED.SetMode(Blue, gpio.Out)
 }
 
-func toggle(led uint, d int) {
+func toggle(led, dly int) {
 	LED.SetBit(led)
-	delay.Millisec(d)
+	delay.Millisec(dly)
 	LED.ClearBit(led)
-	delay.Millisec(d)
+	delay.Millisec(dly)
 }
 
-func blink(c <-chan uint) {
+func blink(c <-chan int) {
 	for {
 		led := <-c
 		toggle(led, 1200)
@@ -44,8 +44,8 @@ func blink(c <-chan uint) {
 }
 
 func main() {
-	c1 := make(chan uint)
-	c2 := make(chan uint)
+	c1 := make(chan int)
+	c2 := make(chan int)
 
 	// Consumers
 	go blink(c1)

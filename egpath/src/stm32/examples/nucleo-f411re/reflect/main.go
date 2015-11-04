@@ -34,7 +34,7 @@ func init() {
 	periph.APB1ClockEnable(periph.USART2)
 	periph.APB1Reset(periph.USART2)
 
-	port, tx, rx := gpio.A, uint(2), uint(3)
+	port, tx, rx := gpio.A, 2, 3
 
 	port.SetMode(tx, gpio.Alt)
 	port.SetOutType(tx, gpio.PushPull)

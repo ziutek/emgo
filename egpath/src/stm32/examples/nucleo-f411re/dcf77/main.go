@@ -38,7 +38,7 @@ func init() {
 	periph.APB2ClockDisable(periph.SysCfg)
 }
 
-func blink(led uint, dly int) {
+func blink(led int, dly int) {
 	leds.SetBit(led)
 	if dly < 0 {
 		delay.Loop(-dly * 1e3)
@@ -61,14 +61,13 @@ func main() {
 	for {
 		p := d.Pulse()
 		now := time.Now().UnixNano()
-		stamp := p.Stamp.UnixNano()
-		fmt.Printf("%d %d: ", now, stamp)
-		if p.Err != nil {
+		if p.Err() != nil {
+			fmt.Printf("now=%d %v\n", now, p.Err())
 			blink(Red, 25)
-			fmt.Println(p.Err)
 		} else {
+			stamp := p.Stamp.UnixNano()
+			fmt.Printf("now=%d stamp=%d dcf=%s\n", now, stamp, p.Date)
 			blink(Green, 25)
-			fmt.Println(p.Time)
 		}
 	}
 }

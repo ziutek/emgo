@@ -3,13 +3,13 @@ package exti
 type Lines uint32
 
 type extiRegs struct {
-	im   Lines `C:"volatile"`
-	em   Lines `C:"volatile"`
-	rts  Lines `C:"volatile"`
-	fts  Lines `C:"volatile"`
-	swie Lines `C:"volatile"`
-	p    Lines `C:"volatile"`
-}
+	im   Lines
+	em   Lines
+	rts  Lines
+	fts  Lines
+	swie Lines
+	p    Lines
+} //C:volatile
 
 func IntrEnabled() Lines {
 	return regs1.im
