@@ -12,7 +12,6 @@ void runtime$noos$svcHandler() {
 		"b		runtime$noos$sv\n\t"
 
 		"0:\n\t"
-
 		"mrs	r0, psp\n\t"
 		"b		runtime$noos$sv"
 

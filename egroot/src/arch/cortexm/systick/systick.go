@@ -7,7 +7,7 @@ type systick struct {
 	rvr   uint32 // Reload Value Register
 	cvr   uint32 // Current Value Register
 	calib uint32 // Calibration Value Register
-} //C:volatile
+} //c:volatile
 
 var stk = (*systick)(unsafe.Pointer(uintptr(0xe000e010)))
 

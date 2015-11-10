@@ -4,7 +4,7 @@ import "unsafe"
 
 type Reg8 struct {
 	r uint8
-} //C:volatile
+} //c:volatile
 
 func PtrReg8(addr uintptr) *Reg8 {
 	return (*Reg8)(unsafe.Pointer(addr))
@@ -40,7 +40,7 @@ func (r *Reg8) Store(v uint8) {
 
 type Reg16 struct {
 	r uint16
-} //C:volatile
+} //c:volatile
 
 func PtrReg16(addr uintptr) *Reg16 {
 	return (*Reg16)(unsafe.Pointer(addr))
@@ -76,7 +76,7 @@ func (r *Reg16) Store(v uint16) {
 
 type Reg32 struct {
 	r uint32
-} //C:volatile
+} //c:volatile
 
 func PtrReg32(addr uintptr) *Reg32 {
 	return (*Reg32)(unsafe.Pointer(addr))

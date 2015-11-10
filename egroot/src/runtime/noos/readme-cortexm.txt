@@ -25,10 +25,6 @@ MaxTasks > 0 means:
 - MPU (if avilable) is used to protect the stacks and other areas (not implemented yet),
 - all tasks runs in user mode.
 
-#### IRTExp
-
-Defines the length of the table for ISR vectors. IRTExp should be >= 5 (2^5 allows to handle 16 system exceptions and 16 external intnerrupts.) IRTExp is used only if MaxTasks > 0.
-
 #### Remarks
 
 All configuration options should be set at the beginning of the linker script.

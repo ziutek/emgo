@@ -12,9 +12,8 @@ int main$main();
 // align checks.
 extern byte DataRAM, DataLoad, DataSize;
 extern byte BSSRAM, BSSSize;
-extern byte StackEnd;
 
-void runtime$noos$Start() {
+void runtime$noos$Reset() {
 	memmove(&DataRAM, &DataLoad, (uint) (&DataSize));
 	memset(&BSSRAM, 0, (uint) (&BSSSize));
 
@@ -25,10 +24,9 @@ void runtime$noos$Start() {
 	for (;;);
 }
 
-__attribute__ ((section(".vectors")))
+/*__attribute__((section(".vectors")))
 uint32 *cortexm$startup$vectors[4] = {
-	(uint32 *) &StackEnd,                 // MSP
-	(uint32 *) runtime$noos$Start,        // entry point
+	(uint32 *) runtime$noos$Reset,        // entry point
 	(uint32 *) runtime$noos$NMIHandler,   // NMI
 	(uint32 *) runtime$noos$FaultHandler, // HardFault
-};
+};*/

@@ -6,7 +6,8 @@ import (
 	"arch/cortexm"
 )
 
-func NMIHandler() {
+//emgo:noinline
+func nmiHandler() {
 	cortexm.BKPT(0)
 }
 

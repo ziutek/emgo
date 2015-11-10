@@ -8,7 +8,7 @@ import (
 // Exce represents Cortex-M exception. Its value is equal to Exception Number
 // (not IRQ number) as defined by ARM in Cortex-M documentation. Lowest Exc
 // value is 1 (Reset), highes value is 255 (externel interrupt #239).
-type Exce byte
+type Exce int
 
 // Cortex-M system exceptions (with they default priority levels).
 const (
@@ -30,7 +30,7 @@ const (
 )
 
 // First external interrupt
-const IRQ0 Exce = 16
+const IRQ0 Exce = SysTick + 1
 
 var (
 	ise  = (*bitReg)(unsafe.Pointer(uintptr(0xe000e100)))

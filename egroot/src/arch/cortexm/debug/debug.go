@@ -9,7 +9,7 @@ type regs struct {
 	dcrs uint32
 	dcrd uint32
 	demc uint32
-} // C:volatile
+} //c:volatile
 
 var drs = (*regs)(unsafe.Pointer(uintptr(0xe000edf0)))
 

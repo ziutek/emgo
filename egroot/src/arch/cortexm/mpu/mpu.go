@@ -15,7 +15,7 @@ type registers struct {
 	rasa2 uint32
 	rbaa3 uint32
 	rasa3 uint32
-} //C:volatile
+} //c:volatile
 
 var r = (*registers)(unsafe.Pointer(uintptr(0xE000ED90)))
 

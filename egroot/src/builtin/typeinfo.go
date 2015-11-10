@@ -9,7 +9,7 @@ type Method struct {
 type Type struct {
 	name    string
 	kind    int
-	elems   []*Type `C:"const"`
+	elems   []*Type `c:"const"`
 	methods []*Method
 	fns     [0]unsafe.Pointer
 }
@@ -46,7 +46,7 @@ func (t *Type) Fns() []unsafe.Pointer {
 }
 
 type ItHead struct {
-	typ *Type `C:"const"`
+	typ *Type `c:"const"`
 }
 
 func (ith *ItHead) Type() *Type {

@@ -42,7 +42,8 @@ func (irq IRQ) SetPrio(p IPrio) error {
 	return mkerror(syscall.SetIRQPrio(int(irq), int(p)))
 }
 
-// UseHandler sets h as handler for irq.
+// UseHandler sets h as handler for irq. It can be not supported by some
+// architectures or when vector table is located in ROM/Flash. 
 func (irq IRQ) UseHandler(h func()) error {
 	return mkerror(syscall.SetIRQHandler(int(irq), h))
 }

@@ -74,11 +74,31 @@ func (ts *taskSched) deliverEvent(e syscall.Event) {
 	}
 }
 
-func irtExp() uint
+/*
+func setupVectorTable(vtLenExp int) {
+	// vt schould be allocated before anything other (first allocation in
+	// program run) to satisfy NVIC allignment restrictions.
+	vt := make([]exce.Vector, 1<<vtLenExp)
+
+	// Setup interrupt table.
+	// Consider setup at link time using GCC weak functions to support
+	// Cortex-M0 and (in case of Cortex-M3,4) to allow vector load on ICode bus
+	// simultaneously with registers stacking on DCode bus.
+	vt[exce.NMI] = exce.VectorFor(nmiHandler)
+	vt[exce.HardFault] = exce.VectorFor(FaultHandler)
+	vt[exce.MemManage] = exce.VectorFor(FaultHandler)
+	vt[exce.BusFault] = exce.VectorFor(FaultHandler)
+	vt[exce.UsageFault] = exce.VectorFor(FaultHandler)
+	vt[exce.SVC] = exce.VectorFor(svcHandler)
+	vt[exce.PendSV] = exce.VectorFor(pendSVHandler)
+	vt[exce.SysTick] = exce.VectorFor(sysTickHandler)
+	exce.UseTable(vt)
+}
+*/
 
 func (ts *taskSched) init() {
-	// vt need to be allocated first to satisfy NVIC allignment restrictions.
-	vt := make([]exce.Vector, 1<<irtExp())
+	//setupVectorTable(irtExp) - disabled (we use static VT, set at link time)
+
 	ts.tasks = make([]taskInfo, MaxTasks())
 
 	// Use PSP as stack pointer for thread mode. Current (zero) task has stack
@@ -94,28 +114,15 @@ func (ts *taskSched) init() {
 	// used).
 	cortexm.SetMSP(unsafe.Pointer(stackTop(len(ts.tasks))))
 
-	// Setup interrupt table.
-	// Consider setup at link time using GCC weak functions to support Cortex-M0
-	// and (in case of Cortex-M3,4) to allow vector load on ICode bus
-	// simultaneously with registers stacking on DCode bus.
-	vt[exce.NMI] = exce.VectorFor(NMIHandler)
-	vt[exce.HardFault] = exce.VectorFor(FaultHandler)
-	vt[exce.MemManage] = exce.VectorFor(FaultHandler)
-	vt[exce.BusFault] = exce.VectorFor(FaultHandler)
-	vt[exce.UsageFault] = exce.VectorFor(FaultHandler)
-	vt[exce.SVC] = exce.VectorFor(svcHandler)
-	vt[exce.PendSV] = exce.VectorFor(pendSVHandler)
-	vt[exce.SysTick] = exce.VectorFor(sysTickHandler)
-	exce.UseTable(vt)
-
 	// After reset all exceptions have highest priority. Change this to allow:
 	// 1. PendSV can be preempt by any exception.
 	// 2. SVC can be used in external interrupt handlers but has lower priority
 	//    than SysTick
-	// 3. Priority of external interrupt can be changed to preempt SVC.
+	// 3. Priority of external interrupt can be changed if thay need to preempt
+	//    SVC.
 	exce.PendSV.SetPrio(exce.PrioLowest)
 	exce.SVC.SetPrio(exce.PrioLowest + exce.PrioRange/2)
-	for irq := exce.IRQ0; int(irq) < len(vt); irq++ {
+	for irq := exce.IRQ0; irq < 256; irq++ {
 		irq.SetPrio(exce.PrioLowest + exce.PrioRange/4)
 	}
 	exce.MemManage.Enable()

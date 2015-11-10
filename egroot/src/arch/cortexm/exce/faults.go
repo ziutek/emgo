@@ -13,7 +13,7 @@ type FaultStatusRegs struct {
 	MMA uintptr // MemManage fault address
 	BFA uintptr // BusFault address
 	AFS uint32  // Auxiliary fault Status
-} //C:volatile
+} //c:volatile
 
 // FSR points to area of memory that contains fault status registers..
 var FSR = (*FaultStatusRegs)(unsafe.Pointer(uintptr(0xe000ed28)))

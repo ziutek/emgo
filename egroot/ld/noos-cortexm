@@ -1,10 +1,15 @@
 SECTIONS {
 	.text : {
 		__exidx_start = .;
-		KEEP(*(.vectors))    /* Interrupt vector table */
-		*(.text .text.*)     /* Code */   
+		
+		/* Vector table. */
+		LONG(StackEnd)
+		KEEP(*(.SystemVectors))
+		KEEP(*(.InterruptVectors))
+		
+		/* Code */ 
+		*(.text .text.*)       
 	} >loadTo
-	
 	
 	.rodata : {
 		. = ALIGN(4);
@@ -58,4 +63,4 @@ SECTIONS {
 	}
 }
 
-ENTRY(runtime$noos$Start)
+ENTRY(runtime$noos$Reset)
