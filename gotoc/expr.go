@@ -656,8 +656,8 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 
 		cdds := cdd.gtc.FuncDecl(fd, cdd.il)
 		for _, c := range cdds {
-			for u, typPtr := range c.FuncBodyUses {
-				cdd.FuncBodyUses[u] = typPtr
+			for u, typPtr := range c.DefUses {
+				cdd.DefUses[u] = typPtr
 			}
 			cdd.indent(w)
 			w.Write(c.Def)

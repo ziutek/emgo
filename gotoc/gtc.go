@@ -16,15 +16,15 @@ import (
 
 // GTC stores information from type checker need for translation.
 type GTC struct {
-	fset        *token.FileSet
-	pkg         *types.Package
-	ti          *types.Info
-	inlineThres int
-	boundsCheck bool
-	nextInt     chan int
-	siz         types.Sizes
-	sizPtr      int64
-	sizIval     int64
+	fset          *token.FileSet
+	pkg           *types.Package
+	ti            *types.Info
+	noinlineThres int
+	boundsCheck   bool
+	nextInt       chan int
+	siz           types.Sizes
+	sizPtr        int64
+	sizIval       int64
 
 	// TODO: safe concurent acces is need
 	tuples  map[string]types.Object
@@ -55,8 +55,8 @@ func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.S
 	}
 }
 
-func (cc *GTC) SetInlineThres(thres int) {
-	cc.inlineThres = thres
+func (cc *GTC) SetNoinlineThres(thres int) {
+	cc.noinlineThres = thres
 }
 
 func (cc *GTC) SetBoundsCheck(bc bool) {
@@ -74,27 +74,28 @@ func (gtc *GTC) File(f *ast.File) (cdds []*CDD) {
 }
 
 func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
-	if cdd.Export {
-		return
-	}
 	cdd.Export = true
 	for o := range cdd.DeclUses {
 		if gtc.isImported(o) {
 			continue
 		}
-		if cddm[o] == nil {
+		c := cddm[o]
+		if c == nil {
 			cdd.exit(o.Pos(), "cddm[o] == nil")
 		}
-		gtc.export(cddm, cddm[o])
-	}
-	if cdd.Typ != FuncDecl || !cdd.Inline {
-		return
-	}
-	for o := range cdd.FuncBodyUses {
-		if gtc.isImported(o) {
-			continue
+		if !c.Export {
+			gtc.export(cddm, c)
 		}
-		gtc.export(cddm, cddm[o])
+	}
+	if cdd.Inline {
+		for o := range cdd.DefUses {
+			if gtc.isImported(o) {
+				continue
+			}
+			if c := cddm[o]; !c.Export {
+				gtc.export(cddm, cddm[o])
+			}
+		}
 	}
 }
 
@@ -137,11 +138,24 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 	// Export code need by exported declarations and inlined function bodies
 	for _, cdd := range cdds {
-		if cdd.Typ == ImportDecl {
+		if cdd.Export || cdd.Typ == ImportDecl {
 			continue
 		}
 		o := cdd.Origin
-		if o.Exported() || (o.Pkg().Name() == "main" && o.Name() == "main") {
+		exported := o.Exported()
+		if exported {
+			if f, ok := o.(*types.Func); ok {
+				if r := f.Type().(*types.Signature).Recv(); r != nil {
+					rt := r.Type()
+					if p, ok := rt.(*types.Pointer); ok {
+						rt = p.Elem()
+					}
+					exported = rt.(*types.Named).Obj().Exported()
+				}
+			}
+		}
+		if exported || (o.Pkg().Name() == "main" && o.Name() == "main") ||
+			cdd.forceExport {
 			gtc.export(cddm, cdd)
 		}
 	}
@@ -153,25 +167,22 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 
 	for _, cdd := range cdds {
-		/*if cdd.Typ == ImportDecl {
-			// Package imported as _
-			//fmt.Println(cdd.Origin.Pkg())
-			imp.add(cdd.Origin.Pkg(), false)
+		if !cdd.Export {
 			continue
-		}*/
+		}
 		for o := range cdd.DeclUses {
 			if gtc.isImported(o) {
-				if cdd.Export {
-					if o.Pkg() == nil {
-						fmt.Printf("nil pkg: %#v\n", o)
-					}
-					imp[o.Pkg()] = true
+				if o.Pkg() == nil {
+					fmt.Printf("nil pkg: %#v\n", o)
 				}
+				imp[o.Pkg()] = true
 			}
 		}
-		for o := range cdd.FuncBodyUses {
-			if gtc.isImported(o) && cdd.Export && cdd.Inline {
-				imp[o.Pkg()] = true
+		if cdd.Inline {
+			for o := range cdd.DefUses {
+				if gtc.isImported(o) {
+					imp[o.Pkg()] = true
+				}
 			}
 		}
 	}
@@ -401,8 +412,7 @@ func (gtc *GTC) methodSet(t types.Type) *types.MethodSet {
 	return types.NewMethodSet(t)
 }
 
-func (gtc *GTC) cattr(use bool, nodes ...ast.Node) string {
-	var ret string
+func (gtc *GTC) pragmas(nodes ...ast.Node) (pragmas, cattrs []string) {
 	for _, n := range nodes {
 		for _, cg := range gtc.cmap[n] {
 			if cg == nil {
@@ -412,23 +422,35 @@ func (gtc *GTC) cattr(use bool, nodes ...ast.Node) string {
 				s := strings.TrimSpace(c.Text)
 				if strings.HasPrefix(s, "//") {
 					s = strings.TrimLeftFunc(s[2:], unicode.IsSpace)
-					if strings.HasPrefix(s, "C:") {
+					switch {
+					case strings.HasPrefix(s, "c:"):
 						s = strings.TrimLeftFunc(s[2:], unicode.IsSpace)
 						if s == "" {
 							gtc.exit(n.Pos(), "empty C attribute")
 						}
-						if len(ret) > 0 {
-							ret += " " + s
-						} else {
-							ret += s
+						cattrs = append(cattrs, s)
+					case strings.HasPrefix(s, "emgo:"):
+						s = strings.TrimLeftFunc(s[5:], unicode.IsSpace)
+						if s == "" {
+							gtc.exit(n.Pos(), "empty Emgo pragma")
 						}
+						pragmas = append(pragmas, s)
 					}
 				}
 			}
 		}
 	}
-	if ret != "" && !use {
-		gtc.exit(nodes[0].Pos(), "unused C attribute: %s", ret)
+	return
+}
+
+func (gtc *GTC) cattrs(nodes ...ast.Node) (string, bool) {
+	pragmas, cattrs := gtc.pragmas(nodes...)
+	var pexport bool
+	for _, p := range pragmas {
+		if p == "export" {
+			pexport = true
+			break
+		}
 	}
-	return ret
+	return strings.Join(cattrs, " "), pexport
 }

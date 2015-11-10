@@ -73,7 +73,7 @@ writeType:
 			cdd.indent(w)
 			if tag := t.Tag(i); tag != "" {
 				//fmt.Println(cdd.gtc.fset.Position(f.Pos()), tag)
-				w.WriteString(reflect.StructTag(tag).Get("C"))
+				w.WriteString(reflect.StructTag(tag).Get("c"))
 				w.WriteByte(' ')
 			}
 			d := cdd.Type(w, f.Type())
@@ -645,7 +645,7 @@ func (cdd *CDD) imethod(sel *types.Selection) string {
 	fi := types.NewFunc(fun.Pos(), cdd.Origin.Pkg(), fname, sig)
 	//cdd.addObject(fi, false) - commented to avoid export fi.
 	acd := cdd.gtc.newCDD(fi, FuncDecl, 0)
-	acd.Complexity = -1 // Never inline
+	acd.Complexity = cdd.gtc.noinlineThres
 	cdd.acds = append(cdd.acds, acd)
 
 	cdd = nil
