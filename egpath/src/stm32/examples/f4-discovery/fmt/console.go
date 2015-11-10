@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"rtos"
+	"arch/cortexm/exce"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -15,12 +16,10 @@ import (
 
 var (
 	udev = usarts.USART2
-	con  = serial.New(udev, 80, 8)
+	con = serial.New(udev, 80, 8)
 )
 
 func initConsole() {
-	// USART
-
 	periph.AHB1ClockEnable(periph.GPIOA)
 	periph.AHB1Reset(periph.GPIOA)
 	periph.APB1ClockEnable(periph.USART2)
@@ -44,7 +43,6 @@ func initConsole() {
 	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	rtos.IRQ(irqs.USART2).UseHandler(conISR)
 	rtos.IRQ(irqs.USART2).Enable()
 
 	con.SetUnix(true)
@@ -53,4 +51,10 @@ func initConsole() {
 
 func conISR() {
 	con.IRQ()
+}
+
+//c:const
+//c:__attribute__((section(".InterruptVectors")))
+var IRQs = [...]func(){
+	irqs.USART2 - exce.IRQ0: conISR,
 }

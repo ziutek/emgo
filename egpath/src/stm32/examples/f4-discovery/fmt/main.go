@@ -13,13 +13,10 @@ func init() {
 }
 
 func main() {
-	con.WriteString("fmt test:\n")
-
 	t := time.Now()
 	fmt.Println(t)
-
-	fmt.Fprint(con, true, " ", false, "\n")
-	fmt.Fprint(con, 10, " ", -10, " ", 1234567890, " ", -1234567890, "\n")
-	fmt.Fprint(con, int64(1234567890123), " ", int64(-1234567890123), "\n")
-	fmt.Fprint(con, 123.456e-20, " ", -123.456e20, "\n")
+	fmt.Println(true, false)
+	fmt.Println(10, -10, 1234567890, -123456789)
+	fmt.Println(int64(1234567890123), int64(-1234567890123))
+	fmt.Println(123.456e-20, -123.456e2)
 }

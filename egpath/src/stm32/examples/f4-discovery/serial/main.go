@@ -12,6 +12,7 @@ import (
 	"delay"
 	"fmt"
 	"rtos"
+	"arch/cortexm/exce"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -73,7 +74,6 @@ func init() {
 	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	rtos.IRQ(irqs.USART2).UseHandler(sirq)
 	rtos.IRQ(irqs.USART2).Enable()
 
 	s.SetUnix(true)
@@ -93,6 +93,12 @@ func blink(c, dly int) {
 func sirq() {
 	//blink(Blue, -10) // Uncoment to see "hardware buffer overrun".
 	s.IRQ()
+}
+
+//c:const
+//c:__attribute__((section(".InterruptVectors")))
+var IRQs = [...]func(){
+	irqs.USART2 - exce.IRQ0: sirq,
 }
 
 func checkErr(err error) {

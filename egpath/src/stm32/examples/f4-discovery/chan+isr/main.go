@@ -7,6 +7,7 @@
 package main
 
 import (
+	"arch/cortexm/exce"
 	"delay"
 	"rtos"
 
@@ -45,7 +46,6 @@ func init() {
 	exti.L0.RiseTrigEnable()
 	exti.L0.IntEnable()
 
-	rtos.IRQ(irqs.Ext0).UseHandler(buttonHandler)
 	rtos.IRQ(irqs.Ext0).Enable()
 
 	periph.APB2ClockDisable(periph.SysCfg)
@@ -56,7 +56,7 @@ var (
 	led = Green
 )
 
-func buttonHandler() {
+func buttonISR() {
 	exti.L0.ClearPending()
 	select {
 	case c <- led:
@@ -69,6 +69,12 @@ func buttonHandler() {
 		delay.Loop(1e5)
 		LED.ClearBit(Blue)
 	}
+}
+
+//c:const
+//c:__attribute__((section(".InterruptVectors")))
+var IRQs = [...]func(){
+	irqs.Ext0 - exce.IRQ0: buttonISR,
 }
 
 func toggle(led int) {

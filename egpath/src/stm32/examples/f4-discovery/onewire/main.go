@@ -2,6 +2,7 @@
 package main
 
 import (
+	"arch/cortexm/exce"
 	"delay"
 	"fmt"
 	"rtos"
@@ -66,7 +67,6 @@ func init() {
 	ow.EnableIRQs(usart.RxNotEmptyIRQ)
 	ow.Enable()
 
-	rtos.IRQ(irqs.USART6).UseHandler(oneISR)
 	rtos.IRQ(irqs.USART6).Enable()
 }
 
@@ -74,12 +74,18 @@ func oneISR() {
 	one.IRQ()
 }
 
-func blink(c, dly int) {
+//c:const
+//c:__attribute__((section(".InterruptVectors")))
+var IRQs = [...]func(){
+	irqs.USART6 - exce.IRQ0: oneISR,
+}
+
+func blink(c, d int) {
 	leds.SetBit(c)
-	if dly > 0 {
-		delay.Millisec(dly)
+	if d > 0 {
+		delay.Millisec(d)
 	} else {
-		delay.Loop(-1e4 * dly)
+		delay.Loop(-1e4 * d)
 	}
 	leds.ClearBit(c)
 }
@@ -106,7 +112,9 @@ func main() {
 
 	// This algorithm doesn't work in case of parasite power mode.
 	for {
-		fmt.Println("Sending ConvertT command on the bus (SkipROM addressing).")
+		fmt.Println(
+			"\nSending ConvertT command on the bus (SkipROM addressing).",
+		)
 		checkErr(m.SkipROM())
 		checkErr(m.ConvertT())
 		fmt.Print("Waiting until all devices finish the conversion")
