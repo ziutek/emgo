@@ -4,28 +4,31 @@ package bits
 
 import "unsafe"
 
-// TODO: Implement generic leadingZeros more efficiently.
+// TODO: Implement these functions more efficiently.
 
 func leadingZeros32(u uint32) uint {
-	var i uint
-	for u>>i != 0 {
-		i++
+	n := uint(32)
+	for u != 0 {
+		u >>= 1
+		n--
 	}
-	return 32 - i
+	return n
 }
 
 func leadingZeros64(u uint64) uint {
-	var i uint
-	for u>>i != 0 {
-		i++
+	n := uint(64)
+	for u != 0 {
+		u >>= 1
+		n--
 	}
-	return 64 - i
+	return n
 }
 
 func leadingZerosPtr(u uintptr) uint {
-	var i uint
-	for u>>i != 0 {
-		i++
+	n := uint(unsafe.Sizeof(u) * 8)
+	for u != 0 {
+		u >>= 1
+		n--
 	}
-	return uint(unsafe.Sizeof(u)*8) - i
+	return n
 }

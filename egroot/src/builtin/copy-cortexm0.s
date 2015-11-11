@@ -2,6 +2,9 @@
 
 .syntax unified
 
+// func Memmove(dst, src unsafe.Pointer, n uintptr)
+.global builtin$Memmove
+
 // unsafe$Pointer memmove(unsafe$Pointer dst, unsafe$Pointer, src, uint n)
 .global memmove
 
@@ -12,34 +15,37 @@
 memmove:
 .thumb_func
 memcpy:
-	cmp   r2, 0
-	bne  0f	
-	bx lr
-0:	
-	mov  ip, r0
+	cmp  r2, 0
+	bne  0f
+	bx   lr
+0:
 	cmp  r1, r0
 	blo  2f
 
 // Forward copy
 1:
+	mov  ip, r0
+0:
 	ldrb  r3, [r1]
 	strb  r3, [r0]
 	adds  r1, 1
 	adds  r0, 1
 	subs  r2, 1
-	bne   1b
-	
+	bne   0b
+
 	mov  r0, ip
-	bx   lr	
+	bx   lr
 
 // Backward copy:
 2:
-	ldrb  r3, [r1]
-	strb  r3, [r0]
+	add  r0, r2
+	add  r1, r2
+0:
 	subs  r1, 1
 	subs  r0, 1
+	ldrb  r3, [r1]
+	strb  r3, [r0]
 	subs  r2, 1
-	bne   2b
-	
-	mov  r0, ip
-	bx   lr	
+	bne   0b
+
+	bx  lr
