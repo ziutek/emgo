@@ -2,14 +2,11 @@
 
 set -e
 
-setsid st-util >/dev/null 2>&1 </dev/null &
-
-trap /bin/true INT
+oocd_cmd="openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg -c 'gdb_port pipe' -c 'log_output /dev/null'"
 
 arm-none-eabi-gdb --tui \
-	-ex "target extended-remote localhost:3333" \
+	-ex "target extended-remote | $oocd_cmd" \
 	-ex "set remote hardware-breakpoint-limit 6" \
 	-ex "set remote hardware-watchpoint-limit 4" \
+	-ex "monitor reset init" \
 	main.elf
-
-killall st-util

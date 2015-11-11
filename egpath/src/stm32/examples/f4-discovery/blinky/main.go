@@ -36,20 +36,20 @@ func wait() {
 
 func main() {
 	for {
-		LED.ClearBit(Green)
-		LED.SetBit(Orange)
+		LED.ClearPin(Green)
+		LED.SetPin(Orange)
 		wait()
 
-		LED.ClearBit(Orange)
-		LED.SetBit(Red)
+		LED.ClearPin(Orange)
+		LED.SetPin(Red)
 		wait()
 
-		LED.ClearBit(Red)
-		LED.SetBit(Blue)
+		LED.ClearPin(Red)
+		LED.SetPin(Blue)
 		wait()
 
-		LED.ClearBit(Blue)
-		LED.SetBit(Green)
+		LED.ClearPin(Blue)
+		LED.SetPin(Green)
 		wait()
 	}
 }

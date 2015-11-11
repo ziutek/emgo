@@ -9,7 +9,7 @@ type extiRegs struct {
 	fts  Lines
 	swie Lines
 	p    Lines
-} //C:volatile
+} //c:volatile
 
 func IntrEnabled() Lines {
 	return regs1.im

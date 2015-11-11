@@ -31,9 +31,9 @@ func init() {
 
 func blink(led int, d int, max, inc float32) {
 	for inc < max {
-		LED.SetBit(led)
+		LED.SetPin(led)
 		delay.Millisec(d)
-		LED.ClearBit(led)
+		LED.ClearPin(led)
 		delay.Millisec(d)
 		// Use floating point calculations to test STMF4 FPU context switching.
 		inc *= inc

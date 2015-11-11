@@ -34,9 +34,9 @@ var (
 
 func sysTickHandler() {
 	if ledup {
-		LED.SetBit(Blue)
+		LED.SetPin(Blue)
 	} else {
-		LED.ClearBit(Blue)
+		LED.ClearPin(Blue)
 	}
 	ledup = !ledup
 }
@@ -68,5 +68,5 @@ func main() {
 
 	// Execution should never reach there so the green LED
 	// should never light up.
-	LED.SetBit(Green)
+	LED.SetPin(Green)
 }

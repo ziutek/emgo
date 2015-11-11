@@ -7,7 +7,7 @@ type regs struct {
 	icscr uint32
 	cfgr  uint32
 	cir   uint32
-} //C:volatile
+} //c:volatile
 
 var c = (*regs)(unsafe.Pointer(uintptr(0x40023800)))
 

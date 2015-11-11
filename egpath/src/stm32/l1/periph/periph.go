@@ -14,7 +14,7 @@ type regs struct {
 	ahblpenr  uint32
 	apb2lpenr uint32
 	apb1lpenr uint32
-} //C:volatile
+} //c:volatile
 
 var p = (*regs)(unsafe.Pointer(uintptr(0x40023810)))
 

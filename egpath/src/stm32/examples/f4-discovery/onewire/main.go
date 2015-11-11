@@ -81,13 +81,13 @@ var IRQs = [...]func(){
 }
 
 func blink(c, d int) {
-	leds.SetBit(c)
+	leds.SetPin(c)
 	if d > 0 {
 		delay.Millisec(d)
 	} else {
 		delay.Loop(-1e4 * d)
 	}
-	leds.ClearBit(c)
+	leds.ClearPin(c)
 }
 
 func checkErr(err error) {

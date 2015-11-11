@@ -27,12 +27,12 @@ func init() {
 
 func main() {
 	for {
-		leds.ClearBit(Blue)
-		leds.SetBit(Green)
+		leds.ClearPin(Blue)
+		leds.SetPin(Green)
 		delay.Millisec(1000)
 
-		leds.ClearBit(Green)
-		leds.SetBit(Blue)
+		leds.ClearPin(Green)
+		leds.SetPin(Blue)
 		delay.Millisec(1000)
 	}
 }

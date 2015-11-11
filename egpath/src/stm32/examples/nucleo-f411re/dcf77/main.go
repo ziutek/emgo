@@ -39,13 +39,13 @@ func init() {
 }
 
 func blink(led int, dly int) {
-	leds.SetBit(led)
+	leds.SetPin(led)
 	if dly < 0 {
 		delay.Loop(-dly * 1e3)
 	} else {
 		delay.Millisec(dly)
 	}
-	leds.ClearBit(led)
+	leds.ClearPin(led)
 }
 
 var d = dcf77.NewDecoder()
@@ -54,7 +54,7 @@ func edgeISR() {
 	t := time.Now()
 	exti.L1.ClearPending()
 	blink(Blue, -100)
-	d.Edge(t, gpio.C.Bit(1))
+	d.Edge(t, gpio.C.InPin(1) != 0)
 }
 
 func main() {

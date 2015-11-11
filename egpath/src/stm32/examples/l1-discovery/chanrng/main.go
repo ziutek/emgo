@@ -42,9 +42,9 @@ func main() {
 		case led = <-cg:
 		case led = <-cb:
 		}
-		leds.SetBit(led)
+		leds.SetPin(led)
 		delay.Millisec(100)
-		leds.ClearBit(led)
+		leds.ClearPin(led)
 		delay.Millisec(100)
 	}
 }

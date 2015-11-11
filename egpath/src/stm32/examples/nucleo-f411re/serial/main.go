@@ -61,7 +61,6 @@ func init() {
 	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	rtos.IRQ(irqs.USART2).UseHandler(sirq)
 	rtos.IRQ(irqs.USART2).Enable()
 
 	s.SetUnix(true)
@@ -70,25 +69,23 @@ func init() {
 }
 
 func blink(c int, d int) {
-	leds.SetBit(c)
+	leds.SetPin(c)
 	if d > 0 {
 		delay.Millisec(d)
 	} else {
 		delay.Loop(-1e4 * d)
 	}
-	leds.ClearBit(c)
+	leds.ClearPin(c)
 }
 
 func sirq() {
 	s.IRQ()
 }
 
-func checkErr(err error) {
-	if err != nil {
-		s.WriteString("\nError: ")
-		s.WriteString(err.Error())
-		s.WriteByte('\n')
-	}
+//c:const
+//c:__attribute__((section(".InterruptVectors")))
+var IRQs = [...]func(){
+	irqs.USART2 - exce.IRQ0: sirq,
 }
 
 type Bool bool

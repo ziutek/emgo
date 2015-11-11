@@ -65,9 +65,9 @@ func buttonISR() {
 		}
 	default:
 		// Signal that c is full.
-		LED.SetBit(Blue)
+		LED.SetPin(Blue)
 		delay.Loop(1e5)
-		LED.ClearBit(Blue)
+		LED.ClearPin(Blue)
 	}
 }
 
@@ -78,9 +78,9 @@ var IRQs = [...]func(){
 }
 
 func toggle(led int) {
-	LED.SetBit(led)
+	LED.SetPin(led)
 	delay.Millisec(500)
-	LED.ClearBit(led)
+	LED.ClearPin(led)
 	delay.Millisec(500)
 }
 

@@ -7,11 +7,11 @@ import (
 type LED int
 
 func (led LED) On() {
-	ledsPort.SetBit(int(led))
+	ledsPort.SetPin(int(led))
 }
 
 func (led LED) Off() {
-	ledsPort.ClearBit(int(led))
+	ledsPort.ClearPin(int(led))
 }
 
 func (led LED) Blink(ms int) {

@@ -29,9 +29,9 @@ func wait() {
 
 func main() {
 	for {
-		LED.SetBit(Green)
+		LED.SetPin(Green)
 		wait()
-		LED.ClearBit(Green)
+		LED.ClearPin(Green)
 		wait()
 	}
 }

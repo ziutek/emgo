@@ -42,7 +42,7 @@ func edgeISR() {
 	t := time.Now()
 	exti.L1.ClearPending()
 	blink(Blue, -100)
-	d.Edge(t, gpio.C.Bit(1))
+	d.Edge(t, gpio.C.InPin(1) != 0)
 }
 
 //c:const

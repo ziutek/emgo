@@ -12,7 +12,7 @@ if [ -n "$TRACECLKIN" ]; then
 fi
 
 echo "Loading at $addr..." >/dev/stderr
-openocd -f interface/stlink-v2.cfg -f target/$TARGET.cfg \
+openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg \
 	-c 'init' \
 	-c 'reset init' \
 	-c "load_image main.bin $addr" \

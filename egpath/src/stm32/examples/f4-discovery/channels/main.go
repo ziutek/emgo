@@ -30,9 +30,9 @@ func init() {
 }
 
 func toggle(led, d int) {
-	LED.SetBit(led)
+	LED.SetPin(led)
 	delay.Millisec(d)
-	LED.ClearBit(led)
+	LED.ClearPin(led)
 	delay.Millisec(d)
 }
 

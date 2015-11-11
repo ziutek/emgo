@@ -9,7 +9,7 @@ type Dev struct {
 	c2  uint32
 	c3  uint32
 	gtp uint32
-} //C:volatile
+} //c:volatile
 
 type Status uint32
 

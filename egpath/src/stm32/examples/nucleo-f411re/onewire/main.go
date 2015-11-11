@@ -2,6 +2,7 @@
 package main
 
 import (
+	"arch/cortexm/exce"
 	"delay"
 	"fmt"
 	"rtos"
@@ -73,7 +74,6 @@ func init() {
 	us.EnableIRQs(usart.RxNotEmptyIRQ)
 	us.Enable()
 
-	rtos.IRQ(irqs.USART2).UseHandler(termISR)
 	rtos.IRQ(irqs.USART2).Enable()
 
 	term.SetUnix(true)
@@ -100,7 +100,6 @@ func init() {
 	ow.EnableIRQs(usart.RxNotEmptyIRQ)
 	ow.Enable()
 
-	rtos.IRQ(irqs.USART6).UseHandler(oneISR)
 	rtos.IRQ(irqs.USART6).Enable()
 }
 
@@ -112,14 +111,21 @@ func oneISR() {
 	one.IRQ()
 }
 
+//c:const
+//c:__attribute__((section(".InterruptVectors")))
+var IRQs = [...]func(){
+	irqs.USART2 - exce.IRQ0: termISR,
+	irqs.USART6 - exce.IRQ0: oneISR,
+}
+
 func blink(c, d int) {
-	leds.SetBit(c)
+	leds.SetPin(c)
 	if d > 0 {
 		delay.Millisec(d)
 	} else {
 		delay.Loop(-1e4 * d)
 	}
-	leds.ClearBit(c)
+	leds.ClearPin(c)
 }
 
 func checkErr(err error) {

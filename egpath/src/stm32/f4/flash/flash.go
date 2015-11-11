@@ -12,7 +12,7 @@ type regs struct {
 	reserved uint32
 	obr      uint32
 	wrpr     uint32
-} //C:volatile
+} //c:volatile
 
 func (r *regs) acrSetBit(n uint, b bool) {
 	if b {

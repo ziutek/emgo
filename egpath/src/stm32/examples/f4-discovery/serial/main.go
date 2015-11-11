@@ -81,13 +81,13 @@ func init() {
 }
 
 func blink(c, dly int) {
-	leds.SetBit(c)
+	leds.SetPin(c)
 	if dly > 0 {
 		delay.Millisec(dly)
 	} else {
 		delay.Loop(-1e4 * dly)
 	}
-	leds.ClearBit(c)
+	leds.ClearPin(c)
 }
 
 func sirq() {
