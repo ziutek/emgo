@@ -37,6 +37,8 @@ func DisableSleepOnExit() {
 	scr.SetBit(1)
 }
 
+//c:static inline
 func WFE()
 
+//c:static inline
 func WFI()
