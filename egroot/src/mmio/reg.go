@@ -50,7 +50,7 @@ func (r *U8) Store(v uint8) {
 	r.r = v
 }
 
-func (r *U8) Ptr() uintptr {
+func (r *U8) Addr() uintptr {
 	return uintptr(unsafe.Pointer(r))
 }
 
@@ -102,7 +102,7 @@ func (r *U16) Store(v uint16) {
 	r.r = v
 }
 
-func (r *U16) Ptr() uintptr {
+func (r *U16) Addr() uintptr {
 	return uintptr(unsafe.Pointer(r))
 }
 
@@ -154,6 +154,6 @@ func (r *U32) Store(v uint32) {
 	r.r = v
 }
 
-func (r *U32) Ptr() uintptr {
+func (r *U32) Addr() uintptr {
 	return uintptr(unsafe.Pointer(r))
 }

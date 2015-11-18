@@ -102,12 +102,12 @@ func (p Port) Ready() bool {
 
 // Store8 stores byte into p.
 func (p Port) Store8(b byte) {
-	mmio.PtrU8(unsafe.Pointer(irs.stim[p].Ptr())).Store(b)
+	mmio.PtrU8(unsafe.Pointer(irs.stim[p].Addr())).Store(b)
 }
 
 // Store16 stores half-word into p.
 func (p Port) Store16(h uint16) {
-	mmio.PtrU16(unsafe.Pointer(irs.stim[p].Ptr())).Store(h)
+	mmio.PtrU16(unsafe.Pointer(irs.stim[p].Addr())).Store(h)
 }
 
 // Store32 stores word into p.

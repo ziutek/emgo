@@ -12,6 +12,8 @@
 .global memcpy
 
 .thumb_func
+builtin$Memmove:
+.thumb_func
 memmove:
 .thumb_func
 memcpy:

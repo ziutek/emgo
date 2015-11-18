@@ -1,9 +1,10 @@
 // +build cortexm4f
 package fpu
 
-import "mmio"
-
-var cpac = mmio.PtrReg32(0xe000ed88)
+import (
+	"mmio"
+	"unsafe"
+)
 
 type Perm uint32
 
@@ -13,15 +14,17 @@ const (
 	Full Perm = 3 << 20
 )
 
+const cpacaddr uintptr = 0xe000ed88
+
 func SetAccess(p Perm) {
+	cpac := mmio.PtrU32(unsafe.Pointer(cpacaddr))
 	cpac.StoreBits(uint32(p), 3<<20)
 }
 
 func Access() Perm {
+	cpac := mmio.PtrU32(unsafe.Pointer(cpacaddr))
 	return Perm(cpac.LoadBits(3 << 20))
 }
-
-var fpcc = mmio.PtrReg32(0xe000ef34)
 
 // SPFlags control/describe FPU state preservation behavior during exception
 // handling.
@@ -42,12 +45,16 @@ const (
 	AutoSP SPFlags = 1 << 31
 )
 
+const fpccaddr uintptr = 0xe000ef34
+
 func SetSP(f SPFlags) {
+	fpcc := mmio.PtrU32(unsafe.Pointer(fpccaddr))
 	fpcc.Store(uint32(f))
 }
 
 func SP() SPFlags {
+	fpcc := mmio.PtrU32(unsafe.Pointer(fpccaddr))
 	return SPFlags(fpcc.Load())
 }
 
-var fpca = mmio.PtrReg32(0xe000ef38)
+const fpcaaddr uintptr = 0xe000ef38
