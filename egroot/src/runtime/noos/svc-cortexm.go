@@ -47,7 +47,7 @@ func scEventWait(fp *exce.StackFrame) {
 }
 
 func scSetSysClock(fp *exce.StackFrame) {
-	sysClk = uint(fp.R[0])
+	sysClk = uint32(fp.R[0])
 	setTickPeriod()
 }
 

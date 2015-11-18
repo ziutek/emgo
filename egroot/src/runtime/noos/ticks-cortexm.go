@@ -9,7 +9,12 @@ import (
 	"sync/barrier"
 )
 
-var sysClk uint
+var (
+	ticks2     [2]uint64
+	ticksABA   uintptr
+	sysClk     uint32
+	tickPeriod uint32
+)
 
 func sysTickStart() {
 	// Defaults:
@@ -18,30 +23,27 @@ func sysTickStart() {
 	systick.WriteFlags(systick.Enable | systick.TickInt | systick.ClkCPU)
 }
 
-var (
-	tickPeriod uint32
-	ticks2     [2]uint64
-	ticksABA   uintptr
-)
-
 func setTickPeriod() {
 	// Set tick period to 2 ms (500 context switches per second).
 	const periodms = 2
-	tickPeriod = uint32(sysClk * periodms / 1e3)
+	tickPeriod = sysClk * periodms / 1e3
 	systick.SetReload(tickPeriod - 1)
 	systick.Reset()
 }
 
 func sysTickHandler() {
+	updateTicks2(tickPeriod)
+	tickEvent.Send()
+	exce.PendSV.SetPending()
+}
+
+func updateTicks2(delta uint32) {
 	aba := atomic.LoadUintptr(&ticksABA)
 	t := ticks2[aba&1]
 	aba++
-	ticks2[aba&1] = t + 1
+	ticks2[aba&1] = t + uint64(delta)
 	barrier.Memory()
 	atomic.StoreUintptr(&ticksABA, aba)
-	tickEvent.Send()
-
-	exce.PendSV.SetPending()
 }
 
 func uptime() uint64 {
@@ -62,7 +64,7 @@ func uptime() uint64 {
 		aba = aba1
 	}
 	return muldiv64(
-		ticks*uint64(tickPeriod)+uint64(tickPeriod-cnt),
+		ticks+uint64(tickPeriod-cnt),
 		1e9, uint64(sysClk),
 	)
 }
