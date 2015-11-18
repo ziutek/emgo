@@ -14,15 +14,15 @@ If you want to write CPU specific function in CPU specific library you are free 
 
 ### Volatile types and variables
 
-If your CPU guarantees ordered access to I/O address spece, you can use volatile types/variables using //C:volatile pragma. This simplifies code and can slightly improve performance, but can cause bugs in more complicated cases.
+If your CPU guarantees ordered access to I/O address spece, you can use volatile types/variables using //c:volatile pragma. This simplifies code and can slightly improve performance, but can cause bugs in more complicated cases.
 
 Don't use volatile types/variables for other things. If you think that you need volatile for something other than MMIO you're wrong - use functions from atomic/sync and atomic/barrier packages instead.
 
 ### Constant global variables
 
-To avoid copying some global variables (especially big arrays) from Flash to RAM use //C:const pragma. C compiler will warn you if your code may modify such variables.
+To avoid copying some global variables (especially big arrays) from Flash to RAM use //c:const pragma. C compiler will warn you if your code may modify such variables.
 
 ### Line length
 
-Code in Emgo standard library avoids lines longer that 80 runes.
+Source code in Emgo standard library avoids lines longer that 80 runes.
 --------------------------------------------------------------------------------

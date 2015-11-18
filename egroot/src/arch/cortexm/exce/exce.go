@@ -39,10 +39,10 @@ var (
 	icp  = (*bitReg)(unsafe.Pointer(uintptr(0xe000e280)))
 	iab  = (*bitReg)(unsafe.Pointer(uintptr(0xe000e300)))
 	ip   = (*byteReg)(unsafe.Pointer(uintptr(0xe000e400)))
-	ics  = mmio.PtrReg32(0xe000ed04)
+	ics  = mmio.PtrU32(unsafe.Pointer(uintptr(0xe000ed04)))
 	shp  = (*byteReg)(unsafe.Pointer(uintptr(0xe000ed18)))
-	shcs = mmio.PtrReg32(0xe000ed24)
-	sti  = mmio.PtrReg32(0xe000ef00)
+	shcs = mmio.PtrU32(unsafe.Pointer(uintptr(0xe000ed24)))
+	sti  = mmio.PtrU32(unsafe.Pointer(uintptr(0xe000ef00)))
 )
 
 // Enable enables handler for irq.

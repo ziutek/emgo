@@ -7,13 +7,13 @@ import (
 )
 
 type regs struct {
-	stim [256]mmio.Reg32
-	_    [640]uint32
-	te   [8]mmio.Reg32
-	_    [8]uint32
-	tp   mmio.Reg32
-	_    [15]uint32
-	tc   mmio.Reg32
+	stim [256]mmio.U32
+	_    [640]mmio.U32
+	te   [8]mmio.U32
+	_    [8]mmio.U32
+	tp   mmio.U32
+	_    [15]mmio.U32
+	tc   mmio.U32
 }
 
 var irs = (*regs)(unsafe.Pointer(uintptr(0xe0000000)))
@@ -102,12 +102,12 @@ func (p Port) Ready() bool {
 
 // Store8 stores byte into p.
 func (p Port) Store8(b byte) {
-	mmio.PtrReg8(uintptr(unsafe.Pointer(&irs.stim[p]))).Store(b)
+	mmio.PtrU8(unsafe.Pointer(irs.stim[p].Ptr())).Store(b)
 }
 
 // Store16 stores half-word into p.
 func (p Port) Store16(h uint16) {
-	mmio.PtrReg16(uintptr(unsafe.Pointer(&irs.stim[p]))).Store(h)
+	mmio.PtrU16(unsafe.Pointer(irs.stim[p].Ptr())).Store(h)
 }
 
 // Store32 stores word into p.

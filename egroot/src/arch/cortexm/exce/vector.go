@@ -19,7 +19,7 @@ func VectorFor(handler func()) Vector {
 }
 
 var (
-	vto      = mmio.PtrReg32(0xe000ed08)
+	vto      = mmio.PtrU32(unsafe.Pointer(uintptr(0xe000ed08)))
 	activeVT []Vector
 )
 
