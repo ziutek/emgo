@@ -1,63 +1,71 @@
 package rtc
 
 import (
+	"arch/cortexm/exce"
+	"mmio"
 	"unsafe"
 
-	"nrf51/periph"
+	"nrf51/internal"
+	"nrf51/ppi"
 )
 
 // Periph represents Real Time Counter peripheral.
 type Periph struct {
-	periph.TasksEvents
-	_         [65]uint32
-	counter   uint32 // Current COUNTER value.
-	prescaler uint32 // 12 bit prescaler for COUNTER frequency.
-	_         [13]uint32
-	cc        [4]uint32 // Compare registers.
-} //c:volatile
+	te        internal.TasksEvents
+	_         [65]mmio.U32
+	counter   mmio.U32 // Current COUNTER value.
+	prescaler mmio.U32 // 12 bit prescaler for COUNTER frequency.
+	_         [13]mmio.U32
+	cc        [4]mmio.U32 // Compare registers.
+}
 
 // Tasks
-const (
-	START      periph.Task = 0 // Start RTC COUNTER.
-	STOP       periph.Task = 1 // Stop RTC COUNTER.
-	CLEAR      periph.Task = 2 // Clear RTC COUNTER.
-	TRIGOVRFLW periph.Task = 3 // Set COUNTER to 0xFFFFF0.
-)
+
+func (p *Periph) START() ppi.Task      { return ppi.GetTask(&p.te, 0) }
+func (p *Periph) STOP() ppi.Task       { return ppi.GetTask(&p.te, 1) }
+func (p *Periph) CLEAR() ppi.Task      { return ppi.GetTask(&p.te, 2) }
+func (p *Periph) TRIGOVRFLW() ppi.Task { return ppi.GetTask(&p.te, 3) }
 
 // Events
-const (
-	TICK     periph.Event = 0  // Event on COUNTER increment.
-	OVRFLW   periph.Event = 1  // Event on COUNTER overflow.
-	COMPARE0 periph.Event = 16 // Compare event on CC[0] match.
-	COMPARE1 periph.Event = 17 // Compare event on CC[1] match.
-	COMPARE2 periph.Event = 18 // Compare event on CC[2] match.
-	COMPARE3 periph.Event = 19 // Compare event on CC[3] match.
-)
 
-var (
-	RTC0 = (*Periph)(unsafe.Pointer(periph.BaseAPB + 0x0b000))
-	RTC1 = (*Periph)(unsafe.Pointer(periph.BaseAPB + 0x11000))
-	RTC2 = (*Periph)(unsafe.Pointer(periph.BaseAPB + 0x24000))
-)
+func (p *Periph) TICK() ppi.Event         { return ppi.GetEvent(&p.te, 0) }
+func (p *Periph) OVRFLW() ppi.Event       { return ppi.GetEvent(&p.te, 1) }
+func (p *Periph) COMPARE(n int) ppi.Event { return ppi.GetEvent(&p.te, 16+n) }
 
+func (p *Periph) IRQ() exce.Exce {
+	return p.te.IRQ()
+}
+
+// Counter returns value of counter register.
 func (p *Periph) Counter() uint32 {
-	return p.counter
+	return p.counter.LoadBits(0xffffff)
 }
 
 func (p *Periph) SetCounter(c uint32) {
-	p.counter = c
+	p.counter.Store(c)
+}
+
+// Prescaler returns value of prescaler register.
+func (p *Periph) Prescaler() uint32 {
+	return p.counter.LoadBits(0xfff)
 }
 
 // SetPrescaler sets prescaler to pr (freq = 32768Hz/(pr+1)). Must only be used
 // when the timer is stopped.
 func (p *Periph) SetPrescaler(pr int) {
-	p.prescaler = uint32(pr)
+	p.prescaler.Store(uint32(pr))
 }
 
 func (p *Periph) CC(n int) uint32 {
-	return p.cc[n]
+	return p.cc[n].LoadBits(0xffffff)
 }
 
 func (p *Periph) SetCC(n int, cc uint32) {
-	p.cc[n] = cc
+	p.cc[n].Store(cc)
 }
+
+var (
+	RTC0 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x0b000))
+	RTC1 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x11000))
+	RTC2 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x24000))
+)

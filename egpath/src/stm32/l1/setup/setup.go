@@ -96,5 +96,5 @@ func Performance(osc int) {
 	for clock.SysClock() != clock.PLL {
 	}
 
-	sysClkChanged()
+	sysclkChanged()
 }

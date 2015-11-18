@@ -1,60 +1,66 @@
 package timer
 
 import (
+	"arch/cortexm/exce"
+	"mmio"
 	"unsafe"
 
-	"nrf51/periph"
+	"nrf51/internal"
+	"nrf51/ppi"
 )
 
 // Timer represents timer/counter peripheral.
 type Periph struct {
-	periph.TasksEvents
-	_         [65]uint32
-	mode      uint32 // Timer mode selection.
-	bitmode   uint32 // Configure the number of bits used by the TIMER.
-	_         uint32
-	prescaler uint32 // Timer prescaler register.
-	_         [11]uint32
-	cc        [4]uint32 // Capture/Compare registers.
-} //c:volatile
+	te        internal.TasksEvents
+	_         [65]mmio.U32
+	mode      mmio.U32 // Timer mode selection.
+	bitmode   mmio.U32 // Configure the number of bits used by the TIMER.
+	_         mmio.U32
+	prescaler mmio.U32 // Timer prescaler register.
+	_         [11]mmio.U32
+	cc        [4]mmio.U32 // Capture/Compare registers.
+}
 
 // Tasks
-const (
-	START    periph.Task = 0  // Star Timer.
-	STOP     periph.Task = 1  // Stop Timer.
-	COUNT    periph.Task = 2  // Increment Timer (Counter mode only).
-	CLEAR    periph.Task = 3  // Clear Timer.
-	CAPTURE0 periph.Task = 16 // Capture Timer value to CC[0] register.
-	CAPTURE1 periph.Task = 17 // Capture Timer value to CC[1] register.
-	CAPTURE2 periph.Task = 18 // Capture Timer value to CC[2] register.
-	CAPTURE3 periph.Task = 19 // Capture Timer value to CC[3] register.
-)
+
+func (p *Periph) START() ppi.Task        { return ppi.GetTask(&p.te, 0) }
+func (p *Periph) STOP() ppi.Task         { return ppi.GetTask(&p.te, 1) }
+func (p *Periph) COUNT() ppi.Task        { return ppi.GetTask(&p.te, 2) }
+func (p *Periph) CLEAR() ppi.Task        { return ppi.GetTask(&p.te, 3) }
+func (p *Periph) CAPTURE(n int) ppi.Task { return ppi.GetTask(&p.te, 16+n) }
 
 // Events
+
+func (p *Periph) COMPARE(n int) ppi.Event { return ppi.GetEvent(&p.te, 16+n) }
+
+type Shorts uint32
+
 const (
-	COMPARE0 periph.Event = 16 // Compare event on CC[0] match.
-	COMPARE1 periph.Event = 17 // Compare event on CC[1] match.
-	COMPARE2 periph.Event = 18 // Compare event on CC[2] match.
-	COMPARE3 periph.Event = 19 // Compare event on CC[3] match.
+	COMPARE0_CLEAR Shorts = 1 << 0
+	COMPARE1_CLEAR Shorts = 1 << 1
+	COMPARE2_CLEAR Shorts = 1 << 2
+	COMPARE3_CLEAR Shorts = 1 << 3
+	COMPARE0_STOP  Shorts = 0x100 << 0
+	COMPARE1_STOP  Shorts = 0x100 << 1
+	COMPARE2_STOP  Shorts = 0x100 << 2
+	COMPARE3_STOP  Shorts = 0x100 << 3
 )
 
-// Shorts
-const (
-	COMPARE0_CLEAR periph.Shorts = 1 << 0
-	COMPARE1_CLEAR periph.Shorts = 1 << 1
-	COMPARE2_CLEAR periph.Shorts = 1 << 2
-	COMPARE3_CLEAR periph.Shorts = 1 << 3
-	COMPARE0_STOP  periph.Shorts = 0x100 << 0
-	COMPARE1_STOP  periph.Shorts = 0x100 << 1
-	COMPARE2_STOP  periph.Shorts = 0x100 << 2
-	COMPARE3_STOP  periph.Shorts = 0x100 << 3
-)
+func (p *Periph) Shorts() Shorts {
+	return Shorts(p.te.Shorts.Load())
+}
 
-var (
-	Timer0 = (*Periph)(unsafe.Pointer(periph.BaseAPB + 0x08000))
-	Timer1 = (*Periph)(unsafe.Pointer(periph.BaseAPB + 0x09000))
-	Timer2 = (*Periph)(unsafe.Pointer(periph.BaseAPB + 0x0a000))
-)
+func (p *Periph) SetShorts(s Shorts) {
+	p.te.Shorts.SetBits(uint32(s))
+}
+
+func (p *Periph) ClearShorts(s Shorts) {
+	p.te.Shorts.ClearBits(uint32(s))
+}
+
+func (p *Periph) IRQ() exce.Exce {
+	return p.te.IRQ()
+}
 
 type Mode byte
 
@@ -64,11 +70,11 @@ const (
 )
 
 func (p *Periph) Mode() Mode {
-	return Mode(p.mode)
+	return Mode(p.mode.LoadBits(1))
 }
 
 func (p *Periph) SetMode(m Mode) {
-	p.mode = uint32(m)
+	p.mode.Store(uint32(m))
 }
 
 type Bitmode byte
@@ -81,27 +87,33 @@ const (
 )
 
 func (p *Periph) Bitmode() Bitmode {
-	return Bitmode(p.bitmode)
+	return Bitmode(p.bitmode.LoadBits(3))
 }
 
 func (p *Periph) SetBitmode(m Bitmode) {
-	p.bitmode = uint32(m)
+	p.bitmode.Store(uint32(m))
 }
 
 func (p *Periph) Prescaler() int {
-	return int(p.prescaler)
+	return int(p.prescaler.LoadBits(0xf))
 }
 
 // SetPrescaler sets prescaler to exp (freq = 16MHz/2^exp). Must only be used
 // when the timer is stopped.
 func (p *Periph) SetPrescaler(exp int) {
-	p.prescaler = uint32(exp)
+	p.prescaler.Store(uint32(exp))
 }
 
 func (p *Periph) CC(n int) uint32 {
-	return p.cc[n]
+	return p.cc[n].Load()
 }
 
 func (p *Periph) SetCC(n int, cc uint32) {
-	p.cc[n] = cc
+	p.cc[n].Store(cc)
 }
+
+var (
+	Timer0 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x08000))
+	Timer1 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x09000))
+	Timer2 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x0a000))
+)

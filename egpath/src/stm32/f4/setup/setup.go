@@ -1,6 +1,6 @@
 package setup
 
-import (	
+import (
 	"stm32/f4/clock"
 	"stm32/f4/flash"
 )
@@ -33,7 +33,7 @@ func Performance(osc, mul, sdiv int) {
 	clock.SetSysClock(clock.HSI)
 	for clock.SysClock() != clock.HSI {
 	}
-	
+
 	if osc != 0 && (osc < 4 || osc > 26 || osc&1 != 0) {
 		panic("wrong frequency of external resonator")
 	}
@@ -60,7 +60,7 @@ func Performance(osc, mul, sdiv int) {
 	flash.SetPrefetch(true)
 	flash.SetICache(true)
 	flash.SetDCache(true)
-	
+
 	// Be sure that flash latency is set before incrase frequency.
 	for flash.Latency() != lat {
 	}
@@ -121,7 +121,7 @@ func Performance(osc, mul, sdiv int) {
 		clock.DisableHSI()
 	}
 
-	sysClkChanged()
+	sysclkChanged()
 }
 
 // Performance168 setups MCU to work with 168 MHz clock.

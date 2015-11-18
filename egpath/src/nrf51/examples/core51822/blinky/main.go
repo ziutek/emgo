@@ -10,6 +10,7 @@ import (
 	"nrf51/gpio"
 	"nrf51/irqs"
 	"nrf51/rtc"
+	"nrf51/setup"
 	"nrf51/timer"
 )
 
@@ -23,22 +24,7 @@ var (
 )
 
 func init() {
-	clkm := clock.Mgmt
-	clkm.TrigTask(clock.HFCLKSTART)
-	for {
-		src, run := clkm.HFCLKStat()
-		if run && src == clock.Xtal {
-			break
-		}
-	}
-	clkm.SetLFCLKSrc(clock.Xtal)
-	clkm.TrigTask(clock.LFCLKSTART)
-	for {
-		src, run := clkm.LFCLKStat()
-		if run && src == clock.Xtal {
-			break
-		}
-	}
+	setup.Clocks(clock.Xtal, clock.Xtal, true)
 
 	for _, led := range leds {
 		p0.SetMode(int(led), gpio.Out)
@@ -46,16 +32,15 @@ func init() {
 
 	t0.SetPrescaler(8) // 62500 Hz
 	t0.SetCC(1, 65526/2)
-	t0.EnableInt(timer.COMPARE0)
-	t0.EnableInt(timer.COMPARE1)
+	t0.COMPARE(0).EnableInt()
+	t0.COMPARE(1).EnableInt()
 	rtos.IRQ(t0.IRQ()).Enable()
-	t0.TrigTask(timer.START)
+	t0.START().Trig()
 
 	rtc0.SetPrescaler(1<<12 - 1) // 8 Hz
-	rtc0.EnableEvent(rtc.TICK)
-	rtc0.EnableInt(rtc.TICK)
+	rtc0.TICK().EnableInt()
 	rtos.IRQ(rtc0.IRQ()).Enable()
-	rtc0.TrigTask(rtc.START)
+	rtc0.START().Trig()
 
 }
 
@@ -66,18 +51,18 @@ func blink(led byte, dly int) {
 }
 
 func timerISR() {
-	switch {
-	case t0.Event(timer.COMPARE0):
-		t0.ClearEvent(timer.COMPARE0)
+	if e := t0.COMPARE(0); e.Happened() {
+		e.Clear()
 		blink(leds[3], 1e3)
-	case t0.Event(timer.COMPARE1):
-		t0.ClearEvent(timer.COMPARE1)
+	}
+	if e := t0.COMPARE(1); e.Happened() {
+		e.Clear()
 		blink(leds[4], 1e3)
 	}
 }
 
 func rtcISR() {
-	rtc0.ClearEvent(rtc.TICK)
+	rtc0.TICK().Clear()
 	blink(leds[2], 1e3)
 }
 

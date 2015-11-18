@@ -7,7 +7,7 @@ import (
 	"syscall"
 )
 
-func sysClkChanged() {
+func sysclkChanged() {
 	if noos.MaxTasks() == 0 {
 		return
 	}
