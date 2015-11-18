@@ -7,12 +7,12 @@ import (
 	"unsafe"
 
 	"nrf51/internal"
-	"nrf51/ppi"
+	"nrf51/te"
 )
 
 // Periph represents clock management peripheral.
 type Periph struct {
-	te           internal.TasksEvents
+	ph           internal.Pheader
 	_            [2]mmio.U32
 	hfclkrun     mmio.U32
 	hfclkstat    mmio.U32
@@ -28,7 +28,7 @@ type Periph struct {
 	xtalfreq     mmio.U32
 }
 
-type Task byte
+type Task int
 
 const (
 	HFCLKSTART Task = 0 // Start high frequency crystal oscilator.
@@ -40,7 +40,7 @@ const (
 	CTSTOP     Task = 6 // Stop calibration timer.
 )
 
-type Event byte
+type Event int
 
 const (
 	HFCLKSTARTED Event = 0 // High frequency crystal oscilator started.
@@ -49,17 +49,9 @@ const (
 	CTTO         Event = 4 // Calibration timer timeout.
 )
 
-func (p *Periph) Task(n Task) ppi.Task {
-	return ppi.GetTask(&p.te, int(n))
-}
-
-func (p *Periph) Event(n Event) ppi.Event {
-	return ppi.GetEvent(&p.te, int(n))
-}
-
-func (p *Periph) IRQ() exce.Exce {
-	return p.te.IRQ()
-}
+func (p *Periph) IRQ() exce.Exce         { return p.ph.IRQ() }
+func (p *Periph) Task(n Task) te.Task    { return te.GetTask(&p.ph, int(n)) }
+func (p *Periph) Event(n Event) te.Event { return te.GetEvent(&p.ph, int(n)) }
 
 // HFCLKRun returns true if HFCLKSTART task was triggered.
 func (p *Periph) HFCLKRun() bool {

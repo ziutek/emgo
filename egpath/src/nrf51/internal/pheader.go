@@ -2,19 +2,13 @@ package internal
 
 import (
 	"arch/cortexm/exce"
-	"unsafe"
 	"mmio"
+	"unsafe"
 )
 
-// Base addresses for peripherals:
-const (
-	BaseAPB uintptr = 0x40000000 // accessed by APB,
-	BaseAHB uintptr = 0x50000000 // accessed by AHB.
-)
-
-// TasksEvents should be the first field on any Periph struct.
+// Pheader should be the first field on any Periph struct.
 // It takes 0x400 bytes of memory.
-type TasksEvents struct {
+type Pheader struct {
 	Tasks    [32]mmio.U32
 	_        [32]mmio.U32
 	Events   [32]mmio.U32
@@ -30,7 +24,7 @@ type TasksEvents struct {
 }
 
 // IRQ returns exception number associated to events.
-func (te *TasksEvents) IRQ() exce.Exce {
-	addr := uintptr(unsafe.Pointer(te))
+func (ph *Pheader) IRQ() exce.Exce {
+	addr := uintptr(unsafe.Pointer(ph))
 	return exce.IRQ0 + exce.Exce((addr-BaseAPB)>>12)
 }

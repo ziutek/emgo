@@ -3,7 +3,7 @@ package gpio
 import (
 	"unsafe"
 
-	"nrf51/periph"
+	"nrf51/internal"
 )
 
 type Port struct {
@@ -18,7 +18,7 @@ type Port struct {
 	pincnf [32]uint32
 } //c:volatile
 
-var P0 = (*Port)(unsafe.Pointer(periph.BaseAHB + 0x504))
+var P0 = (*Port)(unsafe.Pointer(internal.BaseAHB + 0x504))
 
 type Mode byte
 

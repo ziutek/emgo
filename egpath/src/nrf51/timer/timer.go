@@ -1,3 +1,4 @@
+// Package timer provides interface to manage nRF51 timers.
 package timer
 
 import (
@@ -6,12 +7,12 @@ import (
 	"unsafe"
 
 	"nrf51/internal"
-	"nrf51/ppi"
+	"nrf51/te"
 )
 
-// Timer represents timer/counter peripheral.
+// Periph represents timer/counter peripheral.
 type Periph struct {
-	te        internal.TasksEvents
+	ph        internal.Pheader
 	_         [65]mmio.U32
 	mode      mmio.U32 // Timer mode selection.
 	bitmode   mmio.U32 // Configure the number of bits used by the TIMER.
@@ -21,17 +22,27 @@ type Periph struct {
 	cc        [4]mmio.U32 // Capture/Compare registers.
 }
 
-// Tasks
+type Task int
 
-func (p *Periph) START() ppi.Task        { return ppi.GetTask(&p.te, 0) }
-func (p *Periph) STOP() ppi.Task         { return ppi.GetTask(&p.te, 1) }
-func (p *Periph) COUNT() ppi.Task        { return ppi.GetTask(&p.te, 2) }
-func (p *Periph) CLEAR() ppi.Task        { return ppi.GetTask(&p.te, 3) }
-func (p *Periph) CAPTURE(n int) ppi.Task { return ppi.GetTask(&p.te, 16+n) }
+const (
+	START    Task = 0  // Start Timer.
+	STOP     Task = 1  // Stop Timer.
+	COUNT    Task = 2  // Increment Timer (Counter mode only).
+	CLEAR    Task = 3  // Clear timer.
+	CAPTURE0 Task = 16 // Capture Timer value to CC0 register.
+	CAPTURE1 Task = 17 // Capture Timer value to CC1 register.
+	CAPTURE2 Task = 18 // Capture Timer value to CC2 register.
+	CAPTURE3 Task = 19 // Capture Timer value to CC3 register.
+)
 
-// Events
+type Event int
 
-func (p *Periph) COMPARE(n int) ppi.Event { return ppi.GetEvent(&p.te, 16+n) }
+const (
+	COMPARE0 Event = 16 // Compare event on CC[0] match.
+	COMPARE1 Event = 17 // Compare event on CC[1] match.
+	COMPARE2 Event = 18 // Compare event on CC[2] match.
+	COMPARE3 Event = 19 // Compare event on CC[3] match.
+)
 
 type Shorts uint32
 
@@ -46,21 +57,12 @@ const (
 	COMPARE3_STOP  Shorts = 0x100 << 3
 )
 
-func (p *Periph) Shorts() Shorts {
-	return Shorts(p.te.Shorts.Load())
-}
-
-func (p *Periph) SetShorts(s Shorts) {
-	p.te.Shorts.SetBits(uint32(s))
-}
-
-func (p *Periph) ClearShorts(s Shorts) {
-	p.te.Shorts.ClearBits(uint32(s))
-}
-
-func (p *Periph) IRQ() exce.Exce {
-	return p.te.IRQ()
-}
+func (p *Periph) IRQ() exce.Exce         { return p.ph.IRQ() }
+func (p *Periph) Task(n Task) te.Task    { return te.GetTask(&p.ph, int(n)) }
+func (p *Periph) Event(n Event) te.Event { return te.GetEvent(&p.ph, int(n)) }
+func (p *Periph) Shorts() Shorts         { return Shorts(p.ph.Shorts.Load()) }
+func (p *Periph) SetShorts(s Shorts)     { p.ph.Shorts.SetBits(uint32(s)) }
+func (p *Periph) ClearShorts(s Shorts)   { p.ph.Shorts.ClearBits(uint32(s)) }
 
 type Mode byte
 

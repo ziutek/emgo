@@ -1,4 +1,4 @@
-package ppi
+package te
 
 import (
 	"mmio"
@@ -11,8 +11,9 @@ type Task struct {
 	reg *mmio.U32
 }
 
-func GetTask(te *internal.TasksEvents, n int) Task {
-	return Task{&te.Tasks[n]}
+// GetTask returns n-th te task.
+func GetTask(pe *internal.Pheader, n int) Task {
+	return Task{&pe.Tasks[n]}
 }
 
 // Trig triggers task.

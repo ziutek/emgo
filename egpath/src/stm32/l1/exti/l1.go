@@ -37,7 +37,7 @@ const (
 
 var (
 	regs1 = (*extiRegs)(unsafe.Pointer(uintptr(0x40010400)))
-	regs2 = (*[4]mmio.Reg32)(unsafe.Pointer(uintptr(0x40010008)))
+	regs2 = (*[4]mmio.U32)(unsafe.Pointer(uintptr(0x40010008)))
 )
 
 // Connect connects port to exti L0-L15 lines. periph.SysCfg should

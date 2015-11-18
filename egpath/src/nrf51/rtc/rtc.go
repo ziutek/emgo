@@ -1,3 +1,4 @@
+// Package rtc provides interface to manage nRF51 real time counters.
 package rtc
 
 import (
@@ -6,35 +7,42 @@ import (
 	"unsafe"
 
 	"nrf51/internal"
-	"nrf51/ppi"
+	"nrf51/te"
 )
 
 // Periph represents Real Time Counter peripheral.
 type Periph struct {
-	te        internal.TasksEvents
+	ph        internal.Pheader
 	_         [65]mmio.U32
-	counter   mmio.U32 // Current COUNTER value.
-	prescaler mmio.U32 // 12 bit prescaler for COUNTER frequency.
+	counter   mmio.U32
+	prescaler mmio.U32
 	_         [13]mmio.U32
-	cc        [4]mmio.U32 // Compare registers.
+	cc        [4]mmio.U32
 }
 
-// Tasks
+type Task int
 
-func (p *Periph) START() ppi.Task      { return ppi.GetTask(&p.te, 0) }
-func (p *Periph) STOP() ppi.Task       { return ppi.GetTask(&p.te, 1) }
-func (p *Periph) CLEAR() ppi.Task      { return ppi.GetTask(&p.te, 2) }
-func (p *Periph) TRIGOVRFLW() ppi.Task { return ppi.GetTask(&p.te, 3) }
+const (
+	START      Task = 0 // Start RTC COUNTER.
+	STOP       Task = 1 // Stop RTC COUNTER.
+	CLEAR      Task = 2 // Clear RTC COUNTER.
+	TRIGOVRFLW Task = 3 // Set COUNTER to 0xFFFFF0.
+)
 
-// Events
+type Event int
 
-func (p *Periph) TICK() ppi.Event         { return ppi.GetEvent(&p.te, 0) }
-func (p *Periph) OVRFLW() ppi.Event       { return ppi.GetEvent(&p.te, 1) }
-func (p *Periph) COMPARE(n int) ppi.Event { return ppi.GetEvent(&p.te, 16+n) }
+const (
+	TICK     Event = 0  // Event on COUNTER increment.
+	OVRFLW   Event = 1  // Event on COUNTER overflow.
+	COMPARE0 Event = 16 // Compare event on CC[0] match.
+	COMPARE1 Event = 17 // Compare event on CC[1] match.
+	COMPARE2 Event = 18 // Compare event on CC[2] match.
+	COMPARE3 Event = 19 // Compare event on CC[3] match.
+)
 
-func (p *Periph) IRQ() exce.Exce {
-	return p.te.IRQ()
-}
+func (p *Periph) IRQ() exce.Exce         { return p.ph.IRQ() }
+func (p *Periph) Task(n Task) te.Task    { return te.GetTask(&p.ph, int(n)) }
+func (p *Periph) Event(n Event) te.Event { return te.GetEvent(&p.ph, int(n)) }
 
 // Counter returns value of counter register.
 func (p *Periph) Counter() uint32 {

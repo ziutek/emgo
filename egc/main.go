@@ -39,7 +39,6 @@ func getEnv() {
 	if buildCtx.GOPATH = os.Getenv("EGPATH"); buildCtx.GOPATH == "" {
 		die("EGPATH environment variable not set")
 	}
-
 }
 
 var (
