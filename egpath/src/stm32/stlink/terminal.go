@@ -4,7 +4,7 @@
 // MCU's UART and serial package.
 package stlink
 
-import "sync/barrier"
+import "sync/fence"
 
 type size struct {
 	buf byte
@@ -34,9 +34,9 @@ func (t *terminal) BufLen() int {
 }
 
 func (t *terminal) waitrx() {
-	barrier.Compiler()
+	fence.Compiler()
 	for t.siz.rx == 0 {
-		barrier.Compiler()
+		fence.Compiler()
 	}
 }
 
@@ -47,7 +47,7 @@ func (t *terminal) Read(b []byte) (n int, _ error) {
 	t.rd += n
 
 	if t.rd == int(t.siz.rx) {
-		barrier.Memory()
+		fence.Memory()
 		t.siz.rx = 0
 		t.rd = 0
 	}
@@ -55,9 +55,9 @@ func (t *terminal) Read(b []byte) (n int, _ error) {
 }
 
 func (t *terminal) waittx() {
-	barrier.Compiler()
+	fence.Compiler()
 	for t.siz.tx != 0 {
-		barrier.Compiler()
+		fence.Compiler()
 	}
 }
 
@@ -65,7 +65,7 @@ func (t *terminal) Write(b []byte) (n int, _ error) {
 	for len(b) != 0 {
 		t.waittx()
 		m := copy(t.txbuf[:], b)
-		barrier.Memory()
+		fence.Memory()
 		t.siz.tx = byte(m)
 
 		n += m
@@ -81,7 +81,7 @@ func (t *terminal) WriteString(s string) (n int, _ error) {
 	for len(s) != 0 {
 		t.waittx()
 		m := copy(t.txbuf[:], s)
-		barrier.Memory()
+		fence.Memory()
 		t.siz.tx = byte(m)
 
 		n += m

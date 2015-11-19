@@ -4,7 +4,7 @@
 package main
 
 import (
-	"sync/barrier"
+	"sync/fence"
 
 	"arch/cortexm/exce"
 	"arch/cortexm/sleep"
@@ -63,7 +63,7 @@ func main() {
 
 	// Sleep forever.
 	sleep.EnableSleepOnExit()
-	barrier.Sync() // not necessary on Cortex-M0,M3,M4
+	fence.Sync() // not necessary on Cortex-M0,M3,M4
 	sleep.WFI()
 
 	// Execution should never reach there so the green LED

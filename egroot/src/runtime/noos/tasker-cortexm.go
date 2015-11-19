@@ -7,7 +7,7 @@ import (
 	"arch/cortexm/exce"
 	"arch/cortexm/mpu"
 	"math/rand"
-	"sync/barrier"
+	"sync/fence"
 	"syscall"
 	"unsafe"
 )
@@ -104,7 +104,7 @@ func (ts *taskSched) init() {
 	// Use PSP as stack pointer for thread mode. Current (zero) task has stack
 	// at top of the stacks area.
 	cortexm.SetPSP(unsafe.Pointer(cortexm.MSP()))
-	barrier.Sync()
+	fence.Sync()
 	cortexm.SetCtrl(cortexm.Ctrl() | cortexm.UsePSP)
 	cortexm.ISB()
 

@@ -1,6 +1,6 @@
 // +build cortexm0 cortexm3 cortexm4 cortexm4f
 
 void
-sync$barrier$Sync() {
+sync$fence$Sync() {
 	asm volatile ("dsb":::"memory");
 }

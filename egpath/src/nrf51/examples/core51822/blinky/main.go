@@ -1,10 +1,12 @@
 package main
 
 import (
-	"arch/cortexm/exce"
-	"arch/cortexm/sleep"
 	"delay"
 	"rtos"
+	"sync/fence"
+
+	"arch/cortexm/exce"
+	"arch/cortexm/sleep"
 
 	"nrf51/clock"
 	"nrf51/gpio"
@@ -77,7 +79,11 @@ var IRQs = [...]func(){
 }
 
 func main() {
-	for {
-		sleep.WFE()
-	}
+	// Sleep forever.
+	sleep.EnableSleepOnExit()
+	fence.Sync() // not necessary on Cortex-M0,M3,M4
+	sleep.WFI()
+
+	// Execution should never reach there so LED0 should never light up.
+	p0.SetPin(int(leds[0]))
 }

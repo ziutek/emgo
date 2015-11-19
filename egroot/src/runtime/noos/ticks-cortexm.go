@@ -6,7 +6,7 @@ import (
 	"arch/cortexm/exce"
 	"arch/cortexm/systick"
 	"sync/atomic"
-	"sync/barrier"
+	"sync/fence"
 )
 
 var (
@@ -43,7 +43,7 @@ func updateTicks2(delta uint32) {
 	t := ticks2[aba&1]
 	aba++
 	ticks2[aba&1] = t + uint64(delta)
-	barrier.Memory()
+	fence.Memory()
 	atomic.StoreUintptr(&ticksABA, aba)
 }
 
@@ -54,10 +54,10 @@ func uptime() uint64 {
 	)
 	aba := atomic.LoadUintptr(&ticksABA)
 	for {
-		barrier.Compiler()
+		fence.Compiler()
 		cnt = systick.Val()
 		ticks = ticks2[aba&1]
-		barrier.Compiler()
+		fence.Compiler()
 		aba1 := atomic.LoadUintptr(&ticksABA)
 		if aba == aba1 {
 			break

@@ -2,7 +2,7 @@ package noos
 
 import (
 	"sync/atomic"
-	"sync/barrier"
+	"sync/fence"
 	"syscall"
 	"unsafe"
 )
@@ -83,7 +83,7 @@ func (c *chanS) lock() bool {
 }
 
 func (c *chanS) unlock() {
-	barrier.Memory()
+	fence.Memory()
 	atomic.CompareAndSwapInt32(&c.state, 1, 0)
 	c.event.Send()
 }
@@ -235,7 +235,7 @@ func (c *chanS) TryRecv(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintpt
 
 // Done must be called after the data transfer was completed.
 func (c *chanS) Done(d uintptr) {
-	barrier.Memory()
+	fence.Memory()
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(d)), nil)
 	c.event.Send()
 }

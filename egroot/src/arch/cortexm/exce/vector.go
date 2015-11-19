@@ -4,7 +4,7 @@ import (
 	"bits"
 	"builtin"
 	"mmio"
-	"sync/barrier"
+	"sync/fence"
 	"unsafe"
 )
 
@@ -32,7 +32,7 @@ var (
 // it if MaxTask > 0 in your linker script.
 func UseTable(vt []Vector) {
 	activeVT = vt
-	barrier.Memory()
+	fence.Memory()
 	vto.Store(uint32(uintptr(unsafe.Pointer(&vt[0]))))
 }
 
@@ -42,7 +42,7 @@ func (e Exce) UseHandler(handler func()) {
 		panic("exce: vector table is too short")
 	}
 	activeVT[e] = VectorFor(handler)
-	barrier.Sync()
+	fence.Sync()
 }
 
 // NewTable allocates new (properly aligned) vector table for n

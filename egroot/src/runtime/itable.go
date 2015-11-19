@@ -3,7 +3,7 @@ package runtime
 import (
 	"builtin"
 	"sync/atomic"
-	"sync/barrier"
+	"sync/fence"
 	"unsafe"
 )
 
@@ -39,7 +39,7 @@ func itableFor(ityp, etyp *builtin.Type) *builtin.Itable {
 	newel.ityp = ityp
 	newel.etyp = etyp
 	newel.itab = builtin.NewItable(ityp, etyp)
-	barrier.Memory()
+	fence.Memory()
 	for {
 		if atomic.CompareAndSwapPointer(list, nil, unsafe.Pointer(newel)) {
 			return newel.itab

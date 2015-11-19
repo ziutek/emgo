@@ -5,7 +5,7 @@ import (
 	"builtin"
 	"mem"
 	"sync/atomic"
-	"sync/barrier"
+	"sync/fence"
 	"syscall"
 	"unsafe"
 )
@@ -13,7 +13,7 @@ import (
 // Asynchronous channels - lockless implementation.
 
 func bit(w *uint32, n uintptr) bool {
-	barrier.Compiler()
+	fence.Compiler()
 	return *w&(1<<n) != 0
 }
 
@@ -174,21 +174,21 @@ func (c *chanA) Recv(_ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 // Done must be called after data transfer that sender or reveiver need to
 // perform..
 func (c *chanA) Done(n uintptr) {
-	barrier.Memory()
+	fence.Memory()
 	atomicToggleBit(&c.rd[n>>5], n&31)
 	c.event.Send()
 }
 
 func (c *chanA) Len() int {
 	torecv := atomic.LoadUintptr(&c.torecv)
-	barrier.Compiler()
+	fence.Compiler()
 	tosend := atomic.LoadUintptr(&c.tosend)
-	barrier.Compiler()
+	fence.Compiler()
 	for {
 		tr := atomic.LoadUintptr(&c.torecv)
-		barrier.Compiler()
+		fence.Compiler()
 		ts := atomic.LoadUintptr(&c.tosend)
-		barrier.Compiler()
+		fence.Compiler()
 		if tr == torecv {
 			break
 		}

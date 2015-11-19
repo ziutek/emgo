@@ -1,9 +1,9 @@
 void
-sync$barrier$Compiler() {
+sync$fence$Compiler() {
 	asm volatile ("":::"memory");
 }
 
 void
-sync$barrier$Memory() {
+sync$fence$Memory() {
 	__sync_synchronize();
 }
