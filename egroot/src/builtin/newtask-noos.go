@@ -2,7 +2,10 @@
 
 package builtin
 
+//c:inline
 func b2u(bool) uintptr
+
+//c:inline
 func f2u(func()) uintptr
 
 func NewTask(f func(), lock bool) {

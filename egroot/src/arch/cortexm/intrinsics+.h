@@ -30,7 +30,7 @@ arch$cortexm$EPSR() {
 }
 
 uint32
-cortexm$IEPSR() {
+arch$cortexm$IEPSR() {
 	uint32 r;
 	asm volatile ("mrs %0, iepsr":"=r" (r));
 	return r;
@@ -104,7 +104,7 @@ arch$cortexm$LR() {
 }
 
 void
-arch$ortexm$SetLR(uint32 r) {
+arch$cortexm$SetLR(uint32 r) {
 	asm volatile ("mov lr, %0"::"r" (r):"lr");
 }
 

@@ -20,7 +20,8 @@ func sysTickStart() {
 	// Defaults:
 	// One context switch per 1e6 SysTicks (70/s for 70 Mhz, 168/s for 168 MHz)
 	systick.SetReload(1e6 - 1)
-	systick.WriteFlags(systick.Enable | systick.TickInt | systick.ClkCPU)
+	systick.Reset()
+	systick.StoreFlags(systick.Enable | systick.TickInt | systick.ClkCPU)
 }
 
 func setTickPeriod() {

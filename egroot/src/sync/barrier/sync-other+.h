@@ -2,9 +2,9 @@
 
 // This isn't formally correct but hardware full memory barrier, followed by
 // R/W memory access, should be enough on most platform.
-__attribute__ ((always_inline))
-extern inline void sync$barrier$Sync() {
+void
+sync$barrier$Sync() {
 	static int mem;
 	__sync_synchronize();
-	mem++
+	mem++;
 }
