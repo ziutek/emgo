@@ -4,31 +4,46 @@ package bits
 
 import "unsafe"
 
-// TODO: Implement these functions more efficiently.
-
 func leadingZeros32(u uint32) uint {
-	n := uint(32)
-	for u != 0 {
-		u >>= 1
-		n--
+	var n uint = 32
+	x := u >> 16
+	if x != 0 {
+		n -= 16
+		u = x
 	}
-	return n
+	x = u >> 8
+	if x != 0 {
+		n -= 8
+		u = x
+	}
+	x = u >> 4
+	if x != 0 {
+		n -= 4
+		u = x
+	}
+	x = u >> 2
+	if x != 0 {
+		n -= 2
+		u = x
+	}
+	x = u >> 1
+	if x != 0 {
+		n -= 1
+		u = x
+	}
+	return n - uint(u)
 }
 
 func leadingZeros64(u uint64) uint {
-	n := uint(64)
-	for u != 0 {
-		u >>= 1
-		n--
+	if x := uint32(u >> 32); x != 0 {
+		return leadingZeros32(x)
 	}
-	return n
+	return 32 + leadingZeros32(uint32(u))
 }
 
 func leadingZerosPtr(u uintptr) uint {
-	n := uint(unsafe.Sizeof(u) * 8)
-	for u != 0 {
-		u >>= 1
-		n--
+	if unsafe.Sizeof(u) == 64 {
+		return leadingZeros64(uint64(u))
 	}
-	return n
+	return leadingZeros32(uint32(u))
 }
