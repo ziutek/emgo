@@ -5,6 +5,7 @@ package main
 
 import (
 	"arch/cortexm/exce"
+	"bits"
 	"delay"
 	"fmt"
 	"io"
@@ -299,18 +300,10 @@ func main() {
 	var s = "BLE(smart)"
 	fmt.Printf("|%15s|%015s|%-15s|%0-15s|\n", s, s, s, s)
 
-	prio, ena, err := rtos.IRQ(irqs.USART2).Status()
-	fmt.Println("irqs.USART2:", prio, ena, err)
-	prio, ena, err = rtos.IRQ(exce.MemManage).Status()
-	fmt.Println("exce.MemManage:", prio, ena, err)
-	prio, ena, err = rtos.IRQ(exce.BusFault).Status()
-	fmt.Println("exce.BusFault:", prio, ena, err)
-	prio, ena, err = rtos.IRQ(exce.UsageFault).Status()
-	fmt.Println("exce.UsageFault:", prio, ena, err)
-	prio, ena, _ = rtos.IRQ(exce.SVC).Status()
-	fmt.Println("exce.SVC:", prio, ena, err)
-	prio, ena, _ = rtos.IRQ(exce.DebugMon).Status()
-	fmt.Println("exce.DebugMon:", prio, ena, err)
+	u := uint64(0xffff0000ffff000f)
+	for i := uint(0); i <= 64; i++ {
+		fmt.Println(bits.LeadingZeros64(u >> i))
+	}
 }
 
 type II struct {

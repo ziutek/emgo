@@ -88,12 +88,12 @@ func (p *Periph) LFCLKStat() (src Src, running bool) {
 // LFCLKSrcCopy returns clock source for LFCLK from time when LFCLKSTART task
 // has been triggered.
 func (p *Periph) LFCLKSrcCopy() Src {
-	return Src(p.lfclksrccopy.LoadBits(3))
+	return Src(p.lfclksrccopy.LoadMask(3))
 }
 
 // LFCLKSrc returns clock source for LFCLK..
 func (p *Periph) LFCLKSrc() Src {
-	return Src(p.lfclksrc.LoadBits(3))
+	return Src(p.lfclksrc.LoadMask(3))
 }
 
 // SetLFCLKSrc sets clock source for LFCLK. It can only be modified when LFCLK
@@ -104,7 +104,7 @@ func (p *Periph) SetLFCLKSrc(src Src) {
 
 // CTIV returns calibration timer interval in milliseconds.
 func (p *Periph) CTIV() int {
-	return int(p.ctiv.LoadBits(0x7f) * 250)
+	return int(p.ctiv.LoadMask(0x7f) * 250)
 }
 
 // SetCTIV sets calibration timer interval as number of milliseconds
@@ -121,7 +121,7 @@ const (
 )
 
 func (p *Periph) XtalFreq() XtalFreq {
-	return XtalFreq(p.xtalfreq.LoadBits(0xff))
+	return XtalFreq(p.xtalfreq.LoadMask(0xff))
 }
 
 func (p *Periph) SetXtalFreq(xf XtalFreq) {

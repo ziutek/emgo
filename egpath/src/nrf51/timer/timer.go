@@ -72,7 +72,7 @@ const (
 )
 
 func (p *Periph) Mode() Mode {
-	return Mode(p.mode.LoadBits(1))
+	return Mode(p.mode.LoadMask(1))
 }
 
 func (p *Periph) SetMode(m Mode) {
@@ -89,7 +89,7 @@ const (
 )
 
 func (p *Periph) Bitmode() Bitmode {
-	return Bitmode(p.bitmode.LoadBits(3))
+	return Bitmode(p.bitmode.LoadMask(3))
 }
 
 func (p *Periph) SetBitmode(m Bitmode) {
@@ -97,7 +97,7 @@ func (p *Periph) SetBitmode(m Bitmode) {
 }
 
 func (p *Periph) Prescaler() int {
-	return int(p.prescaler.LoadBits(0xf))
+	return int(p.prescaler.LoadMask(0xf))
 }
 
 // SetPrescaler sets prescaler to exp (freq = 16MHz/2^exp). Must only be used

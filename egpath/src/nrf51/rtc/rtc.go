@@ -46,7 +46,7 @@ func (p *Periph) Event(n Event) te.Event { return te.GetEvent(&p.ph, int(n)) }
 
 // Counter returns value of counter register.
 func (p *Periph) Counter() uint32 {
-	return p.counter.LoadBits(0xffffff)
+	return p.counter.LoadMask(0xffffff)
 }
 
 func (p *Periph) SetCounter(c uint32) {
@@ -55,7 +55,7 @@ func (p *Periph) SetCounter(c uint32) {
 
 // Prescaler returns value of prescaler register.
 func (p *Periph) Prescaler() uint32 {
-	return p.counter.LoadBits(0xfff)
+	return p.counter.LoadMask(0xfff)
 }
 
 // SetPrescaler sets prescaler to pr (freq = 32768Hz/(pr+1)). Must only be used
@@ -65,7 +65,7 @@ func (p *Periph) SetPrescaler(pr int) {
 }
 
 func (p *Periph) CC(n int) uint32 {
-	return p.cc[n].LoadBits(0xffffff)
+	return p.cc[n].LoadMask(0xffffff)
 }
 
 func (p *Periph) SetCC(n int, cc uint32) {

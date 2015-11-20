@@ -53,12 +53,12 @@ func SetReload(v uint32) {
 
 // Reload returns value of RVR register.
 func Reload() uint32 {
-	return stk.rvr.LoadBits(0x00ffffff)
+	return stk.rvr.LoadMask(0x00ffffff)
 }
 
 // Val returns current value of SysTick counter
 func Val() uint32 {
-	return stk.cvr.LoadBits(0x00ffffff)
+	return stk.cvr.LoadMask(0x00ffffff)
 }
 
 // Reset counter to 0.
