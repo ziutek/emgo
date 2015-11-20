@@ -1,9 +1,9 @@
-package scb
+package systick
 
 import "mmio"
 
 type Field uint16
-type Bit uint
+type Bit byte
 
 type U8 struct{ r mmio.U8 }
 
