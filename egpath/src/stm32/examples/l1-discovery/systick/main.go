@@ -11,6 +11,7 @@ import (
 	"arch/cortexm/systick"
 
 	"stm32/l1/gpio"
+	"stm32/l1/irqs"
 	"stm32/l1/periph"
 	"stm32/l1/setup"
 )
@@ -32,13 +33,19 @@ var (
 	ledup = true
 )
 
-func sysTickHandler() {
+func isr() {
 	if ledup {
 		LED.SetPin(Blue)
 	} else {
 		LED.ClearPin(Blue)
 	}
 	ledup = !ledup
+}
+
+//c:const
+//c:__attribute__((section(".InterruptVectors")))
+var IRQs = [...]func(){
+	irqs.Tim2 - exce.IRQ0: isr,
 }
 
 func main() {
@@ -50,16 +57,11 @@ func main() {
 	LED.SetMode(Blue, gpio.Out)
 	LED.SetMode(Green, gpio.Out)
 
-	vt := exce.NewTable(16)
-	vt[exce.NMI] = exce.VectorFor(defaultHandler)
-	vt[exce.HardFault] = exce.VectorFor(defaultHandler)
-	vt[exce.SysTick] = exce.VectorFor(sysTickHandler)
-	exce.UseTable(vt)
-
-	_, _, tenms := systick.Calib()
+	tenms := systick.CALIB.Bits(systick.TENMS)
 	tenms *= 10 // stm32l1 returns value for 1 ms not for 10ms.
-	systick.SetReload(tenms * 100)
-	systick.SetFlags(systick.Enable | systick.TickInt)
+	systick.RVR.StoreBits(systick.RELOAD, tenms*100)
+	systick.CVR.StoreBits(systick.CURRENT, 0)
+	systick.CSR.SetBits(systick.ENABLE | systick.TICKINT)
 
 	// Sleep forever.
 	sleep.EnableSleepOnExit()

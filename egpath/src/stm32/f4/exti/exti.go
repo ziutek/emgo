@@ -83,16 +83,16 @@ func (l Lines) connect(port uint32) {
 		if l&0x0f != 0 {
 			r := &regs2[i]
 			if l&1 != 0 {
-				r.StoreMask(0x000f, port)
+				r.StoreBits(0x000f, port)
 			}
 			if l&2 != 0 {
-				r.StoreMask(0x00f0, port<<4)
+				r.StoreBits(0x00f0, port<<4)
 			}
 			if l&4 != 0 {
-				r.StoreMask(0x0f00, port<<8)
+				r.StoreBits(0x0f00, port<<8)
 			}
 			if l&8 != 0 {
-				r.StoreMask(0xf000, port<<12)
+				r.StoreBits(0xf000, port<<12)
 			}
 		}
 		l = l >> 4

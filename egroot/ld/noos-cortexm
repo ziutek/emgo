@@ -17,6 +17,7 @@ SECTIONS {
 			SORT_BY_ALIGNMENT(.rodata)
 			SORT_BY_ALIGNMENT(.rodata.*)
 		)
+		
 		. = ALIGN(4);
 		__exidx_end = .;
 	} >loadTo

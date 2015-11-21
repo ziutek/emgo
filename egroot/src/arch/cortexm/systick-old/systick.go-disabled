@@ -17,17 +17,17 @@ var stk = (*systick)(unsafe.Pointer(uintptr(0xe000e010)))
 // Implemented as set/clear flags instead of enable/disable functions because
 // any read of ctrl register clears Count flag.
 
-type Flags uint32
+type Mask uint32
 
 const (
-	Enable  Flags = 1 << 0  // Counter ebabled.
-	TickInt Flags = 1 << 1  // Generate exceptions.
-	ClkCPU  Flags = 1 << 2  // Use CPU clock as clock source.
-	Count   Flags = 1 << 16 // Timer counted to 0 since last flag read.
+	ENABLE    Flags = 1 << 0  // Enable counter.
+	TICKINT   Flags = 1 << 1  // Generate exceptions.
+	CLKSOURCE Flags = 1 << 2  // Clock source: 0:external, 1:CPU.
+	COUNTFLAG Flags = 1 << 16 // 1:timer counted to 0 since last register read.
 )
 
 // Flags returns SysTick status and control flags.
-func LoadFlags() Flags {
+func CSR() Flags {
 	return Flags(stk.csr.Load())
 }
 
@@ -51,14 +51,14 @@ func SetReload(v uint32) {
 	stk.rvr.Store(v)
 }
 
-// Reload returns value of RVR register.
-func Reload() uint32 {
-	return stk.rvr.LoadMask(0x00ffffff)
+// RVR returns value of RVR register.
+func RVR() uint32 {
+	return stk.rvr.LoadBits(0x00ffffff)
 }
 
-// Val returns current value of SysTick counter
-func Val() uint32 {
-	return stk.cvr.LoadMask(0x00ffffff)
+// CURRENT returns current value of SysTick counter
+func CURRENT() uint32 {
+	return stk.cvr.LoadBits(0x00ffffff)
 }
 
 // Reset counter to 0.
@@ -66,11 +66,11 @@ func Reset() {
 	stk.cvr.Store(0) // Anything stored clears cvr.
 }
 
-// Calib returns calibration properties.
-func Calib() (skew, noref bool, tenms uint32) {
+// CALIB returns calibration properties.
+func CALIB() (tenms uint32, skew, noref bool) {
 	c := stk.calib.Load()
-	skew = c&(1<<31) != 0
-	noref = c&(1<<30) != 0
 	tenms = c & 0x00ffffff
+	skew = c&(1<<30) != 0
+	noref = c&(1<<31) != 0
 	return
 }

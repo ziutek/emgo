@@ -18,12 +18,12 @@ const cpacaddr uintptr = 0xe000ed88
 
 func SetAccess(p Perm) {
 	cpac := mmio.PtrU32(unsafe.Pointer(cpacaddr))
-	cpac.StoreMask(3<<20, uint32(p))
+	cpac.StoreBits(3<<20, uint32(p))
 }
 
 func Access() Perm {
 	cpac := mmio.PtrU32(unsafe.Pointer(cpacaddr))
-	return Perm(cpac.LoadMask(3 << 20))
+	return Perm(cpac.Bits(3 << 20))
 }
 
 // SPFlags control/describe FPU state preservation behavior during exception

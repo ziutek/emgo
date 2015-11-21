@@ -79,14 +79,14 @@ func blink(c int, d int) {
 	leds.ClearPin(c)
 }
 
-func sirq() {
+func isr() {
 	s.IRQ()
 }
 
 //c:const
 //c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.USART2 - exce.IRQ0: sirq,
+	irqs.USART2 - exce.IRQ0: isr,
 }
 
 type Bool bool

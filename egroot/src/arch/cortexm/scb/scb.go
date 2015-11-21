@@ -1,155 +1,162 @@
+// Package scb gives an access to registers of System Control Block.
+//
+// Detailed description of all registers covered by this package can be found in
+// "Cortex-M[0-4] Devices Generic User Guide", chapter 4 "Cortex-M[0-4]
+// Peripherals".
+//
+// Notes
+//
+// 1. Cortex-M0 doesn't implement ACTLR, SHPR1, CFSR, HFSR, MMFR, BFAR, AFSR
+// registers.
+//
+// 2. SHPR2, SHPR3 registers are only word accessible in Cortex-M0 so this
+// package doesn't provide byte access to individual fields.
 package scb
 
-import "unsafe"
-
-type SCB struct {
-	ACTLR U32
-	_     [829]U32
-	CPUID U32
-	ICSR  U32
-	VTOR  U32
-	AIRCR U32
-	SCR   U32
-	CCR   U32
-	SHPR  [3 * 4]U8
-	SHCRS U32
-	MMSR  U8
-	BFSR  U8
-	UFSR  U16
-	HFSR  U32
-	_     U32
-	MMAR  U32
-	BFAR  U32
-	AFSR  U32
-}
-
-var R = (*SCB)(unsafe.Pointer(uintptr(0xe000e008)))
-
-// ACTLR
 const (
-	DISMCYCINT Bit = 0
-	DISDEFWBUF Bit = 1
-	DISFOLD    Bit = 2
-	DISFPCA    Bit = 8
-	DISOOFP    Bit = 9
+	base = 0xE000ED00
+	num  = 16
 )
 
-// CPUID
 const (
-	Revision    Field = 4<<o + 0
-	PartNo      Field = 12<<o + 4
-	Constant    Field = 4<<o + 16
-	Variant     Field = 4<<o + 20
-	Implementer Field = 8<<o + 24
+	CPUID Reg = 0
+
+	Revision    Mask  = 1<<4 - 1
+	PartNo      Field = 12<<x + 4
+	Constant    Field = 4<<x + 16
+	Variant     Field = 4<<x + 20
+	Implementer Field = 8<<x + 24
 )
 
-// ICSR
 const (
-	VECTACTIVE  Field = 9<<o + 0
-	RETTOBASE   Bit   = 11
-	VECTPENDING Field = 10<<o + 12
-	ISRPENDING  Bit   = 22
-	PENDSTCLR   Bit   = 25
-	PENDSTSET   Bit   = 26
-	PENDSVCLR   Bit   = 27
-	PENDSVSET   Bit   = 28
-	NMIPENDSET  Bit   = 31
+	ICSR Reg = 1
+
+	VECTACTIVE  Mask  = 1<<9 - 1
+	RETTOBASE   Mask  = 1 << 11
+	VECTPENDING Field = 10<<x + 12
+	ISRPENDING  Mask  = 1 << 22
+	PENDSTCLR   Mask  = 1 << 25
+	PENDSTSET   Mask  = 1 << 26
+	PENDSVCLR   Mask  = 1 << 27
+	PENDSVSET   Mask  = 1 << 28
+	NMIPENDSET  Mask  = 1 << 31
 )
 
-// VTOR
 const (
-	TBLOFF Field = 25<<o + 7
+	VTOR Reg = 2
+
+	TBLOFF Mask = (1<<25 - 1) << 7
 )
 
-// AIRCR
 const (
-	VECTRESET     Bit   = 0
-	VECTCLRACTIVE Bit   = 1
-	SYSRESETREQ   Bit   = 2
-	PRIGROUP      Field = 3<<o + 8
-	ENDIANNESS    Bit   = 15
-	VECTKEY       Field = 16<<o + 16
+	AIRCR Reg = 3
+
+	VECTRESET     Mask  = 1 << 0
+	VECTCLRACTIVE Mask  = 1 << 1
+	SYSRESETREQ   Mask  = 1 << 2
+	PRIGROUP      Field = 3<<x + 8
+	ENDIANNESS    Mask  = 1 << 15
+	VECTKEY       Field = 16<<x + 16
 )
 
-// SCR
 const (
-	SLEEPONEXIT Bit = 1
-	SLEEPDEEP   Bit = 2
-	SEVONPEND   Bit = 4
+	SCR Reg = 4
+
+	SLEEPONEXIT Mask = 1 << 1
+	SLEEPDEEP   Mask = 1 << 2
+	SEVONPEND   Mask = 1 << 4
 )
 
-// CCR
 const (
-	NONBASETHRDENA Bit = 0
-	USERSETMPEND   Bit = 1
-	UNALIGN_TRP    Bit = 3
-	DIV_0_TRP      Bit = 4
-	BFHFNMIGN      Bit = 8
-	STKALIGN       Bit = 9
+	CCR Reg = 5
+
+	NONBASETHRDENA Mask = 1 << 0
+	USERSETMPEND   Mask = 1 << 1
+	UNALIGN_TRP    Mask = 1 << 3
+	DIV_0_TRP      Mask = 1 << 4
+	BFHFNMIGN      Mask = 1 << 8
+	STKALIGN       Mask = 1 << 9
 )
 
-// SHPR
 const (
-	MemManage  = 0
-	BusFault   = 1
-	UsageFault = 2
-	SVCall     = 7
-	PendSV     = 10
-	SysTick    = 11
+	SHPR1 Reg = 6
+
+	MemManage  Field = 8<<x + 0
+	BusFault   Field = 8<<x + 8
+	UsageFault Field = 8<<x + 16
 )
 
-// SHCSR
 const (
-	MEMFAULTACT    Bit = 0
-	BUSFAULTACT    Bit = 1
-	USGFAULTACT    Bit = 3
-	SVCALLACT      Bit = 7
-	MONITORACT     Bit = 8
-	PENDSVACT      Bit = 10
-	SYSTICKACT     Bit = 11
-	USGFAULTPENDED Bit = 12
-	MEMFAULTPENDED Bit = 13
-	BUSFAULTPENDED Bit = 14
-	SVCALLPENDED   Bit = 15
-	MEMFAULTENA    Bit = 16
-	BUSFAULTENA    Bit = 17
-	USGFAULTENA    Bit = 18
+	SHPR2 Reg = 7
+
+	SVCall Field = 8<<x + 24
 )
 
-// MMSR
 const (
-	IACCVIOL  Bit = 0
-	DACCVIOL  Bit = 1
-	MUNSTKERR Bit = 3
-	MSTKERR   Bit = 4
-	MLSPERR   Bit = 5
-	MMARVALID Bit = 7
+	SHPR3 Reg = 8
+
+	PendSV  Field = 8<<x + 16
+	SysTick Field = 8<<x + 24
 )
 
-// BFSR
 const (
-	IBUSERR     Bit = 0
-	PRECISERR   Bit = 1
-	IMPRECISERR Bit = 2
-	UNSTKERR    Bit = 3
-	STKERR      Bit = 4
-	LSPERR      Bit = 5
-	BFARVALID   Bit = 7
+	SHCSR Reg = 9
+
+	MEMFAULTACT    Mask = 1 << 0
+	BUSFAULTACT    Mask = 1 << 1
+	USGFAULTACT    Mask = 1 << 3
+	SVCALLACT      Mask = 1 << 7
+	MONITORACT     Mask = 1 << 8
+	PENDSVACT      Mask = 1 << 10
+	SYSTICKACT     Mask = 1 << 11
+	USGFAULTPENDED Mask = 1 << 12
+	MEMFAULTPENDED Mask = 1 << 13
+	BUSFAULTPENDED Mask = 1 << 14
+	SVCALLPENDED   Mask = 1 << 15
+	MEMFAULTENA    Mask = 1 << 16
+	BUSFAULTENA    Mask = 1 << 17
+	USGFAULTENA    Mask = 1 << 18
 )
 
-// UFSR
 const (
-	UNDEFINSTR Bit = 0
-	INVSTATE   Bit = 1
-	INVPC      Bit = 2
-	NOCP       Bit = 3
-	UNALIGNED  Bit = 8
-	DIVBYZERO  Bit = 9
+	CFSR Reg = 10
+
+	// MFSR
+	IACCVIOL  Mask = 1 << 0
+	DACCVIOL  Mask = 1 << 1
+	MUNSTKERR Mask = 1 << 3
+	MSTKERR   Mask = 1 << 4
+	MLSPERR   Mask = 1 << 5
+	MMARVALID Mask = 1 << 7
+
+	// BFSR
+	IBUSERR     Mask = 1 << 8
+	PRECISERR   Mask = 1 << 9
+	IMPRECISERR Mask = 1 << 10
+	UNSTKERR    Mask = 1 << 11
+	STKERR      Mask = 1 << 12
+	LSPERR      Mask = 1 << 13
+	BFARVALID   Mask = 1 << 15
+
+	// UFSR
+	UNDEFINSTR Mask = 1 << 16
+	INVSTATE   Mask = 1 << 17
+	INVPC      Mask = 1 << 18
+	NOCP       Mask = 1 << 19
+	UNALIGNED  Mask = 1 << 24
+	DIVBYZERO  Mask = 1 << 25
 )
 
-// HFSR
 const (
-	VECTTBL  Bit = 1
-	FORCED   Bit = 30
-	DEBUGEVT Bit = 31
+	HFSR Reg = 11
+
+	VECTTBL  Mask = 1 << 1
+	FORCED   Mask = 1 << 30
+	DEBUGEVT Mask = 1 << 31
+)
+
+const (
+	MMFR Reg = 13
+	BFAR Reg = 14
+	AFSR Reg = 15
 )

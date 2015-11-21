@@ -1,6 +1,7 @@
 package main
 
 import (
+	"arch/cortexm/exce"
 	"reflect"
 	"rtos"
 
@@ -52,14 +53,19 @@ func init() {
 	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	rtos.IRQ(irqs.USART2).UseHandler(sirq)
 	rtos.IRQ(irqs.USART2).Enable()
 
 	s.SetUnix(true)
 }
 
-func sirq() {
+func isr() {
 	s.IRQ()
+}
+
+//c:const
+//c:__attribute__((section(".InterruptVectors")))
+var IRQs = [...]func(){
+	irqs.USART2 - exce.IRQ0: isr,
 }
 
 type S struct {
@@ -92,7 +98,6 @@ var ivals = [...]interface{}{
 
 func main() {
 	s.WriteString("\nReflection test:\n\n")
-
 	for _, iv := range ivals {
 		v := reflect.ValueOf(iv)
 		t := v.Type()

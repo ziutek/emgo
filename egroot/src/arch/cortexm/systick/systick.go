@@ -1,35 +1,40 @@
+// Package systick gives an access to System Timer registers.
+//
+// Detailed description of all registers covered by this package can be found in
+// "Cortex-M[0-4] Devices Generic User Guide", chapter 4 "Cortex-M[0-4]
+// Peripherals".
 package systick
 
-type SysTick struct {
-	SYST_CSR   U32
-	SYST_RVR   U32
-	SYST_CVR   U32
-	SYST_CALIB U32
-}
-
-var R = (*SysTick)(unsafe.Pointer(uintptr(0xe000e010)))
-
-// SYST_CSR
 const (
-	ENABLE    Bit = 0
-	TICKINT   Bit = 1
-	CLKSOURCE Bit = 2
-	COUNTFLAG Bit = 16
+	base = 0xe000e010
+	num  = 4
 )
 
-// SYST_RVR
 const (
-	RELOAD Field = 24<<o + 0
+	CSR Reg = 0 // Any read of CSR clears COUNTFLAG.
+
+	ENABLE    Mask = 1 << 0  // Enable counter.
+	TICKINT   Mask = 1 << 1  // Generate exceptions.
+	CLKSOURCE Mask = 1 << 2  // Clock source: 0:external, 1:CPU.
+	COUNTFLAG Mask = 1 << 16 // 1:Timer counted to 0 since last register read.
 )
 
-// SYST_CVR
 const (
-	CURRENT Field = 24<<o + 0
+	RVR Reg = 1
+
+	RELOAD Mask = 1<<24 - 1
 )
 
-// SYST_CALIB
 const (
-	TENMS Field = 24<<o + 0
-	SKEW  Bit   = 30
-	NOREF Bit   = 31
+	CVR Reg = 2
+
+	CURRENT Mask = 1<<24 - 1
+)
+
+const (
+	CALIB Reg = 3
+
+	TENMS Mask = 1<<24 - 1
+	SKEW  Mask = 1 << 30
+	NOREF Mask = 1 << 31
 )
