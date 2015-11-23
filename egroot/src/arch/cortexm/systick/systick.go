@@ -6,8 +6,8 @@
 package systick
 
 const (
-	base = 0xe000e010
-	num  = 4
+	base   = 0xe000e010
+	length = 4
 )
 
 const (

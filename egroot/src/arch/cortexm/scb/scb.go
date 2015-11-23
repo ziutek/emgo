@@ -14,8 +14,21 @@
 package scb
 
 const (
-	base = 0xE000ED00
-	num  = 16
+	base   = 0xE000ED00
+	length = 16
+
+	base1   = 0xe000e008
+	length1 = 1
+)
+
+const (
+	ACTLR Reg1 = 0
+
+	DISMCYCINT Mask = 1 << 0
+	DISDEFWBUF Mask = 1 << 1
+	DISFOLD    Mask = 1 << 2
+	DISFPCA    Mask = 1 << 8
+	DISOOFP    Mask = 1 << 9
 )
 
 const (
