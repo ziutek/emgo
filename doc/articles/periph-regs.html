@@ -95,7 +95,7 @@ As you can see, there are 12 instructions and 12*2 + 4 + 4 = 32 bytes used: 24 b
 <h2 id="struct_with_methods">Peripheral memory as struct and methods to access registers</h2>
 
 <p>
-This approach was formerly used (and sometimes still does) in Emgo standard library. But why methods? Whats wrong with previous approach?
+This approach is used in Emgo standard library, especially when some peripheral can have more than one instance (eg. timers, GPIO ports, etc.). But why methods? Whats wrong with previous approach?
 </p>
 
 <p>
@@ -204,7 +204,7 @@ func main() {
 </pre>
 
 <p>
-As you can see, generated code is shorter by one instruction. Now, first instruction loads address of A directly from 58: to r3. Following instructions are identical to previous two examples. We save 6 bytes of memory and one instruction to execute. This doesn't make big difference in speed nor memory consumption, although saving some memory is very nice. There are other things that can't be seen in presented examples which caused that this is the default approach in Emgo standard library.
+As you can see, generated code is shorter by one instruction. Now, first instruction loads address of A directly from 58: to r3. Following instructions are identical to previous two examples. We save 6 bytes of memory and one instruction to execute. This doesn't make big difference in speed nor memory consumption, although saving some memory is very nice. This approach is used in Emgo standard library when some peripheral can exist only in one instance (eg. Cortex-M peripherals like SCB, SysTick or NVIC).
 </p>
 
 <p>
@@ -284,7 +284,7 @@ const (
 </pre>
 
 <p>
-As you can see the description of each register is covered in one <code>const</code> block. First declaration in blok is register name set to its index in array. Subsequent declarations describe all defined bits and fields of this register.
+As you can see, the description of each register is covered in one <code>const</code> block. First declaration in block is the register name, set to its index in array. Subsequent declarations describe all defined bits and fields of this register.
 </p>
 
 <p>
