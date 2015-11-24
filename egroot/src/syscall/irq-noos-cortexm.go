@@ -4,11 +4,10 @@
 package syscall
 
 import (
-	"arch/cortexm/exce"
+	"arch/cortexm"
 )
 
 const (
-	IRQPrioLowest  = exce.PrioLowest
-	IRQPrioHighest = exce.PrioHighest
-	IRQPrioRange   = exce.PrioRange
+	IRQPrioLowest  = cortexm.PrioLowest
+	IRQPrioHighest = cortexm.PrioHighest
 )

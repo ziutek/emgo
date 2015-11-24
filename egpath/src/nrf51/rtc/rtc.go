@@ -2,7 +2,7 @@
 package rtc
 
 import (
-	"arch/cortexm/exce"
+	"arch/cortexm/nvic"
 	"mmio"
 	"unsafe"
 
@@ -40,7 +40,7 @@ const (
 	COMPARE3 Event = 19 // Compare event on CC[3] match.
 )
 
-func (p *Periph) IRQ() exce.Exce         { return p.ph.IRQ() }
+func (p *Periph) IRQ() nvic.IRQ          { return p.ph.IRQ() }
 func (p *Periph) Task(n Task) te.Task    { return te.GetTask(&p.ph, int(n)) }
 func (p *Periph) Event(n Event) te.Event { return te.GetEvent(&p.ph, int(n)) }
 
@@ -49,6 +49,7 @@ func (p *Periph) Counter() uint32 {
 	return p.counter.Bits(0xffffff)
 }
 
+// SetCounter sets value of counter register.
 func (p *Periph) SetCounter(c uint32) {
 	p.counter.Store(c)
 }

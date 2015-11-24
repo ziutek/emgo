@@ -2,7 +2,8 @@ package rtos
 
 import "syscall"
 
-// An IRQ represents exception/interrupt type.
+// An IRQ represents interrupt type.
+// Cortex-M: IRQ represents external interrupt.
 type IRQ int
 
 func (irq IRQ) Enable() error {

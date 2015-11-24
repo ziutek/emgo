@@ -9,33 +9,33 @@ type u8w struct {
 	r [8]uint32
 } //c:volatile
 
-func (r *u8w) SetBit(e Exce) {
-	val := uint32(1) << uint(e&31)
-	e >>= 5
-	r.r[e] = val
+func (r *u8w) SetBit(irq IRQ) {
+	val := uint32(1) << (irq & 31)
+	irq >>= 5
+	r.r[irq] = val
 }
 
-func (r *u8w) Bit(e Exce) bool {
-	mask := uint32(1) << uint(e&31)
-	e >>= 5
-	return r.r[e]&mask != 0
+func (r *u8w) Bit(irq IRQ) bool {
+	mask := uint32(1) << (irq & 31)
+	irq >>= 5
+	return r.r[irq]&mask != 0
 }
 
 type u60w struct {
 	r [60]uint32 // Use uint32 because Cortex-M0 supports only word access.
 } //c:volatile
 
-func (r *u60w) SetByte(e Exce, b byte) {
-	shift := uint(e&3) * 8
+func (r *u60w) SetByte(irq IRQ, b byte) {
+	shift := uint(irq&3) * 8
 	val := uint32(b) << shift
 	mask := uint32(0xff) << shift
-	e >>= 2
-	r.r[e] = r.r[e]&^mask | val
+	irq >>= 2
+	r.r[irq] = r.r[irq]&^mask | val
 }
 
-func (r *u60w) Byte(e Exce) byte {
-	shift := uint(e&3) * 8
-	return byte(r.r[e>>2] >> shift)
+func (r *u60w) Byte(irq IRQ) byte {
+	shift := uint(irq&3) * 8
+	return byte(r.r[irq>>2] >> shift)
 }
 
 type regs struct {

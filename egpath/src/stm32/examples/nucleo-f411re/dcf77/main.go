@@ -32,7 +32,7 @@ func init() {
 	exti.L1.RiseTrigEnable()
 	exti.L1.FallTrigEnable()
 	exti.L1.IntEnable()
-	rtos.IRQ(irqs.Ext1).UseHandler(edgeISR)
+
 	rtos.IRQ(irqs.Ext1).Enable()
 
 	periph.APB2ClockDisable(periph.SysCfg)
@@ -55,6 +55,13 @@ func edgeISR() {
 	exti.L1.ClearPending()
 	blink(Blue, -100)
 	d.Edge(t, gpio.C.InPin(1) != 0)
+}
+
+//c:const
+//c:__attribute__((section(".InterruptVectors")))
+var IRQs = [...]func(){
+	irqs.USART2: conISR,
+	irqs.Ext1:   edgeISR,
 }
 
 func main() {

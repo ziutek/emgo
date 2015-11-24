@@ -3,7 +3,6 @@
 package noos
 
 import (
-	"arch/cortexm/exce"
 	"arch/cortexm/systick"
 	"sync/atomic"
 	"sync/fence"
@@ -35,7 +34,7 @@ func setTickPeriod() {
 func sysTickHandler() {
 	updateTicks2(tickPeriod)
 	tickEvent.Send()
-	exce.PendSV.SetPending()
+	raisePendSV() 
 }
 
 func updateTicks2(delta uint32) {

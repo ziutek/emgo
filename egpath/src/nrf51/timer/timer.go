@@ -2,7 +2,7 @@
 package timer
 
 import (
-	"arch/cortexm/exce"
+	"arch/cortexm/nvic"
 	"mmio"
 	"unsafe"
 
@@ -57,7 +57,7 @@ const (
 	COMPARE3_STOP  Shorts = 0x100 << 3
 )
 
-func (p *Periph) IRQ() exce.Exce         { return p.ph.IRQ() }
+func (p *Periph) IRQ() nvic.IRQ          { return p.ph.IRQ() }
 func (p *Periph) Task(n Task) te.Task    { return te.GetTask(&p.ph, int(n)) }
 func (p *Periph) Event(n Event) te.Event { return te.GetEvent(&p.ph, int(n)) }
 func (p *Periph) Shorts() Shorts         { return Shorts(p.ph.Shorts.Load()) }

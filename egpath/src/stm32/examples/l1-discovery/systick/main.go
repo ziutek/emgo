@@ -6,7 +6,6 @@ package main
 import (
 	"sync/fence"
 
-	"arch/cortexm/exce"
 	"arch/cortexm/sleep"
 	"arch/cortexm/systick"
 
@@ -45,7 +44,7 @@ func isr() {
 //c:const
 //c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.Tim2 - exce.IRQ0: isr,
+	irqs.Tim2: isr,
 }
 
 func main() {

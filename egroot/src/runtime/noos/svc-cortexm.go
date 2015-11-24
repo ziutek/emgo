@@ -5,12 +5,12 @@ package noos
 import (
 	"arch/cortexm"
 	"arch/cortexm/debug/itm"
-	"arch/cortexm/exce"
+	"arch/cortexm/nvic"
 	"syscall"
 	"unsafe"
 )
 
-var syscalls = [...]func(*exce.StackFrame){
+var syscalls = [...]func(*cortexm.StackFrame){
 	syscall.NEWTASK:       scNewTask,
 	syscall.KILLTASK:      scKillTask,
 	syscall.TASKUNLOCK:    scTaskUnlock,
@@ -28,38 +28,38 @@ func unpriv() bool {
 	return cortexm.CONTROL()&cortexm.Unpriv != 0
 }
 
-func scNewTask(fp *exce.StackFrame) {
+func scNewTask(fp *cortexm.StackFrame) {
 	tid, err := tasker.newTask(fp.R[0], fp.PSR, fp.R[1] != 0)
 	fp.R[0], fp.R[1] = uintptr(tid), uintptr(err)
 }
 
-func scKillTask(fp *exce.StackFrame) {
+func scKillTask(fp *cortexm.StackFrame) {
 	err := tasker.killTask(int(fp.R[0]))
 	fp.R[1] = uintptr(err)
 }
 
-func scTaskUnlock(fp *exce.StackFrame) {
+func scTaskUnlock(fp *cortexm.StackFrame) {
 	tasker.unlockParent()
 }
 
-func scEventWait(fp *exce.StackFrame) {
+func scEventWait(fp *cortexm.StackFrame) {
 	tasker.waitEvent(syscall.Event(fp.R[0]))
 }
 
-func scSetSysClock(fp *exce.StackFrame) {
+func scSetSysClock(fp *cortexm.StackFrame) {
 	sysClk = uint32(fp.R[0])
 	setTickPeriod()
 }
 
-func scUptime(fp *exce.StackFrame) {
+func scUptime(fp *cortexm.StackFrame) {
 	*(*uint64)(unsafe.Pointer(fp)) = uptime()
 }
 
-func scSetIRQEna(fp *exce.StackFrame) {
-	irq := exce.Exce(fp.R[0])
+func scSetIRQEna(fp *cortexm.StackFrame) {
+	irq := nvic.IRQ(fp.R[0])
 	ena := fp.R[1] != 0
-	if irq < exce.IRQ0 && unpriv() {
-		fp.R[1] = uintptr(syscall.EPERM)
+	if irq > 239 {
+		fp.R[1] = uintptr(syscall.ERANGE)
 		return
 	}
 	if ena {
@@ -70,45 +70,27 @@ func scSetIRQEna(fp *exce.StackFrame) {
 	fp.R[1] = uintptr(syscall.OK)
 }
 
-func scSetIRQPrio(fp *exce.StackFrame) {
-	r0 := fp.R[0]
-	if r0 > 255 {
+func scSetIRQPrio(fp *cortexm.StackFrame) {
+	irq := nvic.IRQ(fp.R[0])
+	prio := int(fp.R[1])
+	if irq > 239 {
 		fp.R[1] = uintptr(syscall.ERANGE)
-		return
-	}
-	irq := exce.Exce(r0)
-	prio := exce.Prio(fp.R[1])
-	if irq < exce.IRQ0 && unpriv() {
-		fp.R[1] = uintptr(syscall.EPERM)
 		return
 	}
 	irq.SetPrio(prio)
 	fp.R[1] = uintptr(syscall.OK)
 }
 
-func scSetIRQHandler(fp *exce.StackFrame) {
-	r0 := fp.R[0]
-	if r0 > 255 {
-		fp.R[1] = uintptr(syscall.ERANGE)
-		return
-	}
-	irq := exce.Exce(r0)
-	h := p2f(fp.R[1])
-	if irq < exce.IRQ0 && unpriv() {
-		fp.R[1] = uintptr(syscall.EPERM)
-		return
-	}
-	irq.UseHandler(h)
-	fp.R[1] = uintptr(syscall.OK)
+func scSetIRQHandler(fp *cortexm.StackFrame) {
+	fp.R[1] = uintptr(syscall.ENOSYS)
 }
 
-func scIRQStatus(fp *exce.StackFrame) {
-	r0 := fp.R[0]
-	if r0 > 255 {
+func scIRQStatus(fp *cortexm.StackFrame) {
+	irq := nvic.IRQ(fp.R[0])
+	if irq > 239 {
 		fp.R[1] = uintptr(syscall.ERANGE)
 		return
 	}
-	irq := exce.Exce(r0)
 	status := uintptr(irq.Prio())
 	if irq.Enabled() {
 		status = -status - 1
@@ -117,15 +99,15 @@ func scIRQStatus(fp *exce.StackFrame) {
 	fp.R[1] = uintptr(syscall.OK)
 }
 
-func scDebugOut(fp *exce.StackFrame) {
-	port := fp.R[0]
+func scDebugOut(fp *cortexm.StackFrame) {
+	port := itm.Port(fp.R[0])
 	data := (*[1 << 30]byte)(unsafe.Pointer(fp.R[1]))[:fp.R[2]:fp.R[2]]
 	if unpriv() && port >= 16 {
 		fp.R[0] = 0
 		fp.R[1] = uintptr(syscall.EPERM)
 		return
 	}
-	n, _ := itm.Port(port).Write(data)
+	n, _ := port.Write(data)
 	fp.R[0] = uintptr(n)
 	fp.R[1] = uintptr(syscall.OK)
 }
@@ -145,7 +127,7 @@ func svcHandler()
 // Cons: additional register need for syscall number, usually additional
 // mov instruction is need (+2B for any syscall), additional instruction fetch
 // from Flash + execution.
-func sv(fp *exce.StackFrame) {
+func sv(fp *cortexm.StackFrame) {
 	trap := int(*(*byte)(unsafe.Pointer(fp.PC - 2)))
 	if trap >= len(syscalls) {
 		panic("unknown syscall number")

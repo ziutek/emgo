@@ -1,7 +1,6 @@
 package main
 
 import (
-	"arch/cortexm/exce"
 	"reflect"
 	"rtos"
 
@@ -65,7 +64,7 @@ func isr() {
 //c:const
 //c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.USART2 - exce.IRQ0: isr,
+	irqs.USART2: isr,
 }
 
 type S struct {

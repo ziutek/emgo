@@ -12,7 +12,6 @@ import (
 	"delay"
 	"fmt"
 	"rtos"
-	"arch/cortexm/exce"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -98,7 +97,7 @@ func sirq() {
 //c:const
 //c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.USART2 - exce.IRQ0: sirq,
+	irqs.USART2: sirq,
 }
 
 func checkErr(err error) {

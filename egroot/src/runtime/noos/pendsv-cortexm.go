@@ -3,9 +3,15 @@
 package noos
 
 import (
-	"arch/cortexm/sleep"
 	"syscall"
+
+	"arch/cortexm/scb"
+	"arch/cortexm/sleep"
 )
+
+func raisePendSV() {
+	scb.ICSR.Store(scb.PENDSVSET)
+}
 
 // pendSVHandler calls nextTask with PSP for current task. It performs
 // context swich if nextTask returns new non-zero value for PSP.

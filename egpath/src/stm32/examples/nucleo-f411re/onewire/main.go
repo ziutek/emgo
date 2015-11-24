@@ -2,7 +2,6 @@
 package main
 
 import (
-	"arch/cortexm/exce"
 	"delay"
 	"fmt"
 	"rtos"
@@ -114,8 +113,8 @@ func oneISR() {
 //c:const
 //c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.USART2 - exce.IRQ0: termISR,
-	irqs.USART6 - exce.IRQ0: oneISR,
+	irqs.USART2: termISR,
+	irqs.USART6: oneISR,
 }
 
 func blink(c, d int) {

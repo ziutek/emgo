@@ -2,7 +2,7 @@
 
 package noos
 
-import "arch/cortexm/exce"
+import "arch/cortexm"
 
 func Reset()
 
@@ -10,13 +10,13 @@ func Reset()
 //c:const
 //c:__attribute__((section(".SystemVectors")))
 var sysvectors = [...]func(){
-	exce.Reset - 1:      Reset,
-	exce.NMI - 1:        nmiHandler,
-	exce.HardFault - 1:  FaultHandler,
-	exce.MemManage - 1:  FaultHandler,
-	exce.BusFault - 1:   FaultHandler,
-	exce.UsageFault - 1: FaultHandler,
-	exce.SVC - 1:        svcHandler,
-	exce.PendSV - 1:     pendSVHandler,
-	exce.SysTick - 1:    sysTickHandler,
+	cortexm.Reset - 1:      Reset,
+	cortexm.NMI - 1:        nmiHandler,
+	cortexm.HardFault - 1:  FaultHandler,
+	cortexm.MemManage - 1:  FaultHandler,
+	cortexm.BusFault - 1:   FaultHandler,
+	cortexm.UsageFault - 1: FaultHandler,
+	cortexm.SVCall - 1:     svcHandler,
+	cortexm.PendSV - 1:     pendSVHandler,
+	cortexm.SysTick - 1:    sysTickHandler,
 }

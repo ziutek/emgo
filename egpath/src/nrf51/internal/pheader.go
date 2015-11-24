@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"arch/cortexm/exce"
+	"arch/cortexm/nvic"
 	"mmio"
 	"unsafe"
 )
@@ -23,8 +23,8 @@ type Pheader struct {
 	_        [45]mmio.U32
 }
 
-// IRQ returns exception number associated to events.
-func (ph *Pheader) IRQ() exce.Exce {
+// IRQ returns IRQ number associated to events.
+func (ph *Pheader) IRQ() nvic.IRQ {
 	addr := uintptr(unsafe.Pointer(ph))
-	return exce.IRQ0 + exce.Exce((addr-BaseAPB)>>12)
+	return nvic.IRQ((addr - BaseAPB) >> 12)
 }

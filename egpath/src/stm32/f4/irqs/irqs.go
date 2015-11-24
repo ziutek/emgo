@@ -1,9 +1,9 @@
 package irqs
 
-import "arch/cortexm/exce"
+import "arch/cortexm/nvic"
 
 const (
-	WinWdg = exce.IRQ0 + iota
+	WinWdg nvic.IRQ = iota
 	PVD
 	TampStamp
 	RTCWkup

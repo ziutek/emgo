@@ -1,7 +1,6 @@
 package main
 
 import (
-	"arch/cortexm/exce"
 	"fmt"
 	"rtos"
 	"time"
@@ -48,7 +47,7 @@ func edgeISR() {
 //c:const
 //c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.Ext1 - exce.IRQ0: edgeISR,
+	irqs.Ext1: edgeISR,
 }
 
 func main() {

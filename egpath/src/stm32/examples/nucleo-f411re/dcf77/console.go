@@ -44,7 +44,6 @@ func initConsole() {
 	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	rtos.IRQ(irqs.USART2).UseHandler(conISR)
 	rtos.IRQ(irqs.USART2).Enable()
 
 	con.SetUnix(true)

@@ -3,7 +3,7 @@
 package noos
 
 import (
-	"arch/cortexm/exce"
+	"arch/cortexm"
 	"unsafe"
 )
 
@@ -19,7 +19,7 @@ func stackTop(i int) uintptr {
 	return stackEnd() - uintptr(i)*stackCap
 }
 
-func allocStackFrame(sp uintptr) (*exce.StackFrame, uintptr) {
-	sp -= unsafe.Sizeof(exce.StackFrame{})
-	return (*exce.StackFrame)(unsafe.Pointer(sp)), sp
+func allocStackFrame(sp uintptr) (*cortexm.StackFrame, uintptr) {
+	sp -= unsafe.Sizeof(cortexm.StackFrame{})
+	return (*cortexm.StackFrame)(unsafe.Pointer(sp)), sp
 }

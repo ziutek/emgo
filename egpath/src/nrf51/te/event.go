@@ -1,9 +1,10 @@
 package te
 
 import (
-	"arch/cortexm/exce"
 	"mmio"
 	"unsafe"
+
+	"arch/cortexm/nvic"
 
 	"nrf51/internal"
 )
@@ -53,8 +54,8 @@ func (e Event) DisableInt() {
 	ph.IntEnClr.Store(mask)
 }
 
-// IRQ returns exception number associated to event
-func (e Event) IRQ() exce.Exce {
+// IRQ returns IRQ number associated to event
+func (e Event) IRQ() nvic.IRQ {
 	ph, _ := e.phmask()
 	return ph.IRQ()
 }

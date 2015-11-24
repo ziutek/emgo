@@ -5,7 +5,6 @@ import (
 	"rtos"
 	"sync/fence"
 
-	"arch/cortexm/exce"
 	"arch/cortexm/sleep"
 
 	"nrf51/clock"
@@ -25,7 +24,7 @@ var (
 	rtc0 = rtc.RTC0
 )
 
-const period = 32768 // 1s
+const period = 2 * 32768 // 2s
 
 func init() {
 	setup.Clocks(clock.Xtal, clock.Xtal, true)
@@ -74,8 +73,8 @@ func rtcISR() {
 //c:const
 //c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.Timer0 - exce.IRQ0: timerISR,
-	irqs.RTC0 - exce.IRQ0:   rtcISR,
+	irqs.Timer0: timerISR,
+	irqs.RTC0:   rtcISR,
 }
 
 func main() {
@@ -83,7 +82,6 @@ func main() {
 	sleep.EnableSleepOnExit()
 	fence.Sync() // not necessary on Cortex-M0,M3,M4
 	sleep.WFI()
-
 	// Execution should never reach there so LED0 should never light up.
 	p0.SetPin(int(leds[0]))
 }

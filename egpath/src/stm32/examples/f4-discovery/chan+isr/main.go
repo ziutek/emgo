@@ -7,7 +7,6 @@
 package main
 
 import (
-	"arch/cortexm/exce"
 	"delay"
 	"rtos"
 
@@ -74,7 +73,7 @@ func buttonISR() {
 //c:const
 //c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.Ext0 - exce.IRQ0: buttonISR,
+	irqs.Ext0: buttonISR,
 }
 
 func toggle(led int) {

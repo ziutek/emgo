@@ -4,8 +4,9 @@ package noos
 
 import (
 	"arch/cortexm"
-	"arch/cortexm/exce"
 	"arch/cortexm/mpu"
+	"arch/cortexm/nvic"
+	"arch/cortexm/scb"
 	"math/rand"
 	"sync/fence"
 	"syscall"
@@ -120,14 +121,13 @@ func (ts *taskSched) init() {
 	//    than SysTick
 	// 3. Priority of external interrupt can be changed if thay need to preempt
 	//    SVC.
-	exce.PendSV.SetPrio(exce.PrioLowest)
-	exce.SVC.SetPrio(exce.PrioLowest + exce.PrioRange/2)
-	for irq := exce.IRQ0; irq < 256; irq++ {
-		irq.SetPrio(exce.PrioLowest + exce.PrioRange/4)
+	prange := cortexm.PrioHighest - cortexm.PrioLowest
+	scb.SHPR2.SetField(scb.SVCALL, cortexm.PrioLowest+prange/2)
+	scb.SHPR3.SetField(scb.PENDSV, cortexm.PrioLowest)
+	for irq := nvic.IRQ(0); irq < 240; irq++ {
+		irq.SetPrio(cortexm.PrioLowest + prange/4)
 	}
-	exce.MemManage.Enable()
-	exce.BusFault.Enable()
-	exce.UsageFault.Enable()
+	scb.SHCSR.SetBits(scb.MEMFAULTENA | scb.BUSFAULTENA | scb.USGFAULTENA)
 
 	// Setup MPU.
 	mpu.SetMode(mpu.PrivDef)
@@ -169,7 +169,7 @@ func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err sy
 
 	if lock {
 		ts.tasks[ts.curTask].setState(taskLocked)
-		exce.PendSV.SetPending()
+		raisePendSV()
 	}
 
 	return n + 1, syscall.OK
@@ -190,7 +190,7 @@ func (ts *taskSched) killTask(tid int) syscall.Errno {
 		}
 	}
 	if n == ts.curTask {
-		exce.PendSV.SetPending()
+		raisePendSV()
 	}
 	return syscall.OK
 }
@@ -213,5 +213,5 @@ func (ts *taskSched) waitEvent(e syscall.Event) {
 	}
 	t.setState(taskWaitEvent)
 	t.event = e
-	exce.PendSV.SetPending()
+	raisePendSV()
 }

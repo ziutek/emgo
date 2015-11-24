@@ -94,22 +94,22 @@ const (
 const (
 	SHPR1 Reg = 6
 
-	MemManage  Field = 8<<x + 0
-	BusFault   Field = 8<<x + 8
-	UsageFault Field = 8<<x + 16
+	MEMMANAGE  Field = 8<<x + 0
+	BUSFAULT   Field = 8<<x + 8
+	USAGEFAULT Field = 8<<x + 16
 )
 
 const (
 	SHPR2 Reg = 7
 
-	SVCall Field = 8<<x + 24
+	SVCALL Field = 8<<x + 24
 )
 
 const (
 	SHPR3 Reg = 8
 
-	PendSV  Field = 8<<x + 16
-	SysTick Field = 8<<x + 24
+	PENDSV  Field = 8<<x + 16
+	SYSTICK Field = 8<<x + 24
 )
 
 const (

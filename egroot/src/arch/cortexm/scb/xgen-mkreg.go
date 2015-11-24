@@ -22,7 +22,8 @@ func (r Reg) Bits(m Mask) uint32         { return reg(r).Bits(uint32(m)) }
 func (r Reg) StoreBits(m Mask, b uint32) { reg(r).StoreBits(uint32(m), b) }
 func (r Reg) SetBits(m Mask)             { reg(r).SetBits(uint32(m)) }
 func (r Reg) ClearBits(m Mask)           { reg(r).ClearBits(uint32(m)) }
-func (r Reg) Field(f Field) uint32       { return reg(r).Field(uint16(f)) }
-func (r Reg) SetField(f Field, v uint32) { reg(r).SetField(uint16(f), v) }
-func (r Reg) Load() uint32               { return reg(r).Load() }
-func (r Reg) Store(v uint32)             { reg(r).Store(v) }
+func (r Reg) Load() Mask                 { return Mask(reg(r).Load()) }
+func (r Reg) Store(m Mask)               { reg(r).Store(uint32(m)) }
+
+func (r Reg) Field(f Field) int       { return int(reg(r).Field(uint16(f))) }
+func (r Reg) SetField(f Field, v int) { reg(r).SetField(uint16(f), uint32(v)) }

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"rtos"
-	"arch/cortexm/exce"
 
 	"stm32/f4/gpio"
 	"stm32/f4/irqs"
@@ -16,7 +15,7 @@ import (
 
 var (
 	udev = usarts.USART2
-	con = serial.New(udev, 80, 8)
+	con  = serial.New(udev, 80, 8)
 )
 
 func initConsole() {
@@ -56,5 +55,5 @@ func conISR() {
 //c:const
 //c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.USART2 - exce.IRQ0: conISR,
+	irqs.USART2: conISR,
 }

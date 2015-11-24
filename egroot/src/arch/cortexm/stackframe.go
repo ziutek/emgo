@@ -1,4 +1,4 @@
-package exce
+package cortexm
 
 // StackFrame represents Cortex-M exception stack frame (without floating-point state).
 type StackFrame struct {
