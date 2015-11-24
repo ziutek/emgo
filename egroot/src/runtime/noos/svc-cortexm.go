@@ -25,7 +25,7 @@ var syscalls = [...]func(*exce.StackFrame){
 }
 
 func unpriv() bool {
-	return cortexm.Ctrl()&cortexm.Unpriv != 0
+	return cortexm.CONTROL()&cortexm.Unpriv != 0
 }
 
 func scNewTask(fp *exce.StackFrame) {

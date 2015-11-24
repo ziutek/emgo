@@ -105,7 +105,7 @@ func (ts *taskSched) init() {
 	// at top of the stacks area.
 	cortexm.SetPSP(unsafe.Pointer(cortexm.MSP()))
 	fence.Sync()
-	cortexm.SetCtrl(cortexm.Ctrl() | cortexm.UsePSP)
+	cortexm.SetCONTROL(cortexm.CONTROL() | cortexm.UsePSP)
 	cortexm.ISB()
 
 	// Use MSP only for exceptions handlers. MSP will point to stack at boottom
@@ -141,7 +141,7 @@ func (ts *taskSched) init() {
 	sysTickStart()
 
 	// Leave privileged level.
-	cortexm.SetCtrl(cortexm.Ctrl() | cortexm.Unpriv)
+	cortexm.SetCONTROL(cortexm.CONTROL() | cortexm.Unpriv)
 }
 
 func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err syscall.Errno) {

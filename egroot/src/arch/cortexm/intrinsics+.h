@@ -108,15 +108,15 @@ arch$cortexm$SetLR(uint32 r) {
 	asm volatile ("mov lr, %0"::"r" (r):"lr");
 }
 
-arch$cortexm$Control
-arch$cortexm$Ctrl() {
-	arch$cortexm$Control c;
+arch$cortexm$Cflags
+arch$cortexm$CONTROL() {
+	arch$cortexm$Cflags c;
 	asm volatile ("mrs %0, control":"=r" (c));
 	return c;
 }
 
 void
-arch$cortexm$SetCtrl(arch$cortexm$Control c) {
+arch$cortexm$SetCONTROL(arch$cortexm$Cflags c) {
 	asm volatile ("msr control, %0"::"r" (c));
 }
 
@@ -130,6 +130,51 @@ arch$cortexm$ISB() {
 	asm volatile ("isb");
 }
 
-#define arch$cortexm$SVC(imm) asm volatile ("svc %0" :: "i" (imm))
+bool
+arch$cortexm$PRIMASK() {
+	bool b;
+	asm volatile ("msr primask, %0":"=r" (b));
+	return b;
+}
 
+void
+arch$cortexm$SetPRIMASK() {
+	asm volatile ("cpsid i");
+}
+
+void
+arch$cortexm$ClearPRIMASK() {
+	asm volatile ("cpsie i");
+}
+
+bool
+arch$cortexm$FAULTMASK() {
+	bool b;
+	asm volatile ("msr faultmask, %0":"=r" (b));
+	return b;
+}
+
+void
+arch$cortexm$SetFAULTMASK() {
+	asm volatile ("cpsid fi");
+}
+
+void
+arch$cortexm$ClearFAULTMASK() {
+	asm volatile ("cpsie f");
+}
+
+byte
+arch$cortexm$BASEPRI() {
+	byte p;
+	asm volatile ("msr basepri, %0":"=r" (p));
+	return p;
+}
+
+void
+arch$cortexm$SetBASEPRI(byte p) {
+	asm volatile ("mrs %0, basepri"::"r" (p));
+}
+
+#define arch$cortexm$SVC(imm) asm volatile ("svc %0" :: "i" (imm))
 #define arch$cortexm$BKPT(imm) asm volatile ("bkpt %0" :: "i" (imm))
