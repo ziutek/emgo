@@ -76,10 +76,10 @@ func {{$rf}}(n uint) *mmio.U32 {
 {{$rfn := print $rf "(" .N ")"}}
 type {{.Bits}} uint32
 
-func (m {{.Bits}}) Load() {{.Bits}}   { return {{.Bits}}({{$rfn}}.Bits(uint32(m))) }
-func (m {{.Bits}}) Store(b {{.Bits}}) { {{$rfn}}.StoreBits(uint32(m), uint32(b)) }
-func (m {{.Bits}}) Set()    { {{$rfn}}.SetBits(uint32(m)) }
-func (m {{.Bits}}) Clear() { {{$rfn}}.ClearBits(uint32(m)) }
+func (m {{.Bits}}) Load() uint32   { return {{$rfn}}.Bits(uint32(m)) }
+func (m {{.Bits}}) Store(b uint32) { {{$rfn}}.StoreBits(uint32(m), b) }
+func (m {{.Bits}}) Set()           { {{$rfn}}.SetBits(uint32(m)) }
+func (m {{.Bits}}) Clear()         { {{$rfn}}.ClearBits(uint32(m)) }
 
 type {{.Field}} uint16
 
