@@ -23,8 +23,8 @@ SECTIONS {
 	} >loadTo
     
     .stack : {
-    	. = ALIGN((1 << StackExp) / 8);
-    	. = . + (1 << StackExp) * StackFrac / 8 * (MaxTasks + 1);
+    	. = ALIGN((1 << StackLog2) / 8);
+    	. = . + (1 << StackLog2) * StackFrac / 8 * (MaxTasks + 1);
     } >RAM
     
     StackEnd = ADDR(.stack) + SIZEOF(.stack);

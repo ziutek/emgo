@@ -70,11 +70,9 @@ func buttonISR() {
 	}
 }
 
-//c:const
-//c:__attribute__((section(".InterruptVectors")))
-var IRQs = [...]func(){
+var ISRs = [...]func(){
 	irqs.Ext0: buttonISR,
-}
+} //c:__attribute__((section(".InterruptVectors")))
 
 func toggle(led int) {
 	LED.SetPin(led)

@@ -1,5 +1,5 @@
 /* Stack size: 7/8 KB */
-StackExp = 10;
+StackLog2 = 10;
 StackFrac = 7;
 
 /* One stack, without gorutines */

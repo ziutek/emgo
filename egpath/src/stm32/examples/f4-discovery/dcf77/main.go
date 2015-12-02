@@ -44,11 +44,10 @@ func edgeISR() {
 	d.Edge(t, gpio.C.InPin(1) != 0)
 }
 
-//c:const
-//c:__attribute__((section(".InterruptVectors")))
-var IRQs = [...]func(){
+var ISRs = [...]func(){
 	irqs.Ext1: edgeISR,
-}
+} //c:__attribute__((section(".InterruptVectors")))
+
 
 func main() {
 	for {

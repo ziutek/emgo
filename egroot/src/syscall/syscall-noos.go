@@ -11,7 +11,8 @@ const (
 	NEWTASK    = builtin.NEWTASK
 	KILLTASK   = builtin.KILLTASK
 	TASKUNLOCK = builtin.TASKUNLOCK
-	EVENTWAIT  = iota
+	SCHEDNEXT = iota
+	EVENTWAIT
 	SETSYSCLK
 	UPTIME
 	SETIRQENA
@@ -39,6 +40,12 @@ func KillTask(tid int) Errno {
 // tasker that now it can safely run parent task.
 func TaskUnlock() {
 	builtin.Syscall0(TASKUNLOCK)
+}
+
+// SchedNext informs tasker that it need to schedule next ready to run task.
+// It is safe to call SchedNext from interrupt handler.
+func SchedNext() {
+	schedNext()
 }
 
 // SetSysClock informs runtime about current system clock frequency.

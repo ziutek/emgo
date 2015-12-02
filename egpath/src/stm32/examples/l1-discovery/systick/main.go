@@ -6,7 +6,8 @@ package main
 import (
 	"sync/fence"
 
-	"arch/cortexm/sleep"
+	"arch/cortexm"
+	"arch/cortexm/scb"
 	"arch/cortexm/systick"
 
 	"stm32/l1/gpio"
@@ -56,16 +57,16 @@ func main() {
 	LED.SetMode(Blue, gpio.Out)
 	LED.SetMode(Green, gpio.Out)
 
-	tenms := systick.CALIB.Bits(systick.TENMS)
+	tenms := systick.TENMS.Load()
 	tenms *= 10 // stm32l1 returns value for 1 ms not for 10ms.
-	systick.RVR.StoreBits(systick.RELOAD, tenms*100)
-	systick.CVR.StoreBits(systick.CURRENT, 0)
-	systick.CSR.SetBits(systick.ENABLE | systick.TICKINT)
+	systick.RELOAD.Store(tenms * 100)
+	systick.CURRENT.Clear()
+	(systick.ENABLE | systick.TICKINT).Set()
 
 	// Sleep forever.
-	sleep.EnableSleepOnExit()
+	scb.SLEEPONEXIT.Set()
 	fence.Sync() // not necessary on Cortex-M0,M3,M4
-	sleep.WFI()
+	cortexm.WFI()
 
 	// Execution should never reach there so the green LED
 	// should never light up.

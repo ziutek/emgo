@@ -18,17 +18,17 @@ var (
 func sysTickStart() {
 	// Defaults:
 	// One context switch per 1e6 SysTicks (70/s for 70 Mhz, 168/s for 168 MHz)
-	systick.RVR.StoreBits(systick.RELOAD, 1e6-1)
-	systick.CVR.StoreBits(systick.CURRENT, 0)
-	systick.CSR.SetBits(systick.ENABLE | systick.TICKINT | systick.CLKSOURCE)
+	systick.RELOAD.Store(1e6-1)
+	systick.CURRENT.Clear()
+	(systick.ENABLE | systick.TICKINT | systick.CLKSOURCE).Set()
 }
 
 func setTickPeriod() {
 	// Set tick period to 2 ms (500 context switches per second).
 	const periodms = 2
 	tickPeriod = sysClk * periodms / 1e3
-	systick.RVR.StoreBits(systick.RELOAD, tickPeriod-1)
-	systick.CVR.StoreBits(systick.CURRENT, 0)
+	systick.RELOAD.Store(tickPeriod-1)
+	systick.CURRENT.Clear()
 }
 
 func sysTickHandler() {
@@ -54,7 +54,7 @@ func uptime() uint64 {
 	aba := atomic.LoadUintptr(&ticksABA)
 	for {
 		fence.Compiler()
-		cnt = systick.CVR.Bits(systick.CURRENT)
+		cnt = systick.CURRENT.Load()
 		ticks = ticks2[aba&1]
 		fence.Compiler()
 		aba1 := atomic.LoadUintptr(&ticksABA)

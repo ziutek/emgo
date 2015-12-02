@@ -7,16 +7,15 @@ import (
 	"unsafe"
 )
 
-func stackExp() uint
+func stackLog2() uint
 
 func stackFrac() uint
 
 func stackEnd() uintptr
 
-var stackCap = uintptr((1 << stackExp()) * stackFrac() / 8)
-
 func stackTop(i int) uintptr {
-	return stackEnd() - uintptr(i)*stackCap
+	stackSize := uintptr((1 << stackLog2()) * stackFrac() / 8)
+	return stackEnd() - uintptr(i)*stackSize
 }
 
 func allocStackFrame(sp uintptr) (*cortexm.StackFrame, uintptr) {

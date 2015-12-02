@@ -5,12 +5,12 @@ package noos
 import (
 	"syscall"
 
+	"arch/cortexm"
 	"arch/cortexm/scb"
-	"arch/cortexm/sleep"
 )
 
 func raisePendSV() {
-	scb.ICSR.Store(scb.PENDSVSET)
+	scb.ICSR_Store(scb.PENDSVSET)
 }
 
 // pendSVHandler calls nextTask with PSP for current task. It performs
@@ -34,7 +34,7 @@ again:
 		}
 		if n == tasker.curTask {
 			// No task to run.
-			sleep.WFE()
+			cortexm.WFE()
 			goto again
 		}
 	}

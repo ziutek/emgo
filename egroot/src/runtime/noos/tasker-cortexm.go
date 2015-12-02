@@ -4,7 +4,6 @@ package noos
 
 import (
 	"arch/cortexm"
-	"arch/cortexm/mpu"
 	"arch/cortexm/nvic"
 	"arch/cortexm/scb"
 	"math/rand"
@@ -115,22 +114,22 @@ func (ts *taskSched) init() {
 	// used).
 	cortexm.SetMSP(unsafe.Pointer(stackTop(len(ts.tasks))))
 
-	// After reset all exceptions have highest priority. Change this to allow:
-	// 1. PendSV can be preempt by any exception.
-	// 2. SVC can be used in external interrupt handlers but has lower priority
-	//    than SysTick
-	// 3. Priority of external interrupt can be changed if thay need to preempt
-	//    SVC.
+	// After reset all exceptions have highest priority. Change this to achieve:
+	// 1. SysTick has highest priority to ensure that systick counter reset and
+	//    increment of uptime counter are observed as one atomic operation.
+	// 2. PendSV has lowest priority (can be preempt by any exception).
+	// 3. SVC can be used in external interrupt handlers.
+	// 4. It should be possible to increase the priority of any external
+	//    interrupt to allow it to preempt SVC.
 	prange := cortexm.PrioHighest - cortexm.PrioLowest
-	scb.SHPR2.SetField(scb.SVCALL, cortexm.PrioLowest+prange/2)
-	scb.SHPR3.SetField(scb.PENDSV, cortexm.PrioLowest)
+	scb.PRI_SVCall.Store(cortexm.PrioLowest+prange/2)
+	scb.PRI_PendSV.Store(cortexm.PrioLowest)
 	for irq := nvic.IRQ(0); irq < 240; irq++ {
 		irq.SetPrio(cortexm.PrioLowest + prange/4)
 	}
-	scb.SHCSR.SetBits(scb.MEMFAULTENA | scb.BUSFAULTENA | scb.USGFAULTENA)
 
 	// Setup MPU.
-	mpu.SetMode(mpu.PrivDef)
+	//mpu.SetMode(mpu.PrivDef)
 	//mpu.Enable()
 
 	// Set taskInfo for initial (current) task.
@@ -138,7 +137,7 @@ func (ts *taskSched) init() {
 	ts.tasks[0].setState(taskReady)
 
 	// Run tasker.
-	sysTickStart()
+	//sysTickStart()
 
 	// Leave privileged level.
 	cortexm.SetCONTROL(cortexm.CONTROL() | cortexm.Unpriv)

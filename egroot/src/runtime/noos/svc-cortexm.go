@@ -14,6 +14,7 @@ var syscalls = [...]func(*cortexm.StackFrame){
 	syscall.NEWTASK:       scNewTask,
 	syscall.KILLTASK:      scKillTask,
 	syscall.TASKUNLOCK:    scTaskUnlock,
+	syscall.SCHEDNEXT:     scSchedNext,
 	syscall.EVENTWAIT:     scEventWait,
 	syscall.SETSYSCLK:     scSetSysClock,
 	syscall.UPTIME:        scUptime,
@@ -38,8 +39,12 @@ func scKillTask(fp *cortexm.StackFrame) {
 	fp.R[1] = uintptr(err)
 }
 
-func scTaskUnlock(fp *cortexm.StackFrame) {
+func scTaskUnlock(_ *cortexm.StackFrame) {
 	tasker.unlockParent()
+}
+
+func scSchedNext(_ *cortexm.StackFrame) {
+	raisePendSV()
 }
 
 func scEventWait(fp *cortexm.StackFrame) {
@@ -47,8 +52,8 @@ func scEventWait(fp *cortexm.StackFrame) {
 }
 
 func scSetSysClock(fp *cortexm.StackFrame) {
-	sysClk = uint32(fp.R[0])
-	setTickPeriod()
+	sysTimerHz = uint64(fp.R[0])
+	setTimerFreq(uint32(fp.R[0]))
 }
 
 func scUptime(fp *cortexm.StackFrame) {

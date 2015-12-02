@@ -2,6 +2,10 @@ package mmio
 
 import "unsafe"
 
+// Fsiz is used by Field, SetField methods. Field descriptor
+// is uint16 value: f = FieldFsize<<Fsiz + FieldPos.
+const Fsiz = 8
+
 type U8 struct {
 	r uint8
 } //c:volatile
@@ -54,16 +58,16 @@ func (r *U8) Addr() uintptr {
 	return uintptr(unsafe.Pointer(r))
 }
 
-func (u *U8) Field(f uint16) uint8 {
+func (u *U8) Field(f uint16) int {
 	o := byte(f)
-	m := uint8(1)<<(f>>8) - 1
-	return u.Bits(m<<o) >> o
+	m := uint8(1)<<(f>>Fsiz) - 1
+	return int(u.Bits(m<<o) >> o)
 }
 
-func (u *U8) SetField(f uint16, v uint8) {
+func (u *U8) SetField(f uint16, v int) {
 	o := byte(f)
-	m := uint8(1)<<(f>>8) - 1
-	u.StoreBits(m<<o, v<<o)
+	m := uint8(1)<<(f>>Fsiz) - 1
+	u.StoreBits(m<<o, uint8(v)<<o)
 }
 
 type U16 struct {
@@ -118,16 +122,16 @@ func (r *U16) Addr() uintptr {
 	return uintptr(unsafe.Pointer(r))
 }
 
-func (u *U16) Field(f uint16) uint16 {
+func (u *U16) Field(f uint16) int {
 	o := byte(f)
-	m := uint16(1)<<(f>>8) - 1
-	return u.Bits(m<<o) >> o
+	m := uint16(1)<<(f>>Fsiz) - 1
+	return int(u.Bits(m<<o) >> o)
 }
 
-func (u *U16) SetField(f uint16, v uint16) {
+func (u *U16) SetField(f uint16, v int) {
 	o := byte(f)
-	m := uint16(1)<<(f>>8) - 1
-	u.StoreBits(m<<o, v<<o)
+	m := uint16(1)<<(f>>Fsiz) - 1
+	u.StoreBits(m<<o, uint16(v)<<o)
 }
 
 type U32 struct {
@@ -182,14 +186,14 @@ func (r *U32) Addr() uintptr {
 	return uintptr(unsafe.Pointer(r))
 }
 
-func (u *U32) Field(f uint16) uint32 {
+func (u *U32) Field(f uint16) int {
 	o := byte(f)
-	m := uint32(1)<<(f>>8) - 1
-	return u.Bits(m<<o) >> o
+	m := uint32(1)<<(f>>Fsiz) - 1
+	return int(u.Bits(m<<o) >> o)
 }
 
-func (u *U32) SetField(f uint16, v uint32) {
+func (u *U32) SetField(f uint16, v int) {
 	o := byte(f)
-	m := uint32(1)<<(f>>8) - 1
-	u.StoreBits(m<<o, v<<o)
+	m := uint32(1)<<(f>>Fsiz) - 1
+	u.StoreBits(m<<o, uint32(v)<<o)
 }

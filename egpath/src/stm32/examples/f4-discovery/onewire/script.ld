@@ -1,4 +1,4 @@
-StackExp = 12; /* 4 KB */
+StackLog2 = 12; /* 4 KB */
 StackFrac = 6;  /* 6/8 -> 3 KB */
 MaxTasks = 3;
 

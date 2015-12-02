@@ -2,11 +2,11 @@
 
 package rtos
 
-import "runtime/noos"
+import "syscall"
 
 func sleepUntil(end uint64) {
-	te := noos.TickEvent()
 	for Uptime() < end {
-		te.Wait()
+		// syscall.SetAlarm(end)
+		syscall.Alarm.Wait()
 	}
 }

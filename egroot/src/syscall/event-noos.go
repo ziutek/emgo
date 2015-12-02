@@ -45,6 +45,8 @@ func AssignEventFlag() Event {
 func (e Event) Send() {
 	fence.Compiler()
 	atomic.OrUintptr((*uintptr)(&eventReg), uintptr(e))
+	fence.Compiler()
+	schedNext()
 }
 
 // Sum returns logical sum of events.
@@ -68,3 +70,7 @@ func TakeEventReg() Event {
 func (e Event) Wait() {
 	builtin.Syscall1(EVENTWAIT, uintptr(e))
 }
+
+// Alarm is an event that is sent by runtime when alarm time (set by SetAlarm)
+// reached.
+var Alarm = AssignEvent()

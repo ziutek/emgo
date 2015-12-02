@@ -1,10 +1,10 @@
 // +build cortexm0 cortexm3 cortexm4 cortexm4f
 
-extern byte StackExp, StackFrac, StackEnd;
+extern byte StackLog2, StackFrac, StackEnd;
 
 static inline
-uint runtime$noos$stackExp() {
-	return (uint)&StackExp;
+uint runtime$noos$stackLog2() {
+	return (uint)&StackLog2;
 }
 
 static inline

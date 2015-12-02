@@ -5,7 +5,8 @@ import (
 	"rtos"
 	"sync/fence"
 
-	"arch/cortexm/sleep"
+	"arch/cortexm"
+	"arch/cortexm/scb"
 
 	"nrf51/clock"
 	"nrf51/gpio"
@@ -79,9 +80,9 @@ var IRQs = [...]func(){
 
 func main() {
 	// Sleep forever.
-	sleep.EnableSleepOnExit()
+	scb.SLEEPONEXIT.Set()
 	fence.Sync() // not necessary on Cortex-M0,M3,M4
-	sleep.WFI()
+	cortexm.WFI()
 	// Execution should never reach there so LED0 should never light up.
 	p0.SetPin(int(leds[0]))
 }

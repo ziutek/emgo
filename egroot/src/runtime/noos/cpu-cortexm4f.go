@@ -3,14 +3,16 @@
 package noos
 
 import (
-	"arch/cortexm/scb"
 	"arch/cortexm/fpu"
+	"arch/cortexm/scb"
 )
 
 func initCPU() {
+	// Enable fault handlers.
+	(scb.MEMFAULTENA | scb.BUSFAULTENA | scb.USGFAULTENA).Set()
 	// Division by zero and unaligned access will cause the UsageFault.
-	scb.CCR.SetBits(scb.DIV_0_TRP | scb.UNALIGN_TRP)
-	
-	fpu.SetAccess(fpu.Full)
-	fpu.SetSP(fpu.AutoSP | fpu.LazySP)
+	(scb.DIV_0_TRP | scb.UNALIGN_TRP).Set()
+	// Enable FPU.
+	scb.CP10.Store(scb.AccessFull)
+	fpu.FPCCR_Store(fpu.ASPEN | fpu.LSPEN)
 }
