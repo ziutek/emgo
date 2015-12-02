@@ -1,117 +1,136 @@
-// Package mpu allows configure Cortex-M memory protection unit.
+// Package mpu provides interface to configure Cortex-M Memory Protection Unit.
 package mpu
 
-import "unsafe"
+import (
+	"mmio"
+	"unsafe"
+)
 
-type registers struct {
-	typ   uint32
-	ctrl  uint32
-	rn    uint32
-	rba   uint32
-	ras   uint32
-	rbaa1 uint32
-	rasa1 uint32
-	rbaa2 uint32
-	rasa2 uint32
-	rbaa3 uint32
-	rasa3 uint32
+type regs struct {
+	typ  mmio.U32
+	ctrl mmio.U32
+	rnr  mmio.U32
+	bas  [4]BaseAttr
 } //c:volatile
 
-var r = (*registers)(unsafe.Pointer(uintptr(0xE000ED90)))
+func r() *regs {
+	return (*regs)(unsafe.Pointer(uintptr(0xE000ED90)))
+}
 
 // Type returns information about MPU unit:
 // i - number of supported instruction regions,
 // d - number of supported data regions.
 // s - true if separate instruction and data regions are supported.
 func Type() (i, d int, s bool) {
-	i = int(r.typ>>16) & 0xf
-	d = int(r.typ>>8) & 0xf
-	s = (r.typ&1 != 0)
+	typ := r().typ.Load()
+	i = int(typ>>16) & 0xf
+	d = int(typ>>8) & 0xf
+	s = (typ&1 != 0)
 	return
 }
 
 type Flags uint32
 
 const (
+	// If ENABLE is set MPU is enabled.
+	ENABLE Flags = 1 << 0
 	// If HFNM is not set the MPU will be disabled during HardFault, NMI and
 	// FAULTMASK handlers.
-	HFNM Flags = 1 << (iota + 1)
+	HFNMIENA Flags = 1 << 1
 	// If PRIVDEF is set the default memory map is used as background region for
 	// privileged software access.
-	PrivDef
+	PRIVDEFENA Flags = 1 << 2
 )
 
-// SetMode sets flags that globally determine the behavior of the MPU.
-func SetMode(fl Flags) {
-	r.ctrl = r.ctrl&1 | uint32(fl)
+// Set sets flags specified by fl.
+func Set(fl Flags) {
+	r().ctrl.SetBits(uint32(fl))
 }
 
-// Mode returns current flags.
-func Mode() Flags {
-	return Flags(r.ctrl &^ 1)
+// Clear clears flags specified by fl.
+func Clear(fl Flags) {
+	r().ctrl.ClearBits(uint32(fl))
 }
 
-// Enable enables MPU.
-func Enable() {
-	r.ctrl |= 1
+func State() Flags {
+	return Flags(r().ctrl.Load())
 }
 
-// Disable disables MPU.
-func Disable() {
-	r.ctrl &^= 1
+// Select selects region number n.
+func Select(n int) {
+	r().rnr.StoreBits(0xff, uint32(n))
 }
 
 type Attr uint32
 
 const (
+	ENA Attr = 1 << 0
+
 	B Attr = 1 << 16 // Bufferable.
 	C Attr = 1 << 17 // Cacheable.
 	S Attr = 1 << 18 // Shareable.
 
 	// Access permissons.
-	P____ Attr = 0 << 24 // No access.
-	Pr___ Attr = 5 << 24 // Priv-RO.
-	Prw__ Attr = 1 << 24 // Priv-RW.
-	Pr_r_ Attr = 6 << 24 // Priv-RO, Unpriv-RO.
-	Prwr_ Attr = 2 << 24 // Priv-RW, Unpriv-RO.
-	Prwrw Attr = 3 << 24 // Priv-RW, Unpriv-RW.
+	AP    Attr = 7 << 24 // Use to extract access permission bits.
+	A____ Attr = 0 << 24 // No access.
+	Ar___ Attr = 5 << 24 // Priv-RO.
+	Arw__ Attr = 1 << 24 // Priv-RW.
+	Ar_r_ Attr = 6 << 24 // Priv-RO, Unpriv-RO.
+	Arwr_ Attr = 2 << 24 // Priv-RW, Unpriv-RO.
+	Arwrw Attr = 3 << 24 // Priv-RW, Unpriv-RW.
 
-	Xn Attr = 1 << 28 // Instruction access disable.
+	XN Attr = 1 << 28 // Instruction access disable.
 )
 
-// SetTex sets type extension in a.
-func (a *Attr) SetTex(tex byte) {
-	*a |= Attr(tex&7) << 19
+func SIZE(log2 int) Attr {
+	return Attr(log2&0x1f) << 1
 }
 
-// Tex extracts type extension from a.
-func (a Attr) Tex() byte {
-	return byte(a>>19) & 7
+func (a Attr) SIZE() (log2 int) {
+	return int(a>>1) & 0x1f
 }
 
-// Region represents MPU region number.
-type Region int
-
-// Enable setups region rn at address addr of size 1<<sizeExp.
-// Any bit set in srd excludes 1/8 of  (subregion) from region rn.
-// Only regions of size >= 256B can be divided to subregions. The least
-// significant bit of srd controls the first subregion. attr specifies
-// attributes for region rn.
-func (rn Region) Enable(addr uintptr, sizeExp int, srd byte, attr Attr) {
-	if sizeExp < 5 || sizeExp > 32 {
-		panic("mpu: bad region size")
-	}
-	if addr<<uint(32-sizeExp) != 0 {
-		panic("mpu: unaligned base address")
-	}
-	r.rn = uint32(rn)
-	r.rba = uint32(addr)
-	sizeEnable := uint32(sizeExp)<<1 - 1 // Adjust size and set enable bit.
-	r.ras = uint32(attr) + uint32(srd)<<8 + sizeEnable
+func SRD(srd int) Attr {
+	return Attr(srd&0xff) << 8
 }
 
-func (rn Region) Disable() {
-	r.rn = uint32(rn)
-	r.rba = 0
-	r.ras = 0
+func (a Attr) SRD() int {
+	return int(a>>8) & 0xff
+}
+
+func TEX(tex int) Attr {
+	return Attr(tex&7) << 19
+}
+
+func (a Attr) TEX() int {
+	return int(a>>19) & 7
+}
+
+type BaseAttr struct {
+	RBAR uint32
+	RASR Attr
+}
+
+func SetRBAR(rbar uint32) {
+	r().bas[0].RBAR = rbar
+}
+
+func RBAR() uint32 {
+	return r().bas[0].RBAR
+}
+
+func SetRegion(ba BaseAttr) {
+	r().bas[0] = ba
+}
+
+func Region() BaseAttr {
+	return r().bas[0]
+}
+
+func SetRegions(bas [4]BaseAttr) {
+	r().bas = bas
+}
+
+func Regions() [4]BaseAttr {
+	return r().bas
 }

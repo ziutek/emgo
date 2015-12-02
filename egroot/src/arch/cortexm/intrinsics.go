@@ -133,6 +133,12 @@ func BASEPRI() byte
 //c:static inline
 func SetBASEPRI(p byte)
 
+//c:static inline
+func WFE()
+
+//c:static inline
+func WFI()
+
 func SVC(imm byte)
 
 func BKPT(imm byte)

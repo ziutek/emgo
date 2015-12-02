@@ -1,60 +1,33 @@
-// +build cortexm4f
+// Package fpu gives an access to Floating Point Unit registers.
+// Detailed description of all registers covered by this package can be found in
+// "Cortex-M[0-4] Devices Generic User Guide", chapter 4 "Cortex-M[0-4]
+// Peripherals".
+//
+// BaseAddr: 0xe000ef34
+//  0: FPCCR  Floating-point Context Control Register
+//  1: FPCAR  Floating-point Context Address Register
+//  2: FPDSCR Floating-point Default Status Control Register
 package fpu
 
-import (
-	"mmio"
-	"unsafe"
+const (
+	LSPACT FPCCR_Bits = 1 << 0
+	USER   FPCCR_Bits = 1 << 1
+	THREAD FPCCR_Bits = 1 << 3
+	HFRDY  FPCCR_Bits = 1 << 4
+	MMRDY  FPCCR_Bits = 1 << 5
+	BFRDY  FPCCR_Bits = 1 << 6
+	MONRDY FPCCR_Bits = 1 << 8
+	LSPEN  FPCCR_Bits = 1 << 30
+	ASPEN  FPCCR_Bits = 1 << 31
 )
-
-type Perm uint32
 
 const (
-	Deny Perm = 0 << 20
-	Priv Perm = 1 << 20
-	Full Perm = 3 << 20
+	ADDRESS FPCAR_Bits = 0x3fffffff << 2
 )
-
-const cpacaddr uintptr = 0xe000ed88
-
-func SetAccess(p Perm) {
-	cpac := mmio.PtrU32(unsafe.Pointer(cpacaddr))
-	cpac.StoreBits(3<<20, uint32(p))
-}
-
-func Access() Perm {
-	cpac := mmio.PtrU32(unsafe.Pointer(cpacaddr))
-	return Perm(cpac.Bits(3 << 20))
-}
-
-// SPFlags control/describe FPU state preservation behavior during exception
-// handling.
-type SPFlags uint32
 
 const (
-	DeferSP SPFlags = 1 << iota
-	User
-	_
-	Thread
-	HardFault
-	MemFault
-	BusFault
-	_
-	DebugMon
-
-	LazySP SPFlags = 1 << 30
-	AutoSP SPFlags = 1 << 31
+	RMode FPDSCR_Bits = 3 << 22
+	FZ    FPDSCR_Bits = 1 << 24
+	DN    FPDSCR_Bits = 1 << 25
+	AHP   FPDSCR_Bits = 1 << 26
 )
-
-const fpccaddr uintptr = 0xe000ef34
-
-func SetSP(f SPFlags) {
-	fpcc := mmio.PtrU32(unsafe.Pointer(fpccaddr))
-	fpcc.Store(uint32(f))
-}
-
-func SP() SPFlags {
-	fpcc := mmio.PtrU32(unsafe.Pointer(fpccaddr))
-	return SPFlags(fpcc.Load())
-}
-
-const fpcaaddr uintptr = 0xe000ef38

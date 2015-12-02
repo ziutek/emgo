@@ -176,5 +176,16 @@ arch$cortexm$SetBASEPRI(byte p) {
 	asm volatile ("mrs %0, basepri"::"r" (p));
 }
 
+static inline void
+arch$cortexm$WFE() {
+	asm volatile ("wfe");
+}
+
+void
+arch$cortexm$WFI() {
+	asm volatile ("wfi");
+}
+
 #define arch$cortexm$SVC(imm) asm volatile ("svc %0" :: "i" (imm))
+
 #define arch$cortexm$BKPT(imm) asm volatile ("bkpt %0" :: "i" (imm))
