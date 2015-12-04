@@ -26,12 +26,13 @@ void runtime$noos$pendSVHandler() {
 		
 		// Restore the second part of the context of the next task.
 		"msr	psp, r0\n\t"
-		"sub	r0, #8*4\n\t" 
+		"sub	r0, #4*4\n\t" 
 		"ldmia	r0!, {r4-r7}\n\t"
 		"mov    r8, r4\n\t"
 		"mov    r9, r5\n\t"
 		"mov    r10, r6\n\t"
 		"mov    r11, r7\n\t"
+		"sub	r0, #8*4\n\t"
 		"ldmia	r0!, {r4-r7}\n\t"	
 		
 		"1:\n\t"
