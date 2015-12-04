@@ -7,25 +7,25 @@ import (
 	"arch/cortexm/systick"
 )
 
-var timerPeriod_cnt uint32
+var tperiodTicks uint32
 
-func setTimerFreq(hz uint32) {
+func setSystimerFreq(hz uint32) {
 	if hz == 0 {
 		(systick.ENABLE | systick.TICKINT).Clear()
 		return
 	}
-	const timerPeriod_ns = 2e6
-	timerPeriod_cnt = uint32(timerPeriod_ns * uint64(hz) / 1e9)
-	systick.RELOAD.Store(timerPeriod_cnt - 1)
+	const periodns = 2e6
+	tperiodTicks = uint32(periodns * uint64(hz) / 1e9)
+	systick.RELOAD.Store(tperiodTicks - 1)
 	systick.CURRENT.Clear()
 	(systick.ENABLE | systick.TICKINT | systick.CLKSOURCE).Set()
 }
 
 func sysTickHandler() {
-	sysCounter.Add(uint64(timerPeriod_cnt))
+	sysclock.WriterAdd(uint64(tperiodTicks))
 	syscall.Alarm.Send()
 }
 
-func timerCnt() uint64 {
-	return uint64(timerPeriod_cnt - systick.CURRENT.Load())
+func systimer() uint32 {
+	return tperiodTicks - systick.CURRENT.Load()
 }

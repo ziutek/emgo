@@ -35,16 +35,20 @@ type taskInfo struct {
 	prio   uint8
 }
 
-func (ti *taskInfo) init(parent int) {
+func (ti *taskInfo) Init(parent int) {
 	*ti = taskInfo{parent: int16(parent), prio: 255}
-	ti.rng.Seed(uptime() + 1)
+	if sysclockHz == 0 {
+		ti.rng.Seed(uint64(uintptr(unsafe.Pointer(ti))))
+	} else {
+		ti.rng.Seed(uptime() + 1)
+	}
 }
 
-func (ti *taskInfo) state() taskState {
+func (ti *taskInfo) State() taskState {
 	return taskState(ti.flags & 3)
 }
 
-func (ti *taskInfo) setState(s taskState) {
+func (ti *taskInfo) SetState(s taskState) {
 	ti.flags = ti.flags&^3 | s
 }
 
@@ -58,14 +62,14 @@ var tasker taskSched
 func (ts *taskSched) deliverEvent(e syscall.Event) {
 	for i := range ts.tasks {
 		t := &ts.tasks[i]
-		switch t.state() {
+		switch t.State() {
 		case taskEmpty:
 			// skip
 
 		case taskWaitEvent:
 			if t.event&e != 0 {
 				t.event = 0
-				t.setState(taskReady)
+				t.SetState(taskReady)
 			}
 
 		default:
@@ -115,14 +119,14 @@ func (ts *taskSched) init() {
 	cortexm.SetMSP(unsafe.Pointer(stackTop(len(ts.tasks))))
 
 	// After reset all exceptions have highest priority. Change this to achieve:
-	// 1. SysTick has highest priority to ensure that systick counter reset and
-	//    increment of uptime counter are observed as one atomic operation.
+	// 1. SysTick has higher priority than SVC to ensure that any user of Uptime 	//    syscall observes both systick counter reset and sysCounter update as
+	//    one atomic operation.
 	// 2. PendSV has lowest priority (can be preempt by any exception).
 	// 3. SVC can be used in external interrupt handlers.
 	// 4. It should be possible to increase the priority of any external
 	//    interrupt to allow it to preempt SVC.
 	prange := cortexm.PrioHighest - cortexm.PrioLowest
-	scb.PRI_SVCall.Store(cortexm.PrioLowest+prange/2)
+	scb.PRI_SVCall.Store(cortexm.PrioLowest + prange/2)
 	scb.PRI_PendSV.Store(cortexm.PrioLowest)
 	for irq := nvic.IRQ(0); irq < 240; irq++ {
 		irq.SetPrio(cortexm.PrioLowest + prange/4)
@@ -133,8 +137,8 @@ func (ts *taskSched) init() {
 	//mpu.Enable()
 
 	// Set taskInfo for initial (current) task.
-	ts.tasks[0].init(0)
-	ts.tasks[0].setState(taskReady)
+	ts.tasks[0].Init(0)
+	ts.tasks[0].SetState(taskReady)
 
 	// Run tasker.
 	//sysTickStart()
@@ -149,7 +153,7 @@ func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err sy
 		if n++; n >= len(ts.tasks) {
 			n = 0
 		}
-		if ts.tasks[n].state() == taskEmpty {
+		if ts.tasks[n].State() == taskEmpty {
 			break
 		}
 		if n == ts.curTask {
@@ -162,12 +166,12 @@ func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err sy
 	sf.PC = pc
 
 	newt := &ts.tasks[n]
-	newt.init(ts.curTask)
+	newt.Init(ts.curTask)
 	newt.sp = sp
-	newt.setState(taskReady)
+	newt.SetState(taskReady)
 
 	if lock {
-		ts.tasks[ts.curTask].setState(taskLocked)
+		ts.tasks[ts.curTask].SetState(taskLocked)
 		raisePendSV()
 	}
 
@@ -179,10 +183,10 @@ func (ts *taskSched) killTask(tid int) syscall.Errno {
 	if tid != 0 {
 		n = tid - 1.
 	}
-	if n >= len(ts.tasks) || ts.tasks[n].state() == taskEmpty {
+	if n >= len(ts.tasks) || ts.tasks[n].State() == taskEmpty {
 		return syscall.ENFOUND
 	}
-	ts.tasks[n].setState(taskEmpty)
+	ts.tasks[n].SetState(taskEmpty)
 	for i := range ts.tasks {
 		if t := &ts.tasks[i]; int(t.parent) == n {
 			t.parent = -1
@@ -199,8 +203,8 @@ func (ts *taskSched) unlockParent() {
 	if parent == -1 {
 		return
 	}
-	if pt := &ts.tasks[parent]; pt.state() == taskLocked {
-		pt.setState(taskReady)
+	if pt := &ts.tasks[parent]; pt.State() == taskLocked {
+		pt.SetState(taskReady)
 	}
 }
 
@@ -210,7 +214,7 @@ func (ts *taskSched) waitEvent(e syscall.Event) {
 		t.event = 0
 		return
 	}
-	t.setState(taskWaitEvent)
+	t.SetState(taskWaitEvent)
 	t.event = e
 	raisePendSV()
 }

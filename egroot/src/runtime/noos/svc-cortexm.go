@@ -52,8 +52,14 @@ func scEventWait(fp *cortexm.StackFrame) {
 }
 
 func scSetSysClock(fp *cortexm.StackFrame) {
-	sysTimerHz = uint64(fp.R[0])
-	setTimerFreq(uint32(fp.R[0]))
+	sysclockHz = uint32(fp.R[0])
+	if rtc := utof32(fp.R[1]); rtc != nil {
+		sysrtc = rtc
+		setSystimerFreq(0) // Disable generic timer.
+	} else {
+		sysrtc = systimer
+		setSystimerFreq(sysclockHz)
+	}
 }
 
 func scUptime(fp *cortexm.StackFrame) {

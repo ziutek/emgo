@@ -10,8 +10,8 @@ import (
 func initCPU() {
 	// Enable fault handlers.
 	(scb.MEMFAULTENA | scb.BUSFAULTENA | scb.USGFAULTENA).Set()
-	// Division by zero and unaligned access will cause the UsageFault.
-	(scb.DIV_0_TRP | scb.UNALIGN_TRP).Set()
+	// Division by zero will cause the UsageFault.
+	scb.DIV_0_TRP.Set()
 	// Enable FPU.
 	scb.CP10.Store(scb.AccessFull)
 	fpu.FPCCR_Store(fpu.ASPEN | fpu.LSPEN)

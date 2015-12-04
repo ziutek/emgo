@@ -1,3 +1,4 @@
 package noos
 
-func p2f(uintptr) func()
+//c:inline
+func utof32(uintptr) func() uint32

@@ -11,7 +11,7 @@ const (
 	NEWTASK    = builtin.NEWTASK
 	KILLTASK   = builtin.KILLTASK
 	TASKUNLOCK = builtin.TASKUNLOCK
-	SCHEDNEXT = iota
+	SCHEDNEXT  = iota
 	EVENTWAIT
 	SETSYSCLK
 	UPTIME
@@ -26,7 +26,7 @@ const (
 // scheduling current task and waits until new task will call TaskUnlock. When
 // success it returns TID of new task.
 func NewTask(f func(), lock bool) (int, Errno) {
-	tid, e := builtin.Syscall2(NEWTASK, f2u(f), b2u(lock))
+	tid, e := builtin.Syscall2(NEWTASK, ftou(f), btou(lock))
 	return int(tid), Errno(e)
 }
 
@@ -48,22 +48,26 @@ func SchedNext() {
 	schedNext()
 }
 
-// SetSysClock informs runtime about current system clock frequency.
-// It should be called at every system clock change.
-func SetSysClock(hz uint) Errno {
-	_, e := builtin.Syscall1(SETSYSCLK, uintptr(hz))
+// SetSysClock informs runtime about current system clock frequency. If rtc
+// is nil generic clock source is used (eg. Cortex-M SysTick timer). Otherwise
+// rtc is called to obtain Real Time Counter ticks since last update of
+// sysclock. Use SetSysClock(0, nil) to disable system clock (default state
+// after reset).
+func SetSysClock(hz uint, rtc func() uint32) Errno {
+	_, e := builtin.Syscall2(SETSYSCLK, uintptr(hz), f32tou(rtc))
 	return Errno(e)
 }
 
 // Uptime returns how long system is running (in nanosecond). Time when system
-// was in deep sleep state can be included or not.
+// was in deep sleep state can be included or not. It can cause exception/fault
+// if system clock is not properly set.
 func Uptime() uint64 {
 	return builtin.Syscall0u64(UPTIME)
 }
 
 // SetIRQEna enables or disables irq.
 func SetIRQEna(irq int, ena bool) Errno {
-	_, e := builtin.Syscall2(SETIRQENA, uintptr(irq), b2u(ena))
+	_, e := builtin.Syscall2(SETIRQENA, uintptr(irq), btou(ena))
 	return Errno(e)
 }
 
@@ -75,7 +79,7 @@ func SetIRQPrio(irq, prio int) Errno {
 
 // SetIRQHandler sets f as handler function for irq.
 func SetIRQHandler(irq int, f func()) Errno {
-	_, e := builtin.Syscall2(SETIRQHANDLER, uintptr(irq), f2u(f))
+	_, e := builtin.Syscall2(SETIRQHANDLER, uintptr(irq), ftou(f))
 	return Errno(e)
 }
 

@@ -1,4 +1,3 @@
-static
-void (*runtime$noos$p2f(uintptr p))() {
-	return CAST(void (*)(), p);
+uint32(*runtime$noos$utof32(uintptr u)) () {
+	return CAST(uint32(*)(), u);
 }

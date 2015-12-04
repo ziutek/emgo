@@ -29,7 +29,7 @@ again:
 		if n++; n == len(tasker.tasks) {
 			n = 0
 		}
-		if tasker.tasks[n].state() == taskReady {
+		if tasker.tasks[n].State() == taskReady {
 			break
 		}
 		if n == tasker.curTask {

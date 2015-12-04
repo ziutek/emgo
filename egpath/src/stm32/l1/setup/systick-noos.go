@@ -11,5 +11,5 @@ func sysclkChanged() {
 	if noos.MaxTasks() == 0 {
 		return
 	}
-	syscall.SetSysClock(SysClk)
+	syscall.SetSysClock(SysClk, nil)
 }

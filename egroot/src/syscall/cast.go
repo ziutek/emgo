@@ -2,8 +2,12 @@ package syscall
 
 //emgo:export
 //c:static inline
-func b2u(bool) uintptr
+func btou(bool) uintptr
 
 //emgo:export
 //c:static inline
-func f2u(func()) uintptr
+func ftou(func()) uintptr
+
+//emgo:export
+//c:static inline
+func f32tou(func() uint32) uintptr

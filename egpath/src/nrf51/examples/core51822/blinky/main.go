@@ -71,12 +71,10 @@ func rtcISR() {
 	blink(leds[2], 1e3)
 }
 
-//c:const
-//c:__attribute__((section(".InterruptVectors")))
-var IRQs = [...]func(){
+var ISRs = [...]func(){
 	irqs.Timer0: timerISR,
 	irqs.RTC0:   rtcISR,
-}
+} //c:__attribute__((section(".InterruptVectors")))
 
 func main() {
 	// Sleep forever.
