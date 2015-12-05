@@ -1,4 +1,4 @@
-StackExp = 10; /* 1 KiB */
+StackLog2 = 10; /* 1 KiB */
 StackFrac = 8; /* 8/8 */
 MaxTasks = 0;
 IRTExp = 0;

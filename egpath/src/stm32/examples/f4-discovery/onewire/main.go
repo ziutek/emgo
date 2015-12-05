@@ -73,11 +73,9 @@ func oneISR() {
 	one.IRQ()
 }
 
-//c:const
-//c:__attribute__((section(".InterruptVectors")))
-var IRQs = [...]func(){
+var ISRs = [...]func(){
 	irqs.USART6: oneISR,
-}
+} //c:__attribute__((section(".ISRs")))
 
 func blink(c, d int) {
 	leds.SetPin(c)

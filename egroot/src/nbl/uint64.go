@@ -26,6 +26,12 @@ func (u *Uint64) CheckLoad(aba uintptr) (uintptr, bool) {
 	return aba1, aba1 == aba
 }
 
+// BUG: On 32bit CPUs Load doesnt guarantee that it returns valid value. The
+// probability of failure depends on the frequency of updates:
+// 1 kHz: aba wraps onece per 1193 houres,
+// 1 MHz: aba wraps once per 72 minutes.
+// Load fails if aba wraps beetwen StartLoad and CheckLoad or between subsequent
+// CheckLoads and is read twice with the same value.
 func (u *Uint64) Load() uint64 {
 	aba := u.StartLoad()
 	for {

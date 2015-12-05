@@ -1,4 +1,4 @@
-StackExp = 10;
+StackLog2 = 10;
 StackFrac = 7; 
 MaxTasks = 4;
 IRTExp = 5;

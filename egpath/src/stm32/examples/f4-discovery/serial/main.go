@@ -94,11 +94,9 @@ func sirq() {
 	s.IRQ()
 }
 
-//c:const
-//c:__attribute__((section(".InterruptVectors")))
-var IRQs = [...]func(){
+var ISRs = [...]func(){
 	irqs.USART2: sirq,
-}
+} //c:__attribute__((section(".ISRs")))
 
 func checkErr(err error) {
 	if err != nil {

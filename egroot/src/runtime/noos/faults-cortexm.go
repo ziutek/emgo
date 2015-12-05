@@ -8,7 +8,10 @@ import (
 
 //emgo:noinline
 func nmiHandler() {
-	cortexm.BKPT(0)
+	for {
+		cortexm.BKPT(0)
+	}
 }
 
-func FaultHandler()
+//emgo:export
+func faultHandler()

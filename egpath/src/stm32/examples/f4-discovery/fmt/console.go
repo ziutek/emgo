@@ -52,8 +52,6 @@ func conISR() {
 	con.IRQ()
 }
 
-//c:const
-//c:__attribute__((section(".InterruptVectors")))
-var IRQs = [...]func(){
+var ISRs = [...]func(){
 	irqs.USART2: conISR,
-}
+} //c:__attribute__((section(".ISRs")))

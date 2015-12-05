@@ -11,8 +11,9 @@ import (
 
 // An Event represents an event that task or ISR can send and task (but
 // not ISR) can wait for. Events are intended for use by low-level library
-// rutines to implement higher level communication and synchronization primitives
-// like channels and mutexes.
+// rutines to implement higher level communication and synchronization
+// primitives like channels and mutexes. They are specific to noos runtime so
+// can be unavailable if RTOS is used.
 type Event uintptr
 
 const eventBits = uint32(unsafe.Sizeof(Event(0)) * 8)
@@ -71,6 +72,5 @@ func (e Event) Wait() {
 	builtin.Syscall1(EVENTWAIT, uintptr(e))
 }
 
-// Alarm is an event that is sent by runtime when alarm time (set by SetAlarm)
-// reached.
+// Alarm is an event that is sent by runtime when asked by using SetAlarm.
 var Alarm = AssignEvent()

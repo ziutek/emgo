@@ -3,11 +3,14 @@
 package noos
 
 import (
+	"syscall"
+	"unsafe"
+
 	"arch/cortexm"
 	"arch/cortexm/debug/itm"
 	"arch/cortexm/nvic"
-	"syscall"
-	"unsafe"
+
+	"runtime/noos/sysclock/cmst"
 )
 
 var syscalls = [...]func(*cortexm.StackFrame){
@@ -51,15 +54,13 @@ func scEventWait(fp *cortexm.StackFrame) {
 	tasker.waitEvent(syscall.Event(fp.R[0]))
 }
 
+var (
+	setWakeup func(uint64)
+	uptime    func() uint64 = cmst.Uptime
+)
+
 func scSetSysClock(fp *cortexm.StackFrame) {
-	sysclockHz = uint32(fp.R[0])
-	if rtc := utof32(fp.R[1]); rtc != nil {
-		sysrtc = rtc
-		setSystimerFreq(0) // Disable generic timer.
-	} else {
-		sysrtc = systimer
-		setSystimerFreq(sysclockHz)
-	}
+	cmst.SetFreq(uint32(fp.R[0]), false)
 }
 
 func scUptime(fp *cortexm.StackFrame) {

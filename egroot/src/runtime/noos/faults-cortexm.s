@@ -2,10 +2,10 @@
 
 .syntax unified
 
-.global runtime$noos$FaultHandler
+.global runtime$noos$faultHandler
 
 .thumb_func
-runtime$noos$FaultHandler:
+runtime$noos$faultHandler:
 	// At this point a lot of things can be broken so don't touch
 	// stack nor memory. Do only few things that helps debuging.
 	mov   r0, lr

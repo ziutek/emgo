@@ -4,8 +4,22 @@ SECTIONS {
 		
 		/* Vector table. */
 		LONG(StackEnd)
-		KEEP(*(.SystemVectors))
-		KEEP(*(.InterruptVectors))
+		KEEP(*(.Reset))
+		KEEP(*(.NMI))
+		KEEP(*(.HardFault))
+		KEEP(*(.MemManage))
+		KEEP(*(.BusFault))
+		KEEP(*(.UsageFault))
+		KEEP(*(.Reserved7))
+		KEEP(*(.Reserved8))
+		KEEP(*(.Reserved9))
+		KEEP(*(.Reserved10))
+		KEEP(*(.SVCall))		
+		KEEP(*(.DebugMon))		
+		KEEP(*(.Reserved13))		
+		KEEP(*(.PendSV))		
+		KEEP(*(.SysTick))		
+		KEEP(*(.ISRs))
 		
 		/* Code */ 
 		*(.text .text.*)       
@@ -63,5 +77,3 @@ SECTIONS {
 		. = ALIGN(4);
 	}
 }
-
-ENTRY(runtime$noos$Reset)

@@ -37,7 +37,7 @@ type taskInfo struct {
 
 func (ti *taskInfo) Init(parent int) {
 	*ti = taskInfo{parent: int16(parent), prio: 255}
-	if sysclockHz == 0 {
+	if uptime == nil {
 		ti.rng.Seed(uint64(uintptr(unsafe.Pointer(ti))))
 	} else {
 		ti.rng.Seed(uptime() + 1)

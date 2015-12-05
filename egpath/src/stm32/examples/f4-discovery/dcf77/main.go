@@ -46,7 +46,7 @@ func edgeISR() {
 
 var ISRs = [...]func(){
 	irqs.Ext1: edgeISR,
-} //c:__attribute__((section(".InterruptVectors")))
+} //c:__attribute__((section(".ISRs")))
 
 
 func main() {

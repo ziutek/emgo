@@ -59,8 +59,7 @@ func SetSysClock(hz uint, rtc func() uint32) Errno {
 }
 
 // Uptime returns how long system is running (in nanosecond). Time when system
-// was in deep sleep state can be included or not. It can cause exception/fault
-// if system clock is not properly set.
+// was in deep sleep state can be included or not.
 func Uptime() uint64 {
 	return builtin.Syscall0u64(UPTIME)
 }
@@ -98,4 +97,12 @@ func DebugOutString(port int, s string) (int, Errno) {
 // DebugOut allows write debug message.
 func DebugOut(port int, b []byte) (int, Errno) {
 	return DebugOutString(port, *(*string)(unsafe.Pointer(&b)))
+}
+
+// SetAlarm asks the runtime to send Alarm event a uptime t nanoseconds. t is
+// only a hint for runtime, because it can send alarm at any time: before t,
+// at t and after t. Typically, task use SetAlarm in conjunction with
+// Alarm.Wait and Uptime.
+func SetAlarm(t uint64) {
+
 }
