@@ -21,6 +21,5 @@ var (
 	ev12 = faultHandler   //c:__attribute__((section(".DebugMon")))
 	ev13 = faultHandler   //c:__attribute__((section(".Reserved13")))
 	ev14 = pendSVHandler  //c:__attribute__((section(".PendSV")))
+	//15: SysTick vector should be provided by user code.
 )
-
-	//ev15 = sysTickHandler //c:__attribute__((section(".SysTick")))
