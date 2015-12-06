@@ -10,4 +10,8 @@ func ftou(func()) uintptr
 
 //emgo:export
 //c:static inline
-func f32tou(func() uint32) uintptr
+func f64tou(func(uint64)) uintptr
+
+//emgo:export
+//c:static inline
+func fr64tou(func() uint64) uintptr

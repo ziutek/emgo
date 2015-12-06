@@ -8,7 +8,7 @@ func init() {
 	builtin.Alloc = alloc
 	builtin.MakeChan = makeChan
 	builtin.Select = selectComm
-	if MaxTasks() > 0 {
+	if maxTasks() > 0 {
 		tasker.init()
 	}
 }

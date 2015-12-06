@@ -9,22 +9,23 @@ import (
 	"arch/cortexm"
 	"arch/cortexm/debug/itm"
 	"arch/cortexm/nvic"
-
-	"runtime/noos/sysclock/cmst"
 )
 
 var syscalls = [...]func(*cortexm.StackFrame){
 	syscall.NEWTASK:       scNewTask,
 	syscall.KILLTASK:      scKillTask,
 	syscall.TASKUNLOCK:    scTaskUnlock,
+	syscall.MAXTASKS:      scMaxTasks,
 	syscall.SCHEDNEXT:     scSchedNext,
 	syscall.EVENTWAIT:     scEventWait,
 	syscall.SETSYSCLK:     scSetSysClock,
 	syscall.UPTIME:        scUptime,
+	syscall.SETALARM:      scSetAlarm,
 	syscall.SETIRQENA:     scSetIRQEna,
 	syscall.SETIRQPRIO:    scSetIRQPrio,
 	syscall.SETIRQHANDLER: scSetIRQHandler,
 	syscall.IRQSTATUS:     scIRQStatus,
+	syscall.SETPRIVLEVEL:  scSetPrivLevel,
 	syscall.DEBUGOUT:      scDebugOut,
 }
 
@@ -46,6 +47,10 @@ func scTaskUnlock(_ *cortexm.StackFrame) {
 	tasker.unlockParent()
 }
 
+func scMaxTasks(fp *cortexm.StackFrame) {
+	fp.R[0] = uintptr(maxTasks())
+}
+
 func scSchedNext(_ *cortexm.StackFrame) {
 	raisePendSV()
 }
@@ -55,16 +60,21 @@ func scEventWait(fp *cortexm.StackFrame) {
 }
 
 var (
+	uptime    func() uint64
 	setWakeup func(uint64)
-	uptime    func() uint64 = cmst.Uptime
 )
 
 func scSetSysClock(fp *cortexm.StackFrame) {
-	cmst.SetFreq(uint32(fp.R[0]), false)
+	uptime = utofr64(fp.R[0])
+	setWakeup = utof64(fp.R[1])
 }
 
 func scUptime(fp *cortexm.StackFrame) {
-	*(*uint64)(unsafe.Pointer(fp)) = uptime()
+	*(*uint64)(unsafe.Pointer(&fp.R[0])) = uptime()
+}
+
+func scSetAlarm(fp *cortexm.StackFrame) {
+	tasker.setAlarm(*(*uint64)(unsafe.Pointer(&fp.R[0])))
 }
 
 func scSetIRQEna(fp *cortexm.StackFrame) {
@@ -108,6 +118,18 @@ func scIRQStatus(fp *cortexm.StackFrame) {
 		status = -status - 1
 	}
 	fp.R[0] = uintptr(status)
+	fp.R[1] = uintptr(syscall.OK)
+}
+
+func scSetPrivLevel(fp *cortexm.StackFrame) {
+	ctrl := cortexm.CONTROL()
+	switch level := int(fp.R[0]); {
+	case level == 0:
+		cortexm.SetCONTROL(ctrl &^ cortexm.Unpriv)
+	case level > 0:
+		cortexm.SetCONTROL(ctrl | cortexm.Unpriv)
+	}
+	fp.R[0] = uintptr(ctrl & cortexm.Unpriv)
 	fp.R[1] = uintptr(syscall.OK)
 }
 

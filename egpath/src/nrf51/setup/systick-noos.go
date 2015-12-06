@@ -3,13 +3,12 @@
 package setup
 
 import (
-	"runtime/noos"
-	//"syscall"
+	"rtos"
 )
 
 func sysclkChanged() {
-	if noos.MaxTasks() == 0 {
+	if rtos.MaxTasks() == 0 {
 		return
 	}
-	//syscall.SetSysClock(SysClk)
+	// TODO: Setup there RTC0 (RTC1 ???).
 }

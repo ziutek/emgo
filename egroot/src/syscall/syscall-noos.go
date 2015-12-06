@@ -11,14 +11,17 @@ const (
 	NEWTASK    = builtin.NEWTASK
 	KILLTASK   = builtin.KILLTASK
 	TASKUNLOCK = builtin.TASKUNLOCK
-	SCHEDNEXT  = iota
+	MAXTASKS   = iota
+	SCHEDNEXT
 	EVENTWAIT
 	SETSYSCLK
 	UPTIME
+	SETALARM
 	SETIRQENA
 	SETIRQPRIO
 	SETIRQHANDLER
 	IRQSTATUS
+	SETPRIVLEVEL
 	DEBUGOUT
 )
 
@@ -42,26 +45,36 @@ func TaskUnlock() {
 	builtin.Syscall0(TASKUNLOCK)
 }
 
+// MaxTasks: see rtos package.
+func MaxTasks() int {
+	n, _ := builtin.Syscall0(MAXTASKS)
+	return int(n)
+}
+
 // SchedNext informs tasker that it need to schedule next ready to run task.
 // It is safe to call SchedNext from interrupt handler.
 func SchedNext() {
 	schedNext()
 }
 
-// SetSysClock informs runtime about current system clock frequency. If rtc
-// is nil generic clock source is used (eg. Cortex-M SysTick timer). Otherwise
-// rtc is called to obtain Real Time Counter ticks since last update of
-// sysclock. Use SetSysClock(0, nil) to disable system clock (default state
-// after reset).
-func SetSysClock(hz uint, rtc func() uint32) Errno {
-	_, e := builtin.Syscall2(SETSYSCLK, uintptr(hz), f32tou(rtc))
+// SetSysClock registers two functions that runtime uses to communicate with
+// system clock. For more information see runtime/noos/sysclock.
+func SetSysClock(uptime func() uint64, setwakeup func(uint64)) Errno {
+	_, e := builtin.Syscall2(SETSYSCLK, fr64tou(uptime), f64tou(setwakeup))
 	return Errno(e)
 }
 
-// Uptime returns how long system is running (in nanosecond). Time when system
-// was in deep sleep state can be included or not.
+// Uptime: see rtos package.
 func Uptime() uint64 {
-	return builtin.Syscall0u64(UPTIME)
+	return builtin.Syscall0r64(UPTIME)
+}
+
+// SetAlarm asks the runtime to send Alarm event a uptime t nanoseconds. t is
+// only a hint for runtime, because it can send alarm at any time: before t,
+// at t and after t. Typically, task use SetAlarm in conjunction with
+// Alarm.Wait and Uptime.
+func SetAlarm(t uint64) {
+	builtin.Syscall1i64(SETALARM, t)
 }
 
 // SetIRQEna enables or disables irq.
@@ -76,15 +89,22 @@ func SetIRQPrio(irq, prio int) Errno {
 	return Errno(err)
 }
 
-// SetIRQHandler sets f as handler function for irq.
+// SetIRQHandler: see rtos package.
 func SetIRQHandler(irq int, f func()) Errno {
 	_, e := builtin.Syscall2(SETIRQHANDLER, uintptr(irq), ftou(f))
 	return Errno(e)
 }
 
+// IRQStatus: ee rtos package.
 func IRQStatus(irq int) (int, Errno) {
 	s, e := builtin.Syscall1(IRQSTATUS, uintptr(irq))
 	return int(s), Errno(e)
+}
+
+// SetPrivLevel: see rtos package.
+func SetPrivLevel(n int) (int, Errno) {
+	old, e := builtin.Syscall1(SETPRIVLEVEL, uintptr(n))
+	return int(old), Errno(e)
 }
 
 // DebugOutString allows write debug message.
@@ -97,12 +117,4 @@ func DebugOutString(port int, s string) (int, Errno) {
 // DebugOut allows write debug message.
 func DebugOut(port int, b []byte) (int, Errno) {
 	return DebugOutString(port, *(*string)(unsafe.Pointer(&b)))
-}
-
-// SetAlarm asks the runtime to send Alarm event a uptime t nanoseconds. t is
-// only a hint for runtime, because it can send alarm at any time: before t,
-// at t and after t. Typically, task use SetAlarm in conjunction with
-// Alarm.Wait and Uptime.
-func SetAlarm(t uint64) {
-
 }

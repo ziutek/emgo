@@ -1,7 +1,5 @@
 package rtos
 
-//import "syscall"
-
 // A Task represents operating system task/process.
 type Task int
 

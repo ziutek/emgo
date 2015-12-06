@@ -3,13 +3,16 @@
 package setup
 
 import (
-	"runtime/noos"
+	"runtime/noos/sysclk/cmst"
 	"syscall"
 )
 
 func sysclkChanged() {
-	if noos.MaxTasks() == 0 {
+	if syscall.MaxTasks() == 0 {
 		return
 	}
-	syscall.SetSysClock(SysClk, nil)
+	lev, _ := syscall.SetPrivLevel(0)
+	cmst.SetFreq(uint32(SysClk), false)
+	syscall.SetSysClock(cmst.Uptime, cmst.SetWakeup)
+	syscall.SetPrivLevel(lev)
 }

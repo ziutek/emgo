@@ -103,7 +103,7 @@ func setupVectorTable(vtLenExp int) {
 func (ts *taskSched) init() {
 	//setupVectorTable(irtExp) - disabled (we use static VT, set at link time)
 
-	ts.tasks = make([]taskInfo, MaxTasks())
+	ts.tasks = make([]taskInfo, maxTasks())
 
 	// Use PSP as stack pointer for thread mode. Current (zero) task has stack
 	// at top of the stacks area.
@@ -217,4 +217,8 @@ func (ts *taskSched) waitEvent(e syscall.Event) {
 	t.SetState(taskWaitEvent)
 	t.event = e
 	raisePendSV()
+}
+
+func (ts *taskSched) setAlarm(t uint64) {
+
 }
