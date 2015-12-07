@@ -11,10 +11,13 @@ import (
 )
 
 func schedNext() {
-	if cortexm.IPSR()&0xff == 0 {
+	switch cortexm.IPSR() & 0xff {
+	case 0:
 		// Called from thread mode.
 		builtin.Syscall0(SCHEDNEXT)
-	} else {
+	case cortexm.PendSV:
+		// Called from PendSV handler.
+	default:
 		// Called from ISR.
 		scb.ICSR_Store(scb.PENDSVSET)
 	}

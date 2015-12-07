@@ -52,15 +52,15 @@ func waterTask() {
 		switch {
 		case ht <= period:
 			ssrPort.SetPin(r0)
-			rtos.SleepUntil(start + uint64(ht)*1e6)
+			rtos.SleepUntil(start + int64(ht)*1e6)
 			ssrPort.ClearPin(r0)
 		case ht <= 2*period:
 			ssrPort.SetPins(1<<uint(r0) | 1<<uint(r1))
-			rtos.SleepUntil(start + uint64(ht-period)*1e6)
+			rtos.SleepUntil(start + int64(ht-period)*1e6)
 			ssrPort.ClearPin(r1)
 		default:
 			ssrPort.SetPins(1<<uint(r0) | 1<<uint(r1) | 1<<uint(r2))
-			rtos.SleepUntil(start + uint64(ht-2*period)*1e6)
+			rtos.SleepUntil(start + int64(ht-2*period)*1e6)
 			ssrPort.ClearPin(r2)
 		}
 

@@ -4,15 +4,16 @@ package cmst
 import (
 	"math"
 	"nbl"
-	"syscall"
 
+	"arch/cortexm/scb"
 	"arch/cortexm/systick"
 )
 
 var (
 	freqHz      uint32 // Hz.
 	periodTicks uint32 // Ticks.
-	counter     nbl.Uint64
+	counter     nbl.Int64
+	wakeup      nbl.Int64
 )
 
 // SetFreq setups and starts/stops the system clock. hz == 0 means stop the
@@ -36,33 +37,33 @@ func SetFreq(hz uint32, external bool) {
 	cfg.Set()
 }
 
-// SetWakeup asks timer to wakeup runtime at uptime t nanaosecons using PendSV
-// exception. t is only a hint and runtime can be awakened at any uptime less or
-// equal to t or even greather than t, if t is the uptime in the past. Runtime
-// can also be awakened at any time by other PendSV sources.
-func SetWakeup(t uint64) {
-
+// SetWakeup asks timer to run runtime scheduler at uptime t nanoseconds using
+// PendSV exception. t is only a hint and scheduler can be run at any uptime
+// less or equal to t or even greather than t, if t is less than current uptime.
+// Notice that scheduler can be also run at any time by other PendSV source.
+func SetWakeup(t int64) {
+	wakeup.WriterStore(t)
 }
 
 // Uptime returns the time elapsed since the start of the system clock.
-func Uptime() uint64 {
+func Uptime() int64 {
 	if freqHz == 0 {
 		return 0
 	}
 	aba := counter.StartLoad()
 	for {
-		cnt := counter.TryLoad(aba)
+		cnt := uint64(counter.TryLoad(aba))
 		add := periodTicks - systick.CURRENT.Load()
 		var ok bool
 		if aba, ok = counter.CheckLoad(aba); ok {
-			return math.Muldiv(cnt+uint64(add), 1e9, uint64(freqHz))
+			return int64(math.Muldiv(cnt+uint64(add), 1e9, uint64(freqHz)))
 		}
 	}
 }
 
 func SysTickHandler() {
-	counter.WriterAdd(uint64(periodTicks))
-	syscall.Alarm.Send() // change this to PendSV!!!
+	counter.WriterAdd(int64(periodTicks))
+	scb.ICSR_Store(scb.PENDSVSET)
 }
 
 //c:__attribute__((section(".SysTick")))

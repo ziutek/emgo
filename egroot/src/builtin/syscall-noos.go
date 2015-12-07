@@ -17,5 +17,5 @@ func Syscall1(trap, a1 uintptr) (r, e uintptr)
 func Syscall2(trap, a1, a2 uintptr) (r, e uintptr)
 func Syscall3(trap, a1, a2, a3 uintptr) (r, e uintptr)
 
-func Syscall1i64(trap, uintptr uint64)
-func Syscall0r64(trap uintptr) uint64
+func Syscall1i64(trap, uintptr int64) (r, e uintptr)
+func Syscall0r64(trap uintptr) int64

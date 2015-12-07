@@ -40,7 +40,7 @@ func (ti *taskInfo) Init(parent int) {
 	if uptime == nil {
 		ti.rng.Seed(uint64(uintptr(unsafe.Pointer(ti))))
 	} else {
-		ti.rng.Seed(uptime() + 1)
+		ti.rng.Seed(uint64(uptime() + 1))
 	}
 }
 
@@ -53,11 +53,14 @@ func (ti *taskInfo) SetState(s taskState) {
 }
 
 type taskSched struct {
-	tasks   []taskInfo
-	curTask int
+	alarm     int64
+	period    uint32
+	setWakeup func(int64)
+	tasks     []taskInfo
+	curTask   int
 }
 
-var tasker taskSched
+var tasker = taskSched{alarm: 1<<63 - 1, period: 2e6}
 
 func (ts *taskSched) deliverEvent(e syscall.Event) {
 	for i := range ts.tasks {
@@ -102,7 +105,6 @@ func setupVectorTable(vtLenExp int) {
 
 func (ts *taskSched) init() {
 	//setupVectorTable(irtExp) - disabled (we use static VT, set at link time)
-
 	ts.tasks = make([]taskInfo, maxTasks())
 
 	// Use PSP as stack pointer for thread mode. Current (zero) task has stack
@@ -219,6 +221,9 @@ func (ts *taskSched) waitEvent(e syscall.Event) {
 	raisePendSV()
 }
 
-func (ts *taskSched) setAlarm(t uint64) {
-
+func (ts *taskSched) setAlarm(t int64) {
+	if t > ts.alarm {
+		return
+	}
+	ts.alarm = t
 }

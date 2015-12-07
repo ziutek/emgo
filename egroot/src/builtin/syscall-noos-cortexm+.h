@@ -53,22 +53,24 @@
 // uint64 in register
 //
 // ARM EABI tells that 64bit operand is stored in even:odd register pair. But
-// It seems tat `register uint64 r asm("r0")` means that r ocupies r0:r1.
+// It seems that `register uint64 r asm("r0")` means that r ocupies r0:r1.
 
 #define builtin$Syscall1i64(trap, a1) ({ \
-	register uint64  r0 asm("r0") = a1;  \
+	register int64   r  asm("r0") = a1;  \
+	register uintptr r0 asm("r0");       \
 	register uintptr r1 asm("r1");       \
 	asm volatile (                       \
 		"svc %2"                         \
-		: "+r" (r0), "=r" (r1)           \
-		: "i" (trap)                     \
+		: "=r" (r0), "=r" (r1)           \
+		: "i" (trap), "r" (r)            \
 		: "memory"                       \
 	);                                   \
 	(uintptr$$uintptr){r0, r1};          \
 })
 
+
 #define builtin$Syscall0r64(trap) ({ \
-	register uint64 r asm("r0");     \
+	register int64 r asm("r0");      \
 	asm volatile (                   \
 		"svc %1"                     \
 		: "=r" (r)                   \

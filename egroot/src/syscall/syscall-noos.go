@@ -59,13 +59,13 @@ func SchedNext() {
 
 // SetSysClock registers two functions that runtime uses to communicate with
 // system clock. For more information see runtime/noos/sysclock.
-func SetSysClock(uptime func() uint64, setwakeup func(uint64)) Errno {
+func SetSysClock(uptime func() int64, setwakeup func(int64)) Errno {
 	_, e := builtin.Syscall2(SETSYSCLK, fr64tou(uptime), f64tou(setwakeup))
 	return Errno(e)
 }
 
 // Uptime: see rtos package.
-func Uptime() uint64 {
+func Uptime() int64 {
 	return builtin.Syscall0r64(UPTIME)
 }
 
@@ -73,7 +73,7 @@ func Uptime() uint64 {
 // only a hint for runtime, because it can send alarm at any time: before t,
 // at t and after t. Typically, task use SetAlarm in conjunction with
 // Alarm.Wait and Uptime.
-func SetAlarm(t uint64) {
+func SetAlarm(t int64) {
 	builtin.Syscall1i64(SETALARM, t)
 }
 

@@ -4,7 +4,7 @@ package rtos
 
 import "syscall"
 
-func sleepUntil(end uint64) {
+func sleepUntil(end int64) {
 	for Uptime() < end {
 		syscall.SetAlarm(end)
 		syscall.Alarm.Wait()

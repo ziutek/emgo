@@ -108,7 +108,7 @@ func checkErr(err error) {
 }
 
 func main() {
-	var uts [10]uint64
+	var uts [10]int64
 
 	// Following loop disassembled:
 	// 0:

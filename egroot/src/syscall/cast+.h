@@ -9,11 +9,11 @@ syscall$ftou(void (*f) ()) {
 }
 
 uintptr
-syscall$f64tou(void (*f) (uint64)) {
+syscall$f64tou(void (*f) (int64)) {
 	return CAST(uintptr, f);
 }
 
 uintptr
-syscall$fr64tou(uint64(*f) ()) {
+syscall$fr64tou(int64(*f) ()) {
 	return CAST(uintptr, f);
 }
