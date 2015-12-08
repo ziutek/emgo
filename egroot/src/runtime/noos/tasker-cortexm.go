@@ -3,13 +3,14 @@
 package noos
 
 import (
-	"arch/cortexm"
-	"arch/cortexm/nvic"
-	"arch/cortexm/scb"
 	"math/rand"
 	"sync/fence"
 	"syscall"
 	"unsafe"
+
+	"arch/cortexm"
+	"arch/cortexm/nvic"
+	"arch/cortexm/scb"
 )
 
 type taskState byte
@@ -52,6 +53,11 @@ func (ti *taskInfo) SetState(s taskState) {
 	ti.flags = ti.flags&^3 | s
 }
 
+
+// Comment for future separate tasker package:
+// 1. Exported methods can be called only from thread mode (using SVC handler) 
+//    or from PendSV handler.
+// 2. Describe which method can be called from which handler.
 type taskSched struct {
 	alarm     int64
 	period    uint32

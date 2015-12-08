@@ -11,7 +11,7 @@ import (
 	"arch/cortexm/nvic"
 )
 
-var syscalls = [...]func(*cortexm.StackFrame){
+var syscalls = [...]func(fp *cortexm.StackFrame, lr uintptr){
 	syscall.NEWTASK:       scNewTask,
 	syscall.KILLTASK:      scKillTask,
 	syscall.TASKUNLOCK:    scTaskUnlock,
@@ -33,48 +33,60 @@ func unpriv() bool {
 	return cortexm.CONTROL()&cortexm.Unpriv != 0
 }
 
-func scNewTask(fp *cortexm.StackFrame) {
+func mustThread(lr uintptr) {
+	if lr&cortexm.ReturnMask == cortexm.ReturnHandler {
+		panic("syscall from ISR")
+	}
+}
+
+func scNewTask(fp *cortexm.StackFrame, lr uintptr) {
+	mustThread(lr)
 	tid, err := tasker.newTask(fp.R[0], fp.PSR, fp.R[1] != 0)
 	fp.R[0], fp.R[1] = uintptr(tid), uintptr(err)
 }
 
-func scKillTask(fp *cortexm.StackFrame) {
+func scKillTask(fp *cortexm.StackFrame, lr uintptr) {
+	mustThread(lr)
 	err := tasker.killTask(int(fp.R[0]))
 	fp.R[1] = uintptr(err)
 }
 
-func scTaskUnlock(_ *cortexm.StackFrame) {
+func scTaskUnlock(fp *cortexm.StackFrame, lr uintptr) {
+	mustThread(lr)
 	tasker.unlockParent()
 }
 
-func scMaxTasks(fp *cortexm.StackFrame) {
+func scMaxTasks(fp *cortexm.StackFrame, lr uintptr) {
 	fp.R[0] = uintptr(maxTasks())
 }
 
-func scSchedNext(_ *cortexm.StackFrame) {
+func scSchedNext(_ *cortexm.StackFrame, lr uintptr) {
 	raisePendSV()
 }
 
-func scEventWait(fp *cortexm.StackFrame) {
+func scEventWait(fp *cortexm.StackFrame, lr uintptr) {
+	mustThread(lr)
 	tasker.waitEvent(syscall.Event(fp.R[0]))
 }
 
 var uptime func() int64
 
-func scSetSysClock(fp *cortexm.StackFrame) {
+func scSetSysClock(fp *cortexm.StackFrame, lr uintptr) {
+	mustThread(lr)
 	uptime = utofr64(fp.R[0])
 	tasker.setWakeup = utof64(fp.R[1])
 }
 
-func scUptime(fp *cortexm.StackFrame) {
+func scUptime(fp *cortexm.StackFrame, lr uintptr) {
 	*(*int64)(unsafe.Pointer(&fp.R[0])) = uptime()
 }
 
-func scSetAlarm(fp *cortexm.StackFrame) {
+func scSetAlarm(fp *cortexm.StackFrame, lr uintptr) {
+	mustThread(lr)
 	tasker.setAlarm(*(*int64)(unsafe.Pointer(&fp.R[0])))
 }
 
-func scSetIRQEna(fp *cortexm.StackFrame) {
+func scSetIRQEna(fp *cortexm.StackFrame, lr uintptr) {
 	irq := nvic.IRQ(fp.R[0])
 	ena := fp.R[1] != 0
 	if irq > 239 {
@@ -89,7 +101,7 @@ func scSetIRQEna(fp *cortexm.StackFrame) {
 	fp.R[1] = uintptr(syscall.OK)
 }
 
-func scSetIRQPrio(fp *cortexm.StackFrame) {
+func scSetIRQPrio(fp *cortexm.StackFrame, lr uintptr) {
 	irq := nvic.IRQ(fp.R[0])
 	prio := int(fp.R[1])
 	if irq > 239 {
@@ -100,11 +112,11 @@ func scSetIRQPrio(fp *cortexm.StackFrame) {
 	fp.R[1] = uintptr(syscall.OK)
 }
 
-func scSetIRQHandler(fp *cortexm.StackFrame) {
+func scSetIRQHandler(fp *cortexm.StackFrame, lr uintptr) {
 	fp.R[1] = uintptr(syscall.ENOSYS)
 }
 
-func scIRQStatus(fp *cortexm.StackFrame) {
+func scIRQStatus(fp *cortexm.StackFrame, lr uintptr) {
 	irq := nvic.IRQ(fp.R[0])
 	if irq > 239 {
 		fp.R[1] = uintptr(syscall.ERANGE)
@@ -118,7 +130,8 @@ func scIRQStatus(fp *cortexm.StackFrame) {
 	fp.R[1] = uintptr(syscall.OK)
 }
 
-func scSetPrivLevel(fp *cortexm.StackFrame) {
+func scSetPrivLevel(fp *cortexm.StackFrame, lr uintptr) {
+	mustThread(lr)
 	ctrl := cortexm.CONTROL()
 	switch level := int(fp.R[0]); {
 	case level == 0:
@@ -130,7 +143,7 @@ func scSetPrivLevel(fp *cortexm.StackFrame) {
 	fp.R[1] = uintptr(syscall.OK)
 }
 
-func scDebugOut(fp *cortexm.StackFrame) {
+func scDebugOut(fp *cortexm.StackFrame, lr uintptr) {
 	port := itm.Port(fp.R[0])
 	data := (*[1 << 30]byte)(unsafe.Pointer(fp.R[1]))[:fp.R[2]:fp.R[2]]
 	if unpriv() && port >= 16 {
@@ -158,10 +171,10 @@ func svcHandler()
 // Cons: additional register need for syscall number, usually additional
 // mov instruction is need (+2B for any syscall), additional instruction fetch
 // from Flash + execution.
-func sv(fp *cortexm.StackFrame) {
+func sv(fp *cortexm.StackFrame, lr uintptr) {
 	trap := int(*(*byte)(unsafe.Pointer(fp.PC - 2)))
 	if trap >= len(syscalls) {
 		panic("unknown syscall number")
 	}
-	syscalls[trap](fp)
+	syscalls[trap](fp, lr)
 }

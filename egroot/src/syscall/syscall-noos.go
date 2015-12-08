@@ -58,7 +58,16 @@ func SchedNext() {
 }
 
 // SetSysClock registers two functions that runtime uses to communicate with
-// system clock. For more information see runtime/noos/sysclock.
+// system clock.
+//
+// uptime is used to implement Uptime system call. It should return the
+// monotonic time i nanoseconds (typically the time of system clock run).
+//
+// setWakeup is called by scheduler to ask system clock to generate PendSV
+// exception at time t (see rtos.Uptime). Weak (ticking) system clock can ignore
+// t and generate PendSV with fixed period. Good (tickless) clock should
+// generate exceptions as accurately as possible (if t <= Uptime() it should
+// generate PendSV immediately.
 func SetSysClock(uptime func() int64, setwakeup func(int64)) Errno {
 	_, e := builtin.Syscall2(SETSYSCLK, fr64tou(uptime), f64tou(setwakeup))
 	return Errno(e)

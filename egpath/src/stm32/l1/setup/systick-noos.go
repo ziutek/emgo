@@ -12,7 +12,7 @@ func sysclkChanged() {
 		return
 	}
 	lev, _ := syscall.SetPrivLevel(0)
-	cmst.SetFreq(uint32(SysClk), false)
+	cmst.Setup(2e6, SysClk, false)
 	syscall.SetSysClock(cmst.Uptime, cmst.SetWakeup)
 	syscall.SetPrivLevel(lev)
 }

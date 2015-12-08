@@ -7,6 +7,7 @@ void runtime$noos$svcHandler() {
 		"ite 	eq\n\t"
 		"mrseq 	r0, msp\n\t"
 		"mrsne	r0, psp\n\t"
+		"mov    r1, lr\n\t"
 		"b		runtime$noos$sv"
 		:: "X" (runtime$noos$sv)
 	);

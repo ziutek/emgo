@@ -3,8 +3,8 @@
 __attribute__ ((naked)) static
 void runtime$noos$svcHandler() {
 	asm volatile (
-		"mov    r0, lr\n\t"
-		"movs   r1, #4\n\t"
+		"mov    r1, lr\n\t"
+		"movs   r0, #4\n\t"
 		"tst	r0, r1\n\t"
 		"bne    0f\n\t"
 
