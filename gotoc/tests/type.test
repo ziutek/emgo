@@ -389,3 +389,52 @@ const tinfo foo$PAPA$$ = {
 // decl
 typedef $4_$$8$$3_$int *foo$PAPA;
 // end
+
+// Go code:
+type F [4]func(int, uint)
+// C code:
+// decl
+struct $4_$$9$$8$void$0$$9$int$1$uint$0$_struct;
+typedef struct $4_$$9$$8$void$0$$9$int$1$uint$0$_struct $4_$$9$$8$void$0$$9$int$1$uint$0$;
+// def
+#ifndef $4_$$9$$8$void$0$$9$int$1$uint$0$$
+#define $4_$$9$$8$void$0$$9$int$1$uint$0$$
+struct $4_$$9$$8$void$0$$9$int$1$uint$0$_struct {
+	void (*arr[4])(int, uint);
+};
+#endif
+// decl
+const tinfo func$$$int$$uint$$$;
+// def
+const tinfo func$$$int$$uint$$$ = {
+	{
+		.kind = Func
+	}
+};
+// decl
+const tinfo foo$F$$;
+// def
+const tinfo foo$F$$ = {
+	{
+		.name = EGSTR("foo.F"),
+		.kind = Array - 4,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&func$$$int$$uint$$$
+		}))
+	}
+};
+// decl
+const tinfo $8$foo$F$$;
+// def
+const tinfo $8$foo$F$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$F$$
+		}))
+	}
+};
+// decl
+typedef $4_$$9$$8$void$0$$9$int$1$uint$0$ foo$F;
+// end
+// end

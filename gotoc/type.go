@@ -279,7 +279,7 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 
 func escape(s string) (ret string) {
 	for {
-		i := strings.IndexAny(s, "*()")
+		i := strings.IndexAny(s, " ,*()")
 		if i == -1 {
 			break
 		}
@@ -289,8 +289,10 @@ func escape(s string) (ret string) {
 			ret += "$8$"
 		case '(':
 			ret += "$9$"
-		default:
+		case ')':
 			ret += "$0$"
+		case ',':
+			ret += "$1$"
 		}
 		s = s[i+1:]
 	}
