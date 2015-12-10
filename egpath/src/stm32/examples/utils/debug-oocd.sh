@@ -9,4 +9,4 @@ arm-none-eabi-gdb --tui \
 	-ex "set remote hardware-breakpoint-limit 6" \
 	-ex "set remote hardware-watchpoint-limit 4" \
 	-ex "monitor reset init" \
-	main.elf
+	$EGARCH.elf

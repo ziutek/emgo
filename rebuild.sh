@@ -12,8 +12,9 @@ list=$(find egroot/src egpath/src -type d)
 for p in $list; do
 	if [ -n "$(find $p -maxdepth 1 -type f -name '*.go')" ]; then
 		cd $p
+		rm -f *.elf *.bin *.sizes
 		printf "%-44s   " ${p#*/*/}
-		if egc -O g; then
+		if $EGC; then
 			echo OK
 		else
 			echo Err

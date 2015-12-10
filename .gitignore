@@ -5,6 +5,7 @@ __.*
 *.a
 a.out
 *.elf
+*.sizes
 *.bin
 *.map
 egroot/pkg/*
