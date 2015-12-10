@@ -2,7 +2,6 @@ package nbl
 
 import (
 	"sync/atomic"
-	"sync/fence"
 )
 
 // Int64 implements int64 value for one writer and multiple readers. It is
@@ -21,7 +20,6 @@ func (i *Int64) TryLoad(aba uintptr) int64 {
 }
 
 func (i *Int64) CheckLoad(aba uintptr) (uintptr, bool) {
-	fence.Compiler()
 	aba1 := atomic.LoadUintptr(&i.aba)
 	return aba1, aba1 == aba
 }
@@ -53,7 +51,6 @@ func (i *Int64) WriterStore(v int64) {
 	aba := i.aba
 	aba++
 	i.val[aba&1] = v
-	fence.Memory()
 	atomic.StoreUintptr(&i.aba, aba)
 }
 

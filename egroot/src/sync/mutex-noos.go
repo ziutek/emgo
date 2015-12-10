@@ -5,7 +5,6 @@ package sync
 import (
 	"syscall"
 	"sync/atomic"
-	"sync/fence"
 )
 
 type mutex struct {
@@ -31,7 +30,6 @@ func (m *Mutex) lock() {
 
 func (m *Mutex) unlock() {
 	unlocked := m.state &^ 1
-	fence.Memory()
 	if atomic.AddUintptr(&m.state, ^uintptr(0)) != unlocked {
 		panic("sync: unlock of unlocked mutex")
 	}

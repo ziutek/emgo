@@ -16,7 +16,7 @@ If you want to write CPU specific function in CPU specific library you are free 
 
 If your CPU guarantees ordered access to I/O address spece, you can use volatile types/variables using //c:volatile pragma. This simplifies code and can slightly improve performance, but can cause bugs in more complicated cases.
 
-Don't use volatile types/variables for other things. If you think that you need volatile for something other than MMIO you're wrong - use functions from sync/atmic and sync/fence packages instead.
+Don't use volatile types/variables for other things. If you think that you need volatile for something other than MMIO you're wrong - use functions from sync/atmic package instead.
 
 ### Constant global variables
 

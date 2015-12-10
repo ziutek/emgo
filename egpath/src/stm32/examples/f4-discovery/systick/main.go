@@ -4,8 +4,6 @@
 package main
 
 import (
-	"sync/fence"
-
 	"arch/cortexm"
 	"arch/cortexm/scb"
 	"arch/cortexm/systick"
@@ -58,7 +56,7 @@ func main() {
 
 	// Sleep forever.
 	scb.SLEEPONEXIT.Set()
-	fence.Sync() // not necessary on Cortex-M0,M3,M4
+	cortexm.DSB() // not necessary on Cortex-M0,M3,M4
 	cortexm.WFI()
 
 	// Execution should never reach there so the red LED

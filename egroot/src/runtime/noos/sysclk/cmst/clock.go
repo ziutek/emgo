@@ -1,4 +1,5 @@
-// Package cmst implements system clock using Cortex-M SysTick timer.
+// Package cmst implements ticking system clock using Cortex-M SysTick timer.
+// It is not recomended for low power applications.
 package cmst
 
 import (
@@ -10,12 +11,15 @@ import (
 )
 
 var (
-	freqHz      uint   // Hz.
-	periodTicks uint32 // Ticks.
+	freqHz      uint
+	periodTicks uint32
 	counter     nbl.Int64
-	wakeup      nbl.Int64
 )
 
+// Setup setups SysTick to work as sytem clock.
+//  periodns - number of nanoseconds between ticks (generating PendSV),
+//  hz       - frequency of SysTick clock source,
+//  external - false: SysTick uses CPU clock; true: SysTick uses external clock.
 func Setup(periodns, hz uint, external bool) {
 	freqHz = hz
 	if hz == 0 {
@@ -34,7 +38,6 @@ func Setup(periodns, hz uint, external bool) {
 
 // SetWakeup: see syscall.SetSysClock.
 func SetWakeup(t int64) {
-	wakeup.WriterStore(t)
 }
 
 // Uptime: see syscall.SetSysClock.
@@ -53,10 +56,10 @@ func Uptime() int64 {
 	}
 }
 
-func SysTickHandler() {
+func sysTickHandler() {
 	counter.WriterAdd(int64(periodTicks))
 	scb.ICSR_Store(scb.PENDSVSET)
 }
 
 //c:__attribute__((section(".SysTick")))
-var SysTickVector = SysTickHandler
+var SysTickVector = sysTickHandler

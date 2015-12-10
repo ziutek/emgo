@@ -1,7 +1,7 @@
 // Package atomic provides low-level atomic memory primitives.
 //
-// These functions works in relaxed memory model so they don't provide any
-// implicit memory barriers nor "happens-before" edges for different gorutines.
+// These functions works in sequentially consistent memory model so they
+// provide "happens-before" edges for all load/store operations.
 package atomic
 
 import "unsafe"

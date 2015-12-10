@@ -5,7 +5,6 @@ package syscall
 import (
 	"builtin"
 	"sync/atomic"
-	"sync/fence"
 	"unsafe"
 )
 
@@ -44,9 +43,7 @@ func AssignEventFlag() Event {
 // for possible future call of Wait. Compiler doesn't reorder Send with any
 // memory operation that is before it in the program code.
 func (e Event) Send() {
-	fence.Compiler()
 	atomic.OrUintptr((*uintptr)(&eventReg), uintptr(e))
-	fence.Compiler()
 	schedNext()
 }
 

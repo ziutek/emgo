@@ -126,6 +126,16 @@ arch$cortexm$SEV() {
 }
 
 void
+arch$cortexm$DMB() {
+	asm volatile ("dmb");
+}
+
+void
+arch$cortexm$DSB() {
+	asm volatile ("dsb");
+}
+
+void
 arch$cortexm$ISB() {
 	asm volatile ("isb");
 }

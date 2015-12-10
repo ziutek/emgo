@@ -1,12 +1,14 @@
 package delay
 
-import "sync/fence"
+import (
+	"sync"
+)
 
 // Loop can be used to perform short active delay.
 func Loop(n int) {
 	for n > 0 {
 		n--
-		fence.Compiler()
+		sync.Fence()
 	}
 }
 

@@ -65,6 +65,12 @@ func SetLR(r uint32)
 func SEV()
 
 //c:static inline
+func DMB()
+
+//c:static inline
+func DSB()
+
+//c:static inline
 func ISB()
 
 type Cflags uint32
