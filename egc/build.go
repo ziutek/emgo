@@ -20,8 +20,6 @@ import (
 	"github.com/ziutek/emgo/gotoc"
 )
 
-const mainbin = "main.elf"
-
 func egc(ppath string) error {
 	srcDir := ""
 	if build.IsLocalImport(ppath) {
@@ -257,19 +255,22 @@ func compile(bp *build.Package) error {
 	for i, p := range pkg.Imports() {
 		imports[i] = p.Path()
 	}
-	return bt.Link(filepath.Join(bp.Dir, mainbin), imports, objs...)
+	return bt.Link(
+		filepath.Join(bp.Dir, buildCtx.GOARCH+".elf"),
+		imports, objs...,
+	)
 }
 
-// checkPkg returns true if the package and its dependences are up to date (doesn't
-// need to be (re)compiled).
+// checkPkg returns true if the package and its dependences are up to date
+// (doesn't need to be (re)compiled). It always returns false for main package.
 func checkPkg(bp *build.Package) (bool, error) {
+	if bp.Name == "main" {
+		return false, nil
+	}
 	if _, ok := uptodate[bp.ImportPath]; ok {
 		return true, nil
 	}
 	pkgobj := bp.PkgObj
-	if bp.Name == "main" {
-		pkgobj = filepath.Join(bp.Dir, mainbin)
-	}
 	oi, err := os.Stat(pkgobj)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -294,20 +295,18 @@ func checkPkg(bp *build.Package) (bool, error) {
 			return false, nil
 		}
 	}
-	if bp.Name != "main" {
-		h := bp.PkgObj[:len(bp.PkgObj)-1] + "h"
-		ok, err := checkH(h, oi.ModTime())
+	h := bp.PkgObj[:len(bp.PkgObj)-1] + "h"
+	ok, err := checkH(h, oi.ModTime())
+	if err != nil {
+		return false, err
+	}
+	if !ok {
+		data, err := arReadFile(bp.PkgObj, filepath.Base(h))
 		if err != nil {
 			return false, err
 		}
-		if !ok {
-			data, err := arReadFile(bp.PkgObj, filepath.Base(h))
-			if err != nil {
-				return false, err
-			}
-			if err = ioutil.WriteFile(h, data, 0644); err != nil {
-				return false, err
-			}
+		if err = ioutil.WriteFile(h, data, 0644); err != nil {
+			return false, err
 		}
 	}
 	if bp.ImportPath == "builtin" {
@@ -316,9 +315,6 @@ func checkPkg(bp *build.Package) (bool, error) {
 		}
 	} else {
 		imports := addPkg(bp.Imports, "builtin")
-		if bp.Name == "main" {
-			imports = addPkg(bp.Imports, "runtime")
-		}
 		for _, imp := range imports {
 			if imp == "unsafe" {
 				continue
