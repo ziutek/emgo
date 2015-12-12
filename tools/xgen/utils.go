@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
+	"text/template"
 	"unicode"
 )
 
@@ -36,4 +38,14 @@ func nameval(line string, sep byte) (name, val string) {
 		val = line[:i]
 	}
 	return
+}
+
+func save(f string, tpl *template.Template, ctx interface{}) {
+	dir := filepath.Dir(f)
+	base := filepath.Base(f)
+	f = filepath.Join(dir, "xgen_"+base)
+	w, err := os.Create(f)
+	checkErr(err)
+	checkErr(tpl.Execute(w, ctx))
+	checkErr(w.Close())
 }

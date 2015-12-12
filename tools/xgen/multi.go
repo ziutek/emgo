@@ -3,7 +3,6 @@ package main
 import (
 	"go/ast"
 	"go/token"
-	"os"
 	"strconv"
 	"strings"
 	"text/template"
@@ -97,10 +96,7 @@ func multi(pkg, f, txt string, decls []ast.Decl) {
 			}
 		}
 	}
-	w, err := os.Create("xgen_" + f)
-	checkErr(err)
-	checkErr(multiTmpl.Execute(w, ctx))
-	checkErr(w.Close())
+	save(f, multiTmpl, ctx)
 }
 
 const multiText = `package {{.Pkg}}

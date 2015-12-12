@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"strconv"
 	"strings"
 	"text/template"
@@ -28,10 +27,7 @@ func one(pkg, f, txt string) {
 		Group: strings.TrimSuffix(f, ".go"),
 	}
 	ctx.Regs, ctx.Len = regs(f, lines[1:])
-	w, err := os.Create("xgen_" + f)
-	checkErr(err)
-	checkErr(oneTmpl.Execute(w, ctx))
-	checkErr(w.Close())
+	save(f, oneTmpl, ctx)
 }
 
 const oneText = `package {{.Pkg}}
