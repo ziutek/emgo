@@ -6,12 +6,14 @@ import (
 	"syscall"
 
 	"arch/cortexm"
+	"arch/cortexm/debug/itm"
 	"arch/cortexm/scb"
 )
 
-func raisePendSV() {
-	scb.ICSR_Store(scb.PENDSVSET)
-}
+const dbg = itm.Port(17)
+
+func raisePendSV() { scb.ICSR_Store(scb.PENDSVSET) }
+func clearPendSV() { scb.ICSR_Store(scb.PENDSVCLR) }
 
 // pendSVHandler calls nextTask with current task PSP. It performs
 // context swich if nextTask returns new non-zero value for PSP.
@@ -21,7 +23,7 @@ func pendSVHandler()
 // TODO: better scheduler
 func nextTask(sp uintptr) uintptr {
 again:
-	t := uptime()
+	t := tasker.uptime()
 	if t >= tasker.alarm {
 		syscall.Alarm.Send()
 		tasker.alarm = 1<<63 - 1
@@ -39,19 +41,25 @@ again:
 		}
 		if n == tasker.curTask {
 			// No task to run.
-			tasker.setWakeup(tasker.alarm)
+			dbg.WriteString("nextTask 0\n")
+			tasker.wakeup(tasker.alarm)
 			cortexm.WFE()
+			clearPendSV() // Avoid reentering after return.
 			goto again
 		}
 	}
-	if t += int64(tasker.period); t > tasker.alarm {
-		t = tasker.alarm
-	}
-	tasker.setWakeup(t)
 	if n == tasker.curTask {
+		// Only one task running.
+		dbg.WriteString("nextTask 1\n")
+		tasker.wakeup(tasker.alarm)
 		return 0
 	}
 	tasker.tasks[tasker.curTask].sp = sp
 	tasker.curTask = n
+	if t += int64(tasker.period); t > tasker.alarm {
+		t = tasker.alarm
+	}
+	dbg.WriteString("nextTask N\n")
+	tasker.wakeup(t)
 	return tasker.tasks[n].sp
 }

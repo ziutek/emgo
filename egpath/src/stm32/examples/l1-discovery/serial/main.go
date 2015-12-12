@@ -14,7 +14,7 @@ import (
 	"rtos"
 
 	"stm32/l1/gpio"
-	"stm32/l1/irqs"
+	"stm32/l1/irq"
 	"stm32/l1/periph"
 	"stm32/l1/setup"
 	"stm32/l1/usarts"
@@ -62,8 +62,8 @@ func init() {
 	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	rtos.IRQ(irqs.USART3).UseHandler(sirq)
-	rtos.IRQ(irqs.USART3).Enable()
+	rtos.IRQ(irq.USART3).UseHandler(sirq)
+	rtos.IRQ(irq.USART3).Enable()
 
 	s.SetUnix(true)
 }

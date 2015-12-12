@@ -63,13 +63,14 @@ func SchedNext() {
 // uptime is used to implement Uptime system call. It should return the
 // monotonic time i nanoseconds (typically the time of system clock run).
 //
-// setWakeup is called by scheduler to ask system clock to generate PendSV
-// exception at time t (see rtos.Uptime). Weak (ticking) system clock can ignore
-// t and generate PendSV with fixed period. Good (tickless) clock should
-// generate exceptions as accurately as possible (if t <= Uptime() it should
-// generate PendSV immediately.
-func SetSysClock(uptime func() int64, setwakeup func(int64)) Errno {
-	_, e := builtin.Syscall2(SETSYSCLK, fr64tou(uptime), f64tou(setwakeup))
+// wakeup is called by scheduler to ask system clock to generate PendSV
+// exception at time t (see rtos.Uptime). Weak (ticking) system clock can
+// ignore t and generate PendSV with fixed period. Good (tickless) clock should
+// generate exceptions as accurately as possible (if t <= uptime() it should
+// generate PendSV immediately. wakeup must not generate any exception before
+// return to do not wakeup runtime too early from WFE.
+func SetSysClock(uptime func() int64, wakeup func(t int64)) Errno {
+	_, e := builtin.Syscall2(SETSYSCLK, fr64tou(uptime), f64tou(wakeup))
 	return Errno(e)
 }
 

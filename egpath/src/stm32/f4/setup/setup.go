@@ -7,6 +7,7 @@ import (
 
 var (
 	SysClk  uint // System clock [Hz]
+	AHBClk  uint // AHB clock [Hz]
 	APB1Clk uint // APB1 clock [Hz]
 	APB2Clk uint // APB2 clock [Hz]
 )
@@ -91,6 +92,7 @@ func Performance(osc, mul, sdiv int) {
 		APB1Clk = SysClk / 8
 		APB2Clk = SysClk / 4
 	}
+	AHBClk = SysClk
 	clock.SetPrescalerAHB(clock.AHBDiv1)
 	clock.SetPrescalerAPB1(div1)
 	clock.SetPrescalerAPB2(div2)

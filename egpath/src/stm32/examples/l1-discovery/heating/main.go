@@ -6,7 +6,7 @@ import (
 
 	"stm32/l1/exti"
 	"stm32/l1/gpio"
-	"stm32/l1/irqs"
+	"stm32/l1/irq"
 	"stm32/l1/periph"
 	"stm32/l1/setup"
 	"stm32/l1/usarts"
@@ -76,8 +76,8 @@ func init() {
 	buttnExti.Connect(buttnPort)
 	buttnExti.FallTrigEnable()
 	buttnExti.IntEnable()
-	rtos.IRQ(irqs.Ext0).UseHandler(ext0__ISR)
-	rtos.IRQ(irqs.Ext0).Enable()
+	rtos.IRQ(irq.Ext0).UseHandler(ext0__ISR)
+	rtos.IRQ(irq.Ext0).Enable()
 
 	// Setup LEDs output.
 
@@ -103,8 +103,8 @@ func init() {
 	waterExti.Connect(waterPort)
 	waterExti.FallTrigEnable()
 	waterExti.IntEnable()
-	rtos.IRQ(irqs.Ext9_5).UseHandler(ext9_5__ISR)
-	rtos.IRQ(irqs.Ext9_5).Enable()
+	rtos.IRQ(irq.Ext9_5).UseHandler(ext9_5__ISR)
+	rtos.IRQ(irq.Ext9_5).Enable()
 
 	// Setup USART to operate as 1-wire master.
 
@@ -120,8 +120,8 @@ func init() {
 	onewUART.EnableIRQs(usart.RxNotEmptyIRQ)
 	onewUART.Enable()
 
-	rtos.IRQ(irqs.USART3).UseHandler(usart3__ISR)
-	rtos.IRQ(irqs.USART3).Enable()
+	rtos.IRQ(irq.USART3).UseHandler(usart3__ISR)
+	rtos.IRQ(irq.USART3).Enable()
 
 	periph.APB2ClockDisable(periph.SysCfg)
 }

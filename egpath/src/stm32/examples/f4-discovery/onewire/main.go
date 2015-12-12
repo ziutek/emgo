@@ -7,7 +7,7 @@ import (
 	"rtos"
 
 	"stm32/f4/gpio"
-	"stm32/f4/irqs"
+	"stm32/f4/irq"
 	"stm32/f4/periph"
 	"stm32/f4/setup"
 	"stm32/f4/usarts"
@@ -66,7 +66,7 @@ func init() {
 	ow.EnableIRQs(usart.RxNotEmptyIRQ)
 	ow.Enable()
 
-	rtos.IRQ(irqs.USART6).Enable()
+	rtos.IRQ(irq.USART6).Enable()
 }
 
 func oneISR() {
@@ -74,7 +74,7 @@ func oneISR() {
 }
 
 var ISRs = [...]func(){
-	irqs.USART6: oneISR,
+	irq.USART6: oneISR,
 } //c:__attribute__((section(".ISRs")))
 
 func blink(c, d int) {

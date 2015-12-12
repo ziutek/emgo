@@ -12,7 +12,7 @@ import (
 
 	"stm32/f4/exti"
 	"stm32/f4/gpio"
-	"stm32/f4/irqs"
+	"stm32/f4/irq"
 	"stm32/f4/periph"
 	"stm32/f4/setup"
 )
@@ -45,7 +45,7 @@ func init() {
 	exti.L0.RiseTrigEnable()
 	exti.L0.IntEnable()
 
-	rtos.IRQ(irqs.Ext0).Enable()
+	rtos.IRQ(irq.Ext0).Enable()
 
 	periph.APB2ClockDisable(periph.SysCfg)
 }
@@ -71,7 +71,7 @@ func buttonISR() {
 }
 
 var ISRs = [...]func(){
-	irqs.Ext0: buttonISR,
+	irq.Ext0: buttonISR,
 } //c:__attribute__((section(".ISRs")))
 
 func toggle(led int) {

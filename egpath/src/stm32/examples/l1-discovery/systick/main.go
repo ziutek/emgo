@@ -9,7 +9,7 @@ import (
 	"arch/cortexm/systick"
 
 	"stm32/l1/gpio"
-	"stm32/l1/irqs"
+	"stm32/l1/irq"
 	"stm32/l1/periph"
 	"stm32/l1/setup"
 )
@@ -40,11 +40,9 @@ func isr() {
 	ledup = !ledup
 }
 
-//c:const
-//c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.Tim2: isr,
-}
+	irq.Tim2: isr,
+} //c:__attribute__((section(".ISRs")))
 
 func main() {
 	setup.Performance(0)

@@ -69,21 +69,20 @@ func scEventWait(fp *cortexm.StackFrame, lr uintptr) {
 	tasker.waitEvent(syscall.Event(fp.R[0]))
 }
 
-var uptime func() int64
-
 func scSetSysClock(fp *cortexm.StackFrame, lr uintptr) {
 	mustThread(lr)
-	uptime = utofr64(fp.R[0])
-	tasker.setWakeup = utof64(fp.R[1])
+	tasker.SetUptime(utofr64(fp.R[0]))
+	tasker.SetWakeup(utof64(fp.R[1]))
+	raisePendSV() // To ensure that SysClock will start immediately.
 }
 
 func scUptime(fp *cortexm.StackFrame, lr uintptr) {
-	*(*int64)(unsafe.Pointer(&fp.R[0])) = uptime()
+	*(*int64)(unsafe.Pointer(&fp.R[0])) = tasker.Uptime()
 }
 
 func scSetAlarm(fp *cortexm.StackFrame, lr uintptr) {
 	mustThread(lr)
-	tasker.setAlarm(*(*int64)(unsafe.Pointer(&fp.R[0])))
+	tasker.SetAlarm(*(*int64)(unsafe.Pointer(&fp.R[0])))
 }
 
 func scSetIRQEna(fp *cortexm.StackFrame, lr uintptr) {

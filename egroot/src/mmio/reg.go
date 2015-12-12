@@ -197,3 +197,21 @@ func (u *U32) SetField(f uint16, v int) {
 	m := uint32(1)<<(f>>Fsiz) - 1
 	u.StoreBits(m<<o, uint32(v)<<o)
 }
+
+type Bits32 struct {
+	Reg  *U32
+	Mask uint32
+}
+
+func (b Bits32) Load() uint32      { return b.Reg.Bits(b.Mask) }
+func (b Bits32) Store(bits uint32) { b.Reg.StoreBits(b.Mask, bits) }
+func (b Bits32) Set()              { b.Reg.SetBits(b.Mask) }
+func (b Bits32) Clear()            { b.Reg.ClearBits(b.Mask) }
+
+type Field32 struct {
+	Reg *U32
+	Sel uint16
+}
+
+func (f Field32) Load() int   { return f.Reg.Field(f.Sel) }
+func (f Field32) Store(v int) { f.Reg.SetField(f.Sel, v) }

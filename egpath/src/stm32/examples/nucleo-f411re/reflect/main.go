@@ -5,7 +5,7 @@ import (
 	"rtos"
 
 	"stm32/f4/gpio"
-	"stm32/f4/irqs"
+	"stm32/f4/irq"
 	"stm32/f4/periph"
 	"stm32/f4/setup"
 	"stm32/f4/usarts"
@@ -52,7 +52,7 @@ func init() {
 	udev.EnableIRQs(usart.RxNotEmptyIRQ)
 	udev.Enable()
 
-	rtos.IRQ(irqs.USART2).Enable()
+	rtos.IRQ(irq.USART2).Enable()
 
 	s.SetUnix(true)
 }
@@ -61,11 +61,9 @@ func isr() {
 	s.IRQ()
 }
 
-//c:const
-//c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.USART2: isr,
-}
+	irq.USART2: isr,
+} //c:__attribute__((section(".ISRs")))
 
 type S struct {
 	s string

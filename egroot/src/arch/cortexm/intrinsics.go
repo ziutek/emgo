@@ -96,8 +96,7 @@ func PRIMASK() bool
 // SetPRIMASK disables all exceptions with configurable priority. Internally it
 // inserts cpsid i instruction. Atomic primitives on Cortex-M0 always enable
 // exceptions after atomic operation. If you need this functions on Cortex-M0
-// don't use channels, mutexes, don't allocate memory and maybe don't do more
-// things!
+// you should be very careful.
 //
 //c:static inline
 func SetPRIMASK()

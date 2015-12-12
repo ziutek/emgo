@@ -7,7 +7,7 @@ import (
 	"rtos"
 
 	"stm32/f4/gpio"
-	"stm32/f4/irqs"
+	"stm32/f4/irq"
 	"stm32/f4/periph"
 	"stm32/f4/setup"
 	"stm32/f4/usarts"
@@ -73,7 +73,7 @@ func init() {
 	us.EnableIRQs(usart.RxNotEmptyIRQ)
 	us.Enable()
 
-	rtos.IRQ(irqs.USART2).Enable()
+	rtos.IRQ(irq.USART2).Enable()
 
 	term.SetUnix(true)
 	fmt.DefaultWriter = term
@@ -99,7 +99,7 @@ func init() {
 	ow.EnableIRQs(usart.RxNotEmptyIRQ)
 	ow.Enable()
 
-	rtos.IRQ(irqs.USART6).Enable()
+	rtos.IRQ(irq.USART6).Enable()
 }
 
 func termISR() {
@@ -113,8 +113,8 @@ func oneISR() {
 //c:const
 //c:__attribute__((section(".InterruptVectors")))
 var IRQs = [...]func(){
-	irqs.USART2: termISR,
-	irqs.USART6: oneISR,
+	irq.USART2: termISR,
+	irq.USART6: oneISR,
 }
 
 func blink(c, d int) {

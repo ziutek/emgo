@@ -9,7 +9,7 @@ import (
 
 	"nrf51/clock"
 	"nrf51/gpio"
-	"nrf51/irqs"
+	"nrf51/irq"
 	"nrf51/rtc"
 	"nrf51/setup"
 	"nrf51/timer"
@@ -37,12 +37,12 @@ func init() {
 	t0.SetCC(1, 65526/2)
 	t0.Event(timer.COMPARE0).EnableInt()
 	t0.Event(timer.COMPARE1).EnableInt()
-	rtos.IRQ(irqs.Timer0).Enable()
+	rtos.IRQ(irq.Timer0).Enable()
 	t0.Task(timer.START).Trig()
 
 	rtc0.SetPrescaler(0) // 32768 Hz
 	rtc0.Event(rtc.COMPARE1).EnableInt()
-	rtos.IRQ(irqs.RTC0).Enable()
+	rtos.IRQ(irq.RTC0).Enable()
 	rtc0.SetCC(1, period)
 	rtc0.Task(rtc.START).Trig()
 }
@@ -71,8 +71,8 @@ func rtcISR() {
 }
 
 var ISRs = [...]func(){
-	irqs.Timer0: timerISR,
-	irqs.RTC0:   rtcISR,
+	irq.Timer0: timerISR,
+	irq.RTC0:   rtcISR,
 } //c:__attribute__((section(".InterruptVectors")))
 
 func main() {

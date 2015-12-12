@@ -10,11 +10,19 @@ import (
 	"arch/cortexm/systick"
 )
 
+// Counting ticks is always accurate but requires math.Muldiv. Counting
+// nanoseconds requires only ordinary 64-bit multiply and divide but is
+// accurate only in some special cases.
+
 var (
 	freqHz      uint
 	periodTicks uint32
 	counter     nbl.Int64
 )
+
+func tons(tick int64) int64 {
+	return int64(math.Muldiv(uint64(tick), 1e9, uint64(freqHz)))
+}
 
 // Setup setups SysTick to work as sytem clock.
 //  periodns - number of nanoseconds between ticks (generating PendSV),
@@ -47,11 +55,11 @@ func Uptime() int64 {
 	}
 	aba := counter.StartLoad()
 	for {
-		cnt := uint64(counter.TryLoad(aba))
+		cnt := counter.TryLoad(aba)
 		add := periodTicks - systick.CURRENT.Load()
 		var ok bool
 		if aba, ok = counter.CheckLoad(aba); ok {
-			return int64(math.Muldiv(cnt+uint64(add), 1e9, uint64(freqHz)))
+			return tons(cnt + int64(add))
 		}
 	}
 }

@@ -8,7 +8,7 @@ import (
 	"dcf77"
 	"stm32/f4/exti"
 	"stm32/f4/gpio"
-	"stm32/f4/irqs"
+	"stm32/f4/irq"
 	"stm32/f4/periph"
 	"stm32/f4/setup"
 )
@@ -30,7 +30,7 @@ func init() {
 	exti.L1.RiseTrigEnable()
 	exti.L1.FallTrigEnable()
 	exti.L1.IntEnable()
-	rtos.IRQ(irqs.Ext1).Enable()
+	rtos.IRQ(irq.Ext1).Enable()
 
 	periph.APB2ClockDisable(periph.SysCfg)
 }
@@ -45,7 +45,7 @@ func edgeISR() {
 }
 
 var ISRs = [...]func(){
-	irqs.Ext1: edgeISR,
+	irq.Ext1: edgeISR,
 } //c:__attribute__((section(".ISRs")))
 
 

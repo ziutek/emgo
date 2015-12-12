@@ -1,4 +1,4 @@
-package irqs
+package irq
 
 import "arch/cortexm/nvic"
 

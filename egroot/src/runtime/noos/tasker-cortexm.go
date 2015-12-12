@@ -35,12 +35,12 @@ type taskInfo struct {
 	prio   uint8
 }
 
-func (ti *taskInfo) Init(parent int) {
+func (ti *taskInfo) Init(parent int, uptime func() int64) {
 	*ti = taskInfo{parent: int16(parent), prio: 255}
-	if uptime == nil {
+	if t := uptime(); t == 0 {
 		ti.rng.Seed(uint64(uintptr(unsafe.Pointer(ti))))
 	} else {
-		ti.rng.Seed(uint64(uptime() + 1))
+		ti.rng.Seed(uint64(t + 1))
 	}
 }
 
@@ -52,20 +52,48 @@ func (ti *taskInfo) SetState(s taskState) {
 	ti.flags = ti.flags&^3 | s
 }
 
-
 // Comment for future separate tasker package:
-// 1. Exported methods can be called only from thread mode (using SVC handler) 
+// 1. Exported methods can be called only from thread mode (using SVC handler)
 //    or from PendSV handler.
 // 2. Describe which method can be called from which handler.
 type taskSched struct {
-	alarm     int64
-	period    uint32
-	setWakeup func(int64)
-	tasks     []taskInfo
-	curTask   int
+	alarm   int64
+	period  uint32
+	uptime  func() int64
+	wakeup  func(int64)
+	tasks   []taskInfo
+	curTask int
 }
 
-var tasker = taskSched{alarm: 1<<63 - 1, period: 2e6}
+func dummyUptime() int64 { return 0 }
+func dummyWakeup(int64)  {}
+
+var tasker = taskSched{
+	alarm:  1<<63 - 1,
+	period: 200e6,
+	uptime: dummyUptime,
+	wakeup: dummyWakeup,
+}
+
+func (ts *taskSched) Uptime() int64 {
+	return ts.uptime()
+}
+
+func (ts *taskSched) SetUptime(uptime func() int64) {
+	if uptime == nil {
+		ts.uptime = dummyUptime
+	} else {
+		ts.uptime = uptime
+	}
+}
+
+func (ts *taskSched) SetWakeup(wakeup func(int64)) {
+	if wakeup == nil {
+		ts.wakeup = dummyWakeup
+	} else {
+		ts.wakeup = wakeup
+	}
+}
 
 func (ts *taskSched) deliverEvent(e syscall.Event) {
 	for i := range ts.tasks {
@@ -144,7 +172,7 @@ func (ts *taskSched) init() {
 	//mpu.Enable()
 
 	// Set taskInfo for initial (current) task.
-	ts.tasks[0].Init(0)
+	ts.tasks[0].Init(0, ts.uptime)
 	ts.tasks[0].SetState(taskReady)
 
 	// Run tasker.
@@ -173,7 +201,7 @@ func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err sy
 	sf.PC = pc
 
 	newt := &ts.tasks[n]
-	newt.Init(ts.curTask)
+	newt.Init(ts.curTask, ts.uptime)
 	newt.sp = sp
 	newt.SetState(taskReady)
 
@@ -181,7 +209,6 @@ func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err sy
 		ts.tasks[ts.curTask].SetState(taskLocked)
 		raisePendSV()
 	}
-
 	return n + 1, syscall.OK
 }
 
@@ -226,9 +253,12 @@ func (ts *taskSched) waitEvent(e syscall.Event) {
 	raisePendSV()
 }
 
-func (ts *taskSched) setAlarm(t int64) {
+// SetAlarm can be called only from thread mode (through
+// SVCall).
+func (ts *taskSched) SetAlarm(t int64) {
 	if t > ts.alarm {
 		return
 	}
+	// Can be read only in PendSV so non-atomic assignment can be used.
 	ts.alarm = t
 }

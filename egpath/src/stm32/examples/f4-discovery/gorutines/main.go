@@ -29,12 +29,17 @@ func init() {
 	LED.SetMode(Blue, gpio.Out)
 }
 
+func wait(ms int) {
+	delay.Millisec(ms)
+	//delay.Loop(ms * 1e4)
+}
+
 func blink(led int, d int, max, inc float32) {
 	for inc < max {
 		LED.SetPin(led)
-		delay.Millisec(d)
+		wait(d)
 		LED.ClearPin(led)
-		delay.Millisec(d)
+		wait(d)
 		// Use floating point calculations to test STMF4 FPU context switching.
 		inc *= inc
 	}
@@ -46,7 +51,7 @@ func main() {
 		go blink(Orange, 230, 120, 1.0001)
 		go blink(Red, 350, 130, 1.0001)
 		blink(Blue, 500, 100, 1.0001)
-		delay.Millisec(250)
+		wait(250)
 		// BUG: In real application you schould ensure that all gorutines
 		// finished before next loop. In this case Blue LED blinks longest
 		// so this example works.

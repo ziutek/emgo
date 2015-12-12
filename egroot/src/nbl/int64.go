@@ -41,12 +41,14 @@ func (i *Int64) Load() int64 {
 	}
 }
 
-// WriterLoad is more efficient than Load but can be used only by writer.
+// WriterLoad is more efficient than Load but there should be guarantee that
+// any writer can not write to i at the same time. 
 func (i *Int64) WriterLoad() int64 {
 	return i.val[i.aba&1]
 }
 
-// WriterStore can be used only when there is only ONE writer.
+// WriterStore stores v into i.
+// Only ONE writer can call WriterStore at the same time.
 func (i *Int64) WriterStore(v int64) {
 	aba := i.aba
 	aba++
@@ -54,12 +56,16 @@ func (i *Int64) WriterStore(v int64) {
 	atomic.StoreUintptr(&i.aba, aba)
 }
 
+// WriterAdd performs i += v and returns new value of i. 
+// Only ONE writer can call WriterAdd at the same time.
 func (i *Int64) WriterAdd(v int64) int64 {
 	v += i.WriterLoad()
 	i.WriterStore(v)
 	return v
 }
 
+// WriterSub performs i -= v and returns new value of i. 
+// Only ONE writer can call WriterSub at the same time.
 func (i *Int64) WriterSub(v int64) int64 {
 	v = i.WriterLoad() - v
 	i.WriterStore(v)
