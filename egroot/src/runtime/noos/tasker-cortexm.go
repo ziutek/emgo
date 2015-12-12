@@ -161,8 +161,8 @@ func (ts *taskSched) init() {
 	// 4. It should be possible to increase the priority of any external
 	//    interrupt to allow it to preempt SVC.
 	prange := cortexm.PrioHighest - cortexm.PrioLowest
-	scb.PRI_SVCall.Store(cortexm.PrioLowest + prange/2)
-	scb.PRI_PendSV.Store(cortexm.PrioLowest)
+	scb.PRI_SVCall.StoreVal(cortexm.PrioLowest + prange/2)
+	scb.PRI_PendSV.StoreVal(cortexm.PrioLowest)
 	for irq := nvic.IRQ(0); irq < 240; irq++ {
 		irq.SetPrio(cortexm.PrioLowest + prange/4)
 	}

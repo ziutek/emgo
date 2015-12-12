@@ -17,36 +17,36 @@
 package scb
 
 const (
-	Revision    CPUID_Field = 4<<siz + 0
-	PartNo      CPUID_Field = 12<<siz + 4
-	Constant    CPUID_Field = 4<<siz + 16
-	Variant     CPUID_Field = 4<<siz + 20
-	Implementer CPUID_Field = 8<<siz + 24
+	Revision    CPUID_Bits = 0xf << 0
+	PartNo      CPUID_Bits = 0xfff << 4
+	Constant    CPUID_Bits = 0xf << 16
+	Variant     CPUID_Bits = 0xf << 20
+	Implementer CPUID_Bits = 0xff << 24
 )
 
 const (
-	VECTACTIVE  ICSR_Bits  = 1<<9 - 1
-	RETTOBASE   ICSR_Bits  = 1 << 11
-	VECTPENDING ICSR_Field = 10<<siz + 12
-	ISRPENDING  ICSR_Bits  = 1 << 22
-	PENDSTCLR   ICSR_Bits  = 1 << 25
-	PENDSTSET   ICSR_Bits  = 1 << 26
-	PENDSVCLR   ICSR_Bits  = 1 << 27
-	PENDSVSET   ICSR_Bits  = 1 << 28
-	NMIPENDSET  ICSR_Bits  = 1 << 31
+	VECTACTIVE  ICSR_Bits = 0x1ff << 0
+	RETTOBASE   ICSR_Bits = 1 << 11
+	VECTPENDING ICSR_Bits = 0x3ff << 12
+	ISRPENDING  ICSR_Bits = 1 << 22
+	PENDSTCLR   ICSR_Bits = 1 << 25
+	PENDSTSET   ICSR_Bits = 1 << 26
+	PENDSVCLR   ICSR_Bits = 1 << 27
+	PENDSVSET   ICSR_Bits = 1 << 28
+	NMIPENDSET  ICSR_Bits = 1 << 31
 )
 
 const (
-	TBLOFF VTOR_Bits = (1<<25 - 1) << 7
+	TBLOFF VTOR_Bits = 0x1ffffff << 7
 )
 
 const (
-	VECTRESET     AIRCR_Bits  = 1 << 0
-	VECTCLRACTIVE AIRCR_Bits  = 1 << 1
-	SYSRESETREQ   AIRCR_Bits  = 1 << 2
-	PRIGROUP      AIRCR_Field = 3<<siz + 8
-	ENDIANNESS    AIRCR_Bits  = 1 << 15
-	VECTKEY       AIRCR_Field = 16<<siz + 16
+	VECTRESET     AIRCR_Bits = 1 << 0
+	VECTCLRACTIVE AIRCR_Bits = 1 << 1
+	SYSRESETREQ   AIRCR_Bits = 1 << 2
+	PRIGROUP      AIRCR_Bits = 7 << 8
+	ENDIANNESS    AIRCR_Bits = 1 << 15
+	VECTKEY       AIRCR_Bits = 0xffff << 16
 )
 
 const (
@@ -65,18 +65,18 @@ const (
 )
 
 const (
-	PRI_MemManage  SHPR1_Field = 8<<siz + 0
-	PRI_BusFault   SHPR1_Field = 8<<siz + 8
-	PRI_UsageFault SHPR1_Field = 8<<siz + 16
+	PRI_MemManage  SHPR1_Bits = 0xff << 0
+	PRI_BusFault   SHPR1_Bits = 0xff << 8
+	PRI_UsageFault SHPR1_Bits = 0xff << 16
 )
 
 const (
-	PRI_SVCall SHPR2_Field = 8<<siz + 24
+	PRI_SVCall SHPR2_Bits = 0xff << 24
 )
 
 const (
-	PRI_PendSV  SHPR3_Field = 8<<siz + 16
-	PRI_SysTick SHPR3_Field = 8<<siz + 24
+	PRI_PendSV  SHPR3_Bits = 0xff << 16
+	PRI_SysTick SHPR3_Bits = 0xff << 24
 )
 
 const (

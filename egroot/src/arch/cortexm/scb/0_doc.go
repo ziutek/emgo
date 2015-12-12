@@ -12,7 +12,3 @@
 // 2. Cortex-M0 supports only word access to SHPR2, SHPR3 so this package does
 // not provide byte access to individual fields.
 package scb
-
-import "mmio"
-
-const siz = mmio.Fsiz

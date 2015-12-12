@@ -77,5 +77,5 @@ const (
 
 	LTDC = AF14
 
-	EventOut = AF15
+	EventOut = AF15 // Pulse can be generated using SEV instruction.
 )

@@ -3,10 +3,10 @@
 package scb
 
 const (
-	CP10 CPACR_Field = 3<<siz + 20
-	CP11 CPACR_Field = 3<<siz + 22
+	CP10 CPACR_Bits = 3 << 20
+	CP11 CPACR_Bits = 3 << 22
 
-	AccessDeny = 0
-	AccessPriv = 1
-	AccessFull = 3
+	AccessDeny int = 0
+	AccessPriv int = 1
+	AccessFull int = 3
 )

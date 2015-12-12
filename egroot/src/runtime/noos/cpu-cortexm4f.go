@@ -13,6 +13,6 @@ func initCPU() {
 	// Division by zero will cause the UsageFault.
 	scb.DIV_0_TRP.Set()
 	// Enable FPU.
-	scb.CP10.Store(scb.AccessFull)
+	scb.CP10.StoreVal(scb.AccessFull)
 	fpu.FPCCR_Store(fpu.ASPEN | fpu.LSPEN)
 }
