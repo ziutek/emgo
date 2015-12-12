@@ -14,26 +14,28 @@ func main() {
 	}
 
 	fset := token.NewFileSet()
-	mode := parser.PackageClauseOnly | parser.ParseComments
 	for _, f := range os.Args[1:] {
 		if !strings.HasSuffix(f, ".go") {
 			fmt.Fprintln(os.Stderr, "ignoring:", f)
 			continue
 		}
-		a, err := parser.ParseFile(fset, f, nil, mode)
+		a, err := parser.ParseFile(fset, f, nil, parser.ParseComments)
 		checkErr(err)
 		pkg := a.Name.Name
 		for _, cg := range a.Comments {
 			for len(cg.List) > 0 {
-				c := strings.TrimLeft(cg.List[0].Text, "/* \t")
+				c := strings.TrimLeft(cg.List[0].Text, "/*")
+				c = strings.TrimSpace(c)
 				switch {
 				case strings.HasPrefix(c, "BaseAddr:"):
-					mmio(pkg, f, cg.Text())
+					one(pkg, f, cg.Text())
+				case strings.HasPrefix(c, "Instances of") && c[len(c)-1] == ':':
+					multi(pkg, f, cg.Text(), a.Decls)
 				default:
 					cg.List = cg.List[1:]
 					continue
 				}
-				break
+				return
 			}
 		}
 	}
