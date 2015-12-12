@@ -9,25 +9,21 @@ import (
 	"text/template"
 )
 
-type dev struct {
+type instance struct {
 	Name string
 	Addr string
 }
 
 type multiCtx struct {
-	Pkg  string
-	Dev  string
-	Devs []dev
-	Regs []reg
-	Len  int
+	Pkg       string
+	Periph    string
+	Instances []instance
+	Regs      []reg
+	Len       int
 }
 
-func multi(pkg, f, txt string, decls []ast.Decl) {
-	lines := strings.Split(txt, "\n")
-	d := lines[0]
-	lines = lines[1:]
-	d = strings.TrimSpace(d[len("Instances of ") : len(d)-1])
-	var devs []dev
+func instances(f string, lines []string) ([]instance, []string) {
+	var insts []instance
 	for len(lines) > 0 {
 		line := strings.TrimSpace(lines[0])
 		lines = lines[1:]
@@ -39,12 +35,31 @@ func multi(pkg, f, txt string, decls []ast.Decl) {
 		if err != nil {
 			fdie(f, "bad %s address '%s': %v", name, addr, err)
 		}
-		devs = append(devs, dev{Name: name, Addr: addr})
+		insts = append(insts, instance{Name: name, Addr: addr})
+	}
+	return insts, lines
+}
+
+func multi(pkg, f, txt string, decls []ast.Decl) {
+	lines := strings.Split(txt, "\n")
+	p := lines[0]
+	lines = lines[1:]
+	p = strings.TrimSpace(p[len("Peripheral:"):])
+	var insts []instance
+	for len(lines) > 0 {
+		line := strings.TrimSpace(lines[0])
+		lines = lines[1:]
+		if line == "Instances:" {
+			insts, lines = instances(f, lines)
+			break
+		} else if line == "Registers:" {
+			break
+		}
 	}
 	ctx := &multiCtx{
-		Pkg:  pkg,
-		Dev:  d,
-		Devs: devs,
+		Pkg:       pkg,
+		Periph:    p,
+		Instances: insts,
 	}
 	ctx.Regs, ctx.Len = regs(f, lines)
 	regmap := make(map[string]*reg)
@@ -98,27 +113,26 @@ import (
 	"mmio"
 	"unsafe"
 )
+{{$p := .Periph}}
+type {{$p}} struct{}
 
-type {{.Dev}} struct{}
-
-func (p *{{.Dev}}) r(n uint) *mmio.U32 {
+func (p *{{$p}}) r(n uint) *mmio.U32 {
 	return &(*[{{.Len}}]mmio.U32)(unsafe.Pointer(p))[n]
 }
-{{$dev := .Dev}}
-var ({{range .Devs}}
-	{{.Name}} = (*{{$dev}})(unsafe.Pointer(uintptr({{.Addr}}))){{end}}
-)
+
+{{range .Instances}}
+var {{.Name}} = (*{{$p}})(unsafe.Pointer(uintptr({{.Addr}}))){{end}}
 {{range .Regs}}
 {{$prn := print "p.r(" .N ")"}}
 type {{.Bits}} uint32
 type {{.Field}} uint16
 {{range .Decls}}
-func (p *{{$dev}}) {{.Name}}() mmio.{{.Typ}}32 {return mmio.{{.Typ}}32{{"{"}}{{$prn}}, {{.Und}}({{.Name}})} }{{end}}
+func (p *{{$p}}) {{.Name}}() mmio.{{.Typ}}32 {return mmio.{{.Typ}}32{{"{"}}{{$prn}}, {{.Und}}({{.Name}})} }{{end}}
 
-func (p *{{$dev}}) {{.Reg}}_Load() {{.Bits}}              { return {{.Bits}}({{$prn}}.Load()) }
-func (p *{{$dev}}) {{.Reg}}_Store(b {{.Bits}})            { {{$prn}}.Store(uint32(b)) }
-func (p *{{$dev}}) {{.Reg}}_Field(f {{.Field}}) int       { return {{$prn}}.Field(uint16(f)) }
-func (p *{{$dev}}) {{.Reg}}_SetField(f {{.Field}}, v int) { {{$prn}}.SetField(uint16(f), v) }{{end}}
+func (p *{{$p}}) {{.Reg}}_Load() {{.Bits}}              { return {{.Bits}}({{$prn}}.Load()) }
+func (p *{{$p}}) {{.Reg}}_Store(b {{.Bits}})            { {{$prn}}.Store(uint32(b)) }
+func (p *{{$p}}) {{.Reg}}_Field(f {{.Field}}) int       { return {{$prn}}.Field(uint16(f)) }
+func (p *{{$p}}) {{.Reg}}_SetField(f {{.Field}}, v int) { {{$prn}}.SetField(uint16(f), v) }{{end}}
 `
 
 var multiTmpl = template.Must(template.New("multi").Parse(multiText))

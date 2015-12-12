@@ -29,7 +29,7 @@ func main() {
 				switch {
 				case strings.HasPrefix(c, "BaseAddr:"):
 					one(pkg, f, cg.Text())
-				case strings.HasPrefix(c, "Instances of") && c[len(c)-1] == ':':
+				case strings.HasPrefix(c, "Peripheral:"):
 					multi(pkg, f, cg.Text(), a.Decls)
 				default:
 					cg.List = cg.List[1:]
