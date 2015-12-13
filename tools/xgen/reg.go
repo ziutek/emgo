@@ -12,7 +12,7 @@ type reg struct {
 	Reg   string
 	Bits  string
 	Field string
-	N     string
+	N     int
 	Decls []decl
 }
 
@@ -27,14 +27,15 @@ func regs(f string, lines []string) ([]reg, int) {
 			continue
 		}
 		n, err := strconv.ParseUint(num, 0, 0)
-		if err != nil {
+		if err != nil || n&3 != 0 {
 			fdie(f, "bad index %s: %v", num, err)
 		}
+		n >>= 2
 		regs = append(regs, reg{
 			Reg:   name,
 			Bits:  name + "_Bits",
 			Field: name + "_Field",
-			N:     num,
+			N:     int(n),
 		})
 		if max < int(n) {
 			max = int(n)
