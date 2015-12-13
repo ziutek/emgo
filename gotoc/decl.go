@@ -224,7 +224,11 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				w.WriteString(dimFuncPtr(name, dim))
 				cdd.copyDecl(w, ";\n")
 			}
-			typ := to.Type()
+			typ := to.Type().(*types.Named)
+			for i, n := 0, typ.NumMethods(); i < n; i++ {
+				// Type uses its methods too.
+				cdd.addObject(typ.Method(i), false)
+			}
 			w.Reset()
 			cdd.tinfo(w, typ)
 			if _, ok := typ.Underlying().(*types.Pointer); !ok {

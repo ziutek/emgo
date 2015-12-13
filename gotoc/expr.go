@@ -58,6 +58,9 @@ func writeFloat(w *bytes.Buffer, ev constant.Value, k types.BasicKind) {
 }
 
 func (cdd *CDD) Value(w *bytes.Buffer, ev constant.Value, t types.Type) {
+	if o, ok := t.(*types.Named); ok {
+		cdd.addObject(o.Obj(), false)
+	}
 	k := t.Underlying().(*types.Basic).Kind()
 	switch {
 	case k <= types.Bool || k == types.UntypedBool:
@@ -416,7 +419,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 					// Casting unsafe.Pointer
 					// TODO: Don't use CAST if can check that type under
 					// unsafe.Pointer is pointer that points to type of the same
-					// size. This will allow clasify such cast as constant. 
+					// size. This will allow clasify such cast as constant.
 					w.WriteString("CAST(")
 					dim := cdd.Type(w, t)
 					w.WriteString(dimFuncPtr("", dim))
