@@ -379,6 +379,31 @@ func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) bool {
 		default:
 			cdd.gtc.notImplemented(val, typ)
 		}
+	case *ast.CallExpr:
+		t := cdd.exprType(v.Fun)
+		if _, ok := t.(*types.Signature); ok {
+			return false
+		}
+		arg := v.Args[0]
+		at := cdd.exprType(arg)
+		switch typ := t.Underlying().(type) {
+		case *types.Slice:
+			if _, ok := at.Underlying().(*types.Basic); ok {
+				return false // string
+			}
+		case *types.Basic:
+			if typ.Kind() == types.String {
+				if _, ok := at.(*types.Basic); !ok {
+					return false
+				}
+			}
+		case *types.Pointer:
+			if _, ok := at.Underlying().(*types.Pointer); !ok {
+				// Casting unsafe.Pointer
+				return false
+			}
+		}
+		return cdd.isConstExpr(arg, at)
 	}
 	return false
 }

@@ -392,9 +392,10 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 
 	default:
 		arg := e.Args[0]
+		at := cdd.exprType(arg)
 		switch typ := t.Underlying().(type) {
 		case *types.Slice:
-			switch cdd.exprType(arg).Underlying().(type) {
+			switch at.Underlying().(type) {
 			case *types.Basic: // string
 				w.WriteString("BYTES(")
 				cdd.Expr(w, arg, typ)
@@ -409,15 +410,22 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 		case *types.Interface:
 			cdd.interfaceExpr(w, arg, t)
 
-		case *types.Pointer:
-			w.WriteString("CAST(")
-			dim := cdd.Type(w, t)
-			w.WriteString(dimFuncPtr("", dim))
-			w.WriteString(", ")
-			cdd.Expr(w, arg, t)
-			w.WriteByte(')')
-
 		default:
+			if _, ok := typ.(*types.Pointer); ok {
+				if _, ok := at.Underlying().(*types.Pointer); !ok {
+					// Casting unsafe.Pointer
+					// TODO: Don't use CAST if can check that type under
+					// unsafe.Pointer is pointer that points to type of the same
+					// size. This will allow clasify such cast as constant. 
+					w.WriteString("CAST(")
+					dim := cdd.Type(w, t)
+					w.WriteString(dimFuncPtr("", dim))
+					w.WriteString(", ")
+					cdd.Expr(w, arg, t)
+					w.WriteByte(')')
+					break
+				}
+			}
 			w.WriteByte('(')
 			dim := cdd.Type(w, t)
 			w.WriteString(dimFuncPtr("", dim))
