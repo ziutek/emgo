@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
@@ -24,7 +25,7 @@ func one(pkg, f, txt string) {
 	ctx := &oneCtx{
 		Pkg:   pkg,
 		Base:  base,
-		Group: strings.TrimSuffix(f, ".go"),
+		Group: strings.TrimSuffix(filepath.Base(f), ".go"),
 	}
 	ctx.Regs, ctx.Len = regs(f, lines[1:])
 	save(f, oneTmpl, ctx)
