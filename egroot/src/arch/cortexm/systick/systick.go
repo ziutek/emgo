@@ -4,11 +4,11 @@
 // "Cortex-M[0-4] Devices Generic User Guide", chapter 4 "Cortex-M[0-4]
 // Peripherals".
 //
-// BaseAddr: 0xe000e010
-//	0: CSR   SysTick Control and Status Register (any read clears COUNTFLAG)
-//	1: RVR   SysTick Reload Value Register
-//	2: CVR   SysTick Current Value Register
-//	3: CALIB SysTick Calibration Value Register
+// BaseAddr: 0xE000E010
+//	0x00: CSR   SysTick Control and Status Register (any read clears COUNTFLAG).
+//	0x04: RVR   SysTick Reload Value Register.
+//	0x08: CVR   SysTick Current Value Register.
+//	0x0C: CALIB SysTick Calibration Value Register.
 package systick
 
 const (

@@ -1,5 +1,5 @@
 // BaseAddr: 0xe000e008
-//  0: ACTLR Auxiliary Control Register
+//  0x00: ACTLR Auxiliary Control Register
 package scb
 
 const (

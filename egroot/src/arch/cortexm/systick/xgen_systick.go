@@ -10,7 +10,7 @@ import (
 
 
 func systick(n uint) *mmio.U32 {
-	return &(*[4]mmio.U32)(unsafe.Pointer(uintptr(0xe000e010)))[n]
+	return &(*[4]mmio.U32)(unsafe.Pointer(uintptr(0xE000E010)))[n]
 }
 
 
@@ -29,8 +29,8 @@ func CSR_Store(b CSR_Bits) { systick(0).Store(uint32(b)) }
 func (b CSR_Bits) Field(mask CSR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_CSR(v int, m CSR_Bits) CSR_Bits {
-	return CSR_Bits(bits.Make32(v, uint32(m)))
+func Make_CSR(v int, mask CSR_Bits) CSR_Bits {
+	return CSR_Bits(bits.Make32(v, uint32(mask)))
 }
 
 
@@ -49,8 +49,8 @@ func RVR_Store(b RVR_Bits) { systick(1).Store(uint32(b)) }
 func (b RVR_Bits) Field(mask RVR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_RVR(v int, m RVR_Bits) RVR_Bits {
-	return RVR_Bits(bits.Make32(v, uint32(m)))
+func Make_RVR(v int, mask RVR_Bits) RVR_Bits {
+	return RVR_Bits(bits.Make32(v, uint32(mask)))
 }
 
 
@@ -69,8 +69,8 @@ func CVR_Store(b CVR_Bits) { systick(2).Store(uint32(b)) }
 func (b CVR_Bits) Field(mask CVR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_CVR(v int, m CVR_Bits) CVR_Bits {
-	return CVR_Bits(bits.Make32(v, uint32(m)))
+func Make_CVR(v int, mask CVR_Bits) CVR_Bits {
+	return CVR_Bits(bits.Make32(v, uint32(mask)))
 }
 
 
@@ -89,7 +89,7 @@ func CALIB_Store(b CALIB_Bits) { systick(3).Store(uint32(b)) }
 func (b CALIB_Bits) Field(mask CALIB_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_CALIB(v int, m CALIB_Bits) CALIB_Bits {
-	return CALIB_Bits(bits.Make32(v, uint32(m)))
+func Make_CALIB(v int, mask CALIB_Bits) CALIB_Bits {
+	return CALIB_Bits(bits.Make32(v, uint32(mask)))
 }
 

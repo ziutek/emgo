@@ -10,7 +10,7 @@ import (
 
 
 func scb(n uint) *mmio.U32 {
-	return &(*[16]mmio.U32)(unsafe.Pointer(uintptr(0xe000ed00)))[n]
+	return &(*[16]mmio.U32)(unsafe.Pointer(uintptr(0xE000ED00)))[n]
 }
 
 

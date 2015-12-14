@@ -1,5 +1,5 @@
 // BaseAddr: 0xe000ed88
-//  0: CPACR Coprocessor Access Control Register
+//  0x00: CPACR Coprocessor Access Control Register
 package scb
 
 const (

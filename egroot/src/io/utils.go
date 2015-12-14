@@ -11,9 +11,11 @@ func WriteString(w Writer, s string) (int, error) {
 	return w.Write([]byte(s))
 }
 
-/*
-type Drop struct{}
+type discard int
 
-func (d Drop) Write(b []byte) (int, error)       { return len(b), nil }
-func (d Drop) WriteString(s string) (int, error) { return len(s), nil }
-*/
+func (_ discard) Write(b []byte) (int, error)       { return len(b), nil }
+func (_ discard) WriteString(s string) (int, error) { return len(s), nil }
+
+// Discard implements Writer and StringWriter and simply
+// discards all data written to it.
+const Discard discard = 0

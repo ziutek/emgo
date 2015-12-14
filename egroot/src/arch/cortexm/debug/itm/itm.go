@@ -115,8 +115,12 @@ func (p Port) Store32(w uint32) {
 	irs.stim[p].Store(w)
 }
 
-// WriteString implements io.StringWriter interface.
+// WriteString implements io.StringWriter interface. Use p < 0 to disable
+// writtening (useful for temporary disable debug messages).
 func (p Port) WriteString(s string) (int, error) {
+	if p < 0 {
+		return len(s), nil 
+	}
 	n := len(s)
 	i := 0
 loop:
@@ -146,7 +150,8 @@ loop:
 	return n + i, nil
 }
 
-// Write implements io.Writer interface.
+// Write implements io.Writer interface. Use p < 0 to disable writtening
+// (useful for temporary disable debug messages).
 func (p Port) Write(b []byte) (int, error) {
 	return p.WriteString(*(*string)(unsafe.Pointer(&b)))
 }

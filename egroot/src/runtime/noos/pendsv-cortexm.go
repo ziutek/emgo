@@ -10,7 +10,7 @@ import (
 	"arch/cortexm/scb"
 )
 
-const dbg = itm.Port(17)
+const dbg = itm.Port(-17)
 
 func raisePendSV() { scb.ICSR_Store(scb.PENDSVSET) }
 func clearPendSV() { scb.ICSR_Store(scb.PENDSVCLR) }

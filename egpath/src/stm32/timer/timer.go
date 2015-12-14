@@ -1,4 +1,4 @@
-// Package systick gives an access to STM32 timers registers.
+// Package timer gives an access to STM32 timers registers.
 //
 // Peripheral: Timer
 // Instances:
@@ -17,26 +17,26 @@
 //  TIM13: 0x40001C00  APB1  General 1ch
 //  TIM14: 0x40002000  APB1  General 1ch
 // Registers:
-//   0: CR1   Control register 1.
-//   1: CR2   Control register 2.
-//   2: SMCR  Slave mode control register.
-//   3: DIER  DMA/interrupt enable register.
-//   4: SR    Status register.
-//   5: EGR   Event generation register.
-//   6: CCMR1 Capture/compare mode register 1.
-//   7: CCMR2 Capture/compare mode register 2.
-//   8: CCER  Capture/compare enable register.
-//   9: CNT   Counter.
-//  10: PSC   Prescaler
-//  11: ARR   Auto-reload register.
-//  12: RCR   Repetition counter register.
-//  13: CCR1  Capture/compare register 1.
-//  14: CCR2  Capture/compare register 2.
-//  15: CCR3  Capture/compare register 3.
-//  16: CCR4  Capture/compare register 4.
-//  17: BDTR  Break and dead-time register.
-//  18: DCR   DMA control register.
-//  19: DMAR  DMA address for full transfer.
+//  0x00: CR1   Control register 1.
+//  0x04: CR2   Control register 2.
+//  0x08: SMCR  Slave mode control register.
+//  0x0C: DIER  DMA/interrupt enable register.
+//  0x10: SR    Status register.
+//  0x14: EGR   Event generation register.
+//  0x18: CCMR1 Capture/compare mode register 1.
+//  0x1C: CCMR2 Capture/compare mode register 2.
+//  0x20: CCER  Capture/compare enable register.
+//  0x24: CNT   Counter.
+//  0x28: PSC   Prescaler
+//  0x2C: ARR   Auto-reload register.
+//  0x30: RCR   Repetition counter register.
+//  0x34: CCR1  Capture/compare register 1.
+//  0x38: CCR2  Capture/compare register 2.
+//  0x3C: CCR3  Capture/compare register 3.
+//  0x40: CCR4  Capture/compare register 4.
+//  0x44: BDTR  Break and dead-time register.
+//  0x48: DCR   DMA control register.
+//  0x4C: DMAR  DMA address for full transfer.
 package timer
 
 const (

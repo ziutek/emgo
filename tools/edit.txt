@@ -1,0 +1,6 @@
+Edit x/$/ a/ _Bits = 1 << 0/
+Edit x/$/ a/ \/\/ /
+Edit x/$/ a/./
+Edit x/^	/ a/B/
+
+Edit s/:/ _Bits = 1 << 0 \/\//

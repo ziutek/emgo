@@ -1,19 +1,19 @@
-// BaseAddr: 0xe000ed00
-//   0: CPUID CPUID Base Register
-//   1: ICSR  Interrupt Control and State Register
-//   2: VTOR  Vector Table Offset Register
-//   3: AIRCR Application Interrupt and Reset Control Register
-//   4: SCR   System Control Register
-//   5: CCR   Configuration and Control Register
-//   6: SHPR1 System Handler Priority Register 1
-//   7: SHPR2 System Handler Priority Register 2
-//   8: SHPR3 System Handler Priority Register 3
-//   9: SHCSR System Handler Control and State Register
-//  10: CFSR  Configurable Fault Status Register
-//  11: HFSR  HardFault Status Register
-//  13: MMFR  MemManage Fault Address Register
-//  14: BFAR  BusFault Address Register
-//  15: AFSR  Auxiliary Fault Status Register
+// BaseAddr: 0xE000ED00
+//  0x00: CPUID CPUID Base Register
+//  0x04: ICSR  Interrupt Control and State Register
+//  0x08: VTOR  Vector Table Offset Register
+//  0x0C: AIRCR Application Interrupt and Reset Control Register
+//  0x10: SCR   System Control Register
+//  0x14: CCR   Configuration and Control Register
+//  0x18: SHPR1 System Handler Priority Register 1
+//  0x1C: SHPR2 System Handler Priority Register 2
+//  0x20: SHPR3 System Handler Priority Register 3
+//  0x24: SHCSR System Handler Control and State Register
+//  0x28: CFSR  Configurable Fault Status Register
+//  0x2C: HFSR  HardFault Status Register
+//  0x34: MMFR  MemManage Fault Address Register
+//  0x38: BFAR  BusFault Address Register
+//  0x3C: AFSR  Auxiliary Fault Status Register
 package scb
 
 const (
