@@ -70,10 +70,23 @@ func main() {
 		wait()
 		LED.ClearPin(Green)
 		wait()
-		ss := rtc.SSR_Load()
+		ss := uint32(rtc.SSR_Load())
 		hhmmss := rtc.TR_Load()
 		yymmdd := rtc.DR_Load() &^ (1 << 13)
 		ms := 1000 * (32767 - ss) / 32768
 		fmt.Printf("%06x %06x.%03d\n", yymmdd, hhmmss, ms)
+		
+		// Sprawdzić jaki kod generowany jest dla maski 0xffffffff
 	}
 }
+
+
+/*
+Z uintami:
+   text	   data	    bss	    dec	    hex	filename
+  32060	    312	  19572	  51944	   cae8	cortexm4f.elf
+Bez uintow:
+   text	   data	    bss	    dec	    hex	filename
+  32860	    416	  19792	  53068	   cf4c	cortexm4f.elf
+
+*/
