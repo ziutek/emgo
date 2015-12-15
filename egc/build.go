@@ -95,10 +95,14 @@ func compile(bp *build.Package) error {
 
 	// Type check
 
+	var tcerrors []string
+
 	tc := &types.Config{
 		Importer: NewImporter(),
 		Sizes:    sizesMap[buildCtx.GOARCH],
+		Error:    func(err error) { tcerrors = append(tcerrors, err.Error()) },
 	}
+
 	ti := &types.Info{
 		Types:      make(map[ast.Expr]types.TypeAndValue),
 		Defs:       make(map[*ast.Ident]types.Object),
@@ -108,7 +112,7 @@ func compile(bp *build.Package) error {
 
 	pkg, err := tc.Check(ppath, fset, flist, ti)
 	if err != nil {
-		return err
+		return errors.New(strings.Join(tcerrors, "\n"))
 	}
 
 	// Translate to C
