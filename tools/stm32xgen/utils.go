@@ -33,28 +33,20 @@ func doxy(s, tag string) string {
 	return strings.TrimSpace(s)
 }
 
-type output struct {
+type checkedWriter struct {
 	w io.Writer
 }
 
-func (o *output) Write(b []byte) (int, error) {
-	n, err := o.w.Write(b)
+func (c checkedWriter) Write(b []byte) (int, error) {
+	n, err := c.w.Write(b)
 	checkErr(err)
 	return n, nil
 }
 
-func (o *output) WriteString(s string) (int, error) {
-	n, err := io.WriteString(o.w, s)
+func (c checkedWriter) WriteString(s string) (int, error) {
+	n, err := io.WriteString(c.w, s)
 	checkErr(err)
 	return n, nil
-}
-
-func (o *output) Println(v ...interface{}) {
-	fmt.Fprintln(o, v...)
-}
-
-func (o *output) Printf(f string, v ...interface{}) {
-	fmt.Fprintf(o, f, v...)
 }
 
 type scanner struct {
