@@ -5,10 +5,16 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"strings"
+	"syscall"
 	"unicode"
 	"unicode/utf8"
 )
+
+func warn(info ...interface{}) {
+	fmt.Fprintln(os.Stderr, info...)
+}
 
 func die(info ...interface{}) {
 	fmt.Fprintln(os.Stderr, info...)
@@ -33,20 +39,60 @@ func doxy(s, tag string) string {
 	return strings.TrimSpace(s)
 }
 
-type checkedWriter struct {
-	w io.Writer
+func split(s string) (first, rest string) {
+	s = strings.TrimSpace(s)
+	i := strings.IndexFunc(s, unicode.IsSpace)
+	if i < 0 {
+		return s, ""
+	}
+	return s[:i], strings.TrimSpace(s[i+1:])
 }
 
-func (c checkedWriter) Write(b []byte) (int, error) {
-	n, err := c.w.Write(b)
+// cwc wraps io.WriteCloser. It terminates program on any error.
+type cwc struct {
+	c io.WriteCloser
+}
+
+func create(path string) cwc {
+	f, err := os.Create(path)
+	checkErr(err)
+	return cwc{f}
+}
+
+func (w cwc) Write(b []byte) (int, error) {
+	n, err := w.c.Write(b)
 	checkErr(err)
 	return n, nil
 }
 
-func (c checkedWriter) WriteString(s string) (int, error) {
-	n, err := io.WriteString(c.w, s)
+func (w cwc) WriteString(s string) (int, error) {
+	n, err := io.WriteString(w.c, s)
 	checkErr(err)
 	return n, nil
+}
+
+func (w cwc) Close() error {
+	var name string
+	if f, ok := w.c.(*os.File); ok {
+		name = f.Name()
+	}
+	checkErr(w.c.Close())
+	if name != "" {
+		checkErr(exec.Command("gofmt", "-w", name).Run())
+	}
+	return nil
+}
+
+func mkdir(path string) {
+	err := os.Mkdir(path, 0755)
+	if e, ok := err.(*os.PathError); !ok ||
+		e.Err != os.ErrExist && e.Err != syscall.EEXIST {
+		checkErr(err)
+	}
+}
+
+func chdir(path string) {
+	checkErr(os.Chdir(path))
 }
 
 type scanner struct {
@@ -85,4 +131,34 @@ func upperFirst(s string) string {
 	n = utf8.EncodeRune(buf, unicode.ToUpper(r))
 	n += copy(buf[n:], s)
 	return string(buf[:n])
+}
+
+func trailingZeros32(u uint32) uint {
+	n := uint(32)
+	x := u << 16
+	if x != 0 {
+		n -= 16
+		u = x
+	}
+	x = u << 8
+	if x != 0 {
+		n -= 8
+		u = x
+	}
+	x = u << 4
+	if x != 0 {
+		n -= 4
+		u = x
+	}
+	x = u << 2
+	if x != 0 {
+		n -= 2
+		u = x
+	}
+	x = u << 1
+	if x != 0 {
+		n -= 1
+		u = x
+	}
+	return n - uint(u>>31)
 }

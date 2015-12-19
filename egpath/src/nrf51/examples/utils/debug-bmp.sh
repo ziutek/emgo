@@ -1,4 +1,5 @@
 #!/bin/sh
+# gdb + Black Magic Probe
 
 set -e
 

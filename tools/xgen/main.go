@@ -18,8 +18,8 @@ func xgen(f string) {
 			c := strings.TrimLeft(cg.List[0].Text, "/*")
 			c = strings.TrimSpace(c)
 			switch {
-			case strings.HasPrefix(c, "BaseAddr:"):
-				one(pkg, f, cg.Text())
+			/*case strings.HasPrefix(c, "BaseAddr:"):
+				one(pkg, f, cg.Text(), a.Decls)*/
 			case strings.HasPrefix(c, "Peripheral:"):
 				multi(pkg, f, cg.Text(), a.Decls)
 			default:

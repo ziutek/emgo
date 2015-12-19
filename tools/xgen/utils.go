@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"go/format"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,28 +26,25 @@ func checkErr(err error) {
 	}
 }
 
-func nameval(line string, sep byte) (name, val string) {
-	i := strings.IndexByte(line, sep)
+func split(s string) (first, rest string) {
+	s = strings.TrimSpace(s)
+	i := strings.IndexFunc(s, unicode.IsSpace)
 	if i < 0 {
-		return
+		return s, ""
 	}
-	name = strings.TrimSpace(line[:i])
-	line = strings.TrimSpace(line[i+1:])
-	i = strings.IndexFunc(line, unicode.IsSpace)
-	if i < 0 {
-		val = line
-	} else {
-		val = line[:i]
-	}
-	return
+	return s[:i], strings.TrimSpace(s[i+1:])
 }
 
-func save(f string, tpl *template.Template, ctx interface{}) {
-	dir := filepath.Dir(f)
-	base := filepath.Base(f)
-	f = filepath.Join(dir, "xgen_"+base)
-	w, err := os.Create(f)
+func save(fpath string, tpl *template.Template, ctx interface{}) {
+	buf := new(bytes.Buffer)
+	checkErr(tpl.Execute(buf, ctx))
+	src, err := format.Source(buf.Bytes())
 	checkErr(err)
-	checkErr(tpl.Execute(w, ctx))
-	checkErr(w.Close())
+	dir := filepath.Dir(fpath)
+	base := filepath.Base(fpath)
+	f, err := os.Create(filepath.Join(dir, "xgen_"+base))
+	checkErr(err)
+	defer f.Close()
+	_, err = f.Write(src)
+	checkErr(err)
 }
