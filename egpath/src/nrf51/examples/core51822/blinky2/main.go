@@ -34,17 +34,18 @@ func blink(led byte, dly int) {
 	p0.SetPin(int(led))
 	delay.Loop(dly)
 	p0.ClearPin(int(led))
+	delay.Loop(dly)
 }
 
-func ticks() uint32 {
-	return rtc0.Counter()
+func uptime() int64 {
+	return int64(rtc0.Counter()) * 1e9 / 32768
 }
 
 func main() {
-	syscall.SetSysClock(32768, ticks)
-	for t := uint64(0); ; t += 1e9 {
+	syscall.SetSysClock(uptime, nil)
+	for t := int64(0); ; t += 1e9 {
 		for rtos.Uptime() < t {
 		}
-		blink(leds[2], 2e3)
+		blink(leds[2], 1)
 	}
 }
