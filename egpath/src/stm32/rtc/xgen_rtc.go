@@ -8,388 +8,977 @@ import (
 	"unsafe"
 )
 
-
-func rtc(n uint) *mmio.U32 {
-	return &(*[19]mmio.U32)(unsafe.Pointer(uintptr(0x40002800)))[n]
+type Clock struct {
+	TR       TR
+	DR       DR
+	CR       CR
+	ISR      ISR
+	PRER     PRER
+	WUTR     WUTR
+	CALIBR   CALIBR
+	ALRMAR   ALRMAR
+	ALRMBR   ALRMBR
+	WPR      WPR
+	SSR      SSR
+	SHIFTR   SHIFTR
+	TSTR     TSTR
+	TSDR     TSDR
+	TSSSR    TSSSR
+	CALR     CALR
+	TAFCR    TAFCR
+	ALRMASSR ALRMASSR
+	ALRMBSSR ALRMBSSR
 }
 
+var RTC = (*Clock)(unsafe.Pointer(uintptr(0x40002800)))
 
 type TR_Bits uint32
-
-func (m TR_Bits) Set()           { rtc(0).SetBits(uint32(m)) }
-func (m TR_Bits) Clear()         { rtc(0).ClearBits(uint32(m)) }
-func (m TR_Bits) Load() uint32   { return rtc(0).Bits(uint32(m)) }
-func (m TR_Bits) Store(b uint32) { rtc(0).StoreBits(uint32(m), b) }
-func (m TR_Bits) LoadVal() int   { return rtc(0).Field(uint32(m)) }
-func (m TR_Bits) StoreVal(v int) { rtc(0).SetField(uint32(m), v) }
-
-func TR_Load() TR_Bits   { return TR_Bits(rtc(0).Load()) }
-func TR_Store(b TR_Bits) { rtc(0).Store(uint32(b)) }
 
 func (b TR_Bits) Field(mask TR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_TR(v int, mask TR_Bits) TR_Bits {
+func (mask TR_Bits) J(v int) TR_Bits {
 	return TR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type TR struct{ r mmio.U32 }
+
+func (r *TR) Bits(mask TR_Bits) TR_Bits { return TR_Bits(r.r.Bits(uint32(mask))) }
+func (r *TR) StoreBits(mask, b TR_Bits) { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *TR) SetBits(mask TR_Bits)      { r.r.SetBits(uint32(mask)) }
+func (r *TR) ClearBits(mask TR_Bits)    { r.r.ClearBits(uint32(mask)) }
+func (r *TR) Load() TR_Bits             { return TR_Bits(r.r.Load()) }
+func (r *TR) Store(b TR_Bits)           { r.r.Store(uint32(b)) }
+
+func (p *Clock) SU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(SU),
+	}
+}
+func (p *Clock) ST() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(ST),
+	}
+}
+func (p *Clock) MNU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(MNU),
+	}
+}
+func (p *Clock) MNT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(MNT),
+	}
+}
+func (p *Clock) HU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(HU),
+	}
+}
+func (p *Clock) HT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(HT),
+	}
+}
+func (p *Clock) PM() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(PM),
+	}
+}
 
 type DR_Bits uint32
-
-func (m DR_Bits) Set()           { rtc(1).SetBits(uint32(m)) }
-func (m DR_Bits) Clear()         { rtc(1).ClearBits(uint32(m)) }
-func (m DR_Bits) Load() uint32   { return rtc(1).Bits(uint32(m)) }
-func (m DR_Bits) Store(b uint32) { rtc(1).StoreBits(uint32(m), b) }
-func (m DR_Bits) LoadVal() int   { return rtc(1).Field(uint32(m)) }
-func (m DR_Bits) StoreVal(v int) { rtc(1).SetField(uint32(m), v) }
-
-func DR_Load() DR_Bits   { return DR_Bits(rtc(1).Load()) }
-func DR_Store(b DR_Bits) { rtc(1).Store(uint32(b)) }
 
 func (b DR_Bits) Field(mask DR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_DR(v int, mask DR_Bits) DR_Bits {
+func (mask DR_Bits) J(v int) DR_Bits {
 	return DR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type DR struct{ r mmio.U32 }
+
+func (r *DR) Bits(mask DR_Bits) DR_Bits { return DR_Bits(r.r.Bits(uint32(mask))) }
+func (r *DR) StoreBits(mask, b DR_Bits) { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *DR) SetBits(mask DR_Bits)      { r.r.SetBits(uint32(mask)) }
+func (r *DR) ClearBits(mask DR_Bits)    { r.r.ClearBits(uint32(mask)) }
+func (r *DR) Load() DR_Bits             { return DR_Bits(r.r.Load()) }
+func (r *DR) Store(b DR_Bits)           { r.r.Store(uint32(b)) }
+
+func (p *Clock) DU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(DU),
+	}
+}
+func (p *Clock) DT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(DT),
+	}
+}
+func (p *Clock) MU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(MU),
+	}
+}
+func (p *Clock) MT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(MT),
+	}
+}
+func (p *Clock) WDU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(WDU),
+	}
+}
+func (p *Clock) YU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(YU),
+	}
+}
+func (p *Clock) YT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(YT),
+	}
+}
 
 type CR_Bits uint32
-
-func (m CR_Bits) Set()           { rtc(2).SetBits(uint32(m)) }
-func (m CR_Bits) Clear()         { rtc(2).ClearBits(uint32(m)) }
-func (m CR_Bits) Load() uint32   { return rtc(2).Bits(uint32(m)) }
-func (m CR_Bits) Store(b uint32) { rtc(2).StoreBits(uint32(m), b) }
-func (m CR_Bits) LoadVal() int   { return rtc(2).Field(uint32(m)) }
-func (m CR_Bits) StoreVal(v int) { rtc(2).SetField(uint32(m), v) }
-
-func CR_Load() CR_Bits   { return CR_Bits(rtc(2).Load()) }
-func CR_Store(b CR_Bits) { rtc(2).Store(uint32(b)) }
 
 func (b CR_Bits) Field(mask CR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_CR(v int, mask CR_Bits) CR_Bits {
+func (mask CR_Bits) J(v int) CR_Bits {
 	return CR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type CR struct{ r mmio.U32 }
+
+func (r *CR) Bits(mask CR_Bits) CR_Bits { return CR_Bits(r.r.Bits(uint32(mask))) }
+func (r *CR) StoreBits(mask, b CR_Bits) { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *CR) SetBits(mask CR_Bits)      { r.r.SetBits(uint32(mask)) }
+func (r *CR) ClearBits(mask CR_Bits)    { r.r.ClearBits(uint32(mask)) }
+func (r *CR) Load() CR_Bits             { return CR_Bits(r.r.Load()) }
+func (r *CR) Store(b CR_Bits)           { r.r.Store(uint32(b)) }
+
+func (p *Clock) WUCKSEL() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(WUCKSEL),
+	}
+}
+func (p *Clock) TSEDGE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(TSEDGE),
+	}
+}
+func (p *Clock) REFCKON() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(REFCKON),
+	}
+}
+func (p *Clock) BYPSHAD() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(BYPSHAD),
+	}
+}
+func (p *Clock) FMT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(FMT),
+	}
+}
+func (p *Clock) DCE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(DCE),
+	}
+}
+func (p *Clock) ALRAE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(ALRAE),
+	}
+}
+func (p *Clock) ALRBE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(ALRBE),
+	}
+}
+func (p *Clock) WUTE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(WUTE),
+	}
+}
+func (p *Clock) TSE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(TSE),
+	}
+}
+func (p *Clock) ALRAIE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(ALRAIE),
+	}
+}
+func (p *Clock) ALRBIE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(ALRBIE),
+	}
+}
+func (p *Clock) WUTIE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(WUTIE),
+	}
+}
+func (p *Clock) TSIE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(TSIE),
+	}
+}
+func (p *Clock) ADD1H() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(ADD1H),
+	}
+}
+func (p *Clock) SUB1H() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(SUB1H),
+	}
+}
+func (p *Clock) BKP() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(BKP),
+	}
+}
+func (p *Clock) COSEL() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(COSEL),
+	}
+}
+func (p *Clock) POL() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(POL),
+	}
+}
+func (p *Clock) OSEL() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(OSEL),
+	}
+}
+func (p *Clock) COE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(COE),
+	}
+}
 
 type ISR_Bits uint32
-
-func (m ISR_Bits) Set()           { rtc(3).SetBits(uint32(m)) }
-func (m ISR_Bits) Clear()         { rtc(3).ClearBits(uint32(m)) }
-func (m ISR_Bits) Load() uint32   { return rtc(3).Bits(uint32(m)) }
-func (m ISR_Bits) Store(b uint32) { rtc(3).StoreBits(uint32(m), b) }
-func (m ISR_Bits) LoadVal() int   { return rtc(3).Field(uint32(m)) }
-func (m ISR_Bits) StoreVal(v int) { rtc(3).SetField(uint32(m), v) }
-
-func ISR_Load() ISR_Bits   { return ISR_Bits(rtc(3).Load()) }
-func ISR_Store(b ISR_Bits) { rtc(3).Store(uint32(b)) }
 
 func (b ISR_Bits) Field(mask ISR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_ISR(v int, mask ISR_Bits) ISR_Bits {
+func (mask ISR_Bits) J(v int) ISR_Bits {
 	return ISR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type ISR struct{ r mmio.U32 }
+
+func (r *ISR) Bits(mask ISR_Bits) ISR_Bits { return ISR_Bits(r.r.Bits(uint32(mask))) }
+func (r *ISR) StoreBits(mask, b ISR_Bits)  { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *ISR) SetBits(mask ISR_Bits)       { r.r.SetBits(uint32(mask)) }
+func (r *ISR) ClearBits(mask ISR_Bits)     { r.r.ClearBits(uint32(mask)) }
+func (r *ISR) Load() ISR_Bits              { return ISR_Bits(r.r.Load()) }
+func (r *ISR) Store(b ISR_Bits)            { r.r.Store(uint32(b)) }
+
+func (p *Clock) ALRAWF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(ALRAWF),
+	}
+}
+func (p *Clock) ALRBWF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(ALRBWF),
+	}
+}
+func (p *Clock) WUTWF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(WUTWF),
+	}
+}
+func (p *Clock) SHPF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(SHPF),
+	}
+}
+func (p *Clock) INITS() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(INITS),
+	}
+}
+func (p *Clock) RSF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(RSF),
+	}
+}
+func (p *Clock) INITF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(INITF),
+	}
+}
+func (p *Clock) INIT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(INIT),
+	}
+}
+func (p *Clock) ALRAF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(ALRAF),
+	}
+}
+func (p *Clock) ALRBF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(ALRBF),
+	}
+}
+func (p *Clock) WUTF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(WUTF),
+	}
+}
+func (p *Clock) TSF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(TSF),
+	}
+}
+func (p *Clock) TSOVF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(TSOVF),
+	}
+}
+func (p *Clock) TAMP1F() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(TAMP1F),
+	}
+}
+func (p *Clock) TAMP2F() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(TAMP2F),
+	}
+}
+func (p *Clock) RECALPF() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(RECALPF),
+	}
+}
 
 type PRER_Bits uint32
-
-func (m PRER_Bits) Set()           { rtc(4).SetBits(uint32(m)) }
-func (m PRER_Bits) Clear()         { rtc(4).ClearBits(uint32(m)) }
-func (m PRER_Bits) Load() uint32   { return rtc(4).Bits(uint32(m)) }
-func (m PRER_Bits) Store(b uint32) { rtc(4).StoreBits(uint32(m), b) }
-func (m PRER_Bits) LoadVal() int   { return rtc(4).Field(uint32(m)) }
-func (m PRER_Bits) StoreVal(v int) { rtc(4).SetField(uint32(m), v) }
-
-func PRER_Load() PRER_Bits   { return PRER_Bits(rtc(4).Load()) }
-func PRER_Store(b PRER_Bits) { rtc(4).Store(uint32(b)) }
 
 func (b PRER_Bits) Field(mask PRER_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_PRER(v int, mask PRER_Bits) PRER_Bits {
+func (mask PRER_Bits) J(v int) PRER_Bits {
 	return PRER_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type PRER struct{ r mmio.U32 }
+
+func (r *PRER) Bits(mask PRER_Bits) PRER_Bits { return PRER_Bits(r.r.Bits(uint32(mask))) }
+func (r *PRER) StoreBits(mask, b PRER_Bits)   { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *PRER) SetBits(mask PRER_Bits)        { r.r.SetBits(uint32(mask)) }
+func (r *PRER) ClearBits(mask PRER_Bits)      { r.r.ClearBits(uint32(mask)) }
+func (r *PRER) Load() PRER_Bits               { return PRER_Bits(r.r.Load()) }
+func (r *PRER) Store(b PRER_Bits)             { r.r.Store(uint32(b)) }
+
+func (p *Clock) PREDIV_S() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint32(PREDIV_S),
+	}
+}
+func (p *Clock) PREDIV_A() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint32(PREDIV_A),
+	}
+}
 
 type WUTR_Bits uint32
-
-func (m WUTR_Bits) Set()           { rtc(5).SetBits(uint32(m)) }
-func (m WUTR_Bits) Clear()         { rtc(5).ClearBits(uint32(m)) }
-func (m WUTR_Bits) Load() uint32   { return rtc(5).Bits(uint32(m)) }
-func (m WUTR_Bits) Store(b uint32) { rtc(5).StoreBits(uint32(m), b) }
-func (m WUTR_Bits) LoadVal() int   { return rtc(5).Field(uint32(m)) }
-func (m WUTR_Bits) StoreVal(v int) { rtc(5).SetField(uint32(m), v) }
-
-func WUTR_Load() WUTR_Bits   { return WUTR_Bits(rtc(5).Load()) }
-func WUTR_Store(b WUTR_Bits) { rtc(5).Store(uint32(b)) }
 
 func (b WUTR_Bits) Field(mask WUTR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_WUTR(v int, mask WUTR_Bits) WUTR_Bits {
+func (mask WUTR_Bits) J(v int) WUTR_Bits {
 	return WUTR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type WUTR struct{ r mmio.U32 }
+
+func (r *WUTR) Bits(mask WUTR_Bits) WUTR_Bits { return WUTR_Bits(r.r.Bits(uint32(mask))) }
+func (r *WUTR) StoreBits(mask, b WUTR_Bits)   { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *WUTR) SetBits(mask WUTR_Bits)        { r.r.SetBits(uint32(mask)) }
+func (r *WUTR) ClearBits(mask WUTR_Bits)      { r.r.ClearBits(uint32(mask)) }
+func (r *WUTR) Load() WUTR_Bits               { return WUTR_Bits(r.r.Load()) }
+func (r *WUTR) Store(b WUTR_Bits)             { r.r.Store(uint32(b)) }
 
 type CALIBR_Bits uint32
-
-func (m CALIBR_Bits) Set()           { rtc(6).SetBits(uint32(m)) }
-func (m CALIBR_Bits) Clear()         { rtc(6).ClearBits(uint32(m)) }
-func (m CALIBR_Bits) Load() uint32   { return rtc(6).Bits(uint32(m)) }
-func (m CALIBR_Bits) Store(b uint32) { rtc(6).StoreBits(uint32(m), b) }
-func (m CALIBR_Bits) LoadVal() int   { return rtc(6).Field(uint32(m)) }
-func (m CALIBR_Bits) StoreVal(v int) { rtc(6).SetField(uint32(m), v) }
-
-func CALIBR_Load() CALIBR_Bits   { return CALIBR_Bits(rtc(6).Load()) }
-func CALIBR_Store(b CALIBR_Bits) { rtc(6).Store(uint32(b)) }
 
 func (b CALIBR_Bits) Field(mask CALIBR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_CALIBR(v int, mask CALIBR_Bits) CALIBR_Bits {
+func (mask CALIBR_Bits) J(v int) CALIBR_Bits {
 	return CALIBR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type CALIBR struct{ r mmio.U32 }
+
+func (r *CALIBR) Bits(mask CALIBR_Bits) CALIBR_Bits { return CALIBR_Bits(r.r.Bits(uint32(mask))) }
+func (r *CALIBR) StoreBits(mask, b CALIBR_Bits)     { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *CALIBR) SetBits(mask CALIBR_Bits)          { r.r.SetBits(uint32(mask)) }
+func (r *CALIBR) ClearBits(mask CALIBR_Bits)        { r.r.ClearBits(uint32(mask)) }
+func (r *CALIBR) Load() CALIBR_Bits                 { return CALIBR_Bits(r.r.Load()) }
+func (r *CALIBR) Store(b CALIBR_Bits)               { r.r.Store(uint32(b)) }
+
+func (p *Clock) DC() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(DC),
+	}
+}
+func (p *Clock) DCS() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(DCS),
+	}
+}
 
 type ALRMAR_Bits uint32
-
-func (m ALRMAR_Bits) Set()           { rtc(7).SetBits(uint32(m)) }
-func (m ALRMAR_Bits) Clear()         { rtc(7).ClearBits(uint32(m)) }
-func (m ALRMAR_Bits) Load() uint32   { return rtc(7).Bits(uint32(m)) }
-func (m ALRMAR_Bits) Store(b uint32) { rtc(7).StoreBits(uint32(m), b) }
-func (m ALRMAR_Bits) LoadVal() int   { return rtc(7).Field(uint32(m)) }
-func (m ALRMAR_Bits) StoreVal(v int) { rtc(7).SetField(uint32(m), v) }
-
-func ALRMAR_Load() ALRMAR_Bits   { return ALRMAR_Bits(rtc(7).Load()) }
-func ALRMAR_Store(b ALRMAR_Bits) { rtc(7).Store(uint32(b)) }
 
 func (b ALRMAR_Bits) Field(mask ALRMAR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_ALRMAR(v int, mask ALRMAR_Bits) ALRMAR_Bits {
+func (mask ALRMAR_Bits) J(v int) ALRMAR_Bits {
 	return ALRMAR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type ALRMAR struct{ r mmio.U32 }
+
+func (r *ALRMAR) Bits(mask ALRMAR_Bits) ALRMAR_Bits { return ALRMAR_Bits(r.r.Bits(uint32(mask))) }
+func (r *ALRMAR) StoreBits(mask, b ALRMAR_Bits)     { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *ALRMAR) SetBits(mask ALRMAR_Bits)          { r.r.SetBits(uint32(mask)) }
+func (r *ALRMAR) ClearBits(mask ALRMAR_Bits)        { r.r.ClearBits(uint32(mask)) }
+func (r *ALRMAR) Load() ALRMAR_Bits                 { return ALRMAR_Bits(r.r.Load()) }
+func (r *ALRMAR) Store(b ALRMAR_Bits)               { r.r.Store(uint32(b)) }
+
+func (p *Clock) ASU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(ASU),
+	}
+}
+func (p *Clock) AST() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(AST),
+	}
+}
+func (p *Clock) AMSK1() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(AMSK1),
+	}
+}
+func (p *Clock) AMNU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(AMNU),
+	}
+}
+func (p *Clock) AMNT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(AMNT),
+	}
+}
+func (p *Clock) AMSK2() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(AMSK2),
+	}
+}
+func (p *Clock) AHU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(AHU),
+	}
+}
+func (p *Clock) AHT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(AHT),
+	}
+}
+func (p *Clock) APM() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(APM),
+	}
+}
+func (p *Clock) AMSK3() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(AMSK3),
+	}
+}
+func (p *Clock) ADU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(ADU),
+	}
+}
+func (p *Clock) ADT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(ADT),
+	}
+}
+func (p *Clock) AWDSEL() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(AWDSEL),
+	}
+}
+func (p *Clock) AMSK4() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(AMSK4),
+	}
+}
 
 type ALRMBR_Bits uint32
-
-func (m ALRMBR_Bits) Set()           { rtc(8).SetBits(uint32(m)) }
-func (m ALRMBR_Bits) Clear()         { rtc(8).ClearBits(uint32(m)) }
-func (m ALRMBR_Bits) Load() uint32   { return rtc(8).Bits(uint32(m)) }
-func (m ALRMBR_Bits) Store(b uint32) { rtc(8).StoreBits(uint32(m), b) }
-func (m ALRMBR_Bits) LoadVal() int   { return rtc(8).Field(uint32(m)) }
-func (m ALRMBR_Bits) StoreVal(v int) { rtc(8).SetField(uint32(m), v) }
-
-func ALRMBR_Load() ALRMBR_Bits   { return ALRMBR_Bits(rtc(8).Load()) }
-func ALRMBR_Store(b ALRMBR_Bits) { rtc(8).Store(uint32(b)) }
 
 func (b ALRMBR_Bits) Field(mask ALRMBR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_ALRMBR(v int, mask ALRMBR_Bits) ALRMBR_Bits {
+func (mask ALRMBR_Bits) J(v int) ALRMBR_Bits {
 	return ALRMBR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type ALRMBR struct{ r mmio.U32 }
+
+func (r *ALRMBR) Bits(mask ALRMBR_Bits) ALRMBR_Bits { return ALRMBR_Bits(r.r.Bits(uint32(mask))) }
+func (r *ALRMBR) StoreBits(mask, b ALRMBR_Bits)     { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *ALRMBR) SetBits(mask ALRMBR_Bits)          { r.r.SetBits(uint32(mask)) }
+func (r *ALRMBR) ClearBits(mask ALRMBR_Bits)        { r.r.ClearBits(uint32(mask)) }
+func (r *ALRMBR) Load() ALRMBR_Bits                 { return ALRMBR_Bits(r.r.Load()) }
+func (r *ALRMBR) Store(b ALRMBR_Bits)               { r.r.Store(uint32(b)) }
+
+func (p *Clock) BSU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BSU),
+	}
+}
+func (p *Clock) BST() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BST),
+	}
+}
+func (p *Clock) BMSK1() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BMSK1),
+	}
+}
+func (p *Clock) BMNU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BMNU),
+	}
+}
+func (p *Clock) BMNT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BMNT),
+	}
+}
+func (p *Clock) BMSK2() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BMSK2),
+	}
+}
+func (p *Clock) BHU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BHU),
+	}
+}
+func (p *Clock) BHT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BHT),
+	}
+}
+func (p *Clock) BPM() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BPM),
+	}
+}
+func (p *Clock) BMSK3() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BMSK3),
+	}
+}
+func (p *Clock) BDU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BDU),
+	}
+}
+func (p *Clock) BDT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BDT),
+	}
+}
+func (p *Clock) BWDSEL() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BWDSEL),
+	}
+}
+func (p *Clock) BMSK4() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(BMSK4),
+	}
+}
 
 type WPR_Bits uint32
-
-func (m WPR_Bits) Set()           { rtc(9).SetBits(uint32(m)) }
-func (m WPR_Bits) Clear()         { rtc(9).ClearBits(uint32(m)) }
-func (m WPR_Bits) Load() uint32   { return rtc(9).Bits(uint32(m)) }
-func (m WPR_Bits) Store(b uint32) { rtc(9).StoreBits(uint32(m), b) }
-func (m WPR_Bits) LoadVal() int   { return rtc(9).Field(uint32(m)) }
-func (m WPR_Bits) StoreVal(v int) { rtc(9).SetField(uint32(m), v) }
-
-func WPR_Load() WPR_Bits   { return WPR_Bits(rtc(9).Load()) }
-func WPR_Store(b WPR_Bits) { rtc(9).Store(uint32(b)) }
 
 func (b WPR_Bits) Field(mask WPR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_WPR(v int, mask WPR_Bits) WPR_Bits {
+func (mask WPR_Bits) J(v int) WPR_Bits {
 	return WPR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type WPR struct{ r mmio.U32 }
+
+func (r *WPR) Bits(mask WPR_Bits) WPR_Bits { return WPR_Bits(r.r.Bits(uint32(mask))) }
+func (r *WPR) StoreBits(mask, b WPR_Bits)  { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *WPR) SetBits(mask WPR_Bits)       { r.r.SetBits(uint32(mask)) }
+func (r *WPR) ClearBits(mask WPR_Bits)     { r.r.ClearBits(uint32(mask)) }
+func (r *WPR) Load() WPR_Bits              { return WPR_Bits(r.r.Load()) }
+func (r *WPR) Store(b WPR_Bits)            { r.r.Store(uint32(b)) }
 
 type SSR_Bits uint32
-
-func (m SSR_Bits) Set()           { rtc(10).SetBits(uint32(m)) }
-func (m SSR_Bits) Clear()         { rtc(10).ClearBits(uint32(m)) }
-func (m SSR_Bits) Load() uint32   { return rtc(10).Bits(uint32(m)) }
-func (m SSR_Bits) Store(b uint32) { rtc(10).StoreBits(uint32(m), b) }
-func (m SSR_Bits) LoadVal() int   { return rtc(10).Field(uint32(m)) }
-func (m SSR_Bits) StoreVal(v int) { rtc(10).SetField(uint32(m), v) }
-
-func SSR_Load() SSR_Bits   { return SSR_Bits(rtc(10).Load()) }
-func SSR_Store(b SSR_Bits) { rtc(10).Store(uint32(b)) }
 
 func (b SSR_Bits) Field(mask SSR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_SSR(v int, mask SSR_Bits) SSR_Bits {
+func (mask SSR_Bits) J(v int) SSR_Bits {
 	return SSR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type SSR struct{ r mmio.U32 }
+
+func (r *SSR) Bits(mask SSR_Bits) SSR_Bits { return SSR_Bits(r.r.Bits(uint32(mask))) }
+func (r *SSR) StoreBits(mask, b SSR_Bits)  { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *SSR) SetBits(mask SSR_Bits)       { r.r.SetBits(uint32(mask)) }
+func (r *SSR) ClearBits(mask SSR_Bits)     { r.r.ClearBits(uint32(mask)) }
+func (r *SSR) Load() SSR_Bits              { return SSR_Bits(r.r.Load()) }
+func (r *SSR) Store(b SSR_Bits)            { r.r.Store(uint32(b)) }
 
 type SHIFTR_Bits uint32
-
-func (m SHIFTR_Bits) Set()           { rtc(11).SetBits(uint32(m)) }
-func (m SHIFTR_Bits) Clear()         { rtc(11).ClearBits(uint32(m)) }
-func (m SHIFTR_Bits) Load() uint32   { return rtc(11).Bits(uint32(m)) }
-func (m SHIFTR_Bits) Store(b uint32) { rtc(11).StoreBits(uint32(m), b) }
-func (m SHIFTR_Bits) LoadVal() int   { return rtc(11).Field(uint32(m)) }
-func (m SHIFTR_Bits) StoreVal(v int) { rtc(11).SetField(uint32(m), v) }
-
-func SHIFTR_Load() SHIFTR_Bits   { return SHIFTR_Bits(rtc(11).Load()) }
-func SHIFTR_Store(b SHIFTR_Bits) { rtc(11).Store(uint32(b)) }
 
 func (b SHIFTR_Bits) Field(mask SHIFTR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_SHIFTR(v int, mask SHIFTR_Bits) SHIFTR_Bits {
+func (mask SHIFTR_Bits) J(v int) SHIFTR_Bits {
 	return SHIFTR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type SHIFTR struct{ r mmio.U32 }
+
+func (r *SHIFTR) Bits(mask SHIFTR_Bits) SHIFTR_Bits { return SHIFTR_Bits(r.r.Bits(uint32(mask))) }
+func (r *SHIFTR) StoreBits(mask, b SHIFTR_Bits)     { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *SHIFTR) SetBits(mask SHIFTR_Bits)          { r.r.SetBits(uint32(mask)) }
+func (r *SHIFTR) ClearBits(mask SHIFTR_Bits)        { r.r.ClearBits(uint32(mask)) }
+func (r *SHIFTR) Load() SHIFTR_Bits                 { return SHIFTR_Bits(r.r.Load()) }
+func (r *SHIFTR) Store(b SHIFTR_Bits)               { r.r.Store(uint32(b)) }
+
+func (p *Clock) SUBFS() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 44)), uint32(SUBFS),
+	}
+}
+func (p *Clock) ADD1S() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 44)), uint32(ADD1S),
+	}
+}
 
 type TSTR_Bits uint32
-
-func (m TSTR_Bits) Set()           { rtc(12).SetBits(uint32(m)) }
-func (m TSTR_Bits) Clear()         { rtc(12).ClearBits(uint32(m)) }
-func (m TSTR_Bits) Load() uint32   { return rtc(12).Bits(uint32(m)) }
-func (m TSTR_Bits) Store(b uint32) { rtc(12).StoreBits(uint32(m), b) }
-func (m TSTR_Bits) LoadVal() int   { return rtc(12).Field(uint32(m)) }
-func (m TSTR_Bits) StoreVal(v int) { rtc(12).SetField(uint32(m), v) }
-
-func TSTR_Load() TSTR_Bits   { return TSTR_Bits(rtc(12).Load()) }
-func TSTR_Store(b TSTR_Bits) { rtc(12).Store(uint32(b)) }
 
 func (b TSTR_Bits) Field(mask TSTR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_TSTR(v int, mask TSTR_Bits) TSTR_Bits {
+func (mask TSTR_Bits) J(v int) TSTR_Bits {
 	return TSTR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type TSTR struct{ r mmio.U32 }
+
+func (r *TSTR) Bits(mask TSTR_Bits) TSTR_Bits { return TSTR_Bits(r.r.Bits(uint32(mask))) }
+func (r *TSTR) StoreBits(mask, b TSTR_Bits)   { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *TSTR) SetBits(mask TSTR_Bits)        { r.r.SetBits(uint32(mask)) }
+func (r *TSTR) ClearBits(mask TSTR_Bits)      { r.r.ClearBits(uint32(mask)) }
+func (r *TSTR) Load() TSTR_Bits               { return TSTR_Bits(r.r.Load()) }
+func (r *TSTR) Store(b TSTR_Bits)             { r.r.Store(uint32(b)) }
+
+func (p *Clock) TSU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 48)), uint32(TSU),
+	}
+}
+func (p *Clock) TST() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 48)), uint32(TST),
+	}
+}
+func (p *Clock) TMNU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 48)), uint32(TMNU),
+	}
+}
+func (p *Clock) TMNT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 48)), uint32(TMNT),
+	}
+}
+func (p *Clock) THU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 48)), uint32(THU),
+	}
+}
+func (p *Clock) THT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 48)), uint32(THT),
+	}
+}
+func (p *Clock) TPM() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 48)), uint32(TPM),
+	}
+}
 
 type TSDR_Bits uint32
-
-func (m TSDR_Bits) Set()           { rtc(13).SetBits(uint32(m)) }
-func (m TSDR_Bits) Clear()         { rtc(13).ClearBits(uint32(m)) }
-func (m TSDR_Bits) Load() uint32   { return rtc(13).Bits(uint32(m)) }
-func (m TSDR_Bits) Store(b uint32) { rtc(13).StoreBits(uint32(m), b) }
-func (m TSDR_Bits) LoadVal() int   { return rtc(13).Field(uint32(m)) }
-func (m TSDR_Bits) StoreVal(v int) { rtc(13).SetField(uint32(m), v) }
-
-func TSDR_Load() TSDR_Bits   { return TSDR_Bits(rtc(13).Load()) }
-func TSDR_Store(b TSDR_Bits) { rtc(13).Store(uint32(b)) }
 
 func (b TSDR_Bits) Field(mask TSDR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_TSDR(v int, mask TSDR_Bits) TSDR_Bits {
+func (mask TSDR_Bits) J(v int) TSDR_Bits {
 	return TSDR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type TSDR struct{ r mmio.U32 }
+
+func (r *TSDR) Bits(mask TSDR_Bits) TSDR_Bits { return TSDR_Bits(r.r.Bits(uint32(mask))) }
+func (r *TSDR) StoreBits(mask, b TSDR_Bits)   { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *TSDR) SetBits(mask TSDR_Bits)        { r.r.SetBits(uint32(mask)) }
+func (r *TSDR) ClearBits(mask TSDR_Bits)      { r.r.ClearBits(uint32(mask)) }
+func (r *TSDR) Load() TSDR_Bits               { return TSDR_Bits(r.r.Load()) }
+func (r *TSDR) Store(b TSDR_Bits)             { r.r.Store(uint32(b)) }
+
+func (p *Clock) TDU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 52)), uint32(TDU),
+	}
+}
+func (p *Clock) TDT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 52)), uint32(TDT),
+	}
+}
+func (p *Clock) TMU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 52)), uint32(TMU),
+	}
+}
+func (p *Clock) TMT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 52)), uint32(TMT),
+	}
+}
+func (p *Clock) TWDU() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 52)), uint32(TWDU),
+	}
+}
 
 type TSSSR_Bits uint32
-
-func (m TSSSR_Bits) Set()           { rtc(14).SetBits(uint32(m)) }
-func (m TSSSR_Bits) Clear()         { rtc(14).ClearBits(uint32(m)) }
-func (m TSSSR_Bits) Load() uint32   { return rtc(14).Bits(uint32(m)) }
-func (m TSSSR_Bits) Store(b uint32) { rtc(14).StoreBits(uint32(m), b) }
-func (m TSSSR_Bits) LoadVal() int   { return rtc(14).Field(uint32(m)) }
-func (m TSSSR_Bits) StoreVal(v int) { rtc(14).SetField(uint32(m), v) }
-
-func TSSSR_Load() TSSSR_Bits   { return TSSSR_Bits(rtc(14).Load()) }
-func TSSSR_Store(b TSSSR_Bits) { rtc(14).Store(uint32(b)) }
 
 func (b TSSSR_Bits) Field(mask TSSSR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_TSSSR(v int, mask TSSSR_Bits) TSSSR_Bits {
+func (mask TSSSR_Bits) J(v int) TSSSR_Bits {
 	return TSSSR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type TSSSR struct{ r mmio.U32 }
+
+func (r *TSSSR) Bits(mask TSSSR_Bits) TSSSR_Bits { return TSSSR_Bits(r.r.Bits(uint32(mask))) }
+func (r *TSSSR) StoreBits(mask, b TSSSR_Bits)    { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *TSSSR) SetBits(mask TSSSR_Bits)         { r.r.SetBits(uint32(mask)) }
+func (r *TSSSR) ClearBits(mask TSSSR_Bits)       { r.r.ClearBits(uint32(mask)) }
+func (r *TSSSR) Load() TSSSR_Bits                { return TSSSR_Bits(r.r.Load()) }
+func (r *TSSSR) Store(b TSSSR_Bits)              { r.r.Store(uint32(b)) }
 
 type CALR_Bits uint32
-
-func (m CALR_Bits) Set()           { rtc(15).SetBits(uint32(m)) }
-func (m CALR_Bits) Clear()         { rtc(15).ClearBits(uint32(m)) }
-func (m CALR_Bits) Load() uint32   { return rtc(15).Bits(uint32(m)) }
-func (m CALR_Bits) Store(b uint32) { rtc(15).StoreBits(uint32(m), b) }
-func (m CALR_Bits) LoadVal() int   { return rtc(15).Field(uint32(m)) }
-func (m CALR_Bits) StoreVal(v int) { rtc(15).SetField(uint32(m), v) }
-
-func CALR_Load() CALR_Bits   { return CALR_Bits(rtc(15).Load()) }
-func CALR_Store(b CALR_Bits) { rtc(15).Store(uint32(b)) }
 
 func (b CALR_Bits) Field(mask CALR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_CALR(v int, mask CALR_Bits) CALR_Bits {
+func (mask CALR_Bits) J(v int) CALR_Bits {
 	return CALR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type CALR struct{ r mmio.U32 }
+
+func (r *CALR) Bits(mask CALR_Bits) CALR_Bits { return CALR_Bits(r.r.Bits(uint32(mask))) }
+func (r *CALR) StoreBits(mask, b CALR_Bits)   { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *CALR) SetBits(mask CALR_Bits)        { r.r.SetBits(uint32(mask)) }
+func (r *CALR) ClearBits(mask CALR_Bits)      { r.r.ClearBits(uint32(mask)) }
+func (r *CALR) Load() CALR_Bits               { return CALR_Bits(r.r.Load()) }
+func (r *CALR) Store(b CALR_Bits)             { r.r.Store(uint32(b)) }
+
+func (p *Clock) CALM() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 60)), uint32(CALM),
+	}
+}
+func (p *Clock) CALW16() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 60)), uint32(CALW16),
+	}
+}
+func (p *Clock) CALW8() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 60)), uint32(CALW8),
+	}
+}
+func (p *Clock) CALP() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 60)), uint32(CALP),
+	}
+}
 
 type TAFCR_Bits uint32
-
-func (m TAFCR_Bits) Set()           { rtc(16).SetBits(uint32(m)) }
-func (m TAFCR_Bits) Clear()         { rtc(16).ClearBits(uint32(m)) }
-func (m TAFCR_Bits) Load() uint32   { return rtc(16).Bits(uint32(m)) }
-func (m TAFCR_Bits) Store(b uint32) { rtc(16).StoreBits(uint32(m), b) }
-func (m TAFCR_Bits) LoadVal() int   { return rtc(16).Field(uint32(m)) }
-func (m TAFCR_Bits) StoreVal(v int) { rtc(16).SetField(uint32(m), v) }
-
-func TAFCR_Load() TAFCR_Bits   { return TAFCR_Bits(rtc(16).Load()) }
-func TAFCR_Store(b TAFCR_Bits) { rtc(16).Store(uint32(b)) }
 
 func (b TAFCR_Bits) Field(mask TAFCR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_TAFCR(v int, mask TAFCR_Bits) TAFCR_Bits {
+func (mask TAFCR_Bits) J(v int) TAFCR_Bits {
 	return TAFCR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type TAFCR struct{ r mmio.U32 }
+
+func (r *TAFCR) Bits(mask TAFCR_Bits) TAFCR_Bits { return TAFCR_Bits(r.r.Bits(uint32(mask))) }
+func (r *TAFCR) StoreBits(mask, b TAFCR_Bits)    { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *TAFCR) SetBits(mask TAFCR_Bits)         { r.r.SetBits(uint32(mask)) }
+func (r *TAFCR) ClearBits(mask TAFCR_Bits)       { r.r.ClearBits(uint32(mask)) }
+func (r *TAFCR) Load() TAFCR_Bits                { return TAFCR_Bits(r.r.Load()) }
+func (r *TAFCR) Store(b TAFCR_Bits)              { r.r.Store(uint32(b)) }
+
+func (p *Clock) TAMP1E() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMP1E),
+	}
+}
+func (p *Clock) TAMP1TRG() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMP1TRG),
+	}
+}
+func (p *Clock) TAMPIE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMPIE),
+	}
+}
+func (p *Clock) TAMP2E() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMP2E),
+	}
+}
+func (p *Clock) TAMP2TRG() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMP2TRG),
+	}
+}
+func (p *Clock) TAMPTS() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMPTS),
+	}
+}
+func (p *Clock) TAMPFREQ() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMPFREQ),
+	}
+}
+func (p *Clock) TAMPFLT() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMPFLT),
+	}
+}
+func (p *Clock) TAMPPRCH() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMPPRCH),
+	}
+}
+func (p *Clock) TAMPPUDIS() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMPPUDIS),
+	}
+}
+func (p *Clock) TAMP1INSEL() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMP1INSEL),
+	}
+}
+func (p *Clock) TSINSEL() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TSINSEL),
+	}
+}
+func (p *Clock) ALARMOUTTYPE() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(ALARMOUTTYPE),
+	}
+}
 
 type ALRMASSR_Bits uint32
-
-func (m ALRMASSR_Bits) Set()           { rtc(17).SetBits(uint32(m)) }
-func (m ALRMASSR_Bits) Clear()         { rtc(17).ClearBits(uint32(m)) }
-func (m ALRMASSR_Bits) Load() uint32   { return rtc(17).Bits(uint32(m)) }
-func (m ALRMASSR_Bits) Store(b uint32) { rtc(17).StoreBits(uint32(m), b) }
-func (m ALRMASSR_Bits) LoadVal() int   { return rtc(17).Field(uint32(m)) }
-func (m ALRMASSR_Bits) StoreVal(v int) { rtc(17).SetField(uint32(m), v) }
-
-func ALRMASSR_Load() ALRMASSR_Bits   { return ALRMASSR_Bits(rtc(17).Load()) }
-func ALRMASSR_Store(b ALRMASSR_Bits) { rtc(17).Store(uint32(b)) }
 
 func (b ALRMASSR_Bits) Field(mask ALRMASSR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_ALRMASSR(v int, mask ALRMASSR_Bits) ALRMASSR_Bits {
+func (mask ALRMASSR_Bits) J(v int) ALRMASSR_Bits {
 	return ALRMASSR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type ALRMASSR struct{ r mmio.U32 }
+
+func (r *ALRMASSR) Bits(mask ALRMASSR_Bits) ALRMASSR_Bits {
+	return ALRMASSR_Bits(r.r.Bits(uint32(mask)))
+}
+func (r *ALRMASSR) StoreBits(mask, b ALRMASSR_Bits) { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *ALRMASSR) SetBits(mask ALRMASSR_Bits)      { r.r.SetBits(uint32(mask)) }
+func (r *ALRMASSR) ClearBits(mask ALRMASSR_Bits)    { r.r.ClearBits(uint32(mask)) }
+func (r *ALRMASSR) Load() ALRMASSR_Bits             { return ALRMASSR_Bits(r.r.Load()) }
+func (r *ALRMASSR) Store(b ALRMASSR_Bits)           { r.r.Store(uint32(b)) }
+
+func (p *Clock) ASS() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 68)), uint32(ASS),
+	}
+}
+func (p *Clock) AMASKSS() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 68)), uint32(AMASKSS),
+	}
+}
 
 type ALRMBSSR_Bits uint32
-
-func (m ALRMBSSR_Bits) Set()           { rtc(18).SetBits(uint32(m)) }
-func (m ALRMBSSR_Bits) Clear()         { rtc(18).ClearBits(uint32(m)) }
-func (m ALRMBSSR_Bits) Load() uint32   { return rtc(18).Bits(uint32(m)) }
-func (m ALRMBSSR_Bits) Store(b uint32) { rtc(18).StoreBits(uint32(m), b) }
-func (m ALRMBSSR_Bits) LoadVal() int   { return rtc(18).Field(uint32(m)) }
-func (m ALRMBSSR_Bits) StoreVal(v int) { rtc(18).SetField(uint32(m), v) }
-
-func ALRMBSSR_Load() ALRMBSSR_Bits   { return ALRMBSSR_Bits(rtc(18).Load()) }
-func ALRMBSSR_Store(b ALRMBSSR_Bits) { rtc(18).Store(uint32(b)) }
 
 func (b ALRMBSSR_Bits) Field(mask ALRMBSSR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_ALRMBSSR(v int, mask ALRMBSSR_Bits) ALRMBSSR_Bits {
+func (mask ALRMBSSR_Bits) J(v int) ALRMBSSR_Bits {
 	return ALRMBSSR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type ALRMBSSR struct{ r mmio.U32 }
+
+func (r *ALRMBSSR) Bits(mask ALRMBSSR_Bits) ALRMBSSR_Bits {
+	return ALRMBSSR_Bits(r.r.Bits(uint32(mask)))
+}
+func (r *ALRMBSSR) StoreBits(mask, b ALRMBSSR_Bits) { r.r.StoreBits(uint32(mask), uint32(b)) }
+func (r *ALRMBSSR) SetBits(mask ALRMBSSR_Bits)      { r.r.SetBits(uint32(mask)) }
+func (r *ALRMBSSR) ClearBits(mask ALRMBSSR_Bits)    { r.r.ClearBits(uint32(mask)) }
+func (r *ALRMBSSR) Load() ALRMBSSR_Bits             { return ALRMBSSR_Bits(r.r.Load()) }
+func (r *ALRMBSSR) Store(b ALRMBSSR_Bits)           { r.r.Store(uint32(b)) }
+
+func (p *Clock) BSS() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 72)), uint32(BSS),
+	}
+}
+func (p *Clock) BMASKSS() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 72)), uint32(BMASKSS),
+	}
+}

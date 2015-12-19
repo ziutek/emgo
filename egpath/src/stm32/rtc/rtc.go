@@ -1,25 +1,28 @@
 // Package rtc gives an access to STM32 real time clock registers.
 //
-// BaseAddr: 0x40002800  APB1
-//  0x00: TR       Time register.
-//  0x04: DR       Date register.
-//  0x08: CR       Control register.
-//  0x0C: ISR      Initialization and status register.
-//  0x10: PRER     Prescaler register.
-//  0x14: WUTR     Wakeup timer register.
-//  0x18: CALIBR   Calibration register.
-//  0x1C: ALRMAR   Alarm A register.
-//  0x20: ALRMBR   Alarm B register.
-//  0x24: WPR      Write protection register.
-//  0x28: SSR      Sub second register.
-//  0x2C: SHIFTR   Shift control register.
-//  0x30: TSTR     Time stamp time register.
-//  0x34: TSDR     Time stamp date register.
-//  0x38: TSSSR    Time stamp sub second register.
-//  0x3C: CALR     Calibration register.
-//  0x40: TAFCR    Tamper and alternate function configuration register.
-//  0x44: ALRMASSR Alarm A sub second register.
-//  0x48: ALRMBSSR Alarm B sub second register.
+// Peripheral: Clock
+// Instances:
+//  RTC  0x40002800  APB1
+// Registers:
+//  0x00  TR       Time register.
+//  0x04  DR       Date register.
+//  0x08  CR       Control register.
+//  0x0C  ISR      Initialization and status register.
+//  0x10  PRER     Prescaler register.
+//  0x14  WUTR     Wakeup timer register.
+//  0x18  CALIBR   Calibration register.
+//  0x1C  ALRMAR   Alarm A register.
+//  0x20  ALRMBR   Alarm B register.
+//  0x24  WPR      Write protection register.
+//  0x28  SSR      Sub second register.
+//  0x2C  SHIFTR   Shift control register.
+//  0x30  TSTR     Time stamp time register.
+//  0x34  TSDR     Time stamp date register.
+//  0x38  TSSSR    Time stamp sub second register.
+//  0x3C  CALR     Calibration register.
+//  0x40  TAFCR    Tamper and alternate function configuration register.
+//  0x44  ALRMASSR Alarm A sub second register.
+//  0x48  ALRMBSSR Alarm B sub second register.
 package rtc
 
 import (

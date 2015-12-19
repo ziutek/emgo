@@ -1,8 +1,11 @@
-// Package pwr gives an access to STM32F411xC/E power controller registers.
+// Package pwr provides interface to STM32F411xC/E power controller registers.
 //
-// BaseAddr: 0x40007000  APB1
-//  0x0: CR  Power control register.
-//  0x4: CSR Power control/status register.
+// Peripheral: Ctrl
+// Instances:
+//  PWR  0x40007000  APB1
+// Registers:
+//  0x0  CR  Power control register.
+//  0x4  CSR Power control/status register.
 package pwr
 
 const (
@@ -23,11 +26,11 @@ const (
 )
 
 const (
-	WUF    CSR_Bits = 1 << 0 // Wakeup flag
-	SBF    CSR_Bits = 1 << 0 // Standby flag
-	PVDO   CSR_Bits = 1 << 0 // PVD output
-	BRR    CSR_Bits = 1 << 0 // Backup regulator ready
-	EWUP   CSR_Bits = 1 << 0 // Enable WKUP pin
-	BRE    CSR_Bits = 1 << 0 // Backup regulator enable
-	VOSRDY CSR_Bits = 1 << 0 // Regulator voltage scaling output selection ready bit
+	WUF    CSR_Bits = 1 << 0  // Wakeup flag
+	SBF    CSR_Bits = 1 << 1  // Standby flag
+	PVDO   CSR_Bits = 1 << 2  // PVD output
+	BRR    CSR_Bits = 1 << 3  // Backup regulator ready
+	EWUP   CSR_Bits = 1 << 8  // Enable WKUP pin
+	BRE    CSR_Bits = 1 << 9  // Backup regulator enable
+	VOSRDY CSR_Bits = 1 << 14 // Regulator voltage scaling output selection ready bit
 )

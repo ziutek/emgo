@@ -33,9 +33,9 @@ func (r *CR) ClearBits(mask CR_Bits)    { r.r.ClearBits(uint32(mask)) }
 func (r *CR) Load() CR_Bits             { return CR_Bits(r.r.Load()) }
 func (r *CR) Store(b CR_Bits)           { r.r.Store(uint32(b)) }
 
-func (p *Ctrl) LPDS() mmio.Bits32 {
+func (p *Ctrl) LPSDSR() mmio.Bits32 {
 	return mmio.Bits32{
-		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(LPDS),
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(LPSDSR),
 	}
 }
 func (p *Ctrl) PDDS() mmio.Bits32 {
@@ -68,24 +68,14 @@ func (p *Ctrl) DBP() mmio.Bits32 {
 		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DBP),
 	}
 }
-func (p *Ctrl) FPDS() mmio.Bits32 {
+func (p *Ctrl) ULP() mmio.Bits32 {
 	return mmio.Bits32{
-		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(FPDS),
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(ULP),
 	}
 }
-func (p *Ctrl) LPLVDS() mmio.Bits32 {
+func (p *Ctrl) FWU() mmio.Bits32 {
 	return mmio.Bits32{
-		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(LPLVDS),
-	}
-}
-func (p *Ctrl) MRLVDS() mmio.Bits32 {
-	return mmio.Bits32{
-		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(MRLVDS),
-	}
-}
-func (p *Ctrl) ADCDC1() mmio.Bits32 {
-	return mmio.Bits32{
-		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(ADCDC1),
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(FWU),
 	}
 }
 func (p *Ctrl) VOS() mmio.Bits32 {
@@ -93,14 +83,9 @@ func (p *Ctrl) VOS() mmio.Bits32 {
 		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(VOS),
 	}
 }
-func (p *Ctrl) FMSSR() mmio.Bits32 {
+func (p *Ctrl) LPRUN() mmio.Bits32 {
 	return mmio.Bits32{
-		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(FMSSR),
-	}
-}
-func (p *Ctrl) FISSR() mmio.Bits32 {
-	return mmio.Bits32{
-		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(FISSR),
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(LPRUN),
 	}
 }
 
@@ -137,23 +122,33 @@ func (p *Ctrl) PVDO() mmio.Bits32 {
 		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(PVDO),
 	}
 }
-func (p *Ctrl) BRR() mmio.Bits32 {
+func (p *Ctrl) VREFINTRDYF() mmio.Bits32 {
 	return mmio.Bits32{
-		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(BRR),
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(VREFINTRDYF),
 	}
 }
-func (p *Ctrl) EWUP() mmio.Bits32 {
+func (p *Ctrl) VOSF() mmio.Bits32 {
 	return mmio.Bits32{
-		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(EWUP),
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(VOSF),
 	}
 }
-func (p *Ctrl) BRE() mmio.Bits32 {
+func (p *Ctrl) REGLPF() mmio.Bits32 {
 	return mmio.Bits32{
-		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(BRE),
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(REGLPF),
 	}
 }
-func (p *Ctrl) VOSRDY() mmio.Bits32 {
+func (p *Ctrl) EWUP1() mmio.Bits32 {
 	return mmio.Bits32{
-		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(VOSRDY),
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(EWUP1),
+	}
+}
+func (p *Ctrl) EWUP2() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(EWUP2),
+	}
+}
+func (p *Ctrl) EWUP3() mmio.Bits32 {
+	return mmio.Bits32{
+		(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(EWUP3),
 	}
 }

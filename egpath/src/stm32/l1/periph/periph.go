@@ -92,12 +92,13 @@ const (
 	UART4
 	UART5
 	I2C1
-	OTG
+	I2C2
+	USB
 	_
 	_
 	_
 	_
-	Pwr
+	PWR
 	DAC
 	_
 	Comp
