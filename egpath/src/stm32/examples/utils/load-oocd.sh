@@ -1,9 +1,11 @@
 #!/bin/sh
 
-arm-none-eabi-objcopy -O binary -R .noload $EGARCH.elf $EGARCH.bin
-addr=0x20000000
+
 if [ $# -eq 1 -a "$1" = 'flash' ]; then
-	addr=0x8000000
+	load="program $EGARCH.elf"
+else
+	arm-none-eabi-objcopy -O binary -R .noload $EGARCH.elf $EGARCH.bin
+	load="load_image $EGARCH.bin 0x20000000"
 fi
 
 if [ -n "$TRACECLKIN" ]; then
@@ -15,7 +17,7 @@ echo "Loading at $addr..." >/dev/stderr
 openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg \
 	-c 'init' \
 	-c 'reset init' \
-	-c "load_image $EGARCH.bin $addr" \
+	-c "$load" \
 	-c "$tpiu" \
 	-c "$itm" \
 	-c 'reset run' \
