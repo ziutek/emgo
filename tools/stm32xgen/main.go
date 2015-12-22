@@ -1,18 +1,22 @@
 // stm32xgen generates STM32 peripheral filex in xgen format.
 //
 // stm32xgen is usually used this wahy:
-//  unifdef -k -f undef.h -D STM32TARGET stm32f4xx.h |stm32xgen TARGETDIR
+//  unifdef -k -f undef.h -D STM32TARGET stm32f4xx.h |stm32xgen PKGPATH
 package main
 
 import (
 	"os"
+	"path/filepath"
 )
 
 func main() {
 	if len(os.Args) != 2 {
-		die("Usage: %s TARGETDIR")
+		die("Usage: %s PKGPATH")
 	}
-	chdir(os.Args[1])
+	pkgpath := os.Args[1]
+	base := filepath.Base(pkgpath)
+	mkdir(base)
+	chdir(base)
 	var (
 		pkgs []*Package
 		mmap []*MemGroup
@@ -37,7 +41,7 @@ func main() {
 	checkErr(r.Err())
 	saveMmap(mmap)
 	for _, pkg := range pkgs {
-		pkg.Save()
+		pkg.Save(pkgpath)
 	}
 
 }

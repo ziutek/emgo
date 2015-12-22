@@ -133,6 +133,15 @@ func upperFirst(s string) string {
 	return string(buf[:n])
 }
 
+func ident(s string) string {
+	r, _ := utf8.DecodeRuneInString(s)
+	fmt.Println(s)
+	if r == utf8.RuneError || unicode.IsLetter(r) && !unicode.IsDigit(r) {
+		return s
+	}
+	return "V" + s
+}
+
 func trailingZeros32(u uint32) uint {
 	n := uint(32)
 	x := u << 16

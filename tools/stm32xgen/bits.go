@@ -32,7 +32,7 @@ func addtoreg(pkgs []*Package, bits *Bits) bool {
 	if reg == nil {
 		return false
 	}
-	bits.Name = strings.TrimPrefix(name, reg.Name+"_")
+	bits.Name = ident(strings.TrimPrefix(name, reg.Name+"_"))
 	reg.Bits = append(reg.Bits, bits)
 	return true
 }

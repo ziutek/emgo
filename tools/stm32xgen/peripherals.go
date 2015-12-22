@@ -58,7 +58,7 @@ type Periph struct {
 	Regs  []*Register
 }
 
-func (p *Periph) Save(pkgname string) {
+func (p *Periph) Save(base, pkgname string) {
 	w := create(strings.ToLower(p.Name + ".go"))
 	defer w.Close()
 	fmt.Fprintf(w, "// Peripheral: %s_Periph  %s.\n", p.Name, p.Descr)
@@ -84,7 +84,11 @@ func (p *Periph) Save(pkgname string) {
 		}
 	}
 	tw.Flush()
+	fmt.Fprintln(w, "// Import:")
+	fmt.Fprintln(w, "// ", base+"/mmap")
+
 	fmt.Fprintln(w, "package", pkgname)
+	fmt.Fprintln(w)
 	for _, r := range p.Regs {
 		if len(r.Bits) == 0 {
 			continue
@@ -122,13 +126,13 @@ func (pkg *Package) saveDoc() {
 	)
 }
 
-func (pkg *Package) Save() {
+func (pkg *Package) Save(base string) {
 	mkdir(pkg.Name)
 	chdir(pkg.Name)
 	defer chdir("..")
 	pkg.saveDoc()
 	for _, periph := range pkg.Periphs {
-		periph.Save(pkg.Name)
+		periph.Save(base, pkg.Name)
 	}
 }
 
@@ -176,12 +180,16 @@ func peripherals(r *scanner) []*Package {
 			default:
 				r.Die("unknown type:", typ)
 			}
-			if io != 0 {
-				if n := strings.Index(reg, "["); n > 0 {
-					n, err := strconv.ParseUint(reg[n+1:len(reg)-1], 0, 32)
-					checkErr(err)
-					size *= int(n)
+			if n := len(reg) - 1; n >= 0 && reg[n] == ']' {
+				m := strings.Index(reg, "[")
+				if m < 0 {
+					die("Bad register name:", reg)
 				}
+				n, err := strconv.ParseUint(reg[m+1:n], 0, 32)
+				checkErr(err)
+				size *= int(n)
+			}
+			if io != 0 {
 				offset += size
 				continue
 			}
