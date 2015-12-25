@@ -4,25 +4,23 @@ import (
 	"delay"
 	"fmt"
 
-	"stm32/f4/gpio"
 	"stm32/f4/periph"
 	"stm32/f4/setup"
-	"stm32/f411/pwr"
-	"stm32/f411/rcc"
-	"stm32/rtc"
+	"stm32/f411xe/gpio"
+	"stm32/f411xe/pwr"
+	"stm32/f411xe/rcc"
+	"stm32/f411xe/rtc"
 )
 
-var LED = gpio.A
+var LED = gpio.GPIOA
 
-const (
-	Green = 5
-)
+const Green = 1 << 5
 
 func init() {
 	setup.Performance84(8)
 	periph.AHB1ClockEnable(periph.GPIOA)
 	periph.AHB1Reset(periph.GPIOA)
-	LED.SetMode(Green, gpio.Out)
+	gpio.GPIOA.MODER5().Store(gpio.MODER_OUT * gpio.MODER5_0) // Green LED
 }
 
 func wait() {
@@ -61,7 +59,6 @@ func main() {
 		}
 		RTC.PRER.Store((4-1)<<16 + (8192 - 1))
 		RTC.PRER.Store((4-1)<<16 + (8192 - 1))
-		fmt.Printf("%08x\n", RTC.PRER.Load())
 		RTC.DR.Store(0x151215 + 2<<13)
 		RTC.TR.Store(0x214540)
 		RTC.INIT().Clear()
@@ -72,9 +69,9 @@ func main() {
 	}
 
 	for {
-		LED.SetPin(Green)
+		LED.BSRRL.Store(Green)
 		wait()
-		LED.ClearPin(Green)
+		LED.BSRRH.Store(Green)
 		wait()
 		ss := RTC.SSR.Load()
 		hhmmss := RTC.TR.Load()
