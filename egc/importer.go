@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"go/ast"
 	"go/build"
 	"go/parser"
@@ -31,6 +32,46 @@ func (imp *Importer) Import(path string) (*types.Package, error) {
 	return imp.importPkg(path)
 }
 
+func (imp *Importer) importPkg(path string) (*types.Package, error) {
+	if path == "unsafe" {
+		return types.Unsafe, nil
+	}
+	var (
+		srcDir string
+		err    error
+	)
+	if build.IsLocalImport(path) {
+		srcDir, err = os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+	}
+	bp, err := buildCtx.Import(path, srcDir, build.AllowBinary)
+	if err != nil {
+		return nil, err
+	}
+	if bp.PkgObj == "" {
+		return nil, errors.New("Emgo does not support local imports")
+	}
+	if pkg := imp.imports[path]; pkg != nil && pkg.Complete() {
+		return pkg, nil
+	}
+	buf, err := loadExports(bp)
+	if err != nil {
+		return nil, err
+	}
+	_, pkg, err := importer.ImportData(imp.imports, buf)
+	return pkg, err
+}
+
+func loadExports(bp *build.Package) ([]byte, error) {
+	if err := compile(bp); err != nil {
+		return nil, err
+	}
+	uptodate[bp.ImportPath] = struct{}{}
+	return arReadFile(bp.PkgObj, "__.EXPORTS")
+}
+
 func (imp *Importer) importSrc(path string) (*types.Package, error) {
 	if path == "unsafe" {
 		return types.Unsafe, nil
@@ -52,7 +93,9 @@ func (imp *Importer) importSrc(path string) (*types.Package, error) {
 	if err != nil {
 		return nil, err
 	}
+	if bp.PkgObj == "" {
 
+	}
 	if pkg := imp.imports[path]; pkg != nil && pkg.Complete() {
 		return pkg, nil
 	}
@@ -121,46 +164,4 @@ func (imp *Importer) importSrc1(path string) (*types.Package, error) {
 
 	imp.imports[path] = pkg
 	return pkg, nil
-}
-
-func (imp *Importer) importPkg(path string) (*types.Package, error) {
-	if path == "unsafe" {
-		return types.Unsafe, nil
-	}
-
-	var (
-		srcDir string
-		err    error
-	)
-
-	if build.IsLocalImport(path) {
-		srcDir, err = os.Getwd()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	bp, err := buildCtx.Import(path, srcDir, build.AllowBinary)
-	if err != nil {
-		return nil, err
-	}
-
-	if pkg := imp.imports[path]; pkg != nil && pkg.Complete() {
-		return pkg, nil
-	}
-
-	buf, err := loadExports(bp)
-	if err != nil {
-		return nil, err
-	}
-	_, pkg, err := importer.ImportData(imp.imports, buf)
-	return pkg, err
-}
-
-func loadExports(bp *build.Package) ([]byte, error) {
-	if err := compile(bp); err != nil {
-		return nil, err
-	}
-	uptodate[bp.ImportPath] = struct{}{}
-	return arReadFile(bp.PkgObj, "__.EXPORTS")
 }

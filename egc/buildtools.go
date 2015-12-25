@@ -105,12 +105,15 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	} else {
 		return nil, errors.New("unknown EGOS: " + ctx.GOOS)
 	}
-
-	pkgoa := filepath.Join("pkg", ctx.GOOS+"_"+ctx.GOARCH)
+	oat := buildCtx.GOOS + "_" + buildCtx.GOARCH
+	if buildCtx.InstallSuffix != "" {
+		oat += "_" + buildCtx.InstallSuffix
+	}
+	pkgoat := filepath.Join("pkg", oat)
 	importPaths := append([]string{ctx.GOROOT}, strings.Split(ctx.GOPATH, ":")...)
 	for i, p := range importPaths {
 		ldflags.Incl += " -L" + filepath.Join(p, "ld")
-		p = filepath.Join(p, pkgoa)
+		p = filepath.Join(p, pkgoat)
 		cflags.Incl += " -I" + p
 		importPaths[i] = p
 	}

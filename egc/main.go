@@ -9,35 +9,44 @@ import (
 )
 
 var buildCtx = build.Context{
-	Compiler:    "gc",
-	ReleaseTags: []string{"go1.1", "go1.2", "go1.3", "go1.4"},
-	CgoEnabled:  false,
+	Compiler:   "gc",
+	CgoEnabled: false,
 }
 
 var EGCC, EGLD, EGAR string
 
 func getEnv() {
-	if EGCC = os.Getenv("EGCC"); EGCC == "" {
+	EGCC = os.Getenv("EGCC")
+	if EGCC == "" {
 		die("EGCC environment variable not set")
 	}
-	if EGLD = os.Getenv("EGLD"); EGLD == "" {
+	EGLD = os.Getenv("EGLD")
+	if EGLD == "" {
 		die("EGLD environment variable not set")
 	}
-	if EGAR = os.Getenv("EGAR"); EGAR == "" {
+	EGAR = os.Getenv("EGAR")
+	if EGAR == "" {
 		die("EGAR environment variable not set")
 	}
-
-	if buildCtx.GOARCH = os.Getenv("EGARCH"); buildCtx.GOARCH == "" {
+	buildCtx.GOARCH = os.Getenv("EGARCH")
+	if buildCtx.GOARCH == "" {
 		die("EGARCH environment variable not set")
 	}
-	if buildCtx.GOOS = os.Getenv("EGOS"); buildCtx.GOOS == "" {
+	buildCtx.GOOS = os.Getenv("EGOS")
+	if buildCtx.GOOS == "" {
 		die("EGOS environment variable not set")
 	}
-	if buildCtx.GOROOT = os.Getenv("EGROOT"); buildCtx.GOROOT == "" {
+	buildCtx.GOROOT = os.Getenv("EGROOT")
+	if buildCtx.GOROOT == "" {
 		die("EGROOT environment variable not set")
 	}
-	if buildCtx.GOPATH = os.Getenv("EGPATH"); buildCtx.GOPATH == "" {
+	buildCtx.GOPATH = os.Getenv("EGPATH")
+	if buildCtx.GOPATH == "" {
 		die("EGPATH environment variable not set")
+	}
+	if egtarget := os.Getenv("EGTARGET"); egtarget != "" {
+		buildCtx.BuildTags = []string{egtarget}
+		buildCtx.InstallSuffix = egtarget
 	}
 }
 

@@ -130,7 +130,11 @@ func compile(bp *build.Package) error {
 	if ppath == "main" {
 		hpath = filepath.Join(bp.Dir, "_.h")
 	} else {
-		hpath = filepath.Join(bp.PkgRoot, buildCtx.GOOS+"_"+buildCtx.GOARCH, ppath+".h")
+		oat := buildCtx.GOOS + "_" + buildCtx.GOARCH
+		if buildCtx.InstallSuffix != "" {
+			oat += "_" + buildCtx.InstallSuffix
+		}
+		hpath = filepath.Join(bp.PkgRoot, oat, ppath+".h")
 		expath := filepath.Join(work, "__.EXPORTS")
 		impath := filepath.Join(work, "__.IMPORTS")
 		objs = append(objs, expath, impath, hpath)

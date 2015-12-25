@@ -1,7 +1,13 @@
 ### Emgo
 
-This project was born in my mind when I stared write embedded applications for
-STM32 family microcontrollers. I realized that writing for bare metal is very
-fun but it will be more funny to write embeded applications in Go.
+To build and install egc: 
+
+  cd egc
+  go install
+  
+To build some example:
+
+  cd egpath/src/stm32/examples/nucleo-f411re/rtc
+  ./build.sh
 
 [Home page](https://sites.google.com/site/embeddedgo/)

@@ -14,7 +14,12 @@ for p in $list; do
 		cd $p
 		rm -f *.elf *.bin *.sizes
 		printf "%-44s   " ${p#*/*/}
-		if $EGC; then
+		if [ -x build.sh ]; then
+			./build.sh
+		else
+			$EGC
+		fi
+		if $? then
 			echo OK
 		else
 			echo Err
