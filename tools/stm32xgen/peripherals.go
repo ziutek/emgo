@@ -25,6 +25,10 @@ type Register struct {
 }
 
 func (r *Register) fixbits() {
+	if len(r.Bits) == 1 && r.Bits[0].Name == r.Name {
+		r.Bits = nil
+		return
+	}
 	for i, m := range r.Bits {
 		if m.Val {
 			continue
@@ -97,13 +101,18 @@ func (p *Periph) Save(base, pkgname string) {
 		fmt.Fprintln(w, "\nconst (")
 		for _, b := range r.Bits {
 			fmt.Fprintf(w, "\t%s", b.Name)
-			if !b.Val {
-				fmt.Fprintf(w, " %s_Bits", r.Name)
-			}
+			fmt.Fprintf(w, " %s_Bits", r.Name)
 			fmt.Fprintf(w, " = 0x%02X << %d", b.Mask, b.LSL)
-			if b.Descr != "" {
-				fmt.Fprintf(w, " // %s.\n", b.Descr)
-			} else {
+			switch {
+			case b.Descr != "":
+				if b.Val {
+					fmt.Fprintf(w, " //  %s.\n", b.Descr)
+				} else {
+					fmt.Fprintf(w, " //+ %s.\n", b.Descr)
+				}
+			case !b.Val:
+				fmt.Fprintln(w, " //+")
+			default:
 				fmt.Fprintln(w)
 			}
 		}

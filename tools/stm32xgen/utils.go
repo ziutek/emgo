@@ -135,7 +135,6 @@ func upperFirst(s string) string {
 
 func ident(s string) string {
 	r, _ := utf8.DecodeRuneInString(s)
-	fmt.Println(s)
 	if r == utf8.RuneError || unicode.IsLetter(r) && !unicode.IsDigit(r) {
 		return s
 	}

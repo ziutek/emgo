@@ -9,57 +9,98 @@ import (
 
 type reg struct {
 	Name   string
-	Size   uint64
+	Size   uint
+	Len    int
 	Offset uint64
 	Bits   []string
 }
 
-func regs(f string, lines []string, decls []ast.Decl) []*reg {
+func registers(f string, lines []string, decls []ast.Decl) ([]*reg, []string) {
 	var (
 		regs    []*reg
 		nextoff uint64
 	)
-	for _, line := range lines {
-		offstr, name := split(line)
-		name, _ = split(name)
-		if offstr == "" || name == "" {
+loop:
+	for len(lines) > 0 {
+		line := strings.TrimSpace(lines[0])
+		switch line {
+		case "Import:", "Instances:":
+			break loop
+		}
+		lines = lines[1:]
+		if line == "" {
 			continue
 		}
-		size := "32"
-		var siz uint64
-		switch size {
-		case "32":
-			siz = 4
-		case "16":
-			siz = 2
-		case "8":
-			siz = 1
-		default:
-			fdie(f, "bad size %s: not 8, 16, 32", size)
+		offstr, line := split(line)
+		sizstr, line := split(line)
+		name, _ := split(line)
+		switch "" {
+		case offstr:
+			fdie(f, "no register offset")
+		case sizstr:
+			fdie(f, "no register size")
+		case name:
+			fdie(f, "no register name")
 		}
-		offset, err := strconv.ParseUint(offstr, 0, 0)
+		var size uint
+		switch sizstr {
+		case "32":
+			size = 4
+		case "16":
+			size = 2
+		case "8":
+			size = 1
+		default:
+			fdie(f, "bad register size %s: not 8, 16, 32", sizstr)
+		}
+		length := 0
+		if name[len(name)-1] == ']' {
+			n := strings.IndexByte(name, '[')
+			if n <= 0 {
+				fdie(f, "bad register name: %s", name)
+			}
+			l, err := strconv.ParseUint(name[n+1:len(name)-1], 0, 0)
+			if err != nil {
+				fdie(f, "bad array length in %s", name)
+			}
+			name = name[:n]
+			length = int(l)
+		}
+		offset, err := strconv.ParseUint(offstr, 0, 64)
 		if err != nil {
 			fdie(f, "bad offset %s: %v", offstr, err)
-		} else if offset&(siz-1) != 0 {
-			fdie(f, "bad offset %s for %s-bit register", offstr, size)
+		} else if offset&uint64(size-1) != 0 {
+			fdie(f, "bad offset %s for %s-bit register", offstr, sizstr)
 		}
 		for offset > nextoff {
-			var siz uint64 = 4
-			for nextoff+siz > offset || nextoff&(siz-1) != 0 {
+			var siz uint = 4
+			for nextoff+uint64(siz) > offset || nextoff&uint64(siz-1) != 0 {
 				siz >>= 1
 			}
-			regs = append(regs, &reg{
-				Size:   siz * 8,
-				Offset: nextoff,
-			})
-			nextoff += siz
+			if last := regs[len(regs)-1]; last.Name == "" && last.Size == siz*8 {
+				if last.Len == 0 {
+					last.Len += 2
+				} else {
+					last.Len++
+				}
+			} else {
+				regs = append(regs, &reg{
+					Size:   siz * 8,
+					Offset: nextoff,
+				})
+			}
+			nextoff += uint64(siz)
 		}
 		regs = append(regs, &reg{
 			Name:   name,
-			Size:   siz * 8,
+			Size:   size * 8,
+			Len:    length,
 			Offset: offset,
 		})
-		nextoff += siz
+		if length == 0 {
+			length = 1
+		}
+		nextoff += uint64(size) * uint64(length)
 	}
 	regmap := make(map[string]*reg)
 	for _, r := range regs {
@@ -87,10 +128,22 @@ func regs(f string, lines []string, decls []ast.Decl) []*reg {
 			if r == nil {
 				continue
 			}
+			if v.Comment == nil {
+				continue
+			}
+			var n int
+			for cl := v.Comment.List; n < len(v.Comment.List); n++ {
+				if c := cl[n]; c != nil && strings.HasPrefix(c.Text, "//+") {
+					break
+				}
+			}
+			if n == len(v.Comment.List) {
+				continue
+			}
 			for _, id := range v.Names {
 				r.Bits = append(r.Bits, id.Name)
 			}
 		}
 	}
-	return regs
+	return regs, lines
 }

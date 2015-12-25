@@ -6,7 +6,6 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 )
 
 func main() {
@@ -14,9 +13,8 @@ func main() {
 		die("Usage: %s PKGPATH")
 	}
 	pkgpath := os.Args[1]
-	base := filepath.Base(pkgpath)
-	mkdir(base)
-	chdir(base)
+	checkErr(os.MkdirAll(pkgpath, 0755))
+	chdir(pkgpath)
 	var (
 		pkgs []*Package
 		mmap []*MemGroup
