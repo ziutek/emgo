@@ -71,9 +71,7 @@ SECTIONS {
 	HeapBegin = BSSRAM + BSSSize;
 	HeapEnd = ORIGIN(RAM) + LENGTH(RAM);
 	
-	.noload HeapEnd : {
-		. = ALIGN(4);
+	.noload 0 (NOLOAD) : {
 		*(.noload .noload.*)
-		. = ALIGN(4);
 	}
 }
