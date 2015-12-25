@@ -78,7 +78,7 @@ type Port int
 func (p Port) Enabled() bool {
 	bit := int(p & 31)
 	p >>= 5
-	return irs.te[p].Bit(bit)
+	return irs.te[p].Bit(bit) != 0
 }
 
 // Enable enables stimulus por.
@@ -97,7 +97,7 @@ func (p Port) Disable() {
 
 // Ready returns true if port can accept data.
 func (p Port) Ready() bool {
-	return irs.stim[p].Bit(0)
+	return irs.stim[p].Bit(0) != 0
 }
 
 // Store8 stores byte into p.
@@ -119,7 +119,7 @@ func (p Port) Store32(w uint32) {
 // writtening (useful for temporary disable debug messages).
 func (p Port) WriteString(s string) (int, error) {
 	if p < 0 {
-		return len(s), nil 
+		return len(s), nil
 	}
 	n := len(s)
 	i := 0

@@ -18,15 +18,20 @@ func AsU8(addr *uint8) *U8 {
 }
 
 func (r *U8) SetBit(n int) {
-	r.r |= uint8(1 << uint(n))
+	r.r |= uint8(1) << uint(n)
 }
 
 func (r *U8) ClearBit(n int) {
-	r.r &^= uint8(1 << uint(n))
+	r.r &^= uint8(1) << uint(n)
 }
 
-func (r *U8) Bit(n int) bool {
-	return r.r&uint8(1<<uint(n)) != 0
+func (r *U8) Bit(n int) int {
+	return int(r.r>>uint(n)) & 1
+}
+
+func (r *U8) StoreBit(n, v int) {
+	mask := uint8(1) << uint(n)
+	r.r = r.r&^mask | uint8(v<<uint(n))&mask
 }
 
 func (r *U8) Bits(mask uint8) uint8 {
@@ -65,17 +70,17 @@ func (r *U8) SetField(mask uint8, v int) {
 	r.StoreBits(mask, uint8(bits.Make32(v, uint32(mask))))
 }
 
-type Bits8 struct {
-	Reg  *U8
+type UM8 struct {
+	U    *U8
 	Mask uint8
 }
 
-func (b Bits8) Set()             { b.Reg.SetBits(b.Mask) }
-func (b Bits8) Clear()           { b.Reg.ClearBits(b.Mask) }
-func (b Bits8) Load() uint8      { return b.Reg.Bits(b.Mask) }
-func (b Bits8) Store(bits uint8) { b.Reg.StoreBits(b.Mask, bits) }
-func (b Bits8) LoadVal() int     { return b.Reg.Field(uint8(b.Mask)) }
-func (b Bits8) StoreVal(v int)   { b.Reg.SetField(b.Mask, v) }
+func (b UM8) Set()             { b.U.SetBits(b.Mask) }
+func (b UM8) Clear()           { b.U.ClearBits(b.Mask) }
+func (b UM8) Load() uint8      { return b.U.Bits(b.Mask) }
+func (b UM8) Store(bits uint8) { b.U.StoreBits(b.Mask, bits) }
+func (b UM8) LoadVal() int     { return b.U.Field(uint8(b.Mask)) }
+func (b UM8) StoreVal(v int)   { b.U.SetField(b.Mask, v) }
 
 type U16 struct {
 	r uint16
@@ -90,15 +95,20 @@ func AsU16(addr *uint16) *U16 {
 }
 
 func (r *U16) SetBit(n int) {
-	r.r |= uint16(1 << uint(n))
+	r.r |= uint16(1) << uint(n)
 }
 
 func (r *U16) ClearBit(n int) {
-	r.r &^= uint16(1 << uint(n))
+	r.r &^= uint16(1) << uint(n)
 }
 
-func (r *U16) Bit(n int) bool {
-	return r.r&uint16(1<<uint(n)) != 0
+func (r *U16) Bit(n int) int {
+	return int(r.r>>uint(n)) & 1
+}
+
+func (r *U16) StoreBit(n, v int) {
+	mask := uint16(1) << uint(n)
+	r.r = r.r&^mask | uint16(v<<uint(n))&mask
 }
 
 func (r *U16) Bits(mask uint16) uint16 {
@@ -137,17 +147,17 @@ func (r *U16) SetField(mask uint16, v int) {
 	r.StoreBits(mask, uint16(bits.Make32(v, uint32(mask))))
 }
 
-type Bits16 struct {
-	Reg  *U16
+type UM16 struct {
+	U    *U16
 	Mask uint16
 }
 
-func (b Bits16) Set()              { b.Reg.SetBits(b.Mask) }
-func (b Bits16) Clear()            { b.Reg.ClearBits(b.Mask) }
-func (b Bits16) Load() uint16      { return b.Reg.Bits(b.Mask) }
-func (b Bits16) Store(bits uint16) { b.Reg.StoreBits(b.Mask, bits) }
-func (b Bits16) LoadVal() int      { return b.Reg.Field(uint16(b.Mask)) }
-func (b Bits16) StoreVal(v int)    { b.Reg.SetField(b.Mask, v) }
+func (b UM16) Set()              { b.U.SetBits(b.Mask) }
+func (b UM16) Clear()            { b.U.ClearBits(b.Mask) }
+func (b UM16) Load() uint16      { return b.U.Bits(b.Mask) }
+func (b UM16) Store(bits uint16) { b.U.StoreBits(b.Mask, bits) }
+func (b UM16) LoadVal() int      { return b.U.Field(uint16(b.Mask)) }
+func (b UM16) StoreVal(v int)    { b.U.SetField(b.Mask, v) }
 
 type U32 struct {
 	r uint32
@@ -162,17 +172,21 @@ func AsU32(addr *uint32) *U32 {
 }
 
 func (r *U32) SetBit(n int) {
-	r.r |= uint32(1 << uint(n))
+	r.r |= uint32(1) << uint(n)
 }
 
 func (r *U32) ClearBit(n int) {
-	r.r &^= uint32(1 << uint(n))
+	r.r &^= uint32(1) << uint(n)
 }
 
-func (r *U32) Bit(n int) bool {
-	return r.r&uint32(1<<uint(n)) != 0
+func (r *U32) Bit(n int) int {
+	return int(r.r>>uint(n)) & 1
 }
 
+func (r *U32) StoreBit(n, v int) {
+	mask := uint32(1) << uint(n)
+	r.r = r.r&^mask | uint32(v<<uint(n))&mask
+}
 func (r *U32) Bits(mask uint32) uint32 {
 	return r.r & mask
 }
@@ -209,14 +223,14 @@ func (r *U32) SetField(mask uint32, v int) {
 	r.StoreBits(mask, bits.Make32(v, mask))
 }
 
-type Bits32 struct {
-	Reg  *U32
+type UM32 struct {
+	U    *U32
 	Mask uint32
 }
 
-func (b Bits32) Set()              { b.Reg.SetBits(b.Mask) }
-func (b Bits32) Clear()            { b.Reg.ClearBits(b.Mask) }
-func (b Bits32) Load() uint32      { return b.Reg.Bits(b.Mask) }
-func (b Bits32) Store(bits uint32) { b.Reg.StoreBits(b.Mask, bits) }
-func (b Bits32) LoadVal() int      { return b.Reg.Field(uint32(b.Mask)) }
-func (b Bits32) StoreVal(v int)    { b.Reg.SetField(b.Mask, v) }
+func (b UM32) Set()              { b.U.SetBits(b.Mask) }
+func (b UM32) Clear()            { b.U.ClearBits(b.Mask) }
+func (b UM32) Load() uint32      { return b.U.Bits(b.Mask) }
+func (b UM32) Store(bits uint32) { b.U.StoreBits(b.Mask, bits) }
+func (b UM32) LoadVal() int      { return b.U.Field(uint32(b.Mask)) }
+func (b UM32) StoreVal(v int)    { b.U.SetField(b.Mask, v) }

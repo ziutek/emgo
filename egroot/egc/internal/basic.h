@@ -10,7 +10,7 @@ typedef __UINT64_TYPE__ uint64;
 typedef unsigned int uint;
 
 typedef __UINTPTR_TYPE__ uintptr;
-typedef void* unsafe$Pointer;
+typedef void *unsafe$Pointer;
 
 typedef float float32;
 typedef double float64;
@@ -39,7 +39,9 @@ typedef int32 rune;
 #define true (1)
 #define false (0)
 
-typedef struct{} structE;
+typedef struct {
+	byte _;
+} structE;
 
 #define complex(re, im) ((re)+1.i*(im))
 #define real(c) (__real__(c))
