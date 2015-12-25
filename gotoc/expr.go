@@ -116,20 +116,20 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, direct bool) {
 			return
 		}
 	}
-
+	var hasPrefix bool
 	if p := obj.Pkg(); p != nil && !cdd.gtc.isLocal(obj) {
 		cdd.addObject(obj, direct)
 		w.WriteString(upath(obj.Pkg().Path()))
 		w.WriteByte('$')
+		hasPrefix = true
 	}
 	name := obj.Name()
 	switch name {
 	case "init":
 		w.WriteString(cdd.gtc.uniqueId() + name)
-
 	default:
 		w.WriteString(name)
-		if cdd.gtc.isLocal(obj) {
+		if !hasPrefix && name != "error" {
 			w.WriteByte('$')
 		}
 	}

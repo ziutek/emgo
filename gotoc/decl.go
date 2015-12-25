@@ -8,6 +8,7 @@ import (
 	"go/types"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 func (gtc *GTC) FuncDecl(d *ast.FuncDecl, il int) (cdds []*CDD) {
@@ -171,12 +172,25 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 		for _, s := range d.Specs {
 			vs := s.(*ast.ValueSpec)
 			vals := vs.Values
-			cattrs, pexport := gtc.cattrs(d, vs)
+			pragmas, cattrs := gtc.pragmas(d, vs)
+			var pconst, pexport bool
+			for _, p := range pragmas {
+				switch p {
+				case "export":
+					pexport = true
+				case "const":
+					pconst = true
+				}
+			}
+			cattr := strings.Join(cattrs, " ")
 			for i, n := range vs.Names {
 				v := gtc.object(n).(*types.Var)
 				cdd := gtc.newCDD(v, VarDecl, il)
 				cdd.forceExport = pexport
 				name := cdd.NameStr(v, true)
+				if pconst {
+					name = "const " + name
+				}
 				var val ast.Expr
 				if i < len(vals) {
 					val = vals[i]
@@ -189,7 +203,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				} else {
 					indent = true
 				}
-				cdd.varDecl(w, v.Type(), name, val, cattrs)
+				cdd.varDecl(w, v.Type(), name, val, cattr)
 				w.Reset()
 				cdds = append(cdds, cdd)
 			}
