@@ -10,3 +10,4 @@ a.out
 *.map
 egroot/pkg/*
 egpath/pkg/*
+egpath/src/stm32/xgen/stm32

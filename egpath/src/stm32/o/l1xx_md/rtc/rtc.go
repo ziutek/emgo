@@ -149,46 +149,46 @@ const (
 )
 
 const (
-	MSK4  ALRMR_Bits = 0x01 << 31 //+
-	WDSEL ALRMR_Bits = 0x01 << 30 //+
-	DT    ALRMR_Bits = 0x03 << 28 //+
-	DT_0  ALRMR_Bits = 0x01 << 28
-	DT_1  ALRMR_Bits = 0x02 << 28
-	DU    ALRMR_Bits = 0x0F << 24 //+
-	DU_0  ALRMR_Bits = 0x01 << 24
-	DU_1  ALRMR_Bits = 0x02 << 24
-	DU_2  ALRMR_Bits = 0x04 << 24
-	DU_3  ALRMR_Bits = 0x08 << 24
-	MSK3  ALRMR_Bits = 0x01 << 23 //+
-	PM    ALRMR_Bits = 0x01 << 22 //+
-	HT    ALRMR_Bits = 0x03 << 20 //+
-	HT_0  ALRMR_Bits = 0x01 << 20
-	HT_1  ALRMR_Bits = 0x02 << 20
-	HU    ALRMR_Bits = 0x0F << 16 //+
-	HU_0  ALRMR_Bits = 0x01 << 16
-	HU_1  ALRMR_Bits = 0x02 << 16
-	HU_2  ALRMR_Bits = 0x04 << 16
-	HU_3  ALRMR_Bits = 0x08 << 16
-	MSK2  ALRMR_Bits = 0x01 << 15 //+
-	MNT   ALRMR_Bits = 0x07 << 12 //+
-	MNT_0 ALRMR_Bits = 0x01 << 12
-	MNT_1 ALRMR_Bits = 0x02 << 12
-	MNT_2 ALRMR_Bits = 0x04 << 12
-	MNU   ALRMR_Bits = 0x0F << 8 //+
-	MNU_0 ALRMR_Bits = 0x01 << 8
-	MNU_1 ALRMR_Bits = 0x02 << 8
-	MNU_2 ALRMR_Bits = 0x04 << 8
-	MNU_3 ALRMR_Bits = 0x08 << 8
-	MSK1  ALRMR_Bits = 0x01 << 7 //+
-	ST    ALRMR_Bits = 0x07 << 4 //+
-	ST_0  ALRMR_Bits = 0x01 << 4
-	ST_1  ALRMR_Bits = 0x02 << 4
-	ST_2  ALRMR_Bits = 0x04 << 4
-	SU    ALRMR_Bits = 0x0F << 0 //+
-	SU_0  ALRMR_Bits = 0x01 << 0
-	SU_1  ALRMR_Bits = 0x02 << 0
-	SU_2  ALRMR_Bits = 0x04 << 0
-	SU_3  ALRMR_Bits = 0x08 << 0
+	AMSK4  ALRMR_Bits = 0x01 << 31 //+
+	AWDSEL ALRMR_Bits = 0x01 << 30 //+
+	ADT    ALRMR_Bits = 0x03 << 28 //+
+	ADT_0  ALRMR_Bits = 0x01 << 28
+	ADT_1  ALRMR_Bits = 0x02 << 28
+	ADU    ALRMR_Bits = 0x0F << 24 //+
+	ADU_0  ALRMR_Bits = 0x01 << 24
+	ADU_1  ALRMR_Bits = 0x02 << 24
+	ADU_2  ALRMR_Bits = 0x04 << 24
+	ADU_3  ALRMR_Bits = 0x08 << 24
+	AMSK3  ALRMR_Bits = 0x01 << 23 //+
+	APM    ALRMR_Bits = 0x01 << 22 //+
+	AHT    ALRMR_Bits = 0x03 << 20 //+
+	AHT_0  ALRMR_Bits = 0x01 << 20
+	AHT_1  ALRMR_Bits = 0x02 << 20
+	AHU    ALRMR_Bits = 0x0F << 16 //+
+	AHU_0  ALRMR_Bits = 0x01 << 16
+	AHU_1  ALRMR_Bits = 0x02 << 16
+	AHU_2  ALRMR_Bits = 0x04 << 16
+	AHU_3  ALRMR_Bits = 0x08 << 16
+	AMSK2  ALRMR_Bits = 0x01 << 15 //+
+	AMNT   ALRMR_Bits = 0x07 << 12 //+
+	AMNT_0 ALRMR_Bits = 0x01 << 12
+	AMNT_1 ALRMR_Bits = 0x02 << 12
+	AMNT_2 ALRMR_Bits = 0x04 << 12
+	AMNU   ALRMR_Bits = 0x0F << 8 //+
+	AMNU_0 ALRMR_Bits = 0x01 << 8
+	AMNU_1 ALRMR_Bits = 0x02 << 8
+	AMNU_2 ALRMR_Bits = 0x04 << 8
+	AMNU_3 ALRMR_Bits = 0x08 << 8
+	AMSK1  ALRMR_Bits = 0x01 << 7 //+
+	AST    ALRMR_Bits = 0x07 << 4 //+
+	AST_0  ALRMR_Bits = 0x01 << 4
+	AST_1  ALRMR_Bits = 0x02 << 4
+	AST_2  ALRMR_Bits = 0x04 << 4
+	ASU    ALRMR_Bits = 0x0F << 0 //+
+	ASU_0  ALRMR_Bits = 0x01 << 0
+	ASU_1  ALRMR_Bits = 0x02 << 0
+	ASU_2  ALRMR_Bits = 0x04 << 0
+	ASU_3  ALRMR_Bits = 0x08 << 0
 )
 
 const (
@@ -205,58 +205,58 @@ const (
 )
 
 const (
-	PM    TSTR_Bits = 0x01 << 22 //+
-	HT    TSTR_Bits = 0x03 << 20 //+
-	HT_0  TSTR_Bits = 0x01 << 20
-	HT_1  TSTR_Bits = 0x02 << 20
-	HU    TSTR_Bits = 0x0F << 16 //+
-	HU_0  TSTR_Bits = 0x01 << 16
-	HU_1  TSTR_Bits = 0x02 << 16
-	HU_2  TSTR_Bits = 0x04 << 16
-	HU_3  TSTR_Bits = 0x08 << 16
-	MNT   TSTR_Bits = 0x07 << 12 //+
-	MNT_0 TSTR_Bits = 0x01 << 12
-	MNT_1 TSTR_Bits = 0x02 << 12
-	MNT_2 TSTR_Bits = 0x04 << 12
-	MNU   TSTR_Bits = 0x0F << 8 //+
-	MNU_0 TSTR_Bits = 0x01 << 8
-	MNU_1 TSTR_Bits = 0x02 << 8
-	MNU_2 TSTR_Bits = 0x04 << 8
-	MNU_3 TSTR_Bits = 0x08 << 8
-	ST    TSTR_Bits = 0x07 << 4 //+
-	ST_0  TSTR_Bits = 0x01 << 4
-	ST_1  TSTR_Bits = 0x02 << 4
-	ST_2  TSTR_Bits = 0x04 << 4
-	SU    TSTR_Bits = 0x0F << 0 //+
-	SU_0  TSTR_Bits = 0x01 << 0
-	SU_1  TSTR_Bits = 0x02 << 0
-	SU_2  TSTR_Bits = 0x04 << 0
-	SU_3  TSTR_Bits = 0x08 << 0
+	TPM    TSTR_Bits = 0x01 << 22 //+
+	THT    TSTR_Bits = 0x03 << 20 //+
+	THT_0  TSTR_Bits = 0x01 << 20
+	THT_1  TSTR_Bits = 0x02 << 20
+	THU    TSTR_Bits = 0x0F << 16 //+
+	THU_0  TSTR_Bits = 0x01 << 16
+	THU_1  TSTR_Bits = 0x02 << 16
+	THU_2  TSTR_Bits = 0x04 << 16
+	THU_3  TSTR_Bits = 0x08 << 16
+	TMNT   TSTR_Bits = 0x07 << 12 //+
+	TMNT_0 TSTR_Bits = 0x01 << 12
+	TMNT_1 TSTR_Bits = 0x02 << 12
+	TMNT_2 TSTR_Bits = 0x04 << 12
+	TMNU   TSTR_Bits = 0x0F << 8 //+
+	TMNU_0 TSTR_Bits = 0x01 << 8
+	TMNU_1 TSTR_Bits = 0x02 << 8
+	TMNU_2 TSTR_Bits = 0x04 << 8
+	TMNU_3 TSTR_Bits = 0x08 << 8
+	TST    TSTR_Bits = 0x07 << 4 //+
+	TST_0  TSTR_Bits = 0x01 << 4
+	TST_1  TSTR_Bits = 0x02 << 4
+	TST_2  TSTR_Bits = 0x04 << 4
+	TSU    TSTR_Bits = 0x0F << 0 //+
+	TSU_0  TSTR_Bits = 0x01 << 0
+	TSU_1  TSTR_Bits = 0x02 << 0
+	TSU_2  TSTR_Bits = 0x04 << 0
+	TSU_3  TSTR_Bits = 0x08 << 0
 )
 
 const (
-	WDU   TSDR_Bits = 0x07 << 13 //+
-	WDU_0 TSDR_Bits = 0x01 << 13
-	WDU_1 TSDR_Bits = 0x02 << 13
-	WDU_2 TSDR_Bits = 0x04 << 13
-	MT    TSDR_Bits = 0x01 << 12 //+
-	MU    TSDR_Bits = 0x0F << 8  //+
-	MU_0  TSDR_Bits = 0x01 << 8
-	MU_1  TSDR_Bits = 0x02 << 8
-	MU_2  TSDR_Bits = 0x04 << 8
-	MU_3  TSDR_Bits = 0x08 << 8
-	DT    TSDR_Bits = 0x03 << 4 //+
-	DT_0  TSDR_Bits = 0x01 << 4
-	DT_1  TSDR_Bits = 0x02 << 4
-	DU    TSDR_Bits = 0x0F << 0 //+
-	DU_0  TSDR_Bits = 0x01 << 0
-	DU_1  TSDR_Bits = 0x02 << 0
-	DU_2  TSDR_Bits = 0x04 << 0
-	DU_3  TSDR_Bits = 0x08 << 0
+	TWDU   TSDR_Bits = 0x07 << 13 //+
+	TWDU_0 TSDR_Bits = 0x01 << 13
+	TWDU_1 TSDR_Bits = 0x02 << 13
+	TWDU_2 TSDR_Bits = 0x04 << 13
+	TMT    TSDR_Bits = 0x01 << 12 //+
+	TMU    TSDR_Bits = 0x0F << 8  //+
+	TMU_0  TSDR_Bits = 0x01 << 8
+	TMU_1  TSDR_Bits = 0x02 << 8
+	TMU_2  TSDR_Bits = 0x04 << 8
+	TMU_3  TSDR_Bits = 0x08 << 8
+	TDT    TSDR_Bits = 0x03 << 4 //+
+	TDT_0  TSDR_Bits = 0x01 << 4
+	TDT_1  TSDR_Bits = 0x02 << 4
+	TDU    TSDR_Bits = 0x0F << 0 //+
+	TDU_0  TSDR_Bits = 0x01 << 0
+	TDU_1  TSDR_Bits = 0x02 << 0
+	TDU_2  TSDR_Bits = 0x04 << 0
+	TDU_3  TSDR_Bits = 0x08 << 0
 )
 
 const (
-	SS TSSSR_Bits = 0xFFFF << 0 //+
+	TSS TSSSR_Bits = 0xFFFF << 0 //+
 )
 
 const (
@@ -299,10 +299,10 @@ const (
 )
 
 const (
-	MASKSS   ALRMSSR_Bits = 0x0F << 24 //+
-	MASKSS_0 ALRMSSR_Bits = 0x01 << 24
-	MASKSS_1 ALRMSSR_Bits = 0x02 << 24
-	MASKSS_2 ALRMSSR_Bits = 0x04 << 24
-	MASKSS_3 ALRMSSR_Bits = 0x08 << 24
-	SS       ALRMSSR_Bits = 0x7FFF << 0 //+
+	AMASKSS   ALRMSSR_Bits = 0x0F << 24 //+
+	AMASKSS_0 ALRMSSR_Bits = 0x01 << 24
+	AMASKSS_1 ALRMSSR_Bits = 0x02 << 24
+	AMASKSS_2 ALRMSSR_Bits = 0x04 << 24
+	AMASKSS_3 ALRMSSR_Bits = 0x08 << 24
+	ASS       ALRMSSR_Bits = 0x7FFF << 0 //+
 )

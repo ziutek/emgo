@@ -3,26 +3,26 @@ package main
 import (
 	"delay"
 
-	"stm32/f4/gpio"
-	"stm32/f4/periph"
-	"stm32/f4/setup"
+	"stm32/hal/gpio"
+	"stm32/hal/setup"
 )
 
-var LED = gpio.D
+var LED *gpio.Port
 
 const (
-	Green = 12 + iota
-	Orange
-	Red
-	Blue
+	Green  = 12
+	Orange = 13
+	Red    = 14
+	Blue   = 15
 )
 
 func init() {
 	setup.Performance168(8)
 
-	periph.AHB1ClockEnable(periph.GPIOD)
-	periph.AHB1Reset(periph.GPIOD)
+	gpio.D.Enable(false)
+	gpio.D.Reset()
 
+	LED = gpio.D
 	LED.SetMode(Green, gpio.Out)
 	LED.SetMode(Orange, gpio.Out)
 	LED.SetMode(Red, gpio.Out)

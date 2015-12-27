@@ -9,6 +9,8 @@ func tweaks(pkg *Package) {
 		switch p.Name {
 		case "RTC":
 			rtc(p)
+		case "FLASH":
+			flash(p)
 		}
 	}
 }
@@ -22,12 +24,22 @@ func rtc(p *Periph) {
 			r.Name = "ALRMR"
 			r.Len = 2
 			r.Descr = "Alarm A, B registers"
+			for _, b := range r.Bits {
+				b.Name = "A" + b.Name
+			}
 		case r.Name == "ALRMASSR":
 			r.Name = "ALRMSSR"
 			r.Len = 2
 			r.Descr = "Alarm A, B subsecond registers"
+			for _, b := range r.Bits {
+				b.Name = "A" + b.Name
+			}
 		case strings.HasPrefix(r.Name, "ALRMB"):
 			continue
+		case r.Name == "TSTR" || r.Name == "TSDR" || r.Name == "TSSSR":
+			for _, b := range r.Bits {
+				b.Name = "T" + b.Name
+			}
 		case r.Name == "BKP0R":
 			bkpr = r
 			bkpr.Name = "BKPR"
@@ -35,6 +47,24 @@ func rtc(p *Periph) {
 			bkpr.Descr = "Backup registers"
 		case strings.HasPrefix(r.Name, "BKP"):
 			bkpr.Len++
+			continue
+		}
+		regs = append(regs, r)
+	}
+	p.Regs = regs
+}
+
+func flash(p *Periph) {
+	regs := make([]*Register, 0, 20)
+	var optcr *Register
+	for _, r := range p.Regs {
+		switch {
+		case r.Name == "OPTCR":
+			optcr = r
+			optcr.Len = 1
+			optcr.Descr = "Option control registers"
+		case strings.HasPrefix(r.Name, "OPTCR"):
+			optcr.Len++
 			continue
 		}
 		regs = append(regs, r)

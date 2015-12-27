@@ -2,13 +2,12 @@
 // Instances:
 //  FLASH  mmap.FLASH_R_BASE
 // Registers:
-//  0x00 32  ACR     Access control register.
-//  0x04 32  KEYR    Key register.
-//  0x08 32  OPTKEYR Option key register.
-//  0x0C 32  SR      Status register.
-//  0x10 32  CR      Control register.
-//  0x14 32  OPTCR   Option control register.
-//  0x18 32  OPTCR1  Option control register 1.
+//  0x00 32  ACR      Access control register.
+//  0x04 32  KEYR     Key register.
+//  0x08 32  OPTKEYR  Option key register.
+//  0x0C 32  SR       Status register.
+//  0x10 32  CR       Control register.
+//  0x14 32  OPTCR[2] Option control registers.
 // Import:
 //  stm32/o/f40_41xxx/mmap
 package flash
@@ -103,20 +102,4 @@ const (
 	nWRP_11    OPTCR_Bits = 0x800 << 16
 	DB1M       OPTCR_Bits = 0x01 << 30 //+
 	SPRMOD     OPTCR_Bits = 0x01 << 31 //+
-)
-
-const (
-	nWRP    OPTCR1_Bits = 0xFFF << 16 //+
-	nWRP_0  OPTCR1_Bits = 0x01 << 16
-	nWRP_1  OPTCR1_Bits = 0x02 << 16
-	nWRP_2  OPTCR1_Bits = 0x04 << 16
-	nWRP_3  OPTCR1_Bits = 0x08 << 16
-	nWRP_4  OPTCR1_Bits = 0x10 << 16
-	nWRP_5  OPTCR1_Bits = 0x20 << 16
-	nWRP_6  OPTCR1_Bits = 0x40 << 16
-	nWRP_7  OPTCR1_Bits = 0x80 << 16
-	nWRP_8  OPTCR1_Bits = 0x100 << 16
-	nWRP_9  OPTCR1_Bits = 0x200 << 16
-	nWRP_10 OPTCR1_Bits = 0x400 << 16
-	nWRP_11 OPTCR1_Bits = 0x800 << 16
 )

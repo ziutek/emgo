@@ -16,13 +16,16 @@ func main() {
 	checkErr(os.MkdirAll(pkgpath, 0755))
 	chdir(pkgpath)
 	var (
-		pkgs []*Package
+		irqs []*IRQ
 		mmap []*MemGroup
+		pkgs []*Package
 	)
 	r := newScanner(os.Stdin, "stdin")
 	for r.Scan() {
 	noscan:
 		switch doxy(r.Text(), "@addtogroup") {
+		case "Configuration_section_for_CMSIS":
+			irqs = interrupts(r)
 		case "Peripheral_registers_structures":
 			pkgs = peripherals(r)
 		case "Peripheral_memory_map":
@@ -37,6 +40,7 @@ func main() {
 		goto noscan
 	}
 	checkErr(r.Err())
+	saveIRQs(irqs)
 	saveMmap(mmap)
 	for _, pkg := range pkgs {
 		tweaks(pkg)
