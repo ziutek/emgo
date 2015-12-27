@@ -39,6 +39,7 @@ func main() {
 	checkErr(r.Err())
 	saveMmap(mmap)
 	for _, pkg := range pkgs {
+		tweaks(pkg)
 		pkg.Save(pkgpath)
 	}
 

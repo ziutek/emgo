@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"unicode"
@@ -78,7 +79,12 @@ func (w cwc) Close() error {
 	}
 	checkErr(w.c.Close())
 	if name != "" {
-		checkErr(exec.Command("gofmt", "-w", name).Run())
+		name, err := filepath.Abs(name)
+		checkErr(err)
+		gofmt := exec.Command("gofmt", "-w", name)
+		gofmt.Stdout = os.Stdout
+		gofmt.Stderr = os.Stderr
+		checkErr(gofmt.Run())
 	}
 	return nil
 }

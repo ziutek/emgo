@@ -2,45 +2,24 @@
 // Instances:
 //  RTC  mmap.RTC_BASE
 // Registers:
-//  0x00 32  TR       Time register.
-//  0x04 32  DR       Date register.
-//  0x08 32  CR       Control register.
-//  0x0C 32  ISR      Initialization and status register.
-//  0x10 32  PRER     Prescaler register.
-//  0x14 32  WUTR     Wakeup timer register.
-//  0x18 32  CALIBR   Calibration register.
-//  0x1C 32  ALRMAR   Alarm A register.
-//  0x20 32  ALRMBR   Alarm B register.
-//  0x24 32  WPR      Write protection register.
-//  0x28 32  SSR      Sub second register.
-//  0x2C 32  SHIFTR   Shift control register.
-//  0x30 32  TSTR     Time stamp time register.
-//  0x34 32  TSDR     Time stamp date register.
-//  0x38 32  TSSSR    Time-stamp sub second register.
-//  0x3C 32  CALR     Calibration register.
-//  0x40 32  TAFCR    Tamper and alternate function configuration register.
-//  0x44 32  ALRMASSR
-//  0x48 32  ALRMBSSR
-//  0x50 32  BKP0R    Backup register 1.
-//  0x54 32  BKP1R    Backup register 1.
-//  0x58 32  BKP2R    Backup register 2.
-//  0x5C 32  BKP3R    Backup register 3.
-//  0x60 32  BKP4R    Backup register 4.
-//  0x64 32  BKP5R    Backup register 5.
-//  0x68 32  BKP6R    Backup register 6.
-//  0x6C 32  BKP7R    Backup register 7.
-//  0x70 32  BKP8R    Backup register 8.
-//  0x74 32  BKP9R    Backup register 9.
-//  0x78 32  BKP10R   Backup register 10.
-//  0x7C 32  BKP11R   Backup register 11.
-//  0x80 32  BKP12R   Backup register 12.
-//  0x84 32  BKP13R   Backup register 13.
-//  0x88 32  BKP14R   Backup register 14.
-//  0x8C 32  BKP15R   Backup register 15.
-//  0x90 32  BKP16R   Backup register 16.
-//  0x94 32  BKP17R   Backup register 17.
-//  0x98 32  BKP18R   Backup register 18.
-//  0x9C 32  BKP19R   Backup register 19.
+//  0x00 32  TR         Time register.
+//  0x04 32  DR         Date register.
+//  0x08 32  CR         Control register.
+//  0x0C 32  ISR        Initialization and status register.
+//  0x10 32  PRER       Prescaler register.
+//  0x14 32  WUTR       Wakeup timer register.
+//  0x18 32  CALIBR     Calibration register.
+//  0x1C 32  ALRMR[2]   Alarm A, B registers.
+//  0x24 32  WPR        Write protection register.
+//  0x28 32  SSR        Sub second register.
+//  0x2C 32  SHIFTR     Shift control register.
+//  0x30 32  TSTR       Time stamp time register.
+//  0x34 32  TSDR       Time stamp date register.
+//  0x38 32  TSSSR      Time-stamp sub second register.
+//  0x3C 32  CALR       Calibration register.
+//  0x40 32  TAFCR      Tamper and alternate function configuration register.
+//  0x44 32  ALRMSSR[2] Alarm A, B subsecond registers.
+//  0x50 32  BKPR[20]   Backup registers.
 // Import:
 //  stm32/o/f411xe/mmap
 package rtc
@@ -168,89 +147,46 @@ const (
 )
 
 const (
-	MSK4  ALRMAR_Bits = 0x01 << 31 //+
-	WDSEL ALRMAR_Bits = 0x01 << 30 //+
-	DT    ALRMAR_Bits = 0x03 << 28 //+
-	DT_0  ALRMAR_Bits = 0x01 << 28
-	DT_1  ALRMAR_Bits = 0x02 << 28
-	DU    ALRMAR_Bits = 0x0F << 24 //+
-	DU_0  ALRMAR_Bits = 0x01 << 24
-	DU_1  ALRMAR_Bits = 0x02 << 24
-	DU_2  ALRMAR_Bits = 0x04 << 24
-	DU_3  ALRMAR_Bits = 0x08 << 24
-	MSK3  ALRMAR_Bits = 0x01 << 23 //+
-	PM    ALRMAR_Bits = 0x01 << 22 //+
-	HT    ALRMAR_Bits = 0x03 << 20 //+
-	HT_0  ALRMAR_Bits = 0x01 << 20
-	HT_1  ALRMAR_Bits = 0x02 << 20
-	HU    ALRMAR_Bits = 0x0F << 16 //+
-	HU_0  ALRMAR_Bits = 0x01 << 16
-	HU_1  ALRMAR_Bits = 0x02 << 16
-	HU_2  ALRMAR_Bits = 0x04 << 16
-	HU_3  ALRMAR_Bits = 0x08 << 16
-	MSK2  ALRMAR_Bits = 0x01 << 15 //+
-	MNT   ALRMAR_Bits = 0x07 << 12 //+
-	MNT_0 ALRMAR_Bits = 0x01 << 12
-	MNT_1 ALRMAR_Bits = 0x02 << 12
-	MNT_2 ALRMAR_Bits = 0x04 << 12
-	MNU   ALRMAR_Bits = 0x0F << 8 //+
-	MNU_0 ALRMAR_Bits = 0x01 << 8
-	MNU_1 ALRMAR_Bits = 0x02 << 8
-	MNU_2 ALRMAR_Bits = 0x04 << 8
-	MNU_3 ALRMAR_Bits = 0x08 << 8
-	MSK1  ALRMAR_Bits = 0x01 << 7 //+
-	ST    ALRMAR_Bits = 0x07 << 4 //+
-	ST_0  ALRMAR_Bits = 0x01 << 4
-	ST_1  ALRMAR_Bits = 0x02 << 4
-	ST_2  ALRMAR_Bits = 0x04 << 4
-	SU    ALRMAR_Bits = 0x0F << 0 //+
-	SU_0  ALRMAR_Bits = 0x01 << 0
-	SU_1  ALRMAR_Bits = 0x02 << 0
-	SU_2  ALRMAR_Bits = 0x04 << 0
-	SU_3  ALRMAR_Bits = 0x08 << 0
-)
-
-const (
-	MSK4  ALRMBR_Bits = 0x01 << 31 //+
-	WDSEL ALRMBR_Bits = 0x01 << 30 //+
-	DT    ALRMBR_Bits = 0x03 << 28 //+
-	DT_0  ALRMBR_Bits = 0x01 << 28
-	DT_1  ALRMBR_Bits = 0x02 << 28
-	DU    ALRMBR_Bits = 0x0F << 24 //+
-	DU_0  ALRMBR_Bits = 0x01 << 24
-	DU_1  ALRMBR_Bits = 0x02 << 24
-	DU_2  ALRMBR_Bits = 0x04 << 24
-	DU_3  ALRMBR_Bits = 0x08 << 24
-	MSK3  ALRMBR_Bits = 0x01 << 23 //+
-	PM    ALRMBR_Bits = 0x01 << 22 //+
-	HT    ALRMBR_Bits = 0x03 << 20 //+
-	HT_0  ALRMBR_Bits = 0x01 << 20
-	HT_1  ALRMBR_Bits = 0x02 << 20
-	HU    ALRMBR_Bits = 0x0F << 16 //+
-	HU_0  ALRMBR_Bits = 0x01 << 16
-	HU_1  ALRMBR_Bits = 0x02 << 16
-	HU_2  ALRMBR_Bits = 0x04 << 16
-	HU_3  ALRMBR_Bits = 0x08 << 16
-	MSK2  ALRMBR_Bits = 0x01 << 15 //+
-	MNT   ALRMBR_Bits = 0x07 << 12 //+
-	MNT_0 ALRMBR_Bits = 0x01 << 12
-	MNT_1 ALRMBR_Bits = 0x02 << 12
-	MNT_2 ALRMBR_Bits = 0x04 << 12
-	MNU   ALRMBR_Bits = 0x0F << 8 //+
-	MNU_0 ALRMBR_Bits = 0x01 << 8
-	MNU_1 ALRMBR_Bits = 0x02 << 8
-	MNU_2 ALRMBR_Bits = 0x04 << 8
-	MNU_3 ALRMBR_Bits = 0x08 << 8
-	MSK1  ALRMBR_Bits = 0x01 << 7 //+
-	ST    ALRMBR_Bits = 0x07 << 4 //+
-	ST_0  ALRMBR_Bits = 0x01 << 4
-	ST_1  ALRMBR_Bits = 0x02 << 4
-	ST_2  ALRMBR_Bits = 0x04 << 4
-	SU    ALRMBR_Bits = 0x0F << 0 //+
-	SU_0  ALRMBR_Bits = 0x01 << 0
-	SU_1  ALRMBR_Bits = 0x02 << 0
-	SU_2  ALRMBR_Bits = 0x04 << 0
-	SU_3  ALRMBR_Bits = 0x08 << 0
+	MSK4  ALRMR_Bits = 0x01 << 31 //+
+	WDSEL ALRMR_Bits = 0x01 << 30 //+
+	DT    ALRMR_Bits = 0x03 << 28 //+
+	DT_0  ALRMR_Bits = 0x01 << 28
+	DT_1  ALRMR_Bits = 0x02 << 28
+	DU    ALRMR_Bits = 0x0F << 24 //+
+	DU_0  ALRMR_Bits = 0x01 << 24
+	DU_1  ALRMR_Bits = 0x02 << 24
+	DU_2  ALRMR_Bits = 0x04 << 24
+	DU_3  ALRMR_Bits = 0x08 << 24
+	MSK3  ALRMR_Bits = 0x01 << 23 //+
+	PM    ALRMR_Bits = 0x01 << 22 //+
+	HT    ALRMR_Bits = 0x03 << 20 //+
+	HT_0  ALRMR_Bits = 0x01 << 20
+	HT_1  ALRMR_Bits = 0x02 << 20
+	HU    ALRMR_Bits = 0x0F << 16 //+
+	HU_0  ALRMR_Bits = 0x01 << 16
+	HU_1  ALRMR_Bits = 0x02 << 16
+	HU_2  ALRMR_Bits = 0x04 << 16
+	HU_3  ALRMR_Bits = 0x08 << 16
+	MSK2  ALRMR_Bits = 0x01 << 15 //+
+	MNT   ALRMR_Bits = 0x07 << 12 //+
+	MNT_0 ALRMR_Bits = 0x01 << 12
+	MNT_1 ALRMR_Bits = 0x02 << 12
+	MNT_2 ALRMR_Bits = 0x04 << 12
+	MNU   ALRMR_Bits = 0x0F << 8 //+
+	MNU_0 ALRMR_Bits = 0x01 << 8
+	MNU_1 ALRMR_Bits = 0x02 << 8
+	MNU_2 ALRMR_Bits = 0x04 << 8
+	MNU_3 ALRMR_Bits = 0x08 << 8
+	MSK1  ALRMR_Bits = 0x01 << 7 //+
+	ST    ALRMR_Bits = 0x07 << 4 //+
+	ST_0  ALRMR_Bits = 0x01 << 4
+	ST_1  ALRMR_Bits = 0x02 << 4
+	ST_2  ALRMR_Bits = 0x04 << 4
+	SU    ALRMR_Bits = 0x0F << 0 //+
+	SU_0  ALRMR_Bits = 0x01 << 0
+	SU_1  ALRMR_Bits = 0x02 << 0
+	SU_2  ALRMR_Bits = 0x04 << 0
+	SU_3  ALRMR_Bits = 0x08 << 0
 )
 
 const (
@@ -359,19 +295,10 @@ const (
 )
 
 const (
-	MASKSS   ALRMASSR_Bits = 0x0F << 24 //+
-	MASKSS_0 ALRMASSR_Bits = 0x01 << 24
-	MASKSS_1 ALRMASSR_Bits = 0x02 << 24
-	MASKSS_2 ALRMASSR_Bits = 0x04 << 24
-	MASKSS_3 ALRMASSR_Bits = 0x08 << 24
-	SS       ALRMASSR_Bits = 0x7FFF << 0 //+
-)
-
-const (
-	MASKSS   ALRMBSSR_Bits = 0x0F << 24 //+
-	MASKSS_0 ALRMBSSR_Bits = 0x01 << 24
-	MASKSS_1 ALRMBSSR_Bits = 0x02 << 24
-	MASKSS_2 ALRMBSSR_Bits = 0x04 << 24
-	MASKSS_3 ALRMBSSR_Bits = 0x08 << 24
-	SS       ALRMBSSR_Bits = 0x7FFF << 0 //+
+	MASKSS   ALRMSSR_Bits = 0x0F << 24 //+
+	MASKSS_0 ALRMSSR_Bits = 0x01 << 24
+	MASKSS_1 ALRMSSR_Bits = 0x02 << 24
+	MASKSS_2 ALRMSSR_Bits = 0x04 << 24
+	MASKSS_3 ALRMSSR_Bits = 0x08 << 24
+	SS       ALRMSSR_Bits = 0x7FFF << 0 //+
 )

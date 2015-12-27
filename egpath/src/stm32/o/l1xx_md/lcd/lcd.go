@@ -64,3 +64,7 @@ const (
 	SOFC CLR_Bits = 0x01 << 1 //+ Start Of Frame Flag Clear Bit.
 	UDDC CLR_Bits = 0x01 << 3 //+ Update Display Done Flag Clear Bit.
 )
+
+const (
+	SEGMENT_DATA RAM_Bits = 0xFFFFFFFF << 0 //+ Segment Data Bits.
+)

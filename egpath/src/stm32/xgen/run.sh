@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd result
+set -e
 
 ud='unifdef -k -f undef.h -D'
 

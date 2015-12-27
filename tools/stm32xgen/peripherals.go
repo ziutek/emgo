@@ -20,6 +20,7 @@ type Register struct {
 	Offset int
 	Size   string
 	Name   string
+	Len    int
 	Descr  string
 	Bits   []*Bits
 }
@@ -80,7 +81,12 @@ func (p *Periph) Save(base, pkgname string) {
 	tw.Flush()
 	fmt.Fprintln(w, "// Registers:")
 	for _, r := range p.Regs {
-		fmt.Fprintf(tw, "//  0x%02X\t%s\t %s\t", r.Offset, r.Size, r.Name)
+		fmt.Fprintf(tw, "//  0x%02X\t%s\t ", r.Offset, r.Size)
+		if r.Len == 0 {
+			fmt.Fprintf(tw, "%s\t", r.Name)
+		} else {
+			fmt.Fprintf(tw, "%s[%d]\t", r.Name, r.Len)
+		}
 		if r.Descr != "" {
 			fmt.Fprintf(tw, "%s.\n", r.Descr)
 		} else {
@@ -189,6 +195,7 @@ func peripherals(r *scanner) []*Package {
 			default:
 				r.Die("unknown type:", typ)
 			}
+			var length int
 			if n := len(reg) - 1; n >= 0 && reg[n] == ']' {
 				m := strings.Index(reg, "[")
 				if m < 0 {
@@ -196,7 +203,9 @@ func peripherals(r *scanner) []*Package {
 				}
 				n, err := strconv.ParseUint(reg[m+1:n], 0, 32)
 				checkErr(err)
-				size *= int(n)
+				reg = reg[:m]
+				length = int(n)
+				size *= length
 			}
 			if io != 0 {
 				offset += size
@@ -221,7 +230,12 @@ func peripherals(r *scanner) []*Package {
 			}
 			regs = append(
 				regs,
-				&Register{Offset: offset, Size: typ, Name: reg, Descr: descr},
+				&Register{
+					Offset: offset,
+					Size:   typ,
+					Name:   reg,
+					Len:    length,
+					Descr:  descr},
 			)
 			offset += size
 			continue
