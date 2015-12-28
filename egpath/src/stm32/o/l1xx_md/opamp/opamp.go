@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: OPAMP_Periph  Operational Amplifier (OPAMP).
 // Instances:
 //  OPAMP  mmap.OPAMP_BASE

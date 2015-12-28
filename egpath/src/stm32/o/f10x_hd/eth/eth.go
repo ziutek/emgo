@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: ETH_Periph  Ethernet MAC.
 // Instances:
 //  ETH  mmap.ETH_BASE

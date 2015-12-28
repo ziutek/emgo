@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: GPIO_Periph  General Purpose I/O.
 // Instances:
 //  GPIOA  mmap.GPIOA_BASE

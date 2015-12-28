@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: HASH_Periph  HASH.
 // Instances:
 //  HASH  mmap.HASH_BASE

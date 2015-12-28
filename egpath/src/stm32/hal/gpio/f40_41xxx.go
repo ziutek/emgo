@@ -3,6 +3,7 @@
 package gpio
 
 import (
+	"mmio"
 	"unsafe"
 
 	"stm32/o/f40_41xxx/mmap"
@@ -23,26 +24,10 @@ var (
 	K = (*Port)(unsafe.Pointer(mmap.GPIOK_BASE))
 )
 
-func (p *Port) n() int {
+func pnum(p *Port) int {
 	return int(uintptr(unsafe.Pointer(p))-mmap.AHB1PERIPH_BASE) / 0x400
 }
 
-func (p *Port) enable(lp bool) {
-	n := p.n()
-	rcc.RCC.AHB1ENR.SetBit(n)
-	if lp {
-		rcc.RCC.AHB1LPENR.SetBit(n)
-	} else {
-		rcc.RCC.AHB1LPENR.ClearBit(n)
-	}
-}
-
-func (p *Port) disable() {
-	rcc.RCC.AHB1ENR.ClearBit(p.n())
-}
-
-func (p *Port) reset() {
-	n := p.n()
-	rcc.RCC.AHB1RSTR.SetBit(n)
-	rcc.RCC.AHB1RSTR.ClearBit(n)
-}
+func enr() *mmio.U32   { return (*mmio.U32)(&rcc.RCC.AHB1ENR.U32) }
+func lpenr() *mmio.U32 { return (*mmio.U32)(&rcc.RCC.AHB1LPENR.U32) }
+func rstr() *mmio.U32  { return (*mmio.U32)(&rcc.RCC.AHB1RSTR.U32) }

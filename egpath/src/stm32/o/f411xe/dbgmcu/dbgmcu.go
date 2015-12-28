@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: DBGMCU_Periph  Debug MCU.
 // Instances:
 //  DBGMCU  mmap.DBGMCU_BASE

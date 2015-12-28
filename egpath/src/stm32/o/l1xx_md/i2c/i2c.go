@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: I2C_Periph  Inter-integrated Circuit Interface.
 // Instances:
 //  I2C1  mmap.I2C1_BASE

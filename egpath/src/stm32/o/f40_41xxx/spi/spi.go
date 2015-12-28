@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: SPI_Periph  Serial Peripheral Interface.
 // Instances:
 //  I2S2ext  mmap.I2S2ext_BASE

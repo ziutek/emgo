@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: SDIO_Periph  SD host Interface.
 // Instances:
 //  SDIO  mmap.SDIO_BASE

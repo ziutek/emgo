@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: BKP_Periph  Backup Registers.
 // Instances:
 //  BKP  mmap.BKP_BASE

@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: DMA_Periph  DMA Controller.
 // Instances:
 //  DMA1  mmap.DMA1_BASE

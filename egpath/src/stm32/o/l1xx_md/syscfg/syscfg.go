@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: SYSCFG_Periph  SysTem Configuration.
 // Instances:
 //  SYSCFG  mmap.SYSCFG_BASE

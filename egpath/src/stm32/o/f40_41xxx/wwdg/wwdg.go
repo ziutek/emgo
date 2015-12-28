@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: WWDG_Periph  Window WATCHDOG.
 // Instances:
 //  WWDG  mmap.WWDG_BASE

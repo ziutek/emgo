@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: HASH_Periph  HASH.
 // Instances:
 //  HASH  mmap.HASH_BASE

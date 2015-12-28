@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: IWDG_Periph  Independent WATCHDOG.
 // Instances:
 //  IWDG  mmap.IWDG_BASE

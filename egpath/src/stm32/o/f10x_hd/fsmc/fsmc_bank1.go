@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: FSMC_Bank1_Periph  Flexible Static Memory Controller.
 // Instances:
 //  FSMC_Bank1  mmap.FSMC_Bank1_R_BASE

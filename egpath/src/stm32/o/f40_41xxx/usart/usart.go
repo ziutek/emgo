@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: USART_Periph  Universal Synchronous Asynchronous Receiver Transmitter.
 // Instances:
 //  USART2  mmap.USART2_BASE

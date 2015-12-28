@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: EXTI_Periph  External Interrupt/Event Controller.
 // Instances:
 //  EXTI  mmap.EXTI_BASE
@@ -13,51 +15,51 @@
 package exti
 
 const (
-	MR0  IMR_Bits = 0x01 << 0  //+ Interrupt Mask on line 0.
-	MR1  IMR_Bits = 0x01 << 1  //+ Interrupt Mask on line 1.
-	MR2  IMR_Bits = 0x01 << 2  //+ Interrupt Mask on line 2.
-	MR3  IMR_Bits = 0x01 << 3  //+ Interrupt Mask on line 3.
-	MR4  IMR_Bits = 0x01 << 4  //+ Interrupt Mask on line 4.
-	MR5  IMR_Bits = 0x01 << 5  //+ Interrupt Mask on line 5.
-	MR6  IMR_Bits = 0x01 << 6  //+ Interrupt Mask on line 6.
-	MR7  IMR_Bits = 0x01 << 7  //+ Interrupt Mask on line 7.
-	MR8  IMR_Bits = 0x01 << 8  //+ Interrupt Mask on line 8.
-	MR9  IMR_Bits = 0x01 << 9  //+ Interrupt Mask on line 9.
-	MR10 IMR_Bits = 0x01 << 10 //+ Interrupt Mask on line 10.
-	MR11 IMR_Bits = 0x01 << 11 //+ Interrupt Mask on line 11.
-	MR12 IMR_Bits = 0x01 << 12 //+ Interrupt Mask on line 12.
-	MR13 IMR_Bits = 0x01 << 13 //+ Interrupt Mask on line 13.
-	MR14 IMR_Bits = 0x01 << 14 //+ Interrupt Mask on line 14.
-	MR15 IMR_Bits = 0x01 << 15 //+ Interrupt Mask on line 15.
-	MR16 IMR_Bits = 0x01 << 16 //+ Interrupt Mask on line 16.
-	MR17 IMR_Bits = 0x01 << 17 //+ Interrupt Mask on line 17.
-	MR18 IMR_Bits = 0x01 << 18 //+ Interrupt Mask on line 18.
-	MR19 IMR_Bits = 0x01 << 19 //+ Interrupt Mask on line 19.
-	MR23 IMR_Bits = 0x01 << 23 //+ Interrupt Mask on line 23.
+	IL0  IMR_Bits = 0x01 << 0  //+ Interrupt Mask on line 0.
+	IL1  IMR_Bits = 0x01 << 1  //+ Interrupt Mask on line 1.
+	IL2  IMR_Bits = 0x01 << 2  //+ Interrupt Mask on line 2.
+	IL3  IMR_Bits = 0x01 << 3  //+ Interrupt Mask on line 3.
+	IL4  IMR_Bits = 0x01 << 4  //+ Interrupt Mask on line 4.
+	IL5  IMR_Bits = 0x01 << 5  //+ Interrupt Mask on line 5.
+	IL6  IMR_Bits = 0x01 << 6  //+ Interrupt Mask on line 6.
+	IL7  IMR_Bits = 0x01 << 7  //+ Interrupt Mask on line 7.
+	IL8  IMR_Bits = 0x01 << 8  //+ Interrupt Mask on line 8.
+	IL9  IMR_Bits = 0x01 << 9  //+ Interrupt Mask on line 9.
+	IL10 IMR_Bits = 0x01 << 10 //+ Interrupt Mask on line 10.
+	IL11 IMR_Bits = 0x01 << 11 //+ Interrupt Mask on line 11.
+	IL12 IMR_Bits = 0x01 << 12 //+ Interrupt Mask on line 12.
+	IL13 IMR_Bits = 0x01 << 13 //+ Interrupt Mask on line 13.
+	IL14 IMR_Bits = 0x01 << 14 //+ Interrupt Mask on line 14.
+	IL15 IMR_Bits = 0x01 << 15 //+ Interrupt Mask on line 15.
+	IL16 IMR_Bits = 0x01 << 16 //+ Interrupt Mask on line 16.
+	IL17 IMR_Bits = 0x01 << 17 //+ Interrupt Mask on line 17.
+	IL18 IMR_Bits = 0x01 << 18 //+ Interrupt Mask on line 18.
+	IL19 IMR_Bits = 0x01 << 19 //+ Interrupt Mask on line 19.
+	IL23 IMR_Bits = 0x01 << 23 //+ Interrupt Mask on line 23.
 )
 
 const (
-	MR0  EMR_Bits = 0x01 << 0  //+ Event Mask on line 0.
-	MR1  EMR_Bits = 0x01 << 1  //+ Event Mask on line 1.
-	MR2  EMR_Bits = 0x01 << 2  //+ Event Mask on line 2.
-	MR3  EMR_Bits = 0x01 << 3  //+ Event Mask on line 3.
-	MR4  EMR_Bits = 0x01 << 4  //+ Event Mask on line 4.
-	MR5  EMR_Bits = 0x01 << 5  //+ Event Mask on line 5.
-	MR6  EMR_Bits = 0x01 << 6  //+ Event Mask on line 6.
-	MR7  EMR_Bits = 0x01 << 7  //+ Event Mask on line 7.
-	MR8  EMR_Bits = 0x01 << 8  //+ Event Mask on line 8.
-	MR9  EMR_Bits = 0x01 << 9  //+ Event Mask on line 9.
-	MR10 EMR_Bits = 0x01 << 10 //+ Event Mask on line 10.
-	MR11 EMR_Bits = 0x01 << 11 //+ Event Mask on line 11.
-	MR12 EMR_Bits = 0x01 << 12 //+ Event Mask on line 12.
-	MR13 EMR_Bits = 0x01 << 13 //+ Event Mask on line 13.
-	MR14 EMR_Bits = 0x01 << 14 //+ Event Mask on line 14.
-	MR15 EMR_Bits = 0x01 << 15 //+ Event Mask on line 15.
-	MR16 EMR_Bits = 0x01 << 16 //+ Event Mask on line 16.
-	MR17 EMR_Bits = 0x01 << 17 //+ Event Mask on line 17.
-	MR18 EMR_Bits = 0x01 << 18 //+ Event Mask on line 18.
-	MR19 EMR_Bits = 0x01 << 19 //+ Event Mask on line 19.
-	MR23 EMR_Bits = 0x01 << 23 //+ Event Mask on line 19.
+	EL0  EMR_Bits = 0x01 << 0  //+ Event Mask on line 0.
+	EL1  EMR_Bits = 0x01 << 1  //+ Event Mask on line 1.
+	EL2  EMR_Bits = 0x01 << 2  //+ Event Mask on line 2.
+	EL3  EMR_Bits = 0x01 << 3  //+ Event Mask on line 3.
+	EL4  EMR_Bits = 0x01 << 4  //+ Event Mask on line 4.
+	EL5  EMR_Bits = 0x01 << 5  //+ Event Mask on line 5.
+	EL6  EMR_Bits = 0x01 << 6  //+ Event Mask on line 6.
+	EL7  EMR_Bits = 0x01 << 7  //+ Event Mask on line 7.
+	EL8  EMR_Bits = 0x01 << 8  //+ Event Mask on line 8.
+	EL9  EMR_Bits = 0x01 << 9  //+ Event Mask on line 9.
+	EL10 EMR_Bits = 0x01 << 10 //+ Event Mask on line 10.
+	EL11 EMR_Bits = 0x01 << 11 //+ Event Mask on line 11.
+	EL12 EMR_Bits = 0x01 << 12 //+ Event Mask on line 12.
+	EL13 EMR_Bits = 0x01 << 13 //+ Event Mask on line 13.
+	EL14 EMR_Bits = 0x01 << 14 //+ Event Mask on line 14.
+	EL15 EMR_Bits = 0x01 << 15 //+ Event Mask on line 15.
+	EL16 EMR_Bits = 0x01 << 16 //+ Event Mask on line 16.
+	EL17 EMR_Bits = 0x01 << 17 //+ Event Mask on line 17.
+	EL18 EMR_Bits = 0x01 << 18 //+ Event Mask on line 18.
+	EL19 EMR_Bits = 0x01 << 19 //+ Event Mask on line 19.
+	EL23 EMR_Bits = 0x01 << 23 //+ Event Mask on line 19.
 )
 
 const (
@@ -85,27 +87,27 @@ const (
 )
 
 const (
-	TR0  FTSR_Bits = 0x01 << 0  //+ Falling trigger event configuration bit of line 0.
-	TR1  FTSR_Bits = 0x01 << 1  //+ Falling trigger event configuration bit of line 1.
-	TR2  FTSR_Bits = 0x01 << 2  //+ Falling trigger event configuration bit of line 2.
-	TR3  FTSR_Bits = 0x01 << 3  //+ Falling trigger event configuration bit of line 3.
-	TR4  FTSR_Bits = 0x01 << 4  //+ Falling trigger event configuration bit of line 4.
-	TR5  FTSR_Bits = 0x01 << 5  //+ Falling trigger event configuration bit of line 5.
-	TR6  FTSR_Bits = 0x01 << 6  //+ Falling trigger event configuration bit of line 6.
-	TR7  FTSR_Bits = 0x01 << 7  //+ Falling trigger event configuration bit of line 7.
-	TR8  FTSR_Bits = 0x01 << 8  //+ Falling trigger event configuration bit of line 8.
-	TR9  FTSR_Bits = 0x01 << 9  //+ Falling trigger event configuration bit of line 9.
-	TR10 FTSR_Bits = 0x01 << 10 //+ Falling trigger event configuration bit of line 10.
-	TR11 FTSR_Bits = 0x01 << 11 //+ Falling trigger event configuration bit of line 11.
-	TR12 FTSR_Bits = 0x01 << 12 //+ Falling trigger event configuration bit of line 12.
-	TR13 FTSR_Bits = 0x01 << 13 //+ Falling trigger event configuration bit of line 13.
-	TR14 FTSR_Bits = 0x01 << 14 //+ Falling trigger event configuration bit of line 14.
-	TR15 FTSR_Bits = 0x01 << 15 //+ Falling trigger event configuration bit of line 15.
-	TR16 FTSR_Bits = 0x01 << 16 //+ Falling trigger event configuration bit of line 16.
-	TR17 FTSR_Bits = 0x01 << 17 //+ Falling trigger event configuration bit of line 17.
-	TR18 FTSR_Bits = 0x01 << 18 //+ Falling trigger event configuration bit of line 18.
-	TR19 FTSR_Bits = 0x01 << 19 //+ Falling trigger event configuration bit of line 19.
-	TR23 FTSR_Bits = 0x01 << 23 //+ Falling trigger event configuration bit of line 23.
+	TF0  FTSR_Bits = 0x01 << 0  //+ Falling trigger event configuration bit of line 0.
+	TF1  FTSR_Bits = 0x01 << 1  //+ Falling trigger event configuration bit of line 1.
+	TF2  FTSR_Bits = 0x01 << 2  //+ Falling trigger event configuration bit of line 2.
+	TF3  FTSR_Bits = 0x01 << 3  //+ Falling trigger event configuration bit of line 3.
+	TF4  FTSR_Bits = 0x01 << 4  //+ Falling trigger event configuration bit of line 4.
+	TF5  FTSR_Bits = 0x01 << 5  //+ Falling trigger event configuration bit of line 5.
+	TF6  FTSR_Bits = 0x01 << 6  //+ Falling trigger event configuration bit of line 6.
+	TF7  FTSR_Bits = 0x01 << 7  //+ Falling trigger event configuration bit of line 7.
+	TF8  FTSR_Bits = 0x01 << 8  //+ Falling trigger event configuration bit of line 8.
+	TF9  FTSR_Bits = 0x01 << 9  //+ Falling trigger event configuration bit of line 9.
+	TF10 FTSR_Bits = 0x01 << 10 //+ Falling trigger event configuration bit of line 10.
+	TF11 FTSR_Bits = 0x01 << 11 //+ Falling trigger event configuration bit of line 11.
+	TF12 FTSR_Bits = 0x01 << 12 //+ Falling trigger event configuration bit of line 12.
+	TF13 FTSR_Bits = 0x01 << 13 //+ Falling trigger event configuration bit of line 13.
+	TF14 FTSR_Bits = 0x01 << 14 //+ Falling trigger event configuration bit of line 14.
+	TF15 FTSR_Bits = 0x01 << 15 //+ Falling trigger event configuration bit of line 15.
+	TF16 FTSR_Bits = 0x01 << 16 //+ Falling trigger event configuration bit of line 16.
+	TF17 FTSR_Bits = 0x01 << 17 //+ Falling trigger event configuration bit of line 17.
+	TF18 FTSR_Bits = 0x01 << 18 //+ Falling trigger event configuration bit of line 18.
+	TF19 FTSR_Bits = 0x01 << 19 //+ Falling trigger event configuration bit of line 19.
+	TF23 FTSR_Bits = 0x01 << 23 //+ Falling trigger event configuration bit of line 23.
 )
 
 const (

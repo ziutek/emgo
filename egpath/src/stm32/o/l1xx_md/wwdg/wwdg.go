@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: WWDG_Periph  Window WATCHDOG.
 // Instances:
 //  WWDG  mmap.WWDG_BASE

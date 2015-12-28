@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: CAN_TxMailBox_Periph  Controller Area Network TxMailBox.
 // Instances:
 // Registers:

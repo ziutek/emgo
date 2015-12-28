@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: AES_Periph  AES hardware accelerator.
 // Instances:
 //  AES  mmap.AES_BASE

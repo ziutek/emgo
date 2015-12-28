@@ -3,6 +3,7 @@
 package syscall
 
 import (
+	"bits"
 	"builtin"
 	"unsafe"
 )
@@ -29,7 +30,7 @@ const (
 // scheduling current task and waits until new task will call TaskUnlock. When
 // success it returns TID of new task.
 func NewTask(f func(), lock bool) (int, Errno) {
-	tid, e := builtin.Syscall2(NEWTASK, ftou(f), btou(lock))
+	tid, e := builtin.Syscall2(NEWTASK, ftou(f), uintptr(bits.One(lock)))
 	return int(tid), Errno(e)
 }
 
@@ -89,7 +90,7 @@ func SetAlarm(t int64) {
 
 // SetIRQEna enables or disables irq.
 func SetIRQEna(irq int, ena bool) Errno {
-	_, e := builtin.Syscall2(SETIRQENA, uintptr(irq), btou(ena))
+	_, e := builtin.Syscall2(SETIRQENA, uintptr(irq), uintptr(bits.One(ena)))
 	return Errno(e)
 }
 

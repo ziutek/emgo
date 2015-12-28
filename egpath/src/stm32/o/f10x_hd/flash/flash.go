@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: FLASH_Periph  FLASH Registers.
 // Instances:
 //  FLASH  mmap.FLASH_R_BASE

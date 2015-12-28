@@ -11,6 +11,8 @@ func tweaks(pkg *Package) {
 			rtc(p)
 		case "FLASH":
 			flash(p)
+		case "EXTI":
+			exti(p)
 		}
 	}
 }
@@ -70,4 +72,24 @@ func flash(p *Periph) {
 		regs = append(regs, r)
 	}
 	p.Regs = regs
+}
+
+func exti(p *Periph) {
+	for _, r := range p.Regs {
+		switch r.Name {
+		case "IMR":
+			for _, b := range r.Bits {
+				b.Name = strings.Replace(b.Name, "MR", "IL", 1)
+			}
+		case "EMR":
+			for _, b := range r.Bits {
+				b.Name = strings.Replace(b.Name, "MR", "EL", 1)
+			}
+		case "FTSR":
+			for _, b := range r.Bits {
+				b.Name = strings.Replace(b.Name, "TR", "TF", 1)
+			}
+
+		}
+	}
 }

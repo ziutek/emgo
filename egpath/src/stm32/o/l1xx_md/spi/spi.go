@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: SPI_Periph  Serial Peripheral Interface.
 // Instances:
 //  SPI2  mmap.SPI2_BASE

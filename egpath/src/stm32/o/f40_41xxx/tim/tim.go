@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: TIM_Periph  TIM.
 // Instances:
 //  TIM2   mmap.TIM2_BASE

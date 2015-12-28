@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: GPIO_Periph  General Purpose I/O.
 // Instances:
 //  GPIOA  mmap.GPIOA_BASE

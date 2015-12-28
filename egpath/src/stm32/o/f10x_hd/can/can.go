@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: CAN_Periph  Controller Area Network.
 // Instances:
 //  CAN1  mmap.CAN1_BASE

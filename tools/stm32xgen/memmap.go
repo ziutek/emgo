@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 )
 
@@ -68,12 +69,14 @@ func memmap(r *scanner) []*MemGroup {
 	return groups
 }
 
-func saveMmap(mmap []*MemGroup) {
+func saveMmap(mmap []*MemGroup, base string) {
 	mkdir("mmap")
 	chdir("mmap")
 	defer chdir("..")
 	w := create("mmap.go")
 	defer w.Close()
+	fmt.Fprintln(w, "// +build", filepath.Base(base))
+	fmt.Fprintln(w)
 	fmt.Fprintln(
 		w, "// Package mmap provides base memory adresses for all peripherals.",
 	)

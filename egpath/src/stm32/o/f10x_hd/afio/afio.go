@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: AFIO_Periph  Alternate Function I/O.
 // Instances:
 //  AFIO  mmap.AFIO_BASE

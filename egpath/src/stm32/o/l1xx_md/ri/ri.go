@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: RI_Periph  Routing Interface.
 // Instances:
 //  RI  mmap.RI_BASE

@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: SDIO_Periph  SD host Interface.
 // Instances:
 //  SDIO  mmap.SDIO_BASE

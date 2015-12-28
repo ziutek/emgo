@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: DCMI_Periph  DCMI.
 // Instances:
 //  DCMI  mmap.DCMI_BASE

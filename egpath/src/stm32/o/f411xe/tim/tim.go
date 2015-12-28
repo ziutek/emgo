@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: TIM_Periph  TIM.
 // Instances:
 //  TIM2   mmap.TIM2_BASE

@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: FSMC_Bank1_Periph  Flexible Static Memory Controller.
 // Instances:
 //  FSMC_Bank1  mmap.FSMC_Bank1_R_BASE

@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: LTDC_Periph  LCD-TFT Display Controller.
 // Instances:
 //  LTDC  mmap.LTDC_BASE

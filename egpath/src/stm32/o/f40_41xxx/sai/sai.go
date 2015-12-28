@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: SAI_Periph  Serial Audio Interface.
 // Instances:
 //  SAI1  mmap.SAI1_BASE

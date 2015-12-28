@@ -1,5 +1,5 @@
 // This example shows how to use channels to divide interrupt handler into two
-// parts: fast part - that runs in interrupt context and soft part - that runs
+// parts: fast part - that runs in interrupt context and slow part - that runs
 // in user context. Fast part only enqueues events/data and signals to the
 // source if it isn't ready to receive next portion. Slow part dequeues
 // events/data and handles them. This scheme can be used to implement
@@ -10,44 +10,44 @@ import (
 	"delay"
 	"rtos"
 
-	"stm32/f4/exti"
-	"stm32/f4/gpio"
-	"stm32/f4/irq"
-	"stm32/f4/periph"
-	"stm32/f4/setup"
+	"stm32/hal/exti"
+	"stm32/hal/gpio"
+	"stm32/hal/irq"
+	"stm32/hal/setup"
 )
 
-var LED = gpio.D
+var LED *gpio.Port
 
 const (
-	Green = 12 + iota
-	Orange
-	Red
-	Blue
+	Green  = 12
+	Orange = 13
+	Red    = 14
+	Blue   = 15
 )
+
+const ButtonPin = 0
 
 func init() {
 	setup.Performance168(8)
 
-	periph.APB2ClockEnable(periph.SysCfg)
-	periph.APB2Reset(periph.SysCfg)
-	periph.AHB1ClockEnable(periph.GPIOA | periph.GPIOD)
-	periph.AHB1Reset(periph.GPIOA | periph.GPIOD)
+	gpio.A.Enable(false)
+	gpio.D.Enable(false)
 
+	LED = gpio.D
 	LED.SetMode(Green, gpio.Out)
 	LED.SetMode(Orange, gpio.Out)
 	LED.SetMode(Red, gpio.Out)
 	LED.SetMode(Blue, gpio.Out)
 
 	// Setup external interrupt source: user button.
-	gpio.A.SetMode(0, gpio.In)
-	exti.L0.Connect(gpio.A)
-	exti.L0.RiseTrigEnable()
-	exti.L0.IntEnable()
+	bport := gpio.A
+	bport.SetMode(ButtonPin, gpio.In)
+	line := exti.Line(ButtonPin)
+	line.Connect(bport)
+	line.EnableRiseTrig()
+	line.EnableInt()
 
-	rtos.IRQ(irq.Ext0).Enable()
-
-	periph.APB2ClockDisable(periph.SysCfg)
+	rtos.IRQ(irq.EXTI0).Enable()
 }
 
 var (
@@ -56,7 +56,7 @@ var (
 )
 
 func buttonISR() {
-	exti.L0.ClearPending()
+	exti.Line(ButtonPin).ClearPending()
 	select {
 	case c <- led:
 		if led++; led > Red {
@@ -71,7 +71,7 @@ func buttonISR() {
 }
 
 var ISRs = [...]func(){
-	irq.Ext0: buttonISR,
+	irq.EXTI0: buttonISR,
 } //c:__attribute__((section(".ISRs")))
 
 func toggle(led int) {

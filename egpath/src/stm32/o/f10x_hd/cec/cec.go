@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: CEC_Periph  Consumer Electronics Control (CEC).
 // Instances:
 //  CEC  mmap.CEC_BASE

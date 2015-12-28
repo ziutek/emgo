@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -66,6 +67,8 @@ type Periph struct {
 func (p *Periph) Save(base, pkgname string) {
 	w := create(strings.ToLower(p.Name + ".go"))
 	defer w.Close()
+	fmt.Fprintln(w, "// +build", filepath.Base(base))
+	fmt.Fprintln(w)
 	fmt.Fprintf(w, "// Peripheral: %s_Periph  %s.\n", p.Name, p.Descr)
 	fmt.Fprintln(w, "// Instances:")
 	tw := new(tabwriter.Writer)

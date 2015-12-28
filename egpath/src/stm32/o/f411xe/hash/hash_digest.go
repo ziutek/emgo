@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: HASH_DIGEST_Periph  HASH_DIGEST.
 // Instances:
 //  HASH_DIGEST  mmap.HASH_DIGEST_BASE

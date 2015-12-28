@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: DMA_Periph  DMA Controller.
 // Instances:
 //  DMA1  mmap.DMA1_BASE

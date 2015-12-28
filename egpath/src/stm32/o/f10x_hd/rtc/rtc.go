@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: RTC_Periph  Real-Time Clock.
 // Instances:
 //  RTC  mmap.RTC_BASE

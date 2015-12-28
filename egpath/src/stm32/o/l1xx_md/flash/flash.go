@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: FLASH_Periph  FLASH Registers.
 // Instances:
 //  FLASH  mmap.FLASH_R_BASE

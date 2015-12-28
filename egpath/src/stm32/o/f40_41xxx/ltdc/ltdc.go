@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: LTDC_Periph  LCD-TFT Display Controller.
 // Instances:
 //  LTDC  mmap.LTDC_BASE

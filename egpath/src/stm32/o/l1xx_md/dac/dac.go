@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: DAC_Periph  Digital to Analog Converter.
 // Instances:
 //  DAC  mmap.DAC_BASE

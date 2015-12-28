@@ -49,22 +49,22 @@ func (p *Port) OutPin(n int) int {
 	return int(p.out>>uint(n)) & 1
 }
 
-// SetPin sets n-th output pin to 1.
+// SetPin sets output value of n-th pin to 1.
 func (p *Port) SetPin(n int) {
 	p.outset = uint32(1) << uint(n)
 }
 
-// ClearOutPin sets n-th output pin to 0.
+// ClearPin sets output value of n-th pin to 0.
 func (p *Port) ClearPin(n int) {
 	p.outclr = uint32(1) << uint(n)
 }
 
-// SetPins sets output pins on positions specified by pins to 1.
+// SetPins sets output value of pins on positions specified by mask to 1.
 func (p *Port) SetPins(bits uint32) {
 	p.outset = bits
 }
 
-// ClearPins sets output pins on positions specified by bits to 0.
+// ClearPins sets output value of pins on positions specified by mask to 0.
 func (p *Port) ClearPins(bits uint32) {
 	p.outclr = bits
 }

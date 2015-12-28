@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: CRC_Periph  CRC calculation unit.
 // Instances:
 //  CRC  mmap.CRC_BASE

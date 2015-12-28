@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Package mmap provides base memory adresses for all peripherals.
 package mmap
 

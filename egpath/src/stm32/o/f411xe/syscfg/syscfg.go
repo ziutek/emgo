@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: SYSCFG_Periph  System configuration controller.
 // Instances:
 //  SYSCFG  mmap.SYSCFG_BASE

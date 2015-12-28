@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: ETH_Periph  Ethernet MAC.
 // Instances:
 //  ETH  mmap.ETH_BASE

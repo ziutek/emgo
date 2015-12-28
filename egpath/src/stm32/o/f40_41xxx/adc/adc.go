@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: ADC_Periph  Analog to Digital Converter.
 // Instances:
 //  ADC1  mmap.ADC1_BASE

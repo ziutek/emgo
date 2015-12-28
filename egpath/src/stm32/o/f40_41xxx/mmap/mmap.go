@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Package mmap provides base memory adresses for all peripherals.
 package mmap
 

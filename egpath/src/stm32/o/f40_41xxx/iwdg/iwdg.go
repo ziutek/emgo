@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: IWDG_Periph  Independent WATCHDOG.
 // Instances:
 //  IWDG  mmap.IWDG_BASE

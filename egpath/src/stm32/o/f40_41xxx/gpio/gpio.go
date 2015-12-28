@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: GPIO_Periph  General Purpose I/O.
 // Instances:
 //  GPIOA  mmap.GPIOA_BASE

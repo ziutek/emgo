@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: GPIO_Periph  General Purpose IO.
 // Instances:
 //  GPIOA  mmap.GPIOA_BASE

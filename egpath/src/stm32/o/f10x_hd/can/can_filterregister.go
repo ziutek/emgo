@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: CAN_FilterRegister_Periph  Controller Area Network FilterRegister.
 // Instances:
 // Registers:

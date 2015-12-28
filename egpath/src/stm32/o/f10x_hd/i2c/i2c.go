@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: I2C_Periph  Inter Integrated Circuit Interface.
 // Instances:
 //  I2C1  mmap.I2C1_BASE

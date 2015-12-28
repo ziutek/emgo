@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: CAN_FIFOMailBox_Periph  Controller Area Network FIFOMailBox.
 // Instances:
 // Registers:

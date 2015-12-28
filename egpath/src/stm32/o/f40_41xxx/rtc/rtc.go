@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: RTC_Periph  Real-Time Clock.
 // Instances:
 //  RTC  mmap.RTC_BASE

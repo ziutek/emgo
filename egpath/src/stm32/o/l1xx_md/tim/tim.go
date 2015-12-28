@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: TIM_Periph  TIM.
 // Instances:
 //  TIM2   mmap.TIM2_BASE

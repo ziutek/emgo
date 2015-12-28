@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: CRC_Periph  CRC calculation unit.
 // Instances:
 //  CRC  mmap.CRC_BASE

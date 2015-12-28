@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: PWR_Periph  Power Control.
 // Instances:
 //  PWR  mmap.PWR_BASE

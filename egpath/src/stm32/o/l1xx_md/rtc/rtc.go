@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: RTC_Periph  Real-Time Clock.
 // Instances:
 //  RTC  mmap.RTC_BASE

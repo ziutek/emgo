@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: LCD_Periph  LCD.
 // Instances:
 //  LCD  mmap.LCD_BASE

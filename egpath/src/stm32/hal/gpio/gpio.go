@@ -19,20 +19,34 @@ type Port struct {
 	afr     [2]mmio.U32
 }
 
+// Num returns ordinar number of p on its peripheral bus.
+func (p *Port) Num() int {
+	return pnum(p)
+}
+
 // Enable enables clock for port p.
 // lp determines whether the clock remains on in low power (sleep) mode.
 func (p *Port) Enable(lp bool) {
-	p.enable(lp)
+	n := pnum(p)
+	enr().SetBit(n)
+	if lp {
+		lpenr().SetBit(n)
+	} else {
+		lpenr().ClearBit(n)
+	}
+	_ = enr().Load() // Workaround (RCC delay).
 }
 
 // Disable disables clock for port p.
 func (p *Port) Disable() {
-	p.disable()
+	enr().ClearBit(pnum(p))
 }
 
 // Reset resets port p.
 func (p *Port) Reset() {
-	p.reset()
+	n := pnum(p)
+	rstr().SetBit(n)
+	rstr().ClearBit(n)
 }
 
 // Mode represents pin operation mode (input, output, alternate, analog).

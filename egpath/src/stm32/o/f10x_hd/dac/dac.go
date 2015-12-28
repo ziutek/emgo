@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: DAC_Periph  Digital to Analog Converter.
 // Instances:
 //  DAC  mmap.DAC_BASE

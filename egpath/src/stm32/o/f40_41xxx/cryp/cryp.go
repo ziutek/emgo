@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: CRYP_Periph  Crypto Processor.
 // Instances:
 //  CRYP  mmap.CRYP_BASE

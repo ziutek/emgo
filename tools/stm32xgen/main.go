@@ -40,8 +40,8 @@ func main() {
 		goto noscan
 	}
 	checkErr(r.Err())
-	saveIRQs(irqs)
-	saveMmap(mmap)
+	saveIRQs(irqs, pkgpath)
+	saveMmap(mmap, pkgpath)
 	for _, pkg := range pkgs {
 		tweaks(pkg)
 		pkg.Save(pkgpath)

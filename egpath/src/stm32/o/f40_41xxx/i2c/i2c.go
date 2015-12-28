@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: I2C_Periph  Inter-integrated Circuit Interface.
 // Instances:
 //  I2C1  mmap.I2C1_BASE

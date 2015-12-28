@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: RCC_Periph  Reset and Clock Control.
 // Instances:
 //  RCC  mmap.RCC_BASE

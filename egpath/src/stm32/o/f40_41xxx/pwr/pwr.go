@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: PWR_Periph  Power Control.
 // Instances:
 //  PWR  mmap.PWR_BASE

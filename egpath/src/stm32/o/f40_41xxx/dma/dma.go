@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: DMA_Periph  DMA Controller.
 // Instances:
 //  DMA1  mmap.DMA1_BASE

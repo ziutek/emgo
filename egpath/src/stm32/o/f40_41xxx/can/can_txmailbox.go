@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: CAN_TxMailBox_Periph  Controller Area Network TxMailBox.
 // Instances:
 // Registers:

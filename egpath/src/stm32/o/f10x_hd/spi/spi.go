@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: SPI_Periph  Serial Peripheral Interface.
 // Instances:
 //  SPI2  mmap.SPI2_BASE

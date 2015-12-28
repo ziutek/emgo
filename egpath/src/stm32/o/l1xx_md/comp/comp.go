@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: COMP_Periph  Comparator.
 // Instances:
 //  COMP  mmap.COMP_BASE

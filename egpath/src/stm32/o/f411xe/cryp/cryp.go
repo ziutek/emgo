@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: CRYP_Periph  Crypto Processor.
 // Instances:
 //  CRYP  mmap.CRYP_BASE

@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: PWR_Periph  Power Control.
 // Instances:
 //  PWR  mmap.PWR_BASE

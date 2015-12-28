@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: DBGMCU_Periph  Debug MCU.
 // Instances:
 //  DBGMCU  mmap.DBGMCU_BASE

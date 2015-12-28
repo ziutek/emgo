@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Package mmap provides base memory adresses for all peripherals.
 package mmap
 

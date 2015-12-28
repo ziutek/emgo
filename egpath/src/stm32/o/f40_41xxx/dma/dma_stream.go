@@ -1,3 +1,5 @@
+// +build f40_41xxx
+
 // Peripheral: DMA_Stream_Periph  DMA Controller.
 // Instances:
 //  DMA1_Stream0  mmap.DMA1_Stream0_BASE

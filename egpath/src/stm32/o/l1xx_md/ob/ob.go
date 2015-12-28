@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: OB_Periph  Option Bytes Registers.
 // Instances:
 //  OB  mmap.OB_BASE

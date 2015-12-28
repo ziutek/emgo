@@ -1,3 +1,5 @@
+// +build l1xx_md
+
 // Peripheral: DBGMCU_Periph  Debug MCU.
 // Instances:
 //  DBGMCU  mmap.DBGMCU_BASE

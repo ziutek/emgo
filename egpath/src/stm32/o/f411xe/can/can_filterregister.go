@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: CAN_FilterRegister_Periph  Controller Area Network FilterRegister.
 // Instances:
 // Registers:

@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: ADC_Periph  Analog to Digital Converter.
 // Instances:
 //  ADC1  mmap.ADC1_BASE

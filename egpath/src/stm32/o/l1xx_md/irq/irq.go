@@ -1,4 +1,6 @@
-// Package irq provides list of all defined external interrupts.
+// +build l1xx_md
+
+// Package irq provides list of external interrupts.
 package irq
 
 import "arch/cortexm/nvic"

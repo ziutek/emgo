@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: PWR_Periph  Power Control.
 // Instances:
 //  PWR  mmap.PWR_BASE

@@ -1,3 +1,5 @@
+// +build f10x_hd
+
 // Peripheral: CRC_Periph  CRC calculation unit.
 // Instances:
 //  CRC  mmap.CRC_BASE

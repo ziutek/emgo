@@ -1,9 +1,4 @@
 uintptr
-syscall$btou(bool b) {
-	return (uintptr) (b);
-}
-
-uintptr
 syscall$ftou(void (*f) ()) {
 	return CAST(uintptr, f);
 }

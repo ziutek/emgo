@@ -1,3 +1,5 @@
+// +build f411xe
+
 // Peripheral: DMA2D_Periph  DMA2D Controller.
 // Instances:
 //  DMA2D  mmap.DMA2D_BASE
