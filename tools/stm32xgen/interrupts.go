@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -50,19 +49,17 @@ func interrupts(r *scanner) []*IRQ {
 	return irqs
 }
 
-func saveIRQs(irqs []*IRQ, base string) {
+func saveIRQs(irqs []*IRQ) {
 	mkdir("irq")
 	chdir("irq")
 	defer chdir("..")
 	w := create("irq.go")
 	defer w.Close()
-	fmt.Fprintln(w, "// +build", filepath.Base(base))
-	fmt.Fprintln(w)
 	fmt.Fprintln(
 		w, "// Package irq provides list of external interrupts.",
 	)
 	fmt.Fprintln(w, "package irq")
-	fmt.Fprintln(w)
+	w.donotedit()
 	fmt.Fprintln(w, `import "arch/cortexm/nvic"`)
 	fmt.Fprintln(w, "const (")
 	for _, irq := range irqs {

@@ -77,11 +77,18 @@ loop:
 			for nextoff+uint64(siz) > offset || nextoff&uint64(siz-1) != 0 {
 				siz >>= 1
 			}
-			if last := regs[len(regs)-1]; last.Name == "" && last.Size == siz*8 {
-				if last.Len == 0 {
-					last.Len += 2
+			var lastres *reg
+			if len(regs) > 0 {
+				lastres = regs[len(regs)-1]
+				if lastres.Name != "" || lastres.Size != siz*8 {
+					lastres = nil
+				}
+			}
+			if lastres != nil {
+				if lastres.Len == 0 {
+					lastres.Len = 2
 				} else {
-					last.Len++
+					lastres.Len++
 				}
 			} else {
 				regs = append(regs, &reg{

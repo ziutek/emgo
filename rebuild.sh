@@ -7,22 +7,34 @@ EGC='egc'
 
 rm -rf egroot/pkg/* egpath/pkg/*
 
-list=$(find egroot/src egpath/src -type d)
+list=$(find egroot/src -type d)
 
 for p in $list; do
 	if [ -n "$(find $p -maxdepth 1 -type f -name '*.go')" ]; then
 		cd $p
-		rm -f *.elf *.bin *.sizes
 		printf "%-44s   " ${p#*/*/}
-		if [ -x build.sh ]; then
-			./build.sh
-		else
-			$EGC
-		fi
-		if $? then
+		if $EGC; then
 			echo OK
 		else
 			echo Err
+		fi
+		cd - >/dev/null
+	fi
+done
+
+list=$(find egpath/src/stm32/examples -type d)
+
+for p in $list; do
+	if [ -n "$(find $p -maxdepth 1 -type f -name '*.go')" ]; then
+		cd $p
+		if [ -x ../build.sh ]; then
+			rm -f *.elf *.bin *.sizes
+			printf "%-44s   " ${p#*/*/}
+			if ../build.sh; then
+				echo OK
+			else
+				echo Err
+			fi
 		fi
 		cd - >/dev/null
 	fi

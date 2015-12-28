@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -67,8 +66,6 @@ type Periph struct {
 func (p *Periph) Save(base, pkgname string) {
 	w := create(strings.ToLower(p.Name + ".go"))
 	defer w.Close()
-	fmt.Fprintln(w, "// +build", filepath.Base(base))
-	fmt.Fprintln(w)
 	fmt.Fprintf(w, "// Peripheral: %s_Periph  %s.\n", p.Name, p.Descr)
 	fmt.Fprintln(w, "// Instances:")
 	tw := new(tabwriter.Writer)
@@ -101,7 +98,7 @@ func (p *Periph) Save(base, pkgname string) {
 	fmt.Fprintln(w, "// ", base+"/mmap")
 
 	fmt.Fprintln(w, "package", pkgname)
-	fmt.Fprintln(w)
+	w.donotedit()
 	for _, r := range p.Regs {
 		if len(r.Bits) == 0 {
 			continue
@@ -142,6 +139,7 @@ func (pkg *Package) saveDoc() {
 		w, "// Package %s provides interface to %s.\npackage %s\n",
 		pkg.Name, pkg.Descr, pkg.Name,
 	)
+	w.donotedit()
 }
 
 func (pkg *Package) Save(base string) {

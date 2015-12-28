@@ -1,8 +1,10 @@
 // This example shows how to use channels to divide interrupt handler into two
 // parts: fast part - that runs in interrupt context and slow part - that runs
-// in user context. Fast part only enqueues events/data and signals to the
-// source if it isn't ready to receive next portion. Slow part dequeues
-// events/data and handles them. This scheme can be used to implement
+// in user context.
+//
+// Fast part only enqueues events/data that receives from source (you) and
+// informs the source (using blue LED) if its buffer is full. Slow part
+// dequeues events/data and handles them. This scheme can be used to implement
 // interrupt driven I/O library.
 package main
 
