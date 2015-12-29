@@ -35,15 +35,13 @@ SECTIONS {
 		. = ALIGN(4);
 		__exidx_end = .;
 	} >loadTo
-    
-    .stack : {
-    	. = ALIGN((1 << StackLog2) / 8);
-    	. = . + (1 << StackLog2) * StackFrac / 8 * (MaxTasks + 1);
-    } >RAM
-    
-    StackEnd = ADDR(.stack) + SIZEOF(.stack);
-    
-	.data : {
+	
+	.stack : {} >RAM
+	
+	StackBegin = ALIGN(ADDR(.stack), (1 << StackLog2) / 8);
+	StackEnd = StackBegin + (1 << StackLog2) * StackFrac / 8 * (MaxTasks + 1);
+       
+	.data StackEnd : {
 		. = ALIGN(4);
 		*(
 			SORT_BY_ALIGNMENT(.data)
@@ -62,6 +60,7 @@ SECTIONS {
 			SORT_BY_ALIGNMENT(.bss)
 			SORT_BY_ALIGNMENT(.bss.*)
 		)
+		*(SORT_BY_ALIGNMENT(COMMON))
 		. = ALIGN(4);
 	} >RAM
 	
@@ -71,7 +70,7 @@ SECTIONS {
 	HeapBegin = BSSRAM + BSSSize;
 	HeapEnd = ORIGIN(RAM) + LENGTH(RAM);
 	
-	.noload 0 (NOLOAD) : {
-		*(.noload .noload.*)
+	.dummy 0 (DSECT) : {
+		*(.dummy .dummy.*)
 	}
 }
