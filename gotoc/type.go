@@ -616,7 +616,7 @@ func (cdd *CDD) minfo(f *types.Func) string {
 	cdd.acds = append(cdd.acds, acd)
 	cdd = nil
 	acd.Weak = true
-	acd.NoLoad = true
+	acd.NoAlloc = true
 	w := new(bytes.Buffer)
 	w.WriteString("const minfo " + mname)
 	acd.copyDecl(w, ";\n")

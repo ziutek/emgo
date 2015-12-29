@@ -4,7 +4,7 @@
 if [ $# -eq 1 -a "$1" = 'flash' ]; then
 	load="program $EGARCH.elf"
 else
-	arm-none-eabi-objcopy -O binary -R .noload $EGARCH.elf $EGARCH.bin
+	arm-none-eabi-objcopy -O binary $EGARCH.elf $EGARCH.bin
 	load="load_image $EGARCH.bin 0x20000000"
 fi
 

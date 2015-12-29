@@ -2,7 +2,7 @@
 
 set -e
 
-arm-none-eabi-objcopy -O binary -R .noload $EGARCH.elf $EGARCH.bin
+arm-none-eabi-objcopy -O binary $EGARCH.elf $EGARCH.bin
 
 openocd -f interface/$INTERFACE.cfg -f target/nrf51.cfg \
 	-c 'telnet_port pipe' \

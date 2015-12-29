@@ -37,7 +37,7 @@ type CDD struct {
 	Typ    DeclType
 	Export bool
 	Weak   bool
-	NoLoad bool
+	NoAlloc bool
 	Inline bool // set by DetermineInline()
 
 	Decl []byte
@@ -160,12 +160,12 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 		}
 
 	case VarDecl:
-		if cdd.NoLoad {
-			prefix = "__attribute__((section(\".noload\"))) "
+		if cdd.NoAlloc {
+			prefix = "__attribute__((section(\".dummy\"))) "
 		}
 		if cdd.Weak {
-			if cdd.NoLoad {
-				prefix = "__attribute__((weak, section(\".noload\"))) "
+			if cdd.NoAlloc {
+				prefix = "__attribute__((weak, section(\".dummy\"))) "
 			} else {
 				prefix = "__attribute__((weak)) "
 			}
