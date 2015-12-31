@@ -39,7 +39,7 @@ func (r *U8) Bits(mask uint8) uint8 {
 }
 
 func (r *U8) StoreBits(mask, bits uint8) {
-	r.r = r.r&^mask | bits
+	r.r = r.r&^mask | bits&mask
 }
 
 func (r *U8) SetBits(mask uint8) {
@@ -116,7 +116,7 @@ func (r *U16) Bits(mask uint16) uint16 {
 }
 
 func (r *U16) StoreBits(mask, bits uint16) {
-	r.r = r.r&^mask | bits
+	r.r = r.r&^mask | bits&mask
 }
 
 func (r *U16) SetBits(mask uint16) {
@@ -192,7 +192,7 @@ func (r *U32) Bits(mask uint32) uint32 {
 }
 
 func (r *U32) StoreBits(mask, bits uint32) {
-	r.r = r.r&^mask | bits
+	r.r = r.r&^mask | bits&mask
 }
 
 func (r *U32) SetBits(mask uint32) {
