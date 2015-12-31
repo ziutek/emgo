@@ -32,8 +32,8 @@ const ButtonPin = 0
 func init() {
 	setup.Performance168(8)
 
-	gpio.A.Enable(false)
-	gpio.D.Enable(false)
+	gpio.A.EnableClock(false)
+	gpio.D.EnableClock(false)
 
 	LED = gpio.D
 	LED.SetMode(Green, gpio.Out)

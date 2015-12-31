@@ -1,159 +1,151 @@
-// Package usart supports USART/UART devices in most STM32 MCUs.
 package usart
 
-type Dev struct {
-	s   uint32
-	d   uint32
-	br  uint32
-	c1  uint32
-	c2  uint32
-	c3  uint32
-	gtp uint32
-} //c:volatile
-
-type Status uint32
-
-const (
-	ParityErr Status = 1 << iota
-	FramingErr
-	Noise
-	OverrunErr
-	Idle
-	RxNotEmpty
-	TxDone
-	TxEmpty
-
-	LINBreak
-	CTS
+import (
+	"mmio"
 )
 
-func (u *Dev) Status() Status {
-	return Status(u.s)
+// USART represents USART device.
+type USART struct {
+	sr   mmio.U32
+	dr   mmio.U32
+	brr  mmio.U32
+	cr1  mmio.U32
+	cr2  mmio.U32
+	cr3  mmio.U32
+	gtpr mmio.U32
 }
 
-func (u *Dev) SetBaudRate(br int, pclk uint) {
-	div := uint32(pclk / uint(br))
+type Status uint16
+
+const (
+	ParityErr  Status = 1 << 0 // Parity error.
+	FramingErr Status = 1 << 1 // Framing error.
+	NoiseErr   Status = 1 << 2 // Noise error flag.
+	OverrunErr Status = 1 << 3 // Overrun error.
+	Idle       Status = 1 << 4 // IDLE line detected.
+	RxNotEmpty Status = 1 << 5 // Read data register not empty.
+	TxDone     Status = 1 << 6 // Transmission complete.
+	TxEmpty    Status = 1 << 7 // Transmit data register empty.
+	LINBreak   Status = 1 << 8 // LIN break detection flag.
+	CTS        Status = 1 << 9 // CTS flag.
+)
+
+// EnableClock enables clock for USART u.
+// lp determines whether the clock remains on in low power (sleep) mode.
+func (u *USART) EnableClock(lp bool) {
+	enbit := enbit(u)
+	enbit.Set()
+	if lp {
+		lpenbit(u).Set()
+	} else {
+		lpenbit(u).Clear()
+	}
+	_ = enbit.U.Load() // Workaround (RCC delay).
+}
+
+// DisableClock disables clock for USART u.
+func (u *USART) DisableClock() {
+	enbit(u).Clear()
+}
+
+// Reset resets USART u.
+func (u *USART) Reset() {
+	rstbit := rstbit(u)
+	rstbit.Set()
+	rstbit.Clear()
+}
+
+// Status return current status.
+func (u *USART) Status() Status {
+	return Status(u.sr.Load())
+}
+
+// SetBaudRate sets baudrate [sym/s] u .
+func (u *USART) SetBaudRate(baudrate int, pclk uint) {
+	br := uint(baudrate)
+	usartdiv := (pclk + br/2) / br
+	const over8 = 1 << 15
 	if uint(br) > pclk/16 {
 		// Oversampling = 8
-		u.c1 |= 1 << 15
-		u.br = div&7<<1 | div&7
+		u.cr1.SetBits(over8)
+		usartdiv = usartdiv&^7<<1 | usartdiv&7
 	} else {
 		// Oversampling = 16
-		u.c1 &^= 1 << 15
-		u.br = div
+		u.cr1.ClearBits(over8)
 	}
-
+	u.brr.Store(uint32(usartdiv))
 }
 
-func (u *Dev) Enable() {
-	u.c1 |= 1 << 13
+// Enable enables u.
+func (u *USART) Enable() {
+	u.cr1.SetBits(1 << 13)
 }
 
-func (u *Dev) Disable() {
-	u.c1 &^= 1 << 13
+// Disable disables u at end of the current byte transfer.
+func (u *USART) Disable() {
+	u.cr1.ClearBits(1 << 13)
 }
 
-type WordLen byte
+type Conf uint32
 
 const (
-	Bits8 WordLen = iota
-	Bits9
+	RxEna   Conf = 1 << 2         // Receiver enabled.
+	TxEna   Conf = 1 << 3         // Transmiter enabled.
+	ParEven Conf = 2 << 9         // Parity control enabled: even.
+	ParOdd  Conf = 3 << 9         // Parity control enabled: odd.
+	Word9b  Conf = 1 << 12        // Use 9 bit word instead of 8 bit.
+	Stop0b5 Conf = 1 << (16 + 12) // Use 0.5 stop bits insted of 1.
+	Stop2b  Conf = 2 << (16 + 12) // Use 2 stop bits instead of 1.
+	Stop1b5 Conf = 3 << (16 + 12) // Use 1.5 stop bits instead of 1.
 )
 
-func (u *Dev) SetWordLen(l WordLen) {
-	if l == Bits8 {
-		u.c1 &^= 1 << 12
-	} else {
-		u.c1 |= 1 << 12
-	}
+func (u *USART) SetConf(cfg Conf) {
+	mask := RxEna | TxEna | ParOdd
+	u.cr1.StoreBits(uint32(mask), uint32(cfg))
+	mask = Stop1b5
+	u.cr2.StoreBits(uint32(mask), uint32(cfg>>16))
 }
 
-type Parity byte
+type Mode uint32
 
 const (
-	None Parity = iota
-	_
-	Even
-	Odd
+	HalfDuplex Mode = 1 << (16 + 3)
 )
 
-func (u *Dev) SetParity(p Parity) {
-	u.c1 = u.c1&^(3<<9) | uint32(p)<<9
+func (u *USART) SetMode(mode Mode) {
+	//mask :=
+	//u.cr2.StoreBits(uint32(mask), uint32(mode))
+	mask := HalfDuplex
+	u.cr3.StoreBits(uint32(mask), uint32(mode>>16))
 }
 
-type IRQ byte
+type IRQs uint16
 
 const (
-	IdleIRQ IRQ = 1 << iota
-	RxNotEmptyIRQ
-	TxDoneIRQ
-	TxEmptyIRQ
-	ParityErrIRQ
-
-	afterLastIRQ
+	IdleIRQ       IRQs = 1 << 4
+	RxNotEmptyIRQ IRQs = 1 << 5
+	TxDoneIRQ     IRQs = 1 << 6
+	TxEmptyIRQ    IRQs = 1 << 7
+	ParityErrIRQ  IRQs = 1 << 8
 )
 
-func (u *Dev) EnabledIRQs() IRQ {
-	return IRQ(u.c1>>4) & (afterLastIRQ - 1)
+func (u *USART) IRQsEnabled() IRQs {
+	const irqmask = IdleIRQ | RxNotEmptyIRQ | TxDoneIRQ | TxEmptyIRQ | ParityErrIRQ
+	return IRQs(u.cr1.Bits(uint32(irqmask)))
 }
 
-func (u *Dev) EnableIRQs(irqs IRQ) {
-	u.c1 |= uint32(irqs) << 4
+func (u *USART) EnableIRQs(irqs IRQs) {
+	u.cr1.SetBits(uint32(irqs))
 }
 
-func (u *Dev) DisableIRQs(irqs IRQ) {
-
-	u.c1 &^= uint32(irqs) << 4
+func (u *USART) DisableIRQs(irqs IRQs) {
+	u.cr1.ClearBits(uint32(irqs))
 }
 
-type Mode byte
-
-const (
-	Rx = 1 << 2
-	Tx = 1 << 3
-)
-
-func (u *Dev) Mode() Mode {
-	return Mode(u.c1 & (3 << 2))
+func (u *USART) Store(d int) {
+	u.dr.Store(uint32(d))
 }
 
-func (u *Dev) SetMode(m Mode) {
-	u.c1 = u.c1&^(3<<2) | uint32(m)
+func (u *USART) Load() int {
+	return int(u.dr.Load())
 }
-
-type StopBits byte
-
-const (
-	Stop1b StopBits = iota
-	Stop0b5
-	Stop2b
-	Stop1b5
-)
-
-func (u *Dev) SetStopBits(sb StopBits) {
-	u.c2 = u.c2&^(3<<12) | uint32(sb)<<12
-}
-
-func (u *Dev) HalfDuplex() bool {
-	return u.c3|(1<<3) != 0
-}
-
-func (u *Dev) SetHalfDuplex(hd bool) {
-	if hd {
-		u.c3 |= 1 << 3
-	} else {
-		u.c3 &^= 1 << 3
-	}
-}
-
-func (u *Dev) Store(d uint32) {
-	u.d = d
-}
-
-func (u *Dev) Load() uint32 {
-	return u.d
-}
-
-// STM32F10xxx doesn't support:
-// 1. 8x oversampling mode
-// 2. Onebit sample method.

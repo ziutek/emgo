@@ -1,51 +1,42 @@
 package main
 
 import (
-	"stm32/f4/gpio"
-	"stm32/f4/periph"
-	"stm32/f4/setup"
-	"stm32/f4/usarts"
-	"stm32/usart"
+	"stm32/hal/gpio"
+	"stm32/hal/setup"
+	"stm32/hal/usart"
 )
 
-var udev = usarts.USART2
+var tts *usart.USART
 
 func init() {
 	setup.Performance168(8)
 
-	periph.AHB1ClockEnable(periph.GPIOA)
-	periph.AHB1Reset(periph.GPIOA)
-	periph.APB1ClockEnable(periph.USART2)
-	periph.APB1Reset(periph.USART2)
-
 	port, tx, rx := gpio.A, 2, 3
 
+	port.EnableClock(true)
 	port.SetMode(tx, gpio.Alt)
-	port.SetOutType(tx, gpio.PushPull)
-	port.SetPull(tx, gpio.PullUp)
-	port.SetOutSpeed(tx, gpio.Fast)
 	port.SetAltFunc(tx, gpio.USART2)
 	port.SetMode(rx, gpio.Alt)
 	port.SetAltFunc(rx, gpio.USART2)
 
-	udev.SetBaudRate(115200, setup.APB1Clk)
-	udev.SetWordLen(usart.Bits8)
-	udev.SetParity(usart.None)
-	udev.SetStopBits(usart.Stop1b)
-	udev.SetMode(usart.Tx | usart.Rx)
-	udev.Enable()
+	tts = usart.USART2
+
+	tts.EnableClock(true)
+	tts.SetBaudRate(115200, setup.APB1Clk)
+	tts.SetConf(usart.RxEna | usart.TxEna)
+	tts.Enable()
 }
 
 func writeByte(b byte) {
-	udev.Store(uint32(b))
-	for udev.Status()&usart.TxEmpty == 0 {
+	tts.Store(int(b))
+	for tts.Status()&usart.TxEmpty == 0 {
 	}
 }
 
 func readByte() byte {
-	for udev.Status()&usart.RxNotEmpty == 0 {
+	for tts.Status()&usart.RxNotEmpty == 0 {
 	}
-	return byte(udev.Load())
+	return byte(tts.Load())
 }
 
 func main() {

@@ -13,13 +13,11 @@ import (
 	"fmt"
 	"rtos"
 
-	"stm32/f4/gpio"
-	"stm32/f4/irq"
-	"stm32/f4/periph"
-	"stm32/f4/setup"
-	"stm32/f4/usarts"
+	"stm32/hal/gpio"
+	"stm32/hal/irq"
+	"stm32/hal/setup"
+	"stm32/hal/usart"
 	"stm32/serial"
-	"stm32/usart"
 )
 
 const (
@@ -30,9 +28,9 @@ const (
 )
 
 var (
-	leds = gpio.D
-	udev = usarts.USART2
-	s    = serial.New(udev, 80, 8)
+	leds *gpio.Port
+	tts  *usart.USART
+	s    *serial.Dev
 )
 
 func init() {
@@ -40,9 +38,9 @@ func init() {
 
 	// LEDS
 
-	periph.AHB1ClockEnable(periph.GPIOD)
-	periph.AHB1Reset(periph.GPIOD)
+	leds = gpio.D
 
+	leds.EnableClock(false)
 	leds.SetMode(Green, gpio.Out)
 	leds.SetMode(Orange, gpio.Out)
 	leds.SetMode(Red, gpio.Out)
@@ -50,33 +48,27 @@ func init() {
 
 	// USART
 
-	periph.AHB1ClockEnable(periph.GPIOA)
-	periph.AHB1Reset(periph.GPIOA)
-	periph.APB1ClockEnable(periph.USART2)
-	periph.APB1Reset(periph.USART2)
-
 	port, tx, rx := gpio.A, 2, 3
 
+	port.EnableClock(true)
 	port.SetMode(tx, gpio.Alt)
-	port.SetOutType(tx, gpio.PushPull)
-	port.SetPull(tx, gpio.PullUp)
-	port.SetOutSpeed(tx, gpio.Fast)
 	port.SetAltFunc(tx, gpio.USART2)
 	port.SetMode(rx, gpio.Alt)
 	port.SetAltFunc(rx, gpio.USART2)
 
-	udev.SetBaudRate(115200, setup.APB1Clk)
-	udev.SetWordLen(usart.Bits8)
-	udev.SetParity(usart.None)
-	udev.SetStopBits(usart.Stop1b)
-	udev.SetMode(usart.Tx | usart.Rx)
-	udev.EnableIRQs(usart.RxNotEmptyIRQ)
-	udev.Enable()
+	tts = usart.USART2
 
-	rtos.IRQ(irq.USART2).Enable()
+	tts.EnableClock(true)
+	tts.SetBaudRate(115200, setup.APB1Clk)
+	tts.SetConf(usart.RxEna | usart.TxEna)
+	tts.EnableIRQs(usart.RxNotEmptyIRQ)
+	tts.Enable()
 
+	s = serial.New(tts, 80, 8)
 	s.SetUnix(true)
 	fmt.DefaultWriter = s
+
+	rtos.IRQ(irq.USART2).Enable()
 }
 
 func blink(c, dly int) {
@@ -89,13 +81,13 @@ func blink(c, dly int) {
 	leds.ClearPin(c)
 }
 
-func sirq() {
-	//blink(Blue, -10) // Uncoment to see "hardware buffer overrun".
+func ttsISR() {
+	// blink(Blue, -10) // Uncoment to see "hardware buffer overrun".
 	s.IRQ()
 }
 
 var ISRs = [...]func(){
-	irq.USART2: sirq,
+	irq.USART2: ttsISR,
 } //c:__attribute__((section(".ISRs")))
 
 func checkErr(err error) {

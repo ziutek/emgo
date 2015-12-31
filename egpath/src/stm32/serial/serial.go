@@ -2,7 +2,7 @@
 package serial
 
 import (
-	"stm32/usart"
+	"stm32/hal/usart"
 )
 
 // Dev wraps usart.Dev to provide high level interface to send and receive
@@ -13,18 +13,19 @@ import (
 // Status, Load, Store, EnableIRQs, DisableIRQs methods (last two are used to
 // enable/disable TxEmpty and TxDone interrupts).
 type Dev struct {
-	dev    *usart.Dev
+	dev    *usart.USART
 	rx     chan uint16
 	tx     chan uint16
 	txdone chan struct{}
 	unix   bool
 	flush  bool
+	saverr Error
 	//fllf   bool
 }
 
 // New creates new Dev for USART device with Rx/Tx buffer of specified
 // lengths in 9-bit words.
-func New(dev *usart.Dev, rxlen, txlen int) *Dev {
+func New(dev *usart.USART, rxlen, txlen int) *Dev {
 	s := new(Dev)
 	s.dev = dev
 	s.rx = make(chan uint16, rxlen)
@@ -33,22 +34,20 @@ func New(dev *usart.Dev, rxlen, txlen int) *Dev {
 	return s
 }
 
-type Error uint
+type Error byte
 
 const (
-	ErrBufferFull Error = 1 << (9 + iota)
-	ErrParity
+	ErrParity Error = 1 << iota
 	ErrFraming
 	ErrNoise
 	ErrOverrun
+	ErrBufferFull
 )
 
 func (e Error) Error() string {
 	switch e {
 	case 0:
 		return "no error"
-	case ErrBufferFull:
-		return "buffer full"
 	case ErrParity:
 		return "parity error"
 	case ErrFraming:
@@ -57,8 +56,10 @@ func (e Error) Error() string {
 		return "noisy signal"
 	case ErrOverrun:
 		return "hardware buffer overrun"
+	case ErrBufferFull:
+		return "software buffer full"
 	default:
-		return "more than one from: ErrBufferFull, ErrParity, ErrFraming, ErrOverrun"
+		return "two or more errors from: Parity,Framing,Noise,Overrun,BufferFull"
 	}
 }
 
@@ -68,16 +69,13 @@ const flushReq = 1 << 15
 func (s *Dev) IRQ() {
 	st := s.dev.Status()
 	if st&usart.RxNotEmpty != 0 {
-		d := s.dev.Load() & 0x1ff
-		// Add error bits
-		d |= uint32(st&0xf) << 10
-		if len(s.rx) >= cap(s.rx)-1 {
-			d |= uint32(ErrBufferFull)
-		}
+		err := Error(st&0xf) | s.saverr
 		select {
-		case s.rx <- uint16(d):
+		case s.rx <- uint16(s.dev.Load()&0x1ff | int(err)<<10):
+			s.saverr = 0
 		default:
 			// Rx channel is full.
+			s.saverr = err | ErrBufferFull
 		}
 	}
 	if s.flush {
@@ -101,7 +99,7 @@ func (s *Dev) IRQ() {
 				s.dev.EnableIRQs(usart.TxDoneIRQ)
 				break
 			}
-			s.dev.Store(uint32(d))
+			s.dev.Store(int(d))
 		default:
 			// Tx channel is empty.
 			s.dev.DisableIRQs(usart.TxEmptyIRQ)
@@ -152,7 +150,7 @@ func (s *Dev) WriteByte(b byte) error {
 }
 
 func split(d16 uint16) (d9 uint16, err error) {
-	if e := Error(d16) &^ 0x1ff; e != 0 {
+	if e := Error(d16 >> 10); e != 0 {
 		err = e
 	}
 	d9 = d16 & 0x1ff
@@ -223,6 +221,6 @@ func (s *Dev) Read(buf []byte) (n int, err error) {
 }
 
 // USART returns wrapped USART device.
-func (s *Dev) USART() *usart.Dev {
+func (s *Dev) USART() *usart.USART {
 	return s.dev
 }
