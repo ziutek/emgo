@@ -17,6 +17,10 @@ type DMA_Channel_Periph struct {
 	CMAR  CMAR
 }
 
+func (p *DMA_Channel_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var DMA1_Channel1 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Channel1_BASE)))
 
 var DMA1_Channel2 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Channel2_BASE)))

@@ -3,23 +3,22 @@ package main
 import (
 	"fmt"
 
-	"stm32/f4/periph"
-	"stm32/f4/setup"
-	"stm32/timer"
+	"stm32/hal/raw/rcc"
+	"stm32/hal/raw/tim"
+	"stm32/hal/setup"
 )
 
 func init() {
 	setup.Performance168(8)
-	periph.APB2ClockEnable(periph.TIM10)
-	periph.APB2Reset(periph.TIM10)
+	rcc.RCC.TIM10EN().Set()
 }
 
 func main() {
-	tim := timer.TIM10
-	tim.ARR_Store(65000)
-	tim.CNT_Store(0)
+	tim := tim.TIM10
+	tim.ARR.Store(65000)
+	tim.CNT.Store(0)
 	tim.CEN().Set()
 	for {
-		fmt.Println(tim.CNT_Load())
+		fmt.Println(tim.CNT.Load())
 	}
 }

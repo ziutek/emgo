@@ -49,6 +49,10 @@ type CRYP_Periph struct {
 	CSGCM7R    CSGCM7R
 }
 
+func (p *CRYP_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var CRYP = (*CRYP_Periph)(unsafe.Pointer(uintptr(mmap.CRYP_BASE)))
 
 type CR_Bits uint32

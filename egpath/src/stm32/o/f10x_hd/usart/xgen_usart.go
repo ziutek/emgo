@@ -26,6 +26,10 @@ type USART_Periph struct {
 	GTPR GTPR
 }
 
+func (p *USART_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var USART2 = (*USART_Periph)(unsafe.Pointer(uintptr(mmap.USART2_BASE)))
 
 var USART3 = (*USART_Periph)(unsafe.Pointer(uintptr(mmap.USART3_BASE)))

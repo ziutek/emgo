@@ -76,6 +76,10 @@ type ETH_Periph struct {
 	DMACHRBAR   DMACHRBAR
 }
 
+func (p *ETH_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var ETH = (*ETH_Periph)(unsafe.Pointer(uintptr(mmap.ETH_BASE)))
 
 type MACCR_Bits uint32

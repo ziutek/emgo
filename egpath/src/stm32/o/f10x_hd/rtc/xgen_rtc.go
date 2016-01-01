@@ -32,6 +32,10 @@ type RTC_Periph struct {
 	ALRL ALRL
 }
 
+func (p *RTC_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var RTC = (*RTC_Periph)(unsafe.Pointer(uintptr(mmap.RTC_BASE)))
 
 type CRH_Bits uint16

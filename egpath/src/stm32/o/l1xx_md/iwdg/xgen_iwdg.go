@@ -17,6 +17,10 @@ type IWDG_Periph struct {
 	SR  SR
 }
 
+func (p *IWDG_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var IWDG = (*IWDG_Periph)(unsafe.Pointer(uintptr(mmap.IWDG_BASE)))
 
 type KR_Bits uint32

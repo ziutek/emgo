@@ -27,6 +27,10 @@ type AES_Periph struct {
 	IVR3  IVR3
 }
 
+func (p *AES_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var AES = (*AES_Periph)(unsafe.Pointer(uintptr(mmap.AES_BASE)))
 
 type CR_Bits uint32

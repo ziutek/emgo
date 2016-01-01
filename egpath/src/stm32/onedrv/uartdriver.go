@@ -6,13 +6,12 @@ import (
 	"onewire"
 )
 
-type UARTDriver struct {
+type SerialDriver struct {
 	Serial *serial.Dev
-	Clock  uint
 }
 
-func (d *UARTDriver) Reset() error {
-	d.Serial.USART().SetBaudRate(9600, d.Clock)
+func (d SerialDriver) Reset() error {
+	d.Serial.USART().SetBaudRate(9600)
 	d.Serial.WriteByte(0xf0)
 	r, err := d.Serial.ReadByte()
 	if err != nil {
@@ -21,16 +20,16 @@ func (d *UARTDriver) Reset() error {
 	if r == 0xf0 {
 		return onewire.ErrNoResponse
 	}
-	d.Serial.USART().SetBaudRate(115200, d.Clock)
+	d.Serial.USART().SetBaudRate(115200)
 	return nil
 }
 
-func (d *UARTDriver) sendRecv(slot byte) (byte, error) {
+func (d SerialDriver) sendRecv(slot byte) (byte, error) {
 	d.Serial.WriteByte(byte(slot))
 	return d.Serial.ReadByte()
 }
 
-func (d *UARTDriver) WriteBit(bit byte) error {
+func (d SerialDriver) WriteBit(bit byte) error {
 	if bit != 0 {
 		bit = 0xff
 	}
@@ -44,7 +43,7 @@ func (d *UARTDriver) WriteBit(bit byte) error {
 	return nil
 }
 
-func (d *UARTDriver) ReadBit() (byte, error) {
+func (d SerialDriver) ReadBit() (byte, error) {
 	r, err := d.sendRecv(0xff)
 	if err != nil {
 		return 0, err

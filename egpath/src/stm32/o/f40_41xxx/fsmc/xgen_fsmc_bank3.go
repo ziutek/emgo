@@ -19,6 +19,10 @@ type FSMC_Bank3_Periph struct {
 	ECCR3 ECCR3
 }
 
+func (p *FSMC_Bank3_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var FSMC_Bank3 = (*FSMC_Bank3_Periph)(unsafe.Pointer(uintptr(mmap.FSMC_Bank3_R_BASE)))
 
 type PCR3_Bits uint32

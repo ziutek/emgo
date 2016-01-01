@@ -2,6 +2,9 @@ package usart
 
 import (
 	"mmio"
+	"unsafe"
+
+	"stm32/hal/setup"
 )
 
 // USART represents USART device.
@@ -13,6 +16,10 @@ type USART struct {
 	cr2  mmio.U32
 	cr3  mmio.U32
 	gtpr mmio.U32
+}
+
+func (u *USART) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(u))
 }
 
 type Status uint16
@@ -30,7 +37,7 @@ const (
 	CTS        Status = 1 << 9 // CTS flag.
 )
 
-// EnableClock enables clock for USART u.
+// EnableClock enables clock for USART.
 // lp determines whether the clock remains on in low power (sleep) mode.
 func (u *USART) EnableClock(lp bool) {
 	enbit := enbit(u)
@@ -43,7 +50,7 @@ func (u *USART) EnableClock(lp bool) {
 	_ = enbit.U.Load() // Workaround (RCC delay).
 }
 
-// DisableClock disables clock for USART u.
+// DisableClock disables clock for u.
 func (u *USART) DisableClock() {
 	enbit(u).Clear()
 }
@@ -60,9 +67,11 @@ func (u *USART) Status() Status {
 	return Status(u.sr.Load())
 }
 
-// SetBaudRate sets baudrate [sym/s] u .
-func (u *USART) SetBaudRate(baudrate int, pclk uint) {
+// SetBaudRate sets baudrate [sym/s]. APB1Clk, APB2Clk in stm32/hal/setup package
+// must be set properly before use this function.
+func (u *USART) SetBaudRate(baudrate int) {
 	br := uint(baudrate)
+	pclk := setup.PeriphClk(u.BaseAddr())
 	usartdiv := (pclk + br/2) / br
 	const over8 = 1 << 15
 	if uint(br) > pclk/16 {
@@ -102,8 +111,9 @@ const (
 func (u *USART) SetConf(cfg Conf) {
 	mask := RxEna | TxEna | ParOdd
 	u.cr1.StoreBits(uint32(mask), uint32(cfg))
-	mask = Stop1b5
-	u.cr2.StoreBits(uint32(mask), uint32(cfg>>16))
+	cfg >>= 16
+	mask = Stop1b5 >> 16
+	u.cr2.StoreBits(uint32(mask), uint32(cfg))
 }
 
 type Mode uint32
@@ -115,8 +125,9 @@ const (
 func (u *USART) SetMode(mode Mode) {
 	//mask :=
 	//u.cr2.StoreBits(uint32(mask), uint32(mode))
-	mask := HalfDuplex
-	u.cr3.StoreBits(uint32(mask), uint32(mode>>16))
+	mode >>= 16
+	mask := HalfDuplex >> 16
+	u.cr3.StoreBits(uint32(mask), uint32(mask))
 }
 
 type IRQs uint16

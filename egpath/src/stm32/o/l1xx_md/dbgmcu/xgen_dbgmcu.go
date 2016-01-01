@@ -17,6 +17,10 @@ type DBGMCU_Periph struct {
 	APB2FZ APB2FZ
 }
 
+func (p *DBGMCU_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var DBGMCU = (*DBGMCU_Periph)(unsafe.Pointer(uintptr(mmap.DBGMCU_BASE)))
 
 type IDCODE_Bits uint32

@@ -14,6 +14,10 @@ type FSMC_Bank1E_Periph struct {
 	BWTR [7]BWTR
 }
 
+func (p *FSMC_Bank1E_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var FSMC_Bank1E = (*FSMC_Bank1E_Periph)(unsafe.Pointer(uintptr(mmap.FSMC_Bank1E_R_BASE)))
 
 type BWTR_Bits uint32

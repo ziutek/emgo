@@ -5,7 +5,6 @@ package main
 
 import (
 	"bits"
-	"delay"
 	"fmt"
 	"io"
 	"reflect"
@@ -13,79 +12,49 @@ import (
 	"strconv"
 	"unsafe"
 
-	"stm32/f4/gpio"
-	"stm32/f4/irq"
-	"stm32/f4/periph"
-	"stm32/f4/setup"
-	"stm32/f4/usarts"
 	"stm32/serial"
-	"stm32/usart"
+
+	"stm32/hal/gpio"
+	"stm32/hal/irq"
+	"stm32/hal/setup"
+	"stm32/hal/usart"
 )
 
-const (
-	Green = 5
-)
-
-var (
-	leds = gpio.A
-	udev = usarts.USART2
-	s    = serial.New(udev, 80, 8)
-)
+var con *serial.Dev
 
 func init() {
-	setup.Performance84(8)
-
-	periph.AHB1ClockEnable(periph.GPIOA)
-	periph.AHB1Reset(periph.GPIOA)
-
-	leds.SetMode(Green, gpio.Out)
-
-	periph.APB1ClockEnable(periph.USART2)
-	periph.APB1Reset(periph.USART2)
+	setup.Performance96(8)
 
 	port, tx, rx := gpio.A, 2, 3
 
+	port.EnableClock(true)
 	port.SetMode(tx, gpio.Alt)
-	port.SetOutType(tx, gpio.PushPull)
-	port.SetPull(tx, gpio.PullUp)
-	port.SetOutSpeed(tx, gpio.Fast)
 	port.SetAltFunc(tx, gpio.USART2)
 	port.SetMode(rx, gpio.Alt)
 	port.SetAltFunc(rx, gpio.USART2)
 
-	udev.SetBaudRate(115200, setup.APB1Clk)
-	udev.SetWordLen(usart.Bits8)
-	udev.SetParity(usart.None)
-	udev.SetStopBits(usart.Stop1b)
-	udev.SetMode(usart.Tx | usart.Rx)
-	udev.EnableIRQs(usart.RxNotEmptyIRQ)
-	udev.Enable()
+	tts := usart.USART2
+
+	tts.EnableClock(true)
+	tts.SetBaudRate(115200)
+	tts.SetConf(usart.RxEna | usart.TxEna)
+	tts.EnableIRQs(usart.RxNotEmptyIRQ)
+	tts.Enable()
+
+	con = serial.New(tts, 80, 8)
+	con.SetUnix(true)
+	fmt.DefaultWriter = con
 
 	rtos.IRQ(irq.USART2).Enable()
-
-	s.SetUnix(true)
-
-	fmt.DefaultWriter = s
 }
 
-func blink(c int, d int) {
-	leds.SetPin(c)
-	if d > 0 {
-		delay.Millisec(d)
-	} else {
-		delay.Loop(-1e4 * d)
-	}
-	leds.ClearPin(c)
+func conISR() {
+	con.IRQ()
 }
 
-func isr() {
-	s.IRQ()
-}
-
-//c:const
-//c:__attribute__((section(".InterruptVectors")))
-var IRQs = [...]func(){
-	irq.USART2: isr,
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.USART2: conISR,
 }
 
 type Bool bool
@@ -99,13 +68,13 @@ func (b Bool) Format(st fmt.State, c rune) {
 }
 
 func nle(n int, err error) {
-	s.WriteByte('|')
-	strconv.WriteInt(s, n, 10, 0)
+	con.WriteByte('|')
+	strconv.WriteInt(con, n, 10, 0)
 	if err != nil {
-		s.WriteString(" Err: ")
-		s.WriteString(err.Error())
+		con.WriteString(" Err: ")
+		con.WriteString(err.Error())
 	}
-	s.WriteByte('\n')
+	con.WriteByte('\n')
 }
 
 func main() {
@@ -114,116 +83,116 @@ func main() {
 		SmallestNonzeroFloat64 = 4.940656458412465441765687928682213723651e-324
 	)
 
-	nle(strconv.WriteBool(s, true, 't', 0))
-	nle(strconv.WriteBool(s, true, 't', -10))
-	nle(strconv.WriteBool(s, true, 't', 10))
-	nle(strconv.WriteBool(s, true, -'1', -10))
-	nle(strconv.WriteBool(s, true, -'1', 10))
+	nle(strconv.WriteBool(con, true, 't', 0))
+	nle(strconv.WriteBool(con, true, 't', -10))
+	nle(strconv.WriteBool(con, true, 't', 10))
+	nle(strconv.WriteBool(con, true, -'1', -10))
+	nle(strconv.WriteBool(con, true, -'1', 10))
 
-	nle(strconv.WriteUint32(s, 0, 10, 0))
-	nle(strconv.WriteUint32(s, 1234567890, 10, 0))
-	nle(strconv.WriteUint32(s, 1234567890, 10, -20))
-	nle(strconv.WriteUint32(s, 1234567890, 10, 20))
-	nle(strconv.WriteUint32(s, 1234567890, -10, -20))
-	nle(strconv.WriteUint32(s, 1234567890, -10, 20))
-	nle(strconv.WriteUint32(s, 0xf0f0f0f0, 2, 0))
-	nle(strconv.WriteUint32(s, 0x12345678, 16, 0))
-	nle(strconv.WriteUint32(s, 0x12345678, 16, -20))
-	nle(strconv.WriteUint32(s, 0x12345678, 16, 20))
-	nle(strconv.WriteUint32(s, 0x12345678, -16, -20))
-	nle(strconv.WriteUint32(s, 0x12345678, -16, 20))
+	nle(strconv.WriteUint32(con, 0, 10, 0))
+	nle(strconv.WriteUint32(con, 1234567890, 10, 0))
+	nle(strconv.WriteUint32(con, 1234567890, 10, -20))
+	nle(strconv.WriteUint32(con, 1234567890, 10, 20))
+	nle(strconv.WriteUint32(con, 1234567890, -10, -20))
+	nle(strconv.WriteUint32(con, 1234567890, -10, 20))
+	nle(strconv.WriteUint32(con, 0xf0f0f0f0, 2, 0))
+	nle(strconv.WriteUint32(con, 0x12345678, 16, 0))
+	nle(strconv.WriteUint32(con, 0x12345678, 16, -20))
+	nle(strconv.WriteUint32(con, 0x12345678, 16, 20))
+	nle(strconv.WriteUint32(con, 0x12345678, -16, -20))
+	nle(strconv.WriteUint32(con, 0x12345678, -16, 20))
 
-	nle(strconv.WriteInt32(s, 0, 10, 0))
-	nle(strconv.WriteInt32(s, -1234567890, 10, 0))
-	nle(strconv.WriteInt32(s, -1234567890, 10, -20))
-	nle(strconv.WriteInt32(s, -1234567890, 10, 20))
-	nle(strconv.WriteInt32(s, -1234567890, -10, -20))
-	nle(strconv.WriteInt32(s, -1234567890, -10, 20))
-	nle(strconv.WriteInt32(s, -0x10f0f0f0, 2, 0))
-	nle(strconv.WriteInt32(s, -0x12345678, 16, 0))
-	nle(strconv.WriteInt32(s, -0x12345678, 16, -20))
-	nle(strconv.WriteInt32(s, -0x12345678, 16, 20))
-	nle(strconv.WriteInt32(s, -0x12345678, -16, -20))
-	nle(strconv.WriteInt32(s, -0x12345678, -16, 20))
+	nle(strconv.WriteInt32(con, 0, 10, 0))
+	nle(strconv.WriteInt32(con, -1234567890, 10, 0))
+	nle(strconv.WriteInt32(con, -1234567890, 10, -20))
+	nle(strconv.WriteInt32(con, -1234567890, 10, 20))
+	nle(strconv.WriteInt32(con, -1234567890, -10, -20))
+	nle(strconv.WriteInt32(con, -1234567890, -10, 20))
+	nle(strconv.WriteInt32(con, -0x10f0f0f0, 2, 0))
+	nle(strconv.WriteInt32(con, -0x12345678, 16, 0))
+	nle(strconv.WriteInt32(con, -0x12345678, 16, -20))
+	nle(strconv.WriteInt32(con, -0x12345678, 16, 20))
+	nle(strconv.WriteInt32(con, -0x12345678, -16, -20))
+	nle(strconv.WriteInt32(con, -0x12345678, -16, 20))
 
-	nle(strconv.WriteUint64(s, 0, 10, 0))
-	nle(strconv.WriteUint64(s, 12345678900987654321, 10, 0))
-	nle(strconv.WriteUint64(s, 12345678900987654321, 10, -20))
-	nle(strconv.WriteUint64(s, 12345678900987654321, 10, 20))
-	nle(strconv.WriteUint64(s, 12345678900987654321, -10, -20))
-	nle(strconv.WriteUint64(s, 12345678900987654321, -10, 20))
-	nle(strconv.WriteUint64(s, 0xf0f0f0f00f0f0f0f, 2, 0))
-	nle(strconv.WriteUint64(s, 0x1234567887654321, 16, 0))
-	nle(strconv.WriteUint64(s, 0x1234567887654321, 16, -20))
-	nle(strconv.WriteUint64(s, 0x1234567887654321, 16, 20))
-	nle(strconv.WriteUint64(s, 0x1234567887654321, -16, -20))
-	nle(strconv.WriteUint64(s, 0x1234567887654321, -16, 20))
+	nle(strconv.WriteUint64(con, 0, 10, 0))
+	nle(strconv.WriteUint64(con, 12345678900987654321, 10, 0))
+	nle(strconv.WriteUint64(con, 12345678900987654321, 10, -20))
+	nle(strconv.WriteUint64(con, 12345678900987654321, 10, 20))
+	nle(strconv.WriteUint64(con, 12345678900987654321, -10, -20))
+	nle(strconv.WriteUint64(con, 12345678900987654321, -10, 20))
+	nle(strconv.WriteUint64(con, 0xf0f0f0f00f0f0f0f, 2, 0))
+	nle(strconv.WriteUint64(con, 0x1234567887654321, 16, 0))
+	nle(strconv.WriteUint64(con, 0x1234567887654321, 16, -20))
+	nle(strconv.WriteUint64(con, 0x1234567887654321, 16, 20))
+	nle(strconv.WriteUint64(con, 0x1234567887654321, -16, -20))
+	nle(strconv.WriteUint64(con, 0x1234567887654321, -16, 20))
 
-	nle(strconv.WriteInt64(s, 0, 10, 0))
-	nle(strconv.WriteInt64(s, -1234567890987654321, 10, 0))
-	nle(strconv.WriteInt64(s, -1234567890987654321, 10, -20))
-	nle(strconv.WriteInt64(s, -1234567890987654321, 10, 20))
-	nle(strconv.WriteInt64(s, -1234567890987654321, -10, -20))
-	nle(strconv.WriteInt64(s, -1234567890987654321, -10, 20))
-	nle(strconv.WriteInt64(s, -0x10f0f0f00f0f0f0f, 2, 0))
-	nle(strconv.WriteInt64(s, -0x1234567887654321, 16, 0))
-	nle(strconv.WriteInt64(s, -0x1234567887654321, 16, -20))
-	nle(strconv.WriteInt64(s, -0x1234567887654321, 16, 20))
-	nle(strconv.WriteInt64(s, -0x1234567887654321, -16, -20))
-	nle(strconv.WriteInt64(s, -0x1234567887654321, -16, 20))
+	nle(strconv.WriteInt64(con, 0, 10, 0))
+	nle(strconv.WriteInt64(con, -1234567890987654321, 10, 0))
+	nle(strconv.WriteInt64(con, -1234567890987654321, 10, -20))
+	nle(strconv.WriteInt64(con, -1234567890987654321, 10, 20))
+	nle(strconv.WriteInt64(con, -1234567890987654321, -10, -20))
+	nle(strconv.WriteInt64(con, -1234567890987654321, -10, 20))
+	nle(strconv.WriteInt64(con, -0x10f0f0f00f0f0f0f, 2, 0))
+	nle(strconv.WriteInt64(con, -0x1234567887654321, 16, 0))
+	nle(strconv.WriteInt64(con, -0x1234567887654321, 16, -20))
+	nle(strconv.WriteInt64(con, -0x1234567887654321, 16, 20))
+	nle(strconv.WriteInt64(con, -0x1234567887654321, -16, -20))
+	nle(strconv.WriteInt64(con, -0x1234567887654321, -16, 20))
 
-	nle(strconv.WriteFloat(s, 1.23e45, 'b', 24, 2, 32))
-	nle(strconv.WriteFloat(s, 1.23e45, 'b', -24, 2, 32))
-	nle(strconv.WriteFloat(s, 1.23e45, -'b', -24, 2, 32))
-	nle(strconv.WriteFloat(s, 1.23e45, 'b', 24, 2, 64))
-	nle(strconv.WriteFloat(s, 1.23e45, 'b', -24, 2, 64))
-	nle(strconv.WriteFloat(s, 1.23e45, -'b', -24, 2, 64))
-	nle(strconv.WriteFloat(s, -1.23e45, 'b', 24, 2, 64))
-	nle(strconv.WriteFloat(s, -1.23e45, 'b', -24, 2, 64))
-	nle(strconv.WriteFloat(s, -1.23e45, -'b', -24, 2, 64))
+	nle(strconv.WriteFloat(con, 1.23e45, 'b', 24, 2, 32))
+	nle(strconv.WriteFloat(con, 1.23e45, 'b', -24, 2, 32))
+	nle(strconv.WriteFloat(con, 1.23e45, -'b', -24, 2, 32))
+	nle(strconv.WriteFloat(con, 1.23e45, 'b', 24, 2, 64))
+	nle(strconv.WriteFloat(con, 1.23e45, 'b', -24, 2, 64))
+	nle(strconv.WriteFloat(con, 1.23e45, -'b', -24, 2, 64))
+	nle(strconv.WriteFloat(con, -1.23e45, 'b', 24, 2, 64))
+	nle(strconv.WriteFloat(con, -1.23e45, 'b', -24, 2, 64))
+	nle(strconv.WriteFloat(con, -1.23e45, -'b', -24, 2, 64))
 
-	nle(strconv.WriteFloat(s, 1.23456e9, 'f', 24, 4, 64))
-	nle(strconv.WriteFloat(s, 1.23456e9, 'f', -24, 4, 64))
-	nle(strconv.WriteFloat(s, 1.23456e9, -'f', -24, 4, 64))
-	nle(strconv.WriteFloat(s, -1.23456e9, 'f', 24, 4, 64))
-	nle(strconv.WriteFloat(s, -1.23456e9, 'f', -24, 4, 64))
-	nle(strconv.WriteFloat(s, -1.23456e9, -'f', -24, 4, 64))
+	nle(strconv.WriteFloat(con, 1.23456e9, 'f', 24, 4, 64))
+	nle(strconv.WriteFloat(con, 1.23456e9, 'f', -24, 4, 64))
+	nle(strconv.WriteFloat(con, 1.23456e9, -'f', -24, 4, 64))
+	nle(strconv.WriteFloat(con, -1.23456e9, 'f', 24, 4, 64))
+	nle(strconv.WriteFloat(con, -1.23456e9, 'f', -24, 4, 64))
+	nle(strconv.WriteFloat(con, -1.23456e9, -'f', -24, 4, 64))
 
-	nle(strconv.WriteFloat(s, 1.23456e-6, 'f', 24, 4, 64))
-	nle(strconv.WriteFloat(s, 1.23456e-6, 'f', -24, 4, 64))
-	nle(strconv.WriteFloat(s, 1.23456e-6, -'f', -24, 4, 64))
-	nle(strconv.WriteFloat(s, -1.23456e-6, 'f', 24, 4, 64))
-	nle(strconv.WriteFloat(s, -1.23456e-6, 'f', -24, 4, 64))
-	nle(strconv.WriteFloat(s, -1.23456e-6, -'f', -24, 4, 64))
+	nle(strconv.WriteFloat(con, 1.23456e-6, 'f', 24, 4, 64))
+	nle(strconv.WriteFloat(con, 1.23456e-6, 'f', -24, 4, 64))
+	nle(strconv.WriteFloat(con, 1.23456e-6, -'f', -24, 4, 64))
+	nle(strconv.WriteFloat(con, -1.23456e-6, 'f', 24, 4, 64))
+	nle(strconv.WriteFloat(con, -1.23456e-6, 'f', -24, 4, 64))
+	nle(strconv.WriteFloat(con, -1.23456e-6, -'f', -24, 4, 64))
 
-	nle(strconv.WriteFloat(s, 1.23456e-6, 'f', 24, 11, 64))
-	nle(strconv.WriteFloat(s, 1.23456e-6, 'f', -24, 11, 64))
-	nle(strconv.WriteFloat(s, 1.23456e-6, -'f', -24, 11, 64))
-	nle(strconv.WriteFloat(s, -1.23456e-6, 'f', 24, 11, 64))
-	nle(strconv.WriteFloat(s, -1.23456e-6, 'f', -24, 11, 64))
-	nle(strconv.WriteFloat(s, -1.23456e-6, -'f', -24, 11, 64))
+	nle(strconv.WriteFloat(con, 1.23456e-6, 'f', 24, 11, 64))
+	nle(strconv.WriteFloat(con, 1.23456e-6, 'f', -24, 11, 64))
+	nle(strconv.WriteFloat(con, 1.23456e-6, -'f', -24, 11, 64))
+	nle(strconv.WriteFloat(con, -1.23456e-6, 'f', 24, 11, 64))
+	nle(strconv.WriteFloat(con, -1.23456e-6, 'f', -24, 11, 64))
+	nle(strconv.WriteFloat(con, -1.23456e-6, -'f', -24, 11, 64))
 
-	nle(strconv.WriteFloat(s, 1.235e45, 'e', 24, 3, 64))
-	nle(strconv.WriteFloat(s, 1.235e45, 'e', -24, 3, 64))
-	nle(strconv.WriteFloat(s, 1.235e45, -'e', -24, 3, 64))
-	nle(strconv.WriteFloat(s, -1.235e45, 'e', 24, 3, 64))
-	nle(strconv.WriteFloat(s, -1.235e45, 'e', -24, 3, 64))
-	nle(strconv.WriteFloat(s, -1.235e45, -'e', -24, 3, 64))
+	nle(strconv.WriteFloat(con, 1.235e45, 'e', 24, 3, 64))
+	nle(strconv.WriteFloat(con, 1.235e45, 'e', -24, 3, 64))
+	nle(strconv.WriteFloat(con, 1.235e45, -'e', -24, 3, 64))
+	nle(strconv.WriteFloat(con, -1.235e45, 'e', 24, 3, 64))
+	nle(strconv.WriteFloat(con, -1.235e45, 'e', -24, 3, 64))
+	nle(strconv.WriteFloat(con, -1.235e45, -'e', -24, 3, 64))
 
-	nle(strconv.WriteFloat(s, 12340, 'g', 0, 4, 64))
-	nle(strconv.WriteFloat(s, 1234, 'g', 0, 4, 64))
-	nle(strconv.WriteFloat(s, 123.4, 'g', 0, 4, 64))
-	nle(strconv.WriteFloat(s, 12.34, 'g', 0, 4, 64))
-	nle(strconv.WriteFloat(s, 1.234, 'g', 0, 4, 64))
-	nle(strconv.WriteFloat(s, 0.1234, 'g', 0, 4, 64))
-	nle(strconv.WriteFloat(s, 0.01234, 'g', 0, 4, 64))
-	nle(strconv.WriteFloat(s, 0.001234, 'g', 0, 4, 64))
-	nle(strconv.WriteFloat(s, 0.0001234, 'g', 0, 4, 64))
-	nle(strconv.WriteFloat(s, 0.00001234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(con, 12340, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(con, 1234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(con, 123.4, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(con, 12.34, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(con, 1.234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(con, 0.1234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(con, 0.01234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(con, 0.001234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(con, 0.0001234, 'g', 0, 4, 64))
+	nle(strconv.WriteFloat(con, 0.00001234, 'g', 0, 4, 64))
 
 	for i := 0; i < 20; i++ {
 		const f = SmallestNonzeroFloat64
-		nle(strconv.WriteFloat(s, f, 'e', -40, i, 64))
+		nle(strconv.WriteFloat(con, f, 'e', -40, i, 64))
 	}
 
 	n, _ := fmt.Println("v =", -6.4321e-3)

@@ -19,7 +19,7 @@ const (
 func init() {
 	setup.Performance168(8)
 
-	gpio.D.Enable(false)
+	gpio.D.EnableClock(false)
 
 	LED = gpio.D
 	LED.SetMode(Green, gpio.Out)

@@ -3,35 +3,29 @@ package main
 import (
 	"delay"
 
-	"stm32/f4/gpio"
-	"stm32/f4/periph"
-	"stm32/f4/setup"
+	"stm32/hal/gpio"
+	"stm32/hal/setup"
 )
 
-var LED = gpio.A
+var LEDport = gpio.A
 
-const (
-	Green = 5
-)
+const Green = 5
 
 func init() {
-	setup.Performance84(8)
-
-	periph.AHB1ClockEnable(periph.GPIOA)
-	periph.AHB1Reset(periph.GPIOA)
-
-	LED.SetMode(Green, gpio.Out)
+	setup.Performance96(8)
+	LEDport.EnableClock(false)
+	LEDport.SetMode(Green, gpio.Out)
 }
 
 func wait() {
-	delay.Millisec(1000)
+	delay.Millisec(500)
 }
 
 func main() {
 	for {
-		LED.SetPin(Green)
+		LEDport.SetPin(Green)
 		wait()
-		LED.ClearPin(Green)
+		LEDport.ClearPin(Green)
 		wait()
 	}
 }

@@ -32,6 +32,10 @@ type CAN_Periph struct {
 	FA1R  FA1R
 }
 
+func (p *CAN_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var CAN1 = (*CAN_Periph)(unsafe.Pointer(uintptr(mmap.CAN1_BASE)))
 
 var CAN2 = (*CAN_Periph)(unsafe.Pointer(uintptr(mmap.CAN2_BASE)))

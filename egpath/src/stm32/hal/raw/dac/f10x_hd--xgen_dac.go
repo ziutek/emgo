@@ -28,6 +28,10 @@ type DAC_Periph struct {
 	DOR2    DOR2
 }
 
+func (p *DAC_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var DAC = (*DAC_Periph)(unsafe.Pointer(uintptr(mmap.DAC_BASE)))
 
 type CR_Bits uint32

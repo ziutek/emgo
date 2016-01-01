@@ -13,11 +13,12 @@ import (
 	"fmt"
 	"rtos"
 
+	"stm32/serial"
+
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/setup"
 	"stm32/hal/usart"
-	"stm32/serial"
 )
 
 const (
@@ -29,8 +30,7 @@ const (
 
 var (
 	leds *gpio.Port
-	tts  *usart.USART
-	s    *serial.Dev
+	con  *serial.Dev
 )
 
 func init() {
@@ -56,17 +56,17 @@ func init() {
 	port.SetMode(rx, gpio.Alt)
 	port.SetAltFunc(rx, gpio.USART2)
 
-	tts = usart.USART2
+	tts := usart.USART2
 
 	tts.EnableClock(true)
-	tts.SetBaudRate(115200, setup.APB1Clk)
+	tts.SetBaudRate(115200)
 	tts.SetConf(usart.RxEna | usart.TxEna)
 	tts.EnableIRQs(usart.RxNotEmptyIRQ)
 	tts.Enable()
 
-	s = serial.New(tts, 80, 8)
-	s.SetUnix(true)
-	fmt.DefaultWriter = s
+	con = serial.New(tts, 80, 8)
+	con.SetUnix(true)
+	fmt.DefaultWriter = con
 
 	rtos.IRQ(irq.USART2).Enable()
 }
@@ -81,21 +81,22 @@ func blink(c, dly int) {
 	leds.ClearPin(c)
 }
 
-func ttsISR() {
+func conISR() {
 	// blink(Blue, -10) // Uncoment to see "hardware buffer overrun".
-	s.IRQ()
+	con.IRQ()
 }
 
+//c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.USART2: ttsISR,
-} //c:__attribute__((section(".ISRs")))
+	irq.USART2: conISR,
+}
 
 func checkErr(err error) {
 	if err != nil {
 		blink(Red, 10)
-		s.WriteString("\nError: ")
-		s.WriteString(err.Error())
-		s.WriteByte('\n')
+		con.WriteString("\nError: ")
+		con.WriteString(err.Error())
+		con.WriteByte('\n')
 	}
 }
 
@@ -126,7 +127,7 @@ func main() {
 
 	var buf [40]byte
 	for {
-		n, err := s.Read(buf[:])
+		n, err := con.Read(buf[:])
 		checkErr(err)
 		ns := rtos.Uptime()
 		fmt.Printf(" %d ns '%s'\n", ns, buf[:n])

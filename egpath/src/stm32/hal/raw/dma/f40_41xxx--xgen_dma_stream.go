@@ -21,6 +21,10 @@ type DMA_Stream_Periph struct {
 	FCR  FCR
 }
 
+func (p *DMA_Stream_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var DMA1_Stream0 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Stream0_BASE)))
 
 var DMA1_Stream1 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Stream1_BASE)))

@@ -103,6 +103,10 @@ type {{$p}} struct {
 	{{range .Regs}}{{if .Name}} {{.Name}} {{if .Len}}[{{.Len}}]{{end}}{{.Name}} {{else}} _ {{if .Len}}[{{.Len}}]{{end}}uint{{.Size}} {{end}}
 {{end}}}
 
+func (p *{{$p}}) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 {{range .Instances}}
 var {{.Name}} = (*{{$p}})(unsafe.Pointer(uintptr({{.Addr}})))
 {{end}}

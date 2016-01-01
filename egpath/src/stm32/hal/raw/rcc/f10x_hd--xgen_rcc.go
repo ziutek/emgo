@@ -25,6 +25,10 @@ type RCC_Periph struct {
 	CSR      CSR
 }
 
+func (p *RCC_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var RCC = (*RCC_Periph)(unsafe.Pointer(uintptr(mmap.RCC_BASE)))
 
 type CR_Bits uint32

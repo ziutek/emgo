@@ -22,7 +22,7 @@ func init() {
 	tts = usart.USART2
 
 	tts.EnableClock(true)
-	tts.SetBaudRate(115200, setup.APB1Clk)
+	tts.SetBaudRate(115200)
 	tts.SetConf(usart.RxEna | usart.TxEna)
 	tts.Enable()
 }

@@ -21,6 +21,10 @@ type LCD_Periph struct {
 	RAM [16]RAM
 }
 
+func (p *LCD_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var LCD = (*LCD_Periph)(unsafe.Pointer(uintptr(mmap.LCD_BASE)))
 
 type CR_Bits uint32

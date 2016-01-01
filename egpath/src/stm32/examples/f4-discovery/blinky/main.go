@@ -2,7 +2,7 @@ package main
 
 import (
 	"delay"
-	
+
 	"stm32/hal/gpio"
 	"stm32/hal/setup"
 )

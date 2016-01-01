@@ -19,6 +19,10 @@ type CAN_TxMailBox_Periph struct {
 	TDHR TDHR
 }
 
+func (p *CAN_TxMailBox_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 type TIR_Bits uint32
 
 func (b TIR_Bits) Field(mask TIR_Bits) int {

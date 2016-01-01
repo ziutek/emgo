@@ -1,3 +1,5 @@
+// +build f40_41xxx f411xe
+
 // Package setup allows to easy setup MCU for typical use.
 //
 // Clock setup
@@ -40,8 +42,9 @@
 package setup
 
 import (
-	"stm32/o/f40_41xxx/flash"
-	"stm32/o/f40_41xxx/rcc"
+	"stm32/hal/raw/flash"
+	"stm32/hal/raw/mmap"
+	"stm32/hal/raw/rcc"
 )
 
 var (
@@ -188,14 +191,26 @@ func Performance(osc, mul, sdiv int) {
 	setupOS()
 }
 
-// Performance84 setups MCU to work with 84 MHz clock.
+// Performance96 setups MCU to work with 96 MHz clock.
 // See Performance for description of osc.
-func Performance84(osc int) {
-	Performance(osc, 168, 4)
+func Performance96(osc int) {
+	Performance(osc, 192, 4)
 }
 
 // Performance168 setups MCU to work with 168 MHz clock.
 // See Performance for description of osc.
 func Performance168(osc int) {
 	Performance(osc, 168, 2)
+}
+
+func PeriphClk(baseaddr uintptr) uint {
+	switch {
+	case baseaddr >= mmap.AHB1PERIPH_BASE:
+		return AHBClk
+	case baseaddr >= mmap.APB2PERIPH_BASE:
+		return APB2Clk
+	case baseaddr >= mmap.APB1PERIPH_BASE:
+		return APB1Clk
+	}
+	return 0
 }

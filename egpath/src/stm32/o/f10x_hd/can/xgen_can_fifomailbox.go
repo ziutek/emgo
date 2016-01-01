@@ -17,6 +17,10 @@ type CAN_FIFOMailBox_Periph struct {
 	RDHR RDHR
 }
 
+func (p *CAN_FIFOMailBox_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 type RIR_Bits uint32
 
 func (b RIR_Bits) Field(mask RIR_Bits) int {

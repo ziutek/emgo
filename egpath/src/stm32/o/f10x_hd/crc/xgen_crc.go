@@ -18,6 +18,10 @@ type CRC_Periph struct {
 	CR  CR
 }
 
+func (p *CRC_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var CRC = (*CRC_Periph)(unsafe.Pointer(uintptr(mmap.CRC_BASE)))
 
 type DR_Bits uint32

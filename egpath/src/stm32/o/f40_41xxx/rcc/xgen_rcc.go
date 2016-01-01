@@ -47,6 +47,10 @@ type RCC_Periph struct {
 	DCKCFGR2   DCKCFGR2
 }
 
+func (p *RCC_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var RCC = (*RCC_Periph)(unsafe.Pointer(uintptr(mmap.RCC_BASE)))
 
 type CR_Bits uint32

@@ -24,6 +24,10 @@ type OB_Periph struct {
 	WRP1415 WRP1415
 }
 
+func (p *OB_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var OB = (*OB_Periph)(unsafe.Pointer(uintptr(mmap.OB_BASE)))
 
 type RDP_Bits uint32

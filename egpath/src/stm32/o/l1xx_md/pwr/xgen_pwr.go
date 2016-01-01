@@ -15,6 +15,10 @@ type PWR_Periph struct {
 	CSR CSR
 }
 
+func (p *PWR_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var PWR = (*PWR_Periph)(unsafe.Pointer(uintptr(mmap.PWR_BASE)))
 
 type CR_Bits uint32

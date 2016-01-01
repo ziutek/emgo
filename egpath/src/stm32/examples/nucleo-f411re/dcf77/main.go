@@ -57,9 +57,8 @@ func edgeISR() {
 	d.Edge(t, gpio.C.InPin(1) != 0)
 }
 
-//c:const
-//c:__attribute__((section(".InterruptVectors")))
-var IRQs = [...]func(){
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
 	irq.USART2: conISR,
 	irq.Ext1:   edgeISR,
 }

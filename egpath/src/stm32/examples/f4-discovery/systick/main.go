@@ -38,7 +38,7 @@ var SysTickVector = sysTickHandler
 func main() {
 	setup.Performance168(8)
 
-	gpio.D.Enable(false)
+	gpio.D.EnableClock(false)
 
 	LED = gpio.D
 	LED.SetMode(Blue, gpio.Out)

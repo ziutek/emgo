@@ -19,6 +19,10 @@ type EXTI_Periph struct {
 	PR    PR
 }
 
+func (p *EXTI_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var EXTI = (*EXTI_Periph)(unsafe.Pointer(uintptr(mmap.EXTI_BASE)))
 
 type IMR_Bits uint32

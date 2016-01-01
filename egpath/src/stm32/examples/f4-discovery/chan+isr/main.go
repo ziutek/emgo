@@ -72,9 +72,10 @@ func buttonISR() {
 	}
 }
 
+//c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
 	irq.EXTI0: buttonISR,
-} //c:__attribute__((section(".ISRs")))
+}
 
 func toggle(led int) {
 	LED.SetPin(led)

@@ -27,6 +27,10 @@ type LTDC_Layer_Periph struct {
 	CLUTWR CLUTWR
 }
 
+func (p *LTDC_Layer_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var LTDC_Layer1 = (*LTDC_Layer_Periph)(unsafe.Pointer(uintptr(mmap.LTDC_Layer1_BASE)))
 
 var LTDC_Layer2 = (*LTDC_Layer_Periph)(unsafe.Pointer(uintptr(mmap.LTDC_Layer2_BASE)))

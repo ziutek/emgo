@@ -20,6 +20,10 @@ type CEC_Periph struct {
 	RXD  RXD
 }
 
+func (p *CEC_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var CEC = (*CEC_Periph)(unsafe.Pointer(uintptr(mmap.CEC_BASE)))
 
 type CFGR_Bits uint32

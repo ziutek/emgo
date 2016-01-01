@@ -14,6 +14,10 @@ type COMP_Periph struct {
 	CSR CSR
 }
 
+func (p *COMP_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var COMP = (*COMP_Periph)(unsafe.Pointer(uintptr(mmap.COMP_BASE)))
 
 type CSR_Bits uint32

@@ -37,6 +37,10 @@ type ADC_Periph struct {
 	SMPR0 SMPR0
 }
 
+func (p *ADC_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var ADC1 = (*ADC_Periph)(unsafe.Pointer(uintptr(mmap.ADC1_BASE)))
 
 type SR_Bits uint32

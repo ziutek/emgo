@@ -24,6 +24,10 @@ type DCMI_Periph struct {
 	DR      DR
 }
 
+func (p *DCMI_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var DCMI = (*DCMI_Periph)(unsafe.Pointer(uintptr(mmap.DCMI_BASE)))
 
 type CR_Bits uint32

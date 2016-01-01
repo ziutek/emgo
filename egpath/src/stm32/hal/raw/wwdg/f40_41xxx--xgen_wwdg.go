@@ -18,6 +18,10 @@ type WWDG_Periph struct {
 	SR  SR
 }
 
+func (p *WWDG_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var WWDG = (*WWDG_Periph)(unsafe.Pointer(uintptr(mmap.WWDG_BASE)))
 
 type CR_Bits uint32

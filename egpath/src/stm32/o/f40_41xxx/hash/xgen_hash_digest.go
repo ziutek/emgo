@@ -14,6 +14,10 @@ type HASH_DIGEST_Periph struct {
 	HR [8]HR
 }
 
+func (p *HASH_DIGEST_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var HASH_DIGEST = (*HASH_DIGEST_Periph)(unsafe.Pointer(uintptr(mmap.HASH_DIGEST_BASE)))
 
 type HR_Bits uint32

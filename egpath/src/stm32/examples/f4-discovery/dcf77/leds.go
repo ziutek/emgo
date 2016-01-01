@@ -3,8 +3,7 @@ package main
 import (
 	"delay"
 
-	"stm32/f4/gpio"
-	"stm32/f4/periph"
+	"stm32/hal/gpio"
 )
 
 var leds = gpio.D
@@ -17,9 +16,7 @@ const (
 )
 
 func initLEDs() {
-	periph.AHB1ClockEnable(periph.GPIOD)
-	periph.AHB1Reset(periph.GPIOD)
-
+	leds.EnableClock(false)
 	leds.SetMode(Green, gpio.Out)
 	leds.SetMode(Orange, gpio.Out)
 	leds.SetMode(Red, gpio.Out)

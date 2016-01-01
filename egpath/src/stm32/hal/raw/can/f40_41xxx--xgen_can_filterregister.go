@@ -17,6 +17,10 @@ type CAN_FilterRegister_Periph struct {
 	FR2 FR2
 }
 
+func (p *CAN_FilterRegister_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 type FR1_Bits uint32
 
 func (b FR1_Bits) Field(mask FR1_Bits) int {

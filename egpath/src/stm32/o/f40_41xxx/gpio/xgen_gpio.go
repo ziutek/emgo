@@ -23,6 +23,10 @@ type GPIO_Periph struct {
 	AFR     [2]AFR
 }
 
+func (p *GPIO_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var GPIOA = (*GPIO_Periph)(unsafe.Pointer(uintptr(mmap.GPIOA_BASE)))
 
 var GPIOB = (*GPIO_Periph)(unsafe.Pointer(uintptr(mmap.GPIOB_BASE)))

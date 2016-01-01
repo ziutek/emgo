@@ -50,6 +50,10 @@ type TIM_Periph struct {
 	OR    OR
 }
 
+func (p *TIM_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var TIM2 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM2_BASE)))
 
 var TIM3 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM3_BASE)))

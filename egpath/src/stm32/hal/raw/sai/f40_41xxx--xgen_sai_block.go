@@ -23,6 +23,10 @@ type SAI_Block_Periph struct {
 	DR    DR
 }
 
+func (p *SAI_Block_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var SAI1_Block_A = (*SAI_Block_Periph)(unsafe.Pointer(uintptr(mmap.SAI1_Block_A_BASE)))
 
 var SAI1_Block_B = (*SAI_Block_Periph)(unsafe.Pointer(uintptr(mmap.SAI1_Block_B_BASE)))

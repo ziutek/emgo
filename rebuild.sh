@@ -5,7 +5,7 @@ set -e
 #EGC='egc -O g'
 EGC='egc'
 
-rm -rf egroot/pkg/* egpath/pkg/*
+rm -rf egroot/pkg/* 
 
 list=$(find egroot/src -type d)
 
@@ -21,6 +21,8 @@ for p in $list; do
 		cd - >/dev/null
 	fi
 done
+
+rm -rf egpath/pkg/*
 
 list=$(find egpath/src/stm32/examples -type d)
 

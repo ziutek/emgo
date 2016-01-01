@@ -16,6 +16,10 @@ type ADC_Common_Periph struct {
 	CDR CDR
 }
 
+func (p *ADC_Common_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var ADC = (*ADC_Common_Periph)(unsafe.Pointer(uintptr(mmap.ADC_BASE)))
 
 type CSR_Bits uint32

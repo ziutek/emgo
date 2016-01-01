@@ -32,6 +32,10 @@ type LTDC_Periph struct {
 	CDSR  CDSR
 }
 
+func (p *LTDC_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var LTDC = (*LTDC_Periph)(unsafe.Pointer(uintptr(mmap.LTDC_BASE)))
 
 type SSCR_Bits uint32

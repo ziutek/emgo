@@ -4,23 +4,22 @@ import (
 	"delay"
 	"fmt"
 
-	"stm32/f4/periph"
-	"stm32/f4/setup"
-	"stm32/f411xe/gpio"
-	"stm32/f411xe/pwr"
-	"stm32/f411xe/rcc"
-	"stm32/f411xe/rtc"
+	"stm32/hal/gpio"
+	"stm32/hal/setup"
+
+	"stm32/hal/raw/pwr"
+	"stm32/hal/raw/rcc"
+	"stm32/hal/raw/rtc"
 )
 
-var LED = gpio.GPIOA
+var LEDport = gpio.A
 
-const Green = 1 << 5
+const Green = 5
 
 func init() {
-	setup.Performance84(8)
-	periph.AHB1ClockEnable(periph.GPIOA)
-	periph.AHB1Reset(periph.GPIOA)
-	gpio.GPIOA.MODER5().Store(gpio.MODER_OUT * gpio.MODER5_0) // Green LED
+	setup.Performance96(8)
+	LEDport.EnableClock(false)
+	LEDport.SetMode(Green, gpio.Out)
 }
 
 func wait() {
@@ -28,16 +27,19 @@ func wait() {
 }
 
 func main() {
-	delay.Millisec(500)
-
 	PWR := pwr.PWR
 	RCC := rcc.RCC
 	RTC := rtc.RTC
 
-	const bdcrcfg = rcc.LSEON | rcc.RTCSEL_LSE | rcc.RTCEN
+	const lse = 1 * rcc.RTCSEL_0
+	const bdcrcfg = rcc.LSEON | lse | rcc.RTCEN
+
+	wait()
+
 	if RCC.BDCR.Bits(rcc.LSEON|rcc.RTCSEL|rcc.RTCEN) != bdcrcfg {
 		fmt.Println("Configuring backup domain...")
-		periph.APB1ClockEnable(periph.PWR)
+		RCC.PWREN().Set()
+		_ = RCC.PWREN().Load()
 		PWR.DBP().Set()
 		RCC.BDRST().Set()
 		RCC.BDRST().Clear()
@@ -45,12 +47,13 @@ func main() {
 		for RCC.LSERDY().Load() == 0 {
 		}
 		PWR.DBP().Clear()
-		periph.APB1ClockDisable(periph.PWR)
+		RCC.PWREN().Clear()
 		fmt.Println("Done.")
 	}
 	if RTC.INITS().Load() == 0 {
 		fmt.Println("RTC not initialized. Initializing...")
-		periph.APB1ClockEnable(periph.PWR)
+		RCC.PWREN().Set()
+		_ = RCC.PWREN().Load()
 		PWR.DBP().Set()
 		RTC.WPR.Store(0xca)
 		RTC.WPR.Store(0x53)
@@ -64,14 +67,14 @@ func main() {
 		RTC.INIT().Clear()
 		RTC.WPR.Store(0xff)
 		PWR.DBP().Clear()
-		periph.APB1ClockDisable(periph.PWR)
+		RCC.PWREN().Clear()
 		fmt.Println("Done.")
 	}
 
 	for {
-		LED.BSRRL.Store(Green)
+		LEDport.SetPin(Green)
 		wait()
-		LED.BSRRH.Store(Green)
+		LEDport.ClearPin(Green)
 		wait()
 		ss := RTC.SSR.Load()
 		hhmmss := RTC.TR.Load()

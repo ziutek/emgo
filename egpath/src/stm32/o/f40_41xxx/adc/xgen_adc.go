@@ -33,6 +33,10 @@ type ADC_Periph struct {
 	DR    DR
 }
 
+func (p *ADC_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var ADC1 = (*ADC_Periph)(unsafe.Pointer(uintptr(mmap.ADC1_BASE)))
 
 var ADC2 = (*ADC_Periph)(unsafe.Pointer(uintptr(mmap.ADC2_BASE)))

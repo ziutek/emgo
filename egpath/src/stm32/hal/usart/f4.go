@@ -23,7 +23,7 @@ var (
 
 func enbit(u *USART) mmio.UM32 {
 	var u32 *mmio.U32
-	a := uintptr(unsafe.Pointer(u))
+	a := u.BaseAddr()
 	if a >= mmap.APB2PERIPH_BASE {
 		u32 = &rcc.RCC.APB2ENR.U32
 		a -= mmap.APB2PERIPH_BASE
@@ -36,7 +36,7 @@ func enbit(u *USART) mmio.UM32 {
 
 func lpenbit(u *USART) mmio.UM32 {
 	var u32 *mmio.U32
-	a := uintptr(unsafe.Pointer(u))
+	a := u.BaseAddr()
 	if a >= mmap.APB2PERIPH_BASE {
 		u32 = &rcc.RCC.APB2LPENR.U32
 		a -= mmap.APB2PERIPH_BASE
@@ -49,7 +49,7 @@ func lpenbit(u *USART) mmio.UM32 {
 
 func rstbit(u *USART) mmio.UM32 {
 	var u32 *mmio.U32
-	a := uintptr(unsafe.Pointer(u))
+	a := u.BaseAddr()
 	if a >= mmap.APB2PERIPH_BASE {
 		u32 = &rcc.RCC.APB2RSTR.U32
 		a -= mmap.APB2PERIPH_BASE

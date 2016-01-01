@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"stm32/f4/setup"
+	"stm32/hal/setup"
 )
 
 func init() {

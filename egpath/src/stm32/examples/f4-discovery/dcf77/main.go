@@ -1,17 +1,22 @@
 package main
 
 import (
+	"delay"
 	"fmt"
 	"rtos"
 	"time"
 
 	"dcf77"
-	"stm32/f4/exti"
-	"stm32/f4/gpio"
-	"stm32/f4/irq"
-	"stm32/f4/periph"
-	"stm32/f4/setup"
+
+	"stm32/hal/exti"
+	"stm32/hal/gpio"
+	"stm32/hal/irq"
+	"stm32/hal/setup"
 )
+
+const dcfpin = 1
+
+var dcfport = gpio.C
 
 func init() {
 	setup.Performance168(8)
@@ -20,37 +25,36 @@ func init() {
 
 	// Initialize DCF77 input pin.
 
-	periph.APB2ClockEnable(periph.SysCfg)
-	periph.APB2Reset(periph.SysCfg)
-	periph.AHB1ClockEnable(periph.GPIOC)
-	periph.AHB1Reset(periph.GPIOC)
+	dcfport.EnableClock(true)
+	dcfport.SetMode(dcfpin, gpio.In)
 
-	gpio.C.SetMode(1, gpio.In)
-	exti.L1.Connect(gpio.C)
-	exti.L1.RiseTrigEnable()
-	exti.L1.FallTrigEnable()
-	exti.L1.IntEnable()
-	rtos.IRQ(irq.Ext1).Enable()
+	line := exti.Line(dcfpin)
+	line.Connect(dcfport)
+	line.EnableRiseTrig()
+	line.EnableFallTrig()
+	line.EnableInt()
 
-	periph.APB2ClockDisable(periph.SysCfg)
+	rtos.IRQ(irq.EXTI1).Enable()
 }
 
 var d = dcf77.NewDecoder()
 
 func edgeISR() {
 	t := time.Now()
-	exti.L1.ClearPending()
+	exti.Line(dcfpin).ClearPending()
 	blink(Blue, -100)
-	d.Edge(t, gpio.C.InPin(1) != 0)
+	d.Edge(t, dcfport.PinIn(dcfpin) != 0)
 }
 
+//c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.Ext1: edgeISR,
-} //c:__attribute__((section(".ISRs")))
-
+	irq.EXTI1: edgeISR,
+}
 
 func main() {
+	delay.Millisec(100)
 	for {
+		fmt.Println("Pulse wait...")
 		p := d.Pulse()
 		now := time.Now().UnixNano()
 		if p.Err() != nil {

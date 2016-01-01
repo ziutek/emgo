@@ -16,6 +16,10 @@ type RNG_Periph struct {
 	DR DR
 }
 
+func (p *RNG_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var RNG = (*RNG_Periph)(unsafe.Pointer(uintptr(mmap.RNG_BASE)))
 
 type CR_Bits uint32

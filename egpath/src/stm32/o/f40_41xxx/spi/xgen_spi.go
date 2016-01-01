@@ -30,6 +30,10 @@ type SPI_Periph struct {
 	I2SPR   I2SPR
 }
 
+func (p *SPI_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var I2S2ext = (*SPI_Periph)(unsafe.Pointer(uintptr(mmap.I2S2ext_BASE)))
 
 var SPI2 = (*SPI_Periph)(unsafe.Pointer(uintptr(mmap.SPI2_BASE)))

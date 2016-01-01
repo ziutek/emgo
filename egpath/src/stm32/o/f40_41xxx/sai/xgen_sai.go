@@ -14,6 +14,10 @@ type SAI_Periph struct {
 	GCR GCR
 }
 
+func (p *SAI_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var SAI1 = (*SAI_Periph)(unsafe.Pointer(uintptr(mmap.SAI1_BASE)))
 
 type GCR_Bits uint32

@@ -6,16 +6,15 @@ import (
 	"fmt"
 	"rtos"
 
-	"stm32/f4/gpio"
-	"stm32/f4/irq"
-	"stm32/f4/periph"
-	"stm32/f4/setup"
-	"stm32/f4/usarts"
+	"onewire"
+
 	"stm32/onedrv"
 	"stm32/serial"
-	"stm32/usart"
 
-	"onewire"
+	"stm32/hal/gpio"
+	"stm32/hal/irq"
+	"stm32/hal/setup"
+	"stm32/hal/usart"
 )
 
 const (
@@ -26,10 +25,8 @@ const (
 )
 
 var (
-	leds = gpio.D
-
-	ow  = usarts.USART6
-	one = serial.New(ow, 8, 8)
+	leds *gpio.Port
+	one  *serial.Dev
 )
 
 func init() {
@@ -37,9 +34,9 @@ func init() {
 
 	// LEDS
 
-	periph.AHB1ClockEnable(periph.GPIOD)
-	periph.AHB1Reset(periph.GPIOD)
+	leds = gpio.D
 
+	leds.EnableClock(false)
 	leds.SetMode(Green, gpio.Out)
 	leds.SetMode(Orange, gpio.Out)
 	leds.SetMode(Red, gpio.Out)
@@ -47,25 +44,22 @@ func init() {
 
 	// 1-wire
 
-	periph.AHB1ClockEnable(periph.GPIOC)
-	periph.AHB1Reset(periph.GPIOC)
-	periph.APB2ClockEnable(periph.USART6)
-	periph.APB2Reset(periph.USART6)
-
 	port, tx := gpio.C, 6
 
+	port.EnableClock(true)
 	port.SetMode(tx, gpio.Alt)
 	port.SetOutType(tx, gpio.OpenDrain)
 	port.SetAltFunc(tx, gpio.USART6)
 
-	ow.SetWordLen(usart.Bits8)
-	ow.SetParity(usart.None)
-	ow.SetStopBits(usart.Stop1b)
-	ow.SetMode(usart.Tx | usart.Rx)
-	ow.SetHalfDuplex(true)
+	ow := usart.USART6
+
+	ow.EnableClock(true)
+	ow.SetConf(usart.TxEna | usart.RxEna)
+	ow.SetMode(usart.HalfDuplex)
 	ow.EnableIRQs(usart.RxNotEmptyIRQ)
 	ow.Enable()
 
+	one = serial.New(ow, 8, 8)
 	rtos.IRQ(irq.USART6).Enable()
 }
 
@@ -73,9 +67,10 @@ func oneISR() {
 	one.IRQ()
 }
 
+//c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
 	irq.USART6: oneISR,
-} //c:__attribute__((section(".ISRs")))
+}
 
 func blink(c, d int) {
 	leds.SetPin(c)
@@ -99,9 +94,10 @@ func checkErr(err error) {
 }
 
 func main() {
-	drv := onedrv.UARTDriver{Serial: one, Clock: setup.APB2Clk}
-	m := onewire.Master{Driver: &drv}
+	m := onewire.Master{Driver: onedrv.SerialDriver{one}}
 	dtypes := []onewire.Type{onewire.DS18S20, onewire.DS18B20, onewire.DS1822}
+
+	delay.Millisec(100)
 
 	fmt.Println("\nConfigure all DS18B20, DS1822 to 10bit resolution.")
 	checkErr(m.SkipROM())
@@ -109,9 +105,7 @@ func main() {
 
 	// This algorithm doesn't work in case of parasite power mode.
 	for {
-		fmt.Println(
-			"\nSending ConvertT command on the bus (SkipROM addressing).",
-		)
+		fmt.Println("\nSending ConvertT command on the bus (SkipROM addressing).")
 		checkErr(m.SkipROM())
 		checkErr(m.ConvertT())
 		fmt.Print("Waiting until all devices finish the conversion")

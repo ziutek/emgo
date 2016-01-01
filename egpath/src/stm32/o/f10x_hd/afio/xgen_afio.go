@@ -18,6 +18,10 @@ type AFIO_Periph struct {
 	MAPR2  MAPR2
 }
 
+func (p *AFIO_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var AFIO = (*AFIO_Periph)(unsafe.Pointer(uintptr(mmap.AFIO_BASE)))
 
 type EVCR_Bits uint32

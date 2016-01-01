@@ -23,6 +23,10 @@ type HASH_Periph struct {
 	CSR [54]CSR
 }
 
+func (p *HASH_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
 var HASH = (*HASH_Periph)(unsafe.Pointer(uintptr(mmap.HASH_BASE)))
 
 type CR_Bits uint32

@@ -1,10 +1,7 @@
 /* Stack size: 2*7/8 KB */
 StackLog2 = 11;
 StackFrac = 7;
-
-/* One stack, without gorutines */
 MaxTasks = 1;
-IRTExp = 5;
 
 INCLUDE stm32/f411
 INCLUDE stm32/loadram

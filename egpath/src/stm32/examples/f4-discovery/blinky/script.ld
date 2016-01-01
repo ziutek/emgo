@@ -4,7 +4,6 @@ StackFrac = 7;
 
 /* One stack, without gorutines */
 MaxTasks = 1;
-IRTExp = 5;
 
 INCLUDE stm32/f407_g
 INCLUDE stm32/loadram
