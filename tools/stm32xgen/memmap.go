@@ -62,9 +62,11 @@ func memmap(r *scanner) []*MemGroup {
 			continue
 		}
 		if doxy(line, "@addtogroup") != "" {
+			groups = append(groups, group)
 			break
 		}
 	}
+	fmt.Println("mmap", groups)
 	return groups
 }
 
