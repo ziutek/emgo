@@ -2,6 +2,9 @@
 
 set -e
 
+cd ../../stm32/xgen
+rm -rf stm32/o
+
 ud='unifdef -k -f undef.h -D'
 
 $ud STM32F40_41xxx stm32f4xx.h |stm32xgen stm32/o/f40_41xxx
@@ -20,3 +23,7 @@ for target in *; do
 	done
 	cd ..
 done
+
+cd ../../..
+rm -rf o
+mv xgen/stm32/o .

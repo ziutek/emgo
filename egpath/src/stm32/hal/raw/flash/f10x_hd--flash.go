@@ -68,7 +68,3 @@ const (
 	nRST_STDBY OBR_Bits = 0x04 << 2 //  nRST_STDBY.
 	BFB2       OBR_Bits = 0x08 << 2 //  BFB2.
 )
-
-const (
-	WRP WRPR_Bits = 0xFFFFFFFF << 0 //+ Write Protect.
-)

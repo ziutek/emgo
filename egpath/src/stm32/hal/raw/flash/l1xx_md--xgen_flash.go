@@ -377,10 +377,6 @@ type WRPR_Mask struct{ mmio.UM32 }
 func (rm WRPR_Mask) Load() WRPR_Bits   { return WRPR_Bits(rm.UM32.Load()) }
 func (rm WRPR_Mask) Store(b WRPR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *FLASH_Periph) WRP() WRPR_Mask {
-	return WRPR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(WRP)}}
-}
-
 type WRPR1_Bits uint32
 
 func (b WRPR1_Bits) Field(mask WRPR1_Bits) int {
@@ -404,10 +400,6 @@ type WRPR1_Mask struct{ mmio.UM32 }
 func (rm WRPR1_Mask) Load() WRPR1_Bits   { return WRPR1_Bits(rm.UM32.Load()) }
 func (rm WRPR1_Mask) Store(b WRPR1_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *FLASH_Periph) WRP() WRPR1_Mask {
-	return WRPR1_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 128)), uint32(WRP)}}
-}
-
 type WRPR2_Bits uint32
 
 func (b WRPR2_Bits) Field(mask WRPR2_Bits) int {
@@ -430,10 +422,6 @@ type WRPR2_Mask struct{ mmio.UM32 }
 
 func (rm WRPR2_Mask) Load() WRPR2_Bits   { return WRPR2_Bits(rm.UM32.Load()) }
 func (rm WRPR2_Mask) Store(b WRPR2_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *FLASH_Periph) WRP() WRPR2_Mask {
-	return WRPR2_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 132)), uint32(WRP)}}
-}
 
 type WRPR3_Bits uint32
 

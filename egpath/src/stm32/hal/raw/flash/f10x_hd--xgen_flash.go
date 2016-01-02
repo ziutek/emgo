@@ -330,7 +330,3 @@ type WRPR_Mask struct{ mmio.UM32 }
 
 func (rm WRPR_Mask) Load() WRPR_Bits   { return WRPR_Bits(rm.UM32.Load()) }
 func (rm WRPR_Mask) Store(b WRPR_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *FLASH_Periph) WRP() WRPR_Mask {
-	return WRPR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(WRP)}}
-}

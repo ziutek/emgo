@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
 tty=/dev/ttyACM0
-#stty -F $tty 115200
+speed=115200
+stty -F $tty ispeed $speed ospeed $speed igncr
 exec cat $tty

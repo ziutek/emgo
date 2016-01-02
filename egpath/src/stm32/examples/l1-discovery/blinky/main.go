@@ -3,12 +3,11 @@ package main
 import (
 	"delay"
 
-	"stm32/l1/gpio"
-	"stm32/l1/periph"
-	"stm32/l1/setup"
+	"stm32/hal/gpio"
+	"stm32/hal/setup"
 )
 
-var leds = gpio.B
+var LED *gpio.Port
 
 const (
 	Blue  = 6
@@ -16,23 +15,23 @@ const (
 )
 
 func init() {
-	setup.Performance(0)
+	setup.Performance32(0)
 
-	periph.AHBClockEnable(periph.GPIOB)
-	periph.AHBReset(periph.GPIOB)
+	gpio.B.EnableClock(false)
 
-	leds.SetMode(Blue, gpio.Out)
-	leds.SetMode(Green, gpio.Out)
+	LED = gpio.B
+	LED.SetMode(Green, gpio.Out)
+	LED.SetMode(Blue, gpio.Out)
 }
 
 func main() {
 	for {
-		leds.ClearPin(Blue)
-		leds.SetPin(Green)
+		LED.ClearPin(Blue)
+		LED.SetPin(Green)
 		delay.Millisec(1000)
 
-		leds.ClearPin(Green)
-		leds.SetPin(Blue)
+		LED.ClearPin(Green)
+		LED.SetPin(Blue)
 		delay.Millisec(1000)
 	}
 }

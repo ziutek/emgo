@@ -118,10 +118,12 @@ func main() {
 
 	fmt.Println("\nConfigure all DS18B20, DS1822 to 10bit resolution.")
 
+	// This algorithm configures and starts conversion simultaneously on all
+	// temperature sensors on the bus. It is fast, but doesn't work in case of
+	// parasite power mode.
+
 	checkErr(m.SkipROM())
 	checkErr(m.WriteScratchpad(127, -128, onewire.T10bit))
-
-	// This algorithm doesn't work in case of parasite power mode.
 	for {
 		fmt.Println("\nSending ConvertT command on the bus (SkipROM addressing).")
 		checkErr(m.SkipROM())

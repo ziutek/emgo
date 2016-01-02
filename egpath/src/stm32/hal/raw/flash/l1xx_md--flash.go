@@ -75,15 +75,3 @@ const (
 	nRST_STDBY OBR_Bits = 0x01 << 22 //+ nRST_STDBY.
 	BFB2       OBR_Bits = 0x01 << 23 //+ BFB2(available only in STM32L1xx High-density devices).
 )
-
-const (
-	WRP WRPR_Bits = 0xFFFFFFFF << 0 //+ Write Protection bits.
-)
-
-const (
-	WRP WRPR1_Bits = 0xFFFFFFFF << 0 //+ Write Protection bits (available only in STM32L1xx.
-)
-
-const (
-	WRP WRPR2_Bits = 0xFFFFFFFF << 0 //+ Write Protection bits (available only in STM32L1xx.
-)
