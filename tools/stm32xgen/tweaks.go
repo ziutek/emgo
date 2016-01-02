@@ -68,6 +68,8 @@ func flash(p *Periph) {
 		case strings.HasPrefix(r.Name, "OPTCR"):
 			optcr.Len++
 			continue
+		case strings.HasPrefix(r.Name, "WRPR"):
+			r.Bits = nil
 		}
 		regs = append(regs, r)
 	}
