@@ -9,7 +9,7 @@ int main$main();
 extern byte DataRAM, DataLoad, DataSize;
 extern byte BSSRAM, BSSSize;
 
-static void
+void
 runtime$noos$reset() {
 	memmove(&DataRAM, &DataLoad, (uint) (&DataSize));
 	memset(&BSSRAM, 0, (uint) (&BSSSize));

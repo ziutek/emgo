@@ -131,3 +131,13 @@ const (
 	ETH_DMA_BASE      uintptr = ETH_BASE + 0x1000
 	DMA2D_BASE        uintptr = AHB1PERIPH_BASE + 0xB000
 )
+
+// AHB2 peripherals
+const (
+	DCMI_BASE        uintptr = AHB2PERIPH_BASE + 0x50000
+	CRYP_BASE        uintptr = AHB2PERIPH_BASE + 0x60000
+	HASH_BASE        uintptr = AHB2PERIPH_BASE + 0x60400
+	HASH_DIGEST_BASE uintptr = AHB2PERIPH_BASE + 0x60710
+	RNG_BASE         uintptr = AHB2PERIPH_BASE + 0x60800
+	DBGMCU_BASE      uintptr = 0xE0042000
+)

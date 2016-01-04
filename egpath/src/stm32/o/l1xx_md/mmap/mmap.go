@@ -81,3 +81,10 @@ const (
 	FSMC_Bank1E_R_BASE uintptr = FSMC_R_BASE + 0x0104 // FSMC Bank1E registers base address
 	DBGMCU_BASE        uintptr = 0xE0042000           // Debug MCU registers base address
 )
+
+// Unique device ID registers
+const (
+	UID1 uintptr = 0x1FF80050
+	UID2 uintptr = 0x1FF80054
+	UID3 uintptr = 0x1FF80064
+)

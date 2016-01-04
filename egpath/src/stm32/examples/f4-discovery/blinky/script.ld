@@ -2,10 +2,10 @@
 StackLog2 = 10;
 StackFrac = 7;
 
-/* One stack, without gorutines */
+/* One task, two stacks. */
 MaxTasks = 1;
 
-INCLUDE stm32/f407_g
+INCLUDE stm32/f407xg
 INCLUDE stm32/loadram
 INCLUDE noos-cortexm
 

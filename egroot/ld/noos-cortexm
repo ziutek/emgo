@@ -3,6 +3,8 @@ SECTIONS {
 		__exidx_start = .;
 		
 		/* Vector table. */
+		VectorsStart = .;
+		
 		LONG(StackEnd)
 		KEEP(*(.Reset))
 		KEEP(*(.NMI))
@@ -21,7 +23,11 @@ SECTIONS {
 		KEEP(*(.SysTick))		
 		KEEP(*(.ISRs))
 		
-		/* Code */ 
+		/* Special boot code. */
+		. = DEFINED(bootOffset) ? bootOffset : .;
+		*(.text.bootcode)
+
+		/* Code. */ 
 		*(.text .text.*)       
 	} >loadTo
 	
@@ -74,3 +80,5 @@ SECTIONS {
 		*(.dummy .dummy.*)
 	}
 }
+
+ENTRY(runtime$noos$reset)

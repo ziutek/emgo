@@ -141,3 +141,13 @@ const (
 	HASH_DIGEST_BASE uintptr = AHB2PERIPH_BASE + 0x60710
 	RNG_BASE         uintptr = AHB2PERIPH_BASE + 0x60800
 )
+
+// FSMC Bankx registers base address
+const (
+	FSMC_Bank1_R_BASE  uintptr = FSMC_R_BASE + 0x0000
+	FSMC_Bank1E_R_BASE uintptr = FSMC_R_BASE + 0x0104
+	FSMC_Bank2_R_BASE  uintptr = FSMC_R_BASE + 0x0060
+	FSMC_Bank3_R_BASE  uintptr = FSMC_R_BASE + 0x0080
+	FSMC_Bank4_R_BASE  uintptr = FSMC_R_BASE + 0x00A0
+	DBGMCU_BASE        uintptr = 0xE0042000
+)

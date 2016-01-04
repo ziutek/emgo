@@ -2,6 +2,7 @@
 
 package noos
 
+//emgo:export
 func reset()
 
 // Vectors for system exceptions.
