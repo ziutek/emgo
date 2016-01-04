@@ -186,9 +186,15 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 			}
 		}
 	}
+
+	pkgmain := gtc.pkg.Name() == "main"
+
+	w := wc
+	if pkgmain {
+		w = wh
+	}
 	_, err := io.WriteString(
-		wc,
-		"#include <internal/types.h>\n#include <builtin.h>\n",
+		w, "#include <internal/types.h>\n#include <builtin.h>\n",
 	)
 	if err != nil {
 		return err
@@ -199,17 +205,15 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 			continue
 		}
 		w := wc
-		if export {
+		if export || pkgmain {
 			w = wh
 		}
 		if _, err = io.WriteString(w, "#include <"+path+".h>\n"); err != nil {
 			return err
 		}
 	}
-	pkgName := gtc.pkg.Name()
-	if pkgName == "main" {
-		_, err = io.WriteString(wc, "\n#include \"_.h\"\n")
-	} else if gtc.pkg.Path() != "builtin" {
+
+	if !pkgmain && gtc.pkg.Path() != "builtin" {
 		_, err = io.WriteString(wc, "\n#include <"+gtc.pkg.Path()+".h>\n")
 	}
 	if err != nil {
@@ -316,7 +320,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 	buf := new(bytes.Buffer)
 	buf.WriteString("void " + up + "$init() {\n")
-	if pkgName != "main" {
+	if !pkgmain {
 		buf.WriteString("\tstatic bool called = false;\n")
 		buf.WriteString("\tif (called) {\n\t\treturn;\n\t}\n\tcalled = true;\n")
 	}

@@ -127,13 +127,14 @@ func compile(bp *build.Package) error {
 		objs  []string
 	)
 
+	oat := buildCtx.GOOS + "_" + buildCtx.GOARCH
+	if buildCtx.InstallSuffix != "" {
+		oat += "_" + buildCtx.InstallSuffix
+	}
+
 	if ppath == "main" {
-		hpath = filepath.Join(bp.Dir, "_.h")
+		hpath = filepath.Join(bp.Dir, "__"+oat+".h")
 	} else {
-		oat := buildCtx.GOOS + "_" + buildCtx.GOARCH
-		if buildCtx.InstallSuffix != "" {
-			oat += "_" + buildCtx.InstallSuffix
-		}
 		hpath = filepath.Join(bp.PkgRoot, oat, ppath+".h")
 		expath := filepath.Join(work, "__.EXPORTS")
 		impath := filepath.Join(work, "__.IMPORTS")
@@ -171,14 +172,21 @@ func compile(bp *build.Package) error {
 	}
 	defer wh.Close()
 
-	wc, err := os.Create(filepath.Join(bp.Dir, "_.c"))
+	cout := "__" + oat + ".c"
+
+	wc, err := os.Create(filepath.Join(bp.Dir, cout))
 	if err != nil {
 		return err
 	}
 	defer wc.Close()
 
-	up := strings.Replace(ppath, "/", "$", -1)
-	_, err = io.WriteString(wh, "#ifndef "+up+"\n#define "+up+"\n\n")
+	if ppath == "main" {
+		h := filepath.Base(hpath)
+		_, err = io.WriteString(wc, "#include \""+h+"\"\n\n")
+	} else {
+		up := strings.Replace(ppath, "/", "$", -1)
+		_, err = io.WriteString(wh, "#ifndef "+up+"\n#define "+up+"\n\n")
+	}
 	if err != nil {
 		return err
 	}
@@ -206,11 +214,13 @@ func compile(bp *build.Package) error {
 		}
 	}
 
-	if _, err = io.WriteString(wh, "\n#endif\n"); err != nil {
-		return err
+	if ppath != "main" {
+		if _, err = io.WriteString(wh, "\n#endif\n"); err != nil {
+			return err
+		}
 	}
 
-	var csfiles = []string{"_.c"}
+	var csfiles = []string{cout}
 
 	for _, c := range bp.CFiles {
 		if !strings.HasSuffix(c, "+.c") {
