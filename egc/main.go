@@ -39,7 +39,7 @@ func getEnv() {
 	if buildCtx.GOOS == "" {
 		die("EGOS environment variable not set")
 	}
-	if _, ok := archMap[buildCtx.GOOS]; !ok {
+	if _, ok := osMap[buildCtx.GOOS]; !ok {
 		die("Unknown EGOS: " + buildCtx.GOOS)
 	}
 	buildCtx.GOROOT = os.Getenv("EGROOT")
