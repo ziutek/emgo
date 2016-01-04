@@ -32,9 +32,15 @@ func getEnv() {
 	if buildCtx.GOARCH == "" {
 		die("EGARCH environment variable not set")
 	}
+	if _, ok := archMap[buildCtx.GOARCH]; !ok {
+		die("Unknown EGARCH: " + buildCtx.GOARCH)
+	}
 	buildCtx.GOOS = os.Getenv("EGOS")
 	if buildCtx.GOOS == "" {
 		die("EGOS environment variable not set")
+	}
+	if _, ok := archMap[buildCtx.GOOS]; !ok {
+		die("Unknown EGOS: " + buildCtx.GOOS)
 	}
 	buildCtx.GOROOT = os.Getenv("EGROOT")
 	if buildCtx.GOROOT == "" {
