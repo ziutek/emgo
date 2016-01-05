@@ -1,11 +1,17 @@
 #!/bin/sh
 
+set -e
+
+arch=`grep 'EGARCH=' ../build.sh |sed 's/.*EGARCH=\([[:alnum:]_]\+\).*/\1/g'`
+if [ -z "$arch" ]; then
+	arch=$EGARCH
+fi
 
 if [ $# -eq 1 -a "$1" = 'flash' ]; then
-	load="program $EGARCH.elf"
+	load="program $arch.elf"
 else
-	arm-none-eabi-objcopy -O binary $EGARCH.elf $EGARCH.bin
-	load="load_image $EGARCH.bin 0x20000000"
+	arm-none-eabi-objcopy -O binary $arch.elf $arch.bin
+	load="load_image $arch.bin 0x20000000"
 fi
 
 if [ -n "$TRACECLKIN" ]; then
