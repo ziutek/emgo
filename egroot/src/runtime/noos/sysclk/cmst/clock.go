@@ -30,18 +30,20 @@ func tons(tick int64) int64 {
 //  external - false: SysTick uses CPU clock; true: SysTick uses external clock.
 func Setup(periodns, hz uint, external bool) {
 	freqHz = hz
+	st := systick.SYSTICK
 	if hz == 0 {
-		(systick.ENABLE | systick.TICKINT).Clear()
+		st.CSR.ClearBits(systick.ENABLE | systick.TICKINT)
 		return
 	}
 	periodTicks = uint32((uint64(periodns)*uint64(hz) + 5e8) / 1e9)
-	systick.RELOAD.Store(periodTicks - 1)
-	systick.CURRENT.Clear()
-	cfg := systick.ENABLE | systick.TICKINT
-	if !external {
-		cfg |= systick.CLKSOURCE
+	st.RELOAD().Store(systick.RVR_Bits(periodTicks - 1))
+	st.CURRENT().Store(0)
+	if external {
+		st.CLKSOURCE().Clear()
+	} else {
+		st.CLKSOURCE().Set()
 	}
-	cfg.Set()
+	st.CSR.SetBits(systick.ENABLE | systick.TICKINT)
 }
 
 // SetWakeup: see syscall.SetSysClock.
@@ -56,7 +58,7 @@ func Uptime() int64 {
 	aba := counter.StartLoad()
 	for {
 		cnt := counter.TryLoad(aba)
-		add := periodTicks - systick.CURRENT.Load()
+		add := periodTicks - uint32(systick.SYSTICK.CURRENT().Load())
 		var ok bool
 		if aba, ok = counter.CheckLoad(aba); ok {
 			return tons(cnt + int64(add))
