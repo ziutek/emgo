@@ -42,15 +42,15 @@ func init() {
 	port.SetMode(rx, gpio.Alt)
 	port.SetAltFunc(rx, gpio.USART2)
 
-	tts := usart.USART2
+	s := usart.USART2
 
-	tts.EnableClock(true)
-	tts.SetBaudRate(115200)
-	tts.SetConf(usart.RxEna | usart.TxEna)
-	tts.EnableIRQs(usart.RxNotEmptyIRQ)
-	tts.Enable()
+	s.EnableClock(true)
+	s.SetBaudRate(115200)
+	s.SetConf(usart.RxEna | usart.TxEna)
+	s.EnableIRQs(usart.RxNotEmptyIRQ)
+	s.Enable()
 
-	con = serial.New(tts, 80, 8)
+	con = serial.New(s, 80, 8)
 	con.SetUnix(true)
 	fmt.DefaultWriter = con
 
@@ -65,15 +65,15 @@ func init() {
 	port.SetOutType(tx, gpio.OpenDrain)
 	port.SetAltFunc(tx, gpio.USART6)
 
-	ow := usart.USART6
+	s = usart.USART6
 
-	ow.EnableClock(true)
-	ow.SetConf(usart.TxEna | usart.RxEna)
-	ow.SetMode(usart.HalfDuplex)
-	ow.EnableIRQs(usart.RxNotEmptyIRQ)
-	ow.Enable()
+	s.EnableClock(true)
+	s.SetConf(usart.TxEna | usart.RxEna)
+	s.SetMode(usart.HalfDuplex)
+	s.EnableIRQs(usart.RxNotEmptyIRQ)
+	s.Enable()
 
-	one = serial.New(ow, 8, 8)
+	one = serial.New(s, 8, 8)
 	rtos.IRQ(irq.USART6).Enable()
 }
 

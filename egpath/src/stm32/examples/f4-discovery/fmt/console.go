@@ -13,23 +13,22 @@ import (
 var con *serial.Dev
 
 func initConsole() {
-	port, tx, rx := gpio.A, 2, 3
+	gpio.A.EnableClock(true)
+	port, tx, rx := gpio.A, gpio.Pin2, gpio.Pin3
 
-	port.EnableClock(true)
-	port.SetMode(tx, gpio.Alt)
-	port.SetAltFunc(tx, gpio.USART2)
-	port.SetMode(rx, gpio.Alt)
-	port.SetAltFunc(rx, gpio.USART2)
+	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
+	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn})
+	port.SetAltFunc(tx|rx, gpio.USART2)
 
-	tts := usart.USART2
+	s := usart.USART2
 
-	tts.EnableClock(true)
-	tts.SetBaudRate(115200)
-	tts.SetConf(usart.RxEna | usart.TxEna)
-	tts.EnableIRQs(usart.RxNotEmptyIRQ)
-	tts.Enable()
+	s.EnableClock(true)
+	s.SetBaudRate(115200)
+	s.SetConf(usart.RxEna | usart.TxEna)
+	s.EnableIRQs(usart.RxNotEmptyIRQ)
+	s.Enable()
 
-	con = serial.New(tts, 80, 8)
+	con = serial.New(s, 80, 8)
 	con.SetUnix(true)
 	fmt.DefaultWriter = con
 

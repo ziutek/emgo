@@ -11,13 +11,6 @@ import (
 )
 
 const (
-	Low      Speed = 0 //   2 MHz (CL = 50 pF, VDD > 2.7 V)
-	Medium   Speed = 1 //  25 MHz (CL = 50 pF, VDD > 2.7 V)
-	High     Speed = 2 //  50 MHz (CL = 40 pF, VDD > 2.7 V)
-	VeryHigh Speed = 3 // 100 MHz (CL = 30 pF, VDD > 2.7 V)
-)
-
-const (
 	TIM1 = AF1
 	TIM2 = AF1
 
@@ -72,6 +65,14 @@ const (
 	DCMI = AF13
 
 	LTDC = AF14
+)
+
+const (
+	veryLow  = -1 // Not supported.
+	low      = -1 //   2 MHz (CL = 50 pF, VDD > 2.7 V)
+	_        = 0  //  25 MHz (CL = 50 pF, VDD > 2.7 V)
+	high     = 1  //  50 MHz (CL = 40 pF, VDD > 2.7 V)
+	veryHigh = 2  // 100 MHz (CL = 30 pF, VDD > 2.7 V)
 )
 
 var (

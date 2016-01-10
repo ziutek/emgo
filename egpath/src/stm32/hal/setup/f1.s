@@ -2,14 +2,14 @@
 
 .syntax unified
 
-// This code allows to boot program from SRAM on STM32F1xx.
+// This code allows to boot program from RAM on STM32F1xx.
 
-.global bootSRAM
+.global bootRAM
 
 .section .text.bootcode
 
 .thumb_func
-bootSRAM:
+bootRAM:
 	ldr  r0, =VectorsStart  // Load address of vector table.
 	ldr  r1, =0xE000ED08    // Load address of NVIC VTOR register.
 	str  r0, [r1]           // Set VTOR to VectorsStart.

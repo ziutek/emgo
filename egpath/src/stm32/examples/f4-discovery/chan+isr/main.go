@@ -21,30 +21,28 @@ import (
 var LED *gpio.Port
 
 const (
-	Green  = 12
-	Orange = 13
-	Red    = 14
-	Blue   = 15
-)
+	Green  = gpio.Pin12
+	Orange = gpio.Pin13
+	Red    = gpio.Pin14
+	Blue   = gpio.Pin15
 
-const ButtonPin = 0
+	Button = gpio.Pin0
+)
 
 func init() {
 	setup.Performance168(8)
 
 	gpio.A.EnableClock(false)
+	bport := gpio.A
 	gpio.D.EnableClock(false)
-
 	LED = gpio.D
-	LED.SetMode(Green, gpio.Out)
-	LED.SetMode(Orange, gpio.Out)
-	LED.SetMode(Red, gpio.Out)
-	LED.SetMode(Blue, gpio.Out)
+
+	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	LED.Setup(Green|Orange|Red|Blue, cfg)
 
 	// Setup external interrupt source: user button.
-	bport := gpio.A
-	bport.SetMode(ButtonPin, gpio.In)
-	line := exti.Line(ButtonPin)
+	bport.Setup(Button, &gpio.Config{Mode: gpio.In})
+	line := exti.Lines(Button)
 	line.Connect(bport)
 	line.EnableRiseTrig()
 	line.EnableInt()
@@ -53,22 +51,22 @@ func init() {
 }
 
 var (
-	c   = make(chan int, 3)
+	c   = make(chan gpio.Pins, 3)
 	led = Green
 )
 
 func buttonISR() {
-	exti.Line(ButtonPin).ClearPending()
+	exti.Lines(Button).ClearPending()
 	select {
 	case c <- led:
-		if led++; led > Red {
+		if led <<= 1; led > Red {
 			led = Green
 		}
 	default:
 		// Signal that c is full.
-		LED.SetPin(Blue)
+		LED.Set(Blue)
 		delay.Loop(1e5)
-		LED.ClearPin(Blue)
+		LED.Clear(Blue)
 	}
 }
 
@@ -77,10 +75,10 @@ var ISRs = [...]func(){
 	irq.EXTI0: buttonISR,
 }
 
-func toggle(led int) {
-	LED.SetPin(led)
+func toggle(leds gpio.Pins) {
+	LED.Set(leds)
 	delay.Millisec(500)
-	LED.ClearPin(led)
+	LED.Clear(leds)
 	delay.Millisec(500)
 }
 

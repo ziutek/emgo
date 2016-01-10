@@ -11,5 +11,5 @@ INCLUDE stm32/f103rc
 INCLUDE stm32/loadram
 INCLUDE noos-cortexm
 
-/* Include bootSRAM and set it as entry point. */
-ENTRY(bootSRAM)
+/* Include bootRAM and set it as entry point. */
+ENTRY(bootRAM)

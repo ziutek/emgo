@@ -9,37 +9,45 @@ import (
 
 type LED struct {
 	Port *gpio.Port
-	Pin  int
+	Pin  gpio.Pins
 }
 
 func (led LED) Init() {
-	led.Port.SetMode(led.Pin, gpio.Out)
+	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	led.Port.Setup(led.Pin, cfg)
 }
 
 func (led LED) On() {
-	led.Port.SetPin(led.Pin)
+	led.Port.Set(led.Pin)
 }
 
 func (led LED) Off() {
-	led.Port.ClearPin(led.Pin)
+	led.Port.Clear(led.Pin)
 }
 
 var leds = []LED{
-	{gpio.B, 7},
-	{gpio.B, 6},
-	{gpio.B, 5},
-	{gpio.D, 2},
+	{gpio.B, gpio.Pin7},
+	{gpio.B, gpio.Pin6},
+	{gpio.B, gpio.Pin5},
+	{gpio.D, gpio.Pin2},
 }
+
+var keys *gpio.Port
+
+const key3 = gpio.Pin10
 
 func init() {
 	setup.Performance(8, 72/8, false)
 
 	gpio.B.EnableClock(true)
+	gpio.C.EnableClock(true)
 	gpio.D.EnableClock(true)
 
 	for _, led := range leds {
 		led.Init()
 	}
+	keys = gpio.C
+	keys.Setup(key3, &gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
 }
 
 func main() {
@@ -48,12 +56,11 @@ func main() {
 	n := len(leds) - 1
 	for {
 		leds[i].On()
-		delay.Millisec(100)
-		if i == 0 || i == n {
-			d = -d
-			delay.Millisec(50)
-		}
+		delay.Millisec(50)
 		leds[i].Off()
+		if i == 0 || i == n || keys.Mask(key3) == 0 {
+			d = -d
+		}
 		i += d
 	}
 }

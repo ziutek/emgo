@@ -10,28 +10,26 @@ import (
 var LED *gpio.Port
 
 const (
-	Green  = 12
-	Orange = 13
-	Red    = 14
-	Blue   = 15
+	Green  = gpio.Pin12
+	Orange = gpio.Pin13
+	Red    = gpio.Pin14
+	Blue   = gpio.Pin15
 )
 
 func init() {
 	setup.Performance168(8)
 
 	gpio.D.EnableClock(false)
-
 	LED = gpio.D
-	LED.SetMode(Green, gpio.Out)
-	LED.SetMode(Orange, gpio.Out)
-	LED.SetMode(Red, gpio.Out)
-	LED.SetMode(Blue, gpio.Out)
+
+	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	LED.Setup(Green|Orange|Red|Blue, cfg)
 }
 
-func toggle(led int) {
-	LED.SetPin(led)
+func toggle(leds gpio.Pins) {
+	LED.Set(leds)
 	delay.Millisec(200)
-	LED.ClearPin(led)
+	LED.Clear(leds)
 	delay.Millisec(200)
 }
 

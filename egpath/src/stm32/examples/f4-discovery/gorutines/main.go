@@ -10,22 +10,20 @@ import (
 var LED *gpio.Port
 
 const (
-	Green  = 12
-	Orange = 13
-	Red    = 14
-	Blue   = 15
+	Green  = gpio.Pin12
+	Orange = gpio.Pin13
+	Red    = gpio.Pin14
+	Blue   = gpio.Pin15
 )
 
 func init() {
 	setup.Performance168(8)
 
 	gpio.D.EnableClock(false)
-
 	LED = gpio.D
-	LED.SetMode(Green, gpio.Out)
-	LED.SetMode(Orange, gpio.Out)
-	LED.SetMode(Red, gpio.Out)
-	LED.SetMode(Blue, gpio.Out)
+
+	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	LED.Setup(Green|Orange|Red|Blue, cfg)
 }
 
 func wait(ms int) {
@@ -33,11 +31,11 @@ func wait(ms int) {
 	//delay.Loop(ms * 1e4)
 }
 
-func blink(led int, d int, max, inc float32) {
+func blink(leds gpio.Pins, d int, max, inc float32) {
 	for inc < max {
-		LED.SetPin(led)
+		LED.Set(leds)
 		wait(d)
-		LED.ClearPin(led)
+		LED.Clear(leds)
 		wait(d)
 		// Use floating point calculations to test STMF4 FPU context switching.
 		inc *= inc

@@ -10,22 +10,20 @@ import (
 var LED *gpio.Port
 
 const (
-	Green  = 12
-	Orange = 13
-	Red    = 14
-	Blue   = 15
+	Green  = gpio.Pin12
+	Orange = gpio.Pin13
+	Red    = gpio.Pin14
+	Blue   = gpio.Pin15
 )
 
 func init() {
 	setup.Performance168(8)
 
 	gpio.D.EnableClock(false)
-
 	LED = gpio.D
-	LED.SetMode(Green, gpio.Out)
-	LED.SetMode(Orange, gpio.Out)
-	LED.SetMode(Red, gpio.Out)
-	LED.SetMode(Blue, gpio.Out)
+
+	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	LED.Setup(Green|Orange|Red|Blue, cfg)
 }
 
 func wait() {
@@ -35,20 +33,20 @@ func wait() {
 
 func main() {
 	for {
-		LED.ClearPin(Green)
-		LED.SetPin(Orange)
+		LED.Clear(Green)
+		LED.Set(Orange)
 		wait()
 
-		LED.ClearPin(Orange)
-		LED.SetPin(Red)
+		LED.Clear(Orange)
+		LED.Set(Red)
 		wait()
 
-		LED.ClearPin(Red)
-		LED.SetPin(Blue)
+		LED.Clear(Red)
+		LED.Set(Blue)
 		wait()
 
-		LED.ClearPin(Blue)
-		LED.SetPin(Green)
+		LED.Clear(Blue)
+		LED.Set(Green)
 		wait()
 	}
 }

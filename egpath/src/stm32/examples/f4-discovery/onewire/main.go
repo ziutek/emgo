@@ -17,12 +17,7 @@ import (
 	"stm32/hal/usart"
 )
 
-const (
-	Green = 12 + iota
-	Orange
-	Red
-	Blue
-)
+const Red = gpio.Pin14
 
 var (
 	leds *gpio.Port
@@ -32,34 +27,32 @@ var (
 func init() {
 	setup.Performance168(8)
 
-	// LEDS
+	// GPIO
 
+	gpio.C.EnableClock(true)
+	port, tx := gpio.C, gpio.Pin6
+	gpio.D.EnableClock(false)
 	leds = gpio.D
 
-	leds.EnableClock(false)
-	leds.SetMode(Green, gpio.Out)
-	leds.SetMode(Orange, gpio.Out)
-	leds.SetMode(Red, gpio.Out)
-	leds.SetMode(Blue, gpio.Out)
+	// LEDS
+
+	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	leds.Setup(Red, cfg)
 
 	// 1-wire
 
-	port, tx := gpio.C, 6
-
-	port.EnableClock(true)
-	port.SetMode(tx, gpio.Alt)
-	port.SetOutType(tx, gpio.OpenDrain)
+	port.Setup(tx, &gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
 	port.SetAltFunc(tx, gpio.USART6)
 
-	ow := usart.USART6
+	s := usart.USART6
 
-	ow.EnableClock(true)
-	ow.SetConf(usart.TxEna | usart.RxEna)
-	ow.SetMode(usart.HalfDuplex)
-	ow.EnableIRQs(usart.RxNotEmptyIRQ)
-	ow.Enable()
+	s.EnableClock(true)
+	s.SetConf(usart.TxEna | usart.RxEna)
+	s.SetMode(usart.HalfDuplex)
+	s.EnableIRQs(usart.RxNotEmptyIRQ)
+	s.Enable()
 
-	one = serial.New(ow, 8, 8)
+	one = serial.New(s, 8, 8)
 	rtos.IRQ(irq.USART6).Enable()
 }
 
@@ -72,14 +65,14 @@ var ISRs = [...]func(){
 	irq.USART6: oneISR,
 }
 
-func blink(c, d int) {
-	leds.SetPin(c)
+func blink(pins gpio.Pins, d int) {
+	leds.Set(pins)
 	if d > 0 {
 		delay.Millisec(d)
 	} else {
 		delay.Loop(-1e4 * d)
 	}
-	leds.ClearPin(c)
+	leds.Clear(pins)
 }
 
 func checkErr(err error) {

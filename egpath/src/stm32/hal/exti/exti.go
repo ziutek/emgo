@@ -29,11 +29,6 @@ const (
 	RTCALR Lines = 1 << 17 // Real Time Clock Alarm event.
 )
 
-// Line returns bitmask corresponding to n-th line.
-func Line(n int) Lines {
-	return Lines(1 << uint(n))
-}
-
 // Connect connects lines to corresponding pins of GPIO port. After reset lines
 // 0..15 are connected to GPIO port A.
 //

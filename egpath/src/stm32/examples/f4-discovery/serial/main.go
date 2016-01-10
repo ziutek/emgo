@@ -3,7 +3,7 @@
 // You need terminal emulator (eg. screen, minicom, hyperterm) and some USB to
 // 3.3V TTL serial adapter (eg. FT232RL, CP2102 based). Warninig! If you use
 // USB to RS232 it can destroy your Discovery board.
-
+//
 // Connct adapter's GND, Rx and Tx pins respectively to Discovery's GND, PA2,
 // PA3 pins.
 package main
@@ -22,10 +22,10 @@ import (
 )
 
 const (
-	Green = 12 + iota
-	Orange
-	Red
-	Blue
+	Green  = gpio.Pin12
+	Orange = gpio.Pin13
+	Red    = gpio.Pin14
+	Blue   = gpio.Pin15
 )
 
 var (
@@ -36,49 +36,47 @@ var (
 func init() {
 	setup.Performance168(8)
 
-	// LEDS
+	// GPIO
 
+	gpio.A.EnableClock(true)
+	port, tx, rx := gpio.A, gpio.Pin2, gpio.Pin3
+	gpio.D.EnableClock(false)
 	leds = gpio.D
 
-	leds.EnableClock(false)
-	leds.SetMode(Green, gpio.Out)
-	leds.SetMode(Orange, gpio.Out)
-	leds.SetMode(Red, gpio.Out)
-	leds.SetMode(Blue, gpio.Out)
+	// LEDS
+
+	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	leds.Setup(Green|Orange|Red|Blue, cfg)
 
 	// USART
 
-	port, tx, rx := gpio.A, 2, 3
+	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
+	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn})
+	port.SetAltFunc(tx|rx, gpio.USART2)
 
-	port.EnableClock(true)
-	port.SetMode(tx, gpio.Alt)
-	port.SetAltFunc(tx, gpio.USART2)
-	port.SetMode(rx, gpio.Alt)
-	port.SetAltFunc(rx, gpio.USART2)
+	s := usart.USART2
 
-	tts := usart.USART2
+	s.EnableClock(true)
+	s.SetBaudRate(115200)
+	s.SetConf(usart.RxEna | usart.TxEna)
+	s.EnableIRQs(usart.RxNotEmptyIRQ)
+	s.Enable()
 
-	tts.EnableClock(true)
-	tts.SetBaudRate(115200)
-	tts.SetConf(usart.RxEna | usart.TxEna)
-	tts.EnableIRQs(usart.RxNotEmptyIRQ)
-	tts.Enable()
-
-	con = serial.New(tts, 80, 8)
+	con = serial.New(s, 80, 8)
 	con.SetUnix(true)
 	fmt.DefaultWriter = con
 
 	rtos.IRQ(irq.USART2).Enable()
 }
 
-func blink(c, dly int) {
-	leds.SetPin(c)
+func blink(c gpio.Pins, dly int) {
+	leds.Set(c)
 	if dly > 0 {
 		delay.Millisec(dly)
 	} else {
 		delay.Loop(-1e4 * dly)
 	}
-	leds.ClearPin(c)
+	leds.Clear(c)
 }
 
 func conISR() {
