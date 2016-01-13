@@ -6,29 +6,27 @@ import (
 	"stm32/hal/gpio"
 )
 
-var leds = gpio.D
+var leds *gpio.Port
 
 const (
-	Green = 12 + iota
-	Orange
-	Red
-	Blue
+	Green  = gpio.Pin12
+	Orange = gpio.Pin13
+	Red    = gpio.Pin14
+	Blue   = gpio.Pin15
 )
 
-func initLEDs() {
-	leds.EnableClock(false)
-	leds.SetMode(Green, gpio.Out)
-	leds.SetMode(Orange, gpio.Out)
-	leds.SetMode(Red, gpio.Out)
-	leds.SetMode(Blue, gpio.Out)
+func initLEDs(port *gpio.Port) {
+	leds = port
+	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	leds.Setup(Green|Orange|Red|Blue, cfg)
 }
 
-func blink(led, dly int) {
-	leds.SetPin(led)
+func blink(pins gpio.Pins, dly int) {
+	leds.Set(pins)
 	if dly < 0 {
 		delay.Loop(-dly * 1e3)
 	} else {
 		delay.Millisec(dly)
 	}
-	leds.ClearPin(led)
+	leds.Clear(pins)
 }

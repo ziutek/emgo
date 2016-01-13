@@ -70,7 +70,7 @@ func setup(p *Port, n int, cfg *Config) {
 	case cfg.Mode == 0: // In, AltIn.
 		cm := uint32(cfg.Pull)&(8+4) ^ 4
 		cr.StoreBits(sel, cm<<pos)
-		p.MaskStore(Pin0<<uint(n), Pins(cfg.Pull)<<uint(n))
+		p.StorePins(Pin0<<uint(n), Pins(cfg.Pull)<<uint(n))
 	case cfg.Mode&1 != 0: // Out, Alt.
 		cm := uint32(cfg.Mode) & 8
 		cm |= uint32(cfg.Driver)

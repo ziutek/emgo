@@ -18,11 +18,11 @@ func (led LED) Init() {
 }
 
 func (led LED) On() {
-	led.Port.Set(led.Pin)
+	led.Port.SetPins(led.Pin)
 }
 
 func (led LED) Off() {
-	led.Port.Clear(led.Pin)
+	led.Port.ClearPins(led.Pin)
 }
 
 var leds = []LED{
@@ -58,7 +58,7 @@ func main() {
 		leds[i].On()
 		delay.Millisec(50)
 		leds[i].Off()
-		if i == 0 || i == n || keys.Mask(key3) == 0 {
+		if i == 0 || i == n || keys.Pins(key3) == 0 {
 			d = -d
 		}
 		i += d

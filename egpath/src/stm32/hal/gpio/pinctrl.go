@@ -23,13 +23,23 @@ const (
 	All Pins = 0xffff
 )
 
+// Pins returns input value of pins.
+func (p *Port) Pins(pins Pins) Pins {
+	return Pins(p.idr.Bits(uint32(pins)))
+}
+
+// PinsOut returns output value of pins.
+func (p *Port) PinsOut(pins Pins) Pins {
+	return Pins(p.odr.Bits(uint32(pins)))
+}
+
 // Set sets output value of pins to 1.
-func (p *Port) Set(pins Pins) {
+func (p *Port) SetPins(pins Pins) {
 	p.bsrr.Store(uint32(pins))
 }
 
 // Clear sets output value of pins to 0.
-func (p *Port) Clear(pins Pins) {
+func (p *Port) ClearPins(pins Pins) {
 	p.bsrr.Store(uint32(pins) << 16)
 }
 
@@ -39,6 +49,13 @@ func (p *Port) Clear(pins Pins) {
 // priority above clearing bits.
 func (p *Port) ClearAndSet(cspins Pins) {
 	p.bsrr.Store(uint32(cspins))
+}
+
+// StorePins sets pins specified by pins to val.
+func (p *Port) StorePins(pins, val Pins) {
+	pins |= pins << 16
+	val |= ^val << 16
+	p.bsrr.Store(uint32(pins & val))
 }
 
 // Load returns input value of all pins.
@@ -54,23 +71,6 @@ func (p *Port) LoadOut() Pins {
 // Store sets output value of all pins to value specified by val.
 func (p *Port) Store(val Pins) {
 	p.odr.Store(uint32(val))
-}
-
-// Mask returns input value of pins specified by mask.
-func (p *Port) Mask(mask Pins) Pins {
-	return Pins(p.idr.Bits(uint32(mask)))
-}
-
-// MaskOut returns output value of pins specified by mask.
-func (p *Port) MaskOut(mask Pins) Pins {
-	return Pins(p.odr.Bits(uint32(mask)))
-}
-
-// MaskStore sets pins specified by mask to val.
-func (p *Port) MaskStore(mask, val Pins) {
-	mask |= mask << 16
-	val |= ^val << 16
-	p.bsrr.Store(uint32(mask & val))
 }
 
 /*

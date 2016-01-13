@@ -14,21 +14,19 @@ import (
 	"stm32/hal/setup"
 )
 
-const dcfpin = 1
+const dcfpin = gpio.Pin1
 
-var dcfport = gpio.C
+var dcfport *gpio.Port
 
 func init() {
 	setup.Performance168(8)
 
-	initLEDs()
+	gpio.C.EnableClock(true)
+	dcfport = gpio.C
+	gpio.D.EnableClock(false)
+	initLEDs(gpio.D)
 
-	// Initialize DCF77 input pin.
-
-	dcfport.EnableClock(true)
-	dcfport.SetMode(dcfpin, gpio.In)
-
-	line := exti.Line(dcfpin)
+	line := exti.Lines(dcfpin)
 	line.Connect(dcfport)
 	line.EnableRiseTrig()
 	line.EnableFallTrig()
@@ -41,9 +39,9 @@ var d = dcf77.NewDecoder()
 
 func edgeISR() {
 	t := time.Now()
-	exti.Line(dcfpin).ClearPending()
+	exti.Lines(dcfpin).ClearPending()
 	blink(Blue, -100)
-	d.Edge(t, dcfport.PinIn(dcfpin) != 0)
+	d.Edge(t, dcfport.Mask(dcfpin) != 0)
 }
 
 //c:__attribute__((section(".ISRs")))
@@ -54,7 +52,6 @@ var ISRs = [...]func(){
 func main() {
 	delay.Millisec(100)
 	for {
-		fmt.Println("Pulse wait...")
 		p := d.Pulse()
 		now := time.Now().UnixNano()
 		if p.Err() != nil {
