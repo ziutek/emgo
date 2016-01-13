@@ -145,10 +145,6 @@ type PRLH_Mask struct{ mmio.UM16 }
 func (rm PRLH_Mask) Load() PRLH_Bits   { return PRLH_Bits(rm.UM16.Load()) }
 func (rm PRLH_Mask) Store(b PRLH_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *RTC_Periph) PRL() PRLH_Mask {
-	return PRLH_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint16(PRL)}}
-}
-
 type PRLL_Bits uint16
 
 func (b PRLL_Bits) Field(mask PRLL_Bits) int {
@@ -171,10 +167,6 @@ type PRLL_Mask struct{ mmio.UM16 }
 
 func (rm PRLL_Mask) Load() PRLL_Bits   { return PRLL_Bits(rm.UM16.Load()) }
 func (rm PRLL_Mask) Store(b PRLL_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *RTC_Periph) PRL() PRLL_Mask {
-	return PRLL_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint16(PRL)}}
-}
 
 type DIVH_Bits uint16
 
@@ -199,10 +191,6 @@ type DIVH_Mask struct{ mmio.UM16 }
 func (rm DIVH_Mask) Load() DIVH_Bits   { return DIVH_Bits(rm.UM16.Load()) }
 func (rm DIVH_Mask) Store(b DIVH_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *RTC_Periph) RTC_DIV() DIVH_Mask {
-	return DIVH_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint16(RTC_DIV)}}
-}
-
 type DIVL_Bits uint16
 
 func (b DIVL_Bits) Field(mask DIVL_Bits) int {
@@ -225,10 +213,6 @@ type DIVL_Mask struct{ mmio.UM16 }
 
 func (rm DIVL_Mask) Load() DIVL_Bits   { return DIVL_Bits(rm.UM16.Load()) }
 func (rm DIVL_Mask) Store(b DIVL_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *RTC_Periph) RTC_DIV() DIVL_Mask {
-	return DIVL_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint16(RTC_DIV)}}
-}
 
 type CNTH_Bits uint16
 
@@ -253,10 +237,6 @@ type CNTH_Mask struct{ mmio.UM16 }
 func (rm CNTH_Mask) Load() CNTH_Bits   { return CNTH_Bits(rm.UM16.Load()) }
 func (rm CNTH_Mask) Store(b CNTH_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *RTC_Periph) RTC_CNT() CNTH_Mask {
-	return CNTH_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint16(RTC_CNT)}}
-}
-
 type CNTL_Bits uint16
 
 func (b CNTL_Bits) Field(mask CNTL_Bits) int {
@@ -279,10 +259,6 @@ type CNTL_Mask struct{ mmio.UM16 }
 
 func (rm CNTL_Mask) Load() CNTL_Bits   { return CNTL_Bits(rm.UM16.Load()) }
 func (rm CNTL_Mask) Store(b CNTL_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *RTC_Periph) RTC_CNT() CNTL_Mask {
-	return CNTL_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint16(RTC_CNT)}}
-}
 
 type ALRH_Bits uint16
 
@@ -307,10 +283,6 @@ type ALRH_Mask struct{ mmio.UM16 }
 func (rm ALRH_Mask) Load() ALRH_Bits   { return ALRH_Bits(rm.UM16.Load()) }
 func (rm ALRH_Mask) Store(b ALRH_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *RTC_Periph) RTC_ALR() ALRH_Mask {
-	return ALRH_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint16(RTC_ALR)}}
-}
-
 type ALRL_Bits uint16
 
 func (b ALRL_Bits) Field(mask ALRL_Bits) int {
@@ -333,7 +305,3 @@ type ALRL_Mask struct{ mmio.UM16 }
 
 func (rm ALRL_Mask) Load() ALRL_Bits   { return ALRL_Bits(rm.UM16.Load()) }
 func (rm ALRL_Mask) Store(b ALRL_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *RTC_Periph) RTC_ALR() ALRL_Mask {
-	return ALRL_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint16(RTC_ALR)}}
-}

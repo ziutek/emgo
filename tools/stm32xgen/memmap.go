@@ -66,7 +66,6 @@ func memmap(r *scanner) []*MemGroup {
 			break
 		}
 	}
-	fmt.Println("mmap", groups)
 	return groups
 }
 

@@ -32,35 +32,3 @@ const (
 	CNF   CRL_Bits = 0x01 << 4 //+ Configuration Flag.
 	RTOFF CRL_Bits = 0x01 << 5 //+ RTC operation OFF.
 )
-
-const (
-	PRL PRLH_Bits = 0x0F << 0 //+ RTC Prescaler Reload Value High.
-)
-
-const (
-	PRL PRLL_Bits = 0xFFFF << 0 //+ RTC Prescaler Reload Value Low.
-)
-
-const (
-	RTC_DIV DIVH_Bits = 0x0F << 0 //+ RTC Clock Divider High.
-)
-
-const (
-	RTC_DIV DIVL_Bits = 0xFFFF << 0 //+ RTC Clock Divider Low.
-)
-
-const (
-	RTC_CNT CNTH_Bits = 0xFFFF << 0 //+ RTC Counter High.
-)
-
-const (
-	RTC_CNT CNTL_Bits = 0xFFFF << 0 //+ RTC Counter Low.
-)
-
-const (
-	RTC_ALR ALRH_Bits = 0xFFFF << 0 //+ RTC Alarm High.
-)
-
-const (
-	RTC_ALR ALRL_Bits = 0xFFFF << 0 //+ RTC Alarm Low.
-)

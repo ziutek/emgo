@@ -50,6 +50,11 @@ func rtc(p *Periph) {
 		case strings.HasPrefix(r.Name, "BKP"):
 			bkpr.Len++
 			continue
+		case r.Name == "PRLH", r.Name == "PRLL",
+			r.Name == "DIVH", r.Name == "DIVL",
+			r.Name == "CNTH", r.Name == "CNTL",
+			r.Name == "ALRH", r.Name == "ALRL":
+			r.Bits = nil
 		}
 		regs = append(regs, r)
 	}
