@@ -7,7 +7,7 @@ import "rtos"
 var start Time
 
 func Set(t Time) {
-	up := rtos.Uptime()
+	up := rtos.Nanosec()
 	sec := up / 1e9
 	nsec := int32(up - sec*1e9)
 	if nsec < 0 {
@@ -18,7 +18,7 @@ func Set(t Time) {
 }
 
 func now() (sec int64, nsec int32) {
-	up := rtos.Uptime()
+	up := rtos.Nanosec()
 	sec = up / 1e9
 	nsec = int32(up - sec*1e9)
 	sec = start.sec + sec

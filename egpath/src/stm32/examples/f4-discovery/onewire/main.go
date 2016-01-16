@@ -26,6 +26,7 @@ var (
 
 func init() {
 	setup.Performance168(8)
+	setup.UseSysTick()
 
 	// GPIO
 
@@ -66,13 +67,13 @@ var ISRs = [...]func(){
 }
 
 func blink(pins gpio.Pins, d int) {
-	leds.Set(pins)
+	leds.SetPins(pins)
 	if d > 0 {
 		delay.Millisec(d)
 	} else {
 		delay.Loop(-1e4 * d)
 	}
-	leds.Clear(pins)
+	leds.ClearPins(pins)
 }
 
 func checkErr(err error) {

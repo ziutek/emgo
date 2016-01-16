@@ -2,13 +2,17 @@ package rtos
 
 import "syscall"
 
-// Uptime returns how long system is running (in nanosecond). Time when system
-// was in deep sleep state can be included or not.
-func Uptime() int64 {
-	return syscall.Uptime()
+// Nanosec returns system time as number of nanosecond from some time in the
+// past. There is guarantee that system time is monotonic, however accuracy
+// and linearity is implementation dependent. Usually, only systems that use
+// real time clock/counter as time source can provide linear system time. In
+// other cases the time flow can be affected by any enter into low power sleep
+// state.
+func Nanosec() int64 {
+	return syscall.Nanosec()
 }
 
-// SleepUntil sleeps task until Uptime() < end.
+// SleepUntil sleeps task until Nanosec() < end.
 func SleepUntil(end int64) {
 	sleepUntil(end)
 }

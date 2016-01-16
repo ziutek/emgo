@@ -50,8 +50,8 @@ func Setup(periodns, hz uint, external bool) {
 func SetWakeup(t int64) {
 }
 
-// Uptime: see syscall.SetSysClock.
-func Uptime() int64 {
+// Nanosec: see syscall.SetSysClock.
+func Nanosec() int64 {
 	if freqHz == 0 {
 		return 0
 	}

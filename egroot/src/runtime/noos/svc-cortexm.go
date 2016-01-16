@@ -19,7 +19,7 @@ var syscalls = [...]func(fp *cortexm.StackFrame, lr uintptr){
 	syscall.SCHEDNEXT:     scSchedNext,
 	syscall.EVENTWAIT:     scEventWait,
 	syscall.SETSYSCLK:     scSetSysClock,
-	syscall.UPTIME:        scUptime,
+	syscall.NANOSEC:       scNanosec,
 	syscall.SETALARM:      scSetAlarm,
 	syscall.SETIRQENA:     scSetIRQEna,
 	syscall.SETIRQPRIO:    scSetIRQPrio,
@@ -71,13 +71,13 @@ func scEventWait(fp *cortexm.StackFrame, lr uintptr) {
 
 func scSetSysClock(fp *cortexm.StackFrame, lr uintptr) {
 	mustThread(lr)
-	tasker.SetUptime(utofr64(fp.R[0]))
+	tasker.SetNanosec(utofr64(fp.R[0]))
 	tasker.SetWakeup(utof64(fp.R[1]))
 	raisePendSV() // To ensure that SysClock will start immediately.
 }
 
-func scUptime(fp *cortexm.StackFrame, lr uintptr) {
-	*(*int64)(unsafe.Pointer(&fp.R[0])) = tasker.Uptime()
+func scNanosec(fp *cortexm.StackFrame, lr uintptr) {
+	*(*int64)(unsafe.Pointer(&fp.R[0])) = tasker.Nanosec()
 }
 
 func scSetAlarm(fp *cortexm.StackFrame, lr uintptr) {

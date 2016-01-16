@@ -18,6 +18,7 @@ const (
 
 func init() {
 	setup.Performance168(8)
+	setup.UseSysTick()
 
 	gpio.D.EnableClock(false)
 	LED = gpio.D

@@ -5,7 +5,7 @@ package rtos
 import "syscall"
 
 func sleepUntil(end int64) {
-	for Uptime() < end {
+	for Nanosec() < end {
 		syscall.SetAlarm(end)
 		syscall.Alarm.Wait()
 	}

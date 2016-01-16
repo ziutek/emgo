@@ -1,0 +1,51 @@
+
+                                        SWD SWD
+                                    GND CLK IO  3V3
+                                     |   |   |   |
+                                    -+---+---+---+-
+                                   |               |
+                                  -+ BAT       VCC +-
+                                   |               |
+TAMPER-RTC   LED                  -+ C13       GND +-
+                                   |               |
+             OSC32_IN             -+ C14        5V +-
+                                   |               |
+             OSC32_OUT            -+ C15        B9 +- TIM4_CH4
+                                   |               |
+TIM2_CH1_ETR USART2_CTS ADC12_IN0 -+ A0         B8 +- TIM4_CH3
+                                   |               |
+TIM2_CH2     USART2_RTS ADC12_IN1 -+ A1         B7 +- TIM4_CH2  I2C1_SDA
+                                   |               |
+TIM2_CH3     USART2_TX  ADC12_IN2 -+ A2         B6 +- TIM4_CH1  I2C1_SCL
+                                   |               |
+TIM2_CH4     USART2_RX  ADC12_IN3 -+ A3         B5 +-           I2C1_SMBAI
+                                   |               |
+SPI1_NSS     USART2_CK  ADC12_IN4 -+ A4     JNTRST +- B4
+                                   |               |
+SPI1_SCK                ADC12_IN5 -+ A5   JTDO/SWO +- B3
+                                   |               |
+SPI1_MISO    TIM3_CH1   ADC12_IN6 -+ A6       JTDI +- A15
+                                   |               |
+SPI1_MOSI    TIM3_CH2   ADC12_IN7 -+ A7        A12 +- TIM1_ETR  USART1_RTS USBDP CANTX
+                                   |               |
+             TIM3_CH3   ADC12_IN8 -+ B0        A11 +- TIM1_CH4  USART1_CTS USBDM CANRX
+                                   |               |
+             TIM3_CH4   ADC12_IN9 -+ B1        A10 +- TIM1_CH3  USART1_RX
+                                   |               |
+I2C2_SCL     USART3_TX            -+ B10        A9 +- TIM1_CH2  USART1_TX
+                                   |               |
+I2C2_SDA     USART3_RX            -+ B11        A8 +- TIM1_CH1  USART1_CK  MCO
+                                   |               |
+                                   + nRST      B15 +- TIM1_CH3N SPI2_MOSI
+                                   |               |
+                                   + VCC       B14 +- TIM1_CH2N SPI2_MISO  USART3_RTS
+                                   |               |
+                                   + GND       B13 +- TIM1_CH1N SPI2_SCK   USART3_CTS
+                                   |               |
+                                   + GND       B12 +- TIM1_BKIN SPI2_NSS   USART3_CK I2C2_SMBAI
+                                   |               |
+                                    ----+-----+----
+                                        | USB |
+                                        +-----+
+				 
+				 

@@ -8,5 +8,5 @@ func millisec(ms int) {
 	if ms <= 0 {
 		return
 	}
-	rtos.SleepUntil(rtos.Uptime() + int64(ms)*1e6)
+	rtos.SleepUntil(rtos.Nanosec() + int64(ms)*1e6)
 }

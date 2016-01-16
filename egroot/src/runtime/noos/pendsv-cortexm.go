@@ -23,7 +23,7 @@ func pendSVHandler()
 // TODO: better scheduler
 func nextTask(sp uintptr) uintptr {
 again:
-	t := tasker.uptime()
+	t := tasker.nanosec()
 	if t >= tasker.alarm {
 		syscall.Alarm.Send()
 		tasker.alarm = 1<<63 - 1

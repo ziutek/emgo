@@ -18,6 +18,7 @@ const (
 
 func init() {
 	setup.Performance168(8)
+	setup.UseSysTick()
 
 	gpio.D.EnableClock(false)
 	LED = gpio.D
@@ -27,9 +28,9 @@ func init() {
 }
 
 func toggle(leds gpio.Pins, d int) {
-	LED.Set(leds)
+	LED.SetPins(leds)
 	delay.Millisec(d)
-	LED.Clear(leds)
+	LED.ClearPins(leds)
 	delay.Millisec(d)
 }
 

@@ -18,6 +18,7 @@ const (
 
 func init() {
 	setup.Performance168(8)
+	setup.UseSysTick()
 
 	gpio.D.EnableClock(false)
 	LED = gpio.D
@@ -33,9 +34,9 @@ func wait(ms int) {
 
 func blink(leds gpio.Pins, d int, max, inc float32) {
 	for inc < max {
-		LED.Set(leds)
+		LED.SetPins(leds)
 		wait(d)
-		LED.Clear(leds)
+		LED.ClearPins(leds)
 		wait(d)
 		// Use floating point calculations to test STMF4 FPU context switching.
 		inc *= inc

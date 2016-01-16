@@ -35,9 +35,9 @@ type taskInfo struct {
 	prio   uint8
 }
 
-func (ti *taskInfo) Init(parent int, uptime func() int64) {
+func (ti *taskInfo) Init(parent int, t int64) {
 	*ti = taskInfo{parent: int16(parent), prio: 255}
-	if t := uptime(); t == 0 {
+	if t == 0 {
 		ti.rng.Seed(uint64(uintptr(unsafe.Pointer(ti))))
 	} else {
 		ti.rng.Seed(uint64(t + 1))
@@ -59,31 +59,31 @@ func (ti *taskInfo) SetState(s taskState) {
 type taskSched struct {
 	alarm   int64
 	period  uint32
-	uptime  func() int64
+	nanosec func() int64
 	wakeup  func(int64)
 	tasks   []taskInfo
 	curTask int
 }
 
-func dummyUptime() int64 { return 0 }
-func dummyWakeup(int64)  {}
+func dummyNanosec() int64 { return 0 }
+func dummyWakeup(int64)   {}
 
 var tasker = taskSched{
-	alarm:  1<<63 - 1,
-	period: 200e6,
-	uptime: dummyUptime,
-	wakeup: dummyWakeup,
+	alarm:   1<<63 - 1,
+	period:  200e6,
+	nanosec: dummyNanosec,
+	wakeup:  dummyWakeup,
 }
 
-func (ts *taskSched) Uptime() int64 {
-	return ts.uptime()
+func (ts *taskSched) Nanosec() int64 {
+	return ts.nanosec()
 }
 
-func (ts *taskSched) SetUptime(uptime func() int64) {
-	if uptime == nil {
-		ts.uptime = dummyUptime
+func (ts *taskSched) SetNanosec(nanosec func() int64) {
+	if nanosec == nil {
+		ts.nanosec = dummyNanosec
 	} else {
-		ts.uptime = uptime
+		ts.nanosec = nanosec
 	}
 }
 
@@ -172,7 +172,7 @@ func (ts *taskSched) init() {
 	//mpu.Enable()
 
 	// Set taskInfo for initial (current) task.
-	ts.tasks[0].Init(0, ts.uptime)
+	ts.tasks[0].Init(0, ts.nanosec())
 	ts.tasks[0].SetState(taskReady)
 
 	// Run tasker.
@@ -201,7 +201,7 @@ func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err sy
 	sf.PC = pc
 
 	newt := &ts.tasks[n]
-	newt.Init(ts.curTask, ts.uptime)
+	newt.Init(ts.curTask, ts.nanosec())
 	newt.sp = sp
 	newt.SetState(taskReady)
 

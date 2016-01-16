@@ -31,6 +31,7 @@ const (
 
 func init() {
 	setup.Performance168(8)
+	setup.UseSysTick()
 
 	gpio.A.EnableClock(false)
 	bport := gpio.A
@@ -64,9 +65,9 @@ func buttonISR() {
 		}
 	default:
 		// Signal that c is full.
-		LED.Set(Blue)
+		LED.SetPins(Blue)
 		delay.Loop(1e5)
-		LED.Clear(Blue)
+		LED.ClearPins(Blue)
 	}
 }
 
@@ -76,9 +77,9 @@ var ISRs = [...]func(){
 }
 
 func toggle(leds gpio.Pins) {
-	LED.Set(leds)
+	LED.SetPins(leds)
 	delay.Millisec(500)
-	LED.Clear(leds)
+	LED.ClearPins(leds)
 	delay.Millisec(500)
 }
 

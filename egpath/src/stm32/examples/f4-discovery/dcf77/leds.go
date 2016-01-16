@@ -22,11 +22,11 @@ func initLEDs(port *gpio.Port) {
 }
 
 func blink(pins gpio.Pins, dly int) {
-	leds.Set(pins)
+	leds.SetPins(pins)
 	if dly < 0 {
 		delay.Loop(-dly * 1e3)
 	} else {
 		delay.Millisec(dly)
 	}
-	leds.Clear(pins)
+	leds.ClearPins(pins)
 }

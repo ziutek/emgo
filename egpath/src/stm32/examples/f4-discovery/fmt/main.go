@@ -9,6 +9,7 @@ import (
 
 func init() {
 	setup.Performance168(8)
+	setup.UseSysTick()
 	initConsole()
 }
 

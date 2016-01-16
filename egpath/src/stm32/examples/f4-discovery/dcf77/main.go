@@ -20,6 +20,7 @@ var dcfport *gpio.Port
 
 func init() {
 	setup.Performance168(8)
+	setup.UseSysTick()
 
 	gpio.C.EnableClock(true)
 	dcfport = gpio.C
@@ -41,7 +42,7 @@ func edgeISR() {
 	t := time.Now()
 	exti.Lines(dcfpin).ClearPending()
 	blink(Blue, -100)
-	d.Edge(t, dcfport.Mask(dcfpin) != 0)
+	d.Edge(t, dcfport.Pins(dcfpin) != 0)
 }
 
 //c:__attribute__((section(".ISRs")))

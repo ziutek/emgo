@@ -16,7 +16,7 @@ const (
 	SCHEDNEXT
 	EVENTWAIT
 	SETSYSCLK
-	UPTIME
+	NANOSEC
 	SETALARM
 	SETIRQENA
 	SETIRQPRIO
@@ -61,29 +61,29 @@ func SchedNext() {
 // SetSysClock registers two functions that runtime uses to communicate with
 // system clock.
 //
-// uptime is used to implement Uptime system call. It should return the
+// nanosec is used to implement Nanosec system call. It should return the
 // monotonic time i nanoseconds (typically the time of system clock run).
 //
 // wakeup is called by scheduler to ask system clock to generate PendSV
-// exception at time t (see rtos.Uptime). Weak (ticking) system clock can
+// exception at time t (see rtos.Nanosec). Weak (ticking) system clock can
 // ignore t and generate PendSV with fixed period. Good (tickless) clock should
-// generate exceptions as accurately as possible (if t <= uptime() it should
+// generate exceptions as accurately as possible (if t <= nanosec() it should
 // generate PendSV immediately. wakeup must not generate any exception before
-// return to do not wakeup runtime too early from WFE.
-func SetSysClock(uptime func() int64, wakeup func(t int64)) Errno {
-	_, e := builtin.Syscall2(SETSYSCLK, fr64tou(uptime), f64tou(wakeup))
+// return, to do not wakeup runtime too early from WFE.
+func SetSysClock(nanosec func() int64, wakeup func(t int64)) Errno {
+	_, e := builtin.Syscall2(SETSYSCLK, fr64tou(nanosec), f64tou(wakeup))
 	return Errno(e)
 }
 
-// Uptime: see rtos package.
-func Uptime() int64 {
-	return builtin.Syscall0r64(UPTIME)
+// Nanosec: see rtos package.
+func Nanosec() int64 {
+	return builtin.Syscall0r64(NANOSEC)
 }
 
-// SetAlarm asks the runtime to send Alarm event a uptime t nanoseconds. t is
+// SetAlarm asks the runtime to send Alarm event at t. t is
 // only a hint for runtime, because it can send alarm at any time: before t,
 // at t and after t. Typically, task use SetAlarm in conjunction with
-// Alarm.Wait and Uptime.
+// Alarm.Wait and Nanosec.
 func SetAlarm(t int64) {
 	builtin.Syscall1i64(SETALARM, t)
 }
