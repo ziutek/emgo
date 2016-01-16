@@ -112,6 +112,4 @@ func Performance(osc, mul int, div2 bool) {
 	if osc != 0 {
 		RCC.HSION().Clear()
 	}
-
-	setupOS()
 }

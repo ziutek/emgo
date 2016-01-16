@@ -178,8 +178,6 @@ func Performance(osc, mul, sdiv int) {
 	if osc != 0 {
 		RCC.HSION().Clear()
 	}
-
-	setupOS()
 }
 
 // Performance96 setups MCU to work with 96 MHz clock.
