@@ -13,6 +13,8 @@ func tweaks(pkg *Package) {
 			flash(p)
 		case "EXTI":
 			exti(p)
+		case "BKP":
+			bkp(p)
 		}
 	}
 }
@@ -98,5 +100,17 @@ func exti(p *Periph) {
 			}
 
 		}
+	}
+}
+
+func bkp(p *Periph) {
+	for _, r := range p.Regs {
+		if !strings.HasPrefix(r.Name, "DR") {
+			continue
+		}
+		if c := r.Name[2]; c < '0' || c > '9' {
+			continue
+		}
+		r.Bits = nil
 	}
 }
