@@ -133,10 +133,6 @@ type DR1_Mask struct{ mmio.UM16 }
 func (rm DR1_Mask) Load() DR1_Bits   { return DR1_Bits(rm.UM16.Load()) }
 func (rm DR1_Mask) Store(b DR1_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR1_Mask {
-	return DR1_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint16(D)}}
-}
-
 type DR2_Bits uint16
 
 func (b DR2_Bits) Field(mask DR2_Bits) int {
@@ -159,10 +155,6 @@ type DR2_Mask struct{ mmio.UM16 }
 
 func (rm DR2_Mask) Load() DR2_Bits   { return DR2_Bits(rm.UM16.Load()) }
 func (rm DR2_Mask) Store(b DR2_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR2_Mask {
-	return DR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint16(D)}}
-}
 
 type DR3_Bits uint16
 
@@ -187,10 +179,6 @@ type DR3_Mask struct{ mmio.UM16 }
 func (rm DR3_Mask) Load() DR3_Bits   { return DR3_Bits(rm.UM16.Load()) }
 func (rm DR3_Mask) Store(b DR3_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR3_Mask {
-	return DR3_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint16(D)}}
-}
-
 type DR4_Bits uint16
 
 func (b DR4_Bits) Field(mask DR4_Bits) int {
@@ -213,10 +201,6 @@ type DR4_Mask struct{ mmio.UM16 }
 
 func (rm DR4_Mask) Load() DR4_Bits   { return DR4_Bits(rm.UM16.Load()) }
 func (rm DR4_Mask) Store(b DR4_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR4_Mask {
-	return DR4_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint16(D)}}
-}
 
 type DR5_Bits uint16
 
@@ -241,10 +225,6 @@ type DR5_Mask struct{ mmio.UM16 }
 func (rm DR5_Mask) Load() DR5_Bits   { return DR5_Bits(rm.UM16.Load()) }
 func (rm DR5_Mask) Store(b DR5_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR5_Mask {
-	return DR5_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint16(D)}}
-}
-
 type DR6_Bits uint16
 
 func (b DR6_Bits) Field(mask DR6_Bits) int {
@@ -267,10 +247,6 @@ type DR6_Mask struct{ mmio.UM16 }
 
 func (rm DR6_Mask) Load() DR6_Bits   { return DR6_Bits(rm.UM16.Load()) }
 func (rm DR6_Mask) Store(b DR6_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR6_Mask {
-	return DR6_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint16(D)}}
-}
 
 type DR7_Bits uint16
 
@@ -295,10 +271,6 @@ type DR7_Mask struct{ mmio.UM16 }
 func (rm DR7_Mask) Load() DR7_Bits   { return DR7_Bits(rm.UM16.Load()) }
 func (rm DR7_Mask) Store(b DR7_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR7_Mask {
-	return DR7_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint16(D)}}
-}
-
 type DR8_Bits uint16
 
 func (b DR8_Bits) Field(mask DR8_Bits) int {
@@ -321,10 +293,6 @@ type DR8_Mask struct{ mmio.UM16 }
 
 func (rm DR8_Mask) Load() DR8_Bits   { return DR8_Bits(rm.UM16.Load()) }
 func (rm DR8_Mask) Store(b DR8_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR8_Mask {
-	return DR8_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint16(D)}}
-}
 
 type DR9_Bits uint16
 
@@ -349,10 +317,6 @@ type DR9_Mask struct{ mmio.UM16 }
 func (rm DR9_Mask) Load() DR9_Bits   { return DR9_Bits(rm.UM16.Load()) }
 func (rm DR9_Mask) Store(b DR9_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR9_Mask {
-	return DR9_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint16(D)}}
-}
-
 type DR10_Bits uint16
 
 func (b DR10_Bits) Field(mask DR10_Bits) int {
@@ -375,10 +339,6 @@ type DR10_Mask struct{ mmio.UM16 }
 
 func (rm DR10_Mask) Load() DR10_Bits   { return DR10_Bits(rm.UM16.Load()) }
 func (rm DR10_Mask) Store(b DR10_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR10_Mask {
-	return DR10_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint16(D)}}
-}
 
 type RTCCR_Bits uint16
 
@@ -516,10 +476,6 @@ type DR11_Mask struct{ mmio.UM16 }
 func (rm DR11_Mask) Load() DR11_Bits   { return DR11_Bits(rm.UM16.Load()) }
 func (rm DR11_Mask) Store(b DR11_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR11_Mask {
-	return DR11_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint16(D)}}
-}
-
 type DR12_Bits uint16
 
 func (b DR12_Bits) Field(mask DR12_Bits) int {
@@ -542,10 +498,6 @@ type DR12_Mask struct{ mmio.UM16 }
 
 func (rm DR12_Mask) Load() DR12_Bits   { return DR12_Bits(rm.UM16.Load()) }
 func (rm DR12_Mask) Store(b DR12_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR12_Mask {
-	return DR12_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 68)), uint16(D)}}
-}
 
 type DR13_Bits uint16
 
@@ -570,10 +522,6 @@ type DR13_Mask struct{ mmio.UM16 }
 func (rm DR13_Mask) Load() DR13_Bits   { return DR13_Bits(rm.UM16.Load()) }
 func (rm DR13_Mask) Store(b DR13_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR13_Mask {
-	return DR13_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 72)), uint16(D)}}
-}
-
 type DR14_Bits uint16
 
 func (b DR14_Bits) Field(mask DR14_Bits) int {
@@ -596,10 +544,6 @@ type DR14_Mask struct{ mmio.UM16 }
 
 func (rm DR14_Mask) Load() DR14_Bits   { return DR14_Bits(rm.UM16.Load()) }
 func (rm DR14_Mask) Store(b DR14_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR14_Mask {
-	return DR14_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 76)), uint16(D)}}
-}
 
 type DR15_Bits uint16
 
@@ -624,10 +568,6 @@ type DR15_Mask struct{ mmio.UM16 }
 func (rm DR15_Mask) Load() DR15_Bits   { return DR15_Bits(rm.UM16.Load()) }
 func (rm DR15_Mask) Store(b DR15_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR15_Mask {
-	return DR15_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 80)), uint16(D)}}
-}
-
 type DR16_Bits uint16
 
 func (b DR16_Bits) Field(mask DR16_Bits) int {
@@ -650,10 +590,6 @@ type DR16_Mask struct{ mmio.UM16 }
 
 func (rm DR16_Mask) Load() DR16_Bits   { return DR16_Bits(rm.UM16.Load()) }
 func (rm DR16_Mask) Store(b DR16_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR16_Mask {
-	return DR16_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 84)), uint16(D)}}
-}
 
 type DR17_Bits uint16
 
@@ -678,10 +614,6 @@ type DR17_Mask struct{ mmio.UM16 }
 func (rm DR17_Mask) Load() DR17_Bits   { return DR17_Bits(rm.UM16.Load()) }
 func (rm DR17_Mask) Store(b DR17_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR17_Mask {
-	return DR17_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 88)), uint16(D)}}
-}
-
 type DR18_Bits uint16
 
 func (b DR18_Bits) Field(mask DR18_Bits) int {
@@ -704,10 +636,6 @@ type DR18_Mask struct{ mmio.UM16 }
 
 func (rm DR18_Mask) Load() DR18_Bits   { return DR18_Bits(rm.UM16.Load()) }
 func (rm DR18_Mask) Store(b DR18_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR18_Mask {
-	return DR18_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 92)), uint16(D)}}
-}
 
 type DR19_Bits uint16
 
@@ -732,10 +660,6 @@ type DR19_Mask struct{ mmio.UM16 }
 func (rm DR19_Mask) Load() DR19_Bits   { return DR19_Bits(rm.UM16.Load()) }
 func (rm DR19_Mask) Store(b DR19_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR19_Mask {
-	return DR19_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 96)), uint16(D)}}
-}
-
 type DR20_Bits uint16
 
 func (b DR20_Bits) Field(mask DR20_Bits) int {
@@ -758,10 +682,6 @@ type DR20_Mask struct{ mmio.UM16 }
 
 func (rm DR20_Mask) Load() DR20_Bits   { return DR20_Bits(rm.UM16.Load()) }
 func (rm DR20_Mask) Store(b DR20_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR20_Mask {
-	return DR20_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 100)), uint16(D)}}
-}
 
 type DR21_Bits uint16
 
@@ -786,10 +706,6 @@ type DR21_Mask struct{ mmio.UM16 }
 func (rm DR21_Mask) Load() DR21_Bits   { return DR21_Bits(rm.UM16.Load()) }
 func (rm DR21_Mask) Store(b DR21_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR21_Mask {
-	return DR21_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 104)), uint16(D)}}
-}
-
 type DR22_Bits uint16
 
 func (b DR22_Bits) Field(mask DR22_Bits) int {
@@ -812,10 +728,6 @@ type DR22_Mask struct{ mmio.UM16 }
 
 func (rm DR22_Mask) Load() DR22_Bits   { return DR22_Bits(rm.UM16.Load()) }
 func (rm DR22_Mask) Store(b DR22_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR22_Mask {
-	return DR22_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 108)), uint16(D)}}
-}
 
 type DR23_Bits uint16
 
@@ -840,10 +752,6 @@ type DR23_Mask struct{ mmio.UM16 }
 func (rm DR23_Mask) Load() DR23_Bits   { return DR23_Bits(rm.UM16.Load()) }
 func (rm DR23_Mask) Store(b DR23_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR23_Mask {
-	return DR23_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 112)), uint16(D)}}
-}
-
 type DR24_Bits uint16
 
 func (b DR24_Bits) Field(mask DR24_Bits) int {
@@ -866,10 +774,6 @@ type DR24_Mask struct{ mmio.UM16 }
 
 func (rm DR24_Mask) Load() DR24_Bits   { return DR24_Bits(rm.UM16.Load()) }
 func (rm DR24_Mask) Store(b DR24_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR24_Mask {
-	return DR24_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 116)), uint16(D)}}
-}
 
 type DR25_Bits uint16
 
@@ -894,10 +798,6 @@ type DR25_Mask struct{ mmio.UM16 }
 func (rm DR25_Mask) Load() DR25_Bits   { return DR25_Bits(rm.UM16.Load()) }
 func (rm DR25_Mask) Store(b DR25_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR25_Mask {
-	return DR25_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 120)), uint16(D)}}
-}
-
 type DR26_Bits uint16
 
 func (b DR26_Bits) Field(mask DR26_Bits) int {
@@ -920,10 +820,6 @@ type DR26_Mask struct{ mmio.UM16 }
 
 func (rm DR26_Mask) Load() DR26_Bits   { return DR26_Bits(rm.UM16.Load()) }
 func (rm DR26_Mask) Store(b DR26_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR26_Mask {
-	return DR26_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 124)), uint16(D)}}
-}
 
 type DR27_Bits uint16
 
@@ -948,10 +844,6 @@ type DR27_Mask struct{ mmio.UM16 }
 func (rm DR27_Mask) Load() DR27_Bits   { return DR27_Bits(rm.UM16.Load()) }
 func (rm DR27_Mask) Store(b DR27_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR27_Mask {
-	return DR27_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 128)), uint16(D)}}
-}
-
 type DR28_Bits uint16
 
 func (b DR28_Bits) Field(mask DR28_Bits) int {
@@ -974,10 +866,6 @@ type DR28_Mask struct{ mmio.UM16 }
 
 func (rm DR28_Mask) Load() DR28_Bits   { return DR28_Bits(rm.UM16.Load()) }
 func (rm DR28_Mask) Store(b DR28_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR28_Mask {
-	return DR28_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 132)), uint16(D)}}
-}
 
 type DR29_Bits uint16
 
@@ -1002,10 +890,6 @@ type DR29_Mask struct{ mmio.UM16 }
 func (rm DR29_Mask) Load() DR29_Bits   { return DR29_Bits(rm.UM16.Load()) }
 func (rm DR29_Mask) Store(b DR29_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR29_Mask {
-	return DR29_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 136)), uint16(D)}}
-}
-
 type DR30_Bits uint16
 
 func (b DR30_Bits) Field(mask DR30_Bits) int {
@@ -1028,10 +912,6 @@ type DR30_Mask struct{ mmio.UM16 }
 
 func (rm DR30_Mask) Load() DR30_Bits   { return DR30_Bits(rm.UM16.Load()) }
 func (rm DR30_Mask) Store(b DR30_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR30_Mask {
-	return DR30_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 140)), uint16(D)}}
-}
 
 type DR31_Bits uint16
 
@@ -1056,10 +936,6 @@ type DR31_Mask struct{ mmio.UM16 }
 func (rm DR31_Mask) Load() DR31_Bits   { return DR31_Bits(rm.UM16.Load()) }
 func (rm DR31_Mask) Store(b DR31_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR31_Mask {
-	return DR31_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 144)), uint16(D)}}
-}
-
 type DR32_Bits uint16
 
 func (b DR32_Bits) Field(mask DR32_Bits) int {
@@ -1082,10 +958,6 @@ type DR32_Mask struct{ mmio.UM16 }
 
 func (rm DR32_Mask) Load() DR32_Bits   { return DR32_Bits(rm.UM16.Load()) }
 func (rm DR32_Mask) Store(b DR32_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR32_Mask {
-	return DR32_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 148)), uint16(D)}}
-}
 
 type DR33_Bits uint16
 
@@ -1110,10 +982,6 @@ type DR33_Mask struct{ mmio.UM16 }
 func (rm DR33_Mask) Load() DR33_Bits   { return DR33_Bits(rm.UM16.Load()) }
 func (rm DR33_Mask) Store(b DR33_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR33_Mask {
-	return DR33_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 152)), uint16(D)}}
-}
-
 type DR34_Bits uint16
 
 func (b DR34_Bits) Field(mask DR34_Bits) int {
@@ -1136,10 +1004,6 @@ type DR34_Mask struct{ mmio.UM16 }
 
 func (rm DR34_Mask) Load() DR34_Bits   { return DR34_Bits(rm.UM16.Load()) }
 func (rm DR34_Mask) Store(b DR34_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR34_Mask {
-	return DR34_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 156)), uint16(D)}}
-}
 
 type DR35_Bits uint16
 
@@ -1164,10 +1028,6 @@ type DR35_Mask struct{ mmio.UM16 }
 func (rm DR35_Mask) Load() DR35_Bits   { return DR35_Bits(rm.UM16.Load()) }
 func (rm DR35_Mask) Store(b DR35_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR35_Mask {
-	return DR35_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 160)), uint16(D)}}
-}
-
 type DR36_Bits uint16
 
 func (b DR36_Bits) Field(mask DR36_Bits) int {
@@ -1190,10 +1050,6 @@ type DR36_Mask struct{ mmio.UM16 }
 
 func (rm DR36_Mask) Load() DR36_Bits   { return DR36_Bits(rm.UM16.Load()) }
 func (rm DR36_Mask) Store(b DR36_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR36_Mask {
-	return DR36_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 164)), uint16(D)}}
-}
 
 type DR37_Bits uint16
 
@@ -1218,10 +1074,6 @@ type DR37_Mask struct{ mmio.UM16 }
 func (rm DR37_Mask) Load() DR37_Bits   { return DR37_Bits(rm.UM16.Load()) }
 func (rm DR37_Mask) Store(b DR37_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR37_Mask {
-	return DR37_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 168)), uint16(D)}}
-}
-
 type DR38_Bits uint16
 
 func (b DR38_Bits) Field(mask DR38_Bits) int {
@@ -1244,10 +1096,6 @@ type DR38_Mask struct{ mmio.UM16 }
 
 func (rm DR38_Mask) Load() DR38_Bits   { return DR38_Bits(rm.UM16.Load()) }
 func (rm DR38_Mask) Store(b DR38_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR38_Mask {
-	return DR38_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 172)), uint16(D)}}
-}
 
 type DR39_Bits uint16
 
@@ -1272,10 +1120,6 @@ type DR39_Mask struct{ mmio.UM16 }
 func (rm DR39_Mask) Load() DR39_Bits   { return DR39_Bits(rm.UM16.Load()) }
 func (rm DR39_Mask) Store(b DR39_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR39_Mask {
-	return DR39_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 176)), uint16(D)}}
-}
-
 type DR40_Bits uint16
 
 func (b DR40_Bits) Field(mask DR40_Bits) int {
@@ -1298,10 +1142,6 @@ type DR40_Mask struct{ mmio.UM16 }
 
 func (rm DR40_Mask) Load() DR40_Bits   { return DR40_Bits(rm.UM16.Load()) }
 func (rm DR40_Mask) Store(b DR40_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR40_Mask {
-	return DR40_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 180)), uint16(D)}}
-}
 
 type DR41_Bits uint16
 
@@ -1326,10 +1166,6 @@ type DR41_Mask struct{ mmio.UM16 }
 func (rm DR41_Mask) Load() DR41_Bits   { return DR41_Bits(rm.UM16.Load()) }
 func (rm DR41_Mask) Store(b DR41_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) D() DR41_Mask {
-	return DR41_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 184)), uint16(D)}}
-}
-
 type DR42_Bits uint16
 
 func (b DR42_Bits) Field(mask DR42_Bits) int {
@@ -1352,7 +1188,3 @@ type DR42_Mask struct{ mmio.UM16 }
 
 func (rm DR42_Mask) Load() DR42_Bits   { return DR42_Bits(rm.UM16.Load()) }
 func (rm DR42_Mask) Store(b DR42_Bits) { rm.UM16.Store(uint16(b)) }
-
-func (p *BKP_Periph) D() DR42_Mask {
-	return DR42_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 188)), uint16(D)}}
-}

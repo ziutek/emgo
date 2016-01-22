@@ -16,7 +16,7 @@ func GetTask(pe *internal.Pheader, n int) Task {
 	return Task{&pe.Tasks[n]}
 }
 
-// Trig triggers task.
-func (t Task) Trig() {
+// Trigger starts action corresponding to task t.
+func (t Task) Trigger() {
 	t.reg.Store(1)
 }

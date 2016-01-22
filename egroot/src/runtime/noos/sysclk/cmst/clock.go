@@ -6,6 +6,7 @@ import (
 	"math"
 	"nbl"
 
+	"arch/cortexm"
 	"arch/cortexm/scb"
 	"arch/cortexm/systick"
 )
@@ -28,6 +29,7 @@ func tons(tick int64) int64 {
 //  periodns - number of nanoseconds between ticks (generating PendSV),
 //  hz       - frequency of SysTick clock source,
 //  external - false: SysTick uses CPU clock; true: SysTick uses external clock.
+// Setup must be run in privileged mode.
 func Setup(periodns, hz uint, external bool) {
 	freqHz = hz
 	st := systick.SYSTICK
@@ -43,6 +45,12 @@ func Setup(periodns, hz uint, external bool) {
 	} else {
 		st.CLKSOURCE().Set()
 	}
+	// Set priority for SysTick exception higher SVCall proprity, to ensure
+	// that any user of rtos.Nanosec observes both SYSTICK.CURRENT reset and
+	// counter increment as one atomic operation.
+	isnum := cortexm.PrioStep * cortexm.PrioNum
+	scb.PRI_SysTick.StoreVal(cortexm.PrioLowest + isnum*3/4)
+
 	st.CSR.SetBits(systick.ENABLE | systick.TICKINT)
 }
 

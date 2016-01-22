@@ -93,8 +93,10 @@ func (lines Lines) DisableFallTrig() {
 	extip().FTSR.U32.ClearBits(uint32(lines))
 }
 
-// Trig allows generate interrupt/event request by software.
-func (lines Lines) Trig() {
+// Trigger allows to generate interrupt/event request by software. Interrupt
+// pending flag on the line is set only when interrupt generation is enabled
+// for this line. 
+func (lines Lines) Trigger() {
 	extip().SWIER.U32.Store(uint32(lines))
 }
 

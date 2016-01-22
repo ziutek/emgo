@@ -10,4 +10,6 @@ import (
 const (
 	IRQPrioLowest  = cortexm.PrioLowest
 	IRQPrioHighest = cortexm.PrioHighest
+	IRQPrioStep    = cortexm.PrioStep
+	IRQPrioNum     = cortexm.PrioNum
 )

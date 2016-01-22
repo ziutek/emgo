@@ -2,7 +2,7 @@ StackLog2 = 13; /* 8 KB */
 StackFrac = 6;  /* 6/8 */
 
 /* One task, two stacks. */
-MaxTasks = 1;
+MaxTasks = 4;
 
 /* bootSRAM code should by placed at 0x200001E0. */
 bootOffset = 0x1E0;

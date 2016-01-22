@@ -155,3 +155,8 @@ loop:
 func (p Port) Write(b []byte) (int, error) {
 	return p.WriteString(*(*string)(unsafe.Pointer(&b)))
 }
+
+func (p Port) WriteByte(b byte) error {
+	p.Store8(b)
+	return nil
+}

@@ -70,7 +70,7 @@ func dummyWakeup(int64)   {}
 
 var tasker = taskSched{
 	alarm:   1<<63 - 1,
-	period:  200e6,
+	period:  2e6, // 2 ms
 	nanosec: dummyNanosec,
 	wakeup:  dummyWakeup,
 }
@@ -153,19 +153,23 @@ func (ts *taskSched) init() {
 	// used).
 	cortexm.SetMSP(unsafe.Pointer(stackTop(len(ts.tasks))))
 
-	// After reset all exceptions have highest priority. Change this to achieve:
-	// 1. SysTick has higher priority than SVC to ensure that any user of Uptime 	//    syscall observes both systick counter reset and sysCounter update as
-	//    one atomic operation.
-	// 2. PendSV has lowest priority (can be preempt by any exception).
-	// 3. SVC can be used in external interrupt handlers.
-	// 4. It should be possible to increase the priority of any external
-	//    interrupt to allow it to preempt SVC.
-	prange := cortexm.PrioHighest - cortexm.PrioLowest
-	scb.PRI_SVCall.StoreVal(cortexm.PrioLowest + prange/2)
-	scb.PRI_PendSV.StoreVal(cortexm.PrioLowest)
+	// After reset all exceptions have highest priority. Change this to
+	// achieve folowing assumptions (even in case of Cortex-M0 which has only
+	// four priority levels: 0, 64, 128, 192):
+	// 1. PendSV has lowest priority (can be preempt by any exception).
+	// 2. SVC can be used in external interrupt handlers if they have lower
+	//    priority.
+	// 3. There is priority level higher than SVC priority that is required
+	//    for system clock implementation and can be used by external
+	//    interrupts if they must preempt SVC.
+	spnum := cortexm.PrioStep * cortexm.PrioNum
+	scb.PRI_SVCall.StoreVal(cortexm.PrioLowest + spnum*2/4)
+	scb.PRI_PendSV.StoreVal(cortexm.PrioLowest + spnum*0/4)
 	for irq := nvic.IRQ(0); irq < 240; irq++ {
-		irq.SetPrio(cortexm.PrioLowest + prange/4)
+		irq.SetPrio(cortexm.PrioLowest + spnum*1/4)
 	}
+	// Exceptions should generate events to wakeup the scheduler.
+	scb.SEVONPEND.Set()
 
 	// Setup MPU.
 	//mpu.SetMode(mpu.PrivDef)

@@ -15,8 +15,9 @@ func UseSysTick() {
 	syscall.SetSysClock(cmst.Nanosec, cmst.SetWakeup)
 }
 
-// UseRTC setups and uses STM32 real time clock as system clock. It returns true if
-// clock
+// UseRTC setups and uses STM32 real time clock as system clock. RTC based
+// implementation of system clock reserves first three registers from backup
+// domain (DR1, DR2, DR3) for its purposes.
 func UseRTC(freq uint) {
 	useRTC(freq)
 }

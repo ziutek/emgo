@@ -3,8 +3,11 @@
 package exti
 
 import (
+	"mmio"
+
+	"stm32/hal/raw/afio"
 	"stm32/hal/raw/exti"
-	"stm32/hal/raw/syscfg"
+	"stm32/hal/raw/rcc"
 )
 
 const (

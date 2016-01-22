@@ -20,9 +20,13 @@ SECTIONS {
 		KEEP(*(.DebugMon))		
 		KEEP(*(.Reserved13))		
 		KEEP(*(.PendSV))		
-		KEEP(*(.SysTick))		
+		KEEP(*(.SysTick))
+				
+		ASSERT(. - VectorsStart==16*4,"Bad number of system exception vectors");
+		
 		KEEP(*(.ISRs))
 		
+		ASSERT(. - VectorsStart <= 256*4, "To many external interrupt vectors");			
 		/* Special boot code. */
 		. = DEFINED(bootOffset) ? bootOffset : .;
 		*(.text.bootcode)

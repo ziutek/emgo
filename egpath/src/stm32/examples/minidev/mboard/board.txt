@@ -5,25 +5,25 @@
            |                                                   |
            |+ GND                    ---------                 |
            |+ BAT                   |BAT   VCC|           VCC +| --
-           |+ A8                    |C13   GND|           GND +|   |
-           |+ GND                   |C14    5V|            5V +|   
-        -- |+ GND                   |C15    B9|            B9 +| Relays
-Analog inp.|+ USART2_CTS/ADC12_IN0  |A0     B8|            B8 +|        
-        -- |+ USART2_RTS/ADC12_IN1  |A1     B7|            B7 +|   |
-        -- |+ USART2_TX/ADC12_IN2   |A2     B6|            B6 +| --
-      UART |+ USART2_RX/ADC12_IN3   |A3     B5|            B5 +| --
-        -- |+ GND                   |A4 JNTRST|           GND +| DCF77
-        -- |++ GND       GND        |A5    SWO|           VCC +| --
-           |++ B0(IRQ)   SPI1_MISO  |A6   JTDI|           VCC +|
- nRF24L01+ |++ SPI1_MOSI SPI1_SCK   |A7    A12|            5V +| --
-           |++ SPI1_NSS  B1(CE)     |B0    A11|           GND +| 
-        -- |++ VCC       VCC        |B1    A10|     USART1_RX +| UART/1-Wire
-        -- |+ I2C2_SCL              |B10    A9|     USART1_TX +| 
-           |+ I2C2_SDA              |B11    A8|           GND +| --
-   I2C LCD |+ 5V                    |nRST  B15|     SPI2_MOSI +|
-           |+ VCC                   |VCC   B14|     SPI2_MISO +|
-        -- |+ GND                   |GND   B13|      SPI2_SCK +|
-           |                        |GND   B12|      SPI2_NSS +|
-           |                         ---------            VCC +|
-           |                                              GND +|
+           |                        |C13   GND|           GND +|   |
+           |++                      |C14    5V|            5V +|   
+        -- |++                      |C15    B9|            B9 +| Relays
+Analog inp.|++ USART2_CTS/ADC12_IN0 |A0     B8|            B8 +|        
+        -- |++ USART2_RTS/ADC12_IN1 |A1     B7|            B7 +|   |
+        -- |++ USART2_TX/ADC12_IN2  |A2     B6|            B6 +| --
+      UART |++ USART2_RX/ADC12_IN3  |A3     B5|           B5 ++| --
+        -- |                        |A4 JNTRST|           A8 ++| DCF
+        -- | ++ GND       GND       |A5    SWO|          GND ++| 77
+           | ++ B0(IRQ)   SPI1_MISO |A6   JTDI|          VCC ++| --
+ nRF24L01+ | ++ SPI1_MOSI SPI1_SCK  |A7    A12|          VCC ++| --
+           | ++ SPI1_NSS  B1(CE)    |B0    A11|           5V ++| 
+        -- | ++ VCC       VCC       |B1    A10|    USART1_RX ++| UART/1-Wire
+        -- |+ I2C2_SCL              |B10    A9|    USART1_TX ++| 
+           |+ I2C2_SDA              |B11    A8|          GND ++| --
+   I2C LCD |+ 5V                    |nRST  B15|    SPI2_MOSI ++|
+           |+ VCC                   |VCC   B14|    SPI2_MISO ++|
+        -- |+ GND                   |GND   B13|     SPI2_SCK ++|
+           |                        |GND   B12|     SPI2_NSS ++|
+           |                         ---------           GND ++|
+           |                                       GND GND   oo|
             ---------------------------------------------------

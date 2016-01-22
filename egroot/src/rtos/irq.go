@@ -14,32 +14,34 @@ func (irq IRQ) Disable() error {
 	return mkerror(syscall.SetIRQEna(int(irq), false))
 }
 
-// IPrio represents IRQ priority.
-type IPrio int
+// IRQPrio represents IRQ priority.
+type IRQPrio int
 
 const (
-	IPrioLowest  = IPrio(syscall.IRQPrioLowest)
-	IPrioHighest = IPrio(syscall.IRQPrioHighest)
+	IRQPrioLowest  = IRQPrio(syscall.IRQPrioLowest)
+	IRQPrioHighest = IRQPrio(syscall.IRQPrioHighest)
+	IRQPrioStep    = IRQPrio(syscall.IRQPrioStep)
+	IRQPrioNum     = IRQPrio(syscall.IRQPrioNum)
 )
 
 // Lower resturns true if priority p is lower than o.
-func (p IPrio) Lower(o IPrio) bool {
-	if IPrioLowest < IPrioHighest {
+func (p IRQPrio) Lower(o IRQPrio) bool {
+	if IRQPrioLowest < IRQPrioHighest {
 		return p < o
 	}
 	return p > o
 }
 
 // Higher resturns true if priority p is higher than o.
-func (p IPrio) Higher(o IPrio) bool {
-	if IPrioLowest > IPrioHighest {
+func (p IRQPrio) Higher(o IRQPrio) bool {
+	if IRQPrioLowest > IRQPrioHighest {
 		return p > o
 	}
 	return p < o
 }
 
 // SetPrio sets priority for irq.
-func (irq IRQ) SetPrio(p IPrio) error {
+func (irq IRQ) SetPrio(p IRQPrio) error {
 	return mkerror(syscall.SetIRQPrio(int(irq), int(p)))
 }
 
@@ -50,13 +52,13 @@ func (irq IRQ) UseHandler(h func()) error {
 }
 
 // Status returns basic information about irq.
-func (irq IRQ) Status() (prio IPrio, enabled bool, err error) {
+func (irq IRQ) Status() (prio IRQPrio, enabled bool, err error) {
 	s, e := syscall.IRQStatus(int(irq))
 	enabled = s < 0
 	if enabled {
 		s = -s - 1
 	}
-	prio = IPrio(s)
+	prio = IRQPrio(s)
 	err = mkerror(e)
 	return
 }

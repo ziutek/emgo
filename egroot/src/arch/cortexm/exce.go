@@ -21,22 +21,24 @@ const IRQ0 = 16
 const (
 	PrioLowest  = 255
 	PrioHighest = 0
+	PrioStep    = -1
+	PrioNum     = 256
 )
 
 // EXC_RETURN
 const (
 	// ReturnMask: selects bits that can be compared with Return* constants.
-	ReturnMask   = 0xf
-	
+	ReturnMask = 0xf
+
 	// ReturnHandler: exception will return to handler mode.
 	ReturnHandler = 0x1
-	
+
 	// ReturnMSP: exception will return to thread mode using MSP .
-	ReturnMSP     = 0x9 
-	
-	// ReturnPSP: exception will return to thread mode using PSP.	
-	ReturnPSP     = 0xd
-	
+	ReturnMSP = 0x9
+
+	// ReturnPSP: exception will return to thread mode using PSP.
+	ReturnPSP = 0xd
+
 	// UseFPSMask: if set there is floating-point state saved on stack.
-	UseFPSMask    = 0x10
+	UseFPSMask = 0x10
 )

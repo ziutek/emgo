@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-
+ 
 arch=`grep 'EGARCH=' ../build.sh |sed 's/.*EGARCH=\([[:alnum:]_]\+\).*/\1/g'`
 if [ -z "$arch" ]; then
 	arch=$EGARCH
@@ -14,3 +14,4 @@ if [ $# -eq 1 -a "$1" = 'flash' ]; then
 fi       
 echo "Loading at $addr..."
 st-flash --reset write $arch.bin $addr
+
