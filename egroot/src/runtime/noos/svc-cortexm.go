@@ -11,6 +11,7 @@ import (
 	"arch/cortexm/nvic"
 )
 
+//emgo:const
 var syscalls = [...]func(fp *cortexm.StackFrame, lr uintptr){
 	syscall.NEWTASK:       scNewTask,
 	syscall.KILLTASK:      scKillTask,

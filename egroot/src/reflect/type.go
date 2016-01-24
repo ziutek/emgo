@@ -44,6 +44,7 @@ type kindInfo struct {
 	align byte
 }
 
+//emgo:const
 var kinfos = [...]kindInfo{
 	{"array", 0, 0},
 	{"invalid", 0, 0},

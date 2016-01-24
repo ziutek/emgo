@@ -1,13 +1,11 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in the LICENSE.GO file.
 
 // Package time provides functionality for measuring and displaying time.
 //
 // The calendrical calculations always assume a Gregorian calendar.
 package time
-
-import "errors"
 
 // A Time represents an instant in time with nanosecond precision.
 //
@@ -30,11 +28,6 @@ import "errors"
 // Changing the location in this way changes only the presentation; it does not
 // change the instant in time being denoted and therefore does not affect the
 // computations described in earlier paragraphs.
-//
-// Note that the Go == operator compares not just the time instant but also the
-// Location. Therefore, Time values should not be used as map or database keys
-// without first guaranteeing that the identical Location has been set for all
-// values, which can be achieved through use of the UTC or Local method.
 //
 type Time struct {
 	// sec gives the number of seconds elapsed since
@@ -91,7 +84,6 @@ const (
 	December
 )
 
-//emgo:const
 var months = [...]string{
 	"January",
 	"February",
@@ -123,7 +115,6 @@ const (
 	Saturday
 )
 
-//emgo:const
 var days = [...]string{
 	"Sunday",
 	"Monday",
@@ -456,6 +447,87 @@ const (
 	Hour                 = 60 * Minute
 )
 
+/*
+// String returns a string representing the duration in the form "72h3m0.5s".
+// Leading zero units are omitted.  As a special case, durations less than one
+// second format use a smaller unit (milli-, micro-, or nanoseconds) to ensure
+// that the leading digit is non-zero.  The zero duration formats as 0,
+// with no unit.
+func (d Duration) String() string {
+	// Largest time is 2540400h10m10.000000000s
+	var buf [32]byte
+	w := len(buf)
+
+	u := uint64(d)
+	neg := d < 0
+	if neg {
+		u = -u
+	}
+
+	if u < uint64(Second) {
+		// Special case: if duration is smaller than a second,
+		// use smaller units, like 1.2ms
+		var (
+			prec int
+			unit byte
+		)
+		switch {
+		case u == 0:
+			return "0"
+		case u < uint64(Microsecond):
+			// print nanoseconds
+			prec = 0
+			unit = 'n'
+		case u < uint64(Millisecond):
+			// print microseconds
+			prec = 3
+			unit = 'u'
+		default:
+			// print milliseconds
+			prec = 6
+			unit = 'm'
+		}
+		w -= 2
+		buf[w] = unit
+		buf[w+1] = 's'
+		w, u = fmtFrac(buf[:w], u, prec)
+		w = fmtInt(buf[:w], u)
+	} else {
+		w--
+		buf[w] = 's'
+
+		w, u = fmtFrac(buf[:w], u, 9)
+
+		// u is now integer seconds
+		w = fmtInt(buf[:w], u%60)
+		u /= 60
+
+		// u is now integer minutes
+		if u > 0 {
+			w--
+			buf[w] = 'm'
+			w = fmtInt(buf[:w], u%60)
+			u /= 60
+
+			// u is now integer hours
+			// Stop at hours because days can be different lengths.
+			if u > 0 {
+				w--
+				buf[w] = 'h'
+				w = fmtInt(buf[:w], u)
+			}
+		}
+	}
+
+	if neg {
+		w--
+		buf[w] = '-'
+	}
+
+	return string(buf[w:])
+}
+*/
+
 // fmtFrac formats the fraction of v/10**prec (e.g., ".12345") into the
 // tail of buf, omitting trailing zeros.  it omits the decimal
 // point too when the fraction is 0.  It returns the index where the
@@ -533,7 +605,7 @@ func (d Duration) Hours() float64 {
 // Add returns the time t+d.
 func (t Time) Add(d Duration) Time {
 	t.sec += int64(d / 1e9)
-	nsec := int32(t.nsec) + int32(d%1e9)
+	nsec := t.nsec + int32(d%1e9)
 	if nsec >= 1e9 {
 		t.sec++
 		nsec -= 1e9
@@ -675,8 +747,6 @@ func absDate(abs uint64, full bool) (year int, month Month, day int, yday int) {
 // daysBefore[m] counts the number of days in a non-leap year
 // before month m begins.  There is an entry for m=12, counting
 // the number of days before January of next year (365).
-//
-//emgo:const
 var daysBefore = [...]int32{
 	0,
 	31,
@@ -702,7 +772,8 @@ func daysIn(m Month, year int) int {
 
 // Now returns the current local time.
 func Now() Time {
-	return now()
+	sec, nsec := now()
+	return Time{sec + unixToInternal, nsec, Local}
 }
 
 // UTC returns t with the location set to UTC.
@@ -717,12 +788,14 @@ func (t Time) Local() Time {
 	return t
 }
 
+var missingLocation = "time: missing Location"
+
 // In returns t with the location information set to loc.
 //
 // In panics if loc is nil.
 func (t Time) In(loc *Location) Time {
 	if loc == nil {
-		panic("time: missing Location in call to Time.In")
+		panic(&missingLocation)
 	}
 	t.loc = loc
 	return t
@@ -758,6 +831,7 @@ func (t Time) UnixNano() int64 {
 	return (t.sec+internalToUnix)*1e9 + int64(t.nsec)
 }
 
+/*
 const timeBinaryVersion byte = 1
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
@@ -810,7 +884,7 @@ func (t *Time) UnmarshalBinary(data []byte) error {
 		return errors.New("Time.UnmarshalBinary: unsupported version")
 	}
 
-	if len(buf) != /*version*/ 1+ /*sec*/ 8+ /*nsec*/ 4+ /*zone offset*/ 2 {
+	if len(buf) != / *version* / 1+ / *sec* / 8+ / *nsec* / 4+ / *zone offset* / 2 {
 		return errors.New("Time.UnmarshalBinary: invalid length")
 	}
 
@@ -819,7 +893,7 @@ func (t *Time) UnmarshalBinary(data []byte) error {
 		int64(buf[3])<<32 | int64(buf[2])<<40 | int64(buf[1])<<48 | int64(buf[0])<<56
 
 	buf = buf[8:]
-	t.nsec = int32(buf[3]) | int32(buf[2])<<8 | int32(buf[1])<<16 | int32(buf[0])<<24
+	t.nsec = uintptr(int32(buf[3]) | int32(buf[2])<<8 | int32(buf[1])<<16 | int32(buf[0])<<24)
 
 	buf = buf[4:]
 	offset := int(int16(buf[1])|int16(buf[0])<<8) * 60
@@ -835,11 +909,60 @@ func (t *Time) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
+// TODO(rsc): Remove GobEncoder, GobDecoder, MarshalJSON, UnmarshalJSON in Go 2.
+// The same semantics will be provided by the generic MarshalBinary, MarshalText,
+// UnmarshalBinary, UnmarshalText.
+
+// GobEncode implements the gob.GobEncoder interface.
+func (t Time) GobEncode() ([]byte, error) {
+	return t.MarshalBinary()
+}
+
+// GobDecode implements the gob.GobDecoder interface.
+func (t *Time) GobDecode(data []byte) error {
+	return t.UnmarshalBinary(data)
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+// The time is a quoted string in RFC 3339 format, with sub-second precision added if present.
+func (t Time) MarshalJSON() ([]byte, error) {
+	if y := t.Year(); y < 0 || y >= 10000 {
+		// RFC 3339 is clear that years are 4 digits exactly.
+		// See golang.org/issue/4556#c15 for more discussion.
+		return nil, errors.New("Time.MarshalJSON: year outside of range [0,9999]")
+	}
+	return []byte(t.Format(`"` + RFC3339Nano + `"`)), nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+// The time is expected to be a quoted string in RFC 3339 format.
+func (t *Time) UnmarshalJSON(data []byte) (err error) {
+	// Fractional seconds are handled implicitly by Parse.
+	*t, err = Parse(`"`+RFC3339+`"`, string(data))
+	return
+}
+
+// MarshalText implements the encoding.TextMarshaler interface.
+// The time is formatted in RFC 3339 format, with sub-second precision added if present.
+func (t Time) MarshalText() ([]byte, error) {
+	if y := t.Year(); y < 0 || y >= 10000 {
+		return nil, errors.New("Time.MarshalText: year outside of range [0,9999]")
+	}
+	return []byte(t.Format(RFC3339Nano)), nil
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// The time is expected to be in RFC 3339 format.
+func (t *Time) UnmarshalText(data []byte) (err error) {
+	// Fractional seconds are handled implicitly by Parse.
+	*t, err = Parse(RFC3339, string(data))
+	return
+}
+*/
+
 // Unix returns the local Time corresponding to the given Unix time,
 // sec seconds and nsec nanoseconds since January 1, 1970 UTC.
 // It is valid to pass nsec outside the range [0, 999999999].
-// Not all sec values have a corresponding time value. One such
-// value is 1<<63-1 (the largest int64 value).
 func Unix(sec int64, nsec int64) Time {
 	if nsec < 0 || nsec >= 1e9 {
 		n := nsec / 1e9
@@ -892,7 +1015,7 @@ func norm(hi, lo, base int) (nhi, nlo int) {
 // Date panics if loc is nil.
 func Date(year int, month Month, day, hour, min, sec, nsec int, loc *Location) Time {
 	if loc == nil {
-		panic("time: missing Location in call to Date")
+		panic(&missingLocation)
 	}
 
 	// Normalize month, overflowing into year.

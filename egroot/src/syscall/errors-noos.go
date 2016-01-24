@@ -11,6 +11,7 @@ const (
 	ENOSYS
 )
 
+//emgo:const
 var errnos = []string{
 	OK:      "success",
 	ENORES:  "no resources",

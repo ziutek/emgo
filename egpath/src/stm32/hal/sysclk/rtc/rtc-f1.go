@@ -1,13 +1,13 @@
 // +build f10x_ld f10x_ld_vl f10x_md f10x_md_vl f10x_hd f10x_hd_vl f10x_xl
 
-package setup
+package rtc
 
 import (
 	"math"
-	"mmio"
 	"rtos"
 	"sync/atomic"
 	"syscall"
+	"time"
 
 	"arch/cortexm/scb"
 
@@ -20,82 +20,33 @@ import (
 	"stm32/hal/raw/rtc"
 )
 
-// When 32768 Hz oscilator is used and rtcPreLog2 == 5 then:
+// When 32768 Hz oscilator is used and preLog2 == 5 then:
 // - rtos.Nanosec resolution will be 1/32768 s,
 // - rtos.SleepUntil resoultion will be 1<<5/32768 s = 1/1024 s ≈ 1 ms,
 // - the longest down time (RTC on battery) will be 1<<32/1024 s ≈ 48 days.
 const (
-	rtcPreLog2 = 5
-	rtcPre     = 1 << rtcPreLog2
+	preLog2   = 5
+	prescaler = 1 << preLog2
 
-	rtcMaxSleepCnt  = 1 << 22
-	rtcMaxSleepTick = rtcMaxSleepCnt << rtcPreLog2
+	maxSleepCnt  = 1 << 22
+	maxSleepTick = maxSleepCnt << preLog2
 )
 
 const (
-	rtcDirty = iota
-	rtcNotSet
-	rtcOK
+	flagOK  = 0
+	flagSet = 1
 )
 
-func ticktons(tick int64) int64 {
-	return int64(math.Muldiv(uint64(tick), 1e9, uint64(rtcFreqHz)))
+type globals struct {
+	freqHz  uint
+	cntExt  int32 // 16 bit RTC VCNT excension.
+	lastISR uint32
 }
 
-func nstotick(ns int64) int64 {
-	return int64(math.Muldiv(uint64(ns), uint64(rtcFreqHz), 1e9))
-}
+var mem globals
 
-func waitForSync(RTC *rtc.RTC_Periph) {
-	RTC.RSF().Clear()
-	for RTC.RSF().Load() == 0 {
-	}
-}
-
-func waitForWrite(RTC *rtc.RTC_Periph) {
-	for RTC.RTOFF().Load() == 0 {
-	}
-}
-
-type twoReg struct {
-	high, low *mmio.U16
-}
-
-func (tr twoReg) Load() uint32 {
-	return uint32(tr.high.Load())<<16 | uint32(tr.low.Load())
-}
-
-func (tr twoReg) Store(u uint32) {
-	tr.high.Store(uint16(u >> 16))
-	tr.low.Store(uint16(u))
-}
-
-type rtcBackup struct {
-	p *bkp.BKP_Periph
-}
-
-func (b rtcBackup) Status() *mmio.U16 {
-	return &b.p.DR1.U16
-}
-
-func (b rtcBackup) CntExt() *mmio.U16 {
-	return &b.p.DR2.U16
-}
-
-func (b rtcBackup) LastISR() twoReg {
-	return twoReg{&b.p.DR3.U16, &b.p.DR4.U16}
-}
-
-var (
-	rtcFreqHz uint
-
-	rtcStatus  uint16
-	rtcCntExt  uint32
-	rtcLastISR uint32
-)
-
-func useRTC(freqHz uint) {
-	rtcFreqHz = freqHz
+func setup(freqHz uint) {
+	mem.freqHz = freqHz
 
 	RTC := rtc.RTC
 	RCC := rcc.RCC
@@ -113,9 +64,7 @@ func useRTC(freqHz uint) {
 	PWR.DBP().Set()
 	RCC.APB1ENR.ClearBits(rcc.PWREN)
 
-	rtcStatus = bkp.Status().Load()
-
-	if RCC.BDCR.Bits(mask) != cfg || rtcStatus == rtcDirty {
+	if RCC.BDCR.Bits(mask) != cfg || bkp.Status().Bit(flagOK) == 0 {
 		// RTC not initialized or in dirty state.
 
 		// Reset backup domain and configure RTC clock source.
@@ -130,17 +79,22 @@ func useRTC(freqHz uint) {
 		waitForSync(RTC)
 		waitForWrite(RTC)
 		RTC.CNF().Set() // Begin PRL configuration
-		RTC.PRLL.Store(rtcPre - 1)
+		RTC.PRLL.Store(prescaler - 1)
 		RTC.CNF().Clear() // Copy from APB to BKP domain.
 
-		rtcStatus = rtcNotSet
-		bkp.Status().Store(rtcStatus)
+		bkp.Status().SetBit(flagOK)
 
 		// Wait for complete before setup RTCALR interrupt.
 		waitForWrite(RTC)
 	} else {
-		rtcCntExt = uint32(bkp.CntExt().Load())
-		rtcLastISR = bkp.LastISR().Load()
+		mem.cntExt = int32(int16(bkp.CntExt().Load()))
+		mem.lastISR = bkp.LastISR().Load()
+		if bkp.Status().Bit(flagSet) != 0 {
+			sec := bkp.StartSec().Load()
+			ns := int32(bkp.StartNanosec().Load())
+			start := time.Unix(int64(sec), int64(ns))
+			time.SetStart(start)
+		}
 	}
 	// Wait for sync. Need in both cases: after reset (synchronise APB domain)
 	// or after configuration (avoid reading bad DIVL).
@@ -155,25 +109,25 @@ func useRTC(freqHz uint) {
 	// Force RTCISR to early handle possible overflow.
 	exti.RTCALR.Trigger()
 
-	syscall.SetSysClock(rtcNanosec, rtcSetWakeup)
+	syscall.SetSysClock(nanosec, setWakeup)
 }
 
 // rtcVCNT returns value of virtual counter that counts number of ticks of
 // RTC input clock. Value of this virtual counter is calculated according to
 // the formula:
 //
-//  VCNT = ((CNTH<<16 + CNTL)<<rtcPreLog2 + frac) & (rtcPre<<32 - 1)
+//  VCNT = ((CNTH<<16 + CNTL)<<preLog2 + frac) & (prescaler<<32 - 1)
 //
 // where frac is calculated as follow:
 //
-//  frac = rtcPre - (DIVL+1)&(rtcPre-1)
+//  frac = prescaler - (DIVL+1)&(prescaler-1)
 //
-// Only DIVL is used, so prescaler (rtcPre) can not be greater than 0x10000.
+// Only DIVL is used, so prescaler can not be greater than 0x10000.
 //
 // Thanks to this transformation, RTC interrupts are generated at right time.
 // See example for Second, Overflow and Alarm(0-1) interrupts in table below:
 //
-//  CNT      DIV| vcnt>>5 vcnt&0x1f
+//  CNT      DIV| VCNT>>5 VCNT&0x1f
 //  ------------+--------------------
 //  ffffffff 04 | ffffffff 1b
 //  ffffffff 03 | ffffffff 1c
@@ -187,7 +141,7 @@ func useRTC(freqHz uint) {
 //  00000000 1b | 00000000 04
 //  00000000 1a | 00000000 05
 //
-func rtcVCNT() int64 {
+func loadVCNT() int64 {
 	RTC := rtc.RTC
 	var (
 		ch rtc.CNTH_Bits
@@ -212,62 +166,62 @@ func rtcVCNT() int64 {
 		ch = ch1
 	}
 	cnt := uint32(ch)<<16 | uint32(cl)
-	frac := rtcPre - (uint32(dl)+1)&(rtcPre-1)
-	return (int64(cnt)<<rtcPreLog2 + int64(frac)) & (rtcPre<<32 - 1)
+	frac := prescaler - (uint32(dl)+1)&(prescaler-1)
+	return (int64(cnt)<<preLog2 + int64(frac)) & (prescaler<<32 - 1)
 }
 
-func RTCISR() {
+func isr() {
 	exti.RTCALR.ClearPending()
 
-	vcnt32 := uint32(rtcVCNT() >> rtcPreLog2)
-	if vcnt32 != rtcLastISR {
-		if vcnt32 < rtcLastISR {
-			cntExt := rtcCntExt + 1
+	vcnt32 := uint32(loadVCNT() >> preLog2)
+	if vcnt32 != mem.lastISR {
+		if vcnt32 < mem.lastISR {
+			cntext := mem.cntExt + 1
 			bkp := rtcBackup{bkp.BKP}
-			bkp.Status().Store(rtcDirty)
-			bkp.CntExt().Store(uint16(cntExt))
+			bkp.Status().ClearBit(flagOK)
+			bkp.CntExt().Store(uint16(cntext))
 			bkp.LastISR().Store(vcnt32)
-			bkp.Status().Store(rtcStatus)
-			atomic.StoreUint32(&rtcCntExt, cntExt)
+			bkp.Status().SetBit(flagOK)
+			atomic.StoreInt32(&mem.cntExt, cntext)
 		} else {
 			rtcBackup{bkp.BKP}.LastISR().Store(vcnt32)
 		}
-		atomic.StoreUint32(&rtcLastISR, vcnt32)
+		atomic.StoreUint32(&mem.lastISR, vcnt32)
 	}
 
 	scb.ICSR_Store(scb.PENDSVSET)
 }
 
-func rtcTicks() int64 {
+func loadTicks() int64 {
 	irq.RTCAlarm.Disable()
-	lastISR := atomic.LoadUint32(&rtcLastISR)
-	cntExt := atomic.LoadUint32(&rtcCntExt)
-	vcnt := rtcVCNT()
+	lastisr := atomic.LoadUint32(&mem.lastISR)
+	cntext := atomic.LoadInt32(&mem.cntExt)
+	vcnt := loadVCNT()
 	irq.RTCAlarm.Enable()
 
-	if uint32(vcnt>>rtcPreLog2) < lastISR {
-		cntExt++
+	if uint32(vcnt>>preLog2) < lastisr {
+		cntext++
 	}
-	return int64(cntExt)<<(32+rtcPreLog2) | vcnt
+	return int64(cntext)<<(32+preLog2) | vcnt
 }
 
-// rtcNanosec: see syscall.SetSysClock.
-func rtcNanosec() int64 {
-	return ticktons(rtcTicks())
+// nanosec: see syscall.SetSysClock.
+func nanosec() int64 {
+	return ticktons(loadTicks())
 }
 
-// rtcSetWakeup: see syscall.SetSysClock.
-func rtcSetWakeup(ns int64) {
+// setWakeup: see syscall.SetSysClock.
+func setWakeup(ns int64) {
 	wkup := nstotick(ns)
-	now := rtcTicks()
+	now := loadTicks()
 	sleep := wkup - now
 	switch {
-	case sleep > rtcMaxSleepTick:
-		wkup = now + rtcMaxSleepTick
+	case sleep > maxSleepTick:
+		wkup = now + maxSleepTick
 	case sleep < 0:
 		wkup = now
 	}
-	wkup = (wkup + rtcPre/2) >> rtcPreLog2
+	wkup = (wkup + prescaler/2) >> preLog2
 	alr := uint32(wkup) - 1
 
 	RTC := rtc.RTC
@@ -277,7 +231,7 @@ func rtcSetWakeup(ns int64) {
 	RTC.ALRL.Store(rtc.ALRL_Bits(alr))
 	RTC.CNF().Clear()
 
-	if rtcTicks()>>rtcPreLog2 >= wkup {
+	if loadTicks()>>preLog2 >= wkup {
 		// There is a chance that the alarm interrupt was not triggered.
 		exti.RTCALR.Trigger()
 	}
@@ -287,28 +241,31 @@ func rtcSetWakeup(ns int64) {
 	println32(" alr:", alr)*/
 }
 
-/*
-const dbg = itm.Port(17)
-
-func print64(s string, i int64) {
-	dbg.WriteString(s)
-	strconv.WriteInt64(dbg, i, 16, 0)
+func setStartTime(t time.Time) {
+	bkp := rtcBackup{bkp.BKP}
+	if bkp.Status().Bit(flagOK) == 0 {
+		return
+	}
+	sec := t.Unix()
+	ns := t.Nanosecond()
+	time.SetStart(t)
+	bkp.Status().ClearBit(flagOK)
+	bkp.StartSec().Store(uint64(sec))
+	bkp.StartNanosec().Store(uint32(ns))
+	bkp.Status().Store(1<<flagSet | 1<<flagOK)
 }
 
-func println64(s string, i int64) {
-	dbg.WriteString(s)
-	strconv.WriteInt64(dbg, i, 16, 0)
-	dbg.WriteString("\r\n")
+func status() (ok, set bool) {
+	status := rtcBackup{bkp.BKP}.Status().Load()
+	ok = status&(1<<flagOK) != 0
+	set = status&(1<<flagSet) != 0
+	return
 }
 
-func print32(s string, u uint32) {
-	dbg.WriteString(s)
-	strconv.WriteUint32(dbg, u, 16, 0)
+func ticktons(tick int64) int64 {
+	return int64(math.Muldiv(uint64(tick), 1e9, uint64(mem.freqHz)))
 }
 
-func println32(s string, u uint32) {
-	dbg.WriteString(s)
-	strconv.WriteUint32(dbg, u, 16, 0)
-	dbg.WriteString("\r\n")
+func nstotick(ns int64) int64 {
+	return int64(math.Muldiv(uint64(ns), uint64(mem.freqHz), 1e9))
 }
-*/

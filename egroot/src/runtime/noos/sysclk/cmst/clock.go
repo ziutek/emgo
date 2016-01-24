@@ -79,5 +79,6 @@ func sysTickHandler() {
 	scb.ICSR_Store(scb.PENDSVSET)
 }
 
+//emgo:const
 //c:__attribute__((section(".SysTick")))
 var SysTickVector = sysTickHandler

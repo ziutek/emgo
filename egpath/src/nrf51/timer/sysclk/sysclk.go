@@ -28,6 +28,8 @@ func isr() {
 	}
 }
 
+//emgo:const
+//c:__attribute__((section(".InterruptVectors")))
 var ISRs = [...]func(){
 	irq.RTC0: isr,
-} //c:__attribute__((section(".InterruptVectors")))
+}

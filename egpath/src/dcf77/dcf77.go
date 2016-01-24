@@ -14,6 +14,7 @@ const (
 	ErrBits   = Error(-3)
 )
 
+//emgo:const
 var strerr = []string{
 	"initializing",
 	"timing error",

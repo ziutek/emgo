@@ -2,7 +2,7 @@ package strconv
 
 // Powers of ten taken from https://github.com/floitsch/double-conversion
 
-//c:const
+//emgo:const
 var significands = [...]uint64{
 	0xfa8fd5a0081c0288, // -348
 	0xbaaee17fa23ebf76, // -340
@@ -93,7 +93,7 @@ var significands = [...]uint64{
 	0xaf87023b9bf0ee6b, // 340
 }
 
-//c:const
+//emgo:const
 var exponents = [...]int16{
 	-1220, // -348
 	-1193, // -340
@@ -184,7 +184,7 @@ var exponents = [...]int16{
 	1066,  // 340
 }
 
-//c:const
+//emgo:const
 var tens = [...]uint32{
 	1,
 	10,

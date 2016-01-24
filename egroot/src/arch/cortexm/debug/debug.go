@@ -4,12 +4,13 @@ import (
 	"unsafe"
 )
 
+//c:volatile
 type regs struct {
 	dhcs uint32
 	dcrs uint32
 	dcrd uint32
 	demc uint32
-} //c:volatile
+}
 
 var drs = (*regs)(unsafe.Pointer(uintptr(0xe000edf0)))
 

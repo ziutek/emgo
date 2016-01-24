@@ -52,8 +52,6 @@ const (
 )
 
 // UTC represents Universal Coordinated Time (UTC).
-//
-//emgo:const
 var UTC *Location = &utcLoc
 
 // utcLoc is separate so that get can refer to &utcLoc
@@ -253,11 +251,6 @@ func (l *Location) lookupName(name string, unix int64) (offset int, isDST bool, 
 }
 
 /*
-// NOTE(rsc): Eventually we will need to accept the POSIX TZ environment
-// syntax too, but I don't feel like implementing it today.
-
-var zoneinfo, _ = syscall.Getenv("ZONEINFO")
-
 // LoadLocation returns the Location with the given name.
 //
 // If the name is "" or "UTC", LoadLocation returns UTC.

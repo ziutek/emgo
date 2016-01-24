@@ -2,6 +2,8 @@ package main
 
 import (
 	"delay"
+	"fmt"
+	"time"
 
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
@@ -30,7 +32,7 @@ func init() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm: setup.RTCISR,
+	irq.RTCAlarm: rtc.ISR,
 }
 
 func blink(led gpio.Pins, dly int) {
@@ -39,10 +41,20 @@ func blink(led gpio.Pins, dly int) {
 		delay.Millisec(dly)
 		leds.ClearPins(led)
 		delay.Millisec(dly)
+		t := time.Now()
+		y, mo, d := t.Date()
+		h, mi, s := t.Clock()
+		ns := t.Nanosecond()
+		fmt.Printf(
+			"%04d-%02d-%02d %02d:%02d:%02d.%09d\n",
+			y, mo, d, h, mi, s, ns,
+		)
 	}
 }
 
 func main() {
-	go blink(LED1, 500)
-	blink(LED2, 1000)
+	if ok, set := rtc.Status(); ok && !set {
+		rtc.SetTime(time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC))
+	}
+	blink(LED2, 500)
 }
