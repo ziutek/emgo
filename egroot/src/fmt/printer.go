@@ -134,21 +134,25 @@ func (p *printer) badVerb(verb byte, v reflect.Value) {
 }
 
 func (p *printer) format(verb byte, i interface{}) {
+	if verb != 'T' && verb != 'p' {
+		if f, ok := i.(Formatter); ok {
+			f.Format(p, rune(verb))
+			return
+		}
+	}
 	switch verb {
 	case 'T':
 		i = reflect.TypeOf(i).String()
-	default:
+	case 'v', 's', 'x', 'X', 'q':
 		switch f := i.(type) {
-		case nil:
-			i = "<nil>"
-		case Formatter:
-			f.Format(p, rune(verb))
-			return
 		case error:
 			i = f.Error()
 		case Stringer:
 			i = f.String()
 		}
+	}
+	if i == nil {
+		i = "<nil>"
 	}
 	p.formatValue(verb, reflect.ValueOf(i))
 }
