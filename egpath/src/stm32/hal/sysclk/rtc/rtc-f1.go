@@ -39,8 +39,8 @@ const (
 
 type globals struct {
 	freqHz  uint
-	cntExt  int32 // 16 bit RTC VCNT excension.
-	lastISR uint32
+	cntExt  int32  // 16 bit RTC VCNT excension.
+	lastISR uint32 // Last ISR  time using uint32(VCNT).
 }
 
 var mem globals
@@ -112,7 +112,7 @@ func setup(freqHz uint) {
 	syscall.SetSysClock(nanosec, setWakeup)
 }
 
-// rtcVCNT returns value of virtual counter that counts number of ticks of
+// loadVCNT returns value of virtual counter that counts number of ticks of
 // RTC input clock. Value of this virtual counter is calculated according to
 // the formula:
 //

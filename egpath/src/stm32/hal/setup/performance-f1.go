@@ -4,6 +4,7 @@ package setup
 
 import (
 	"stm32/hal/raw/flash"
+	"stm32/hal/raw/mmap"
 	"stm32/hal/raw/rcc"
 )
 
@@ -112,4 +113,16 @@ func Performance(osc, mul int, div2 bool) {
 	if osc != 0 {
 		RCC.HSION().Clear()
 	}
+}
+
+func PeriphClk(baseaddr uintptr) uint {
+	switch {
+	case baseaddr >= mmap.AHBPERIPH_BASE:
+		return AHBClk
+	case baseaddr >= mmap.APB2PERIPH_BASE:
+		return APB2Clk
+	case baseaddr >= mmap.APB1PERIPH_BASE:
+		return APB1Clk
+	}
+	return 0
 }

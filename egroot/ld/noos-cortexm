@@ -22,7 +22,9 @@ SECTIONS {
 		KEEP(*(.PendSV))		
 		KEEP(*(.SysTick))
 				
-		ASSERT(. - VectorsStart==16*4,"Bad number of system exception vectors");
+		ASSERT(. - VectorsStart <= 16*4, "Too many system exception vectors");
+		
+		. = VectorsStart + 16*4;
 		
 		KEEP(*(.ISRs))
 		
