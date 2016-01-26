@@ -58,6 +58,7 @@ func WriteUint32(w io.Writer, u uint32, base, width int) (int, error) {
 	return writePadded(w, buf[n:], width, base < 0)
 }
 
+// WriteInt32 works like WriteInt but is optimized for 32-bit numbers.
 func WriteInt32(w io.Writer, i int32, base, width int) (int, error) {
 	var (
 		buf [33]byte
@@ -79,6 +80,7 @@ func WriteUint64(w io.Writer, u uint64, base, width int) (int, error) {
 	return writePadded(w, buf[n:], width, base < 0)
 }
 
+// WriteInt64 works like WriteInt.
 func WriteInt64(w io.Writer, i int64, base, width int) (int, error) {
 	var (
 		buf [65]byte
@@ -94,10 +96,10 @@ func WriteInt64(w io.Writer, i int64, base, width int) (int, error) {
 	return writePadded(w, buf[n:], width, base < 0)
 }
 
-// WriteInt writes text representation of i in buf using 2 <= |base| <= 36.
-// If width > 0 then written value is left-justified, if width < 0 written
-// value is left-justified. If base < 0 then left-justified value is prepended
-// with zeros, instead it spaces are used.
+// WriteInt writes text representation of i to w using 2 <= |base| <= 36.
+// If width > 0 then written value is right-justified, otherwise it is
+// left-justified. If base < 0 then right-justified value is prepended
+// with zeros, instead  spaces are used.
 func WriteInt(w io.Writer, i, base, width int) (int, error) {
 	if intSize <= 4 {
 		return WriteInt32(w, int32(i), base, width)

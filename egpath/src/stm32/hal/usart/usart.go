@@ -40,26 +40,18 @@ const (
 // EnableClock enables clock for USART.
 // lp determines whether the clock remains on in low power (sleep) mode.
 func (u *USART) EnableClock(lp bool) {
-	enbit := enbit(u)
-	enbit.Set()
-	if lp {
-		lpenbit(u).Set()
-	} else {
-		lpenbit(u).Clear()
-	}
-	_ = enbit.U.Load() // Workaround (RCC delay).
+	setLPEnabled(u, lp)
+	setEnabled(u, true)
 }
 
 // DisableClock disables clock for u.
 func (u *USART) DisableClock() {
-	enbit(u).Clear()
+	setEnabled(u, false)
 }
 
 // Reset resets USART u.
 func (u *USART) Reset() {
-	rstbit := rstbit(u)
-	rstbit.Set()
-	rstbit.Clear()
+	reset(u)
 }
 
 // Status return current status.

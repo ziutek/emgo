@@ -18,6 +18,7 @@ import (
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/setup"
+	"stm32/hal/sysclk/systick"
 	"stm32/hal/usart"
 )
 
@@ -35,6 +36,7 @@ var (
 
 func init() {
 	setup.Performance168(8)
+	systick.Setup()
 
 	// GPIO
 
@@ -70,13 +72,13 @@ func init() {
 }
 
 func blink(c gpio.Pins, dly int) {
-	leds.Set(c)
+	leds.SetPins(c)
 	if dly > 0 {
 		delay.Millisec(dly)
 	} else {
 		delay.Loop(-1e4 * dly)
 	}
-	leds.Clear(c)
+	leds.ClearPins(c)
 }
 
 func conISR() {
@@ -109,7 +111,7 @@ func main() {
 	//   cmp	r3, r2
 	//   bne.n  0b
 	for i := range uts {
-		uts[i] = rtos.Uptime()
+		uts[i] = rtos.Nanosec()
 	}
 
 	fmt.Println("\nrtos.Uptime() in loop:")
@@ -127,7 +129,7 @@ func main() {
 	for {
 		n, err := con.Read(buf[:])
 		checkErr(err)
-		ns := rtos.Uptime()
+		ns := rtos.Nanosec()
 		fmt.Printf(" %d ns '%s'\n", ns, buf[:n])
 		blink(Green, 10)
 	}
