@@ -10,8 +10,8 @@ import (
 
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
-	"stm32/hal/setup"
-	"stm32/hal/sysclk/rtc"
+	"stm32/hal/osclk/rtc"
+	"stm32/hal/system"
 	"stm32/hal/usart"
 )
 
@@ -26,7 +26,7 @@ const (
 )
 
 func init() {
-	setup.Performance(8, 72/8, false)
+	system.Setup(8, 72/8, false)
 	rtc.Setup(32768)
 
 	// GPIO
@@ -81,9 +81,10 @@ func blink(led gpio.Pins, dly int) {
 		y, mo, d := t.Date()
 		h, mi, s := t.Clock()
 		ns := t.Nanosecond()
-		
-		// Can print formated date without fmt (bonus: program will fit in SRAM).
-		
+
+		// Is ther a easy way to print formated date without fmt package?
+		// Yes. Bonus: whole program fits into 40 KB SRAM.
+
 		strconv.WriteInt(con, y, -10, 4)
 		con.WriteByte('-')
 		strconv.WriteInt(con, int(mo), -10, 2)

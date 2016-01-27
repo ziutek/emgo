@@ -3,16 +3,16 @@
 package systick
 
 import (
-	"runtime/noos/sysclk/cmst"
+	"runtime/noos/clk/cmst"
 	"syscall"
 
-	"stm32/hal/setup"
+	"stm32/hal/system"
 )
 
-// UseSysTick setups and uses Cortex-M SYSTICK timer as system clock.
+// Setup setups and uses Cortex-M SYSTICK timer as OS clock.
 func Setup() {
 	lev, _ := syscall.SetPrivLevel(0)
-	cmst.Setup(2e6, setup.AHBClk/8, true)
+	cmst.Setup(2e6, system.AHBClk/8, true)
 	syscall.SetPrivLevel(lev)
 	syscall.SetSysClock(cmst.Nanosec, cmst.SetWakeup)
 }

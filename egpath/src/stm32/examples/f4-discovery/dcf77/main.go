@@ -11,7 +11,8 @@ import (
 	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
-	"stm32/hal/setup"
+	"stm32/hal/osclk/systick"
+	"stm32/hal/system"
 )
 
 const dcfpin = gpio.Pin1
@@ -19,8 +20,8 @@ const dcfpin = gpio.Pin1
 var dcfport *gpio.Port
 
 func init() {
-	setup.Performance168(8)
-	setup.UseSysTick()
+	system.Setup168(8)
+	systick.Setup()
 
 	gpio.C.EnableClock(true)
 	dcfport = gpio.C

@@ -4,7 +4,7 @@ import (
 	"mmio"
 	"unsafe"
 
-	"stm32/hal/setup"
+	"stm32/hal/system"
 )
 
 // USART represents USART device.
@@ -59,11 +59,11 @@ func (u *USART) Status() Status {
 	return Status(u.sr.Load())
 }
 
-// SetBaudRate sets baudrate [sym/s]. APB1Clk, APB2Clk in stm32/hal/setup package
-// must be set properly before use this function.
+// SetBaudRate sets baudrate [sym/s]. APB1Clk, APB2Clk in stm32/hal/system
+// package must be set properly before use this function.
 func (u *USART) SetBaudRate(baudrate int) {
 	br := uint(baudrate)
-	pclk := setup.PeriphClk(u.BaseAddr())
+	pclk := system.PeriphClk(u.BaseAddr())
 	usartdiv := (pclk + br/2) / br
 	const over8 = 1 << 15
 	if uint(br) > pclk/16 {

@@ -1,6 +1,6 @@
 // +build f40_41xxx f411xe f2xxx-TODO
 
-package setup
+package system
 
 const (
 	maxAPB1Clk = 42e6 // Hz

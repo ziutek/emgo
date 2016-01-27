@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"stm32/hal/setup"
+	"stm32/hal/osclk/systick"
+	"stm32/hal/system"
 )
 
 func init() {
-	setup.Performance168(8)
-	setup.UseSysTick()
+	system.Setup168(8)
+	systick.Setup()
 	initConsole()
 }
 

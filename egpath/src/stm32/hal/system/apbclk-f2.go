@@ -1,6 +1,6 @@
 // +build f2xxx-TODO
 
-package setup
+package system
 
 const (
 	maxAPB1Clk = 30e6 // Hz

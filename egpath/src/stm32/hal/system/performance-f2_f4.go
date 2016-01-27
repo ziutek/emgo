@@ -1,7 +1,5 @@
 // +build f40_41xxx f411xe f2xxx-TODO
 
-// Package setup allows to easy setup MCU for typical use.
-//
 // Clock setup
 //
 // Goal is to provide 48 MHz for USB. So PLLCK must satisfy the equation:
@@ -39,7 +37,7 @@
 //
 //  SYSCLK = 2 MHz * N / P
 //
-package setup
+package system
 
 import (
 	"stm32/hal/raw/flash"
@@ -47,7 +45,7 @@ import (
 	"stm32/hal/raw/rcc"
 )
 
-// Performance setups MCU for best performance (prefetch on, I/D cache on,
+// Setup setups MCU for best performance (prefetch on, I/D cache on,
 // minimum allowed Flash latency).
 //
 // osc is freqency of external resonator in MHz. Allowed values are multiples
@@ -66,7 +64,7 @@ import (
 //
 //  SysClk = 2e6 * mul / sdiv [Hz]
 //
-func Performance(osc, mul, sdiv int) {
+func Setup(osc, mul, sdiv int) {
 	RCC := rcc.RCC
 
 	// Reset RCC clock configuration.
@@ -180,16 +178,16 @@ func Performance(osc, mul, sdiv int) {
 	}
 }
 
-// Performance96 setups MCU to work with 96 MHz clock.
+// Setup96 setups MCU to work with 96 MHz clock.
 // See Performance for description of osc.
-func Performance96(osc int) {
-	Performance(osc, 192, 4)
+func Setup96(osc int) {
+	Setup(osc, 192, 4)
 }
 
-// Performance168 setups MCU to work with 168 MHz clock.
+// Setup168 setups MCU to work with 168 MHz clock.
 // See Performance for description of osc.
-func Performance168(osc int) {
-	Performance(osc, 168, 2)
+func Setup168(osc int) {
+	Setup(osc, 168, 2)
 }
 
 func PeriphClk(baseaddr uintptr) uint {

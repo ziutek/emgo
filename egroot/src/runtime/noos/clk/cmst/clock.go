@@ -1,4 +1,4 @@
-// Package cmst implements ticking system clock using Cortex-M SysTick timer.
+// Package cmst implements ticking OS clock using Cortex-M SysTick timer.
 // It is not recomended for low power applications.
 package cmst
 

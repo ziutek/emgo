@@ -11,7 +11,7 @@
 //
 //  SYSCLK = PLLCK / PLLDIV
 //
-package setup
+package system
 
 import (
 	"stm32/hal/raw/flash"
@@ -19,7 +19,7 @@ import (
 	"stm32/hal/raw/rcc"
 )
 
-// Performance setups MCU for best performance (Flash prefetch and 64-bit access
+// Setup setups MCU for best performance (Flash prefetch and 64-bit access
 // on).
 //
 // osc is freqency of external resonator in MHz. Allowed values: 2, 3, 4, 6, 8,
@@ -30,7 +30,7 @@ import (
 //
 //  SysClk = 96e6 / sdiv [Hz]
 //
-func Performance(osc, sdiv int) {
+func Setup(osc, sdiv int) {
 	RCC := rcc.RCC
 
 	// Reset RCC clock configuration.
@@ -132,10 +132,10 @@ func Performance(osc, sdiv int) {
 	setupOS()
 }
 
-// Performance32 setups MCU to work with 96 MHz clock.
-// See Performance for description of osc.
-func Performance32(osc int) {
-	Performance(osc, 3)
+// Setup32 setups MCU to work with 96 MHz clock.
+// See Setup for description of osc.
+func Setup32(osc int) {
+	Setup(osc, 3)
 }
 
 func PeriphClk(baseaddr uintptr) uint {

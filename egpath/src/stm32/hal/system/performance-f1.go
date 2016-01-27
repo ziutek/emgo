@@ -1,6 +1,6 @@
 // +build f10x_ld f10x_ld_vl f10x_md f10x_md_vl f10x_hd f10x_hd_vl f10x_xl
 
-package setup
+package system
 
 import (
 	"stm32/hal/raw/flash"
@@ -8,7 +8,7 @@ import (
 	"stm32/hal/raw/rcc"
 )
 
-// Performance setups MCU for best performance ().
+// Setup setups MCU for best performance.
 //
 // osc is freqency of external resonator in MHz. Allowed values: 4 to 16 MHz.
 // Use 0 to select internal HSI oscilator (8 MHz / 2) as system clock source.
@@ -26,7 +26,7 @@ import (
 // when osc == 0. mul can be 2..16.
 //
 // USB requires HSE and SysClk set to 48e6 or 72e6 Hz.
-func Performance(osc, mul int, div2 bool) {
+func Setup(osc, mul int, div2 bool) {
 	RCC := rcc.RCC
 
 	// Reset RCC clock configuration.

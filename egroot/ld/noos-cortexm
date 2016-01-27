@@ -5,6 +5,7 @@ SECTIONS {
 		/* Vector table. */
 		VectorsStart = .;
 		
+		
 		LONG(StackEnd)
 		KEEP(*(.Reset))
 		KEEP(*(.NMI))
@@ -23,7 +24,6 @@ SECTIONS {
 		KEEP(*(.SysTick))
 				
 		ASSERT(. - VectorsStart <= 16*4, "Too many system exception vectors");
-		
 		. = VectorsStart + 16*4;
 		
 		KEEP(*(.ISRs))

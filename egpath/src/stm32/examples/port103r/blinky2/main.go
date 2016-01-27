@@ -5,7 +5,8 @@ import (
 
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
-	"stm32/hal/setup"
+	"stm32/hal/osclk/rtc"
+	"stm32/hal/system"
 )
 
 type LED struct {
@@ -38,8 +39,8 @@ var keys *gpio.Port
 const key3 = gpio.Pin10
 
 func init() {
-	setup.Performance(8, 72/8, false)
-	setup.UseRTC(32768)
+	system.Setup(8, 72/8, false)
+	rtc.Setup(32768)
 
 	gpio.B.EnableClock(true)
 	gpio.C.EnableClock(true)
@@ -55,7 +56,7 @@ func init() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm: setup.RTCISR,
+	irq.RTCAlarm: rtc.ISR,
 }
 
 func main() {

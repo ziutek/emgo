@@ -7,8 +7,8 @@ import (
 
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
-	"stm32/hal/setup"
-	"stm32/hal/sysclk/rtc"
+	"stm32/hal/osclk/rtc"
+	"stm32/hal/system"
 )
 
 var leds *gpio.Port
@@ -19,7 +19,7 @@ const (
 )
 
 func init() {
-	setup.Performance(8, 72/8, false)
+	system.Setup(8, 72/8, false)
 	rtc.Setup(32768)
 
 	gpio.B.EnableClock(true)

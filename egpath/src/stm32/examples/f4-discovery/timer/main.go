@@ -3,13 +3,16 @@ package main
 import (
 	"fmt"
 
+	"stm32/hal/osclk/systick"
+	"stm32/hal/system"
+
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/tim"
-	"stm32/hal/setup"
 )
 
 func init() {
-	setup.Performance168(8)
+	system.Setup168(8)
+	systick.Setup()
 	rcc.RCC.TIM10EN().Set()
 }
 

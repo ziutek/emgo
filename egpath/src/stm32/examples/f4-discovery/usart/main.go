@@ -2,14 +2,16 @@ package main
 
 import (
 	"stm32/hal/gpio"
-	"stm32/hal/setup"
+	"stm32/hal/osclk/systick"
+	"stm32/hal/system"
 	"stm32/hal/usart"
 )
 
 var tts *usart.USART
 
 func init() {
-	setup.Performance168(8)
+	system.Setup168(8)
+	systick.Setup()
 
 	gpio.A.EnableClock(true)
 	port, tx, rx := gpio.A, gpio.Pin2, gpio.Pin3

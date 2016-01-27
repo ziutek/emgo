@@ -17,8 +17,8 @@ import (
 
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
-	"stm32/hal/setup"
-	"stm32/hal/sysclk/systick"
+	"stm32/hal/osclk/systick"
+	"stm32/hal/system"
 	"stm32/hal/usart"
 )
 
@@ -35,7 +35,7 @@ var (
 )
 
 func init() {
-	setup.Performance168(8)
+	system.Setup168(8)
 	systick.Setup()
 
 	// GPIO

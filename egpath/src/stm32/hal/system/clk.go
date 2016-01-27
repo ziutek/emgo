@@ -1,4 +1,4 @@
-package setup
+package system
 
 var (
 	SysClk  uint // System clock [Hz]
