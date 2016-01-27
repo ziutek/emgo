@@ -69,8 +69,8 @@ const (
 )
 
 const (
-	ENDUAL OAR2_Bits = 0x01 << 0 //+ Dual addressing mode enable.
-	ADD2   OAR2_Bits = 0x7F << 1 //+ Interface address.
+	ENDUAL    OAR2_Bits = 0x01 << 0 //+ Dual addressing mode enable.
+	SECADD1_7 OAR2_Bits = 0x7F << 1 //+ Interface address.
 )
 
 const ()
@@ -100,13 +100,13 @@ const (
 	SMBDEFAULT SR2_Bits = 0x01 << 5 //+ SMBus Device Default Address (Slave mode).
 	SMBHOST    SR2_Bits = 0x01 << 6 //+ SMBus Host Header (Slave mode).
 	DUALF      SR2_Bits = 0x01 << 7 //+ Dual Flag (Slave mode).
-	PEC        SR2_Bits = 0xFF << 8 //+ Packet Error Checking Register.
+	PECVAL     SR2_Bits = 0xFF << 8 //+ Packet Error Checking Register.
 )
 
 const (
-	CCR  CCR_Bits = 0xFFF << 0 //+ Clock Control Register in Fast/Standard mode (Master mode).
-	DUTY CCR_Bits = 0x01 << 14 //+ Fast Mode Duty Cycle.
-	FS   CCR_Bits = 0x01 << 15 //+ I2C Master Mode Selection.
+	CCRVAL CCR_Bits = 0xFFF << 0 //+ Clock Control Register in Fast/Standard mode (Master mode).
+	DUTY   CCR_Bits = 0x01 << 14 //+ Fast Mode Duty Cycle.
+	FS     CCR_Bits = 0x01 << 15 //+ I2C Master Mode Selection.
 )
 
 const ()

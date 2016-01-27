@@ -15,6 +15,8 @@ func tweaks(pkg *Package) {
 			exti(p)
 		case "BKP":
 			bkp(p)
+		case "I2C":
+			i2c(p)
 		}
 	}
 }
@@ -112,5 +114,33 @@ func bkp(p *Periph) {
 			continue
 		}
 		r.Bits = nil
+	}
+}
+
+func i2c(p *Periph) {
+	for _, r := range p.Regs {
+		switch r.Name {
+		case "OAR2":
+			for _, b := range r.Bits {
+				if b.Name == "ADD2" {
+					b.Name = "SECADD1_7"
+					break
+				}
+			}
+		case "SR2":
+			for _, b := range r.Bits {
+				if b.Name == "PEC" {
+					b.Name = "PECVAL"
+					break
+				}
+			}
+		case "CCR":
+			for _, b := range r.Bits {
+				if b.Name == "CCR" {
+					b.Name = "CCRVAL"
+					break
+				}
+			}
+		}
 	}
 }

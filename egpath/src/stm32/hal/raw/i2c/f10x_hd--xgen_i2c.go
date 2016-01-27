@@ -232,8 +232,8 @@ func (p *I2C_Periph) ENDUAL() OAR2_Mask {
 	return OAR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint16(ENDUAL)}}
 }
 
-func (p *I2C_Periph) ADD2() OAR2_Mask {
-	return OAR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint16(ADD2)}}
+func (p *I2C_Periph) SECADD1_7() OAR2_Mask {
+	return OAR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint16(SECADD1_7)}}
 }
 
 type DR_Bits uint16
@@ -389,8 +389,8 @@ func (p *I2C_Periph) DUALF() SR2_Mask {
 	return SR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint16(DUALF)}}
 }
 
-func (p *I2C_Periph) PEC() SR2_Mask {
-	return SR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint16(PEC)}}
+func (p *I2C_Periph) PECVAL() SR2_Mask {
+	return SR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint16(PECVAL)}}
 }
 
 type CCR_Bits uint16
@@ -416,8 +416,8 @@ type CCR_Mask struct{ mmio.UM16 }
 func (rm CCR_Mask) Load() CCR_Bits   { return CCR_Bits(rm.UM16.Load()) }
 func (rm CCR_Mask) Store(b CCR_Bits) { rm.UM16.Store(uint16(b)) }
 
-func (p *I2C_Periph) CCR() CCR_Mask {
-	return CCR_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint16(CCR)}}
+func (p *I2C_Periph) CCRVAL() CCR_Mask {
+	return CCR_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint16(CCRVAL)}}
 }
 
 func (p *I2C_Periph) DUTY() CCR_Mask {
