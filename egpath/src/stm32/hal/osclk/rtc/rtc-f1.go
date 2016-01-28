@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"arch/cortexm/bitband"
 	"arch/cortexm/scb"
 
 	"stm32/hal/exti"
@@ -30,9 +31,7 @@ const (
 
 	maxSleepCnt  = 1 << 22
 	maxSleepTick = maxSleepCnt << preLog2
-)
 
-const (
 	flagOK  = 0
 	flagSet = 1
 )
@@ -41,12 +40,18 @@ type globals struct {
 	freqHz  uint
 	cntExt  int32  // 16 bit RTC VCNT excension.
 	lastISR uint32 // Last ISR  time using uint32(VCNT).
+	status  bitband.Bits16
 }
 
-var mem globals
+var g globals
+
+func init() {
+	status := rtcBackup{bkp.BKP}.Status()
+	g.status = bitband.Alias16(status)
+}
 
 func setup(freqHz uint) {
-	mem.freqHz = freqHz
+	g.freqHz = freqHz
 
 	RTC := rtc.RTC
 	RCC := rcc.RCC
@@ -64,7 +69,7 @@ func setup(freqHz uint) {
 	PWR.DBP().Set()
 	RCC.APB1ENR.ClearBits(rcc.PWREN)
 
-	if RCC.BDCR.Bits(mask) != cfg || bkp.Status().Bit(flagOK) == 0 {
+	if RCC.BDCR.Bits(mask) != cfg || g.status.Bit(flagOK).Load() == 0 {
 		// RTC not initialized or in dirty state.
 
 		// Reset backup domain and configure RTC clock source.
@@ -82,14 +87,14 @@ func setup(freqHz uint) {
 		RTC.PRLL.Store(prescaler - 1)
 		RTC.CNF().Clear() // Copy from APB to BKP domain.
 
-		bkp.Status().SetBit(flagOK)
+		g.status.Bit(flagOK).Set()
 
 		// Wait for complete before setup RTCALR interrupt.
 		waitForWrite(RTC)
 	} else {
-		mem.cntExt = int32(int16(bkp.CntExt().Load()))
-		mem.lastISR = bkp.LastISR().Load()
-		if bkp.Status().Bit(flagSet) != 0 {
+		g.cntExt = int32(int16(bkp.CntExt().Load()))
+		g.lastISR = bkp.LastISR().Load()
+		if g.status.Bit(flagSet).Load() != 0 {
 			sec := bkp.StartSec().Load()
 			ns := int32(bkp.StartNanosec().Load())
 			start := time.Unix(int64(sec), int64(ns))
@@ -174,19 +179,19 @@ func isr() {
 	exti.RTCALR.ClearPending()
 
 	vcnt32 := uint32(loadVCNT() >> preLog2)
-	if vcnt32 != mem.lastISR {
-		if vcnt32 < mem.lastISR {
-			cntext := mem.cntExt + 1
+	if vcnt32 != g.lastISR {
+		if vcnt32 < g.lastISR {
+			cntext := g.cntExt + 1
 			bkp := rtcBackup{bkp.BKP}
-			bkp.Status().ClearBit(flagOK)
+			g.status.Bit(flagOK).Clear()
 			bkp.CntExt().Store(uint16(cntext))
 			bkp.LastISR().Store(vcnt32)
-			bkp.Status().SetBit(flagOK)
-			atomic.StoreInt32(&mem.cntExt, cntext)
+			g.status.Bit(flagOK).Set()
+			atomic.StoreInt32(&g.cntExt, cntext)
 		} else {
 			rtcBackup{bkp.BKP}.LastISR().Store(vcnt32)
 		}
-		atomic.StoreUint32(&mem.lastISR, vcnt32)
+		atomic.StoreUint32(&g.lastISR, vcnt32)
 	}
 
 	scb.ICSR_Store(scb.PENDSVSET)
@@ -194,8 +199,8 @@ func isr() {
 
 func loadTicks() int64 {
 	irq.RTCAlarm.Disable()
-	lastisr := atomic.LoadUint32(&mem.lastISR)
-	cntext := atomic.LoadInt32(&mem.cntExt)
+	lastisr := atomic.LoadUint32(&g.lastISR)
+	cntext := atomic.LoadInt32(&g.cntExt)
 	vcnt := loadVCNT()
 	irq.RTCAlarm.Enable()
 
@@ -243,29 +248,28 @@ func setWakeup(ns int64) {
 
 func setStartTime(t time.Time) {
 	bkp := rtcBackup{bkp.BKP}
-	if bkp.Status().Bit(flagOK) == 0 {
+	if g.status.Bit(flagOK).Load() == 0 {
 		return
 	}
 	sec := t.Unix()
 	ns := t.Nanosecond()
 	time.SetStart(t)
-	bkp.Status().ClearBit(flagOK)
+	g.status.Bit(flagOK).Clear()
 	bkp.StartSec().Store(uint64(sec))
 	bkp.StartNanosec().Store(uint32(ns))
 	bkp.Status().Store(1<<flagSet | 1<<flagOK)
 }
 
 func status() (ok, set bool) {
-	status := rtcBackup{bkp.BKP}.Status().Load()
-	ok = status&(1<<flagOK) != 0
-	set = status&(1<<flagSet) != 0
+	ok = g.status.Bit(flagOK).Load() != 0
+	set = g.status.Bit(flagSet).Load() != 0
 	return
 }
 
 func ticktons(tick int64) int64 {
-	return int64(math.Muldiv(uint64(tick), 1e9, uint64(mem.freqHz)))
+	return int64(math.Muldiv(uint64(tick), 1e9, uint64(g.freqHz)))
 }
 
 func nstotick(ns int64) int64 {
-	return int64(math.Muldiv(uint64(ns), uint64(mem.freqHz), 1e9))
+	return int64(math.Muldiv(uint64(ns), uint64(g.freqHz), 1e9))
 }

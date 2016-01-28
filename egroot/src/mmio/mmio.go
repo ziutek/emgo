@@ -5,9 +5,10 @@ import (
 	"unsafe"
 )
 
+//c:volatile
 type U8 struct {
 	r uint8
-} //c:volatile
+}
 
 func PtrU8(addr unsafe.Pointer) *U8 {
 	return (*U8)(addr)
@@ -82,9 +83,10 @@ func (b UM8) Store(bits uint8) { b.U.StoreBits(b.Mask, bits) }
 func (b UM8) LoadVal() int     { return b.U.Field(uint8(b.Mask)) }
 func (b UM8) StoreVal(v int)   { b.U.SetField(b.Mask, v) }
 
+//c:volatile
 type U16 struct {
 	r uint16
-} //c:volatile
+}
 
 func PtrU16(addr unsafe.Pointer) *U16 {
 	return (*U16)(addr)
@@ -159,9 +161,10 @@ func (b UM16) Store(bits uint16) { b.U.StoreBits(b.Mask, bits) }
 func (b UM16) LoadVal() int      { return b.U.Field(uint16(b.Mask)) }
 func (b UM16) StoreVal(v int)    { b.U.SetField(b.Mask, v) }
 
+//c:volatile
 type U32 struct {
 	r uint32
-} //c:volatile
+}
 
 func PtrU32(addr unsafe.Pointer) *U32 {
 	return (*U32)(addr)
