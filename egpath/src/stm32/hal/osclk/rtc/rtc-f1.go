@@ -261,8 +261,9 @@ func setStartTime(t time.Time) {
 }
 
 func status() (ok, set bool) {
-	ok = g.status.Bit(flagOK).Load() != 0
-	set = g.status.Bit(flagSet).Load() != 0
+	s := rtcBackup{bkp.BKP}.Status().Load()
+	ok = s&(1<<flagOK) != 0
+	set = s&(1<<flagSet) != 0
 	return
 }
 
