@@ -15,7 +15,7 @@ const (
 	MAXTASKS   = iota
 	SCHEDNEXT
 	EVENTWAIT
-	SETSYSCLK
+	SETSYSTIM
 	NANOSEC
 	SETALARM
 	SETIRQENA
@@ -58,20 +58,21 @@ func SchedNext() {
 	schedNext()
 }
 
-// SetSysClock registers two functions that runtime uses to communicate with
-// system clock.
+// SetSysTimer registers two functions that runtime uses to communicate with
+// system timer.
 //
-// nanosec is used to implement Nanosec system call. It should return the
-// monotonic time i nanoseconds (typically the time of system clock run).
+// Nanosec is used to implement Nanosec system call. It should return the
+// monotonic time i nanoseconds (typically the time of system timer run).
 //
-// wakeup is called by scheduler to ask system clock to generate PendSV
-// exception at time t (see rtos.Nanosec). Weak (ticking) system clock can
-// ignore t and generate PendSV with fixed period. Good (tickless) clock should
+// Wakeup is called by scheduler to ask system timer to generate PendSV
+// exception at time t (see rtos.Nanosec). Weak (ticking) system timer can
+// ignore t and generate PendSV with fixed period. Good (tickless) timer should
 // generate exceptions as accurately as possible (if t <= nanosec() it should
-// generate PendSV immediately. wakeup must not generate any exception before
-// return, to do not wakeup runtime too early from WFE.
-func SetSysClock(nanosec func() int64, wakeup func(t int64)) Errno {
-	_, e := builtin.Syscall2(SETSYSCLK, fr64tou(nanosec), f64tou(wakeup))
+// generate PendSV immediately. Wakeup must not generate any exception before
+// return, to do not wakeup runtime too early from WFE. There is guaranteed
+// that wakeup will be called by PendSV handler immediately after registration.
+func SetSysTimer(nanosec func() int64, wakeup func(t int64)) Errno {
+	_, e := builtin.Syscall2(SETSYSTIM, fr64tou(nanosec), f64tou(wakeup))
 	return Errno(e)
 }
 

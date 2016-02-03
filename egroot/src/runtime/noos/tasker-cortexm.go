@@ -101,40 +101,16 @@ func (ts *taskSched) deliverEvent(e syscall.Event) {
 		switch t.State() {
 		case taskEmpty:
 			// skip
-
 		case taskWaitEvent:
 			if t.event&e != 0 {
 				t.event = 0
 				t.SetState(taskReady)
 			}
-
 		default:
 			t.event |= e
 		}
 	}
 }
-
-/*
-func setupVectorTable(vtLenExp int) {
-	// vt schould be allocated before anything other (first allocation in
-	// program run) to satisfy NVIC allignment restrictions.
-	vt := make([]exce.Vector, 1<<vtLenExp)
-
-	// Setup interrupt table.
-	// Consider setup at link time using GCC weak functions to support
-	// Cortex-M0 and (in case of Cortex-M3,4) to allow vector load on ICode bus
-	// simultaneously with registers stacking on DCode bus.
-	vt[exce.NMI] = exce.VectorFor(nmiHandler)
-	vt[exce.HardFault] = exce.VectorFor(FaultHandler)
-	vt[exce.MemManage] = exce.VectorFor(FaultHandler)
-	vt[exce.BusFault] = exce.VectorFor(FaultHandler)
-	vt[exce.UsageFault] = exce.VectorFor(FaultHandler)
-	vt[exce.SVC] = exce.VectorFor(svcHandler)
-	vt[exce.PendSV] = exce.VectorFor(pendSVHandler)
-	vt[exce.SysTick] = exce.VectorFor(sysTickHandler)
-	exce.UseTable(vt)
-}
-*/
 
 func (ts *taskSched) init() {
 	//setupVectorTable(irtExp) - disabled (we use static VT, set at link time)
@@ -178,9 +154,6 @@ func (ts *taskSched) init() {
 	// Set taskInfo for initial (current) task.
 	ts.tasks[0].Init(0, ts.nanosec())
 	ts.tasks[0].SetState(taskReady)
-
-	// Run tasker.
-	//sysTickStart()
 
 	// Leave privileged level.
 	cortexm.SetCONTROL(cortexm.CONTROL() | cortexm.Unpriv)
@@ -257,12 +230,11 @@ func (ts *taskSched) waitEvent(e syscall.Event) {
 	raisePendSV()
 }
 
-// SetAlarm can be called only from thread mode (through
-// SVCall).
+// SetAlarm can be called only from thread mode (through SVCall).
 func (ts *taskSched) SetAlarm(t int64) {
 	if t > ts.alarm {
 		return
 	}
-	// Can be read only in PendSV so non-atomic assignment can be used.
+	// Can be read only in PendSV so non-atomic assignment is enough.
 	ts.alarm = t
 }

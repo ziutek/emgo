@@ -1,4 +1,4 @@
-// Package cmst implements ticking OS clock using Cortex-M SysTick timer.
+// Package cmst implements ticking OS timer using Cortex-M SysTick timer.
 // It is not recomended for low power applications.
 package cmst
 
@@ -25,7 +25,7 @@ func tons(tick int64) int64 {
 	return int64(math.Muldiv(uint64(tick), 1e9, uint64(freqHz)))
 }
 
-// Setup setups SysTick to work as sytem clock.
+// Setup setups SysTick to work as sytem timer.
 //  periodns - number of nanoseconds between ticks (generating PendSV),
 //  hz       - frequency of SysTick clock source,
 //  external - false: SysTick uses CPU clock; true: SysTick uses external clock.

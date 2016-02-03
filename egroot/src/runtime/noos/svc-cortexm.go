@@ -19,7 +19,7 @@ var syscalls = [...]func(fp *cortexm.StackFrame, lr uintptr){
 	syscall.MAXTASKS:      scMaxTasks,
 	syscall.SCHEDNEXT:     scSchedNext,
 	syscall.EVENTWAIT:     scEventWait,
-	syscall.SETSYSCLK:     scSetSysClock,
+	syscall.SETSYSTIM:     scSetSysTimer,
 	syscall.NANOSEC:       scNanosec,
 	syscall.SETALARM:      scSetAlarm,
 	syscall.SETIRQENA:     scSetIRQEna,
@@ -70,11 +70,14 @@ func scEventWait(fp *cortexm.StackFrame, lr uintptr) {
 	tasker.waitEvent(syscall.Event(fp.R[0]))
 }
 
-func scSetSysClock(fp *cortexm.StackFrame, lr uintptr) {
+func scSetSysTimer(fp *cortexm.StackFrame, lr uintptr) {
 	mustThread(lr)
 	tasker.SetNanosec(utofr64(fp.R[0]))
 	tasker.SetWakeup(utof64(fp.R[1]))
-	raisePendSV() // To ensure that SysClock will start immediately.
+	// Raise PendSV to cause to call wakeup for the first time. System timer
+	// implementation can rely on the fact, that wakeup is called by PendSV
+	// handler immediately after setup (can be used to initialize/start timer).
+	raisePendSV() 
 }
 
 func scNanosec(fp *cortexm.StackFrame, lr uintptr) {

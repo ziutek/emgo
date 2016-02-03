@@ -55,7 +55,8 @@ func (e Event) Sum(a Event) Event {
 }
 
 // TakeEventReg is intended to be used by runtime to obtain accumulated events.
-// It returns value of shared event registers and clears it in one atomic operation.
+// It returns value of shared event register and clears it in one atomic
+// operation.
 func TakeEventReg() Event {
 	return Event(atomic.SwapUintptr((*uintptr)(&eventReg), 0))
 }
