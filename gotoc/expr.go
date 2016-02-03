@@ -825,7 +825,8 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 		w.WriteString(dimFuncPtr("", dim))
 		w.WriteString(", ")
 	case *types.Array:
-		if cdd.gtc.boundsCheck {
+		if cdd.gtc.boundsCheck &&
+			!cdd.isConstExpr(idx, types.Typ[types.UntypedInt]) {
 			w.WriteString("AIDXC(")
 		} else {
 			w.WriteString("AIDX(")
