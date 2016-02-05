@@ -5,7 +5,6 @@ import (
 	"unsafe"
 )
 
-//c:volatile
 type Bit struct {
 	a *mmio.U32
 }
