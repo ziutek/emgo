@@ -64,13 +64,13 @@ func SchedNext() {
 // Nanosec is used to implement Nanosec system call. It should return the
 // monotonic time i nanoseconds (typically the time of system timer run).
 //
-// Wakeup is called by scheduler to ask system timer to generate PendSV
-// exception at time t (see rtos.Nanosec). Weak (ticking) system timer can
-// ignore t and generate PendSV with fixed period. Good (tickless) timer should
-// generate exceptions as accurately as possible (if t <= nanosec() it should
-// generate PendSV immediately. Wakeup must not generate any exception before
+// Wakeup is called by scheduler to ask system timer to wakeup it (using
+// SchedNext function) at time t. Weak (ticking) system timer can ignore t and
+// wakeup the scheduler with fixed period. Good (tickless) timer should wakeup
+// the scheduler as accurately as possible (if t <= nanosec() it should call
+// SchedNext immediately). Wakeup should not generate any exception before
 // return, to do not wakeup runtime too early from WFE. There is guaranteed
-// that wakeup will be called by PendSV handler immediately after registration.
+// that wakeup will be called by scheduler immediately after registration.
 func SetSysTimer(nanosec func() int64, wakeup func(t int64)) Errno {
 	_, e := builtin.Syscall2(SETSYSTIM, fr64tou(nanosec), f64tou(wakeup))
 	return Errno(e)

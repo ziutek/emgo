@@ -5,6 +5,7 @@ package cmst
 import (
 	"math"
 	"nbl"
+	"syscall"
 
 	"arch/cortexm"
 	"arch/cortexm/scb"
@@ -76,7 +77,7 @@ func Nanosec() int64 {
 
 func sysTickHandler() {
 	counter.WriterAdd(int64(periodTicks))
-	scb.ICSR_Store(scb.PENDSVSET)
+	syscall.SchedNext()
 }
 
 //emgo:const

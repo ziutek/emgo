@@ -43,7 +43,6 @@ again:
 			// No task to run.
 			//dbg.WriteString("*nt* 0\n")
 			tasker.wakeup(tasker.alarm)
-			//dbg.WriteString("*nt* WFE\n")
 			cortexm.WFE()
 			//dbg.WriteString("*nt* wakeup\n")
 			clearPendSV() // Avoid reentering after return.

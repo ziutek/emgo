@@ -16,9 +16,15 @@ func schedNext() {
 		// Called from thread mode.
 		builtin.Syscall0(SCHEDNEXT)
 	case cortexm.PendSV:
-		// Called from PendSV handler (sending Alarm event).
+		// Called from PendSV handler when it sends Alarm event.
 	default:
 		// Called from ISR.
-		scb.ICSR_Store(scb.PENDSVSET)
+		if scb.PENDSVACT.Load() != 0 {
+			// Wakeup PendSV handler.
+			cortexm.SEV()
+		} else {
+			// Rise PendSV exception.
+			scb.ICSR_Store(scb.PENDSVSET)
+		}
 	}
 }

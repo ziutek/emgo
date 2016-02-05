@@ -145,7 +145,7 @@ func (ts *taskSched) init() {
 		irq.SetPrio(cortexm.PrioLowest + spnum*1/4)
 	}
 	// Exceptions should generate events to wakeup the scheduler.
-	scb.SEVONPEND.Set()
+	//scb.SEVONPEND.Set() - disabled. Use SEV instruction instead.
 
 	// Setup MPU.
 	//mpu.SetMode(mpu.PrivDef)
