@@ -4,22 +4,30 @@ import (
 	"delay"
 	"fmt"
 
+	"arch/cortexm/bitband"
+
 	"stm32/hal/gpio"
-	"stm32/hal/setup"
+	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 
 	"stm32/hal/raw/pwr"
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/rtc"
 )
 
-var LEDport = gpio.A
-
-const Green = 5
+var led bitband.Bit
 
 func init() {
-	setup.Performance96(8)
-	LEDport.EnableClock(false)
-	LEDport.SetMode(Green, gpio.Out)
+	system.Setup96(8)
+	systick.Setup()
+
+	port, pin := gpio.A, 5
+	led = port.OutPin(pin)
+
+	port.EnableClock(false)
+
+	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	gpio.A.SetupPin(pin, &cfg)
 }
 
 func wait() {
@@ -72,9 +80,9 @@ func main() {
 	}
 
 	for {
-		LEDport.SetPin(Green)
+		led.Set()
 		wait()
-		LEDport.ClearPin(Green)
+		led.Clear()
 		wait()
 		ss := RTC.SSR.Load()
 		hhmmss := RTC.TR.Load()

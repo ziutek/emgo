@@ -11,8 +11,8 @@ import (
 	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
-	"stm32/hal/osclk/systick"
 	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 )
 
 const dcfpin = gpio.Pin1

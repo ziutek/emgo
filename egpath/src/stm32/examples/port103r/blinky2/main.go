@@ -5,8 +5,8 @@ import (
 
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
-	"stm32/hal/osclk/rtc"
 	"stm32/hal/system"
+	"stm32/hal/system/timer/rtc"
 )
 
 type LED struct {

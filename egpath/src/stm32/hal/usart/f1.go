@@ -15,5 +15,3 @@ var (
 	UART4  = (*USART)(unsafe.Pointer(mmap.UART4_BASE))
 	UART5  = (*USART)(unsafe.Pointer(mmap.UART5_BASE))
 )
-
-func setLPEnabled(_ *USART, _ bool) {}

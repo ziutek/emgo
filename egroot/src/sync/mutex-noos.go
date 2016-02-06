@@ -3,35 +3,46 @@
 package sync
 
 import (
-	"syscall"
 	"sync/atomic"
+	"syscall"
 )
 
 type mutex struct {
-	state uintptr
+	state syscall.Event
 }
 
-func (m *Mutex) lock() {
-	state := atomic.LoadUintptr(&m.state)
+func atomicInitLoadState(p *uintptr) uintptr {
+	state := atomic.LoadUintptr(p)
 	if state == 0 {
-		state = uintptr(syscall.AssignEventFlag())
-		if !atomic.CompareAndSwapUintptr(&m.state, 0, state) {
-			state = m.state
+		state = uintptr(syscall.AssignEventFlag()) | 1
+		if !atomic.CompareAndSwapUintptr(p, 0, state) {
+			state = atomic.LoadUintptr(p)
 		}
 	}
-	unlocked, locked := state&^1, state|1
+	return state
+}
+
+func lock(m *Mutex) {
+	state := syscall.AtomicLoadEvent(&m.state)
+	if state == 0 {
+		state = syscall.AssignEventFlag() | 1
+		if !syscall.AtomicCompareAndSwapEvent(&m.state, 0, state) {
+			state = syscall.AtomicLoadEvent(&m.state)
+		}
+	}
+	unlocked, locked := state|1, state&^1
 	for {
-		if atomic.CompareAndSwapUintptr(&m.state, unlocked, locked) {
+		if syscall.AtomicCompareAndSwapEvent(&m.state, unlocked, locked) {
 			return
 		}
-		syscall.Event(unlocked).Wait()
+		locked.Wait()
 	}
 }
 
-func (m *Mutex) unlock() {
-	unlocked := m.state &^ 1
-	if atomic.AddUintptr(&m.state, ^uintptr(0)) != unlocked {
+func unlock(m *Mutex) {
+	state := syscall.AtomicLoadEvent(&m.state)
+	if syscall.AtomicAddEvent(&m.state, 1) != state|1 {
 		panic("sync: unlock of unlocked mutex")
 	}
-	syscall.Event(unlocked).Send()
+	state.Send()
 }

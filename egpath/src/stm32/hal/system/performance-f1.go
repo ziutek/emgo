@@ -4,7 +4,6 @@ package system
 
 import (
 	"stm32/hal/raw/flash"
-	"stm32/hal/raw/mmap"
 	"stm32/hal/raw/rcc"
 )
 
@@ -48,43 +47,46 @@ func Setup(osc, mul int, div2 bool) {
 	if mul < 2 || mul > 16 {
 		panic("bad PLL multipler")
 	}
-	if osc == 0 {
-		SysClk = 4e6 * uint(mul) // Hz
-	} else {
+	sysclk := 4e6 * uint(mul) // Hz
+	if osc != 0 {
 		// HSE needs milliseconds to stabilize, so enable it now.
 		RCC.HSEON().Set()
-		SysClk = uint(osc) * uint(mul) * 1e6 // Hz
+		sysclk = uint(osc) * uint(mul) * 1e6 // Hz
 		if div2 {
-			SysClk /= 2
+			sysclk /= 2
 		}
 	}
-	AHBClk = SysClk
-	APB2Clk = AHBClk
+	ahbclk := sysclk
 	cfgr := rcc.CFGR_Bits(mul-2) * rcc.PLLMULL_0
-	const maxAPB1Clk = 36e6 // Hz
+	const maxAPB1clk = 36e6 // Hz
+	var apb1clk uint
 	switch {
-	case AHBClk <= 1*maxAPB1Clk:
+	case ahbclk <= 1*maxAPB1clk:
 		cfgr |= rcc.PPRE1_DIV1
-		APB1Clk = AHBClk / 1
-	case AHBClk <= 2*maxAPB1Clk:
+		apb1clk = ahbclk / 1
+	case ahbclk <= 2*maxAPB1clk:
 		cfgr |= rcc.PPRE1_DIV2
-		APB1Clk = AHBClk / 2
-	case AHBClk <= 4*maxAPB1Clk:
+		apb1clk = ahbclk / 2
+	case ahbclk <= 4*maxAPB1clk:
 		cfgr |= rcc.PPRE1_DIV4
-		APB1Clk = AHBClk / 4
-	case AHBClk <= 8*maxAPB1Clk:
+		apb1clk = ahbclk / 4
+	case ahbclk <= 8*maxAPB1clk:
 		cfgr |= rcc.PPRE1_DIV8
-		APB1Clk = AHBClk / 8
+		apb1clk = ahbclk / 8
 	default:
 		cfgr |= rcc.PPRE1_DIV16
-		APB1Clk = AHBClk / 16
+		apb1clk = ahbclk / 16
 	}
-	if SysClk <= 48e6 {
+	clock[Core] = sysclk
+	clock[AHB] = ahbclk
+	clock[APB1] = apb1clk
+	clock[APB2] = ahbclk
+	if sysclk <= 48e6 {
 		cfgr |= rcc.USBPRE
 	}
 	// Setup Flash.
 	FLASH := flash.FLASH
-	latency := flash.ACR_Bits((SysClk-1)/24e6) * flash.LATENCY_1
+	latency := flash.ACR_Bits((sysclk-1)/24e6) * flash.LATENCY_1
 	FLASH.ACR.SetBits(flash.PRFTBE | latency)
 
 	// Setup PLL.
@@ -113,16 +115,4 @@ func Setup(osc, mul int, div2 bool) {
 	if osc != 0 {
 		RCC.HSION().Clear()
 	}
-}
-
-func PeriphClk(baseaddr uintptr) uint {
-	switch {
-	case baseaddr >= mmap.AHBPERIPH_BASE:
-		return AHBClk
-	case baseaddr >= mmap.APB2PERIPH_BASE:
-		return APB2Clk
-	case baseaddr >= mmap.APB1PERIPH_BASE:
-		return APB1Clk
-	}
-	return 0
 }

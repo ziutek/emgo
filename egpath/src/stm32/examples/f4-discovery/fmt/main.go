@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"stm32/hal/osclk/systick"
 	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 )
 
 func init() {

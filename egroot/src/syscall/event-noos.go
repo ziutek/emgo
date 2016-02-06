@@ -72,3 +72,21 @@ func (e Event) Wait() {
 
 // Alarm is an event that is sent by runtime when asked by using SetAlarm.
 var Alarm = AssignEvent()
+
+func AtomicLoadEvent(p *Event) Event {
+	return Event(atomic.LoadUintptr((*uintptr)(p)))
+}
+
+func AtomicStoreEvent(p *Event, e Event) {
+	atomic.StoreUintptr((*uintptr)(p), uintptr(e))
+}
+
+func AtomicAddEvent(p *Event, delta int) Event {
+	return Event(atomic.AddUintptr((*uintptr)(p), 1))
+}
+
+func AtomicCompareAndSwapEvent(p *Event, old, new Event) bool {
+	return atomic.CompareAndSwapUintptr(
+		(*uintptr)(p), uintptr(old), uintptr(new),
+	)
+}

@@ -4,8 +4,8 @@ import (
 	"delay"
 
 	"stm32/hal/gpio"
-	"stm32/hal/osclk/systick"
 	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 )
 
 var LED *gpio.Port
@@ -24,8 +24,8 @@ func init() {
 	gpio.D.EnableClock(false)
 	LED = gpio.D
 
-	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	LED.Setup(Green|Orange|Red|Blue, cfg)
+	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	LED.Setup(Green|Orange|Red|Blue, &cfg)
 }
 
 func wait() {

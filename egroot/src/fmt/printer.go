@@ -143,7 +143,7 @@ func (p *printer) format(verb byte, i interface{}) {
 	switch verb {
 	case 'T':
 		i = reflect.TypeOf(i).String()
-	case 'v', 's', 'x', 'X', 'q':
+	case 'v', 's', 'q': // Do not follow original rule in case of x and X.
 		switch f := i.(type) {
 		case error:
 			i = f.Error()

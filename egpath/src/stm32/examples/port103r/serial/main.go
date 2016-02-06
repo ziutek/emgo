@@ -10,8 +10,8 @@ import (
 
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
-	"stm32/hal/osclk/rtc"
 	"stm32/hal/system"
+	"stm32/hal/system/timer/rtc"
 	"stm32/hal/usart"
 )
 
@@ -44,7 +44,7 @@ func init() {
 	// USART
 
 	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
-	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn})
+	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 
 	s := usart.USART1
 

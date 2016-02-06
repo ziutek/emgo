@@ -17,8 +17,8 @@ import (
 
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
-	"stm32/hal/osclk/systick"
 	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 	"stm32/hal/usart"
 )
 
@@ -53,7 +53,7 @@ func init() {
 	// USART
 
 	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
-	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn})
+	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	port.SetAltFunc(tx|rx, gpio.USART2)
 
 	s := usart.USART2
@@ -86,6 +86,7 @@ func conISR() {
 	con.IRQ()
 }
 
+//emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
 	irq.USART2: conISR,
@@ -114,7 +115,7 @@ func main() {
 		uts[i] = rtos.Nanosec()
 	}
 
-	fmt.Println("\nrtos.Uptime() in loop:")
+	fmt.Println("\nrtos.Nanosec() in loop:")
 	for i, ut := range uts {
 		fmt.Print(ut, " ns")
 		if i > 0 {

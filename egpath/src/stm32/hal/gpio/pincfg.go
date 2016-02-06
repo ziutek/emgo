@@ -50,7 +50,12 @@ type Config struct {
 	Pull   Pull   // Pull-up/pull-down resistors.
 }
 
-// Setup configures n-th pin.
+// SetupPin configures n-th pin.
+func (p *Port) SetupPin(n int, cfg *Config) {
+	setup(p, n, cfg)
+}
+
+// Setup configures pins.
 func (p *Port) Setup(pins Pins, cfg *Config) {
 	for n := 0; n < 16; n++ {
 		if pins&(1<<uint(n)) != 0 {

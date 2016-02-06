@@ -4,6 +4,7 @@ import (
 	"mmio"
 	"unsafe"
 
+	"stm32/hal/internal"
 	"stm32/hal/system"
 )
 
@@ -18,8 +19,9 @@ type USART struct {
 	gtpr mmio.U32
 }
 
-func (u *USART) BaseAddr() uintptr {
-	return uintptr(unsafe.Pointer(u))
+// Bus returns a bus to which u is connected.
+func (u *USART) Bus() system.Bus {
+	return internal.Bus(unsafe.Pointer(u))
 }
 
 type Status uint16
@@ -37,21 +39,22 @@ const (
 	CTS        Status = 1 << 9 // CTS flag.
 )
 
-// EnableClock enables clock for USART.
+// EnableClock enables clock for u.
 // lp determines whether the clock remains on in low power (sleep) mode.
 func (u *USART) EnableClock(lp bool) {
-	setLPEnabled(u, lp)
-	setEnabled(u, true)
+	addr := unsafe.Pointer(u)
+	internal.APB_SetLPEnabled(addr, lp)
+	internal.APB_SetEnabled(addr, true)
 }
 
 // DisableClock disables clock for u.
 func (u *USART) DisableClock() {
-	setEnabled(u, false)
+	internal.APB_SetEnabled(unsafe.Pointer(u), false)
 }
 
-// Reset resets USART u.
+// Reset resets u.
 func (u *USART) Reset() {
-	reset(u)
+	internal.APB_Reset(unsafe.Pointer(u))
 }
 
 // Status return current status.
@@ -63,7 +66,7 @@ func (u *USART) Status() Status {
 // package must be set properly before use this function.
 func (u *USART) SetBaudRate(baudrate int) {
 	br := uint(baudrate)
-	pclk := system.PeriphClk(u.BaseAddr())
+	pclk := u.Bus().Clock()
 	usartdiv := (pclk + br/2) / br
 	const over8 = 1 << 15
 	if uint(br) > pclk/16 {

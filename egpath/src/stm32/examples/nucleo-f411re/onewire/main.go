@@ -13,34 +13,40 @@ import (
 
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
-	"stm32/hal/setup"
+	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 	"stm32/hal/usart"
 )
 
-const Green = 5
+const Green = gpio.Pin5
 
 var (
-	LEDport  = gpio.A
-	con, one *serial.Dev
+	leds *gpio.Port
+	con  *serial.Dev
+	one  *serial.Dev
 )
 
 func init() {
-	setup.Performance96(8)
+	system.Setup96(8)
+	systick.Setup()
+
+	// GPIO
+	gpio.A.EnableClock(true)
+	leds = gpio.A
+	uprt, tx, rx := gpio.A, gpio.Pin2, gpio.Pin3
+	gpio.C.EnableClock(true)
+	oprt, opin := gpio.C, gpio.Pin6
 
 	// LEDS
 
-	LEDport.EnableClock(false)
-	LEDport.SetMode(Green, gpio.Out)
+	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	leds.Setup(Green, &cfg)
 
 	// USART
 
-	port, tx, rx := gpio.A, 2, 3
-
-	port.EnableClock(true)
-	port.SetMode(tx, gpio.Alt)
-	port.SetAltFunc(tx, gpio.USART2)
-	port.SetMode(rx, gpio.Alt)
-	port.SetAltFunc(rx, gpio.USART2)
+	uprt.Setup(tx, &gpio.Config{Mode: gpio.Alt})
+	uprt.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	uprt.SetAltFunc(tx|rx, gpio.USART2)
 
 	s := usart.USART2
 
@@ -58,12 +64,8 @@ func init() {
 
 	// 1-wire
 
-	port, tx = gpio.C, 6
-
-	port.EnableClock(true)
-	port.SetMode(tx, gpio.Alt)
-	port.SetOutType(tx, gpio.OpenDrain)
-	port.SetAltFunc(tx, gpio.USART6)
+	oprt.Setup(opin, &gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
+	oprt.SetAltFunc(opin, gpio.USART6)
 
 	s = usart.USART6
 
@@ -85,20 +87,21 @@ func oneISR() {
 	one.IRQ()
 }
 
+//emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
 	irq.USART2: conISR,
 	irq.USART6: oneISR,
 }
 
-func blink(c, d int) {
-	LEDport.SetPin(c)
+func blink(c gpio.Pins, d int) {
+	leds.SetPins(c)
 	if d > 0 {
 		delay.Millisec(d)
 	} else {
 		delay.Loop(-1e4 * d)
 	}
-	LEDport.ClearPin(c)
+	leds.ClearPins(c)
 }
 
 func checkErr(err error) {

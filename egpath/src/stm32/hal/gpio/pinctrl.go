@@ -1,5 +1,9 @@
 package gpio
 
+import (
+	"arch/cortexm/bitband"
+)
+
 // Pins is bitmask which lower 16 bis represents pins of GPIO port.
 type Pins uint32
 
@@ -73,30 +77,12 @@ func (p *Port) Store(val Pins) {
 	p.odr.Store(uint32(val))
 }
 
-/*
-// Pin returns current input value of n-th pin.
-func (p *Port) Pin(n int) int {
-	return p.idr.Bit(n)
+// Pin returns bitband alias to input value of n-th pin.
+func (p *Port) InPin(n int) bitband.Bit {
+	return bitband.Alias32(&p.idr).Bit(n)
 }
 
-// PinOut returns current output value of n-th pin.
-func (p *Port) PinOut(n int) int {
-	return p.odr.Bit(n)
+// OutPin returns bitband alias to output value of n-th pin.
+func (p *Port) OutPin(n int) bitband.Bit {
+	return bitband.Alias32(&p.odr).Bit(n)
 }
-
-// SetPin sets output value of n-th pin to 1.
-func (p *Port) SetPin(n int) {
-	p.bsrr.Store(1 << uint(n))
-}
-
-// ClearPin sets output value of n-th pin to 0.
-func (p *Port) ClearPin(n int) {
-	p.bsrr.Store(0x10000 << uint(n))
-}
-
-// StorePin sets output value of n-th pin to v&1.
-func (p *Port) StorePin(n, v int) {
-	n += (1 - v&1) * 16
-	p.bsrr.Store(1 << uint(n))
-}
-*/

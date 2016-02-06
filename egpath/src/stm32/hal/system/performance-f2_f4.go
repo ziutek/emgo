@@ -41,12 +41,11 @@ package system
 
 import (
 	"stm32/hal/raw/flash"
-	"stm32/hal/raw/mmap"
 	"stm32/hal/raw/rcc"
 )
 
-// Setup setups MCU for best performance (prefetch on, I/D cache on,
-// minimum allowed Flash latency).
+// Setup setups MCU for best performance (prefetch on, I/D cache on, minimum
+// allowed Flash latency).
 //
 // osc is freqency of external resonator in MHz. Allowed values are multiples
 // of 2, from 4 to 26. Use 0 to select internal HSI oscilator as system clock
@@ -97,7 +96,7 @@ func Setup(osc, mul, sdiv int) {
 	if osc != 0 {
 		RCC.HSEON().Set()
 	}
-	SysClk = 2e6 * uint(mul) / uint(sdiv)
+	sysclk := 2e6 * uint(mul) / uint(sdiv)
 
 	// Setup linear voltage regulator scaling.
 	// RCC.PWREN().Set()
@@ -105,43 +104,48 @@ func Setup(osc, mul, sdiv int) {
 	// RCC.PWREN().Clear()
 
 	// Setup clock dividers for AHB, APB1, APB2 bus.
-	AHBClk = SysClk
+	ahbclk := sysclk
+	var apb1clk, apb2clk uint
 	switch {
-	case AHBClk <= 1*maxAPB1Clk:
-		APB1Clk = AHBClk / 1
-	case AHBClk <= 2*maxAPB1Clk:
+	case ahbclk <= 1*maxAPB1Clk:
+		apb1clk = ahbclk / 1
+	case ahbclk <= 2*maxAPB1Clk:
 		RCC.PPRE1().Store(rcc.PPRE1_DIV2)
-		APB1Clk = AHBClk / 2
-	case AHBClk <= 4*maxAPB1Clk:
+		apb1clk = ahbclk / 2
+	case ahbclk <= 4*maxAPB1Clk:
 		RCC.PPRE1().Store(rcc.PPRE1_DIV4)
-		APB1Clk = AHBClk / 4
-	case AHBClk <= 8*maxAPB1Clk:
+		apb1clk = ahbclk / 4
+	case ahbclk <= 8*maxAPB1Clk:
 		RCC.PPRE1().Store(rcc.PPRE1_DIV8)
-		APB1Clk = AHBClk / 8
+		apb1clk = ahbclk / 8
 	default:
 		RCC.PPRE1().Store(rcc.PPRE1_DIV16)
-		APB1Clk = AHBClk / 16
+		apb1clk = ahbclk / 16
 	}
 	switch {
-	case AHBClk <= 1*maxAPB2Clk:
-		APB2Clk = AHBClk / 1
-	case AHBClk <= 2*maxAPB2Clk:
+	case ahbclk <= 1*maxAPB2Clk:
+		apb2clk = ahbclk / 1
+	case ahbclk <= 2*maxAPB2Clk:
 		RCC.PPRE2().Store(rcc.PPRE2_DIV2)
-		APB2Clk = AHBClk / 2
-	case AHBClk <= 4*maxAPB2Clk:
+		apb2clk = ahbclk / 2
+	case ahbclk <= 4*maxAPB2Clk:
 		RCC.PPRE2().Store(rcc.PPRE2_DIV4)
-		APB2Clk = AHBClk / 4
-	case AHBClk <= 8*maxAPB2Clk:
+		apb2clk = ahbclk / 4
+	case ahbclk <= 8*maxAPB2Clk:
 		RCC.PPRE2().Store(rcc.PPRE2_DIV8)
-		APB2Clk = AHBClk / 8
+		apb2clk = ahbclk / 8
 	default:
 		RCC.PPRE2().Store(rcc.PPRE2_DIV16)
-		APB2Clk = AHBClk / 16
+		apb2clk = ahbclk / 16
 	}
+	clock[Core] = sysclk
+	clock[AHB] = ahbclk
+	clock[APB1] = apb1clk
+	clock[APB2] = apb2clk
 
 	// Setup Flash.
 	FLASH := flash.FLASH
-	latency := flash.ACR_Bits((SysClk-1)/30e6) * flash.LATENCY_1WS
+	latency := flash.ACR_Bits((sysclk-1)/30e6) * flash.LATENCY_1WS
 	FLASH.ACR.SetBits(flash.DCEN | flash.ICEN | flash.PRFTEN | latency)
 
 	// Setup PLL.
@@ -188,16 +192,4 @@ func Setup96(osc int) {
 // See Performance for description of osc.
 func Setup168(osc int) {
 	Setup(osc, 168, 2)
-}
-
-func PeriphClk(baseaddr uintptr) uint {
-	switch {
-	case baseaddr >= mmap.AHB1PERIPH_BASE:
-		return AHBClk
-	case baseaddr >= mmap.APB2PERIPH_BASE:
-		return APB2Clk
-	case baseaddr >= mmap.APB1PERIPH_BASE:
-		return APB1Clk
-	}
-	return 0
 }

@@ -67,6 +67,6 @@ func pnum(p *Port) int {
 	return int(uintptr(unsafe.Pointer(p))-mmap.AHBPERIPH_BASE) / 0x400
 }
 
-func enr() *mmio.U32   { return &rcc.RCC.AHBENR.U32 }
-func lpenr() *mmio.U32 { return &rcc.RCC.AHBLPENR.U32 }
-func rstr() *mmio.U32  { return &rcc.RCC.AHBRSTR.U32 }
+func enreg() *mmio.U32   { return &rcc.RCC.AHBENR.U32 }
+func lpenreg() *mmio.U32 { return &rcc.RCC.AHBLPENR.U32 }
+func rstreg() *mmio.U32  { return &rcc.RCC.AHBRSTR.U32 }

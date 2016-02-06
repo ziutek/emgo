@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"stm32/hal/osclk/systick"
 	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/tim"

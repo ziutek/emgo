@@ -54,12 +54,13 @@ func pnum(p *Port) int {
 	return int(uintptr(unsafe.Pointer(p))-mmap.APB2PERIPH_BASE) / 0x400
 }
 
-func enr() *mmio.U32  { return &rcc.RCC.APB2ENR.U32 }
-func rstr() *mmio.U32 { return &rcc.RCC.APB2RSTR.U32 }
+func enreg() *mmio.U32  { return &rcc.RCC.APB2ENR.U32 }
+func rstreg() *mmio.U32 { return &rcc.RCC.APB2RSTR.U32 }
 
 func enableClock(p *Port, _ bool) {
-	enr().SetBit(pnum(p))
-	_ = enr().Load() // RCC delay (workaround for silicon bugs).
+	bit := bit(p, enreg())
+	bit.Set()
+	bit.Load() // RCC delay (workaround for silicon bugs).
 }
 
 func setup(p *Port, n int, cfg *Config) {
@@ -80,30 +81,3 @@ func setup(p *Port, n int, cfg *Config) {
 		cr.ClearBits(sel)
 	}
 }
-
-/*
-func setModeIn(p *Port, n int, m *ModeIn) {
-	cr := &p.cr[n>>3]
-	pos := uint(n & 7 * 4)
-	cnf := uint32(m.Pull) & 8
-	cr.StoreBits(0xf<<pos, cnf<<pos)
-	p.StorePin(n, int(m.Pull))
-	// Ignore mo.Alt.
-}
-
-func setModeOut(p *Port, n int, m *ModeOut) {
-	cr := &p.cr[n>>3]
-	pos := uint(n & 7 * 4)
-	cm := uint32(bits.One(m.Alt)) << 3
-	cm |= uint32(m.Driver)
-	cm |= uint32(m.Speed) + 1
-	cr.StoreBits(0xf<<pos, cm<<pos)
-	// Ignore mo.Pull (not supported by STM32F1xx).
-}
-
-func setModeAna(p *Port, n int) {
-	cr := &p.cr[n>>3]
-	pos := uint(n & 7 * 4)
-	cr.ClearBits(0xf << pos)
-}
-*/
