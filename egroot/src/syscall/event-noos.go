@@ -8,9 +8,9 @@ import (
 	"unsafe"
 )
 
-// An Event represents an event that task or ISR can send and task (but
-// not ISR) can wait for. Events are intended for use by low-level library
-// rutines to implement higher level communication and synchronization
+// Event represents an event that multiple tasks or ISRs can send and multiple
+// tasks (but not ISRs) can wait for. Events are intended for use by low-level
+// library rutines to implement higher level communication and synchronization
 // primitives like channels and mutexes. They are specific to noos runtime so
 // can be unavailable if RTOS is used.
 type Event uintptr
@@ -71,7 +71,7 @@ func (e Event) Wait() {
 }
 
 // Alarm is an event that is sent by runtime when asked by using SetAlarm.
-var Alarm = AssignEvent()
+var Alarm = AssignEventFlag()
 
 func AtomicLoadEvent(p *Event) Event {
 	return Event(atomic.LoadUintptr((*uintptr)(p)))
