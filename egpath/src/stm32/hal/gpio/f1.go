@@ -22,8 +22,10 @@ var (
 
 type registers struct {
 	cr   [2]mmio.U32
-	idr  mmio.U32
-	odr  mmio.U32
+	idr  mmio.U16
+	_    uint16
+	odr  mmio.U16
+	_    uint16
 	bsrr mmio.U32
 	brr  mmio.U32
 	lckr mmio.U32

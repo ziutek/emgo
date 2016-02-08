@@ -12,8 +12,10 @@ type registers struct {
 	otyper  mmio.U32
 	ospeedr mmio.U32
 	pupdr   mmio.U32
-	idr     mmio.U32
-	odr     mmio.U32
+	idr     mmio.U16
+	_       uint16
+	odr     mmio.U16
+	_       uint16
 	bsrr    mmio.U32
 	lckr    mmio.U32
 	afr     [2]mmio.U32

@@ -29,12 +29,12 @@ const (
 
 // Pins returns input value of pins.
 func (p *Port) Pins(pins Pins) Pins {
-	return Pins(p.idr.Bits(uint32(pins)))
+	return Pins(p.idr.Bits(uint16(pins)))
 }
 
 // PinsOut returns output value of pins.
 func (p *Port) PinsOut(pins Pins) Pins {
-	return Pins(p.odr.Bits(uint32(pins)))
+	return Pins(p.odr.Bits(uint16(pins)))
 }
 
 // Set sets output value of pins to 1.
@@ -74,15 +74,15 @@ func (p *Port) LoadOut() Pins {
 
 // Store sets output value of all pins to value specified by val.
 func (p *Port) Store(val Pins) {
-	p.odr.Store(uint32(val))
+	p.odr.Store(uint16(val))
 }
 
-// Pin returns bitband alias to input value of n-th pin.
-func (p *Port) InPin(n int) bitband.Bit {
-	return bitband.Alias32(&p.idr).Bit(n)
+// Pin returns bitband alias to input values of port.
+func (p *Port) InPins() bitband.Bits16 {
+	return bitband.Alias16(&p.idr)
 }
 
-// OutPin returns bitband alias to output value of n-th pin.
-func (p *Port) OutPin(n int) bitband.Bit {
-	return bitband.Alias32(&p.odr).Bit(n)
+// OutPin returns bitband alias to output values of port.
+func (p *Port) OutPins() bitband.Bits16 {
+	return bitband.Alias16(&p.odr)
 }

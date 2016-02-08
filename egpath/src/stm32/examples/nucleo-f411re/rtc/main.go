@@ -22,7 +22,7 @@ func init() {
 	systick.Setup()
 
 	port, pin := gpio.A, 5
-	led = port.OutPin(pin)
+	led = port.OutPins().Bit(pin)
 
 	port.EnableClock(false)
 
