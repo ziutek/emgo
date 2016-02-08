@@ -117,7 +117,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			w.WriteString(" " + tupName + " = ")
 			cdd.Expr(w, s.Rhs[0], nil)*/
 			tupName := "_tmp" + cdd.gtc.uniqueId()
-			cdd.varDecl(w, tup, tupName, s.Rhs[0], "")
+			cdd.varDecl(w, tup, tupName, s.Rhs[0], "", false)
 			w.WriteByte('\n')
 			cdd.indent(w)
 			for i, n := 0, tup.Len(); i < n; i++ {
@@ -336,7 +336,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		default:
 			if s.Value != nil || !array {
 				cdd.indent(w)
-				cdd.varDecl(w, xt, xs, e, "")
+				cdd.varDecl(w, xt, xs, e, "", false)
 				w.WriteByte('\n')
 			}
 		}
@@ -487,7 +487,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		var typ types.Type
 		if s.Tag != nil {
 			typ = cdd.exprType(s.Tag)
-			cdd.varDecl(w, typ, "_tag", s.Tag, "")
+			cdd.varDecl(w, typ, "_tag", s.Tag, "", false)
 			w.WriteByte('\n')
 		} else {
 			typ = types.Typ[types.Bool]
@@ -565,7 +565,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		ityp := cdd.exprType(x)
 		iempty := (cdd.gtc.methodSet(ityp).Len() == 0)
 		cdd.indent(w)
-		cdd.varDecl(w, cdd.exprType(x), "_tag", x, "")
+		cdd.varDecl(w, cdd.exprType(x), "_tag", x, "", false)
 		w.WriteByte('\n')
 		for _, stmt := range s.Body.List {
 			cdd.indent(w)

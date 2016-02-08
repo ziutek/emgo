@@ -577,7 +577,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.il++
 		ityp := cdd.exprType(e.X)
 		cdd.indent(w)
-		cdd.varDecl(w, ityp, "_i", e.X, "")
+		cdd.varDecl(w, ityp, "_i", e.X, "", false)
 		w.WriteByte('\n')
 		cdd.indent(w)
 		iempty := (cdd.gtc.methodSet(ityp).Len() == 0)
@@ -698,7 +698,7 @@ func (cdd *CDD) newVar(name string, typ types.Type, global bool, val ast.Expr) {
 	}
 	acd := cdd.gtc.newCDD(o, VarDecl, 0)
 	cdd.acds = append(cdd.acds, acd)
-	acd.varDecl(new(bytes.Buffer), typ, name, val, "")
+	acd.varDecl(new(bytes.Buffer), typ, name, val, "", false)
 }
 
 func (cdd *CDD) ptrExpr(w *bytes.Buffer, e ast.Expr) {

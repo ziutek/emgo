@@ -188,9 +188,6 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				cdd := gtc.newCDD(v, VarDecl, il)
 				cdd.forceExport = pexport
 				name := cdd.NameStr(v, true)
-				if pconst {
-					name = "const " + name
-				}
 				var val ast.Expr
 				if i < len(vals) {
 					val = vals[i]
@@ -203,7 +200,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				} else {
 					indent = true
 				}
-				cdd.varDecl(w, v.Type(), name, val, cattr)
+				cdd.varDecl(w, v.Type(), name, val, cattr, pconst)
 				w.Reset()
 				cdds = append(cdds, cdd)
 			}
@@ -285,7 +282,7 @@ func zeroVal(w *bytes.Buffer, typ types.Type) {
 	}
 }
 
-func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Expr, cattrs string) {
+func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Expr, cattrs string, pconst bool) {
 	global := (cdd.Typ == VarDecl) && cdd.gtc.isGlobal(cdd.Origin)
 	if cattrs != "" {
 		w.WriteString(cattrs)
@@ -293,9 +290,16 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Ex
 	}
 	dim := cdd.Type(w, typ)
 	w.WriteByte(' ')
-	w.WriteString(dimFuncPtr(name, dim))
+	if pconst {
+		w.WriteString(dimFuncPtr("const "+name, dim))
+	} else {
+		w.WriteString(dimFuncPtr(name, dim))
+	}
 	if global {
 		cdd.copyDecl(w, ";\n") // Global variables may need declaration
+		w.Reset()
+		cdd.indent(w)
+		w.WriteString("__typeof__(" + name + ") " + name)
 		cdd.constInit = (val == nil || cdd.isConstExpr(val, typ))
 		if !cdd.constInit {
 			w.WriteString(";\n")
