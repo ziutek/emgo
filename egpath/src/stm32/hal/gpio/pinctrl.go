@@ -24,7 +24,7 @@ const (
 	Pin13
 	Pin14
 	Pin15
-	All Pins = 0xffff
+	AllPins Pins = 0xffff
 )
 
 // Pins returns input value of pins.
