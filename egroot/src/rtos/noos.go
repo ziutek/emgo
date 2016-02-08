@@ -39,6 +39,7 @@ func eventWaitUntil(e *Event, t int64) bool {
 		if t >= 0 && Nanosec() >= t {
 			return false
 		}
+		syscall.SetAlarm(t)
 		state0.Wait()
 	}
 }
@@ -61,6 +62,7 @@ func waitEvent(t int64, events []*Event) uint32 {
 		if ret != 0 || t >= 0 && Nanosec() >= t {
 			return ret
 		}
+		syscall.SetAlarm(t)
 		sum.Wait()
 	}
 }

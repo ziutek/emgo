@@ -23,9 +23,9 @@ func (e *Event) Wait(t int64) bool {
 
 // WaitEvent waits for at least one from no more than 32 different events until
 // time t. It returns bitmask that describes which events occured: the least
-// significant bit of returned velue corresponds to events[0]. Use t < 0 to
-// disable timeout checking. Task can not determine how many events was sent
-// before it returned from Wait.
+// significant bit of returned velue corresponds to events[0]. Returned zero
+// value informs that timeout occured. Use t < 0 to disable timeout checking.
+// Task can not determine how many events was sent before it returned from Wait.
 func WaitEvent(t int64, events ...*Event) uint32 {
 	return waitEvent(t, events)
 }

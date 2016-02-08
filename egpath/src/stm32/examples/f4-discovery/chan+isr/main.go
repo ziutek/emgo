@@ -34,7 +34,7 @@ func init() {
 	system.Setup168(8)
 	systick.Setup()
 
-	gpio.A.EnableClock(false)
+	gpio.A.EnableClock(true)
 	bport := gpio.A
 	gpio.D.EnableClock(false)
 	LED = gpio.D
@@ -72,6 +72,7 @@ func buttonISR() {
 	}
 }
 
+//emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
 	irq.EXTI0: buttonISR,
