@@ -55,8 +55,9 @@ func buttonISR() {
 }
 
 func wait() {
-	event.Wait(rtos.Nanosec() + 2e9)
-	event.Clear()
+	if event.Wait(rtos.Nanosec() + 2e9) {
+		event.Clear()
+	}
 }
 
 func main() {

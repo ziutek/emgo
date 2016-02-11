@@ -1,17 +1,20 @@
 package i2c
 
 import (
+	"rtos"
 	"sync"
+
+	"arch/cortexm/irq"
 )
 
 // Driver implements interrupt driven driver for I2C peripheral.
 type Driver struct {
 	Periph
+	EventIRQ
+	ErrorIRQ
 
-	mt   sync.Mutex
-	wg   sync.WaitGroup
-	data []byte
-	n    uint32
+	mt sync.Mutex
+	ev rtos.Event
 }
 
 func (d *Driver) MasterConn(addr int16) MasterConn {
@@ -20,10 +23,5 @@ func (d *Driver) MasterConn(addr int16) MasterConn {
 }
 
 func (d *Driver) ISR() {
-	
-	sr1 := d.sr1 | d.Periph.raw.SR1.Load()
-}
-
-
-func (d *Driver) enai() {
+	d.ev.Send()
 }

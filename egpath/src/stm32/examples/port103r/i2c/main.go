@@ -61,6 +61,7 @@ func main() {
 configure:
 	twi.Reset() // Mandatory!
 	twi.Setup(&i2c.Config{Speed: 4400})
+	twi.Enable()
 
 	c := twi.MasterConn(0x27)
 
@@ -85,7 +86,7 @@ loop:
 			goto configure
 		} else {
 			fmt.Printf("0x%02x\n", err)
-			twi.SoftReset()
+			//twi.SoftReset()
 			goto loop
 		}
 	}

@@ -27,7 +27,8 @@ func (f *EventFlag) Val() int {
 //
 //	for {
 //		if !flag.Wait(deadline) {
-//			// Handle timeout
+//			handleTimeout()
+//			continue
 //		}
 //
 //		// Tell source of events that should not report new ones. Instead it
@@ -51,7 +52,8 @@ func (f *EventFlag) Val() int {
 //
 //	for {
 //		if !flag.Wait(deadline) {
-//			// Handle timeout
+//			handleTimeout()
+//			continue
 //		}
 //		flag.Clear()
 //		handleEvent()

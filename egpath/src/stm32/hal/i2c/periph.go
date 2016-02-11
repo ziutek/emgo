@@ -126,6 +126,5 @@ func (p Periph) Setup(cfg *Config) {
 	p.raw.CR2.Store(i2c.CR2_Bits(pclkM))
 	p.raw.CCR.Store(i2c.CCR_Bits(ccr))
 	p.raw.TRISE.Store(i2c.TRISE_Bits(trise))
-	cr1 := i2c.CR1_Bits(cfg.Mode) | i2c.PE
-	p.raw.CR1.Store(cr1)
+	p.raw.CR1.Store(i2c.CR1_Bits(cfg.Mode))
 }

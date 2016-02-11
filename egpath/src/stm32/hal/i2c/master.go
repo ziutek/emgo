@@ -35,7 +35,7 @@ func (e Error) Error() string {
 }
 
 func (c *MasterConn) waitSR1(bit i2c.SR1_Bits) Error {
-	timeout := rtos.Nanosec() + 10*1e6 // 10 ms timeout
+	timeout := rtos.Nanosec() + 100*1e6 // 100 ms timeout
 	for {
 		sr1 := c.d.raw.SR1.Load()
 		if e := Error(sr1>>8) &^ (1 << 5); e != 0 {
@@ -49,7 +49,6 @@ func (c *MasterConn) waitSR1(bit i2c.SR1_Bits) Error {
 		}
 	}
 }
-
 
 /*func (c *MasterConn) Write(buf []byte) (int, error) {
 
@@ -87,6 +86,7 @@ func (c *MasterConn) Write(buf []byte) (int, error) {
 	}
 end:
 	if e != 0 {
+		raw.SR1.Store(0) // Clear error flags.
 		if e&Timeout == 0 {
 			c.Stop()
 		}
