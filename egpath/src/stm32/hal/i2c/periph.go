@@ -71,6 +71,8 @@ type Config struct {
 	Mode  Mode      // I2C, SMBusDev, SMBusHost.
 }
 
+// Setup configures p. It ensures that configured SCL clock speed <= cfg.Speed.
+//
 // STM32 generates I2C SCL as follow:
 //
 //   SCL = PCLK / CCR / idiv
@@ -89,9 +91,7 @@ type Config struct {
 //   fast mode 16/9: 36 MHz / 4 / 25  = 360 kHz.
 //
 // To obtain 400 kHz SCL in 16/9 fast mode the PCLK must be configured to
-//  multiple of 10 MHz.
-
-// Setup configures p. It ensures that configured SCL clock speed <= cfg.Speed.
+// multiple of 10 MHz.
 func (p Periph) Setup(cfg *Config) {
 	pclk := int(p.Bus().Clock()) // Pclk should fit in int.
 	pclkM := pclk / 1e6
@@ -123,7 +123,7 @@ func (p Periph) Setup(cfg *Config) {
 		trise = pclkM*3/10 + 1 // SCL max. rise time 300 ns.
 	}
 	p.raw.CR1.Store(0) // Disables peripheral.
-	p.raw.CR2.Store(i2c.CR2_Bits(pclkM))
+	p.raw.FREQ().Store(i2c.CR2_Bits(pclkM))
 	p.raw.CCR.Store(i2c.CCR_Bits(ccr))
 	p.raw.TRISE.Store(i2c.TRISE_Bits(trise))
 	p.raw.CR1.Store(i2c.CR1_Bits(cfg.Mode))

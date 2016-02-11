@@ -82,7 +82,7 @@ var b = []byte("blaaa")
 // decl
 slice foo$b;
 // def
-slice foo$b;
+__typeof__(foo$b) foo$b;
 // init
 	foo$b = BYTES(EGSTR("blaaa"));
 // end

@@ -4,7 +4,7 @@ var c chan int;
 // decl
 chan foo$c;
 // def
-chan foo$c = {};
+__typeof__(foo$c) foo$c = {};
 // end
 
 // Go code:
