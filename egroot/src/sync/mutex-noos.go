@@ -3,23 +3,11 @@
 package sync
 
 import (
-	"sync/atomic"
 	"syscall"
 )
 
 type mutex struct {
 	state syscall.Event
-}
-
-func atomicInitLoadState(p *uintptr) uintptr {
-	state := atomic.LoadUintptr(p)
-	if state == 0 {
-		state = uintptr(syscall.AssignEventFlag()) | 1
-		if !atomic.CompareAndSwapUintptr(p, 0, state) {
-			state = atomic.LoadUintptr(p)
-		}
-	}
-	return state
 }
 
 func lock(m *Mutex) {

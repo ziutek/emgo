@@ -13,7 +13,7 @@ func (irq IRQ) Enabled() bool {
 	return r.ISER.Bit(irq)
 }
 
-// Enable enables handler for e.
+// Enable enables handler for irq.
 func (irq IRQ) Enable() {
 	r.ISER.SetBit(irq)
 }

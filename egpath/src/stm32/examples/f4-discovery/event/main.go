@@ -19,7 +19,7 @@ var leds struct{ Red, Green, Blue, Orange bitband.Bit }
 func init() {
 	system.Setup168(8)
 	systick.Setup()
-	
+
 	gpio.A.EnableClock(true)
 	btnport := gpio.A
 	gpio.D.EnableClock(false)
@@ -47,35 +47,37 @@ func init() {
 	rtos.IRQ(irq.EXTI0).Enable()
 }
 
-var event = rtos.NewEvent()
+var event rtos.EventFlag
 
 func buttonISR() {
 	exti.Lines(button).ClearPending()
-	event.Send()
+	event.Set()
+}
+
+func wait() {
+	event.Wait(rtos.Nanosec() + 2e9)
+	event.Clear()
+}
+
+func main() {
+	for {
+		leds.Green.Clear()
+		leds.Orange.Set()
+		wait()
+		leds.Orange.Clear()
+		leds.Red.Set()
+		wait()
+		leds.Red.Clear()
+		leds.Blue.Set()
+		wait()
+		leds.Blue.Clear()
+		leds.Green.Set()
+		wait()
+	}
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
 	irq.EXTI0: buttonISR,
-}
-
-func main() {
-	sec := func(s int) int64 {
-		return rtos.Nanosec() + int64(s)*1e9
-	}
-	for {
-		leds.Green.Clear()
-		leds.Orange.Set()
-		event.Wait(sec(2))
-		leds.Orange.Clear()
-		leds.Red.Set()
-		event.Wait(sec(2))
-		leds.Red.Clear()
-		leds.Blue.Set()
-		event.Wait(sec(2))
-		leds.Blue.Clear()
-		leds.Green.Set()
-		event.Wait(sec(2))
-	}
 }

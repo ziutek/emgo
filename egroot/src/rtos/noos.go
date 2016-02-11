@@ -13,56 +13,67 @@ func sleepUntil(end int64) {
 	}
 }
 
-type event struct {
-	raw syscall.Event
+type eventFlag struct {
+	state syscall.Event
 }
 
-func newEvent() *Event {
-	e := new(Event)
-	e.raw = syscall.AssignEventFlag() | syscall.Alarm | 1
-	return e
+func atomicInitLoadState(p *syscall.Event) syscall.Event {
+	state := syscall.AtomicLoadEvent(p)
+	if state == 0 {
+		state = syscall.AssignEventFlag() | syscall.Alarm
+		if !syscall.AtomicCompareAndSwapEvent(p, 0, state) {
+			state = syscall.AtomicLoadEvent(p)
+		}
+	}
+	return state
 }
 
-func eventSend(e *Event) {
-	raw := syscall.AtomicLoadEvent(&e.raw) &^ 1
-	syscall.AtomicStoreEvent(&e.raw, raw)
-	raw.Send()
+func flagSet(f *EventFlag) {
+	state := atomicInitLoadState(&f.state) | 1
+	syscall.AtomicStoreEvent(&f.state, state)
+	state.Send()
 }
 
-func eventWaitUntil(e *Event, t int64) bool {
-	state := syscall.AtomicLoadEvent(&e.raw)
-	state0, state1 := state&^1, state|1
+func flagClear(f *EventFlag) {
+	state := atomicInitLoadState(&f.state) &^ 1
+	syscall.AtomicStoreEvent(&f.state, state)
+	state.Send()
+}
+
+func flagVal(f *EventFlag) int {
+	return int(syscall.AtomicLoadEvent(&f.state) & 1)
+}
+
+func flagWait(f *EventFlag, deadline int64) bool {
 	for {
-		if syscall.AtomicCompareAndSwapEvent(&e.raw, state0, state1) {
+		state := atomicInitLoadState(&f.state)
+		if state&1 != 0 {
 			return true
 		}
-		if t >= 0 && Nanosec() >= t {
+		if deadline != 0 && Nanosec() >= deadline {
 			return false
 		}
-		syscall.SetAlarm(t)
-		state0.Wait()
+		syscall.SetAlarm(deadline)
+		(state &^ 1).Wait()
 	}
 }
 
-func waitEvent(t int64, events []*Event) uint32 {
+func waitEvent(deadline int64, flags []*EventFlag) uint32 {
 	var sum syscall.Event
-	for _, e := range events {
-		sum |= syscall.AtomicLoadEvent(&e.raw)
+	for _, f := range flags {
+		sum |= atomicInitLoadState(&f.state)
 	}
 	sum &^= 1
 	var ret uint32
 	for {
-		for n, e := range events {
-			state := syscall.AtomicLoadEvent(&e.raw)
-			state0, state1 := state&^1, state|1
-			if syscall.AtomicCompareAndSwapEvent(&e.raw, state0, state1) {
-				ret |= 1 << uint(n)
-			}
+		for n, f := range flags {
+			state := syscall.AtomicLoadEvent(&f.state)
+			ret |= uint32(state&1) << uint(n)
 		}
-		if ret != 0 || t >= 0 && Nanosec() >= t {
+		if ret != 0 || deadline != 0 && Nanosec() >= deadline {
 			return ret
 		}
-		syscall.SetAlarm(t)
+		syscall.SetAlarm(deadline)
 		sum.Wait()
 	}
 }
