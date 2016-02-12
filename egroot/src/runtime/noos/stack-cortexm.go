@@ -7,14 +7,14 @@ import (
 	"unsafe"
 )
 
-func stackLog2() uint
+func stackTaskLog2() uint
 
-func stackFrac() uint
+func stackTaskFrac() uint
 
 func stackEnd() uintptr
 
 func stackTop(i int) uintptr {
-	stackSize := uintptr((1 << stackLog2()) * stackFrac() / 8)
+	stackSize := uintptr((1 << stackTaskLog2()) * stackTaskFrac() / 8)
 	return stackEnd() - uintptr(i)*stackSize
 }
 

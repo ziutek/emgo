@@ -113,7 +113,6 @@ func (ts *taskSched) deliverEvent(e syscall.Event) {
 }
 
 func (ts *taskSched) init() {
-	//setupVectorTable(irtExp) - disabled (we use static VT, set at link time)
 	ts.tasks = make([]taskInfo, maxTasks())
 
 	// Use PSP as stack pointer for thread mode. Current (zero) task has stack

@@ -5,7 +5,6 @@ SECTIONS {
 		/* Vector table. */
 		VectorsStart = .;
 		
-		
 		LONG(StackEnd)
 		KEEP(*(.Reset))
 		KEEP(*(.NMI))
@@ -50,8 +49,8 @@ SECTIONS {
 	
 	.stack : {} >RAM
 	
-	StackBegin = ALIGN(ADDR(.stack), (1 << StackLog2) / 8);
-	StackEnd = StackBegin + (1 << StackLog2) * StackFrac / 8 * (MaxTasks + 1);
+	tasksBegin = ALIGN(ADDR(.stack) + StackISR, (1 << StackTaskLog2) / 8);
+	StackEnd = tasksBegin + (1 << StackTaskLog2) * StackTaskFrac / 8 * MaxTasks;
        
 	.data StackEnd : {
 		. = ALIGN(4);
