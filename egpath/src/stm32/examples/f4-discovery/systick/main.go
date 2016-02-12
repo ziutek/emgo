@@ -12,35 +12,33 @@ import (
 	"stm32/hal/system"
 )
 
-var LED *gpio.Port
-
 const (
 	Red  = gpio.Pin14
 	Blue = gpio.Pin15
 )
 
-var ledup = true
+var (
+	leds  *gpio.Port
+	ledup = true
+)
 
 func sysTickHandler() {
 	if ledup {
-		LED.SetPins(Blue)
+		leds.SetPins(Blue)
 	} else {
-		LED.ClearPins(Blue)
+		leds.ClearPins(Blue)
 	}
 	ledup = !ledup
 }
-
-//c:__attribute__((section(".SysTick")))
-var SysTickVector = sysTickHandler
 
 func main() {
 	system.Setup168(8)
 
 	gpio.D.EnableClock(false)
-	LED = gpio.D
+	leds = gpio.D
 
 	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	LED.Setup(Blue|Red, cfg)
+	leds.Setup(Blue|Red, cfg)
 
 	st := systick.SYSTICK
 	onesec := systick.RVR_Bits(system.AHB.Clock() / 8)
@@ -55,5 +53,9 @@ func main() {
 
 	// Execution should never reach there so the red LED
 	// should never light up.
-	LED.SetPins(Red)
+	leds.SetPins(Red)
 }
+
+//emgo:const
+//c:__attribute__((section(".SysTick")))
+var SysTickVector = sysTickHandler

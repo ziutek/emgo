@@ -87,13 +87,6 @@ func oneISR() {
 	one.IRQ()
 }
 
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.USART2: conISR,
-	irq.USART6: oneISR,
-}
-
 func blink(c gpio.Pins, d int) {
 	leds.SetPins(c)
 	if d > 0 {
@@ -159,4 +152,11 @@ func main() {
 		fmt.Println("Done.")
 		delay.Millisec(4e3)
 	}
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.USART2: conISR,
+	irq.USART6: oneISR,
 }

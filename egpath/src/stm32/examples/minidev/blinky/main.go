@@ -6,7 +6,7 @@ import (
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/system"
-	"stm32/hal/osclk/rtc"
+	"stm32/hal/system/timer/rtc"
 )
 
 var leds *gpio.Port
@@ -23,25 +23,20 @@ func init() {
 	leds.Setup(Blue, &gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
 }
 
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
-}
-
-func wait(ms int) {
-	//delay.Loop(1e7)
-	delay.Millisec(ms)
-}
-
 func main() {
 	for {
 		for _, d := range []int{100, 100, 400, 400, 400, 400, 100, 100, 100} {
 			leds.ClearPins(Blue)
-			wait(20)
+			delay.Millisec(20)
 			leds.SetPins(Blue)
-			wait(d)
+			delay.Millisec(d)
 		}
-		wait(1000)
+		delay.Millisec(1000)
 	}
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.RTCAlarm: rtc.ISR,
 }

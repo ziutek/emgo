@@ -4,34 +4,36 @@ import (
 	"delay"
 
 	"stm32/hal/gpio"
-	"stm32/hal/setup"
+	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 )
 
-var LED *gpio.Port
+var leds *gpio.Port
 
 const (
-	Blue  = 6
-	Green = 7
+	Blue  = gpio.Pin6
+	Green = gpio.Pin7
 )
 
 func init() {
-	setup.Performance32(0)
+	system.Setup32(0)
+	systick.Setup()
 
 	gpio.B.EnableClock(false)
+	leds = gpio.B
 
-	LED = gpio.B
-	LED.SetMode(Green, gpio.Out)
-	LED.SetMode(Blue, gpio.Out)
+	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	leds.Setup(Green|Blue, &cfg)
 }
 
 func main() {
 	for {
-		LED.ClearPin(Blue)
-		LED.SetPin(Green)
+		leds.ClearPins(Blue)
+		leds.SetPins(Green)
 		delay.Millisec(1000)
 
-		LED.ClearPin(Green)
-		LED.SetPin(Blue)
+		leds.ClearPins(Green)
+		leds.SetPins(Blue)
 		delay.Millisec(1000)
 	}
 }

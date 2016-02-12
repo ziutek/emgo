@@ -2,6 +2,8 @@ package exti
 
 import (
 	"stm32/hal/gpio"
+
+	"stm32/hal/raw/exti"
 )
 
 // Lines is bitmask that represents EXTI input lines.
@@ -65,77 +67,77 @@ func (lines Lines) Connect(port *gpio.Port) {
 
 // RiseTrigEnabled returns lines that have rising edge detection enabled.
 func RiseTrigEnabled() Lines {
-	return Lines(extip().RTSR.U32.Load())
+	return Lines(exti.EXTI.RTSR.U32.Load())
 }
 
 // EnableRiseTrig enables rising edge detection for lines.
 func (lines Lines) EnableRiseTrig() {
-	extip().RTSR.U32.SetBits(uint32(lines))
+	exti.EXTI.RTSR.U32.SetBits(uint32(lines))
 }
 
 // DisableRiseTrig disables rising edge detection for lines.
 func (lines Lines) DisableRiseTrig() {
-	extip().RTSR.U32.ClearBits(uint32(lines))
+	exti.EXTI.RTSR.U32.ClearBits(uint32(lines))
 }
 
 // FallTrigEnabled returns lines that have falling edge detection enabled.
 func FallTrigEnabled() Lines {
-	return Lines(extip().FTSR.U32.Load())
+	return Lines(exti.EXTI.FTSR.U32.Load())
 }
 
 // EnableFallTrig enables falling edge detection for lines.
 func (lines Lines) EnableFallTrig() {
-	extip().FTSR.U32.SetBits(uint32(lines))
+	exti.EXTI.FTSR.U32.SetBits(uint32(lines))
 }
 
 // DisableFallTrig disables falling edge detection for lines.
 func (lines Lines) DisableFallTrig() {
-	extip().FTSR.U32.ClearBits(uint32(lines))
+	exti.EXTI.FTSR.U32.ClearBits(uint32(lines))
 }
 
 // Trigger allows to generate interrupt/event request by software. Interrupt
 // pending flag on the line is set only when interrupt generation is enabled
-// for this line. 
+// for this line.
 func (lines Lines) Trigger() {
-	extip().SWIER.U32.Store(uint32(lines))
+	exti.EXTI.SWIER.U32.Store(uint32(lines))
 }
 
 // IntEnabled returns lines that have interrupt generation enabled.
 func IntEnabled() Lines {
-	return Lines(extip().IMR.U32.Load())
+	return Lines(exti.EXTI.IMR.U32.Load())
 }
 
 // EnableInt enables interrupt generation by lines.
 func (lines Lines) EnableInt() {
-	extip().IMR.U32.SetBits(uint32(lines))
+	exti.EXTI.IMR.U32.SetBits(uint32(lines))
 }
 
 // DisableInt disable interrupt generation by lines.
 func (lines Lines) DisableInt() {
-	extip().IMR.U32.ClearBits(uint32(lines))
+	exti.EXTI.IMR.U32.ClearBits(uint32(lines))
 }
 
 // EventEnabled returns lines that have event generation enabled.
 func EventEnabled() Lines {
-	return Lines(extip().EMR.Load())
+	return Lines(exti.EXTI.EMR.Load())
 }
 
 // EnableEvent enables event generation by lines.
 func (lines Lines) EnableEvent() {
-	extip().EMR.U32.SetBits(uint32(lines))
+	exti.EXTI.EMR.U32.SetBits(uint32(lines))
 }
 
 // DisableEvent disable event generation by lines.
 func (lines Lines) DisableEvent() {
-	extip().EMR.U32.ClearBits(uint32(lines))
+	exti.EXTI.EMR.U32.ClearBits(uint32(lines))
 }
 
 // Pending returns lines that have pending interrupt flag set.
 func Pending() Lines {
-	return Lines(extip().PR.U32.Load())
+	return Lines(exti.EXTI.PR.U32.Load())
 }
 
 // ClearPending clears pending interrupt flag for lines.
 func (l Lines) ClearPending() {
-	extip().PR.U32.Store(uint32(l))
+	exti.EXTI.PR.U32.Store(uint32(l))
 }

@@ -10,65 +10,70 @@ import (
 	"delay"
 	"rtos"
 
-	"stm32/l1/exti"
-	"stm32/l1/gpio"
-	"stm32/l1/irq"
-	"stm32/l1/periph"
-	"stm32/l1/setup"
+	"stm32/hal/exti"
+	"stm32/hal/gpio"
+	"stm32/hal/irq"
+	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 )
 
-var LED = gpio.B
+var leds *gpio.Port
 
 const (
-	Blue  = 6
-	Green = 7
+	Blue  = gpio.Pin6
+	Green = gpio.Pin7
+
+	Button = gpio.Pin0
 )
 
 func init() {
-	setup.Performance(0)
+	system.Setup32(0)
+	systick.Setup()
 
-	periph.APB2ClockEnable(periph.SysCfg)
-	periph.APB2Reset(periph.SysCfg)
-	periph.AHBClockEnable(periph.GPIOA | periph.GPIOB)
-	periph.AHBReset(periph.GPIOA | periph.GPIOB)
+	gpio.A.EnableClock(true)
+	bport := gpio.A
+	gpio.B.EnableClock(false)
+	leds = gpio.B
 
-	LED.SetMode(Green, gpio.Out)
-	LED.SetMode(Blue, gpio.Out)
+	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	leds.Setup(Green|Blue, cfg)
 
 	// Setup external interrupt source: user button.
-	gpio.A.SetMode(0, gpio.In)
-	exti.L0.Connect(gpio.A)
-	exti.L0.RiseTrigEnable()
-	exti.L0.IntEnable()
-	rtos.IRQ(irq.Ext0).UseHandler(buttonHandler)
-	rtos.IRQ(irq.Ext0).Enable()
+	bport.Setup(Button, &gpio.Config{Mode: gpio.In})
+	line := exti.Lines(Button)
+	line.Connect(bport)
+	line.EnableRiseTrig()
+	line.EnableInt()
 
-	periph.APB2ClockDisable(periph.SysCfg)
+	rtos.IRQ(irq.EXTI0).Enable()
 }
 
-var c = make(chan int, 3)
+var c = make(chan struct{}, 3)
 
-func buttonHandler() {
-	exti.L0.ClearPending()
+func buttonISR() {
+	exti.Lines(Button).ClearPending()
 	select {
-	case c <- Green:
+	case c <- struct{}{}:
 	default:
 		// Signal that c is full.
-		LED.SetPin(Blue)
+		leds.SetPins(Blue)
 		delay.Loop(1e5)
-		LED.ClearPin(Blue)
+		leds.ClearPins(Blue)
 	}
-}
-
-func toggle(led int) {
-	LED.SetPin(led)
-	delay.Millisec(500)
-	LED.ClearPin(led)
-	delay.Millisec(500)
 }
 
 func main() {
 	for {
-		toggle(<-c)
+		<-c
+		leds.SetPins(Green)
+		delay.Millisec(500)
+		leds.ClearPins(Green)
+		delay.Millisec(500)
 	}
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.EXTI0: buttonISR,
 }

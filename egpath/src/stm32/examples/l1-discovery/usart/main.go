@@ -6,51 +6,43 @@
 package main
 
 import (
-	"stm32/l1/gpio"
-	"stm32/l1/periph"
-	"stm32/l1/setup"
-	"stm32/l1/usarts"
-	"stm32/usart"
+	"stm32/hal/gpio"
+	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
+	"stm32/hal/usart"
 )
 
-var udev = usarts.USART3
+var tts *usart.USART
 
 func init() {
-	setup.Performance(0)
+	system.Setup32(0)
+	systick.Setup()
 
-	periph.AHBClockEnable(periph.GPIOB)
-	periph.AHBReset(periph.GPIOB)
-	periph.APB1ClockEnable(periph.USART3)
-	periph.APB1Reset(periph.USART3)
+	gpio.B.EnableClock(true)
+	port, tx, rx := gpio.B, gpio.Pin10, gpio.Pin11
 
-	port, tx, rx := gpio.B, 10, 11
+	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
+	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	port.SetAltFunc(tx|rx, gpio.USART3)
 
-	port.SetMode(tx, gpio.Alt)
-	port.SetOutType(tx, gpio.PushPull)
-	port.SetPull(tx, gpio.PullUp)
-	port.SetOutSpeed(tx, gpio.Medium)
-	port.SetAltFunc(tx, gpio.USART3)
-	port.SetMode(rx, gpio.Alt)
-	port.SetAltFunc(rx, gpio.USART3)
+	tts = usart.USART3
 
-	udev.SetBaudRate(115200, setup.APB1Clk)
-	udev.SetWordLen(usart.Bits8)
-	udev.SetParity(usart.None)
-	udev.SetStopBits(usart.Stop1b)
-	udev.SetMode(usart.Tx | usart.Rx)
-	udev.Enable()
+	tts.EnableClock(true)
+	tts.SetBaudRate(115200)
+	tts.SetConf(usart.RxEna | usart.TxEna)
+	tts.Enable()
 }
 
 func writeByte(b byte) {
-	udev.Store(uint32(b))
-	for udev.Status()&usart.TxEmpty == 0 {
+	tts.Store(int(b))
+	for tts.Status()&usart.TxEmpty == 0 {
 	}
 }
 
 func readByte() byte {
-	for udev.Status()&usart.RxNotEmpty == 0 {
+	for tts.Status()&usart.RxNotEmpty == 0 {
 	}
-	return byte(udev.Load())
+	return byte(tts.Load())
 }
 
 func main() {

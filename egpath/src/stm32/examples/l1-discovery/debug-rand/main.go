@@ -5,13 +5,13 @@ import (
 	"rtos"
 	"strconv"
 
-	"stm32/l1/setup"
+	"stm32/hal/system"
 )
 
 var dbg = rtos.Debug(0)
 
 func main() {
-	setup.Performance(0)
+	system.Setup32(0)
 
 	var rnd rand.XorShift64
 

@@ -3,7 +3,7 @@
 // You need terminal emulator (eg. screen, minicom, hyperterm) and some USB to
 // 3.3V TTL serial adapter (eg. FT232RL, CP2102 based). Warninig! If you use
 // USB to RS232 it can destroy your Discovery board.
-
+//
 // Connct adapter's GND, Rx and Tx pins respectively to Discovery's GND, PB10,
 // PB11 pins.
 package main
@@ -13,82 +13,80 @@ import (
 	"fmt"
 	"rtos"
 
-	"stm32/l1/gpio"
-	"stm32/l1/irq"
-	"stm32/l1/periph"
-	"stm32/l1/setup"
-	"stm32/l1/usarts"
 	"stm32/serial"
-	"stm32/usart"
+
+	"stm32/hal/gpio"
+	"stm32/hal/irq"
+	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
+	"stm32/hal/usart"
 )
 
 const (
-	Blue  = 6
-	Green = 7
+	Blue  = gpio.Pin6
+	Green = gpio.Pin7
 )
 
 var (
-	leds = gpio.B
-	udev = usarts.USART3
-	s    = serial.New(udev, 80, 8)
+	leds *gpio.Port
+	con  *serial.Dev
 )
 
 func init() {
-	setup.Performance(0)
+	system.Setup32(0)
+	systick.Setup()
 
-	periph.AHBClockEnable(periph.GPIOB)
-	periph.AHBReset(periph.GPIOB)
-	periph.APB1ClockEnable(periph.USART3)
-	periph.APB1Reset(periph.USART3)
+	gpio.B.EnableClock(true)
+	leds = gpio.B
+	port, tx, rx := gpio.B, gpio.Pin10, gpio.Pin11
 
-	leds.SetMode(Blue, gpio.Out)
-	leds.SetMode(Green, gpio.Out)
+	// LEDS
 
-	port, tx, rx := gpio.B, 10, 11
+	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	leds.Setup(Green|Blue, &cfg)
 
-	port.SetMode(tx, gpio.Alt)
-	port.SetOutType(tx, gpio.PushPull)
-	port.SetPull(tx, gpio.PullUp)
-	port.SetOutSpeed(tx, gpio.Medium)
-	port.SetAltFunc(tx, gpio.USART3)
-	port.SetMode(rx, gpio.Alt)
-	port.SetAltFunc(rx, gpio.USART3)
+	// USART
 
-	udev.SetBaudRate(115200, setup.APB1Clk)
-	udev.SetWordLen(usart.Bits8)
-	udev.SetParity(usart.None)
-	udev.SetStopBits(usart.Stop1b)
-	udev.SetMode(usart.Tx | usart.Rx)
-	udev.EnableIRQs(usart.RxNotEmptyIRQ)
-	udev.Enable()
+	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
+	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	port.SetAltFunc(tx|rx, gpio.USART3)
 
-	rtos.IRQ(irq.USART3).UseHandler(sirq)
+	s := usart.USART3
+
+	s.EnableClock(true)
+	s.SetBaudRate(115200)
+	s.SetConf(usart.RxEna | usart.TxEna)
+	s.EnableIRQs(usart.RxNotEmptyIRQ)
+	s.Enable()
+
+	con = serial.New(s, 80, 8)
+	con.SetUnix(true)
+	fmt.DefaultWriter = con
+
 	rtos.IRQ(irq.USART3).Enable()
-
-	s.SetUnix(true)
 }
 
-func blink(c, dly int) {
-	leds.SetPin(c)
+func blink(c gpio.Pins, dly int) {
+	leds.SetPins(c)
 	if dly > 0 {
 		delay.Millisec(dly)
 	} else {
-		delay.Loop(-2e3 * dly)
+		delay.Loop(-1e4 * dly)
 	}
-	leds.ClearPin(c)
+	leds.ClearPins(c)
 }
 
-func sirq() {
+func conISR() {
 	//blink(Blue, -10) // Uncoment to see "hardware buffer overrun".
-	s.IRQ()
+	con.IRQ()
 }
 
 func checkErr(err error) {
 	if err != nil {
 		blink(Blue, 10)
-		s.WriteString("\nError: ")
-		s.WriteString(err.Error())
-		s.WriteByte('\n')
+		con.WriteString("\nError: ")
+		con.WriteString(err.Error())
+		con.WriteByte('\n')
 	}
 }
 
@@ -103,31 +101,32 @@ func main() {
 	//   cmp	r3, r2
 	//   bne.n  0b
 	for i := range uts {
-		uts[i] = rtos.Uptime()
+		uts[i] = rtos.Nanosec()
 	}
 
-	s.WriteString("\nrtos.Uptime() in loop:\n")
+	fmt.Println("\nrtos.Nanosec() in loop:")
 	for i, ut := range uts {
-		fmt.Fprint(s, ut, " ns")
+		fmt.Print(ut, " ns")
 		if i > 0 {
-			fmt.Fprint(s, " (dt = ", ut-uts[i-1], " ns)")
+			fmt.Printf(" (dt = %d ns)", ut-uts[i-1])
 		}
-		s.WriteByte('\n')
+		fmt.Println()
 	}
 
-	s.WriteString("Echo:\n")
-	s.Flush()
+	fmt.Println("Echo:")
 
 	var buf [40]byte
 	for {
-		n, err := s.Read(buf[:])
+		n, err := con.Read(buf[:])
 		checkErr(err)
-
-		ns := rtos.Uptime()
-		fmt.Fprint(s, ns, " ns \"")
-		s.Write(buf[:n])
-		s.WriteString("\"\n")
-
+		ns := rtos.Nanosec()
+		fmt.Printf(" %d ns '%s'\n", ns, buf[:n])
 		blink(Green, 10)
 	}
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.USART3: conISR,
 }

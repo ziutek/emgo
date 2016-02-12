@@ -8,56 +8,43 @@ import (
 	"arch/cortexm/scb"
 	"arch/cortexm/systick"
 
-	"stm32/l1/gpio"
-	"stm32/l1/irq"
-	"stm32/l1/periph"
-	"stm32/l1/setup"
+	"stm32/hal/gpio"
+	"stm32/hal/system"
 )
-
-var LED = gpio.B
 
 const (
-	Blue  = 6
-	Green = 7
+	Blue  = gpio.Pin6
+	Green = gpio.Pin7
 )
 
-func defaultHandler() {
-	for {
-	}
-}
-
 var (
-	cnt   int
+	leds  *gpio.Port
 	ledup = true
 )
 
-func isr() {
+func sysTickHandler() {
 	if ledup {
-		LED.SetPin(Blue)
+		leds.SetPins(Blue)
 	} else {
-		LED.ClearPin(Blue)
+		leds.ClearPins(Blue)
 	}
 	ledup = !ledup
 }
 
-var IRQs = [...]func(){
-	irq.Tim2: isr,
-} //c:__attribute__((section(".ISRs")))
-
 func main() {
-	setup.Performance(0)
+	system.Setup32(0)
 
-	periph.AHBClockEnable(periph.GPIOB)
-	periph.AHBReset(periph.GPIOB)
+	gpio.B.EnableClock(false)
+	leds = gpio.B
 
-	LED.SetMode(Blue, gpio.Out)
-	LED.SetMode(Green, gpio.Out)
+	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	leds.Setup(Blue|Green, cfg)
 
-	tenms := systick.TENMS.Load()
-	tenms *= 10 // stm32l1 returns value for 1 ms not for 10ms.
-	systick.RELOAD.Store(tenms * 100)
-	systick.CURRENT.Clear()
-	(systick.ENABLE | systick.TICKINT).Set()
+	st := systick.SYSTICK
+	onesec := systick.RVR_Bits(system.AHB.Clock() / 8)
+	st.RELOAD().Store(onesec/2 - 1) // Period 0.5 s.
+	st.CURRENT().Clear()
+	st.CSR.SetBits(systick.ENABLE | systick.TICKINT)
 
 	// Sleep forever.
 	scb.SLEEPONEXIT.Set()
@@ -66,5 +53,9 @@ func main() {
 
 	// Execution should never reach there so the green LED
 	// should never light up.
-	LED.SetPin(Green)
+	leds.SetPins(Green)
 }
+
+//emgo:const
+//c:__attribute__((section(".SysTick")))
+var SysTickVector = sysTickHandler

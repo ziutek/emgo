@@ -15,7 +15,6 @@ package system
 
 import (
 	"stm32/hal/raw/flash"
-	"stm32/hal/raw/mmap"
 	"stm32/hal/raw/rcc"
 )
 
@@ -77,24 +76,28 @@ func Setup(osc, sdiv int) {
 		RCC.HSEON().Set()
 	}
 
-	SysClk = 96e6 / uint(sdiv) // Hz
-
 	// Setup linear voltage regulator scaling.
 	// RCC.PWREN().Set()
 	// pwr.PWR.VOS().Store(pwr.VOS_0)
 	// RCC.PWREN().Clear()
 
 	// Calculate clock dividers for AHB, APB1, APB2 bus.
-	AHBClk = SysClk
-	if AHBClk <= 32e6 {
+	sysclk := 96e6 / uint(sdiv) // Hz
+	ahbclk := sysclk
+	var apb1clk, apb2clk uint
+	if ahbclk <= 32e6 {
 		cfgr |= rcc.PPRE1_DIV1 | rcc.PPRE2_DIV1
-		APB1Clk = AHBClk / 1
-		APB2Clk = AHBClk / 1
+		apb1clk = ahbclk / 1
+		apb2clk = ahbclk / 1
 	} else {
 		cfgr |= rcc.PPRE1_DIV2 | rcc.PPRE2_DIV2
-		APB1Clk = AHBClk / 2
-		APB2Clk = AHBClk / 2
+		apb1clk = ahbclk / 2
+		apb2clk = ahbclk / 2
 	}
+	clock[Core] = sysclk
+	clock[AHB] = ahbclk
+	clock[APB1] = apb1clk
+	clock[APB2] = apb2clk
 
 	// Setup Flash.
 	FLASH := flash.FLASH
@@ -128,24 +131,10 @@ func Setup(osc, sdiv int) {
 		// Wait for system clock setup...
 	}
 	RCC.MSION().Clear()
-
-	setupOS()
 }
 
 // Setup32 setups MCU to work with 96 MHz clock.
 // See Setup for description of osc.
 func Setup32(osc int) {
 	Setup(osc, 3)
-}
-
-func PeriphClk(baseaddr uintptr) uint {
-	switch {
-	case baseaddr >= mmap.AHBPERIPH_BASE:
-		return AHBClk
-	case baseaddr >= mmap.APB2PERIPH_BASE:
-		return APB2Clk
-	case baseaddr >= mmap.APB1PERIPH_BASE:
-		return APB1Clk
-	}
-	return 0
 }

@@ -3,7 +3,7 @@
 // in user context.
 //
 // Fast part only enqueues events/data that receives from source (you) and
-// informs the source (using blue LED) if its buffer is full. Slow part
+// informs the source (using blue leds) if its buffer is full. Slow part
 // dequeues events/data and handles them. This scheme can be used to implement
 // interrupt driven I/O library.
 package main
@@ -19,7 +19,7 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var LED *gpio.Port
+var leds *gpio.Port
 
 const (
 	Green  = gpio.Pin12
@@ -37,10 +37,10 @@ func init() {
 	gpio.A.EnableClock(true)
 	bport := gpio.A
 	gpio.D.EnableClock(false)
-	LED = gpio.D
+	leds = gpio.D
 
 	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	LED.Setup(Green|Orange|Red|Blue, cfg)
+	leds.Setup(Green|Orange|Red|Blue, cfg)
 
 	// Setup external interrupt source: user button.
 	bport.Setup(Button, &gpio.Config{Mode: gpio.In})
@@ -66,22 +66,16 @@ func buttonISR() {
 		}
 	default:
 		// Signal that c is full.
-		LED.SetPins(Blue)
+		leds.SetPins(Blue)
 		delay.Loop(1e5)
-		LED.ClearPins(Blue)
+		leds.ClearPins(Blue)
 	}
 }
 
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.EXTI0: buttonISR,
-}
-
-func toggle(leds gpio.Pins) {
-	LED.SetPins(leds)
+func toggle(colors gpio.Pins) {
+	leds.SetPins(colors)
 	delay.Millisec(500)
-	LED.ClearPins(leds)
+	leds.ClearPins(colors)
 	delay.Millisec(500)
 }
 
@@ -89,4 +83,10 @@ func main() {
 	for {
 		toggle(<-c)
 	}
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.EXTI0: buttonISR,
 }

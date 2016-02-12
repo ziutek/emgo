@@ -1,8 +1,8 @@
-/* Stack size: 7/8 KB */
-StackLog2 = 10;
-StackFrac = 7;
+StackISR = 2000; /* 2 kB */
 
-/* One task, two stacks. */
+/* Stack size: 7/8 KiB */
+StackTaskLog2 = 10;
+StackTaskFrac = 7;
 MaxTasks = 1;
 
 INCLUDE stm32/f407xg

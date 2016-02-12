@@ -46,12 +46,6 @@ func init() {
 	rnd.Seed(uint64(rtos.Nanosec()))
 }
 
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
-}
-
 func waitkey(wg *sync.WaitGroup) {
 	for key3.Load() != 0 {
 		delay.Millisec(5)
@@ -83,4 +77,10 @@ func main() {
 	}
 	wg.Wait()
 	leds[3].Set()
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.RTCAlarm: rtc.ISR,
 }

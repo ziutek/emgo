@@ -1,8 +1,9 @@
-StackLog2 = 11;
-StackFrac = 6; 
-MaxTasks = 0;
-IRTExp = 0;
+StackISR = 4000; /* 4 kB */
 
-INCLUDE stm32/l152_b
+StackTaskLog2 = 0;
+StackTaskFrac = 0; 
+MaxTasks = 0;
+
+INCLUDE stm32/l152rb
 INCLUDE stm32/loadram
 INCLUDE noos-cortexm

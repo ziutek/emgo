@@ -2,16 +2,17 @@ package main
 
 import (
 	"fmt"
-	"unsafe"
 	"rtos"
+	"unsafe"
 
-	"stm32/l1/setup"
+	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 )
 
 var dbg = rtos.Debug(0)
 
 func printa(s string, gs, ga, cs, ca uintptr) {
-	fmt.Fprint(dbg, s, gs, " ", ga, "\t", cs, " ", ca, "\n")
+	fmt.Fprintf(dbg, "%6s %2d %2d\t%2d %2d\n", s, gs, ga, cs, ca)
 }
 
 type S16 struct {
@@ -51,7 +52,8 @@ func AlignS32() uintptr
 func AlignS64() uintptr
 
 func main() {
-	setup.Performance(0)
+	system.Setup32(0)
+	systick.Setup()
 
 	dbg.WriteString("Data size/alignment\n\n")
 	dbg.WriteString("Type    Emgo       C\n")

@@ -1,7 +1,7 @@
-StackLog2 = 10; /* 1 KB */
-StackFrac = 8;  /* 8/8 */
+StackISR = 2000; /* 2 KB */
 
-/* One task, two stacks. */
+StackTaskLog2 = 10; /* 1 KiB */
+StackTaskFrac = 8;  /* 8/8 */
 MaxTasks = 1;
 
 /* bootSRAM code should by placed at 0x200001E0. */

@@ -46,12 +46,6 @@ func conISR() {
 	con.IRQ()
 }
 
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.USART2: conISR,
-}
-
 type S struct {
 	s string
 }
@@ -86,4 +80,10 @@ func main() {
 		v := reflect.ValueOf(iv)
 		fmt.Println(v.Type())
 	}
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.USART2: conISR,
 }

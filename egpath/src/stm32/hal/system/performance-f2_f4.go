@@ -96,7 +96,6 @@ func Setup(osc, mul, sdiv int) {
 	if osc != 0 {
 		RCC.HSEON().Set()
 	}
-	sysclk := 2e6 * uint(mul) / uint(sdiv)
 
 	// Setup linear voltage regulator scaling.
 	// RCC.PWREN().Set()
@@ -104,6 +103,7 @@ func Setup(osc, mul, sdiv int) {
 	// RCC.PWREN().Clear()
 
 	// Setup clock dividers for AHB, APB1, APB2 bus.
+	sysclk := 2e6 * uint(mul) / uint(sdiv)
 	ahbclk := sysclk
 	var apb1clk, apb2clk uint
 	switch {

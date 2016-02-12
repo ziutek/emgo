@@ -5,29 +5,33 @@ import (
 	"fmt"
 
 	"stm32/hal/gpio"
-	"stm32/hal/setup"
+	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 
 	"stm32/hal/raw/pwr"
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/rtc"
 )
 
-var LED *gpio.Port
+var leds *gpio.Port
 
 const (
 	Green = gpio.Pin7
 )
 
 func init() {
-	setup.Performance32(0)
+	system.Setup32(0)
+	systick.Setup()
 
 	gpio.B.EnableClock(false)
-	LED = gpio.B
-	LED.Setup(Green, &gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
+	leds = gpio.B
+
+	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	leds.Setup(Green, &cfg)
 }
 
 func wait() {
-	delay.Millisec(250)
+	
 }
 
 func main() {
@@ -69,8 +73,8 @@ func main() {
 		RTC.PRER.Store(prer)
 		RTC.PRER.Store(prer)
 		fmt.Printf("%x\n", RTC.PRER.Load())
-		//RTC.DR.Store(0x151215 + 2<<13)
-		//RTC.TR.Store(0x214540)
+		RTC.DR.Store(0x151215 + 2<<13)
+		RTC.TR.Store(0x214540)
 		RTC.INIT().Clear()
 		RTC.WPR.Store(0xff)
 		PWR.DBP().Clear()
@@ -79,10 +83,10 @@ func main() {
 	}
 
 	for {
-		LED.SetPins(Green)
-		wait()
-		LED.ClearPins(Green)
-		wait()
+		leds.SetPins(Green)
+		delay.Millisec(250)
+		leds.ClearPins(Green)
+		delay.Millisec(250)
 		hhmmss := RTC.TR.Load()
 		dr := RTC.DR.Load()
 		yymmdd := dr &^ (7 << 13)

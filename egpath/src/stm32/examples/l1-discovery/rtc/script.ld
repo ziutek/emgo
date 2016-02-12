@@ -1,8 +1,8 @@
-/* Stack size: 6 KB */
-StackLog2 = 13; /* 8 KB */
-StackFrac = 6;  /* 6/8 */
+StackISR = 2000;
 
-/* Two gorutines, 2 stacks. */
+/* Stack size: 7 KiB */
+StackTaskLog2 = 13; /* 8 KiB */
+StackTaskFrac = 7;  /* 7/8 */
 MaxTasks = 1;
 
 INCLUDE stm32/l152rb

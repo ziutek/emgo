@@ -1,6 +1,8 @@
-/* Stack size: 6 KB */
-StackLog2 = 13; /* 8 KB */
-StackFrac = 6;  /* 6/8 */
+StackISR = 2000; /* 2 KB */
+
+/* Stack size: 6 KiB */
+StackTaskLog2 = 13; /* 8 KiB */
+StackTaskFrac = 6;  /* 6/8 */
 
 /* Two gorutines, 3 stacks. */
 MaxTasks = 2;

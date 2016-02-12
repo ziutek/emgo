@@ -3,48 +3,49 @@ package main
 import (
 	"delay"
 
-	"stm32/l1/gpio"
-	"stm32/l1/periph"
-	"stm32/l1/setup"
+	"stm32/hal/gpio"
+	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
 )
 
-func gen(c chan<- int, v int) {
+func gen(c chan<- gpio.Pins, pins gpio.Pins) {
 	for {
-		c <- v
+		c <- pins
 	}
 }
 
 var leds = gpio.B
 
 const (
-	Blue  = 6
-	Green = 7
+	Blue  = gpio.Pin6
+	Green = gpio.Pin7
 )
 
 func main() {
-	setup.Performance(0)
+	system.Setup32(0)
+	systick.Setup()
 
-	periph.AHBClockEnable(periph.GPIOB)
-	periph.AHBReset(periph.GPIOB)
+	gpio.B.EnableClock(false)
+	leds = gpio.B
 
-	leds.SetMode(Blue, gpio.Out)
-	leds.SetMode(Green, gpio.Out)
+	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	leds.Setup(Green|Blue, &cfg)
 
-	cb := make(chan int, 2)
-	cg := make(chan int, 2)
+	cb := make(chan gpio.Pins, 2)
+	cg := make(chan gpio.Pins, 2)
 
 	go gen(cg, Green)
 	go gen(cb, Blue)
 
 	for {
-		var led int
+		var led gpio.Pins
 		select {
 		case led = <-cg:
 		case led = <-cb:
 		}
-		leds.SetPin(led)
+		leds.SetPins(led)
 		delay.Millisec(100)
-		leds.ClearPin(led)
+		leds.ClearPins(led)
 		delay.Millisec(100)
 	}
 }

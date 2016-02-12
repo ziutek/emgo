@@ -9,6 +9,35 @@ import (
 	"stm32/hal/raw/i2c"
 )
 
+// Driver implements polling and interrupt driven driver to I2C peripheral.
+// Default mode is polling .
+type Driver struct {
+	Periph
+
+	mutex  sync.Mutex
+	evflag rtos.EventFlag
+	evirq  nvic.IRQ
+	errirq nvic.IRQ
+}
+
+func (d *Driver) SetIntMode(evirq, errirq nvic.IRQ) {
+	d.evirq = evirq
+	d.errirq = errirq
+	d.Periph.raw.CR2.SetBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
+}
+
+func (d *Driver) SetPollMode() {
+	d.evirq = 0
+	d.errirq = 0
+	d.Periph.raw.CR2.ClearBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
+}
+
+func (d *Driver) ISR() {
+	d.evirq.Disable()
+	d.errirq.Disable()
+	d.evflag.Set()
+}
+
 type Error byte
 
 const (
@@ -26,27 +55,45 @@ func (e Error) Error() string {
 	return "I2C error"
 }
 
-// Driver implements interrupt driven driver for I2C peripheral. By default
-// driver works in polling mode.
-type Driver struct {
-	Periph
-
-	mutex  sync.Mutex
-	evflag rtos.EventFlag
-	evirq  nvic.IRQ
-	errirq nvic.IRQ
+func (d *Driver) waitIRQ(ev i2c.SR1_Bits, deadline int64) Error {
+	for {
+		rtos.IRQ(d.evirq).Enable()
+		rtos.IRQ(d.errirq).Enable()
+		if !d.evflag.Wait(deadline) {
+			return SoftTimeout
+		}
+		d.evflag.Clear()
+		sr1 := d.Periph.raw.SR1.Load()
+		if e := Error(sr1>>8) &^ SoftTimeout; e != 0 {
+			return e
+		}
+		if sr1&ev != 0 {
+			return 0
+		}
+	}
 }
 
-func (d *Driver) SetIntMode(evirq, errirq nvic.IRQ) {
-	d.evirq = evirq
-	d.errirq = errirq
-	d.Periph.raw.CR2.SetBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
+func (d *Driver) pollEvent(ev i2c.SR1_Bits, deadline int64) Error {
+	for {
+		sr1 := d.raw.SR1.Load()
+		if e := Error(sr1>>8) &^ SoftTimeout; e != 0 {
+			return e
+		}
+		if sr1&ev != 0 {
+			return 0
+		}
+		if rtos.Nanosec() >= deadline {
+			return SoftTimeout
+		}
+	}
 }
 
-func (d *Driver) ISR() {
-	d.evirq.Disable()
-	d.errirq.Disable()
-	d.evflag.Set()
+func (d *Driver) waitEvent(ev i2c.SR1_Bits) Error {
+	deadline := rtos.Nanosec() + 100*1e6 // 100 ms
+	if d.evirq == 0 {
+		return d.pollEvent(ev, deadline)
+	}
+	return d.waitIRQ(ev, deadline)
 }
 
 func (d *Driver) MasterConn(addr int16) MasterConn {

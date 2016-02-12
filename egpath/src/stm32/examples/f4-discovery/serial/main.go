@@ -47,8 +47,8 @@ func init() {
 
 	// LEDS
 
-	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(Green|Orange|Red|Blue, cfg)
+	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	leds.Setup(Green|Orange|Red|Blue, &cfg)
 
 	// USART
 
@@ -84,12 +84,6 @@ func blink(c gpio.Pins, dly int) {
 func conISR() {
 	// blink(Blue, -10) // Uncoment to see "hardware buffer overrun".
 	con.IRQ()
-}
-
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.USART2: conISR,
 }
 
 func checkErr(err error) {
@@ -134,4 +128,10 @@ func main() {
 		fmt.Printf(" %d ns '%s'\n", ns, buf[:n])
 		blink(Green, 10)
 	}
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.USART2: conISR,
 }
