@@ -42,7 +42,26 @@ const (
 )
 
 const (
+	ENn       = 0
+	DATATYPEn = 1
+	MODEn     = 3
+	CHMODn    = 5
+	CCFCn     = 7
+	ERRCn     = 8
+	CCIEn     = 9
+	ERRIEn    = 10
+	DMAINENn  = 11
+	DMAOUTENn = 12
+)
+
+const (
 	CCF   SR_Bits = 0x01 << 0 //+ Computation Complete Flag.
 	RDERR SR_Bits = 0x01 << 1 //+ Read Error Flag.
 	WRERR SR_Bits = 0x01 << 2 //+ Write Error Flag.
+)
+
+const (
+	CCFn   = 0
+	RDERRn = 1
+	WRERRn = 2
 )

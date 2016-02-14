@@ -57,6 +57,16 @@ const (
 )
 
 const (
+	PMn  = 22
+	HTn  = 20
+	HUn  = 16
+	MNTn = 12
+	MNUn = 8
+	STn  = 4
+	SUn  = 0
+)
+
+const (
 	YT    DR_Bits = 0x0F << 20 //+
 	YT_0  DR_Bits = 0x01 << 20
 	YT_1  DR_Bits = 0x02 << 20
@@ -85,6 +95,16 @@ const (
 	DU_1  DR_Bits = 0x02 << 0
 	DU_2  DR_Bits = 0x04 << 0
 	DU_3  DR_Bits = 0x08 << 0
+)
+
+const (
+	YTn  = 20
+	YUn  = 16
+	WDUn = 13
+	MTn  = 12
+	MUn  = 8
+	DTn  = 4
+	DUn  = 0
 )
 
 const (
@@ -117,6 +137,30 @@ const (
 )
 
 const (
+	COEn     = 23
+	OSELn    = 21
+	POLn     = 20
+	COSELn   = 19
+	BCKn     = 18
+	SUB1Hn   = 17
+	ADD1Hn   = 16
+	TSIEn    = 15
+	WUTIEn   = 14
+	ALRBIEn  = 13
+	ALRAIEn  = 12
+	TSEn     = 11
+	WUTEn    = 10
+	ALRBEn   = 9
+	ALRAEn   = 8
+	DCEn     = 7
+	FMTn     = 6
+	BYPSHADn = 5
+	REFCKONn = 4
+	TSEDGEn  = 3
+	WUCKSELn = 0
+)
+
+const (
 	RECALPF ISR_Bits = 0x01 << 16 //+
 	TAMP1F  ISR_Bits = 0x01 << 13 //+
 	TSOVF   ISR_Bits = 0x01 << 12 //+
@@ -135,8 +179,31 @@ const (
 )
 
 const (
+	RECALPFn = 16
+	TAMP1Fn  = 13
+	TSOVFn   = 12
+	TSFn     = 11
+	WUTFn    = 10
+	ALRBFn   = 9
+	ALRAFn   = 8
+	INITn    = 7
+	INITFn   = 6
+	RSFn     = 5
+	INITSn   = 4
+	SHPFn    = 3
+	WUTWFn   = 2
+	ALRBWFn  = 1
+	ALRAWFn  = 0
+)
+
+const (
 	PREDIV_A PRER_Bits = 0x7F << 16  //+
 	PREDIV_S PRER_Bits = 0x1FFF << 0 //+
+)
+
+const (
+	PREDIV_An = 16
+	PREDIV_Sn = 0
 )
 
 const (
@@ -144,8 +211,17 @@ const (
 )
 
 const (
+	WUTn = 0
+)
+
+const (
 	DCS CALIBR_Bits = 0x01 << 7 //+
 	DC  CALIBR_Bits = 0x1F << 0 //+
+)
+
+const (
+	DCSn = 7
+	DCn  = 0
 )
 
 const (
@@ -192,7 +268,28 @@ const (
 )
 
 const (
+	AMSK4n  = 31
+	AWDSELn = 30
+	ADTn    = 28
+	ADUn    = 24
+	AMSK3n  = 23
+	APMn    = 22
+	AHTn    = 20
+	AHUn    = 16
+	AMSK2n  = 15
+	AMNTn   = 12
+	AMNUn   = 8
+	AMSK1n  = 7
+	ASTn    = 4
+	ASUn    = 0
+)
+
+const (
 	KEY WPR_Bits = 0xFF << 0 //+
+)
+
+const (
+	KEYn = 0
 )
 
 const (
@@ -200,8 +297,17 @@ const (
 )
 
 const (
+	SSn = 0
+)
+
+const (
 	SUBFS SHIFTR_Bits = 0x7FFF << 0 //+
 	ADD1S SHIFTR_Bits = 0x01 << 31  //+
+)
+
+const (
+	SUBFSn = 0
+	ADD1Sn = 31
 )
 
 const (
@@ -235,6 +341,16 @@ const (
 )
 
 const (
+	TPMn  = 22
+	THTn  = 20
+	THUn  = 16
+	TMNTn = 12
+	TMNUn = 8
+	TSTn  = 4
+	TSUn  = 0
+)
+
+const (
 	TWDU   TSDR_Bits = 0x07 << 13 //+
 	TWDU_0 TSDR_Bits = 0x01 << 13
 	TWDU_1 TSDR_Bits = 0x02 << 13
@@ -256,7 +372,19 @@ const (
 )
 
 const (
+	TWDUn = 13
+	TMTn  = 12
+	TMUn  = 8
+	TDTn  = 4
+	TDUn  = 0
+)
+
+const (
 	TSS TSSSR_Bits = 0xFFFF << 0 //+
+)
+
+const (
+	TSSn = 0
 )
 
 const (
@@ -273,6 +401,13 @@ const (
 	CALM_6 CALR_Bits = 0x40 << 0
 	CALM_7 CALR_Bits = 0x80 << 0
 	CALM_8 CALR_Bits = 0x100 << 0
+)
+
+const (
+	CALPn   = 15
+	CALW8n  = 14
+	CALW16n = 13
+	CALMn   = 0
 )
 
 const (
@@ -297,10 +432,29 @@ const (
 )
 
 const (
+	ALARMOUTTYPEn = 18
+	TSINSELn      = 17
+	TAMPINSELn    = 16
+	TAMPPUDISn    = 15
+	TAMPPRCHn     = 13
+	TAMPFLTn      = 11
+	TAMPFREQn     = 8
+	TAMPTSn       = 7
+	TAMPIEn       = 2
+	TAMP1TRGn     = 1
+	TAMP1En       = 0
+)
+
+const (
 	AMASKSS   ALRMSSR_Bits = 0x0F << 24 //+
 	AMASKSS_0 ALRMSSR_Bits = 0x01 << 24
 	AMASKSS_1 ALRMSSR_Bits = 0x02 << 24
 	AMASKSS_2 ALRMSSR_Bits = 0x04 << 24
 	AMASKSS_3 ALRMSSR_Bits = 0x08 << 24
 	ASS       ALRMSSR_Bits = 0x7FFF << 0 //+
+)
+
+const (
+	AMASKSSn = 24
+	ASSn     = 0
 )

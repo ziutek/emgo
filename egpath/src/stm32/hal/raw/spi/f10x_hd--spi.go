@@ -42,12 +42,38 @@ const (
 )
 
 const (
+	CPHAn     = 0
+	CPOLn     = 1
+	MSTRn     = 2
+	BRn       = 3
+	SPEn      = 6
+	LSBFIRSTn = 7
+	SSIn      = 8
+	SSMn      = 9
+	RXONLYn   = 10
+	DFFn      = 11
+	CRCNEXTn  = 12
+	CRCENn    = 13
+	BIDIOEn   = 14
+	BIDIMODEn = 15
+)
+
+const (
 	RXDMAEN CR2_Bits = 0x01 << 0 //+ Rx Buffer DMA Enable.
 	TXDMAEN CR2_Bits = 0x01 << 1 //+ Tx Buffer DMA Enable.
 	SSOE    CR2_Bits = 0x01 << 2 //+ SS Output Enable.
 	ERRIE   CR2_Bits = 0x01 << 5 //+ Error Interrupt Enable.
 	RXNEIE  CR2_Bits = 0x01 << 6 //+ RX buffer Not Empty Interrupt Enable.
 	TXEIE   CR2_Bits = 0x01 << 7 //+ Tx buffer Empty Interrupt Enable.
+)
+
+const (
+	RXDMAENn = 0
+	TXDMAENn = 1
+	SSOEn    = 2
+	ERRIEn   = 5
+	RXNEIEn  = 6
+	TXEIEn   = 7
 )
 
 const (
@@ -61,10 +87,23 @@ const (
 	BSY    SR_Bits = 0x01 << 7 //+ Busy flag.
 )
 
-const ()
+const (
+	RXNEn   = 0
+	TXEn    = 1
+	CHSIDEn = 2
+	UDRn    = 3
+	CRCERRn = 4
+	MODFn   = 5
+	OVRn    = 6
+	BSYn    = 7
+)
 
 const (
 	CRCPOLY CRCPR_Bits = 0xFFFF << 0 //+ CRC polynomial register.
+)
+
+const (
+	CRCPOLYn = 0
 )
 
 const (
@@ -72,7 +111,15 @@ const (
 )
 
 const (
+	RXCRCn = 0
+)
+
+const (
 	TXCRC TXCRCR_Bits = 0xFFFF << 0 //+ Tx CRC Register.
+)
+
+const (
+	TXCRCn = 0
 )
 
 const (
@@ -93,7 +140,24 @@ const (
 )
 
 const (
+	CHLENn   = 0
+	DATLENn  = 1
+	CKPOLn   = 3
+	I2SSTDn  = 4
+	PCMSYNCn = 7
+	I2SCFGn  = 8
+	I2SEn    = 10
+	I2SMODn  = 11
+)
+
+const (
 	I2SDIV I2SPR_Bits = 0xFF << 0 //+ I2S Linear prescaler.
 	ODD    I2SPR_Bits = 0x01 << 8 //+ Odd factor for the prescaler.
 	MCKOE  I2SPR_Bits = 0x01 << 9 //+ Master Clock Output Enable.
+)
+
+const (
+	I2SDIVn = 0
+	ODDn    = 8
+	MCKOEn  = 9
 )

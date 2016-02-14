@@ -27,10 +27,25 @@ const (
 )
 
 const (
+	SECIEn = 0
+	ALRIEn = 1
+	OWIEn  = 2
+)
+
+const (
 	SECF  CRL_Bits = 0x01 << 0 //+ Second Flag.
 	ALRF  CRL_Bits = 0x01 << 1 //+ Alarm Flag.
 	OWF   CRL_Bits = 0x01 << 2 //+ OverfloW Flag.
 	RSF   CRL_Bits = 0x01 << 3 //+ Registers Synchronized Flag.
 	CNF   CRL_Bits = 0x01 << 4 //+ Configuration Flag.
 	RTOFF CRL_Bits = 0x01 << 5 //+ RTC operation OFF.
+)
+
+const (
+	SECFn  = 0
+	ALRFn  = 1
+	OWFn   = 2
+	RSFn   = 3
+	CNFn   = 4
+	RTOFFn = 5
 )

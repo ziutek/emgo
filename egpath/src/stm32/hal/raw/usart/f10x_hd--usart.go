@@ -34,11 +34,27 @@ const (
 	CTS  SR_Bits = 0x01 << 9 //+ CTS Flag.
 )
 
-const ()
+const (
+	PEn   = 0
+	FEn   = 1
+	NEn   = 2
+	OREn  = 3
+	IDLEn = 4
+	RXNEn = 5
+	TCn   = 6
+	TXEn  = 7
+	LBDn  = 8
+	CTSn  = 9
+)
 
 const (
 	DIV_Fraction BRR_Bits = 0x0F << 0  //+ Fraction of USARTDIV.
 	DIV_Mantissa BRR_Bits = 0xFFF << 4 //+ Mantissa of USARTDIV.
+)
+
+const (
+	DIV_Fractionn = 0
+	DIV_Mantissan = 4
 )
 
 const (
@@ -60,6 +76,24 @@ const (
 )
 
 const (
+	SBKn    = 0
+	RWUn    = 1
+	REn     = 2
+	TEn     = 3
+	IDLEIEn = 4
+	RXNEIEn = 5
+	TCIEn   = 6
+	TXEIEn  = 7
+	PEIEn   = 8
+	PSn     = 9
+	PCEn    = 10
+	WAKEn   = 11
+	Mn      = 12
+	UEn     = 13
+	OVER8n  = 15
+)
+
+const (
 	ADD    CR2_Bits = 0x0F << 0  //+ Address of the USART node.
 	LBDL   CR2_Bits = 0x01 << 5  //+ LIN Break Detection Length.
 	LBDIE  CR2_Bits = 0x01 << 6  //+ LIN Break Detection Interrupt Enable.
@@ -71,6 +105,18 @@ const (
 	STOP_0 CR2_Bits = 0x01 << 12 //  Bit 0.
 	STOP_1 CR2_Bits = 0x02 << 12 //  Bit 1.
 	LINEN  CR2_Bits = 0x01 << 14 //+ LIN mode enable.
+)
+
+const (
+	ADDn   = 0
+	LBDLn  = 5
+	LBDIEn = 6
+	LBCLn  = 8
+	CPHAn  = 9
+	CPOLn  = 10
+	CLKENn = 11
+	STOPn  = 12
+	LINENn = 14
 )
 
 const (
@@ -89,6 +135,21 @@ const (
 )
 
 const (
+	EIEn    = 0
+	IRENn   = 1
+	IRLPn   = 2
+	HDSELn  = 3
+	NACKn   = 4
+	SCENn   = 5
+	DMARn   = 6
+	DMATn   = 7
+	RTSEn   = 8
+	CTSEn   = 9
+	CTSIEn  = 10
+	ONEBITn = 11
+)
+
+const (
 	PSC   GTPR_Bits = 0xFF << 0 //+ PSC[7:0] bits (Prescaler value).
 	PSC_0 GTPR_Bits = 0x01 << 0 //  Bit 0.
 	PSC_1 GTPR_Bits = 0x02 << 0 //  Bit 1.
@@ -99,4 +160,9 @@ const (
 	PSC_6 GTPR_Bits = 0x40 << 0 //  Bit 6.
 	PSC_7 GTPR_Bits = 0x80 << 0 //  Bit 7.
 	GT    GTPR_Bits = 0xFF << 8 //+ Guard time value.
+)
+
+const (
+	PSCn = 0
+	GTn  = 8
 )

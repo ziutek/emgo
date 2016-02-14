@@ -24,6 +24,11 @@ const (
 )
 
 const (
+	Tn    = 0
+	WDGAn = 7
+)
+
+const (
 	W      CFR_Bits = 0x7F << 0 //+ W[6:0] bits (7-bit window value).
 	W0     CFR_Bits = 0x01 << 0 //  Bit 0.
 	W1     CFR_Bits = 0x02 << 0 //  Bit 1.
@@ -39,5 +44,15 @@ const (
 )
 
 const (
+	Wn     = 0
+	WDGTBn = 7
+	EWIn   = 9
+)
+
+const (
 	EWIF SR_Bits = 0x01 << 0 //+ Early Wakeup Interrupt Flag.
+)
+
+const (
+	EWIFn = 0
 )

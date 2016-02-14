@@ -77,6 +77,11 @@ const (
 )
 
 const (
+	MODEn = 0
+	CNFn  = 2
+)
+
+const (
 	MODE     CRH_Bits = 0x33333333 << 0 //+ Port x mode bits.
 	MODE8    CRH_Bits = 0x03 << 0       //  MODE8[1:0] bits (Port x mode bits, pin 8).
 	MODE8_0  CRH_Bits = 0x01 << 0       //  Bit 0.
@@ -130,6 +135,11 @@ const (
 )
 
 const (
+	MODEn = 0
+	CNFn  = 2
+)
+
+const (
 	IDR0  IDR_Bits = 0x01 << 0  //+ Port input data, bit 0.
 	IDR1  IDR_Bits = 0x01 << 1  //+ Port input data, bit 1.
 	IDR2  IDR_Bits = 0x01 << 2  //+ Port input data, bit 2.
@@ -149,6 +159,25 @@ const (
 )
 
 const (
+	IDR0n  = 0
+	IDR1n  = 1
+	IDR2n  = 2
+	IDR3n  = 3
+	IDR4n  = 4
+	IDR5n  = 5
+	IDR6n  = 6
+	IDR7n  = 7
+	IDR8n  = 8
+	IDR9n  = 9
+	IDR10n = 10
+	IDR11n = 11
+	IDR12n = 12
+	IDR13n = 13
+	IDR14n = 14
+	IDR15n = 15
+)
+
+const (
 	ODR0  ODR_Bits = 0x01 << 0  //+ Port output data, bit 0.
 	ODR1  ODR_Bits = 0x01 << 1  //+ Port output data, bit 1.
 	ODR2  ODR_Bits = 0x01 << 2  //+ Port output data, bit 2.
@@ -165,6 +194,25 @@ const (
 	ODR13 ODR_Bits = 0x01 << 13 //+ Port output data, bit 13.
 	ODR14 ODR_Bits = 0x01 << 14 //+ Port output data, bit 14.
 	ODR15 ODR_Bits = 0x01 << 15 //+ Port output data, bit 15.
+)
+
+const (
+	ODR0n  = 0
+	ODR1n  = 1
+	ODR2n  = 2
+	ODR3n  = 3
+	ODR4n  = 4
+	ODR5n  = 5
+	ODR6n  = 6
+	ODR7n  = 7
+	ODR8n  = 8
+	ODR9n  = 9
+	ODR10n = 10
+	ODR11n = 11
+	ODR12n = 12
+	ODR13n = 13
+	ODR14n = 14
+	ODR15n = 15
 )
 
 const (
@@ -203,6 +251,41 @@ const (
 )
 
 const (
+	BS0n  = 0
+	BS1n  = 1
+	BS2n  = 2
+	BS3n  = 3
+	BS4n  = 4
+	BS5n  = 5
+	BS6n  = 6
+	BS7n  = 7
+	BS8n  = 8
+	BS9n  = 9
+	BS10n = 10
+	BS11n = 11
+	BS12n = 12
+	BS13n = 13
+	BS14n = 14
+	BS15n = 15
+	BR0n  = 16
+	BR1n  = 17
+	BR2n  = 18
+	BR3n  = 19
+	BR4n  = 20
+	BR5n  = 21
+	BR6n  = 22
+	BR7n  = 23
+	BR8n  = 24
+	BR9n  = 25
+	BR10n = 26
+	BR11n = 27
+	BR12n = 28
+	BR13n = 29
+	BR14n = 30
+	BR15n = 31
+)
+
+const (
 	BR0  BRR_Bits = 0x01 << 0  //+ Port x Reset bit 0.
 	BR1  BRR_Bits = 0x01 << 1  //+ Port x Reset bit 1.
 	BR2  BRR_Bits = 0x01 << 2  //+ Port x Reset bit 2.
@@ -219,6 +302,25 @@ const (
 	BR13 BRR_Bits = 0x01 << 13 //+ Port x Reset bit 13.
 	BR14 BRR_Bits = 0x01 << 14 //+ Port x Reset bit 14.
 	BR15 BRR_Bits = 0x01 << 15 //+ Port x Reset bit 15.
+)
+
+const (
+	BR0n  = 0
+	BR1n  = 1
+	BR2n  = 2
+	BR3n  = 3
+	BR4n  = 4
+	BR5n  = 5
+	BR6n  = 6
+	BR7n  = 7
+	BR8n  = 8
+	BR9n  = 9
+	BR10n = 10
+	BR11n = 11
+	BR12n = 12
+	BR13n = 13
+	BR14n = 14
+	BR15n = 15
 )
 
 const (
@@ -239,4 +341,24 @@ const (
 	LCK14 LCKR_Bits = 0x01 << 14 //+ Port x Lock bit 14.
 	LCK15 LCKR_Bits = 0x01 << 15 //+ Port x Lock bit 15.
 	LCKK  LCKR_Bits = 0x01 << 16 //+ Lock key.
+)
+
+const (
+	LCK0n  = 0
+	LCK1n  = 1
+	LCK2n  = 2
+	LCK3n  = 3
+	LCK4n  = 4
+	LCK5n  = 5
+	LCK6n  = 6
+	LCK7n  = 7
+	LCK8n  = 8
+	LCK9n  = 9
+	LCK10n = 10
+	LCK11n = 11
+	LCK12n = 12
+	LCK13n = 13
+	LCK14n = 14
+	LCK15n = 15
+	LCKKn  = 16
 )

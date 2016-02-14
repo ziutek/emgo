@@ -39,6 +39,29 @@ const (
 )
 
 const (
+	TCIF3n  = 27
+	HTIF3n  = 26
+	TEIF3n  = 25
+	DMEIF3n = 24
+	FEIF3n  = 22
+	TCIF2n  = 21
+	HTIF2n  = 20
+	TEIF2n  = 19
+	DMEIF2n = 18
+	FEIF2n  = 16
+	TCIF1n  = 11
+	HTIF1n  = 10
+	TEIF1n  = 9
+	DMEIF1n = 8
+	FEIF1n  = 6
+	TCIF0n  = 5
+	HTIF0n  = 4
+	TEIF0n  = 3
+	DMEIF0n = 2
+	FEIF0n  = 0
+)
+
+const (
 	TCIF7  HISR_Bits = 0x01 << 27 //+
 	HTIF7  HISR_Bits = 0x01 << 26 //+
 	TEIF7  HISR_Bits = 0x01 << 25 //+
@@ -59,6 +82,29 @@ const (
 	TEIF4  HISR_Bits = 0x01 << 3  //+
 	DMEIF4 HISR_Bits = 0x01 << 2  //+
 	FEIF4  HISR_Bits = 0x01 << 0  //+
+)
+
+const (
+	TCIF7n  = 27
+	HTIF7n  = 26
+	TEIF7n  = 25
+	DMEIF7n = 24
+	FEIF7n  = 22
+	TCIF6n  = 21
+	HTIF6n  = 20
+	TEIF6n  = 19
+	DMEIF6n = 18
+	FEIF6n  = 16
+	TCIF5n  = 11
+	HTIF5n  = 10
+	TEIF5n  = 9
+	DMEIF5n = 8
+	FEIF5n  = 6
+	TCIF4n  = 5
+	HTIF4n  = 4
+	TEIF4n  = 3
+	DMEIF4n = 2
+	FEIF4n  = 0
 )
 
 const (
@@ -85,6 +131,29 @@ const (
 )
 
 const (
+	CTCIF3n  = 27
+	CHTIF3n  = 26
+	CTEIF3n  = 25
+	CDMEIF3n = 24
+	CFEIF3n  = 22
+	CTCIF2n  = 21
+	CHTIF2n  = 20
+	CTEIF2n  = 19
+	CDMEIF2n = 18
+	CFEIF2n  = 16
+	CTCIF1n  = 11
+	CHTIF1n  = 10
+	CTEIF1n  = 9
+	CDMEIF1n = 8
+	CFEIF1n  = 6
+	CTCIF0n  = 5
+	CHTIF0n  = 4
+	CTEIF0n  = 3
+	CDMEIF0n = 2
+	CFEIF0n  = 0
+)
+
+const (
 	CTCIF7  HIFCR_Bits = 0x01 << 27 //+
 	CHTIF7  HIFCR_Bits = 0x01 << 26 //+
 	CTEIF7  HIFCR_Bits = 0x01 << 25 //+
@@ -105,4 +174,27 @@ const (
 	CTEIF4  HIFCR_Bits = 0x01 << 3  //+
 	CDMEIF4 HIFCR_Bits = 0x01 << 2  //+
 	CFEIF4  HIFCR_Bits = 0x01 << 0  //+
+)
+
+const (
+	CTCIF7n  = 27
+	CHTIF7n  = 26
+	CTEIF7n  = 25
+	CDMEIF7n = 24
+	CFEIF7n  = 22
+	CTCIF6n  = 21
+	CHTIF6n  = 20
+	CTEIF6n  = 19
+	CDMEIF6n = 18
+	CFEIF6n  = 16
+	CTCIF5n  = 11
+	CHTIF5n  = 10
+	CTEIF5n  = 9
+	CDMEIF5n = 8
+	CFEIF5n  = 6
+	CTCIF4n  = 5
+	CHTIF4n  = 4
+	CTEIF4n  = 3
+	CDMEIF4n = 2
+	CFEIF4n  = 0
 )

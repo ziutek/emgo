@@ -97,6 +97,24 @@ const (
 )
 
 const (
+	WDn   = 23
+	JDn   = 22
+	IFGn  = 17
+	CSDn  = 16
+	FESn  = 14
+	RODn  = 13
+	LMn   = 12
+	DMn   = 11
+	IPCOn = 10
+	RDn   = 9
+	APCSn = 7
+	BLn   = 5
+	DCn   = 4
+	TEn   = 3
+	REn   = 2
+)
+
+const (
 	RA                          MACFFR_Bits = 0x01 << 31 //+ Receive all.
 	HPF                         MACFFR_Bits = 0x01 << 10 //+ Hash or perfect filter.
 	SAF                         MACFFR_Bits = 0x01 << 9  //+ Source address filter enable.
@@ -114,11 +132,33 @@ const (
 )
 
 const (
+	RAn   = 31
+	HPFn  = 10
+	SAFn  = 9
+	SAIFn = 8
+	PCFn  = 6
+	BFDn  = 5
+	PAMn  = 4
+	DAIFn = 3
+	HMn   = 2
+	HUn   = 1
+	PMn   = 0
+)
+
+const (
 	HTH MACHTHR_Bits = 0xFFFFFFFF << 0 //+ Hash table high.
 )
 
 const (
+	HTHn = 0
+)
+
+const (
 	HTL MACHTLR_Bits = 0xFFFFFFFF << 0 //+ Hash table low.
+)
+
+const (
+	HTLn = 0
 )
 
 const (
@@ -135,7 +175,19 @@ const (
 )
 
 const (
+	PAn = 11
+	MRn = 6
+	CRn = 2
+	MWn = 1
+	MBn = 0
+)
+
+const (
 	MD MACMIIDR_Bits = 0xFFFF << 0 //+ MII data: read/write data from/to PHY.
+)
+
+const (
+	MDn = 0
 )
 
 const (
@@ -153,12 +205,31 @@ const (
 )
 
 const (
+	PTn     = 16
+	ZQPDn   = 7
+	PLTn    = 4
+	UPFDn   = 3
+	RFCEn   = 2
+	TFCEn   = 1
+	FCBBPAn = 0
+)
+
+const (
 	VLANTC MACVLANTR_Bits = 0x01 << 16  //+ 12-bit VLAN tag comparison.
 	VLANTI MACVLANTR_Bits = 0xFFFF << 0 //+ VLAN tag identifier (for receive frames).
 )
 
 const (
+	VLANTCn = 16
+	VLANTIn = 0
+)
+
+const (
 	D MACRWUFFR_Bits = 0xFFFFFFFF << 0 //+ Wake-up frame filter register data.
+)
+
+const (
+	Dn = 0
 )
 
 const (
@@ -172,6 +243,16 @@ const (
 )
 
 const (
+	WFFRPRn = 31
+	GUn     = 9
+	WFRn    = 6
+	MPRn    = 5
+	WFEn    = 2
+	MPEn    = 1
+	PDn     = 0
+)
+
+const (
 	TSTS   MACSR_Bits = 0x01 << 9 //+ Time stamp trigger status.
 	MMCTS  MACSR_Bits = 0x01 << 6 //+ MMC transmit status.
 	MMMCRS MACSR_Bits = 0x01 << 5 //+ MMC receive status.
@@ -180,8 +261,21 @@ const (
 )
 
 const (
+	TSTSn   = 9
+	MMCTSn  = 6
+	MMMCRSn = 5
+	MMCSn   = 4
+	PMTSn   = 3
+)
+
+const (
 	TSTIM MACIMR_Bits = 0x01 << 9 //+ Time stamp trigger interrupt mask.
 	PMTIM MACIMR_Bits = 0x01 << 3 //+ PMT interrupt mask.
+)
+
+const (
+	TSTIMn = 9
+	PMTIMn = 3
 )
 
 const (
@@ -189,7 +283,15 @@ const (
 )
 
 const (
+	MACA0Hn = 0
+)
+
+const (
 	MACA0L MACA0LR_Bits = 0xFFFFFFFF << 0 //+ MAC address0 low.
+)
+
+const (
+	MACA0Ln = 0
 )
 
 const (
@@ -206,7 +308,18 @@ const (
 )
 
 const (
+	AEn     = 31
+	SAn     = 30
+	MBCn    = 24
+	MACA1Hn = 0
+)
+
+const (
 	MACA1L MACA1LR_Bits = 0xFFFFFFFF << 0 //+ MAC address1 low.
+)
+
+const (
+	MACA1Ln = 0
 )
 
 const (
@@ -223,7 +336,18 @@ const (
 )
 
 const (
+	AEn     = 31
+	SAn     = 30
+	MBCn    = 24
+	MACA2Hn = 0
+)
+
+const (
 	MACA2L MACA2LR_Bits = 0xFFFFFFFF << 0 //+ MAC address2 low.
+)
+
+const (
+	MACA2Ln = 0
 )
 
 const (
@@ -240,7 +364,18 @@ const (
 )
 
 const (
+	AEn     = 31
+	SAn     = 30
+	MBCn    = 24
+	MACA3Hn = 0
+)
+
+const (
 	MACA3L MACA3LR_Bits = 0xFFFFFFFF << 0 //+ MAC address3 low.
+)
+
+const (
+	MACA3Ln = 0
 )
 
 const (
@@ -253,9 +388,24 @@ const (
 )
 
 const (
+	MCFHPn = 5
+	MCPn   = 4
+	MCFn   = 3
+	RORn   = 2
+	CSRn   = 1
+	CRn    = 0
+)
+
+const (
 	RGUFS MMCRIR_Bits = 0x01 << 17 //+ Set when Rx good unicast frames counter reaches half the maximum value.
 	RFAES MMCRIR_Bits = 0x01 << 6  //+ Set when Rx alignment error counter reaches half the maximum value.
 	RFCES MMCRIR_Bits = 0x01 << 5  //+ Set when Rx crc error counter reaches half the maximum value.
+)
+
+const (
+	RGUFSn = 17
+	RFAESn = 6
+	RFCESn = 5
 )
 
 const (
@@ -265,9 +415,21 @@ const (
 )
 
 const (
+	TGFSn    = 21
+	TGFMSCSn = 15
+	TGFSCSn  = 14
+)
+
+const (
 	RGUFM MMCRIMR_Bits = 0x01 << 17 //+ Mask the interrupt when Rx good unicast frames counter reaches half the maximum value.
 	RFAEM MMCRIMR_Bits = 0x01 << 6  //+ Mask the interrupt when when Rx alignment error counter reaches half the maximum value.
 	RFCEM MMCRIMR_Bits = 0x01 << 5  //+ Mask the interrupt when Rx crc error counter reaches half the maximum value.
+)
+
+const (
+	RGUFMn = 17
+	RFAEMn = 6
+	RFCEMn = 5
 )
 
 const (
@@ -277,7 +439,17 @@ const (
 )
 
 const (
+	TGFMn    = 21
+	TGFMSCMn = 15
+	TGFSCMn  = 14
+)
+
+const (
 	TGFSCC MMCTGFSCCR_Bits = 0xFFFFFFFF << 0 //+ Number of successfully transmitted frames after a single collision in Half-duplex mode..
+)
+
+const (
+	TGFSCCn = 0
 )
 
 const (
@@ -285,7 +457,15 @@ const (
 )
 
 const (
+	TGFMSCCn = 0
+)
+
+const (
 	TGFC MMCTGFCR_Bits = 0xFFFFFFFF << 0 //+ Number of good frames transmitted..
+)
+
+const (
+	TGFCn = 0
 )
 
 const (
@@ -293,11 +473,23 @@ const (
 )
 
 const (
+	RFCECn = 0
+)
+
+const (
 	RFAEC MMCRFAECR_Bits = 0xFFFFFFFF << 0 //+ Number of frames received with alignment (dribble) error.
 )
 
 const (
+	RFAECn = 0
+)
+
+const (
 	RGUFC MMCRGUFCR_Bits = 0xFFFFFFFF << 0 //+ Number of good unicast frames received..
+)
+
+const (
+	RGUFCn = 0
 )
 
 const (
@@ -311,11 +503,29 @@ const (
 )
 
 const (
+	TSCNTn = 16
+	TSARUn = 5
+	TSITEn = 4
+	TSSTUn = 3
+	TSSTIn = 2
+	TSFCUn = 1
+	TSEn   = 0
+)
+
+const (
 	STSSI PTPSSIR_Bits = 0xFF << 0 //+ System time Sub-second increment value.
 )
 
 const (
+	STSSIn = 0
+)
+
+const (
 	STS PTPTSHR_Bits = 0xFFFFFFFF << 0 //+ System Time second.
+)
+
+const (
+	STSn = 0
 )
 
 const (
@@ -324,7 +534,16 @@ const (
 )
 
 const (
+	STPNSn = 31
+	STSSn  = 0
+)
+
+const (
 	TSUS PTPTSHUR_Bits = 0xFFFFFFFF << 0 //+ Time stamp update seconds.
+)
+
+const (
+	TSUSn = 0
 )
 
 const (
@@ -333,7 +552,16 @@ const (
 )
 
 const (
+	TSUPNSn = 31
+	TSUSSn  = 0
+)
+
+const (
 	TSA PTPTSAR_Bits = 0xFFFFFFFF << 0 //+ Time stamp addend.
+)
+
+const (
+	TSAn = 0
 )
 
 const (
@@ -341,7 +569,15 @@ const (
 )
 
 const (
+	TTSHn = 0
+)
+
+const (
 	TTSL PTPTTLR_Bits = 0xFFFFFFFF << 0 //+ Target time stamp low.
+)
+
+const (
+	TTSLn = 0
 )
 
 const (
@@ -355,6 +591,19 @@ const (
 	TSSARFE    PTPTSSR_Bits = 0x01 << 8  //+ Time stamp snapshot for all received frames enable.
 	TSTTR      PTPTSSR_Bits = 0x01 << 5  //+ Time stamp target time reached.
 	TSSO       PTPTSSR_Bits = 0x01 << 4  //+ Time stamp seconds overflow.
+)
+
+const (
+	TSSMRMEn    = 15
+	TSSEMEn     = 14
+	TSSIPV4FEn  = 13
+	TSSIPV6FEn  = 12
+	TSSPTPOEFEn = 11
+	TSPTPPSV2En = 10
+	TSSSRn      = 9
+	TSSARFEn    = 8
+	TSTTRn      = 5
+	TSSOn       = 4
 )
 
 const (
@@ -400,7 +649,25 @@ const (
 )
 
 const (
+	AABn  = 25
+	FPMn  = 24
+	USPn  = 23
+	RDPn  = 17
+	FBn   = 16
+	RTPRn = 14
+	PBLn  = 8
+	EDEn  = 7
+	DSLn  = 2
+	DAn   = 1
+	SRn   = 0
+)
+
+const (
 	TPD DMATPDR_Bits = 0xFFFFFFFF << 0 //+ Transmit poll demand.
+)
+
+const (
+	TPDn = 0
 )
 
 const (
@@ -408,11 +675,23 @@ const (
 )
 
 const (
+	RPDn = 0
+)
+
+const (
 	SRL DMARDLAR_Bits = 0xFFFFFFFF << 0 //+ Start of receive list.
 )
 
 const (
+	SRLn = 0
+)
+
+const (
 	STL DMATDLAR_Bits = 0xFFFFFFFF << 0 //+ Start of transmit list.
+)
+
+const (
+	STLn = 0
 )
 
 const (
@@ -455,6 +734,30 @@ const (
 )
 
 const (
+	TSTSn = 29
+	PMTSn = 28
+	MMCSn = 27
+	EBSn  = 23
+	TPSn  = 20
+	RPSn  = 17
+	NISn  = 16
+	AISn  = 15
+	ERSn  = 14
+	FBESn = 13
+	ETSn  = 10
+	RWTSn = 9
+	RPSSn = 8
+	RBUSn = 7
+	RSn   = 6
+	TUSn  = 5
+	ROSn  = 4
+	TJTSn = 3
+	TBUSn = 2
+	TPSSn = 1
+	TSn   = 0
+)
+
+const (
 	DTCEFD       DMAOMR_Bits = 0x01 << 26 //+ Disable Dropping of TCP/IP checksum error frames.
 	RSF          DMAOMR_Bits = 0x01 << 25 //+ Receive store and forward.
 	DFRF         DMAOMR_Bits = 0x01 << 24 //+ Disable flushing of received frames.
@@ -482,6 +785,21 @@ const (
 )
 
 const (
+	DTCEFDn = 26
+	RSFn    = 25
+	DFRFn   = 24
+	TSFn    = 21
+	FTFn    = 20
+	TTCn    = 14
+	STn     = 13
+	FEFn    = 7
+	FUGFn   = 6
+	RTCn    = 3
+	OSFn    = 2
+	SRn     = 1
+)
+
+const (
 	NISE  DMAIER_Bits = 0x01 << 16 //+ Normal interrupt summary enable.
 	AISE  DMAIER_Bits = 0x01 << 15 //+ Abnormal interrupt summary enable.
 	ERIE  DMAIER_Bits = 0x01 << 14 //+ Early receive interrupt enable.
@@ -500,6 +818,24 @@ const (
 )
 
 const (
+	NISEn  = 16
+	AISEn  = 15
+	ERIEn  = 14
+	FBEIEn = 13
+	ETIEn  = 10
+	RWTIEn = 9
+	RPSIEn = 8
+	RBUIEn = 7
+	RIEn   = 6
+	TUIEn  = 5
+	ROIEn  = 4
+	TJTIEn = 3
+	TBUIEn = 2
+	TPSIEn = 1
+	TIEn   = 0
+)
+
+const (
 	OFOC DMAMFBOCR_Bits = 0x01 << 28  //+ Overflow bit for FIFO overflow counter.
 	MFA  DMAMFBOCR_Bits = 0x7FF << 17 //+ Number of frames missed by the application.
 	OMFC DMAMFBOCR_Bits = 0x01 << 16  //+ Overflow bit for missed frame counter.
@@ -507,7 +843,18 @@ const (
 )
 
 const (
+	OFOCn = 28
+	MFAn  = 17
+	OMFCn = 16
+	MFCn  = 0
+)
+
+const (
 	HTDAP DMACHTDR_Bits = 0xFFFFFFFF << 0 //+ Host transmit descriptor address pointer.
+)
+
+const (
+	HTDAPn = 0
 )
 
 const (
@@ -515,9 +862,21 @@ const (
 )
 
 const (
+	HRDAPn = 0
+)
+
+const (
 	HTBAP DMACHTBAR_Bits = 0xFFFFFFFF << 0 //+ Host transmit buffer address pointer.
 )
 
 const (
+	HTBAPn = 0
+)
+
+const (
 	HRBAP DMACHRBAR_Bits = 0xFFFFFFFF << 0 //+ Host receive buffer address pointer.
+)
+
+const (
+	HRBAPn = 0
 )

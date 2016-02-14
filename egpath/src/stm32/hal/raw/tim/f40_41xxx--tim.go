@@ -60,6 +60,17 @@ const (
 )
 
 const (
+	CENn  = 0
+	UDISn = 1
+	URSn  = 2
+	OPMn  = 3
+	DIRn  = 4
+	CMSn  = 5
+	ARPEn = 7
+	CKDn  = 8
+)
+
+const (
 	CCPC  CR2_Bits = 0x01 << 0  //+ Capture/Compare Preloaded Control.
 	CCUS  CR2_Bits = 0x01 << 2  //+ Capture/Compare Control Update Selection.
 	CCDS  CR2_Bits = 0x01 << 3  //+ Capture/Compare DMA Selection.
@@ -75,6 +86,21 @@ const (
 	OIS3  CR2_Bits = 0x01 << 12 //+ Output Idle state 3 (OC3 output).
 	OIS3N CR2_Bits = 0x01 << 13 //+ Output Idle state 3 (OC3N output).
 	OIS4  CR2_Bits = 0x01 << 14 //+ Output Idle state 4 (OC4 output).
+)
+
+const (
+	CCPCn  = 0
+	CCUSn  = 2
+	CCDSn  = 3
+	MMSn   = 4
+	TI1Sn  = 7
+	OIS1n  = 8
+	OIS1Nn = 9
+	OIS2n  = 10
+	OIS2Nn = 11
+	OIS3n  = 12
+	OIS3Nn = 13
+	OIS4n  = 14
 )
 
 const (
@@ -100,6 +126,16 @@ const (
 )
 
 const (
+	SMSn  = 0
+	TSn   = 4
+	MSMn  = 7
+	ETFn  = 8
+	ETPSn = 12
+	ECEn  = 14
+	ETPn  = 15
+)
+
+const (
 	UIE   DIER_Bits = 0x01 << 0  //+ Update interrupt enable.
 	CC1IE DIER_Bits = 0x01 << 1  //+ Capture/Compare 1 interrupt enable.
 	CC2IE DIER_Bits = 0x01 << 2  //+ Capture/Compare 2 interrupt enable.
@@ -118,6 +154,24 @@ const (
 )
 
 const (
+	UIEn   = 0
+	CC1IEn = 1
+	CC2IEn = 2
+	CC3IEn = 3
+	CC4IEn = 4
+	COMIEn = 5
+	TIEn   = 6
+	BIEn   = 7
+	UDEn   = 8
+	CC1DEn = 9
+	CC2DEn = 10
+	CC3DEn = 11
+	CC4DEn = 12
+	COMDEn = 13
+	TDEn   = 14
+)
+
+const (
 	UIF   SR_Bits = 0x01 << 0  //+ Update interrupt Flag.
 	CC1IF SR_Bits = 0x01 << 1  //+ Capture/Compare 1 interrupt Flag.
 	CC2IF SR_Bits = 0x01 << 2  //+ Capture/Compare 2 interrupt Flag.
@@ -133,6 +187,21 @@ const (
 )
 
 const (
+	UIFn   = 0
+	CC1IFn = 1
+	CC2IFn = 2
+	CC3IFn = 3
+	CC4IFn = 4
+	COMIFn = 5
+	TIFn   = 6
+	BIFn   = 7
+	CC1OFn = 9
+	CC2OFn = 10
+	CC3OFn = 11
+	CC4OFn = 12
+)
+
+const (
 	UG   EGR_Bits = 0x01 << 0 //+ Update Generation.
 	CC1G EGR_Bits = 0x01 << 1 //+ Capture/Compare 1 Generation.
 	CC2G EGR_Bits = 0x01 << 2 //+ Capture/Compare 2 Generation.
@@ -141,6 +210,17 @@ const (
 	COMG EGR_Bits = 0x01 << 5 //+ Capture/Compare Control Update Generation.
 	TG   EGR_Bits = 0x01 << 6 //+ Trigger Generation.
 	BG   EGR_Bits = 0x01 << 7 //+ Break Generation.
+)
+
+const (
+	UGn   = 0
+	CC1Gn = 1
+	CC2Gn = 2
+	CC3Gn = 3
+	CC4Gn = 4
+	COMGn = 5
+	TGn   = 6
+	BGn   = 7
 )
 
 const (
@@ -183,6 +263,19 @@ const (
 )
 
 const (
+	CC1Sn  = 0
+	OC1FEn = 2
+	OC1PEn = 3
+	OC1Mn  = 4
+	OC1CEn = 7
+	CC2Sn  = 8
+	OC2FEn = 10
+	OC2PEn = 11
+	OC2Mn  = 12
+	OC2CEn = 15
+)
+
+const (
 	CC3S     CCMR2_Bits = 0x03 << 0  //+ CC3S[1:0] bits (Capture/Compare 3 Selection).
 	CC3S_0   CCMR2_Bits = 0x01 << 0  //  Bit 0.
 	CC3S_1   CCMR2_Bits = 0x02 << 0  //  Bit 1.
@@ -222,6 +315,19 @@ const (
 )
 
 const (
+	CC3Sn  = 0
+	OC3FEn = 2
+	OC3PEn = 3
+	OC3Mn  = 4
+	OC3CEn = 7
+	CC4Sn  = 8
+	OC4FEn = 10
+	OC4PEn = 11
+	OC4Mn  = 12
+	OC4CEn = 15
+)
+
+const (
 	CC1E  CCER_Bits = 0x01 << 0  //+ Capture/Compare 1 output enable.
 	CC1P  CCER_Bits = 0x01 << 1  //+ Capture/Compare 1 output Polarity.
 	CC1NE CCER_Bits = 0x01 << 2  //+ Capture/Compare 1 Complementary output enable.
@@ -239,23 +345,31 @@ const (
 	CC4NP CCER_Bits = 0x01 << 15 //+ Capture/Compare 4 Complementary output Polarity.
 )
 
-const ()
-
-const ()
-
-const ()
+const (
+	CC1En  = 0
+	CC1Pn  = 1
+	CC1NEn = 2
+	CC1NPn = 3
+	CC2En  = 4
+	CC2Pn  = 5
+	CC2NEn = 6
+	CC2NPn = 7
+	CC3En  = 8
+	CC3Pn  = 9
+	CC3NEn = 10
+	CC3NPn = 11
+	CC4En  = 12
+	CC4Pn  = 13
+	CC4NPn = 15
+)
 
 const (
 	REP RCR_Bits = 0xFF << 0 //+ Repetition Counter Value.
 )
 
-const ()
-
-const ()
-
-const ()
-
-const ()
+const (
+	REPn = 0
+)
 
 const (
 	DTG    BDTR_Bits = 0xFF << 0  //+ DTG[0:7] bits (Dead-Time Generator set-up).
@@ -279,6 +393,17 @@ const (
 )
 
 const (
+	DTGn  = 0
+	LOCKn = 8
+	OSSIn = 10
+	OSSRn = 11
+	BKEn  = 12
+	BKPn  = 13
+	AOEn  = 14
+	MOEn  = 15
+)
+
+const (
 	DBA   DCR_Bits = 0x1F << 0 //+ DBA[4:0] bits (DMA Base Address).
 	DBA_0 DCR_Bits = 0x01 << 0 //  Bit 0.
 	DBA_1 DCR_Bits = 0x02 << 0 //  Bit 1.
@@ -294,7 +419,16 @@ const (
 )
 
 const (
+	DBAn = 0
+	DBLn = 8
+)
+
+const (
 	DMAB DMAR_Bits = 0xFFFF << 0 //+ DMA register for burst accesses.
+)
+
+const (
+	DMABn = 0
 )
 
 const (
@@ -304,4 +438,9 @@ const (
 	ITR1_RMP   OR_Bits = 0x03 << 10 //+ ITR1_RMP[1:0] bits (TIM2 Internal trigger 1 remap).
 	ITR1_RMP_0 OR_Bits = 0x01 << 10 //  Bit 0.
 	ITR1_RMP_1 OR_Bits = 0x02 << 10 //  Bit 1.
+)
+
+const (
+	TI4_RMPn  = 6
+	ITR1_RMPn = 10
 )

@@ -48,6 +48,26 @@ const (
 )
 
 const (
+	LPDSn   = 0
+	PDDSn   = 1
+	CWUFn   = 2
+	CSBFn   = 3
+	PVDEn   = 4
+	PLSn    = 5
+	DBPn    = 8
+	FPDSn   = 9
+	LPUDSn  = 10
+	MRUDSn  = 11
+	ADCDC1n = 13
+	VOSn    = 14
+	ODENn   = 16
+	ODSWENn = 17
+	UDENn   = 18
+	FMSSRn  = 20
+	FISSRn  = 21
+)
+
+const (
 	WUF     CSR_Bits = 0x01 << 0  //+ Wakeup Flag.
 	SBF     CSR_Bits = 0x01 << 1  //+ Standby Flag.
 	PVDO    CSR_Bits = 0x01 << 2  //+ PVD Output.
@@ -59,4 +79,18 @@ const (
 	ODRDY   CSR_Bits = 0x01 << 16 //+ Over Drive generator ready.
 	ODSWRDY CSR_Bits = 0x01 << 17 //+ Over Drive Switch ready.
 	UDSWRDY CSR_Bits = 0x03 << 18 //+ Under Drive ready.
+)
+
+const (
+	WUFn     = 0
+	SBFn     = 1
+	PVDOn    = 2
+	BRRn     = 3
+	WUPPn    = 7
+	EWUPn    = 8
+	BREn     = 9
+	VOSRDYn  = 14
+	ODRDYn   = 16
+	ODSWRDYn = 17
+	UDSWRDYn = 18
 )

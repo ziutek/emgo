@@ -35,6 +35,18 @@ const (
 )
 
 const (
+	INRQn  = 0
+	SLEEPn = 1
+	TXFPn  = 2
+	RFLMn  = 3
+	NARTn  = 4
+	AWUMn  = 5
+	ABOMn  = 6
+	TTCMn  = 7
+	RESETn = 15
+)
+
+const (
 	INAK  MSR_Bits = 0x01 << 0  //+ Initialization Acknowledge.
 	SLAK  MSR_Bits = 0x01 << 1  //+ Sleep Acknowledge.
 	ERRI  MSR_Bits = 0x01 << 2  //+ Error Interrupt.
@@ -44,6 +56,18 @@ const (
 	RXM   MSR_Bits = 0x01 << 9  //+ Receive Mode.
 	SAMP  MSR_Bits = 0x01 << 10 //+ Last Sample Point.
 	RX    MSR_Bits = 0x01 << 11 //+ CAN Rx Signal.
+)
+
+const (
+	INAKn  = 0
+	SLAKn  = 1
+	ERRIn  = 2
+	WKUIn  = 3
+	SLAKIn = 4
+	TXMn   = 8
+	RXMn   = 9
+	SAMPn  = 10
+	RXn    = 11
 )
 
 const (
@@ -74,6 +98,27 @@ const (
 )
 
 const (
+	RQCP0n = 0
+	TXOK0n = 1
+	ALST0n = 2
+	TERR0n = 3
+	ABRQ0n = 7
+	RQCP1n = 8
+	TXOK1n = 9
+	ALST1n = 10
+	TERR1n = 11
+	ABRQ1n = 15
+	RQCP2n = 16
+	TXOK2n = 17
+	ALST2n = 18
+	TERR2n = 19
+	ABRQ2n = 23
+	CODEn  = 24
+	TMEn   = 26
+	LOWn   = 29
+)
+
+const (
 	FMP0  RF0R_Bits = 0x03 << 0 //+ FIFO 0 Message Pending.
 	FULL0 RF0R_Bits = 0x01 << 3 //+ FIFO 0 Full.
 	FOVR0 RF0R_Bits = 0x01 << 4 //+ FIFO 0 Overrun.
@@ -81,10 +126,24 @@ const (
 )
 
 const (
+	FMP0n  = 0
+	FULL0n = 3
+	FOVR0n = 4
+	RFOM0n = 5
+)
+
+const (
 	FMP1  RF1R_Bits = 0x03 << 0 //+ FIFO 1 Message Pending.
 	FULL1 RF1R_Bits = 0x01 << 3 //+ FIFO 1 Full.
 	FOVR1 RF1R_Bits = 0x01 << 4 //+ FIFO 1 Overrun.
 	RFOM1 RF1R_Bits = 0x01 << 5 //+ Release FIFO 1 Output Mailbox.
+)
+
+const (
+	FMP1n  = 0
+	FULL1n = 3
+	FOVR1n = 4
+	RFOM1n = 5
 )
 
 const (
@@ -105,6 +164,23 @@ const (
 )
 
 const (
+	TMEIEn  = 0
+	FMPIE0n = 1
+	FFIE0n  = 2
+	FOVIE0n = 3
+	FMPIE1n = 4
+	FFIE1n  = 5
+	FOVIE1n = 6
+	EWGIEn  = 8
+	EPVIEn  = 9
+	BOFIEn  = 10
+	LECIEn  = 11
+	ERRIEn  = 15
+	WKUIEn  = 16
+	SLKIEn  = 17
+)
+
+const (
 	EWGF  ESR_Bits = 0x01 << 0  //+ Error Warning Flag.
 	EPVF  ESR_Bits = 0x01 << 1  //+ Error Passive Flag.
 	BOFF  ESR_Bits = 0x01 << 2  //+ Bus-Off Flag.
@@ -117,6 +193,15 @@ const (
 )
 
 const (
+	EWGFn = 0
+	EPVFn = 1
+	BOFFn = 2
+	LECn  = 4
+	TECn  = 16
+	RECn  = 24
+)
+
+const (
 	BRP  BTR_Bits = 0x3FF << 0 //+ Baud Rate Prescaler.
 	TS1  BTR_Bits = 0x0F << 16 //+ Time Segment 1.
 	TS2  BTR_Bits = 0x07 << 20 //+ Time Segment 2.
@@ -126,7 +211,20 @@ const (
 )
 
 const (
+	BRPn  = 0
+	TS1n  = 16
+	TS2n  = 20
+	SJWn  = 24
+	LBKMn = 30
+	SILMn = 31
+)
+
+const (
 	FINIT FMR_Bits = 0x01 << 0 //+ Filter Init Mode.
+)
+
+const (
+	FINITn = 0
 )
 
 const (
@@ -148,6 +246,10 @@ const (
 )
 
 const (
+	FBMn = 0
+)
+
+const (
 	FSC   FS1R_Bits = 0x3FFF << 0 //+ Filter Scale Configuration.
 	FSC0  FS1R_Bits = 0x01 << 0   //  Filter Scale Configuration bit 0.
 	FSC1  FS1R_Bits = 0x02 << 0   //  Filter Scale Configuration bit 1.
@@ -163,6 +265,10 @@ const (
 	FSC11 FS1R_Bits = 0x800 << 0  //  Filter Scale Configuration bit 11.
 	FSC12 FS1R_Bits = 0x1000 << 0 //  Filter Scale Configuration bit 12.
 	FSC13 FS1R_Bits = 0x2000 << 0 //  Filter Scale Configuration bit 13.
+)
+
+const (
+	FSCn = 0
 )
 
 const (
@@ -184,6 +290,10 @@ const (
 )
 
 const (
+	FFAn = 0
+)
+
+const (
 	FACT   FA1R_Bits = 0x3FFF << 0 //+ Filter Active.
 	FACT0  FA1R_Bits = 0x01 << 0   //  Filter 0 Active.
 	FACT1  FA1R_Bits = 0x02 << 0   //  Filter 1 Active.
@@ -199,4 +309,8 @@ const (
 	FACT11 FA1R_Bits = 0x800 << 0  //  Filter 11 Active.
 	FACT12 FA1R_Bits = 0x1000 << 0 //  Filter 12 Active.
 	FACT13 FA1R_Bits = 0x2000 << 0 //  Filter 13 Active.
+)
+
+const (
+	FACTn = 0
 )

@@ -61,8 +61,20 @@ const (
 )
 
 const (
+	CALn  = 0
+	CCOn  = 7
+	ASOEn = 8
+	ASOSn = 9
+)
+
+const (
 	TPE  CR_Bits = 0x01 << 0 //+ TAMPER pin enable.
 	TPAL CR_Bits = 0x01 << 1 //+ TAMPER pin active level.
+)
+
+const (
+	TPEn  = 0
+	TPALn = 1
 )
 
 const (
@@ -71,4 +83,12 @@ const (
 	TPIE CSR_Bits = 0x01 << 2 //+ TAMPER Pin interrupt enable.
 	TEF  CSR_Bits = 0x01 << 8 //+ Tamper Event Flag.
 	TIF  CSR_Bits = 0x01 << 9 //+ Tamper Interrupt Flag.
+)
+
+const (
+	CTEn  = 0
+	CTIn  = 1
+	TPIEn = 2
+	TEFn  = 8
+	TIFn  = 9
 )

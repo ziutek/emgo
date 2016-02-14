@@ -24,6 +24,12 @@ const (
 )
 
 const (
+	MEM_MODEn = 0
+	FB_MODEn  = 8
+	SWP_FMCn  = 10
+)
+
+const (
 	ADCxDC2      PMC_Bits = 0x07 << 16 //+ Refer to AN4073 on how to use this bit.
 	ADC1DC2      PMC_Bits = 0x01 << 16 //  Refer to AN4073 on how to use this bit.
 	ADC2DC2      PMC_Bits = 0x02 << 16 //  Refer to AN4073 on how to use this bit.
@@ -32,6 +38,16 @@ const (
 )
 
 const (
+	ADCxDC2n      = 16
+	MII_RMII_SELn = 23
+)
+
+const (
 	CMP_PD CMPCR_Bits = 0x01 << 0 //+ Compensation cell ready flag.
 	READY  CMPCR_Bits = 0x01 << 8 //+ Compensation cell power-down.
+)
+
+const (
+	CMP_PDn = 0
+	READYn  = 8
 )

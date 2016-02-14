@@ -36,6 +36,18 @@ const (
 )
 
 const (
+	INITn     = 2
+	DMAEn     = 3
+	DATATYPEn = 4
+	MODEn     = 6
+	ALGOn     = 7
+	NBWn      = 8
+	DINNEn    = 12
+	MDMATn    = 13
+	LKEYn     = 16
+)
+
+const (
 	NBW   STR_Bits = 0x1F << 0 //+
 	NBW_0 STR_Bits = 0x01 << 0
 	NBW_1 STR_Bits = 0x02 << 0
@@ -46,8 +58,18 @@ const (
 )
 
 const (
+	NBWn  = 0
+	DCALn = 8
+)
+
+const (
 	DINIM IMR_Bits = 0x01 << 0 //+
 	DCIM  IMR_Bits = 0x01 << 1 //+
+)
+
+const (
+	DINIMn = 0
+	DCIMn  = 1
 )
 
 const (
@@ -55,4 +77,11 @@ const (
 	DCIS  SR_Bits = 0x01 << 1 //+
 	DMAS  SR_Bits = 0x01 << 2 //+
 	BUSY  SR_Bits = 0x01 << 3 //+
+)
+
+const (
+	DINISn = 0
+	DCISn  = 1
+	DMASn  = 2
+	BUSYn  = 3
 )

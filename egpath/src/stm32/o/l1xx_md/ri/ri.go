@@ -61,6 +61,18 @@ const (
 )
 
 const (
+	IC1Zn = 0
+	IC2Zn = 4
+	IC3Zn = 8
+	IC4Zn = 12
+	TIMn  = 16
+	IC1n  = 18
+	IC2n  = 19
+	IC3n  = 20
+	IC4n  = 21
+)
+
+const (
 	CH    ASCR1_Bits = 0x3FCFFFF << 0 //+ AS_CH[25:18] & AS_CH[15:0] bits ( Analog switches selection bits).
 	CH_0  ASCR1_Bits = 0x01 << 0      //  Bit 0.
 	CH_1  ASCR1_Bits = 0x02 << 0      //  Bit 1.
@@ -96,6 +108,13 @@ const (
 )
 
 const (
+	CHn    = 0
+	CH_31n = 16
+	VCOMPn = 26
+	SCMn   = 31
+)
+
+const (
 	GR10_1 ASCR2_Bits = 0x01 << 0  //+ GR10-1 selection bit.
 	GR10_2 ASCR2_Bits = 0x01 << 1  //+ GR10-2 selection bit.
 	GR10_3 ASCR2_Bits = 0x01 << 2  //+ GR10-3 selection bit.
@@ -123,6 +142,36 @@ const (
 	GR6_3  ASCR2_Bits = 0x01 << 27 //+ GR6-3 selection bit.
 	GR6_4  ASCR2_Bits = 0x01 << 28 //+ GR6-4 selection bit.
 	GR5_4  ASCR2_Bits = 0x01 << 29 //+ GR5-4 selection bit.
+)
+
+const (
+	GR10_1n = 0
+	GR10_2n = 1
+	GR10_3n = 2
+	GR10_4n = 3
+	GR6_1n  = 4
+	GR6_2n  = 5
+	GR5_1n  = 6
+	GR5_2n  = 7
+	GR5_3n  = 8
+	GR4_1n  = 9
+	GR4_2n  = 10
+	GR4_3n  = 11
+	GR4_4n  = 15
+	CH0bn   = 16
+	CH1bn   = 17
+	CH2bn   = 18
+	CH3bn   = 19
+	CH6bn   = 20
+	CH7bn   = 21
+	CH8bn   = 22
+	CH9bn   = 23
+	CH10bn  = 24
+	CH11bn  = 25
+	CH12bn  = 26
+	GR6_3n  = 27
+	GR6_4n  = 28
+	GR5_4n  = 29
 )
 
 const (
@@ -160,6 +209,11 @@ const (
 	PB_13 HYSCR1_Bits = 0x2000 << 16 //  Bit 13.
 	PB_14 HYSCR1_Bits = 0x4000 << 16 //  Bit 14.
 	PB_15 HYSCR1_Bits = 0x8000 << 16 //  Bit 15.
+)
+
+const (
+	PAn = 0
+	PBn = 16
 )
 
 const (
@@ -217,6 +271,11 @@ const (
 )
 
 const (
+	PCn = 0
+	PDn = 16
+)
+
+const (
 	PF    HYSCR3_Bits = 0xFFFF << 16 //+ PF[15:0] Port F Hysteresis selection.
 	PF_0  HYSCR3_Bits = 0x01 << 16   //  Bit 0.
 	PF_1  HYSCR3_Bits = 0x02 << 16   //  Bit 1.
@@ -234,6 +293,10 @@ const (
 	PF_13 HYSCR3_Bits = 0x2000 << 16 //  Bit 13.
 	PF_14 HYSCR3_Bits = 0x4000 << 16 //  Bit 14.
 	PF_15 HYSCR3_Bits = 0x8000 << 16 //  Bit 15.
+)
+
+const (
+	PFn = 16
 )
 
 const (
@@ -257,6 +320,10 @@ const (
 )
 
 const (
+	PGn = 0
+)
+
+const (
 	PA    ASMR1_Bits = 0xFFFF << 0 //+ PA[15:0] Port A analog switch mode selection.
 	PA_0  ASMR1_Bits = 0x01 << 0   //  Bit 0.
 	PA_1  ASMR1_Bits = 0x02 << 0   //  Bit 1.
@@ -274,6 +341,10 @@ const (
 	PA_13 ASMR1_Bits = 0x2000 << 0 //  Bit 13.
 	PA_14 ASMR1_Bits = 0x4000 << 0 //  Bit 14.
 	PA_15 ASMR1_Bits = 0x8000 << 0 //  Bit 15.
+)
+
+const (
+	PAn = 0
 )
 
 const (
@@ -297,6 +368,10 @@ const (
 )
 
 const (
+	PAn = 0
+)
+
+const (
 	PA    CICR1_Bits = 0xFFFF << 0 //+ PA[15:0] Port A channel identification for capture.
 	PA_0  CICR1_Bits = 0x01 << 0   //  Bit 0.
 	PA_1  CICR1_Bits = 0x02 << 0   //  Bit 1.
@@ -314,6 +389,10 @@ const (
 	PA_13 CICR1_Bits = 0x2000 << 0 //  Bit 13.
 	PA_14 CICR1_Bits = 0x4000 << 0 //  Bit 14.
 	PA_15 CICR1_Bits = 0x8000 << 0 //  Bit 15.
+)
+
+const (
+	PAn = 0
 )
 
 const (
@@ -337,6 +416,10 @@ const (
 )
 
 const (
+	PBn = 0
+)
+
+const (
 	PB    CMR2_Bits = 0xFFFF << 0 //+ PB[15:0] Port B channel masking.
 	PB_0  CMR2_Bits = 0x01 << 0   //  Bit 0.
 	PB_1  CMR2_Bits = 0x02 << 0   //  Bit 1.
@@ -354,6 +437,10 @@ const (
 	PB_13 CMR2_Bits = 0x2000 << 0 //  Bit 13.
 	PB_14 CMR2_Bits = 0x4000 << 0 //  Bit 14.
 	PB_15 CMR2_Bits = 0x8000 << 0 //  Bit 15.
+)
+
+const (
+	PBn = 0
 )
 
 const (
@@ -377,6 +464,10 @@ const (
 )
 
 const (
+	PBn = 0
+)
+
+const (
 	PC    ASMR3_Bits = 0xFFFF << 0 //+ PC[15:0] Port C analog switch mode selection.
 	PC_0  ASMR3_Bits = 0x01 << 0   //  Bit 0.
 	PC_1  ASMR3_Bits = 0x02 << 0   //  Bit 1.
@@ -394,6 +485,10 @@ const (
 	PC_13 ASMR3_Bits = 0x2000 << 0 //  Bit 13.
 	PC_14 ASMR3_Bits = 0x4000 << 0 //  Bit 14.
 	PC_15 ASMR3_Bits = 0x8000 << 0 //  Bit 15.
+)
+
+const (
+	PCn = 0
 )
 
 const (
@@ -417,6 +512,10 @@ const (
 )
 
 const (
+	PCn = 0
+)
+
+const (
 	PC    CICR3_Bits = 0xFFFF << 0 //+ PC[15:0] Port C channel identification for capture.
 	PC_0  CICR3_Bits = 0x01 << 0   //  Bit 0.
 	PC_1  CICR3_Bits = 0x02 << 0   //  Bit 1.
@@ -434,6 +533,10 @@ const (
 	PC_13 CICR3_Bits = 0x2000 << 0 //  Bit 13.
 	PC_14 CICR3_Bits = 0x4000 << 0 //  Bit 14.
 	PC_15 CICR3_Bits = 0x8000 << 0 //  Bit 15.
+)
+
+const (
+	PCn = 0
 )
 
 const (
@@ -457,6 +560,10 @@ const (
 )
 
 const (
+	PFn = 0
+)
+
+const (
 	PF    CMR4_Bits = 0xFFFF << 0 //+ PF[15:0] Port F channel masking.
 	PF_0  CMR4_Bits = 0x01 << 0   //  Bit 0.
 	PF_1  CMR4_Bits = 0x02 << 0   //  Bit 1.
@@ -474,6 +581,10 @@ const (
 	PF_13 CMR4_Bits = 0x2000 << 0 //  Bit 13.
 	PF_14 CMR4_Bits = 0x4000 << 0 //  Bit 14.
 	PF_15 CMR4_Bits = 0x8000 << 0 //  Bit 15.
+)
+
+const (
+	PFn = 0
 )
 
 const (
@@ -497,6 +608,10 @@ const (
 )
 
 const (
+	PFn = 0
+)
+
+const (
 	PG    ASMR5_Bits = 0xFFFF << 0 //+ PG[15:0] Port G analog switch mode selection.
 	PG_0  ASMR5_Bits = 0x01 << 0   //  Bit 0.
 	PG_1  ASMR5_Bits = 0x02 << 0   //  Bit 1.
@@ -514,6 +629,10 @@ const (
 	PG_13 ASMR5_Bits = 0x2000 << 0 //  Bit 13.
 	PG_14 ASMR5_Bits = 0x4000 << 0 //  Bit 14.
 	PG_15 ASMR5_Bits = 0x8000 << 0 //  Bit 15.
+)
+
+const (
+	PGn = 0
 )
 
 const (
@@ -537,6 +656,10 @@ const (
 )
 
 const (
+	PGn = 0
+)
+
+const (
 	PG    CICR5_Bits = 0xFFFF << 0 //+ PG[15:0] Port G channel identification for capture.
 	PG_0  CICR5_Bits = 0x01 << 0   //  Bit 0.
 	PG_1  CICR5_Bits = 0x02 << 0   //  Bit 1.
@@ -554,4 +677,8 @@ const (
 	PG_13 CICR5_Bits = 0x2000 << 0 //  Bit 13.
 	PG_14 CICR5_Bits = 0x4000 << 0 //  Bit 14.
 	PG_15 CICR5_Bits = 0x8000 << 0 //  Bit 15.
+)
+
+const (
+	PGn = 0
 )

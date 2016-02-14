@@ -82,6 +82,25 @@ const (
 )
 
 const (
+	MODER0n  = 0
+	MODER1n  = 2
+	MODER2n  = 4
+	MODER3n  = 6
+	MODER4n  = 8
+	MODER5n  = 10
+	MODER6n  = 12
+	MODER7n  = 14
+	MODER8n  = 16
+	MODER9n  = 18
+	MODER10n = 20
+	MODER11n = 22
+	MODER12n = 24
+	MODER13n = 26
+	MODER14n = 28
+	MODER15n = 30
+)
+
+const (
 	OT_0  OTYPER_Bits = 0x01 << 0  //+
 	OT_1  OTYPER_Bits = 0x01 << 1  //+
 	OT_2  OTYPER_Bits = 0x01 << 2  //+
@@ -98,6 +117,25 @@ const (
 	OT_13 OTYPER_Bits = 0x01 << 13 //+
 	OT_14 OTYPER_Bits = 0x01 << 14 //+
 	OT_15 OTYPER_Bits = 0x01 << 15 //+
+)
+
+const (
+	OT_0n  = 0
+	OT_1n  = 1
+	OT_2n  = 2
+	OT_3n  = 3
+	OT_4n  = 4
+	OT_5n  = 5
+	OT_6n  = 6
+	OT_7n  = 7
+	OT_8n  = 8
+	OT_9n  = 9
+	OT_10n = 10
+	OT_11n = 11
+	OT_12n = 12
+	OT_13n = 13
+	OT_14n = 14
+	OT_15n = 15
 )
 
 const (
@@ -152,6 +190,25 @@ const (
 )
 
 const (
+	OSPEEDR0n  = 0
+	OSPEEDR1n  = 2
+	OSPEEDR2n  = 4
+	OSPEEDR3n  = 6
+	OSPEEDR4n  = 8
+	OSPEEDR5n  = 10
+	OSPEEDR6n  = 12
+	OSPEEDR7n  = 14
+	OSPEEDR8n  = 16
+	OSPEEDR9n  = 18
+	OSPEEDR10n = 20
+	OSPEEDR11n = 22
+	OSPEEDR12n = 24
+	OSPEEDR13n = 26
+	OSPEEDR14n = 28
+	OSPEEDR15n = 30
+)
+
+const (
 	PUPDR0    PUPDR_Bits = 0x03 << 0 //+
 	PUPDR0_0  PUPDR_Bits = 0x01 << 0
 	PUPDR0_1  PUPDR_Bits = 0x02 << 0
@@ -203,6 +260,25 @@ const (
 )
 
 const (
+	PUPDR0n  = 0
+	PUPDR1n  = 2
+	PUPDR2n  = 4
+	PUPDR3n  = 6
+	PUPDR4n  = 8
+	PUPDR5n  = 10
+	PUPDR6n  = 12
+	PUPDR7n  = 14
+	PUPDR8n  = 16
+	PUPDR9n  = 18
+	PUPDR10n = 20
+	PUPDR11n = 22
+	PUPDR12n = 24
+	PUPDR13n = 26
+	PUPDR14n = 28
+	PUPDR15n = 30
+)
+
+const (
 	IDR_0  IDR_Bits = 0x01 << 0  //+
 	IDR_1  IDR_Bits = 0x01 << 1  //+
 	IDR_2  IDR_Bits = 0x01 << 2  //+
@@ -222,6 +298,25 @@ const (
 )
 
 const (
+	IDR_0n  = 0
+	IDR_1n  = 1
+	IDR_2n  = 2
+	IDR_3n  = 3
+	IDR_4n  = 4
+	IDR_5n  = 5
+	IDR_6n  = 6
+	IDR_7n  = 7
+	IDR_8n  = 8
+	IDR_9n  = 9
+	IDR_10n = 10
+	IDR_11n = 11
+	IDR_12n = 12
+	IDR_13n = 13
+	IDR_14n = 14
+	IDR_15n = 15
+)
+
+const (
 	ODR_0  ODR_Bits = 0x01 << 0  //+
 	ODR_1  ODR_Bits = 0x01 << 1  //+
 	ODR_2  ODR_Bits = 0x01 << 2  //+
@@ -238,4 +333,23 @@ const (
 	ODR_13 ODR_Bits = 0x01 << 13 //+
 	ODR_14 ODR_Bits = 0x01 << 14 //+
 	ODR_15 ODR_Bits = 0x01 << 15 //+
+)
+
+const (
+	ODR_0n  = 0
+	ODR_1n  = 1
+	ODR_2n  = 2
+	ODR_3n  = 3
+	ODR_4n  = 4
+	ODR_5n  = 5
+	ODR_6n  = 6
+	ODR_7n  = 7
+	ODR_8n  = 8
+	ODR_9n  = 9
+	ODR_10n = 10
+	ODR_11n = 11
+	ODR_12n = 12
+	ODR_13n = 13
+	ODR_14n = 14
+	ODR_15n = 15
 )

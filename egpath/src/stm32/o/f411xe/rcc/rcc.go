@@ -66,6 +66,23 @@ const (
 )
 
 const (
+	HSIONn     = 0
+	HSIRDYn    = 1
+	HSITRIMn   = 3
+	HSICALn    = 8
+	HSEONn     = 16
+	HSERDYn    = 17
+	HSEBYPn    = 18
+	CSSONn     = 19
+	PLLONn     = 24
+	PLLRDYn    = 25
+	PLLI2SONn  = 26
+	PLLI2SRDYn = 27
+	PLLSAIONn  = 28
+	PLLSAIRDYn = 29
+)
+
+const (
 	PLLM       PLLCFGR_Bits = 0x3F << 0 //+
 	PLLM_0     PLLCFGR_Bits = 0x01 << 0
 	PLLM_1     PLLCFGR_Bits = 0x02 << 0
@@ -94,6 +111,14 @@ const (
 	PLLQ_1     PLLCFGR_Bits = 0x02 << 24
 	PLLQ_2     PLLCFGR_Bits = 0x04 << 24
 	PLLQ_3     PLLCFGR_Bits = 0x08 << 24
+)
+
+const (
+	PLLMn   = 0
+	PLLNn   = 6
+	PLLPn   = 16
+	PLLSRCn = 22
+	PLLQn   = 24
 )
 
 const (
@@ -165,6 +190,20 @@ const (
 )
 
 const (
+	SWn      = 0
+	SWSn     = 2
+	HPREn    = 4
+	PPRE1n   = 10
+	PPRE2n   = 13
+	RTCPREn  = 16
+	MCO1n    = 21
+	I2SSRCn  = 23
+	MCO1PREn = 24
+	MCO2PREn = 27
+	MCO2n    = 30
+)
+
+const (
 	LSIRDYF     CIR_Bits = 0x01 << 0  //+
 	LSERDYF     CIR_Bits = 0x01 << 1  //+
 	HSIRDYF     CIR_Bits = 0x01 << 2  //+
@@ -191,6 +230,32 @@ const (
 )
 
 const (
+	LSIRDYFn     = 0
+	LSERDYFn     = 1
+	HSIRDYFn     = 2
+	HSERDYFn     = 3
+	PLLRDYFn     = 4
+	PLLI2SRDYFn  = 5
+	PLLSAIRDYFn  = 6
+	CSSFn        = 7
+	LSIRDYIEn    = 8
+	LSERDYIEn    = 9
+	HSIRDYIEn    = 10
+	HSERDYIEn    = 11
+	PLLRDYIEn    = 12
+	PLLI2SRDYIEn = 13
+	PLLSAIRDYIEn = 14
+	LSIRDYCn     = 16
+	LSERDYCn     = 17
+	HSIRDYCn     = 18
+	HSERDYCn     = 19
+	PLLRDYCn     = 20
+	PLLI2SRDYCn  = 21
+	PLLSAIRDYCn  = 22
+	CSSCn        = 23
+)
+
+const (
 	GPIOARST  AHB1RSTR_Bits = 0x01 << 0  //+
 	GPIOBRST  AHB1RSTR_Bits = 0x01 << 1  //+
 	GPIOCRST  AHB1RSTR_Bits = 0x01 << 2  //+
@@ -211,11 +276,39 @@ const (
 )
 
 const (
+	GPIOARSTn  = 0
+	GPIOBRSTn  = 1
+	GPIOCRSTn  = 2
+	GPIODRSTn  = 3
+	GPIOERSTn  = 4
+	GPIOFRSTn  = 5
+	GPIOGRSTn  = 6
+	GPIOHRSTn  = 7
+	GPIOIRSTn  = 8
+	GPIOJRSTn  = 9
+	GPIOKRSTn  = 10
+	CRCRSTn    = 12
+	DMA1RSTn   = 21
+	DMA2RSTn   = 22
+	DMA2DRSTn  = 23
+	ETHMACRSTn = 25
+	OTGHRSTn   = 28
+)
+
+const (
 	DCMIRST  AHB2RSTR_Bits = 0x01 << 0 //+
 	CRYPRST  AHB2RSTR_Bits = 0x01 << 4 //+
 	HASHRST  AHB2RSTR_Bits = 0x01 << 5 //+
 	RNGRST   AHB2RSTR_Bits = 0x01 << 6 //+
 	OTGFSRST AHB2RSTR_Bits = 0x01 << 7 //+
+)
+
+const (
+	DCMIRSTn  = 0
+	CRYPRSTn  = 4
+	HASHRSTn  = 5
+	RNGRSTn   = 6
+	OTGFSRSTn = 7
 )
 
 const (
@@ -247,6 +340,34 @@ const (
 )
 
 const (
+	TIM2RSTn   = 0
+	TIM3RSTn   = 1
+	TIM4RSTn   = 2
+	TIM5RSTn   = 3
+	TIM6RSTn   = 4
+	TIM7RSTn   = 5
+	TIM12RSTn  = 6
+	TIM13RSTn  = 7
+	TIM14RSTn  = 8
+	WWDGRSTn   = 11
+	SPI2RSTn   = 14
+	SPI3RSTn   = 15
+	USART2RSTn = 17
+	USART3RSTn = 18
+	UART4RSTn  = 19
+	UART5RSTn  = 20
+	I2C1RSTn   = 21
+	I2C2RSTn   = 22
+	I2C3RSTn   = 23
+	CAN1RSTn   = 25
+	CAN2RSTn   = 26
+	PWRRSTn    = 28
+	DACRSTn    = 29
+	UART7RSTn  = 30
+	UART8RSTn  = 31
+)
+
+const (
 	TIM1RST   APB2RSTR_Bits = 0x01 << 0  //+
 	TIM8RST   APB2RSTR_Bits = 0x01 << 1  //+
 	USART1RST APB2RSTR_Bits = 0x01 << 4  //+
@@ -263,6 +384,25 @@ const (
 	SPI6RST   APB2RSTR_Bits = 0x01 << 21 //+
 	SAI1RST   APB2RSTR_Bits = 0x01 << 22 //+
 	LTDCRST   APB2RSTR_Bits = 0x01 << 26 //+
+)
+
+const (
+	TIM1RSTn   = 0
+	TIM8RSTn   = 1
+	USART1RSTn = 4
+	USART6RSTn = 5
+	ADCRSTn    = 8
+	SDIORSTn   = 11
+	SPI1RSTn   = 12
+	SPI4RSTn   = 13
+	SYSCFGRSTn = 14
+	TIM9RSTn   = 16
+	TIM10RSTn  = 17
+	TIM11RSTn  = 18
+	SPI5RSTn   = 20
+	SPI6RSTn   = 21
+	SAI1RSTn   = 22
+	LTDCRSTn   = 26
 )
 
 const (
@@ -292,11 +432,45 @@ const (
 )
 
 const (
+	GPIOAENn      = 0
+	GPIOBENn      = 1
+	GPIOCENn      = 2
+	GPIODENn      = 3
+	GPIOEENn      = 4
+	GPIOFENn      = 5
+	GPIOGENn      = 6
+	GPIOHENn      = 7
+	GPIOIENn      = 8
+	GPIOJENn      = 9
+	GPIOKENn      = 10
+	CRCENn        = 12
+	BKPSRAMENn    = 18
+	CCMDATARAMENn = 20
+	DMA1ENn       = 21
+	DMA2ENn       = 22
+	DMA2DENn      = 23
+	ETHMACENn     = 25
+	ETHMACTXENn   = 26
+	ETHMACRXENn   = 27
+	ETHMACPTPENn  = 28
+	OTGHSENn      = 29
+	OTGHSULPIENn  = 30
+)
+
+const (
 	DCMIEN  AHB2ENR_Bits = 0x01 << 0 //+
 	CRYPEN  AHB2ENR_Bits = 0x01 << 4 //+
 	HASHEN  AHB2ENR_Bits = 0x01 << 5 //+
 	RNGEN   AHB2ENR_Bits = 0x01 << 6 //+
 	OTGFSEN AHB2ENR_Bits = 0x01 << 7 //+
+)
+
+const (
+	DCMIENn  = 0
+	CRYPENn  = 4
+	HASHENn  = 5
+	RNGENn   = 6
+	OTGFSENn = 7
 )
 
 const (
@@ -328,6 +502,34 @@ const (
 )
 
 const (
+	TIM2ENn   = 0
+	TIM3ENn   = 1
+	TIM4ENn   = 2
+	TIM5ENn   = 3
+	TIM6ENn   = 4
+	TIM7ENn   = 5
+	TIM12ENn  = 6
+	TIM13ENn  = 7
+	TIM14ENn  = 8
+	WWDGENn   = 11
+	SPI2ENn   = 14
+	SPI3ENn   = 15
+	USART2ENn = 17
+	USART3ENn = 18
+	UART4ENn  = 19
+	UART5ENn  = 20
+	I2C1ENn   = 21
+	I2C2ENn   = 22
+	I2C3ENn   = 23
+	CAN1ENn   = 25
+	CAN2ENn   = 26
+	PWRENn    = 28
+	DACENn    = 29
+	UART7ENn  = 30
+	UART8ENn  = 31
+)
+
+const (
 	TIM1EN   APB2ENR_Bits = 0x01 << 0  //+
 	TIM8EN   APB2ENR_Bits = 0x01 << 1  //+
 	USART1EN APB2ENR_Bits = 0x01 << 4  //+
@@ -346,6 +548,27 @@ const (
 	SPI6EN   APB2ENR_Bits = 0x01 << 21 //+
 	SAI1EN   APB2ENR_Bits = 0x01 << 22 //+
 	LTDCEN   APB2ENR_Bits = 0x01 << 26 //+
+)
+
+const (
+	TIM1ENn   = 0
+	TIM8ENn   = 1
+	USART1ENn = 4
+	USART6ENn = 5
+	ADC1ENn   = 8
+	ADC2ENn   = 9
+	ADC3ENn   = 10
+	SDIOENn   = 11
+	SPI1ENn   = 12
+	SPI4ENn   = 13
+	SYSCFGENn = 14
+	TIM9ENn   = 16
+	TIM10ENn  = 17
+	TIM11ENn  = 18
+	SPI5ENn   = 20
+	SPI6ENn   = 21
+	SAI1ENn   = 22
+	LTDCENn   = 26
 )
 
 const (
@@ -378,11 +601,48 @@ const (
 )
 
 const (
+	GPIOALPENn     = 0
+	GPIOBLPENn     = 1
+	GPIOCLPENn     = 2
+	GPIODLPENn     = 3
+	GPIOELPENn     = 4
+	GPIOFLPENn     = 5
+	GPIOGLPENn     = 6
+	GPIOHLPENn     = 7
+	GPIOILPENn     = 8
+	GPIOJLPENn     = 9
+	GPIOKLPENn     = 10
+	CRCLPENn       = 12
+	FLITFLPENn     = 15
+	SRAM1LPENn     = 16
+	SRAM2LPENn     = 17
+	BKPSRAMLPENn   = 18
+	SRAM3LPENn     = 19
+	DMA1LPENn      = 21
+	DMA2LPENn      = 22
+	DMA2DLPENn     = 23
+	ETHMACLPENn    = 25
+	ETHMACTXLPENn  = 26
+	ETHMACRXLPENn  = 27
+	ETHMACPTPLPENn = 28
+	OTGHSLPENn     = 29
+	OTGHSULPILPENn = 30
+)
+
+const (
 	DCMILPEN  AHB2LPENR_Bits = 0x01 << 0 //+
 	CRYPLPEN  AHB2LPENR_Bits = 0x01 << 4 //+
 	HASHLPEN  AHB2LPENR_Bits = 0x01 << 5 //+
 	RNGLPEN   AHB2LPENR_Bits = 0x01 << 6 //+
 	OTGFSLPEN AHB2LPENR_Bits = 0x01 << 7 //+
+)
+
+const (
+	DCMILPENn  = 0
+	CRYPLPENn  = 4
+	HASHLPENn  = 5
+	RNGLPENn   = 6
+	OTGFSLPENn = 7
 )
 
 const (
@@ -414,6 +674,34 @@ const (
 )
 
 const (
+	TIM2LPENn   = 0
+	TIM3LPENn   = 1
+	TIM4LPENn   = 2
+	TIM5LPENn   = 3
+	TIM6LPENn   = 4
+	TIM7LPENn   = 5
+	TIM12LPENn  = 6
+	TIM13LPENn  = 7
+	TIM14LPENn  = 8
+	WWDGLPENn   = 11
+	SPI2LPENn   = 14
+	SPI3LPENn   = 15
+	USART2LPENn = 17
+	USART3LPENn = 18
+	UART4LPENn  = 19
+	UART5LPENn  = 20
+	I2C1LPENn   = 21
+	I2C2LPENn   = 22
+	I2C3LPENn   = 23
+	CAN1LPENn   = 25
+	CAN2LPENn   = 26
+	PWRLPENn    = 28
+	DACLPENn    = 29
+	UART7LPENn  = 30
+	UART8LPENn  = 31
+)
+
+const (
 	TIM1LPEN   APB2LPENR_Bits = 0x01 << 0  //+
 	TIM8LPEN   APB2LPENR_Bits = 0x01 << 1  //+
 	USART1LPEN APB2LPENR_Bits = 0x01 << 4  //+
@@ -435,6 +723,27 @@ const (
 )
 
 const (
+	TIM1LPENn   = 0
+	TIM8LPENn   = 1
+	USART1LPENn = 4
+	USART6LPENn = 5
+	ADC1LPENn   = 8
+	ADC2PENn    = 9
+	ADC3LPENn   = 10
+	SDIOLPENn   = 11
+	SPI1LPENn   = 12
+	SPI4LPENn   = 13
+	SYSCFGLPENn = 14
+	TIM9LPENn   = 16
+	TIM10LPENn  = 17
+	TIM11LPENn  = 18
+	SPI5LPENn   = 20
+	SPI6LPENn   = 21
+	SAI1LPENn   = 22
+	LTDCLPENn   = 26
+)
+
+const (
 	LSEON    BDCR_Bits = 0x01 << 0 //+
 	LSERDY   BDCR_Bits = 0x01 << 1 //+
 	LSEBYP   BDCR_Bits = 0x01 << 2 //+
@@ -444,6 +753,16 @@ const (
 	RTCSEL_1 BDCR_Bits = 0x02 << 8
 	RTCEN    BDCR_Bits = 0x01 << 15 //+
 	BDRST    BDCR_Bits = 0x01 << 16 //+
+)
+
+const (
+	LSEONn  = 0
+	LSERDYn = 1
+	LSEBYPn = 2
+	LSEMODn = 3
+	RTCSELn = 8
+	RTCENn  = 15
+	BDRSTn  = 16
 )
 
 const (
@@ -460,10 +779,30 @@ const (
 )
 
 const (
+	LSIONn    = 0
+	LSIRDYn   = 1
+	RMVFn     = 24
+	BORRSTFn  = 25
+	PADRSTFn  = 26
+	PORRSTFn  = 27
+	SFTRSTFn  = 28
+	WDGRSTFn  = 29
+	WWDGRSTFn = 30
+	LPWRRSTFn = 31
+)
+
+const (
 	MODPER    SSCGR_Bits = 0x1FFF << 0  //+
 	INCSTEP   SSCGR_Bits = 0x7FFF << 13 //+
 	SPREADSEL SSCGR_Bits = 0x01 << 30   //+
 	SSCGEN    SSCGR_Bits = 0x01 << 31   //+
+)
+
+const (
+	MODPERn    = 0
+	INCSTEPn   = 13
+	SPREADSELn = 30
+	SSCGENn    = 31
 )
 
 const (
@@ -496,6 +835,13 @@ const (
 )
 
 const (
+	PLLI2SMn = 0
+	PLLI2SNn = 6
+	PLLI2SQn = 24
+	PLLI2SRn = 28
+)
+
+const (
 	PLLSAIN   PLLSAICFGR_Bits = 0x1FF << 6 //+
 	PLLSAIN_0 PLLSAICFGR_Bits = 0x01 << 6
 	PLLSAIN_1 PLLSAICFGR_Bits = 0x02 << 6
@@ -518,6 +864,12 @@ const (
 )
 
 const (
+	PLLSAINn = 6
+	PLLSAIQn = 24
+	PLLSAIRn = 28
+)
+
+const (
 	PLLI2SDIVQ DCKCFGR_Bits = 0x1F << 0  //+
 	PLLSAIDIVQ DCKCFGR_Bits = 0x1F << 8  //+
 	PLLSAIDIVR DCKCFGR_Bits = 0x03 << 16 //+
@@ -528,4 +880,13 @@ const (
 	SAI1BSRC_0 DCKCFGR_Bits = 0x01 << 22
 	SAI1BSRC_1 DCKCFGR_Bits = 0x02 << 22
 	TIMPRE     DCKCFGR_Bits = 0x01 << 24 //+
+)
+
+const (
+	PLLI2SDIVQn = 0
+	PLLSAIDIVQn = 8
+	PLLSAIDIVRn = 16
+	SAI1ASRCn   = 20
+	SAI1BSRCn   = 22
+	TIMPREn     = 24
 )

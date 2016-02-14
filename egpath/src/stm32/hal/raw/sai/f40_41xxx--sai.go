@@ -19,3 +19,8 @@ const (
 	SYNCOUT_0 GCR_Bits = 0x01 << 4 //  Bit 0.
 	SYNCOUT_1 GCR_Bits = 0x02 << 4 //  Bit 1.
 )
+
+const (
+	SYNCINn  = 0
+	SYNCOUTn = 4
+)

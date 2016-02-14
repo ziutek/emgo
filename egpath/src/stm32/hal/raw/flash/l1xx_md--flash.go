@@ -31,6 +31,14 @@ const (
 )
 
 const (
+	LATENCYn  = 0
+	PRFTENn   = 1
+	ACC64n    = 2
+	SLEEP_PDn = 3
+	RUN_PDn   = 4
+)
+
+const (
 	PELOCK     PECR_Bits = 0x01 << 0  //+ FLASH_PECR and Flash data Lock.
 	PRGLOCK    PECR_Bits = 0x01 << 1  //+ Program matrix Lock.
 	OPTLOCK    PECR_Bits = 0x01 << 2  //+ Option byte matrix Lock.
@@ -45,13 +53,20 @@ const (
 	OBL_LAUNCH PECR_Bits = 0x01 << 18 //+ Launch the option byte loading.
 )
 
-const ()
-
-const ()
-
-const ()
-
-const ()
+const (
+	PELOCKn     = 0
+	PRGLOCKn    = 1
+	OPTLOCKn    = 2
+	PROGn       = 3
+	DATAn       = 4
+	FTDWn       = 8
+	ERASEn      = 9
+	FPRGn       = 10
+	PARALLBANKn = 15
+	EOPIEn      = 16
+	ERRIEn      = 17
+	OBL_LAUNCHn = 18
+)
 
 const (
 	BSY        SR_Bits = 0x01 << 0  //+ Busy.
@@ -67,6 +82,19 @@ const (
 )
 
 const (
+	BSYn        = 0
+	EOPn        = 1
+	ENHVn       = 2
+	READYn      = 3
+	WRPERRn     = 8
+	PGAERRn     = 9
+	SIZERRn     = 10
+	OPTVERRn    = 11
+	OPTVERRUSRn = 12
+	RDERRn      = 13
+)
+
+const (
 	RDPRT      OBR_Bits = 0x55 << 1  //+ Read Protection.
 	SPRMOD     OBR_Bits = 0x01 << 8  //+ Selection of protection mode of WPRi bits.
 	BOR_LEV    OBR_Bits = 0x0F << 16 //+ BOR_LEV[3:0] Brown Out Reset Threshold Level.
@@ -74,4 +102,14 @@ const (
 	nRST_STOP  OBR_Bits = 0x01 << 21 //+ nRST_STOP.
 	nRST_STDBY OBR_Bits = 0x01 << 22 //+ nRST_STDBY.
 	BFB2       OBR_Bits = 0x01 << 23 //+ BFB2(available only in STM32L1xx High-density devices).
+)
+
+const (
+	RDPRTn      = 1
+	SPRMODn     = 8
+	BOR_LEVn    = 16
+	IWDG_SWn    = 20
+	nRST_STOPn  = 21
+	nRST_STDBYn = 22
+	BFB2n       = 23
 )

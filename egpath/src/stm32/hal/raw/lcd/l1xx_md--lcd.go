@@ -29,6 +29,14 @@ const (
 )
 
 const (
+	LCDENn   = 0
+	VSELn    = 1
+	DUTYn    = 2
+	BIASn    = 5
+	MUX_SEGn = 7
+)
+
+const (
 	HD       FCR_Bits = 0x01 << 0  //+ High Drive Enable Bit.
 	SOFIE    FCR_Bits = 0x01 << 1  //+ Start of Frame Interrupt Enable Bit.
 	UDDIE    FCR_Bits = 0x01 << 3  //+ Update Display Done Interrupt Enable Bit.
@@ -56,6 +64,19 @@ const (
 )
 
 const (
+	HDn     = 0
+	SOFIEn  = 1
+	UDDIEn  = 3
+	PONn    = 4
+	DEADn   = 7
+	CCn     = 10
+	BLINKFn = 13
+	BLINKn  = 16
+	DIVn    = 18
+	PSn     = 22
+)
+
+const (
 	ENS   SR_Bits = 0x01 << 0 //+ LCD Enabled Bit.
 	SOF   SR_Bits = 0x01 << 1 //+ Start Of Frame Flag Bit.
 	UDR   SR_Bits = 0x01 << 2 //+ Update Display Request Bit.
@@ -65,10 +86,28 @@ const (
 )
 
 const (
+	ENSn   = 0
+	SOFn   = 1
+	UDRn   = 2
+	UDDn   = 3
+	RDYn   = 4
+	FCRSRn = 5
+)
+
+const (
 	SOFC CLR_Bits = 0x01 << 1 //+ Start Of Frame Flag Clear Bit.
 	UDDC CLR_Bits = 0x01 << 3 //+ Update Display Done Flag Clear Bit.
 )
 
 const (
+	SOFCn = 1
+	UDDCn = 3
+)
+
+const (
 	SEGMENT_DATA RAM_Bits = 0xFFFFFFFF << 0 //+ Segment Data Bits.
+)
+
+const (
+	SEGMENT_DATAn = 0
 )

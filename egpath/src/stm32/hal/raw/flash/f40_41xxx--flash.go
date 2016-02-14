@@ -44,6 +44,15 @@ const (
 )
 
 const (
+	LATENCYn = 0
+	PRFTENn  = 8
+	ICENn    = 9
+	DCENn    = 10
+	ICRSTn   = 11
+	DCRSTn   = 12
+)
+
+const (
 	EOP    SR_Bits = 0x01 << 0  //+
 	SOP    SR_Bits = 0x01 << 1  //+
 	WRPERR SR_Bits = 0x01 << 4  //+
@@ -51,6 +60,16 @@ const (
 	PGPERR SR_Bits = 0x01 << 6  //+
 	PGSERR SR_Bits = 0x01 << 7  //+
 	BSY    SR_Bits = 0x01 << 16 //+
+)
+
+const (
+	EOPn    = 0
+	SOPn    = 1
+	WRPERRn = 4
+	PGAERRn = 5
+	PGPERRn = 6
+	PGSERRn = 7
+	BSYn    = 16
 )
 
 const (
@@ -70,6 +89,18 @@ const (
 	STRT    CR_Bits = 0x01 << 16 //+
 	EOPIE   CR_Bits = 0x01 << 24 //+
 	LOCK    CR_Bits = 0x01 << 31 //+
+)
+
+const (
+	PGn    = 0
+	SERn   = 1
+	MERn   = 2
+	SNBn   = 3
+	PSIZEn = 8
+	MER2n  = 15
+	STRTn  = 16
+	EOPIEn = 24
+	LOCKn  = 31
 )
 
 const (
@@ -106,4 +137,19 @@ const (
 	nWRP_11    OPTCR_Bits = 0x800 << 16
 	DB1M       OPTCR_Bits = 0x01 << 30 //+
 	SPRMOD     OPTCR_Bits = 0x01 << 31 //+
+)
+
+const (
+	OPTLOCKn    = 0
+	OPTSTRTn    = 1
+	BOR_LEV_0n  = 2
+	BOR_LEV_1n  = 3
+	BFB2n       = 4
+	WDG_SWn     = 5
+	nRST_STOPn  = 6
+	nRST_STDBYn = 7
+	RDPn        = 8
+	nWRPn       = 16
+	DB1Mn       = 30
+	SPRMODn     = 31
 )

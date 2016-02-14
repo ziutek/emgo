@@ -41,6 +41,14 @@ const (
 )
 
 const (
+	AWDn   = 0
+	EOCn   = 1
+	JEOCn  = 2
+	JSTRTn = 3
+	STRTn  = 4
+)
+
+const (
 	AWDCH     CR1_Bits = 0x1F << 0  //+ AWDCH[4:0] bits (Analog watchdog channel select bits).
 	AWDCH_0   CR1_Bits = 0x01 << 0  //  Bit 0.
 	AWDCH_1   CR1_Bits = 0x02 << 0  //  Bit 1.
@@ -69,6 +77,22 @@ const (
 )
 
 const (
+	AWDCHn   = 0
+	EOCIEn   = 5
+	AWDIEn   = 6
+	JEOCIEn  = 7
+	SCANn    = 8
+	AWDSGLn  = 9
+	JAUTOn   = 10
+	DISCENn  = 11
+	JDISCENn = 12
+	DISCNUMn = 13
+	DUALMODn = 16
+	JAWDENn  = 22
+	AWDENn   = 23
+)
+
+const (
 	ADON      CR2_Bits = 0x01 << 0  //+ A/D Converter ON / OFF.
 	CONT      CR2_Bits = 0x01 << 1  //+ Continuous Conversion.
 	CAL       CR2_Bits = 0x01 << 2  //+ A/D Calibration.
@@ -88,6 +112,22 @@ const (
 	JSWSTART  CR2_Bits = 0x01 << 21 //+ Start Conversion of injected channels.
 	SWSTART   CR2_Bits = 0x01 << 22 //+ Start Conversion of regular channels.
 	TSVREFE   CR2_Bits = 0x01 << 23 //+ Temperature Sensor and VREFINT Enable.
+)
+
+const (
+	ADONn     = 0
+	CONTn     = 1
+	CALn      = 2
+	RSTCALn   = 3
+	DMAn      = 8
+	ALIGNn    = 11
+	JEXTSELn  = 12
+	JEXTTRIGn = 15
+	EXTSELn   = 17
+	EXTTRIGn  = 20
+	JSWSTARTn = 21
+	SWSTARTn  = 22
+	TSVREFEn  = 23
 )
 
 const (
@@ -123,6 +163,17 @@ const (
 	SMP17_0 SMPR1_Bits = 0x01 << 21 //  Bit 0.
 	SMP17_1 SMPR1_Bits = 0x02 << 21 //  Bit 1.
 	SMP17_2 SMPR1_Bits = 0x04 << 21 //  Bit 2.
+)
+
+const (
+	SMP10n = 0
+	SMP11n = 3
+	SMP12n = 6
+	SMP13n = 9
+	SMP14n = 12
+	SMP15n = 15
+	SMP16n = 18
+	SMP17n = 21
 )
 
 const (
@@ -169,7 +220,24 @@ const (
 )
 
 const (
+	SMP0n = 0
+	SMP1n = 3
+	SMP2n = 6
+	SMP3n = 9
+	SMP4n = 12
+	SMP5n = 15
+	SMP6n = 18
+	SMP7n = 21
+	SMP8n = 24
+	SMP9n = 27
+)
+
+const (
 	JOFFSET1 JOFR1_Bits = 0xFFF << 0 //+ Data offset for injected channel 1.
+)
+
+const (
+	JOFFSET1n = 0
 )
 
 const (
@@ -177,7 +245,15 @@ const (
 )
 
 const (
+	JOFFSET2n = 0
+)
+
+const (
 	JOFFSET3 JOFR3_Bits = 0xFFF << 0 //+ Data offset for injected channel 3.
+)
+
+const (
+	JOFFSET3n = 0
 )
 
 const (
@@ -185,11 +261,23 @@ const (
 )
 
 const (
+	JOFFSET4n = 0
+)
+
+const (
 	HT HTR_Bits = 0xFFF << 0 //+ Analog watchdog high threshold.
 )
 
 const (
+	HTn = 0
+)
+
+const (
 	LT LTR_Bits = 0xFFF << 0 //+ Analog watchdog low threshold.
+)
+
+const (
+	LTn = 0
 )
 
 const (
@@ -222,6 +310,14 @@ const (
 	L_1    SQR1_Bits = 0x02 << 20 //  Bit 1.
 	L_2    SQR1_Bits = 0x04 << 20 //  Bit 2.
 	L_3    SQR1_Bits = 0x08 << 20 //  Bit 3.
+)
+
+const (
+	SQ13n = 0
+	SQ14n = 5
+	SQ15n = 10
+	SQ16n = 15
+	Ln    = 20
 )
 
 const (
@@ -264,6 +360,15 @@ const (
 )
 
 const (
+	SQ7n  = 0
+	SQ8n  = 5
+	SQ9n  = 10
+	SQ10n = 15
+	SQ11n = 20
+	SQ12n = 25
+)
+
+const (
 	SQ1   SQR3_Bits = 0x1F << 0  //+ SQ1[4:0] bits (1st conversion in regular sequence).
 	SQ1_0 SQR3_Bits = 0x01 << 0  //  Bit 0.
 	SQ1_1 SQR3_Bits = 0x02 << 0  //  Bit 1.
@@ -303,6 +408,15 @@ const (
 )
 
 const (
+	SQ1n = 0
+	SQ2n = 5
+	SQ3n = 10
+	SQ4n = 15
+	SQ5n = 20
+	SQ6n = 25
+)
+
+const (
 	JSQ1   JSQR_Bits = 0x1F << 0  //+ JSQ1[4:0] bits (1st conversion in injected sequence).
 	JSQ1_0 JSQR_Bits = 0x01 << 0  //  Bit 0.
 	JSQ1_1 JSQR_Bits = 0x02 << 0  //  Bit 1.
@@ -333,7 +447,19 @@ const (
 )
 
 const (
+	JSQ1n = 0
+	JSQ2n = 5
+	JSQ3n = 10
+	JSQ4n = 15
+	JLn   = 20
+)
+
+const (
 	JDATA JDR1_Bits = 0xFFFF << 0 //+ Injected data.
+)
+
+const (
+	JDATAn = 0
 )
 
 const (
@@ -341,7 +467,15 @@ const (
 )
 
 const (
+	JDATAn = 0
+)
+
+const (
 	JDATA JDR3_Bits = 0xFFFF << 0 //+ Injected data.
+)
+
+const (
+	JDATAn = 0
 )
 
 const (
@@ -349,6 +483,15 @@ const (
 )
 
 const (
+	JDATAn = 0
+)
+
+const (
 	DATA     DR_Bits = 0xFFFF << 0  //+ Regular data.
 	ADC2DATA DR_Bits = 0xFFFF << 16 //+ ADC2 data.
+)
+
+const (
+	DATAn     = 0
+	ADC2DATAn = 16
 )

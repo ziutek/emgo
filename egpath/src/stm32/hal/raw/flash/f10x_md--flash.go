@@ -30,16 +30,32 @@ const (
 )
 
 const (
+	LATENCYn = 0
+	HLFCYAn  = 3
+	PRFTBEn  = 4
+	PRFTBSn  = 5
+)
+
+const (
 	FKEYR KEYR_Bits = 0xFFFFFFFF << 0 //+ FPEC Key.
 )
 
-const ()
+const (
+	FKEYRn = 0
+)
 
 const (
 	BSY      SR_Bits = 0x01 << 0 //+ Busy.
 	PGERR    SR_Bits = 0x01 << 2 //+ Programming Error.
 	WRPRTERR SR_Bits = 0x01 << 4 //+ Write Protection Error.
 	EOP      SR_Bits = 0x01 << 5 //+ End of operation.
+)
+
+const (
+	BSYn      = 0
+	PGERRn    = 2
+	WRPRTERRn = 4
+	EOPn      = 5
 )
 
 const (
@@ -56,7 +72,24 @@ const (
 )
 
 const (
+	PGn     = 0
+	PERn    = 1
+	MERn    = 2
+	OPTPGn  = 4
+	OPTERn  = 5
+	STRTn   = 6
+	LOCKn   = 7
+	OPTWREn = 9
+	ERRIEn  = 10
+	EOPIEn  = 12
+)
+
+const (
 	FAR AR_Bits = 0xFFFFFFFF << 0 //+ Flash Address.
+)
+
+const (
+	FARn = 0
 )
 
 const (
@@ -67,4 +100,10 @@ const (
 	nRST_STOP  OBR_Bits = 0x02 << 2 //  nRST_STOP.
 	nRST_STDBY OBR_Bits = 0x04 << 2 //  nRST_STDBY.
 	BFB2       OBR_Bits = 0x08 << 2 //  BFB2.
+)
+
+const (
+	OPTERRn = 0
+	RDPRTn  = 1
+	USERn   = 2
 )

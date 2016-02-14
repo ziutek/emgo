@@ -39,6 +39,30 @@ const (
 )
 
 const (
+	IL0n  = 0
+	IL1n  = 1
+	IL2n  = 2
+	IL3n  = 3
+	IL4n  = 4
+	IL5n  = 5
+	IL6n  = 6
+	IL7n  = 7
+	IL8n  = 8
+	IL9n  = 9
+	IL10n = 10
+	IL11n = 11
+	IL12n = 12
+	IL13n = 13
+	IL14n = 14
+	IL15n = 15
+	IL16n = 16
+	IL17n = 17
+	IL18n = 18
+	IL19n = 19
+	IL23n = 23
+)
+
+const (
 	EL0  EMR_Bits = 0x01 << 0  //+ Event Mask on line 0.
 	EL1  EMR_Bits = 0x01 << 1  //+ Event Mask on line 1.
 	EL2  EMR_Bits = 0x01 << 2  //+ Event Mask on line 2.
@@ -60,6 +84,30 @@ const (
 	EL18 EMR_Bits = 0x01 << 18 //+ Event Mask on line 18.
 	EL19 EMR_Bits = 0x01 << 19 //+ Event Mask on line 19.
 	EL23 EMR_Bits = 0x01 << 23 //+ Event Mask on line 19.
+)
+
+const (
+	EL0n  = 0
+	EL1n  = 1
+	EL2n  = 2
+	EL3n  = 3
+	EL4n  = 4
+	EL5n  = 5
+	EL6n  = 6
+	EL7n  = 7
+	EL8n  = 8
+	EL9n  = 9
+	EL10n = 10
+	EL11n = 11
+	EL12n = 12
+	EL13n = 13
+	EL14n = 14
+	EL15n = 15
+	EL16n = 16
+	EL17n = 17
+	EL18n = 18
+	EL19n = 19
+	EL23n = 23
 )
 
 const (
@@ -87,6 +135,30 @@ const (
 )
 
 const (
+	TR0n  = 0
+	TR1n  = 1
+	TR2n  = 2
+	TR3n  = 3
+	TR4n  = 4
+	TR5n  = 5
+	TR6n  = 6
+	TR7n  = 7
+	TR8n  = 8
+	TR9n  = 9
+	TR10n = 10
+	TR11n = 11
+	TR12n = 12
+	TR13n = 13
+	TR14n = 14
+	TR15n = 15
+	TR16n = 16
+	TR17n = 17
+	TR18n = 18
+	TR19n = 19
+	TR23n = 23
+)
+
+const (
 	TF0  FTSR_Bits = 0x01 << 0  //+ Falling trigger event configuration bit of line 0.
 	TF1  FTSR_Bits = 0x01 << 1  //+ Falling trigger event configuration bit of line 1.
 	TF2  FTSR_Bits = 0x01 << 2  //+ Falling trigger event configuration bit of line 2.
@@ -108,6 +180,30 @@ const (
 	TF18 FTSR_Bits = 0x01 << 18 //+ Falling trigger event configuration bit of line 18.
 	TF19 FTSR_Bits = 0x01 << 19 //+ Falling trigger event configuration bit of line 19.
 	TF23 FTSR_Bits = 0x01 << 23 //+ Falling trigger event configuration bit of line 23.
+)
+
+const (
+	TF0n  = 0
+	TF1n  = 1
+	TF2n  = 2
+	TF3n  = 3
+	TF4n  = 4
+	TF5n  = 5
+	TF6n  = 6
+	TF7n  = 7
+	TF8n  = 8
+	TF9n  = 9
+	TF10n = 10
+	TF11n = 11
+	TF12n = 12
+	TF13n = 13
+	TF14n = 14
+	TF15n = 15
+	TF16n = 16
+	TF17n = 17
+	TF18n = 18
+	TF19n = 19
+	TF23n = 23
 )
 
 const (
@@ -135,6 +231,30 @@ const (
 )
 
 const (
+	SWIER0n  = 0
+	SWIER1n  = 1
+	SWIER2n  = 2
+	SWIER3n  = 3
+	SWIER4n  = 4
+	SWIER5n  = 5
+	SWIER6n  = 6
+	SWIER7n  = 7
+	SWIER8n  = 8
+	SWIER9n  = 9
+	SWIER10n = 10
+	SWIER11n = 11
+	SWIER12n = 12
+	SWIER13n = 13
+	SWIER14n = 14
+	SWIER15n = 15
+	SWIER16n = 16
+	SWIER17n = 17
+	SWIER18n = 18
+	SWIER19n = 19
+	SWIER23n = 23
+)
+
+const (
 	PR0  PR_Bits = 0x01 << 0  //+ Pending bit for line 0.
 	PR1  PR_Bits = 0x01 << 1  //+ Pending bit for line 1.
 	PR2  PR_Bits = 0x01 << 2  //+ Pending bit for line 2.
@@ -156,4 +276,28 @@ const (
 	PR18 PR_Bits = 0x01 << 18 //+ Pending bit for line 18.
 	PR19 PR_Bits = 0x01 << 19 //+ Pending bit for line 19.
 	PR23 PR_Bits = 0x01 << 23 //+ Pending bit for line 23.
+)
+
+const (
+	PR0n  = 0
+	PR1n  = 1
+	PR2n  = 2
+	PR3n  = 3
+	PR4n  = 4
+	PR5n  = 5
+	PR6n  = 6
+	PR7n  = 7
+	PR8n  = 8
+	PR9n  = 9
+	PR10n = 10
+	PR11n = 11
+	PR12n = 12
+	PR13n = 13
+	PR14n = 14
+	PR15n = 15
+	PR16n = 16
+	PR17n = 17
+	PR18n = 18
+	PR19n = 19
+	PR23n = 23
 )

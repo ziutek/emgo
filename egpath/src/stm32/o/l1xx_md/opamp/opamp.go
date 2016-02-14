@@ -47,8 +47,50 @@ const (
 )
 
 const (
+	OPA1PDn     = 0
+	S3SEL1n     = 1
+	S4SEL1n     = 2
+	S5SEL1n     = 3
+	S6SEL1n     = 4
+	OPA1CAL_Ln  = 5
+	OPA1CAL_Hn  = 6
+	OPA1LPMn    = 7
+	OPA2PDn     = 8
+	S3SEL2n     = 9
+	S4SEL2n     = 10
+	S5SEL2n     = 11
+	S6SEL2n     = 12
+	OPA2CAL_Ln  = 13
+	OPA2CAL_Hn  = 14
+	OPA2LPMn    = 15
+	OPA3PDn     = 16
+	S3SEL3n     = 17
+	S4SEL3n     = 18
+	S5SEL3n     = 19
+	S6SEL3n     = 20
+	OPA3CAL_Ln  = 21
+	OPA3CAL_Hn  = 22
+	OPA3LPMn    = 23
+	ANAWSEL1n   = 24
+	ANAWSEL2n   = 25
+	ANAWSEL3n   = 26
+	S7SEL2n     = 27
+	AOP_RANGEn  = 28
+	OPA1CALOUTn = 29
+	OPA2CALOUTn = 30
+	OPA3CALOUTn = 31
+)
+
+const (
 	AO1_OPT_OFFSET_TRIM OTR_Bits = 0x3FF << 0  //+ Offset trim for OPAMP1.
 	AO2_OPT_OFFSET_TRIM OTR_Bits = 0x3FF << 10 //+ Offset trim for OPAMP2.
 	AO3_OPT_OFFSET_TRIM OTR_Bits = 0x3FF << 20 //+ Offset trim for OPAMP2.
 	OT_USER             OTR_Bits = 0x01 << 31  //+ Switch to OPAMP offset user trimmed values.
+)
+
+const (
+	AO1_OPT_OFFSET_TRIMn = 0
+	AO2_OPT_OFFSET_TRIMn = 10
+	AO3_OPT_OFFSET_TRIMn = 20
+	OT_USERn             = 31
 )

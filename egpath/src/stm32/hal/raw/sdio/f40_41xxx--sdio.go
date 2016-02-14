@@ -27,6 +27,10 @@ const (
 )
 
 const (
+	PWRCTRLn = 0
+)
+
+const (
 	CLKDIV   CLKCR_Bits = 0xFF << 0  //+ Clock divide factor.
 	CLKEN    CLKCR_Bits = 0x01 << 8  //+ Clock enable bit.
 	PWRSAV   CLKCR_Bits = 0x01 << 9  //+ Power saving configuration bit.
@@ -39,7 +43,21 @@ const (
 )
 
 const (
+	CLKDIVn  = 0
+	CLKENn   = 8
+	PWRSAVn  = 9
+	BYPASSn  = 10
+	WIDBUSn  = 11
+	NEGEDGEn = 13
+	HWFC_ENn = 14
+)
+
+const (
 	CMDARG ARG_Bits = 0xFFFFFFFF << 0 //+ Command argument.
+)
+
+const (
+	CMDARGn = 0
 )
 
 const (
@@ -57,11 +75,31 @@ const (
 )
 
 const (
+	CMDINDEXn    = 0
+	WAITRESPn    = 6
+	WAITINTn     = 8
+	WAITPENDn    = 9
+	CPSMENn      = 10
+	SDIOSUSPENDn = 11
+	ENCMDCOMPLn  = 12
+	NIENn        = 13
+	CEATACMDn    = 14
+)
+
+const (
 	DATATIME DTIMER_Bits = 0xFFFFFFFF << 0 //+ Data timeout period..
 )
 
 const (
+	DATATIMEn = 0
+)
+
+const (
 	DATALENGTH DLEN_Bits = 0x1FFFFFF << 0 //+ Data length value.
+)
+
+const (
+	DATALENGTHn = 0
 )
 
 const (
@@ -81,6 +119,18 @@ const (
 )
 
 const (
+	DTENn       = 0
+	DTDIRn      = 1
+	DTMODEn     = 2
+	DMAENn      = 3
+	DBLOCKSIZEn = 4
+	RWSTARTn    = 8
+	RWSTOPn     = 9
+	RWMODn      = 10
+	SDIOENn     = 11
+)
+
+const (
 	CCRCFAILC ICR_Bits = 0x01 << 0  //+ CCRCFAIL flag clear bit.
 	DCRCFAILC ICR_Bits = 0x01 << 1  //+ DCRCFAIL flag clear bit.
 	CTIMEOUTC ICR_Bits = 0x01 << 2  //+ CTIMEOUT flag clear bit.
@@ -94,6 +144,22 @@ const (
 	DBCKENDC  ICR_Bits = 0x01 << 10 //+ DBCKEND flag clear bit.
 	SDIOITC   ICR_Bits = 0x01 << 22 //+ SDIOIT flag clear bit.
 	CEATAENDC ICR_Bits = 0x01 << 23 //+ CEATAEND flag clear bit.
+)
+
+const (
+	CCRCFAILCn = 0
+	DCRCFAILCn = 1
+	CTIMEOUTCn = 2
+	DTIMEOUTCn = 3
+	TXUNDERRCn = 4
+	RXOVERRCn  = 5
+	CMDRENDCn  = 6
+	CMDSENTCn  = 7
+	DATAENDCn  = 8
+	STBITERRCn = 9
+	DBCKENDCn  = 10
+	SDIOITCn   = 22
+	CEATAENDCn = 23
 )
 
 const (
@@ -124,5 +190,36 @@ const (
 )
 
 const (
+	CCRCFAILIEn = 0
+	DCRCFAILIEn = 1
+	CTIMEOUTIEn = 2
+	DTIMEOUTIEn = 3
+	TXUNDERRIEn = 4
+	RXOVERRIEn  = 5
+	CMDRENDIEn  = 6
+	CMDSENTIEn  = 7
+	DATAENDIEn  = 8
+	STBITERRIEn = 9
+	DBCKENDIEn  = 10
+	CMDACTIEn   = 11
+	TXACTIEn    = 12
+	RXACTIEn    = 13
+	TXFIFOHEIEn = 14
+	RXFIFOHFIEn = 15
+	TXFIFOFIEn  = 16
+	RXFIFOFIEn  = 17
+	TXFIFOEIEn  = 18
+	RXFIFOEIEn  = 19
+	TXDAVLIEn   = 20
+	RXDAVLIEn   = 21
+	SDIOITIEn   = 22
+	CEATAENDIEn = 23
+)
+
+const (
 	FIFODATA FIFO_Bits = 0xFFFFFFFF << 0 //+ Receive and transmit FIFO data.
+)
+
+const (
+	FIFODATAn = 0
 )

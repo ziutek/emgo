@@ -73,6 +73,16 @@ const (
 )
 
 const (
+	ALGODIRn   = 2
+	ALGOMODEn  = 3
+	DATATYPEn  = 6
+	KEYSIZEn   = 8
+	FFLUSHn    = 14
+	CRYPENn    = 15
+	GCM_CCMPHn = 16
+)
+
+const (
 	IFEM SR_Bits = 0x01 << 0 //+
 	IFNF SR_Bits = 0x01 << 1 //+
 	OFNE SR_Bits = 0x01 << 2 //+
@@ -81,8 +91,21 @@ const (
 )
 
 const (
+	IFEMn = 0
+	IFNFn = 1
+	OFNEn = 2
+	OFFUn = 3
+	BUSYn = 4
+)
+
+const (
 	DIEN DMACR_Bits = 0x01 << 0 //+
 	DOEN DMACR_Bits = 0x01 << 1 //+
+)
+
+const (
+	DIENn = 0
+	DOENn = 1
 )
 
 const (
@@ -91,11 +114,26 @@ const (
 )
 
 const (
+	INIMn  = 0
+	OUTIMn = 1
+)
+
+const (
 	OUTRIS RISR_Bits = 0x01 << 0 //+
 	INRIS  RISR_Bits = 0x01 << 1 //+
 )
 
 const (
+	OUTRISn = 0
+	INRISn  = 1
+)
+
+const (
 	INMIS  MISR_Bits = 0x01 << 0 //+
 	OUTMIS MISR_Bits = 0x01 << 1 //+
+)
+
+const (
+	INMISn  = 0
+	OUTMISn = 1
 )

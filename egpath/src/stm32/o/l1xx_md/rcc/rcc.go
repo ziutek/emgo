@@ -39,6 +39,20 @@ const (
 )
 
 const (
+	HSIONn  = 0
+	HSIRDYn = 1
+	MSIONn  = 8
+	MSIRDYn = 9
+	HSEONn  = 16
+	HSERDYn = 17
+	HSEBYPn = 18
+	PLLONn  = 24
+	PLLRDYn = 25
+	CSSONn  = 28
+	RTCPREn = 29
+)
+
+const (
 	HSICAL     ICSCR_Bits = 0xFF << 0  //+ Internal High Speed clock Calibration.
 	HSITRIM    ICSCR_Bits = 0x1F << 8  //+ Internal High Speed clock trimming.
 	MSIRANGE   ICSCR_Bits = 0x07 << 13 //+ Internal Multi Speed clock Range.
@@ -51,6 +65,14 @@ const (
 	MSIRANGE_6 ICSCR_Bits = 0x06 << 13 //  Internal Multi Speed clock Range 4.194 MHz.
 	MSICAL     ICSCR_Bits = 0xFF << 16 //+ Internal Multi Speed clock Calibration.
 	MSITRIM    ICSCR_Bits = 0xFF << 24 //+ Internal Multi Speed clock trimming.
+)
+
+const (
+	HSICALn   = 0
+	HSITRIMn  = 8
+	MSIRANGEn = 13
+	MSICALn   = 16
+	MSITRIMn  = 24
 )
 
 const (
@@ -148,6 +170,19 @@ const (
 )
 
 const (
+	SWn     = 0
+	SWSn    = 2
+	HPREn   = 4
+	PPRE1n  = 8
+	PPRE2n  = 11
+	PLLSRCn = 16
+	PLLMULn = 18
+	PLLDIVn = 22
+	MCOSELn = 24
+	MCOPREn = 28
+)
+
+const (
 	LSIRDYF  CIR_Bits = 0x01 << 0  //+ LSI Ready Interrupt flag.
 	LSERDYF  CIR_Bits = 0x01 << 1  //+ LSE Ready Interrupt flag.
 	HSIRDYF  CIR_Bits = 0x01 << 2  //+ HSI Ready Interrupt flag.
@@ -174,6 +209,32 @@ const (
 )
 
 const (
+	LSIRDYFn  = 0
+	LSERDYFn  = 1
+	HSIRDYFn  = 2
+	HSERDYFn  = 3
+	PLLRDYFn  = 4
+	MSIRDYFn  = 5
+	LSECSSn   = 6
+	CSSFn     = 7
+	LSIRDYIEn = 8
+	LSERDYIEn = 9
+	HSIRDYIEn = 10
+	HSERDYIEn = 11
+	PLLRDYIEn = 12
+	MSIRDYIEn = 13
+	LSECSSIEn = 14
+	LSIRDYCn  = 16
+	LSERDYCn  = 17
+	HSIRDYCn  = 18
+	HSERDYCn  = 19
+	PLLRDYCn  = 20
+	MSIRDYCn  = 21
+	LSECSSCn  = 22
+	CSSCn     = 23
+)
+
+const (
 	GPIOARST AHBRSTR_Bits = 0x01 << 0  //+ GPIO port A reset.
 	GPIOBRST AHBRSTR_Bits = 0x01 << 1  //+ GPIO port B reset.
 	GPIOCRST AHBRSTR_Bits = 0x01 << 2  //+ GPIO port C reset.
@@ -191,6 +252,23 @@ const (
 )
 
 const (
+	GPIOARSTn = 0
+	GPIOBRSTn = 1
+	GPIOCRSTn = 2
+	GPIODRSTn = 3
+	GPIOERSTn = 4
+	GPIOHRSTn = 5
+	GPIOFRSTn = 6
+	GPIOGRSTn = 7
+	CRCRSTn   = 12
+	FLITFRSTn = 15
+	DMA1RSTn  = 24
+	DMA2RSTn  = 25
+	AESRSTn   = 27
+	FSMCRSTn  = 30
+)
+
+const (
 	SYSCFGRST APB2RSTR_Bits = 0x01 << 0  //+ System Configuration SYSCFG reset.
 	TIM9RST   APB2RSTR_Bits = 0x01 << 2  //+ TIM9 reset.
 	TIM10RST  APB2RSTR_Bits = 0x01 << 3  //+ TIM10 reset.
@@ -199,6 +277,17 @@ const (
 	SDIORST   APB2RSTR_Bits = 0x01 << 11 //+ SDIO reset.
 	SPI1RST   APB2RSTR_Bits = 0x01 << 12 //+ SPI1 reset.
 	USART1RST APB2RSTR_Bits = 0x01 << 14 //+ USART1 reset.
+)
+
+const (
+	SYSCFGRSTn = 0
+	TIM9RSTn   = 2
+	TIM10RSTn  = 3
+	TIM11RSTn  = 4
+	ADC1RSTn   = 9
+	SDIORSTn   = 11
+	SPI1RSTn   = 12
+	USART1RSTn = 14
 )
 
 const (
@@ -225,6 +314,29 @@ const (
 )
 
 const (
+	TIM2RSTn   = 0
+	TIM3RSTn   = 1
+	TIM4RSTn   = 2
+	TIM5RSTn   = 3
+	TIM6RSTn   = 4
+	TIM7RSTn   = 5
+	LCDRSTn    = 9
+	WWDGRSTn   = 11
+	SPI2RSTn   = 14
+	SPI3RSTn   = 15
+	USART2RSTn = 17
+	USART3RSTn = 18
+	UART4RSTn  = 19
+	UART5RSTn  = 20
+	I2C1RSTn   = 21
+	I2C2RSTn   = 22
+	USBRSTn    = 23
+	PWRRSTn    = 28
+	DACRSTn    = 29
+	COMPRSTn   = 31
+)
+
+const (
 	GPIOAEN AHBENR_Bits = 0x01 << 0  //+ GPIO port A clock enable.
 	GPIOBEN AHBENR_Bits = 0x01 << 1  //+ GPIO port B clock enable.
 	GPIOCEN AHBENR_Bits = 0x01 << 2  //+ GPIO port C clock enable.
@@ -242,6 +354,23 @@ const (
 )
 
 const (
+	GPIOAENn = 0
+	GPIOBENn = 1
+	GPIOCENn = 2
+	GPIODENn = 3
+	GPIOEENn = 4
+	GPIOHENn = 5
+	GPIOFENn = 6
+	GPIOGENn = 7
+	CRCENn   = 12
+	FLITFENn = 15
+	DMA1ENn  = 24
+	DMA2ENn  = 25
+	AESENn   = 27
+	FSMCENn  = 30
+)
+
+const (
 	SYSCFGEN APB2ENR_Bits = 0x01 << 0  //+ System Configuration SYSCFG clock enable.
 	TIM9EN   APB2ENR_Bits = 0x01 << 2  //+ TIM9 interface clock enable.
 	TIM10EN  APB2ENR_Bits = 0x01 << 3  //+ TIM10 interface clock enable.
@@ -250,6 +379,17 @@ const (
 	SDIOEN   APB2ENR_Bits = 0x01 << 11 //+ SDIO clock enable.
 	SPI1EN   APB2ENR_Bits = 0x01 << 12 //+ SPI1 clock enable.
 	USART1EN APB2ENR_Bits = 0x01 << 14 //+ USART1 clock enable.
+)
+
+const (
+	SYSCFGENn = 0
+	TIM9ENn   = 2
+	TIM10ENn  = 3
+	TIM11ENn  = 4
+	ADC1ENn   = 9
+	SDIOENn   = 11
+	SPI1ENn   = 12
+	USART1ENn = 14
 )
 
 const (
@@ -276,6 +416,29 @@ const (
 )
 
 const (
+	TIM2ENn   = 0
+	TIM3ENn   = 1
+	TIM4ENn   = 2
+	TIM5ENn   = 3
+	TIM6ENn   = 4
+	TIM7ENn   = 5
+	LCDENn    = 9
+	WWDGENn   = 11
+	SPI2ENn   = 14
+	SPI3ENn   = 15
+	USART2ENn = 17
+	USART3ENn = 18
+	UART4ENn  = 19
+	UART5ENn  = 20
+	I2C1ENn   = 21
+	I2C2ENn   = 22
+	USBENn    = 23
+	PWRENn    = 28
+	DACENn    = 29
+	COMPENn   = 31
+)
+
+const (
 	GPIOALPEN AHBLPENR_Bits = 0x01 << 0  //+ GPIO port A clock enabled in sleep mode.
 	GPIOBLPEN AHBLPENR_Bits = 0x01 << 1  //+ GPIO port B clock enabled in sleep mode.
 	GPIOCLPEN AHBLPENR_Bits = 0x01 << 2  //+ GPIO port C clock enabled in sleep mode.
@@ -294,6 +457,24 @@ const (
 )
 
 const (
+	GPIOALPENn = 0
+	GPIOBLPENn = 1
+	GPIOCLPENn = 2
+	GPIODLPENn = 3
+	GPIOELPENn = 4
+	GPIOHLPENn = 5
+	GPIOFLPENn = 6
+	GPIOGLPENn = 7
+	CRCLPENn   = 12
+	FLITFLPENn = 15
+	SRAMLPENn  = 16
+	DMA1LPENn  = 24
+	DMA2LPENn  = 25
+	AESLPENn   = 27
+	FSMCLPENn  = 30
+)
+
+const (
 	SYSCFGLPEN APB2LPENR_Bits = 0x01 << 0  //+ System Configuration SYSCFG clock enabled in sleep mode.
 	TIM9LPEN   APB2LPENR_Bits = 0x01 << 2  //+ TIM9 interface clock enabled in sleep mode.
 	TIM10LPEN  APB2LPENR_Bits = 0x01 << 3  //+ TIM10 interface clock enabled in sleep mode.
@@ -302,6 +483,17 @@ const (
 	SDIOLPEN   APB2LPENR_Bits = 0x01 << 11 //+ SDIO clock enabled in sleep mode.
 	SPI1LPEN   APB2LPENR_Bits = 0x01 << 12 //+ SPI1 clock enabled in sleep mode.
 	USART1LPEN APB2LPENR_Bits = 0x01 << 14 //+ USART1 clock enabled in sleep mode.
+)
+
+const (
+	SYSCFGLPENn = 0
+	TIM9LPENn   = 2
+	TIM10LPENn  = 3
+	TIM11LPENn  = 4
+	ADC1LPENn   = 9
+	SDIOLPENn   = 11
+	SPI1LPENn   = 12
+	USART1LPENn = 14
 )
 
 const (
@@ -325,6 +517,29 @@ const (
 	PWRLPEN    APB1LPENR_Bits = 0x01 << 28 //+ Power interface clock enabled in sleep mode.
 	DACLPEN    APB1LPENR_Bits = 0x01 << 29 //+ DAC interface clock enabled in sleep mode.
 	COMPLPEN   APB1LPENR_Bits = 0x01 << 31 //+ Comparator interface clock enabled in sleep mode.
+)
+
+const (
+	TIM2LPENn   = 0
+	TIM3LPENn   = 1
+	TIM4LPENn   = 2
+	TIM5LPENn   = 3
+	TIM6LPENn   = 4
+	TIM7LPENn   = 5
+	LCDLPENn    = 9
+	WWDGLPENn   = 11
+	SPI2LPENn   = 14
+	SPI3LPENn   = 15
+	USART2LPENn = 17
+	USART3LPENn = 18
+	UART4LPENn  = 19
+	UART5LPENn  = 20
+	I2C1LPENn   = 21
+	I2C2LPENn   = 22
+	USBLPENn    = 23
+	PWRLPENn    = 28
+	DACLPENn    = 29
+	COMPLPENn   = 31
 )
 
 const (
@@ -352,4 +567,25 @@ const (
 	IWDGRSTF       CSR_Bits = 0x01 << 29 //+ Independent Watchdog reset flag.
 	WWDGRSTF       CSR_Bits = 0x01 << 30 //+ Window watchdog reset flag.
 	LPWRRSTF       CSR_Bits = 0x01 << 31 //+ Low-Power reset flag.
+)
+
+const (
+	LSIONn    = 0
+	LSIRDYn   = 1
+	LSEONn    = 8
+	LSERDYn   = 9
+	LSEBYPn   = 10
+	LSECSSONn = 11
+	LSECSSDn  = 12
+	RTCSELn   = 16
+	RTCENn    = 22
+	RTCRSTn   = 23
+	RMVFn     = 24
+	OBLRSTFn  = 25
+	PINRSTFn  = 26
+	PORRSTFn  = 27
+	SFTRSTFn  = 28
+	IWDGRSTFn = 29
+	WWDGRSTFn = 30
+	LPWRRSTFn = 31
 )

@@ -38,6 +38,23 @@ const (
 )
 
 const (
+	PEn        = 0
+	SMBUSn     = 1
+	SMBTYPEn   = 3
+	ENARPn     = 4
+	ENPECn     = 5
+	ENGCn      = 6
+	NOSTRETCHn = 7
+	STARTn     = 8
+	STOPn      = 9
+	ACKn       = 10
+	POSn       = 11
+	PECn       = 12
+	ALERTn     = 13
+	SWRSTn     = 15
+)
+
+const (
 	FREQ    CR2_Bits = 0x3F << 0  //+ FREQ[5:0] bits (Peripheral Clock Frequency).
 	FREQ_0  CR2_Bits = 0x01 << 0  //  Bit 0.
 	FREQ_1  CR2_Bits = 0x02 << 0  //  Bit 1.
@@ -50,6 +67,15 @@ const (
 	ITBUFEN CR2_Bits = 0x01 << 10 //+ Buffer Interrupt Enable.
 	DMAEN   CR2_Bits = 0x01 << 11 //+ DMA Requests Enable.
 	LAST    CR2_Bits = 0x01 << 12 //+ DMA Last Transfer.
+)
+
+const (
+	FREQn    = 0
+	ITERRENn = 8
+	ITEVTENn = 9
+	ITBUFENn = 10
+	DMAENn   = 11
+	LASTn    = 12
 )
 
 const (
@@ -69,11 +95,21 @@ const (
 )
 
 const (
+	ADD1_7n  = 1
+	ADD8_9n  = 8
+	ADD0n    = 0
+	ADDMODEn = 15
+)
+
+const (
 	ENDUAL    OAR2_Bits = 0x01 << 0 //+ Dual addressing mode enable.
 	SECADD1_7 OAR2_Bits = 0x7F << 1 //+ Interface address.
 )
 
-const ()
+const (
+	ENDUALn    = 0
+	SECADD1_7n = 1
+)
 
 const (
 	SB       SR1_Bits = 0x01 << 0  //+ Start Bit (Master mode).
@@ -93,6 +129,23 @@ const (
 )
 
 const (
+	SBn       = 0
+	ADDRn     = 1
+	BTFn      = 2
+	ADD10n    = 3
+	STOPFn    = 4
+	RXNEn     = 6
+	TXEn      = 7
+	BERRn     = 8
+	ARLOn     = 9
+	AFn       = 10
+	OVRn      = 11
+	PECERRn   = 12
+	TIMEOUTn  = 14
+	SMBALERTn = 15
+)
+
+const (
 	MSL        SR2_Bits = 0x01 << 0 //+ Master/Slave.
 	BUSY       SR2_Bits = 0x01 << 1 //+ Bus Busy.
 	TRA        SR2_Bits = 0x01 << 2 //+ Transmitter/Receiver.
@@ -104,9 +157,24 @@ const (
 )
 
 const (
+	MSLn        = 0
+	BUSYn       = 1
+	TRAn        = 2
+	GENCALLn    = 4
+	SMBDEFAULTn = 5
+	SMBHOSTn    = 6
+	DUALFn      = 7
+	PECVALn     = 8
+)
+
+const (
 	CCRVAL CCR_Bits = 0xFFF << 0 //+ Clock Control Register in Fast/Standard mode (Master mode).
 	DUTY   CCR_Bits = 0x01 << 14 //+ Fast Mode Duty Cycle.
 	FS     CCR_Bits = 0x01 << 15 //+ I2C Master Mode Selection.
 )
 
-const ()
+const (
+	CCRVALn = 0
+	DUTYn   = 14
+	FSn     = 15
+)

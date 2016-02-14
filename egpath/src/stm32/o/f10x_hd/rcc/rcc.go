@@ -32,6 +32,19 @@ const (
 )
 
 const (
+	HSIONn   = 0
+	HSIRDYn  = 1
+	HSITRIMn = 3
+	HSICALn  = 8
+	HSEONn   = 16
+	HSERDYn  = 17
+	HSEBYPn  = 18
+	CSSONn   = 19
+	PLLONn   = 24
+	PLLRDYn  = 25
+)
+
+const (
 	SW                CFGR_Bits = 0x03 << 0  //+ SW[1:0] bits (System clock Switch).
 	SW_0              CFGR_Bits = 0x01 << 0  //  Bit 0.
 	SW_1              CFGR_Bits = 0x02 << 0  //  Bit 1.
@@ -122,6 +135,20 @@ const (
 )
 
 const (
+	SWn       = 0
+	SWSn      = 2
+	HPREn     = 4
+	PPRE1n    = 8
+	PPRE2n    = 11
+	ADCPREn   = 14
+	PLLSRCn   = 16
+	PLLXTPREn = 17
+	PLLMULLn  = 18
+	USBPREn   = 22
+	MCOn      = 24
+)
+
+const (
 	LSIRDYF  CIR_Bits = 0x01 << 0  //+ LSI Ready Interrupt flag.
 	LSERDYF  CIR_Bits = 0x01 << 1  //+ LSE Ready Interrupt flag.
 	HSIRDYF  CIR_Bits = 0x01 << 2  //+ HSI Ready Interrupt flag.
@@ -142,6 +169,26 @@ const (
 )
 
 const (
+	LSIRDYFn  = 0
+	LSERDYFn  = 1
+	HSIRDYFn  = 2
+	HSERDYFn  = 3
+	PLLRDYFn  = 4
+	CSSFn     = 7
+	LSIRDYIEn = 8
+	LSERDYIEn = 9
+	HSIRDYIEn = 10
+	HSERDYIEn = 11
+	PLLRDYIEn = 12
+	LSIRDYCn  = 16
+	LSERDYCn  = 17
+	HSIRDYCn  = 18
+	HSERDYCn  = 19
+	PLLRDYCn  = 20
+	CSSCn     = 23
+)
+
+const (
 	AFIORST   APB2RSTR_Bits = 0x01 << 0  //+ Alternate Function I/O reset.
 	IOPARST   APB2RSTR_Bits = 0x01 << 2  //+ I/O port A reset.
 	IOPBRST   APB2RSTR_Bits = 0x01 << 3  //+ I/O port B reset.
@@ -157,6 +204,24 @@ const (
 	IOPGRST   APB2RSTR_Bits = 0x01 << 8  //+ I/O port G reset.
 	TIM8RST   APB2RSTR_Bits = 0x01 << 13 //+ TIM8 Timer reset.
 	ADC3RST   APB2RSTR_Bits = 0x01 << 15 //+ ADC3 interface reset.
+)
+
+const (
+	AFIORSTn   = 0
+	IOPARSTn   = 2
+	IOPBRSTn   = 3
+	IOPCRSTn   = 4
+	IOPDRSTn   = 5
+	ADC1RSTn   = 9
+	ADC2RSTn   = 10
+	TIM1RSTn   = 11
+	SPI1RSTn   = 12
+	USART1RSTn = 14
+	IOPERSTn   = 6
+	IOPFRSTn   = 7
+	IOPGRSTn   = 8
+	TIM8RSTn   = 13
+	ADC3RSTn   = 15
 )
 
 const (
@@ -183,6 +248,29 @@ const (
 )
 
 const (
+	TIM2RSTn   = 0
+	TIM3RSTn   = 1
+	WWDGRSTn   = 11
+	USART2RSTn = 17
+	I2C1RSTn   = 21
+	CAN1RSTn   = 25
+	BKPRSTn    = 27
+	PWRRSTn    = 28
+	TIM4RSTn   = 2
+	SPI2RSTn   = 14
+	USART3RSTn = 18
+	I2C2RSTn   = 22
+	USBRSTn    = 23
+	TIM5RSTn   = 3
+	TIM6RSTn   = 4
+	TIM7RSTn   = 5
+	SPI3RSTn   = 15
+	UART4RSTn  = 19
+	UART5RSTn  = 20
+	DACRSTn    = 29
+)
+
+const (
 	DMA1EN  AHBENR_Bits = 0x01 << 0  //+ DMA1 clock enable.
 	SRAMEN  AHBENR_Bits = 0x01 << 2  //+ SRAM interface clock enable.
 	FLITFEN AHBENR_Bits = 0x01 << 4  //+ FLITF clock enable.
@@ -190,6 +278,16 @@ const (
 	DMA2EN  AHBENR_Bits = 0x01 << 1  //+ DMA2 clock enable.
 	FSMCEN  AHBENR_Bits = 0x01 << 8  //+ FSMC clock enable.
 	SDIOEN  AHBENR_Bits = 0x01 << 10 //+ SDIO clock enable.
+)
+
+const (
+	DMA1ENn  = 0
+	SRAMENn  = 2
+	FLITFENn = 4
+	CRCENn   = 6
+	DMA2ENn  = 1
+	FSMCENn  = 8
+	SDIOENn  = 10
 )
 
 const (
@@ -208,6 +306,24 @@ const (
 	IOPGEN   APB2ENR_Bits = 0x01 << 8  //+ I/O port G clock enable.
 	TIM8EN   APB2ENR_Bits = 0x01 << 13 //+ TIM8 Timer clock enable.
 	ADC3EN   APB2ENR_Bits = 0x01 << 15 //+ DMA1 clock enable.
+)
+
+const (
+	AFIOENn   = 0
+	IOPAENn   = 2
+	IOPBENn   = 3
+	IOPCENn   = 4
+	IOPDENn   = 5
+	ADC1ENn   = 9
+	ADC2ENn   = 10
+	TIM1ENn   = 11
+	SPI1ENn   = 12
+	USART1ENn = 14
+	IOPEENn   = 6
+	IOPFENn   = 7
+	IOPGENn   = 8
+	TIM8ENn   = 13
+	ADC3ENn   = 15
 )
 
 const (
@@ -234,6 +350,29 @@ const (
 )
 
 const (
+	TIM2ENn   = 0
+	TIM3ENn   = 1
+	WWDGENn   = 11
+	USART2ENn = 17
+	I2C1ENn   = 21
+	CAN1ENn   = 25
+	BKPENn    = 27
+	PWRENn    = 28
+	TIM4ENn   = 2
+	SPI2ENn   = 14
+	USART3ENn = 18
+	I2C2ENn   = 22
+	USBENn    = 23
+	TIM5ENn   = 3
+	TIM6ENn   = 4
+	TIM7ENn   = 5
+	SPI3ENn   = 15
+	UART4ENn  = 19
+	UART5ENn  = 20
+	DACENn    = 29
+)
+
+const (
 	LSEON          BDCR_Bits = 0x01 << 0  //+ External Low Speed oscillator enable.
 	LSERDY         BDCR_Bits = 0x01 << 1  //+ External Low Speed oscillator Ready.
 	LSEBYP         BDCR_Bits = 0x01 << 2  //+ External Low Speed oscillator Bypass.
@@ -249,6 +388,15 @@ const (
 )
 
 const (
+	LSEONn  = 0
+	LSERDYn = 1
+	LSEBYPn = 2
+	RTCSELn = 8
+	RTCENn  = 15
+	BDRSTn  = 16
+)
+
+const (
 	LSION    CSR_Bits = 0x01 << 0  //+ Internal Low Speed oscillator enable.
 	LSIRDY   CSR_Bits = 0x01 << 1  //+ Internal Low Speed oscillator Ready.
 	RMVF     CSR_Bits = 0x01 << 24 //+ Remove reset flag.
@@ -258,4 +406,16 @@ const (
 	IWDGRSTF CSR_Bits = 0x01 << 29 //+ Independent Watchdog reset flag.
 	WWDGRSTF CSR_Bits = 0x01 << 30 //+ Window watchdog reset flag.
 	LPWRRSTF CSR_Bits = 0x01 << 31 //+ Low-Power reset flag.
+)
+
+const (
+	LSIONn    = 0
+	LSIRDYn   = 1
+	RMVFn     = 24
+	PINRSTFn  = 26
+	PORRSTFn  = 27
+	SFTRSTFn  = 28
+	IWDGRSTFn = 29
+	WWDGRSTFn = 30
+	LPWRRSTFn = 31
 )

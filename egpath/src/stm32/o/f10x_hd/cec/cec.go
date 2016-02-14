@@ -23,6 +23,13 @@ const (
 )
 
 const (
+	PEn   = 0
+	IEn   = 1
+	BTEMn = 2
+	BPEMn = 3
+)
+
+const (
 	OA   OAR_Bits = 0x0F << 0 //+ OA[3:0]: Own Address.
 	OA_0 OAR_Bits = 0x01 << 0 //  Bit 0.
 	OA_1 OAR_Bits = 0x02 << 0 //  Bit 1.
@@ -30,7 +37,9 @@ const (
 	OA_3 OAR_Bits = 0x08 << 0 //  Bit 3.
 )
 
-const ()
+const (
+	OAn = 0
+)
 
 const (
 	BTE   ESR_Bits = 0x01 << 0 //+ Bit Timing Error.
@@ -40,6 +49,16 @@ const (
 	ACKE  ESR_Bits = 0x01 << 4 //+ Block Acknowledge Error.
 	LINE  ESR_Bits = 0x01 << 5 //+ Line Error.
 	TBTFE ESR_Bits = 0x01 << 6 //+ Tx Block Transfer Finished Error.
+)
+
+const (
+	BTEn   = 0
+	BPEn   = 1
+	RBTFEn = 2
+	SBEn   = 3
+	ACKEn  = 4
+	LINEn  = 5
+	TBTFEn = 6
 )
 
 const (
@@ -53,6 +72,13 @@ const (
 	RBTF  CSR_Bits = 0x01 << 7 //+ Rx Block Transfer Finished.
 )
 
-const ()
-
-const ()
+const (
+	TSOMn  = 0
+	TEOMn  = 1
+	TERRn  = 2
+	TBTRFn = 3
+	RSOMn  = 4
+	REOMn  = 5
+	RERRn  = 6
+	RBTFn  = 7
+)

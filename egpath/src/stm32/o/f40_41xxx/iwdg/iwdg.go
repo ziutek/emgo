@@ -17,6 +17,10 @@ const (
 )
 
 const (
+	KEYn = 0
+)
+
+const (
 	PR   PR_Bits = 0x07 << 0 //+ PR[2:0] (Prescaler divider).
 	PR_0 PR_Bits = 0x01 << 0 //  Bit 0.
 	PR_1 PR_Bits = 0x02 << 0 //  Bit 1.
@@ -24,10 +28,23 @@ const (
 )
 
 const (
+	PRn = 0
+)
+
+const (
 	RL RLR_Bits = 0xFFF << 0 //+ Watchdog counter reload value.
+)
+
+const (
+	RLn = 0
 )
 
 const (
 	PVU SR_Bits = 0x01 << 0 //+ Watchdog prescaler value update.
 	RVU SR_Bits = 0x01 << 1 //+ Watchdog counter reload value update.
+)
+
+const (
+	PVUn = 0
+	RVUn = 1
 )

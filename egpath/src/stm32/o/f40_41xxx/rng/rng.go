@@ -17,9 +17,22 @@ const (
 )
 
 const (
+	RNGENn = 2
+	IEn    = 3
+)
+
+const (
 	DRDY SR_Bits = 0x01 << 0 //+
 	CECS SR_Bits = 0x01 << 1 //+
 	SECS SR_Bits = 0x01 << 2 //+
 	CEIS SR_Bits = 0x01 << 5 //+
 	SEIS SR_Bits = 0x01 << 6 //+
+)
+
+const (
+	DRDYn = 0
+	CECSn = 1
+	SECSn = 2
+	CEISn = 5
+	SEISn = 6
 )

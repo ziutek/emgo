@@ -37,9 +37,32 @@ const (
 )
 
 const (
+	CAPTUREn = 0
+	CMn      = 1
+	CROPn    = 2
+	JPEGn    = 3
+	ESSn     = 4
+	PCKPOLn  = 5
+	HSPOLn   = 6
+	VSPOLn   = 7
+	FCRC_0n  = 8
+	FCRC_1n  = 9
+	EDM_0n   = 10
+	EDM_1n   = 11
+	CREn     = 12
+	ENABLEn  = 14
+)
+
+const (
 	HSYNC SR_Bits = 0x01 << 0 //+
 	VSYNC SR_Bits = 0x01 << 1 //+
 	FNE   SR_Bits = 0x01 << 2 //+
+)
+
+const (
+	HSYNCn = 0
+	VSYNCn = 1
+	FNEn   = 2
 )
 
 const (
@@ -51,11 +74,27 @@ const (
 )
 
 const (
+	FRAME_RISn = 0
+	OVF_RISn   = 1
+	ERR_RISn   = 2
+	VSYNC_RISn = 3
+	LINE_RISn  = 4
+)
+
+const (
 	FRAME_IE IER_Bits = 0x01 << 0 //+
 	OVF_IE   IER_Bits = 0x01 << 1 //+
 	ERR_IE   IER_Bits = 0x01 << 2 //+
 	VSYNC_IE IER_Bits = 0x01 << 3 //+
 	LINE_IE  IER_Bits = 0x01 << 4 //+
+)
+
+const (
+	FRAME_IEn = 0
+	OVF_IEn   = 1
+	ERR_IEn   = 2
+	VSYNC_IEn = 3
+	LINE_IEn  = 4
 )
 
 const (
@@ -67,9 +106,25 @@ const (
 )
 
 const (
+	FRAME_MISn = 0
+	OVF_MISn   = 1
+	ERR_MISn   = 2
+	VSYNC_MISn = 3
+	LINE_MISn  = 4
+)
+
+const (
 	FRAME_ISC ICR_Bits = 0x01 << 0 //+
 	OVF_ISC   ICR_Bits = 0x01 << 1 //+
 	ERR_ISC   ICR_Bits = 0x01 << 2 //+
 	VSYNC_ISC ICR_Bits = 0x01 << 3 //+
 	LINE_ISC  ICR_Bits = 0x01 << 4 //+
+)
+
+const (
+	FRAME_ISCn = 0
+	OVF_ISCn   = 1
+	ERR_ISCn   = 2
+	VSYNC_ISCn = 3
+	LINE_ISCn  = 4
 )

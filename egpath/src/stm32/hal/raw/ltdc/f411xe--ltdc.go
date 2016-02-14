@@ -29,8 +29,18 @@ const (
 )
 
 const (
+	VSHn = 0
+	HSWn = 16
+)
+
+const (
 	AVBP BPCR_Bits = 0x7FF << 0  //+ Accumulated Vertical Back Porch.
 	AHBP BPCR_Bits = 0xFFF << 16 //+ Accumulated Horizontal Back Porch.
+)
+
+const (
+	AVBPn = 0
+	AHBPn = 16
 )
 
 const (
@@ -39,8 +49,18 @@ const (
 )
 
 const (
+	AAHn = 0
+	AAWn = 16
+)
+
+const (
 	TOTALH TWCR_Bits = 0x7FF << 0  //+ Total Heigh.
 	TOTALW TWCR_Bits = 0xFFF << 16 //+ Total Width.
+)
+
+const (
+	TOTALHn = 0
+	TOTALWn = 16
 )
 
 const (
@@ -56,14 +76,37 @@ const (
 )
 
 const (
+	LTDCENn = 0
+	DBWn    = 4
+	DGWn    = 8
+	DRWn    = 12
+	DTENn   = 16
+	PCPOLn  = 28
+	DEPOLn  = 29
+	VSPOLn  = 30
+	HSPOLn  = 31
+)
+
+const (
 	IMR SRCR_Bits = 0x01 << 0 //+ Immediate Reload.
 	VBR SRCR_Bits = 0x01 << 1 //+ Vertical Blanking Reload.
+)
+
+const (
+	IMRn = 0
+	VBRn = 1
 )
 
 const (
 	BCBLUE  BCCR_Bits = 0xFF << 0  //+ Background Blue value.
 	BCGREEN BCCR_Bits = 0xFF << 8  //+ Background Green value.
 	BCRED   BCCR_Bits = 0xFF << 16 //+ Background Red value.
+)
+
+const (
+	BCBLUEn  = 0
+	BCGREENn = 8
+	BCREDn   = 16
 )
 
 const (
@@ -74,10 +117,24 @@ const (
 )
 
 const (
+	LIEn    = 0
+	FUIEn   = 1
+	TERRIEn = 2
+	RRIEn   = 3
+)
+
+const (
 	LIF    ISR_Bits = 0x01 << 0 //+ Line Interrupt Flag.
 	FUIF   ISR_Bits = 0x01 << 1 //+ FIFO Underrun Interrupt Flag.
 	TERRIF ISR_Bits = 0x01 << 2 //+ Transfer Error Interrupt Flag.
 	RRIF   ISR_Bits = 0x01 << 3 //+ Register Reload interrupt Flag.
+)
+
+const (
+	LIFn    = 0
+	FUIFn   = 1
+	TERRIFn = 2
+	RRIFn   = 3
 )
 
 const (
@@ -88,7 +145,18 @@ const (
 )
 
 const (
+	CLIFn    = 0
+	CFUIFn   = 1
+	CTERRIFn = 2
+	CRRIFn   = 3
+)
+
+const (
 	LIPOS LIPCR_Bits = 0x7FF << 0 //+ Line Interrupt Position.
+)
+
+const (
+	LIPOSn = 0
 )
 
 const (
@@ -97,8 +165,20 @@ const (
 )
 
 const (
+	CYPOSn = 0
+	CXPOSn = 16
+)
+
+const (
 	VDES   CDSR_Bits = 0x01 << 0 //+ Vertical Data Enable Status.
 	HDES   CDSR_Bits = 0x01 << 1 //+ Horizontal Data Enable Status.
 	VSYNCS CDSR_Bits = 0x01 << 2 //+ Vertical Synchronization Status.
 	HSYNCS CDSR_Bits = 0x01 << 3 //+ Horizontal Synchronization Status.
+)
+
+const (
+	VDESn   = 0
+	HDESn   = 1
+	VSYNCSn = 2
+	HSYNCSn = 3
 )

@@ -18,6 +18,11 @@ const (
 )
 
 const (
+	DEV_IDn = 0
+	REV_IDn = 16
+)
+
+const (
 	DBG_SLEEP    CR_Bits = 0x01 << 0 //+
 	DBG_STOP     CR_Bits = 0x01 << 1 //+
 	DBG_STANDBY  CR_Bits = 0x01 << 2 //+
@@ -25,6 +30,14 @@ const (
 	TRACE_MODE   CR_Bits = 0x03 << 6 //+
 	TRACE_MODE_0 CR_Bits = 0x01 << 6 //  Bit 0.
 	TRACE_MODE_1 CR_Bits = 0x02 << 6 //  Bit 1.
+)
+
+const (
+	DBG_SLEEPn   = 0
+	DBG_STOPn    = 1
+	DBG_STANDBYn = 2
+	TRACE_IOENn  = 5
+	TRACE_MODEn  = 6
 )
 
 const (
@@ -50,4 +63,27 @@ const (
 	DBG_TIM9_STOP          APB1FZ_Bits = 0x01 << 16 //+
 	DBG_TIM10_STOP         APB1FZ_Bits = 0x01 << 17 //+
 	DBG_TIM11_STOP         APB1FZ_Bits = 0x01 << 18 //+
+)
+
+const (
+	DBG_TIM2_STOPn          = 0
+	DBG_TIM3_STOPn          = 1
+	DBG_TIM4_STOPn          = 2
+	DBG_TIM5_STOPn          = 3
+	DBG_TIM6_STOPn          = 4
+	DBG_TIM7_STOPn          = 5
+	DBG_TIM12_STOPn         = 6
+	DBG_TIM13_STOPn         = 7
+	DBG_TIM14_STOPn         = 8
+	DBG_RTC_STOPn           = 10
+	DBG_WWDG_STOPn          = 11
+	DBG_IWDG_STOPn          = 12
+	DBG_I2C1_SMBUS_TIMEOUTn = 21
+	DBG_I2C2_SMBUS_TIMEOUTn = 22
+	DBG_I2C3_SMBUS_TIMEOUTn = 23
+	DBG_CAN1_STOPn          = 25
+	DBG_CAN2_STOPn          = 26
+	DBG_TIM9_STOPn          = 16
+	DBG_TIM10_STOPn         = 17
+	DBG_TIM11_STOPn         = 18
 )

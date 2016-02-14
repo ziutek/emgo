@@ -53,12 +53,29 @@ const (
 )
 
 const (
+	CENn  = 0
+	UDISn = 1
+	URSn  = 2
+	OPMn  = 3
+	DIRn  = 4
+	CMSn  = 5
+	ARPEn = 7
+	CKDn  = 8
+)
+
+const (
 	CCDS  CR2_Bits = 0x01 << 3 //+ Capture/Compare DMA Selection.
 	MMS   CR2_Bits = 0x07 << 4 //+ MMS[2:0] bits (Master Mode Selection).
 	MMS_0 CR2_Bits = 0x01 << 4 //  Bit 0.
 	MMS_1 CR2_Bits = 0x02 << 4 //  Bit 1.
 	MMS_2 CR2_Bits = 0x04 << 4 //  Bit 2.
 	TI1S  CR2_Bits = 0x01 << 7 //+ TI1 Selection.
+)
+
+const (
+	CCDSn = 3
+	MMSn  = 4
+	TI1Sn = 7
 )
 
 const (
@@ -85,6 +102,17 @@ const (
 )
 
 const (
+	SMSn  = 0
+	OCCSn = 3
+	TSn   = 4
+	MSMn  = 7
+	ETFn  = 8
+	ETPSn = 12
+	ECEn  = 14
+	ETPn  = 15
+)
+
+const (
 	UIE   DIER_Bits = 0x01 << 0  //+ Update interrupt enable.
 	CC1IE DIER_Bits = 0x01 << 1  //+ Capture/Compare 1 interrupt enable.
 	CC2IE DIER_Bits = 0x01 << 2  //+ Capture/Compare 2 interrupt enable.
@@ -97,6 +125,21 @@ const (
 	CC3DE DIER_Bits = 0x01 << 11 //+ Capture/Compare 3 DMA request enable.
 	CC4DE DIER_Bits = 0x01 << 12 //+ Capture/Compare 4 DMA request enable.
 	TDE   DIER_Bits = 0x01 << 14 //+ Trigger DMA request enable.
+)
+
+const (
+	UIEn   = 0
+	CC1IEn = 1
+	CC2IEn = 2
+	CC3IEn = 3
+	CC4IEn = 4
+	TIEn   = 6
+	UDEn   = 8
+	CC1DEn = 9
+	CC2DEn = 10
+	CC3DEn = 11
+	CC4DEn = 12
+	TDEn   = 14
 )
 
 const (
@@ -113,12 +156,34 @@ const (
 )
 
 const (
+	UIFn   = 0
+	CC1IFn = 1
+	CC2IFn = 2
+	CC3IFn = 3
+	CC4IFn = 4
+	TIFn   = 6
+	CC1OFn = 9
+	CC2OFn = 10
+	CC3OFn = 11
+	CC4OFn = 12
+)
+
+const (
 	UG   EGR_Bits = 0x01 << 0 //+ Update Generation.
 	CC1G EGR_Bits = 0x01 << 1 //+ Capture/Compare 1 Generation.
 	CC2G EGR_Bits = 0x01 << 2 //+ Capture/Compare 2 Generation.
 	CC3G EGR_Bits = 0x01 << 3 //+ Capture/Compare 3 Generation.
 	CC4G EGR_Bits = 0x01 << 4 //+ Capture/Compare 4 Generation.
 	TG   EGR_Bits = 0x01 << 6 //+ Trigger Generation.
+)
+
+const (
+	UGn   = 0
+	CC1Gn = 1
+	CC2Gn = 2
+	CC3Gn = 3
+	CC4Gn = 4
+	TGn   = 6
 )
 
 const (
@@ -161,6 +226,19 @@ const (
 )
 
 const (
+	CC1Sn  = 0
+	OC1FEn = 2
+	OC1PEn = 3
+	OC1Mn  = 4
+	OC1CEn = 7
+	CC2Sn  = 8
+	OC2FEn = 10
+	OC2PEn = 11
+	OC2Mn  = 12
+	OC2CEn = 15
+)
+
+const (
 	CC3S     CCMR2_Bits = 0x03 << 0  //+ CC3S[1:0] bits (Capture/Compare 3 Selection).
 	CC3S_0   CCMR2_Bits = 0x01 << 0  //  Bit 0.
 	CC3S_1   CCMR2_Bits = 0x02 << 0  //  Bit 1.
@@ -200,6 +278,19 @@ const (
 )
 
 const (
+	CC3Sn  = 0
+	OC3FEn = 2
+	OC3PEn = 3
+	OC3Mn  = 4
+	OC3CEn = 7
+	CC4Sn  = 8
+	OC4FEn = 10
+	OC4PEn = 11
+	OC4Mn  = 12
+	OC4CEn = 15
+)
+
+const (
 	CC1E  CCER_Bits = 0x01 << 0  //+ Capture/Compare 1 output enable.
 	CC1P  CCER_Bits = 0x01 << 1  //+ Capture/Compare 1 output Polarity.
 	CC1NP CCER_Bits = 0x01 << 3  //+ Capture/Compare 1 Complementary output Polarity.
@@ -214,19 +305,20 @@ const (
 	CC4NP CCER_Bits = 0x01 << 15 //+ Capture/Compare 4 Complementary output Polarity.
 )
 
-const ()
-
-const ()
-
-const ()
-
-const ()
-
-const ()
-
-const ()
-
-const ()
+const (
+	CC1En  = 0
+	CC1Pn  = 1
+	CC1NPn = 3
+	CC2En  = 4
+	CC2Pn  = 5
+	CC2NPn = 7
+	CC3En  = 8
+	CC3Pn  = 9
+	CC3NPn = 11
+	CC4En  = 12
+	CC4Pn  = 13
+	CC4NPn = 15
+)
 
 const (
 	DBA   DCR_Bits = 0x1F << 0 //+ DBA[4:0] bits (DMA Base Address).
@@ -244,11 +336,24 @@ const (
 )
 
 const (
+	DBAn = 0
+	DBLn = 8
+)
+
+const (
 	DMAB DMAR_Bits = 0xFFFF << 0 //+ DMA register for burst accesses.
+)
+
+const (
+	DMABn = 0
 )
 
 const (
 	TI1RMP   OR_Bits = 0x03 << 0 //+ Option register for TI1 Remapping.
 	TI1RMP_0 OR_Bits = 0x01 << 0 //  Bit 0.
 	TI1RMP_1 OR_Bits = 0x02 << 0 //  Bit 1.
+)
+
+const (
+	TI1RMPn = 0
 )

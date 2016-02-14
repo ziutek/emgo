@@ -47,6 +47,12 @@ const (
 )
 
 const (
+	PINn  = 0
+	PORTn = 4
+	EVOEn = 7
+)
+
+const (
 	SPI1_REMAP                MAPR_Bits = 0x01 << 0  //+ SPI1 remapping.
 	I2C1_REMAP                MAPR_Bits = 0x01 << 1  //+ I2C1 remapping.
 	USART1_REMAP              MAPR_Bits = 0x01 << 2  //+ USART1 remapping.
@@ -97,4 +103,24 @@ const (
 	SWJ_CFG_NOJNTRST          MAPR_Bits = 0x01 << 24 //  Full SWJ (JTAG-DP + SW-DP) but without JNTRST.
 	SWJ_CFG_JTAGDISABLE       MAPR_Bits = 0x02 << 24 //  JTAG-DP Disabled and SW-DP Enabled.
 	SWJ_CFG_DISABLE           MAPR_Bits = 0x04 << 24 //  JTAG-DP Disabled and SW-DP Disabled.
+)
+
+const (
+	SPI1_REMAPn         = 0
+	I2C1_REMAPn         = 1
+	USART1_REMAPn       = 2
+	USART2_REMAPn       = 3
+	USART3_REMAPn       = 4
+	TIM1_REMAPn         = 6
+	TIM2_REMAPn         = 8
+	TIM3_REMAPn         = 10
+	TIM4_REMAPn         = 12
+	CAN_REMAPn          = 13
+	PD01_REMAPn         = 15
+	TIM5CH4_IREMAPn     = 16
+	ADC1_ETRGINJ_REMAPn = 17
+	ADC1_ETRGREG_REMAPn = 18
+	ADC2_ETRGINJ_REMAPn = 19
+	ADC2_ETRGREG_REMAPn = 20
+	SWJ_CFGn            = 24
 )

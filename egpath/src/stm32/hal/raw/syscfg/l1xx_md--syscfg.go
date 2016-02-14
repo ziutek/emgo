@@ -23,5 +23,14 @@ const (
 )
 
 const (
+	MEM_MODEn  = 0
+	BOOT_MODEn = 8
+)
+
+const (
 	USB_PU PMC_Bits = 0x01 << 0 //+ SYSCFG PMC.
+)
+
+const (
+	USB_PUn = 0
 )

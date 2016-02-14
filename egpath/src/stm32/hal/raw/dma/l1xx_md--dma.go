@@ -45,6 +45,37 @@ const (
 )
 
 const (
+	GIF1n  = 0
+	TCIF1n = 1
+	HTIF1n = 2
+	TEIF1n = 3
+	GIF2n  = 4
+	TCIF2n = 5
+	HTIF2n = 6
+	TEIF2n = 7
+	GIF3n  = 8
+	TCIF3n = 9
+	HTIF3n = 10
+	TEIF3n = 11
+	GIF4n  = 12
+	TCIF4n = 13
+	HTIF4n = 14
+	TEIF4n = 15
+	GIF5n  = 16
+	TCIF5n = 17
+	HTIF5n = 18
+	TEIF5n = 19
+	GIF6n  = 20
+	TCIF6n = 21
+	HTIF6n = 22
+	TEIF6n = 23
+	GIF7n  = 24
+	TCIF7n = 25
+	HTIF7n = 26
+	TEIF7n = 27
+)
+
+const (
 	CGIF1  IFCR_Bits = 0x01 << 0  //+ Channel 1 Global interrupt clearr.
 	CTCIF1 IFCR_Bits = 0x01 << 1  //+ Channel 1 Transfer Complete clear.
 	CHTIF1 IFCR_Bits = 0x01 << 2  //+ Channel 1 Half Transfer clear.
@@ -73,4 +104,35 @@ const (
 	CTCIF7 IFCR_Bits = 0x01 << 25 //+ Channel 7 Transfer Complete clear.
 	CHTIF7 IFCR_Bits = 0x01 << 26 //+ Channel 7 Half Transfer clear.
 	CTEIF7 IFCR_Bits = 0x01 << 27 //+ Channel 7 Transfer Error clear.
+)
+
+const (
+	CGIF1n  = 0
+	CTCIF1n = 1
+	CHTIF1n = 2
+	CTEIF1n = 3
+	CGIF2n  = 4
+	CTCIF2n = 5
+	CHTIF2n = 6
+	CTEIF2n = 7
+	CGIF3n  = 8
+	CTCIF3n = 9
+	CHTIF3n = 10
+	CTEIF3n = 11
+	CGIF4n  = 12
+	CTCIF4n = 13
+	CHTIF4n = 14
+	CTEIF4n = 15
+	CGIF5n  = 16
+	CTCIF5n = 17
+	CHTIF5n = 18
+	CTEIF5n = 19
+	CGIF6n  = 20
+	CTCIF6n = 21
+	CHTIF6n = 22
+	CTEIF6n = 23
+	CGIF7n  = 24
+	CTCIF7n = 25
+	CHTIF7n = 26
+	CTEIF7n = 27
 )

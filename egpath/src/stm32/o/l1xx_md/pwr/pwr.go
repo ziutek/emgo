@@ -38,6 +38,20 @@ const (
 )
 
 const (
+	LPSDSRn = 0
+	PDDSn   = 1
+	CWUFn   = 2
+	CSBFn   = 3
+	PVDEn   = 4
+	PLSn    = 5
+	DBPn    = 8
+	ULPn    = 9
+	FWUn    = 10
+	VOSn    = 11
+	LPRUNn  = 14
+)
+
+const (
 	WUF         CSR_Bits = 0x01 << 0  //+ Wakeup Flag.
 	SBF         CSR_Bits = 0x01 << 1  //+ Standby Flag.
 	PVDO        CSR_Bits = 0x01 << 2  //+ PVD Output.
@@ -47,4 +61,16 @@ const (
 	EWUP1       CSR_Bits = 0x01 << 8  //+ Enable WKUP pin 1.
 	EWUP2       CSR_Bits = 0x01 << 9  //+ Enable WKUP pin 2.
 	EWUP3       CSR_Bits = 0x01 << 10 //+ Enable WKUP pin 3.
+)
+
+const (
+	WUFn         = 0
+	SBFn         = 1
+	PVDOn        = 2
+	VREFINTRDYFn = 3
+	VOSFn        = 4
+	REGLPFn      = 5
+	EWUP1n       = 8
+	EWUP2n       = 9
+	EWUP3n       = 10
 )

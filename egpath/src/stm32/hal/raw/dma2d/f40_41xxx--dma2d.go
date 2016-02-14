@@ -46,6 +46,19 @@ const (
 )
 
 const (
+	STARTn = 0
+	SUSPn  = 1
+	ABORTn = 2
+	TEIEn  = 8
+	TCIEn  = 9
+	TWIEn  = 10
+	CAEIEn = 11
+	CTCIEn = 12
+	CEIEn  = 13
+	MODEn  = 16
+)
+
+const (
 	TEIF  ISR_Bits = 0x01 << 0 //+ Transfer Error Interrupt Flag.
 	TCIF  ISR_Bits = 0x01 << 1 //+ Transfer Complete Interrupt Flag.
 	TWIF  ISR_Bits = 0x01 << 2 //+ Transfer Watermark Interrupt Flag.
@@ -55,7 +68,20 @@ const (
 )
 
 const (
+	TEIFn  = 0
+	TCIFn  = 1
+	TWIFn  = 2
+	CAEIFn = 3
+	CTCIFn = 4
+	CEIFn  = 5
+)
+
+const (
 	MA FGMAR_Bits = 0xFFFFFFFF << 0 //+ Memory Address.
+)
+
+const (
+	MAn = 0
 )
 
 const (
@@ -63,11 +89,23 @@ const (
 )
 
 const (
+	LOn = 0
+)
+
+const (
 	MA BGMAR_Bits = 0xFFFFFFFF << 0 //+ Memory Address.
 )
 
 const (
+	MAn = 0
+)
+
+const (
 	LO BGOR_Bits = 0x3FFF << 0 //+ Line Offset.
+)
+
+const (
+	LOn = 0
 )
 
 const (
@@ -80,9 +118,24 @@ const (
 )
 
 const (
+	CMn    = 0
+	CCMn   = 4
+	STARTn = 5
+	CSn    = 8
+	AMn    = 16
+	ALPHAn = 24
+)
+
+const (
 	BLUE  FGCOLR_Bits = 0xFF << 0  //+ Blue Value.
 	GREEN FGCOLR_Bits = 0xFF << 8  //+ Green Value.
 	RED   FGCOLR_Bits = 0xFF << 16 //+ Red Value.
+)
+
+const (
+	BLUEn  = 0
+	GREENn = 8
+	REDn   = 16
 )
 
 const (
@@ -95,9 +148,24 @@ const (
 )
 
 const (
+	CMn    = 0
+	CCMn   = 4
+	STARTn = 5
+	CSn    = 8
+	AMn    = 16
+	ALPHAn = 24
+)
+
+const (
 	BLUE  BGCOLR_Bits = 0xFF << 0  //+ Blue Value.
 	GREEN BGCOLR_Bits = 0xFF << 8  //+ Green Value.
 	RED   BGCOLR_Bits = 0xFF << 16 //+ Red Value.
+)
+
+const (
+	BLUEn  = 0
+	GREENn = 8
+	REDn   = 16
 )
 
 const (
@@ -105,11 +173,23 @@ const (
 )
 
 const (
+	MAn = 0
+)
+
+const (
 	MA BGCMAR_Bits = 0xFFFFFFFF << 0 //+ Memory Address.
 )
 
 const (
+	MAn = 0
+)
+
+const (
 	CM OPFCCR_Bits = 0x07 << 0 //+ Color mode.
+)
+
+const (
+	CMn = 0
 )
 
 const (
@@ -131,11 +211,26 @@ const (
 )
 
 const (
+	BLUE_1n  = 0
+	GREEN_1n = 8
+	RED_1n   = 16
+	ALPHA_1n = 24
+)
+
+const (
 	MA OMAR_Bits = 0xFFFFFFFF << 0 //+ Memory Address.
 )
 
 const (
+	MAn = 0
+)
+
+const (
 	LO OOR_Bits = 0x3FFF << 0 //+ Line Offset.
+)
+
+const (
+	LOn = 0
 )
 
 const (
@@ -144,10 +239,24 @@ const (
 )
 
 const (
+	NLn = 0
+	PLn = 16
+)
+
+const (
 	LW LWR_Bits = 0xFFFF << 0 //+ Line Watermark.
+)
+
+const (
+	LWn = 0
 )
 
 const (
 	EN AMTCR_Bits = 0x01 << 0 //+ Enable.
 	DT AMTCR_Bits = 0xFF << 8 //+ Dead Time.
+)
+
+const (
+	ENn = 0
+	DTn = 8
 )

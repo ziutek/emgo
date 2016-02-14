@@ -100,15 +100,16 @@ func (p *Periph) Save(base, pkgname string) {
 	fmt.Fprintln(w, "package", pkgname)
 	w.donotedit()
 	for _, r := range p.Regs {
+		r.fixbits()
 		if len(r.Bits) == 0 {
 			continue
 		}
-		r.fixbits()
 		fmt.Fprintln(w, "\nconst (")
 		for _, b := range r.Bits {
-			fmt.Fprintf(w, "\t%s", b.Name)
-			fmt.Fprintf(w, " %s_Bits", r.Name)
-			fmt.Fprintf(w, " = 0x%02X << %d", b.Mask, b.LSL)
+			fmt.Fprintf(
+				w, "\t%s %s_Bits = 0x%02X << %d",
+				b.Name, r.Name, b.Mask, b.LSL,
+			)
 			switch {
 			case b.Descr != "":
 				if b.Val {
@@ -120,6 +121,13 @@ func (p *Periph) Save(base, pkgname string) {
 				fmt.Fprintln(w, " //+")
 			default:
 				fmt.Fprintln(w)
+			}
+		}
+		fmt.Fprintln(w, ")")
+		fmt.Fprintln(w, "\nconst (")
+		for _, b := range r.Bits {
+			if !b.Val {
+				fmt.Fprintf(w, "\t%sn = %d\n", b.Name, b.LSL)
 			}
 		}
 		fmt.Fprintln(w, ")")

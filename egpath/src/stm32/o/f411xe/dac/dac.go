@@ -58,8 +58,30 @@ const (
 )
 
 const (
+	EN1n    = 0
+	BOFF1n  = 1
+	TEN1n   = 2
+	TSEL1n  = 3
+	WAVE1n  = 6
+	MAMP1n  = 8
+	DMAEN1n = 12
+	EN2n    = 16
+	BOFF2n  = 17
+	TEN2n   = 18
+	TSEL2n  = 19
+	WAVE2n  = 22
+	MAMP2n  = 24
+	DMAEN2n = 28
+)
+
+const (
 	SWTRIG1 SWTRIGR_Bits = 0x01 << 0 //+ DAC channel1 software trigger.
 	SWTRIG2 SWTRIGR_Bits = 0x01 << 1 //+ DAC channel2 software trigger.
+)
+
+const (
+	SWTRIG1n = 0
+	SWTRIG2n = 1
 )
 
 const (
@@ -67,7 +89,15 @@ const (
 )
 
 const (
+	DACC1DHRn = 0
+)
+
+const (
 	DACC1DHR DHR12L1_Bits = 0xFFF << 4 //+ DAC channel1 12-bit Left aligned data.
+)
+
+const (
+	DACC1DHRn = 4
 )
 
 const (
@@ -75,7 +105,15 @@ const (
 )
 
 const (
+	DACC1DHRn = 0
+)
+
+const (
 	DACC2DHR DHR12R2_Bits = 0xFFF << 0 //+ DAC channel2 12-bit Right aligned data.
+)
+
+const (
+	DACC2DHRn = 0
 )
 
 const (
@@ -83,7 +121,15 @@ const (
 )
 
 const (
+	DACC2DHRn = 4
+)
+
+const (
 	DACC2DHR DHR8R2_Bits = 0xFF << 0 //+ DAC channel2 8-bit Right aligned data.
+)
+
+const (
+	DACC2DHRn = 0
 )
 
 const (
@@ -92,8 +138,18 @@ const (
 )
 
 const (
+	DACC1DHRn = 0
+	DACC2DHRn = 16
+)
+
+const (
 	DACC1DHR DHR12LD_Bits = 0xFFF << 4  //+ DAC channel1 12-bit Left aligned data.
 	DACC2DHR DHR12LD_Bits = 0xFFF << 20 //+ DAC channel2 12-bit Left aligned data.
+)
+
+const (
+	DACC1DHRn = 4
+	DACC2DHRn = 20
 )
 
 const (
@@ -102,7 +158,16 @@ const (
 )
 
 const (
+	DACC1DHRn = 0
+	DACC2DHRn = 8
+)
+
+const (
 	DACC1DOR DOR1_Bits = 0xFFF << 0 //+ DAC channel1 data output.
+)
+
+const (
+	DACC1DORn = 0
 )
 
 const (
@@ -110,6 +175,15 @@ const (
 )
 
 const (
+	DACC2DORn = 0
+)
+
+const (
 	DMAUDR1 SR_Bits = 0x01 << 13 //+ DAC channel1 DMA underrun flag.
 	DMAUDR2 SR_Bits = 0x01 << 29 //+ DAC channel2 DMA underrun flag.
+)
+
+const (
+	DMAUDR1n = 13
+	DMAUDR2n = 29
 )

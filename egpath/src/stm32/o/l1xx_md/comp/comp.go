@@ -36,3 +36,25 @@ const (
 	CAIF      CSR_Bits = 0x01 << 30 //+ Bit 30.
 	TSUSP     CSR_Bits = 0x01 << 31 //+ Bit 31.
 )
+
+const (
+	V10KPUn    = 0
+	V400KPUn   = 1
+	V10KPDn    = 2
+	V400KPDn   = 3
+	CMP1ENn    = 4
+	SW1n       = 5
+	CMP1OUTn   = 7
+	SPEEDn     = 12
+	CMP2OUTn   = 13
+	VREFOUTENn = 16
+	WNDWEn     = 17
+	INSELn     = 18
+	OUTSELn    = 21
+	FCH3n      = 26
+	FCH8n      = 27
+	RCH13n     = 28
+	CAIEn      = 29
+	CAIFn      = 30
+	TSUSPn     = 31
+)
