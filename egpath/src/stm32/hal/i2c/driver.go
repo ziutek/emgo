@@ -38,17 +38,19 @@ func (d *Driver) ISR() {
 	d.evflag.Set()
 }
 
-type Error byte
+type Error int16
 
 const (
-	BusErr      Error = 1 << 0
-	ArbLost     Error = 1 << 1
-	AckFail     Error = 1 << 2
-	Overrun     Error = 1 << 3
-	PECErr      Error = 1 << 4
-	SoftTimeout Error = 1 << 5
-	Timeout     Error = 1 << 6
-	SMBAlert    Error = 1 << 7
+	BusErr   Error = 1 << 0
+	ArbLost  Error = 1 << 1
+	AckFail  Error = 1 << 2
+	Overrun  Error = 1 << 3
+	PECErr   Error = 1 << 4
+	Timeout  Error = 1 << 6
+	SMBAlert Error = 1 << 7
+
+	SoftTimeout Error = 1 << 8
+	BelatedStop Error = 1 << 9
 )
 
 func (e Error) Error() string {
@@ -64,7 +66,7 @@ func (d *Driver) waitIRQ(ev i2c.SR1_Bits, deadline int64) Error {
 		}
 		d.evflag.Clear()
 		sr1 := d.Periph.raw.SR1.Load()
-		if e := Error(sr1>>8) &^ SoftTimeout; e != 0 {
+		if e := Error(sr1 >> 8); e != 0 {
 			return e
 		}
 		if sr1&ev != 0 {
@@ -76,7 +78,7 @@ func (d *Driver) waitIRQ(ev i2c.SR1_Bits, deadline int64) Error {
 func (d *Driver) pollEvent(ev i2c.SR1_Bits, deadline int64) Error {
 	for {
 		sr1 := d.raw.SR1.Load()
-		if e := Error(sr1>>8) &^ SoftTimeout; e != 0 {
+		if e := Error(sr1 >> 8); e != 0 {
 			return e
 		}
 		if sr1&ev != 0 {
@@ -89,7 +91,7 @@ func (d *Driver) pollEvent(ev i2c.SR1_Bits, deadline int64) Error {
 }
 
 func (d *Driver) waitEvent(ev i2c.SR1_Bits) Error {
-	deadline := rtos.Nanosec() + 100*1e6 // 100 ms
+	deadline := rtos.Nanosec() + 100e6 // 100 ms
 	if d.evirq == 0 {
 		return d.pollEvent(ev, deadline)
 	}
@@ -97,6 +99,6 @@ func (d *Driver) waitEvent(ev i2c.SR1_Bits) Error {
 }
 
 func (d *Driver) MasterConn(addr int16) MasterConn {
-	return MasterConn{d: d, addr: uint16(addr<<1) &^ started}
+	return MasterConn{d: d, addr: uint16(addr << 1)}
 	// TODO: Add support for 10-bit addr.
 }
