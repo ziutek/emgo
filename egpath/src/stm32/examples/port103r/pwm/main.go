@@ -52,10 +52,10 @@ func init() {
 }
 
 func pwmblink(led *mmio.U16, dly int) {
-	var x uint16
+	var x uint
 	var back bool
 	for {
-		led.Store(x)
+		led.Store(uint16(x))
 		if x <= 1 {
 			x = 1
 			back = false

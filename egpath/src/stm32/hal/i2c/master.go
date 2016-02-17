@@ -12,20 +12,43 @@ import (
 // Peripheral supports only one active connection at the same time. Starting a
 // subsequent transaction in other connection is blocked until the current
 // transaction will end. Active connection supports both read and write
-// transactions, which can be interleaved. Change of direction interrupts
-// previous transaction but keeps the connection active.
+// transactions. There is no need to terminate write transaction before
+// subsequent read transaction but read transaction must be terminated before
+// subsequent write transaction. By default auto-stop is enabled for read and
+// write operations.
 type MasterConn struct {
-	d      *Driver
-	addr   uint16
-	state  byte
-	stoprd bool
+	d     *Driver
+	addr  uint16
+	state byte
+	stop  byte
 }
 
 const (
 	nact  = 0
 	actrd = 1
 	actwr = 2
+
+	stoprd   = 1 << 0
+	manstprd = 1 << 1
+	manstpwr = 1 << 2
 )
+
+// SetAutoStop sets auto-stop mode for read and write operations. If enabled
+// (default) any read or write operation is finished by sending stop condition
+// on the I2C bus and leaves connection inactive. This mode improves ability to
+// sharing I2C bus between multiple tasks but at the same time can degrade
+// performance. It is not recommended to disable auto-stop mode for read
+// operations.
+func (c *MasterConn) SetAutoStop(rd, wr bool) {
+	stop := c.stop & stoprd
+	if !rd {
+		stop |= manstprd
+	}
+	if !wr {
+		stop |= manstpwr
+	}
+	c.stop = stop
+}
 
 // Write sends data from buf to slave device. If len(buf) == 0 Write does
 // nothing, especially it does not activate inactiv connection nor interrupt
@@ -41,9 +64,10 @@ func (c *MasterConn) Write(buf []byte) (int, error) {
 	d := c.d
 	p := d.Periph.raw
 	if c.state != actwr {
-		if c.state == nact {
-			d.mutex.Lock()
+		if c.state == actrd {
+			return 0, ActiveRead
 		}
+		d.mutex.Lock()
 		c.state = actwr
 		p.START().Set()
 		if e = d.waitEvent(i2c.SB); e != 0 {
@@ -61,6 +85,9 @@ func (c *MasterConn) Write(buf []byte) (int, error) {
 			goto err
 		}
 		n++
+	}
+	if c.stop&manstpwr == 0 {
+		c.StopWrite()
 	}
 	return n, nil
 err:
@@ -90,6 +117,9 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 	if len(buf) == 0 {
 		return 0, nil
 	}
+	if c.stop&manstprd == 0 {
+		c.SetStopRead()
+	}
 	var err error
 	d := c.d
 	p := d.Periph.raw
@@ -108,7 +138,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 			err = e
 			goto end
 		}
-		if c.stoprd {
+		if c.stop|stoprd != 0 {
 			switch len(buf) {
 			case 1:
 				p.ACK().Clear()
@@ -144,7 +174,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 		}
 		p.SR2.Load()
 	}
-	if c.stoprd {
+	if c.stop|stoprd != 0 {
 		n := len(buf) - 2
 		if n < 0 {
 			err = BelatedStop
@@ -175,7 +205,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 	}
 	return len(buf), nil
 end:
-	c.stoprd = false
+	c.stop &^= stoprd
 	c.state = nact
 	d.mutex.Unlock()
 	return len(buf), err
@@ -186,5 +216,10 @@ end:
 // called after first read in current transaction, the subsequent read must read
 // at least 2 bytes to properly generate stop condition on I2C bus.
 func (c *MasterConn) SetStopRead() {
-	c.stoprd = true
+	c.stop |= stoprd
+}
+
+func (c *MasterConn) WriteByte(b byte) error {
+	_, err := c.Write([]byte{b})
+	return err
 }

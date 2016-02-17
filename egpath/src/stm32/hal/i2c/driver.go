@@ -51,6 +51,7 @@ const (
 
 	SoftTimeout Error = 1 << 8
 	BelatedStop Error = 1 << 9
+	ActiveRead  Error = 1 << 10 // Write when active read transaction.
 )
 
 func (e Error) Error() string {
