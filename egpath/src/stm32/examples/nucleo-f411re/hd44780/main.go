@@ -1,6 +1,6 @@
-// This example shows how to use HD44780 + PCF8574T combo.
+// This example shows how to use PCF8574T + HD44780 combo.
 //
-// For PCF8574T and HD44780 LCD. Connections:
+// Connections:
 // P0 --> RS
 // P1 --> R/W
 // P2 --> E
@@ -10,8 +10,8 @@
 // P6 <-> DB6
 // P7 <-> DB7
 //
-// It seems that PCF8574T works well up to 200 kHz (VCC = 5V). Tested up to
-// 400 kHz but there are no any speed improvements above 200 kHz.
+// It seems that PCF8574T works well up to 200 kHz (VCC = 5V, short cables).
+// Tested up to 400 kHz but there are no any speed improvements above 200 kHz.
 package main
 
 import (
@@ -22,17 +22,13 @@ import (
 	"hdc"
 
 	"stm32/hal/gpio"
+	"stm32/hal/i2c"
 	"stm32/hal/irq"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
-
-	"stm32/hal/i2c"
 )
 
-var (
-	twiDrv = &i2c.Driver{Periph: i2c.I2C1}
-	twiCon = twiDrv.MasterConn(0x27)
-)
+var twi *i2c.Driver
 
 func init() {
 	system.Setup96(8)
@@ -47,12 +43,12 @@ func init() {
 	}
 	port.Setup(pins, &cfg)
 	port.SetAltFunc(pins, gpio.I2C1)
-	twiDrv.EnableClock(true)
-	twiDrv.Reset() // Mandatory!
-	twiDrv.Setup(&i2c.Config{Speed: 200e3})
-	twiDrv.SetIntMode(irq.I2C1_EV, irq.I2C1_ER)
-	twiDrv.Enable()
-	twiCon.SetAutoStop(true, false) // This speedups writing.
+	twi = i2c.NewDriver(i2c.I2C1)
+	twi.EnableClock(true)
+	twi.Reset() // Mandatory!
+	twi.Setup(&i2c.Config{Speed: 200e3})
+	twi.SetIntMode(irq.I2C1_EV, irq.I2C1_ER)
+	twi.Enable()
 }
 
 func checkErr(err error) {
@@ -66,37 +62,50 @@ func checkErr(err error) {
 
 var (
 	lcd = &hdc.Display{
-		Drv:  &twiCon,
 		Cols: 20, Rows: 4,
-		DLs: 4,
-		RS:  1 << 0, RW: 1 << 1, E: 1 << 2, AUX: 1 << 3,
+		DS:         4,
+		RS:         1 << 0, RW: 1 << 1, E: 1 << 2, AUX: 1 << 3,
 	}
-	buf [4 * 20]byte
+	screen [4 * 20]byte
 )
 
 func main() {
+	c := twi.NewMasterConn(0x27)
+	c.SetAutoStop(true, false) // This improves write speed.
+	lcd.ReadWriter = c
+
 	checkErr(lcd.Init())
 	checkErr(lcd.SetDisplayMode(hdc.DisplayOn))
-	checkErr(lcd.SetAUX())
+	checkErr(lcd.SetAUX()) // Backlight on.
 
-	for i := range buf[:] {
-		buf[i] = ' '
+	for i := range screen[:] {
+		screen[i] = ' '
 	}
-	bb := bytes.MakeBuffer(buf[20:], true)
+	line := bytes.MakeBuffer(screen[2*20:], true)
 	var t1 int64
 	for i := 0; ; i++ {
 		t := rtos.Nanosec()
 		fps := 1e9 / float32(t-t1)
 		t1 = t
-		bb.Reset()
-		fmt.Fprintf(&bb, "%7d %6.3g FPS", i, fps)
-		_, err := lcd.Write(buf[:])
-		checkErr(err)
+		line.Reset()
+		fmt.Fprintf(&line, "%7d %6.1f FPS", i, fps)
+		writeScreen(lcd, &screen)
 	}
 }
 
+func writeScreen(lcd *hdc.Display, screen *[4 * 20]byte) {
+	_, err := lcd.Write(screen[0:20])
+	checkErr(err)
+	_, err = lcd.Write(screen[40:60])
+	checkErr(err)
+	_, err = lcd.Write(screen[20:40])
+	checkErr(err)
+	_, err = lcd.Write(screen[60:80])
+	checkErr(err)
+}
+
 func twiISR() {
-	twiDrv.ISR()
+	twi.ISR()
 }
 
 //emgo:const
