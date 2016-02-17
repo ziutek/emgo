@@ -160,8 +160,10 @@ func writeZero(w io.Writer, width, prec, flags, e int) (int, error) {
 }
 
 // WriteFloat writes text representation of f using format specified by fmt:
-//	|fmt| == 'b': -ddddp±ddd,
-//  |fmt| == 'e': -d.dddde±dd,
+//	'b': -ddddp±ddd,
+//	'e': -d.dddde±dd,
+//	'f': -ddddd.dddd,
+//  'g': ...
 func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, error) {
 	if n, err := specials(w, f, width); n > 0 {
 		return n, err
@@ -228,7 +230,7 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 	dig, exp := g.Init(frac, exp)
 	var sigd int
 	if flags&flagF != 0 {
-		sigd = exp + prec
+		sigd = exp + 1 + prec
 		if sigd < 0 {
 			return writeZero(w, width, prec, flags, 0)
 		}
