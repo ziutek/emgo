@@ -20,6 +20,13 @@ type Driver struct {
 	errirq nvic.IRQ
 }
 
+// NewDriver provides convenient way to create heap allocated Driver struct.
+func NewDriver(p Periph) *Driver {
+	d := new(Driver)
+	d.Periph = p
+	return d
+}
+
 func (d *Driver) SetIntMode(evirq, errirq nvic.IRQ) {
 	d.evirq = evirq
 	d.errirq = errirq
@@ -99,7 +106,17 @@ func (d *Driver) waitEvent(ev i2c.SR1_Bits) Error {
 	return d.waitIRQ(ev, deadline)
 }
 
+// MasterConn returns initialized MasterConn struct that can be used to
+// communicate with the slave device. Addr is the I2C address of the slave.
 func (d *Driver) MasterConn(addr int16) MasterConn {
 	return MasterConn{d: d, addr: uint16(addr << 1)}
 	// TODO: Add support for 10-bit addr.
+}
+
+// NewMasterConn is like MasterConn but returns pointer to heap allocated
+// MasterConn struct.
+func (d *Driver) NewMasterConn(addr int16) *MasterConn {
+	mc := new(MasterConn)
+	*mc = d.MasterConn(addr)
+	return mc
 }
