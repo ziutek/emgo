@@ -4,7 +4,7 @@ var A = 3
 // decl
 int foo$A;
 // def
-int foo$A = 3;
+__typeof__(foo$A) foo$A = 3;
 // end
 
 // Go code:
@@ -23,11 +23,11 @@ struct $3_$int_struct {
 // decl
 $3_$int _cl0;
 // def
-$3_$int _cl0 = {{1, 2, 3}};
+__typeof__(_cl0) _cl0 = {{1, 2, 3}};
 // decl
 slice foo$A;
 // def
-slice foo$A = {&_cl0, 3, 3};
+__typeof__(foo$A) foo$A = {&_cl0, 3, 3};
 // end
 
 // Go code:
@@ -46,11 +46,11 @@ struct $31_$int_struct {
 // decl
 $31_$int _cl0;
 // def
-$31_$int _cl0 = {{[10] = 1, [20] = 2, [30] = 3}};
+__typeof__(_cl0) _cl0 = {{[10] = 1, [20] = 2, [30] = 3}};
 // decl
 slice foo$A;
 // def
-slice foo$A = {&_cl0, 31, 31};
+__typeof__(foo$A) foo$A = {&_cl0, 31, 31};
 // end
 
 // Go code:
@@ -69,11 +69,11 @@ struct $32_$int_struct {
 // decl
 $32_$int _cl0;
 // def
-$32_$int _cl0 = {{1, 2, [30] = 3, 4}};
+__typeof__(_cl0) _cl0 = {{1, 2, [30] = 3, 4}};
 // decl
 slice foo$A;
 // def
-slice foo$A = {&_cl0, 32, 32};
+__typeof__(foo$A) foo$A = {&_cl0, 32, 32};
 // end
 
 // Go code:
@@ -115,11 +115,11 @@ struct foo$S_struct {
 // decl
 foo$S _cl0;
 // def
-foo$S _cl0 = {.a = 1};
+__typeof__(_cl0) _cl0 = {.a = 1};
 // decl
 foo$S *foo$p;
 // def
-foo$S *foo$p = &_cl0;
+__typeof__(foo$p) foo$p = &_cl0;
 // end
 
 // Go code:
@@ -139,5 +139,5 @@ struct bool$$int32_struct {
 // decl
 bool$$int32 (*foo$F)(byte, int);
 // def
-bool$$int32 (*foo$F)(byte, int) = nil;
+__typeof__(foo$F) foo$F = nil;
 // end

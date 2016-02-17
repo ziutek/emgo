@@ -13,7 +13,7 @@ var c chan int = nil;
 // decl
 chan foo$c;
 // def
-chan foo$c = NILCHAN;
+__typeof__(foo$c) foo$c = NILCHAN;
 // end
 
 // Go code:

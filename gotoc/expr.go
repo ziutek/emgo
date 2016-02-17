@@ -788,14 +788,39 @@ func (cdd *CDD) clArrayLen(elems []ast.Expr) int64 {
 }
 
 func (cdd *CDD) elts(w *bytes.Buffer, elts []ast.Expr, nilT types.Type, st *types.Struct) {
+	if len(elts) == 0 {
+		return
+	}
+	if nilT != nil {
+		for i, el := range elts {
+			if i > 0 {
+				w.WriteString(", ")
+			}
+			cdd.interfaceExpr(w, el, nilT)
+		}
+		return
+	}
+	// Struct
+	if _, ok := elts[0].(*ast.KeyValueExpr); !ok {
+		for i, el := range elts {
+			if i > 0 {
+				w.WriteString(", ")
+			}
+			cdd.interfaceExpr(w, el, st.Field(i).Type())
+		}
+		return
+	}
 	for i, el := range elts {
 		if i > 0 {
 			w.WriteString(", ")
 		}
-		if nilT != nil {
-			cdd.interfaceExpr(w, el, nilT)
-		} else {
-			cdd.interfaceExpr(w, el, st.Field(i).Type())
+		key := el.(*ast.KeyValueExpr).Key.(*ast.Ident).Name
+		for k := 0; k < st.NumFields(); k++ {
+			f := st.Field(k)
+			if st.Field(k).Name() == key {
+				cdd.interfaceExpr(w, el, f.Type())
+				break
+			}
 		}
 	}
 }

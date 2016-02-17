@@ -44,7 +44,7 @@ struct foo$S_struct {
 // decl
 foo$S foo$s;
 // def
-foo$S foo$s = {};
+__typeof__(foo$s) foo$s = {};
 // decl
 int foo$F();
 // def
@@ -66,10 +66,7 @@ struct {
 	int b;
 } foo$s;
 // def
-struct {
-	int a;
-	int b;
-} foo$s = {};
+__typeof__(foo$s) foo$s = {};
 // decl
 int foo$F();
 // def
