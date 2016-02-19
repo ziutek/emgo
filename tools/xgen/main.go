@@ -21,7 +21,7 @@ func xgen(f string) {
 			/*case strings.HasPrefix(c, "BaseAddr:"):
 				one(pkg, f, cg.Text(), a.Decls)*/
 			case strings.HasPrefix(c, "Peripheral:"):
-				multi(pkg, f, cg.Text(), a.Decls)
+				periph(pkg, f, cg.Text(), a.Decls)
 			default:
 				cg.List = cg.List[1:]
 				continue
