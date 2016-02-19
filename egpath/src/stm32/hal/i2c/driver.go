@@ -108,15 +108,16 @@ func (d *Driver) waitEvent(ev i2c.SR1_Bits) Error {
 
 // MasterConn returns initialized MasterConn struct that can be used to
 // communicate with the slave device. Addr is the I2C address of the slave.
-func (d *Driver) MasterConn(addr int16) MasterConn {
-	return MasterConn{d: d, addr: uint16(addr << 1)}
+// See MasterConn.SetStopMode for description of stm.
+func (d *Driver) MasterConn(addr int16, stm StopMode) MasterConn {
+	return MasterConn{d: d, addr: uint16(addr << 1), stop: stm}
 	// TODO: Add support for 10-bit addr.
 }
 
 // NewMasterConn is like MasterConn but returns pointer to heap allocated
 // MasterConn struct.
-func (d *Driver) NewMasterConn(addr int16) *MasterConn {
+func (d *Driver) NewMasterConn(addr int16, stm StopMode) *MasterConn {
 	mc := new(MasterConn)
-	*mc = d.MasterConn(addr)
+	*mc = d.MasterConn(addr, stm)
 	return mc
 }

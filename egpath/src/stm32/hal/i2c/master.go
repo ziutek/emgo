@@ -19,35 +19,37 @@ import (
 type MasterConn struct {
 	d     *Driver
 	addr  uint16
+	stop  StopMode
 	state byte
-	stop  byte
 }
+
+type StopMode byte
+
+const (
+	NOAS StopMode = 0      // Manual mode (use SetStopRead, StopWrite).
+	ASRD StopMode = 1 << 1 // Any read is finished by sending stop condition.
+	ASWR StopMode = 1 << 2 // Any write is finished by sending stop condition.
+
+	stoprd StopMode = 1 << 0
+)
 
 const (
 	nact  = 0
 	actrd = 1
 	actwr = 2
 
-	stoprd   = 1 << 0
 	manstprd = 1 << 1
 	manstpwr = 1 << 2
 )
 
-// SetAutoStop sets auto-stop mode for read and write operations. If enabled
-// (default) any read or write operation is finished by sending stop condition
-// on the I2C bus and leaves connection inactive. This mode improves ability to
-// sharing I2C bus between multiple tasks but at the same time can degrade
-// performance. It is not recommended to disable auto-stop mode for read
-// operations.
-func (c *MasterConn) SetAutoStop(rd, wr bool) {
-	stop := c.stop & stoprd
-	if !rd {
-		stop |= manstprd
-	}
-	if !wr {
-		stop |= manstpwr
-	}
-	c.stop = stop
+// SetStopMode allows to enable/disable auto-stop mode for read and/or write
+// operations. If auto-stop mode is enabled for read/write then ay read/write
+// operation is finished by sending stop condition on the I2C bus and leaves
+// connection inactive. This mode improves ability to sharing I2C bus between
+// multiple tasks but at the same time can degrade performance. It is not
+// recommended to disable auto-stop mode for read operations.
+func (c *MasterConn) SetStopMode(stm StopMode) {
+	c.stop = stm
 }
 
 // Write sends data from buf to slave device. If len(buf) == 0 Write does
@@ -86,7 +88,7 @@ func (c *MasterConn) Write(buf []byte) (int, error) {
 		}
 		n++
 	}
-	if c.stop&manstpwr == 0 {
+	if c.stop&ASWR != 0 {
 		c.StopWrite()
 	}
 	return n, nil
@@ -117,7 +119,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 	if len(buf) == 0 {
 		return 0, nil
 	}
-	if c.stop&manstprd == 0 {
+	if c.stop&ASRD != 0 {
 		c.SetStopRead()
 	}
 	var err error
@@ -175,7 +177,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 		p.SR2.Load()
 	}
 	if c.stop|stoprd != 0 {
-		n := len(buf) - 2
+		n := len(buf) - 3
 		if n < 0 {
 			err = BelatedStop
 			goto end
@@ -187,13 +189,22 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 			}
 			buf[i] = byte(p.DR.Load())
 		}
+		if e := d.waitEvent(i2c.BTF); e != 0 {
+			err = e
+			goto end
+		}
 		p.ACK().Clear()
 		cortexm.SetPRIMASK()
-		d := p.DR.Load()
+		b := p.DR.Load()
 		p.STOP().Set()
 		cortexm.ClearPRIMASK()
-		buf[n] = byte(d)
+		buf[n] = byte(b)
 		buf[n+1] = byte(p.DR.Load())
+		if e := d.waitEvent(i2c.RXNE); e != 0 {
+			err = e
+			goto end
+		}
+		buf[n+2] = byte(p.DR.Load())
 		goto end
 	}
 	for i := range buf {

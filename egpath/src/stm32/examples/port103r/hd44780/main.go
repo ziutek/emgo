@@ -27,10 +27,7 @@ import (
 	"stm32/hal/i2c"
 )
 
-var (
-	twiDrv = &i2c.Driver{Periph: i2c.I2C2}
-	twiCon = twiDrv.MasterConn(0x27)
-)
+var twi = &i2c.Driver{Periph: i2c.I2C2}
 
 func init() {
 	system.Setup(8, 72/8, false)
@@ -44,12 +41,11 @@ func init() {
 		Driver: gpio.OpenDrain,
 	}
 	port.Setup(pins, &cfg)
-	twiDrv.EnableClock(true)
-	twiDrv.Reset() // Mandatory!
-	twiDrv.Setup(&i2c.Config{Speed: 100e3})
-	twiDrv.SetIntMode(irq.I2C2_EV, irq.I2C2_ER)
-	twiDrv.Enable()
-	twiCon.SetAutoStop(true, false) // This speedups writing.
+	twi.EnableClock(true)
+	twi.Reset() // Mandatory!
+	twi.Setup(&i2c.Config{Speed: 400e3})
+	twi.SetIntMode(irq.I2C2_EV, irq.I2C2_ER)
+	twi.Enable()
 }
 
 func checkErr(err error) {
@@ -64,9 +60,9 @@ func checkErr(err error) {
 var (
 	lcd = hdc.Display{
 		Rows: 20, Cols: 4,
-		ReadWriter:  &twiCon,
-		DS: 4,
-		RS: 1 << 0, RW: 1 << 1, E: 1 << 2, AUX: 1 << 3,
+		ReadWriter: twi.NewMasterConn(0x27, i2c.ASRD),
+		DS:         4,
+		RS:         1 << 0, RW: 1 << 1, E: 1 << 2, AUX: 1 << 3,
 	}
 )
 
@@ -78,7 +74,7 @@ func main() {
 }
 
 func twiISR() {
-	twiDrv.ISR()
+	twi.ISR()
 }
 
 //emgo:const

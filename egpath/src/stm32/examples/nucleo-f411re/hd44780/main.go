@@ -63,15 +63,14 @@ func checkErr(err error) {
 var (
 	lcd = &hdc.Display{
 		Cols: 20, Rows: 4,
-		DS:         4,
-		RS:         1 << 0, RW: 1 << 1, E: 1 << 2, AUX: 1 << 3,
+		DS: 4,
+		RS: 1 << 0, RW: 1 << 1, E: 1 << 2, AUX: 1 << 3,
 	}
-	screen [4 * 20]byte
+	screen [20 * 4]byte
 )
 
 func main() {
-	c := twi.NewMasterConn(0x27)
-	c.SetAutoStop(true, false) // This improves write speed.
+	c := twi.NewMasterConn(0x27, i2c.ASRD)
 	lcd.ReadWriter = c
 
 	checkErr(lcd.Init())
