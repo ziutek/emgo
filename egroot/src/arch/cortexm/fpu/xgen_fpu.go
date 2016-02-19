@@ -8,68 +8,172 @@ import (
 	"unsafe"
 )
 
-
-func fpu(n uint) *mmio.U32 {
-	return &(*[3]mmio.U32)(unsafe.Pointer(uintptr(0xe000ef34)))[n]
+type FPU_Periph struct {
+	CPACR  CPACR
+	_      [106]uint32
+	FPCCR  FPCCR
+	FPCAR  FPCAR
+	FPDSCR FPDSCR
 }
 
+func (p *FPU_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
+var FPU = (*FPU_Periph)(unsafe.Pointer(uintptr(0xe000ED88)))
+
+type CPACR_Bits uint32
+
+func (b CPACR_Bits) Field(mask CPACR_Bits) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask CPACR_Bits) J(v int) CPACR_Bits {
+	return CPACR_Bits(bits.Make32(v, uint32(mask)))
+}
+
+type CPACR struct{ mmio.U32 }
+
+func (r *CPACR) Bits(mask CPACR_Bits) CPACR_Bits { return CPACR_Bits(r.U32.Bits(uint32(mask))) }
+func (r *CPACR) StoreBits(mask, b CPACR_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *CPACR) SetBits(mask CPACR_Bits)         { r.U32.SetBits(uint32(mask)) }
+func (r *CPACR) ClearBits(mask CPACR_Bits)       { r.U32.ClearBits(uint32(mask)) }
+func (r *CPACR) Load() CPACR_Bits                { return CPACR_Bits(r.U32.Load()) }
+func (r *CPACR) Store(b CPACR_Bits)              { r.U32.Store(uint32(b)) }
+
+type CPACR_Mask struct{ mmio.UM32 }
+
+func (rm CPACR_Mask) Load() CPACR_Bits   { return CPACR_Bits(rm.UM32.Load()) }
+func (rm CPACR_Mask) Store(b CPACR_Bits) { rm.UM32.Store(uint32(b)) }
+
+func (p *FPU_Periph) CP10() CPACR_Mask {
+	return CPACR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(CP10)}}
+}
+
+func (p *FPU_Periph) CP11() CPACR_Mask {
+	return CPACR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(CP11)}}
+}
 
 type FPCCR_Bits uint32
-
-func (m FPCCR_Bits) Set()           { fpu(0).SetBits(uint32(m)) }
-func (m FPCCR_Bits) Clear()         { fpu(0).ClearBits(uint32(m)) }
-func (m FPCCR_Bits) Load() uint32   { return fpu(0).Bits(uint32(m)) }
-func (m FPCCR_Bits) Store(b uint32) { fpu(0).StoreBits(uint32(m), b) }
-func (m FPCCR_Bits) LoadVal() int   { return fpu(0).Field(uint32(m)) }
-func (m FPCCR_Bits) StoreVal(v int) { fpu(0).SetField(uint32(m), v) }
-
-func FPCCR_Load() FPCCR_Bits   { return FPCCR_Bits(fpu(0).Load()) }
-func FPCCR_Store(b FPCCR_Bits) { fpu(0).Store(uint32(b)) }
 
 func (b FPCCR_Bits) Field(mask FPCCR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_FPCCR(v int, mask FPCCR_Bits) FPCCR_Bits {
+func (mask FPCCR_Bits) J(v int) FPCCR_Bits {
 	return FPCCR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type FPCCR struct{ mmio.U32 }
+
+func (r *FPCCR) Bits(mask FPCCR_Bits) FPCCR_Bits { return FPCCR_Bits(r.U32.Bits(uint32(mask))) }
+func (r *FPCCR) StoreBits(mask, b FPCCR_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *FPCCR) SetBits(mask FPCCR_Bits)         { r.U32.SetBits(uint32(mask)) }
+func (r *FPCCR) ClearBits(mask FPCCR_Bits)       { r.U32.ClearBits(uint32(mask)) }
+func (r *FPCCR) Load() FPCCR_Bits                { return FPCCR_Bits(r.U32.Load()) }
+func (r *FPCCR) Store(b FPCCR_Bits)              { r.U32.Store(uint32(b)) }
+
+type FPCCR_Mask struct{ mmio.UM32 }
+
+func (rm FPCCR_Mask) Load() FPCCR_Bits   { return FPCCR_Bits(rm.UM32.Load()) }
+func (rm FPCCR_Mask) Store(b FPCCR_Bits) { rm.UM32.Store(uint32(b)) }
+
+func (p *FPU_Periph) LSPACT() FPCCR_Mask {
+	return FPCCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 428)), uint32(LSPACT)}}
+}
+
+func (p *FPU_Periph) USER() FPCCR_Mask {
+	return FPCCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 428)), uint32(USER)}}
+}
+
+func (p *FPU_Periph) THREAD() FPCCR_Mask {
+	return FPCCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 428)), uint32(THREAD)}}
+}
+
+func (p *FPU_Periph) HFRDY() FPCCR_Mask {
+	return FPCCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 428)), uint32(HFRDY)}}
+}
+
+func (p *FPU_Periph) MMRDY() FPCCR_Mask {
+	return FPCCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 428)), uint32(MMRDY)}}
+}
+
+func (p *FPU_Periph) BFRDY() FPCCR_Mask {
+	return FPCCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 428)), uint32(BFRDY)}}
+}
+
+func (p *FPU_Periph) MONRDY() FPCCR_Mask {
+	return FPCCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 428)), uint32(MONRDY)}}
+}
+
+func (p *FPU_Periph) LSPEN() FPCCR_Mask {
+	return FPCCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 428)), uint32(LSPEN)}}
+}
+
+func (p *FPU_Periph) ASPEN() FPCCR_Mask {
+	return FPCCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 428)), uint32(ASPEN)}}
+}
 
 type FPCAR_Bits uint32
-
-func (m FPCAR_Bits) Set()           { fpu(1).SetBits(uint32(m)) }
-func (m FPCAR_Bits) Clear()         { fpu(1).ClearBits(uint32(m)) }
-func (m FPCAR_Bits) Load() uint32   { return fpu(1).Bits(uint32(m)) }
-func (m FPCAR_Bits) Store(b uint32) { fpu(1).StoreBits(uint32(m), b) }
-func (m FPCAR_Bits) LoadVal() int   { return fpu(1).Field(uint32(m)) }
-func (m FPCAR_Bits) StoreVal(v int) { fpu(1).SetField(uint32(m), v) }
-
-func FPCAR_Load() FPCAR_Bits   { return FPCAR_Bits(fpu(1).Load()) }
-func FPCAR_Store(b FPCAR_Bits) { fpu(1).Store(uint32(b)) }
 
 func (b FPCAR_Bits) Field(mask FPCAR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_FPCAR(v int, mask FPCAR_Bits) FPCAR_Bits {
+func (mask FPCAR_Bits) J(v int) FPCAR_Bits {
 	return FPCAR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type FPCAR struct{ mmio.U32 }
+
+func (r *FPCAR) Bits(mask FPCAR_Bits) FPCAR_Bits { return FPCAR_Bits(r.U32.Bits(uint32(mask))) }
+func (r *FPCAR) StoreBits(mask, b FPCAR_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *FPCAR) SetBits(mask FPCAR_Bits)         { r.U32.SetBits(uint32(mask)) }
+func (r *FPCAR) ClearBits(mask FPCAR_Bits)       { r.U32.ClearBits(uint32(mask)) }
+func (r *FPCAR) Load() FPCAR_Bits                { return FPCAR_Bits(r.U32.Load()) }
+func (r *FPCAR) Store(b FPCAR_Bits)              { r.U32.Store(uint32(b)) }
+
+type FPCAR_Mask struct{ mmio.UM32 }
+
+func (rm FPCAR_Mask) Load() FPCAR_Bits   { return FPCAR_Bits(rm.UM32.Load()) }
+func (rm FPCAR_Mask) Store(b FPCAR_Bits) { rm.UM32.Store(uint32(b)) }
+
+func (p *FPU_Periph) ADDRESS() FPCAR_Mask {
+	return FPCAR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 432)), uint32(ADDRESS)}}
+}
 
 type FPDSCR_Bits uint32
-
-func (m FPDSCR_Bits) Set()           { fpu(2).SetBits(uint32(m)) }
-func (m FPDSCR_Bits) Clear()         { fpu(2).ClearBits(uint32(m)) }
-func (m FPDSCR_Bits) Load() uint32   { return fpu(2).Bits(uint32(m)) }
-func (m FPDSCR_Bits) Store(b uint32) { fpu(2).StoreBits(uint32(m), b) }
-func (m FPDSCR_Bits) LoadVal() int   { return fpu(2).Field(uint32(m)) }
-func (m FPDSCR_Bits) StoreVal(v int) { fpu(2).SetField(uint32(m), v) }
-
-func FPDSCR_Load() FPDSCR_Bits   { return FPDSCR_Bits(fpu(2).Load()) }
-func FPDSCR_Store(b FPDSCR_Bits) { fpu(2).Store(uint32(b)) }
 
 func (b FPDSCR_Bits) Field(mask FPDSCR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_FPDSCR(v int, mask FPDSCR_Bits) FPDSCR_Bits {
+func (mask FPDSCR_Bits) J(v int) FPDSCR_Bits {
 	return FPDSCR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type FPDSCR struct{ mmio.U32 }
+
+func (r *FPDSCR) Bits(mask FPDSCR_Bits) FPDSCR_Bits { return FPDSCR_Bits(r.U32.Bits(uint32(mask))) }
+func (r *FPDSCR) StoreBits(mask, b FPDSCR_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *FPDSCR) SetBits(mask FPDSCR_Bits)          { r.U32.SetBits(uint32(mask)) }
+func (r *FPDSCR) ClearBits(mask FPDSCR_Bits)        { r.U32.ClearBits(uint32(mask)) }
+func (r *FPDSCR) Load() FPDSCR_Bits                 { return FPDSCR_Bits(r.U32.Load()) }
+func (r *FPDSCR) Store(b FPDSCR_Bits)               { r.U32.Store(uint32(b)) }
+
+type FPDSCR_Mask struct{ mmio.UM32 }
+
+func (rm FPDSCR_Mask) Load() FPDSCR_Bits   { return FPDSCR_Bits(rm.UM32.Load()) }
+func (rm FPDSCR_Mask) Store(b FPDSCR_Bits) { rm.UM32.Store(uint32(b)) }
+
+func (p *FPU_Periph) RMode() FPDSCR_Mask {
+	return FPDSCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 436)), uint32(RMode)}}
+}
+
+func (p *FPU_Periph) FZ() FPDSCR_Mask {
+	return FPDSCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 436)), uint32(FZ)}}
+}
+
+func (p *FPU_Periph) DN() FPDSCR_Mask {
+	return FPDSCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 436)), uint32(DN)}}
+}
+
+func (p *FPU_Periph) AHP() FPDSCR_Mask {
+	return FPDSCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 436)), uint32(AHP)}}
+}

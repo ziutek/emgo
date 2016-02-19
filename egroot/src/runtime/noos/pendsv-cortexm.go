@@ -12,8 +12,8 @@ import (
 
 //const dbg = itm.Port(17)
 
-func raisePendSV() { scb.ICSR_Store(scb.PENDSVSET) }
-func clearPendSV() { scb.ICSR_Store(scb.PENDSVCLR) }
+func raisePendSV() { scb.SCB.ICSR.Store(scb.PENDSVSET) }
+func clearPendSV() { scb.SCB.ICSR.Store(scb.PENDSVCLR) }
 
 // pendSVHandler calls nextTask with current task PSP. It performs
 // context swich if nextTask returns new non-zero value for PSP.

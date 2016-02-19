@@ -19,12 +19,13 @@ func schedNext() {
 		// Called from PendSV handler when it sends Alarm event.
 	default:
 		// Called from ISR.
-		if scb.PENDSVACT.Load() != 0 {
+		SCB := scb.SCB
+		if SCB.PENDSVACT().Load() != 0 {
 			// Wakeup PendSV handler.
 			cortexm.SEV()
 		} else {
 			// Rise PendSV exception.
-			scb.ICSR_Store(scb.PENDSVSET)
+			SCB.ICSR.Store(scb.PENDSVSET)
 		}
 	}
 }

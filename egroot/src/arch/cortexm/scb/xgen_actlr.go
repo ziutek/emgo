@@ -8,28 +8,55 @@ import (
 	"unsafe"
 )
 
-
-func actlr(n uint) *mmio.U32 {
-	return &(*[1]mmio.U32)(unsafe.Pointer(uintptr(0xe000e008)))[n]
+type AUX_Periph struct {
+	ACTLR ACTLR
 }
 
+func (p *AUX_Periph) BaseAddr() uintptr {
+	return uintptr(unsafe.Pointer(p))
+}
+
+var AUX = (*AUX_Periph)(unsafe.Pointer(uintptr(0xe000e008)))
 
 type ACTLR_Bits uint32
-
-func (m ACTLR_Bits) Set()           { actlr(0).SetBits(uint32(m)) }
-func (m ACTLR_Bits) Clear()         { actlr(0).ClearBits(uint32(m)) }
-func (m ACTLR_Bits) Load() uint32   { return actlr(0).Bits(uint32(m)) }
-func (m ACTLR_Bits) Store(b uint32) { actlr(0).StoreBits(uint32(m), b) }
-func (m ACTLR_Bits) LoadVal() int   { return actlr(0).Field(uint32(m)) }
-func (m ACTLR_Bits) StoreVal(v int) { actlr(0).SetField(uint32(m), v) }
-
-func ACTLR_Load() ACTLR_Bits   { return ACTLR_Bits(actlr(0).Load()) }
-func ACTLR_Store(b ACTLR_Bits) { actlr(0).Store(uint32(b)) }
 
 func (b ACTLR_Bits) Field(mask ACTLR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func Make_ACTLR(v int, mask ACTLR_Bits) ACTLR_Bits {
+func (mask ACTLR_Bits) J(v int) ACTLR_Bits {
 	return ACTLR_Bits(bits.Make32(v, uint32(mask)))
 }
 
+type ACTLR struct{ mmio.U32 }
+
+func (r *ACTLR) Bits(mask ACTLR_Bits) ACTLR_Bits { return ACTLR_Bits(r.U32.Bits(uint32(mask))) }
+func (r *ACTLR) StoreBits(mask, b ACTLR_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *ACTLR) SetBits(mask ACTLR_Bits)         { r.U32.SetBits(uint32(mask)) }
+func (r *ACTLR) ClearBits(mask ACTLR_Bits)       { r.U32.ClearBits(uint32(mask)) }
+func (r *ACTLR) Load() ACTLR_Bits                { return ACTLR_Bits(r.U32.Load()) }
+func (r *ACTLR) Store(b ACTLR_Bits)              { r.U32.Store(uint32(b)) }
+
+type ACTLR_Mask struct{ mmio.UM32 }
+
+func (rm ACTLR_Mask) Load() ACTLR_Bits   { return ACTLR_Bits(rm.UM32.Load()) }
+func (rm ACTLR_Mask) Store(b ACTLR_Bits) { rm.UM32.Store(uint32(b)) }
+
+func (p *AUX_Periph) DISMCYCINT() ACTLR_Mask {
+	return ACTLR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DISMCYCINT)}}
+}
+
+func (p *AUX_Periph) DISDEFWBUF() ACTLR_Mask {
+	return ACTLR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DISDEFWBUF)}}
+}
+
+func (p *AUX_Periph) DISFOLD() ACTLR_Mask {
+	return ACTLR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DISFOLD)}}
+}
+
+func (p *AUX_Periph) DISFPCA() ACTLR_Mask {
+	return ACTLR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DISFPCA)}}
+}
+
+func (p *AUX_Periph) DISOOFP() ACTLR_Mask {
+	return ACTLR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DISOOFP)}}
+}

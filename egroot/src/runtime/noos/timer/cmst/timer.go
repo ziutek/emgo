@@ -49,9 +49,9 @@ func Setup(periodns, hz uint, external bool) {
 	// Set priority for SysTick exception higher SVCall proprity, to ensure
 	// that any user of rtos.Nanosec observes both SYSTICK.CURRENT reset and
 	// counter increment as one atomic operation.
-	isnum := cortexm.PrioStep * cortexm.PrioNum
-	scb.PRI_SysTick.StoreVal(cortexm.PrioLowest + isnum*3/4)
-
+	spnum := cortexm.PrioStep * cortexm.PrioNum
+	prio := cortexm.PrioLowest + spnum*3/4
+	scb.SCB.PRI_SysTick().Store(scb.PRI_SysTick.J(prio))
 	st.CSR.SetBits(systick.ENABLE | systick.TICKINT)
 }
 

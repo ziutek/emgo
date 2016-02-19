@@ -7,8 +7,9 @@ import (
 )
 
 func initCPU() {
+	SCB := scb.SCB
 	// Enable fault handlers.
-	(scb.MEMFAULTENA | scb.BUSFAULTENA | scb.USGFAULTENA).Set()
+	SCB.SHCSR.SetBits(scb.MEMFAULTENA | scb.BUSFAULTENA | scb.USGFAULTENA)
 	// Division by zero will cause the UsageFault.
-	scb.DIV_0_TRP.Set()
+	SCB.DIV_0_TRP().Set()
 }

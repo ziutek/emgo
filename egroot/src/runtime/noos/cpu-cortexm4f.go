@@ -8,11 +8,13 @@ import (
 )
 
 func initCPU() {
+	SCB := scb.SCB
+	FPU := fpu.FPU
 	// Enable fault handlers.
-	(scb.MEMFAULTENA | scb.BUSFAULTENA | scb.USGFAULTENA).Set()
+	SCB.SHCSR.SetBits(scb.MEMFAULTENA | scb.BUSFAULTENA | scb.USGFAULTENA)
 	// Division by zero will cause the UsageFault.
-	scb.DIV_0_TRP.Set()
+	SCB.DIV_0_TRP().Set()
 	// Enable FPU.
-	scb.CP10.StoreVal(scb.AccessFull)
-	fpu.FPCCR_Store(fpu.ASPEN | fpu.LSPEN)
+	FPU.CP10().Store(fpu.CPACFULL << fpu.CP10n)
+	FPU.FPCCR.Store(fpu.ASPEN | fpu.LSPEN)
 }

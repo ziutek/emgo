@@ -138,13 +138,12 @@ func (ts *taskSched) init() {
 	//    for system clock implementation and can be used by external
 	//    interrupts if they must preempt SVC.
 	spnum := cortexm.PrioStep * cortexm.PrioNum
-	scb.PRI_SVCall.StoreVal(cortexm.PrioLowest + spnum*2/4)
-	scb.PRI_PendSV.StoreVal(cortexm.PrioLowest + spnum*0/4)
+	SCB := scb.SCB
+	SCB.PRI_SVCall().Store(scb.PRI_SVCall.J(cortexm.PrioLowest + spnum*2/4))
+	SCB.PRI_PendSV().Store(scb.PRI_PendSV.J(cortexm.PrioLowest + spnum*0/4))
 	for irq := nvic.IRQ(0); irq < 240; irq++ {
 		irq.SetPrio(cortexm.PrioLowest + spnum*1/4)
 	}
-	// Exceptions should generate events to wakeup the scheduler.
-	//scb.SEVONPEND.Set() - disabled. Use SEV instruction instead.
 
 	// Setup MPU.
 	//mpu.SetMode(mpu.PrivDef)
