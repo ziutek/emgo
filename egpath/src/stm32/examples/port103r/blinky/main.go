@@ -9,7 +9,7 @@ import (
 	"stm32/hal/system/timer/rtc"
 )
 
-var leds gpio.Port
+var leds *gpio.Port
 
 const (
 	LED1 = gpio.Pin7

@@ -33,7 +33,7 @@ const PWMmax = 1e4
 // Outputs.
 var (
 	// Solid state relays.
-	SSR gpio.Port
+	SSR *gpio.Port
 
 	// Water heater PWM.
 	Wpwm [3]*mmio.U32

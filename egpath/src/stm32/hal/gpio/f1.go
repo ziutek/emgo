@@ -11,13 +11,13 @@ import (
 )
 
 var (
-	A = Port{(*registers)(unsafe.Pointer(mmap.GPIOA_BASE))}
-	B = Port{(*registers)(unsafe.Pointer(mmap.GPIOB_BASE))}
-	C = Port{(*registers)(unsafe.Pointer(mmap.GPIOC_BASE))}
-	D = Port{(*registers)(unsafe.Pointer(mmap.GPIOD_BASE))}
-	E = Port{(*registers)(unsafe.Pointer(mmap.GPIOE_BASE))}
-	F = Port{(*registers)(unsafe.Pointer(mmap.GPIOF_BASE))}
-	G = Port{(*registers)(unsafe.Pointer(mmap.GPIOG_BASE))}
+	A = (*Port)(unsafe.Pointer(mmap.GPIOA_BASE))
+	B = (*Port)(unsafe.Pointer(mmap.GPIOB_BASE))
+	C = (*Port)(unsafe.Pointer(mmap.GPIOC_BASE))
+	D = (*Port)(unsafe.Pointer(mmap.GPIOD_BASE))
+	E = (*Port)(unsafe.Pointer(mmap.GPIOE_BASE))
+	F = (*Port)(unsafe.Pointer(mmap.GPIOF_BASE))
+	G = (*Port)(unsafe.Pointer(mmap.GPIOG_BASE))
 )
 
 type registers struct {
@@ -52,20 +52,20 @@ const (
 	veryHigh = 2
 )
 
-func pnum(p Port) int {
-	return int(uintptr(unsafe.Pointer(p.registers))-mmap.APB2PERIPH_BASE) / 0x400
+func pnum(p *Port) int {
+	return int(uintptr(unsafe.Pointer(p))-mmap.APB2PERIPH_BASE) / 0x400
 }
 
 func enreg() *mmio.U32  { return &rcc.RCC.APB2ENR.U32 }
 func rstreg() *mmio.U32 { return &rcc.RCC.APB2RSTR.U32 }
 
-func enableClock(p Port, _ bool) {
+func enableClock(p *Port, _ bool) {
 	bit := bit(p, enreg())
 	bit.Set()
 	bit.Load() // RCC delay (workaround for silicon bugs).
 }
 
-func setup(p Port, n int, cfg *Config) {
+func setup(p *Port, n int, cfg *Config) {
 	cr := &p.cr[n>>3]
 	pos := uint(n & 7 * 4)
 	sel := uint32(0xf) << pos

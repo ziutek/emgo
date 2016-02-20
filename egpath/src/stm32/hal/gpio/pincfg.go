@@ -51,12 +51,12 @@ type Config struct {
 }
 
 // SetupPin configures n-th pin.
-func (p Port) SetupPin(n int, cfg *Config) {
+func (p *Port) SetupPin(n int, cfg *Config) {
 	setup(p, n, cfg)
 }
 
 // Setup configures pins.
-func (p Port) Setup(pins Pins, cfg *Config) {
+func (p *Port) Setup(pins Pins, cfg *Config) {
 	for n := 0; n < 16; n++ {
 		if pins&(1<<uint(n)) != 0 {
 			setup(p, n, cfg)
@@ -64,9 +64,9 @@ func (p Port) Setup(pins Pins, cfg *Config) {
 	}
 }
 
-// Lock locks configuration of n-th pin. Locked configuration can not be modified
-// until reset.
-func (p Port) Lock(pins Pins) {
+// Lock locks configuration of n-th pin. Locked configuration can not be
+// modified until reset.
+func (p *Port) Lock(pins Pins) {
 	pins1 := pins | 0x10000
 	p.lckr.Store(uint32(pins1))
 	p.lckr.Store(uint32(pins))

@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	leds  gpio.Port
+	leds  *gpio.Port
 	ledup = true
 )
 

@@ -13,7 +13,7 @@ import (
 	"stm32/hal/raw/rtc"
 )
 
-var leds gpio.Port
+var leds *gpio.Port
 
 const (
 	Green = gpio.Pin7

@@ -28,10 +28,10 @@ func init() {
 	leds.Setup(Green|Orange|Red|Blue, cfg)
 }
 
-func toggle(leds gpio.Pins, d int) {
-	leds.SetPins(leds)
+func toggle(colors gpio.Pins, d int) {
+	leds.SetPins(colors)
 	delay.Millisec(d)
-	leds.ClearPins(leds)
+	leds.ClearPins(colors)
 	delay.Millisec(d)
 }
 

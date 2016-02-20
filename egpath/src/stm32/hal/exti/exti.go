@@ -36,7 +36,7 @@ const (
 //
 // Connect enables AFIO/SYSCFG clock before configuration and disables it before
 // return.
-func (lines Lines) Connect(port gpio.Port) {
+func (lines Lines) Connect(port *gpio.Port) {
 	if lines >= L15<<1 {
 		panic("exti: can not connect lines to GPIO port")
 	}

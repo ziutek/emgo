@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	leds gpio.Port
+	leds *gpio.Port
 	twi  *i2c.I2C_Periph
 )
 

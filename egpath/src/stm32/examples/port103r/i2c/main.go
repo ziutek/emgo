@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	leds gpio.Port
+	leds *gpio.Port
 	twi  = &i2c.Driver{Periph: i2c.I2C2}
 )
 

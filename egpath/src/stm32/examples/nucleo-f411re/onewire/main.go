@@ -21,7 +21,7 @@ import (
 const Green = gpio.Pin5
 
 var (
-	leds gpio.Port
+	leds *gpio.Port
 	con  *serial.Dev
 	one  *serial.Dev
 )

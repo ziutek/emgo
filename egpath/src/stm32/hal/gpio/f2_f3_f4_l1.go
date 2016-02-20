@@ -36,14 +36,14 @@ const (
 	openDrain = 1
 )
 
-func enableClock(p Port, lp bool) {
+func enableClock(p *Port, lp bool) {
 	enbit := bit(p, enreg())
 	enbit.Set()
 	bit(p, lpenreg()).Store(bits.One(lp))
 	enbit.Load() // RCC delay (workaround for silicon bugs).
 }
 
-func setup(p Port, n int, cfg *Config) {
+func setup(p *Port, n int, cfg *Config) {
 	pos := uint(n * 2)
 	p.otyper.StoreBit(n, int(cfg.Driver))
 	p.ospeedr.StoreBits(3<<pos, uint32(int(cfg.Speed)-veryLow)<<pos)
@@ -76,14 +76,14 @@ const (
 )
 
 // SetPinAltFun sets alternate function af for n-th pin.
-func (p Port) SetPinAltFunc(n int, af AltFunc) {
+func (p *Port) SetPinAltFunc(n int, af AltFunc) {
 	m := n >> 3 & 1
 	o := uint(n) & 7 * 4
 	p.afr[m].StoreBits(0xf<<o, uint32(af)<<o)
 }
 
 // SetAltFunc sets alternate function af for pins.
-func (p Port) SetAltFunc(pins Pins, af AltFunc) {
+func (p *Port) SetAltFunc(pins Pins, af AltFunc) {
 	for n := 0; n < 16; n++ {
 		if pins&(1<<uint(n)) != 0 {
 			p.SetPinAltFunc(n, af)

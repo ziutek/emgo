@@ -10,7 +10,7 @@ import (
 )
 
 type LED struct {
-	Port gpio.Port
+	Port *gpio.Port
 	Pin  gpio.Pins
 }
 

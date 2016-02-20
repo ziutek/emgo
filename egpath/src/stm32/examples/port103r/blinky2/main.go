@@ -10,7 +10,7 @@ import (
 )
 
 type LED struct {
-	Port gpio.Port
+	Port *gpio.Port
 	Pin  gpio.Pins
 }
 
@@ -34,7 +34,7 @@ var leds = []LED{
 	{gpio.D, gpio.Pin2},
 }
 
-var keys gpio.Port
+var keys *gpio.Port
 
 const key3 = gpio.Pin10
 

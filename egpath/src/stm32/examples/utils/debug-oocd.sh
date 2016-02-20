@@ -2,8 +2,6 @@
 
 set -e
 
-set -e
-
 arch=`grep 'EGARCH=' ../build.sh |sed 's/.*EGARCH=\([[:alnum:]_]\+\).*/\1/g'`
 if [ -z "$arch" ]; then
 	arch=$EGARCH
@@ -16,5 +14,4 @@ arm-none-eabi-gdb --tui \
 	-ex 'set remote hardware-breakpoint-limit 6' \
 	-ex 'set remote hardware-watchpoint-limit 4' \
 	-ex 'set mem inaccessible-by-default off' \
-	-ex 'monitor reset init' \
 	$arch.elf

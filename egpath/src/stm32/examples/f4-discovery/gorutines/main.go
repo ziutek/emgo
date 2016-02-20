@@ -8,7 +8,7 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var leds gpio.Port
+var leds *gpio.Port
 
 const (
 	Green  = gpio.Pin12

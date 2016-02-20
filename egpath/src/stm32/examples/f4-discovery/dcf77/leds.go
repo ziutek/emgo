@@ -6,7 +6,7 @@ import (
 	"stm32/hal/gpio"
 )
 
-var leds gpio.Port
+var leds *gpio.Port
 
 const (
 	Green  = gpio.Pin12
@@ -15,7 +15,7 @@ const (
 	Blue   = gpio.Pin15
 )
 
-func initLEDs(port gpio.Port) {
+func initLEDs(port *gpio.Port) {
 	leds = port
 	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	leds.Setup(Green|Orange|Red|Blue, cfg)
