@@ -7,11 +7,15 @@ import (
 
 func addtoreg(pkgs []*Package, bits *Bits) bool {
 	name := bits.Name
-	var periph *Periph
+	var (
+		pack   *Package
+		periph *Periph
+	)
 	m := 0
 	for _, pkg := range pkgs {
 		for _, p := range pkg.Periphs {
 			if strings.HasPrefix(name, p.Name+"_") && len(p.Name) > m {
+				pack = pkg
 				periph = p
 				m = len(p.Name)
 			}
@@ -30,9 +34,26 @@ func addtoreg(pkgs []*Package, bits *Bits) bool {
 		}
 	}
 	if reg == nil {
+		// Try other peripherals from this package (this handles DMA channels).
+		m = 0
+		for _, p := range pack.Periphs {
+			for _, r := range p.Regs {
+				if len(r.Name) > m {
+					if strings.HasPrefix(name, r.Name+"_") {
+						reg = r
+						m = len(r.Name)
+					} else if strings.HasPrefix(name, r.Name+"1_") {
+						reg = r
+						m = len(r.Name) + 1
+					}
+				}
+			}
+		}
+	}
+	if reg == nil {
 		return false
 	}
-	bits.Name = ident(strings.TrimPrefix(name, reg.Name+"_"))
+	bits.Name = ident(name[m+1:])
 	reg.Bits = append(reg.Bits, bits)
 	return true
 }

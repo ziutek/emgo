@@ -32,3 +32,48 @@ const (
 const (
 	USB_PUn = 0
 )
+
+const (
+	EXTI0    EXTICR_Bits = 0x0F << 0  //+ EXTI 0 configuration.
+	EXTI1    EXTICR_Bits = 0x0F << 4  //+ EXTI 1 configuration.
+	EXTI2    EXTICR_Bits = 0x0F << 8  //+ EXTI 2 configuration.
+	EXTI3    EXTICR_Bits = 0x0F << 12 //+ EXTI 3 configuration.
+	EXTI0_PA EXTICR_Bits = 0x00 << 12 //  PA[0] pin.
+	EXTI0_PB EXTICR_Bits = 0x01 << 0  //  PB[0] pin.
+	EXTI0_PC EXTICR_Bits = 0x02 << 0  //  PC[0] pin.
+	EXTI0_PD EXTICR_Bits = 0x03 << 0  //  PD[0] pin.
+	EXTI0_PE EXTICR_Bits = 0x04 << 0  //  PE[0] pin.
+	EXTI0_PH EXTICR_Bits = 0x05 << 0  //  PH[0] pin.
+	EXTI0_PF EXTICR_Bits = 0x06 << 0  //  PF[0] pin.
+	EXTI0_PG EXTICR_Bits = 0x07 << 0  //  PG[0] pin.
+	EXTI1_PA EXTICR_Bits = 0x00 << 12 //  PA[1] pin.
+	EXTI1_PB EXTICR_Bits = 0x01 << 4  //  PB[1] pin.
+	EXTI1_PC EXTICR_Bits = 0x02 << 4  //  PC[1] pin.
+	EXTI1_PD EXTICR_Bits = 0x03 << 4  //  PD[1] pin.
+	EXTI1_PE EXTICR_Bits = 0x04 << 4  //  PE[1] pin.
+	EXTI1_PH EXTICR_Bits = 0x05 << 4  //  PH[1] pin.
+	EXTI1_PF EXTICR_Bits = 0x06 << 4  //  PF[1] pin.
+	EXTI1_PG EXTICR_Bits = 0x07 << 4  //  PG[1] pin.
+	EXTI2_PA EXTICR_Bits = 0x00 << 12 //  PA[2] pin.
+	EXTI2_PB EXTICR_Bits = 0x01 << 8  //  PB[2] pin.
+	EXTI2_PC EXTICR_Bits = 0x02 << 8  //  PC[2] pin.
+	EXTI2_PD EXTICR_Bits = 0x03 << 8  //  PD[2] pin.
+	EXTI2_PE EXTICR_Bits = 0x04 << 8  //  PE[2] pin.
+	EXTI2_PH EXTICR_Bits = 0x05 << 8  //  PH[2] pin.
+	EXTI2_PF EXTICR_Bits = 0x06 << 8  //  PF[2] pin.
+	EXTI2_PG EXTICR_Bits = 0x07 << 8  //  PG[2] pin.
+	EXTI3_PA EXTICR_Bits = 0x00 << 12 //  PA[3] pin.
+	EXTI3_PB EXTICR_Bits = 0x01 << 12 //  PB[3] pin.
+	EXTI3_PC EXTICR_Bits = 0x02 << 12 //  PC[3] pin.
+	EXTI3_PD EXTICR_Bits = 0x03 << 12 //  PD[3] pin.
+	EXTI3_PE EXTICR_Bits = 0x04 << 12 //  PE[3] pin.
+	EXTI3_PF EXTICR_Bits = 0x03 << 12 //  PF[3] pin.
+	EXTI3_PG EXTICR_Bits = 0x04 << 12 //  PG[3] pin.
+)
+
+const (
+	EXTI0n = 0
+	EXTI1n = 4
+	EXTI2n = 8
+	EXTI3n = 12
+)
