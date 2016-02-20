@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	leds *gpio.Port
+	leds gpio.Port
 	twi  *i2c.I2C_Periph
 )
 
@@ -57,12 +57,6 @@ func init() {
 	twi.PE().Set()
 }
 
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
-}
-
 func main() {
 	leds.SetPins(LED1)
 	addr := i2c.DR_Bits(0x4e)
@@ -84,4 +78,10 @@ func main() {
 		}
 	}
 	twi.STOP().Set()
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.RTCAlarm: rtc.ISR,
 }

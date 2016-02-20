@@ -8,7 +8,7 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var LED *gpio.Port
+var leds gpio.Port
 
 const (
 	Green  = gpio.Pin12
@@ -22,10 +22,10 @@ func init() {
 	systick.Setup()
 
 	gpio.D.EnableClock(false)
-	LED = gpio.D
+	leds = gpio.D
 
 	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	LED.Setup(Green|Orange|Red|Blue, cfg)
+	leds.Setup(Green|Orange|Red|Blue, cfg)
 }
 
 func wait(ms int) {
@@ -33,11 +33,11 @@ func wait(ms int) {
 	//delay.Loop(ms * 1e4)
 }
 
-func blink(leds gpio.Pins, d int, max, inc float32) {
+func blink(colors gpio.Pins, d int, max, inc float32) {
 	for inc < max {
-		LED.SetPins(leds)
+		leds.SetPins(colors)
 		wait(d)
-		LED.ClearPins(leds)
+		leds.ClearPins(colors)
 		wait(d)
 		// Use floating point calculations to test STMF4 FPU context switching.
 		inc *= inc

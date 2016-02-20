@@ -13,7 +13,7 @@ import (
 	"stm32/hal/raw/rtc"
 )
 
-var leds *gpio.Port
+var leds gpio.Port
 
 const (
 	Green = gpio.Pin7
@@ -28,10 +28,6 @@ func init() {
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	leds.Setup(Green, &cfg)
-}
-
-func wait() {
-	
 }
 
 func main() {

@@ -30,7 +30,7 @@ const (
 )
 
 var (
-	leds *gpio.Port
+	leds gpio.Port
 	con  *serial.Dev
 )
 

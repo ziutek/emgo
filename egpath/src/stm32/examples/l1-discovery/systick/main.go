@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	leds  *gpio.Port
+	leds  gpio.Port
 	ledup = true
 )
 
@@ -47,7 +47,7 @@ func main() {
 	st.CSR.SetBits(systick.ENABLE | systick.TICKINT)
 
 	// Sleep forever.
-	scb.SLEEPONEXIT.Set()
+	scb.SCB.SLEEPONEXIT().Set()
 	cortexm.DSB() // not necessary on Cortex-M0,M3,M4
 	cortexm.WFI()
 

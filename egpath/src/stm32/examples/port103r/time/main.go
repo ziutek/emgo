@@ -11,7 +11,7 @@ import (
 	"stm32/hal/system/timer/rtc"
 )
 
-var leds *gpio.Port
+var leds gpio.Port
 
 const (
 	LED1 = gpio.Pin7
@@ -29,13 +29,8 @@ func init() {
 	leds.Setup(LED1|LED2, cfg)
 }
 
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
-}
 
-func blink(led gpio.Pins, dly int) {
+func printDate(led gpio.Pins, dly int) {
 	for {
 		leds.SetPins(led)
 		delay.Millisec(dly)
@@ -56,5 +51,11 @@ func main() {
 	if ok, set := rtc.Status(); ok && !set {
 		rtc.SetTime(time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC))
 	}
-	blink(LED2, 500)
+	printDate(LED2, 500)
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.RTCAlarm: rtc.ISR,
 }

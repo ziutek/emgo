@@ -11,7 +11,7 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var LED *gpio.Port
+var leds gpio.Port
 
 const (
 	Green  = gpio.Pin12
@@ -25,10 +25,10 @@ func init() {
 	systick.Setup()
 
 	gpio.D.EnableClock(false)
-	LED = gpio.D
+	leds = gpio.D
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	LED.Setup(Green|Orange|Red|Blue, &cfg)
+	leds.Setup(Green|Orange|Red|Blue, &cfg)
 
 	rnd.Seed(uint64(rtos.Nanosec()))
 }
@@ -44,17 +44,17 @@ func loop() {
 		m.Lock() // Comment this line.
 		switch n & 3 {
 		case 0:
-			LED.ClearPins(Green)
-			LED.SetPins(Orange)
+			leds.ClearPins(Green)
+			leds.SetPins(Orange)
 		case 1:
-			LED.ClearPins(Orange)
-			LED.SetPins(Red)
+			leds.ClearPins(Orange)
+			leds.SetPins(Red)
 		case 2:
-			LED.ClearPins(Red)
-			LED.SetPins(Blue)
+			leds.ClearPins(Red)
+			leds.SetPins(Blue)
 		default:
-			LED.ClearPins(Blue)
-			LED.SetPins(Green)
+			leds.ClearPins(Blue)
+			leds.SetPins(Green)
 		}
 		// rnd.Uint32 isn't thread safe but don't care.
 		delay.Millisec(50 + int(rnd.Uint32()&0xff))

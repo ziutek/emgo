@@ -17,7 +17,7 @@ import (
 
 const dcfpin = gpio.Pin1
 
-var dcfport *gpio.Port
+var dcfport gpio.Port
 
 func init() {
 	system.Setup168(8)

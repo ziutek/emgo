@@ -54,17 +54,17 @@ const (
 )
 
 var (
-	A = (*Port)(unsafe.Pointer(mmap.GPIOA_BASE))
-	B = (*Port)(unsafe.Pointer(mmap.GPIOB_BASE))
-	C = (*Port)(unsafe.Pointer(mmap.GPIOC_BASE))
-	D = (*Port)(unsafe.Pointer(mmap.GPIOD_BASE))
-	E = (*Port)(unsafe.Pointer(mmap.GPIOE_BASE))
-	F = (*Port)(unsafe.Pointer(mmap.GPIOF_BASE))
-	G = (*Port)(unsafe.Pointer(mmap.GPIOG_BASE))
+	A = Port{(*registers)(unsafe.Pointer(mmap.GPIOA_BASE))}
+	B = Port{(*registers)(unsafe.Pointer(mmap.GPIOB_BASE))}
+	C = Port{(*registers)(unsafe.Pointer(mmap.GPIOC_BASE))}
+	D = Port{(*registers)(unsafe.Pointer(mmap.GPIOD_BASE))}
+	E = Port{(*registers)(unsafe.Pointer(mmap.GPIOE_BASE))}
+	F = Port{(*registers)(unsafe.Pointer(mmap.GPIOF_BASE))}
+	G = Port{(*registers)(unsafe.Pointer(mmap.GPIOG_BASE))}
 )
 
-func pnum(p *Port) int {
-	return int(uintptr(unsafe.Pointer(p))-mmap.AHBPERIPH_BASE) / 0x400
+func pnum(p Port) int {
+	return int(uintptr(unsafe.Pointer(p.registers))-mmap.AHBPERIPH_BASE) / 0x400
 }
 
 func enreg() *mmio.U32   { return &rcc.RCC.AHBENR.U32 }

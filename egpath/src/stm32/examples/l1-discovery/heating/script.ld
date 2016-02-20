@@ -1,9 +1,10 @@
-StackLog2 = 10; /* 1 KiB */
-StackFrac = 8; /* 8/8 */
-MaxTasks = 2;
-IRTExp = 7; /* Up to 128 exceptions/interrupts */
+StackISR = 1000;
+
+StackTaskLog2 = 11;
+StackTaskFrac = 8;
+MaxTasks = 1;
 
 INCLUDE stm32/l152rb
-INCLUDE stm32/loadflash
+INCLUDE stm32/loadram
 INCLUDE noos-cortexm
 

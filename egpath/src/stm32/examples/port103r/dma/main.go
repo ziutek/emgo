@@ -27,12 +27,6 @@ func init() {
 	leds.Setup(LED1|LED2, cfg)
 }
 
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
-}
-
 func blink(led gpio.Pins, dly int) {
 	for {
 		leds.SetPins(led)
@@ -43,6 +37,11 @@ func blink(led gpio.Pins, dly int) {
 }
 
 func main() {
-	go blink(LED1, 500)
-	blink(LED2, 1000)
+	blink(LED1, 1000)
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.RTCAlarm: rtc.ISR,
 }

@@ -8,7 +8,7 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var LED *gpio.Port
+var leds gpio.Port
 
 const (
 	Green  = gpio.Pin12
@@ -22,23 +22,23 @@ func init() {
 	systick.Setup()
 
 	gpio.D.EnableClock(false)
-	LED = gpio.D
+	leds = gpio.D
 
 	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	LED.Setup(Green|Orange|Red|Blue, cfg)
+	leds.Setup(Green|Orange|Red|Blue, cfg)
 }
 
-func toggle(leds gpio.Pins, dly int) {
-	LED.SetPins(leds)
+func toggle(colors gpio.Pins, dly int) {
+	leds.SetPins(colors)
 	delay.Millisec(dly)
-	LED.ClearPins(leds)
+	leds.ClearPins(colors)
 	delay.Millisec(dly)
 }
 
 func blink(c <-chan gpio.Pins) {
 	for {
-		leds := <-c
-		toggle(leds, 1200)
+		colors := <-c
+		toggle(colors, 1200)
 	}
 }
 

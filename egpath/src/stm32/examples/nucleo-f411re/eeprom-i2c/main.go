@@ -30,7 +30,7 @@ func init() {
 	twi = i2c.NewDriver(i2c.I2C1)
 	twi.EnableClock(true)
 	twi.Reset() // Mandatory!
-	twi.Setup(&i2c.Config{Speed: 100e3})
+	twi.Setup(&i2c.Config{Speed: 400e3})
 	twi.SetIntMode(irq.I2C1_EV, irq.I2C1_ER)
 	twi.Enable()
 }
@@ -50,14 +50,14 @@ func main() {
 	c := twi.NewMasterConn(0x50, i2c.ASRD)
 	addr := []byte{0}
 
-	fmt.Printf("Sending data to EEPROM...")
+	fmt.Printf("Sending data to EEPROM... ")
 	_, err := c.Write(addr)
 	checkErr(err)
 	_, err = c.Write([]byte("**Hello EEPROM**"))
 	c.StopWrite()
-	fmt.Printf(" OK.\n")
+	fmt.Printf("OK.\n")
 
-	fmt.Printf("Waiting for writing...")
+	fmt.Printf("Waiting for writing... ")
 	for {
 		_, err = c.Write(addr)
 		if err == nil {

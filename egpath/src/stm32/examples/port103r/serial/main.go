@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	leds *gpio.Port
+	leds gpio.Port
 	con  *serial.Dev
 )
 
@@ -71,7 +71,7 @@ var ISRs = [...]func(){
 	irq.RTCAlarm: rtc.ISR,
 }
 
-func blink(led gpio.Pins, dly int) {
+func printDate(led gpio.Pins, dly int) {
 	for {
 		leds.SetPins(led)
 		delay.Millisec(dly)
@@ -82,8 +82,8 @@ func blink(led gpio.Pins, dly int) {
 		h, mi, s := t.Clock()
 		ns := t.Nanosecond()
 
-		// Is ther a easy way to print formated date without fmt package?
-		// Yes. Bonus: whole program fits into 40 KB SRAM.
+		// Is there a easy way to print formated date without fmt package?
+		// Yes. Bonus: whole program fits into 48 KB SRAM.
 
 		strconv.WriteInt(con, y, -10, 4)
 		con.WriteByte('-')
@@ -106,5 +106,5 @@ func main() {
 	if ok, set := rtc.Status(); ok && !set {
 		rtc.SetTime(time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC))
 	}
-	blink(LED2, 500)
+	printDate(LED2, 500)
 }

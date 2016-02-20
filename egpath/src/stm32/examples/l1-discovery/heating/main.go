@@ -2,148 +2,164 @@
 package main
 
 import (
+	"delay"
+	"mmio"
 	"rtos"
 
-	"stm32/l1/exti"
-	"stm32/l1/gpio"
-	"stm32/l1/irq"
-	"stm32/l1/periph"
-	"stm32/l1/setup"
-	"stm32/l1/usarts"
-	"stm32/usart"
+	"arch/cortexm/bitband"
+
+	"stm32/hal/exti"
+	"stm32/hal/gpio"
+	"stm32/hal/irq"
+	"stm32/hal/system"
+	"stm32/hal/system/timer/systick"
+
+	"stm32/hal/raw/rcc"
+	"stm32/hal/raw/tim"
 )
 
-var (
-	buttnPort = gpio.A
-	buttnExti = exti.L0
-	ledsPort  = gpio.B
-	heatPort  = gpio.C
-	waterPort = gpio.B
-	waterExti = exti.L9
-	ssrPort   = gpio.C
-	onewPort  = gpio.C
-	onewUART  = usarts.USART3
-	onewClk   = setup.APB1Clk
-)
-
+// Interrupt inputs.
 const (
-	// butnPort
-	buttn = 0
+	// Port A.
+	button = gpio.Pin0
+	// Port B.
+	waterFlow = gpio.Pin9
+	// Port C.
+	oneWire = gpio.Pin10
+)
 
-	// ledsPort
-	blue  = LED(6)
-	green = LED(7)
+const PWMmax = 1e4
 
-	// heatPort
-	heat0 = 0
-	heat1 = 1
-	heat2 = 2
+// Outputs.
+var (
+	// Solid state relays.
+	SSR gpio.Port
 
-	// waterPort
-	water = 9
+	// Water heater PWM.
+	Wpwm [3]*mmio.U32
+)
 
-	// ssrPort
-	ssr0 = 6
-	ssr1 = 7
-	ssr2 = 8
+// Bitband outputs.
+var (
+	// Onboard LEDs.
+	Blue  bitband.Bit
+	Green bitband.Bit
 
-	// onewPort
-	onew = 10
+	RoomHeater [3]bitband.Bit // Room heating solid state relays.
 )
 
 func init() {
-	setup.Performance(0)
+	system.Setup32(0)
+	systick.Setup()
 
-	periph.APB1ClockEnable(periph.USART3)
-	periph.APB1Reset(periph.USART3)
-	periph.APB2ClockEnable(periph.SysCfg)
-	periph.APB2Reset(periph.SysCfg)
-	gpiop := buttnPort.Periph() |
-		ledsPort.Periph() |
-		heatPort.Periph() |
-		waterPort.Periph() |
-		ssrPort.Periph() |
-		onewPort.Periph()
-	periph.AHBClockEnable(gpiop)
-	periph.AHBReset(gpiop)
+	// GPIO.
 
-	// Setup SWO.
-	gpio.B.SetMode(3, gpio.Alt)
-	gpio.B.SetAltFunc(3, gpio.Sys)
+	gpio.A.EnableClock(true)
+	btnport := gpio.A
+	gpio.B.EnableClock(true)
+	ledport := gpio.B
+	wfport := gpio.B
+	gpio.C.EnableClock(true)
+	SSR = gpio.C
 
-	// Setup button input.
-	buttnPort.SetMode(buttn, gpio.In)
-	buttnExti.Connect(buttnPort)
-	buttnExti.FallTrigEnable()
-	buttnExti.IntEnable()
-	rtos.IRQ(irq.Ext0).UseHandler(ext0__ISR)
-	rtos.IRQ(irq.Ext0).Enable()
+	// Inputs
 
-	// Setup LEDs output.
+	// Button.
+	btnport.Setup(button, &gpio.Config{Mode: gpio.In})
+	line := exti.Lines(button)
+	line.Connect(btnport)
+	line.EnableRiseTrig()
+	line.EnableInt()
+	rtos.IRQ(irq.EXTI0).Enable()
 
-	ledsPort.SetMode(int(green), gpio.Out)
-	ledsPort.SetMode(int(blue), gpio.Out)
+	// Water flow sensor.
+	wfport.Setup(waterFlow, &gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
+	line = exti.Lines(waterFlow)
+	line.Connect(wfport)
+	line.EnableFallTrig()
+	line.EnableInt()
+	rtos.IRQ(irq.EXTI9_5).Enable()
 
-	// Setup heating output.
+	// Outputs
 
-	heatPort.SetMode(heat0, gpio.Out)
-	heatPort.SetMode(heat1, gpio.Out)
-	heatPort.SetMode(heat2, gpio.Out)
+	slowOut := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 
-	// Setup SSR output.
+	// LEDs.
+	bbpins := ledport.OutPins()
+	ledport.SetupPin(6, &slowOut)
+	ledport.SetupPin(7, &slowOut)
+	Blue = bbpins.Bit(6)
+	Green = bbpins.Bit(7)
 
-	ssrPort.SetMode(ssr0, gpio.Out)
-	ssrPort.SetMode(ssr1, gpio.Out)
-	ssrPort.SetMode(ssr2, gpio.Out)
+	// Room heating.
+	for _, pin := range []int{0, 1, 2} {
+		SSR.SetupPin(pin, &slowOut)
+	}
+	bbpins = SSR.OutPins()
+	RoomHeater[0] = bbpins.Bit(0)
+	RoomHeater[1] = bbpins.Bit(1)
+	RoomHeater[2] = bbpins.Bit(2)
 
-	// Setup external interrupt source: water flow sensor.
+	// Water heating, PWM.
+	const (
+		pwmfreq = 2 // Hz
+		pwmpins = gpio.Pin6 | gpio.Pin7 | gpio.Pin8
+		pwmmode = 6 //  Mode 1
+	)
+	SSR.Setup(pwmpins, &gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
+	SSR.SetAltFunc(pwmpins, gpio.TIM3)
+	rcc.RCC.TIM3EN().Set()
+	t := tim.TIM3
+	t.PSC.U16.Store(uint16(system.APB1.Clock()/(PWMmax*pwmfreq) - 1))
+	t.ARR.Store(PWMmax - 1)
+	t.OC1M().Store(pwmmode << tim.OC1Mn)
+	t.OC2M().Store(pwmmode << tim.OC2Mn)
+	t.OC3M().Store(pwmmode << tim.OC3Mn)
+	t.OC1PE().Set()
+	t.OC2PE().Set()
+	t.OC3PE().Set()
+	t.CCER.SetBits(tim.CC1E | tim.CC2E | tim.CC3E)
+	t.ARPE().Set()
+	t.UG().Set()
+	t.CEN().Set()
 
-	waterPort.SetMode(water, gpio.In)
-	waterPort.SetPull(water, gpio.PullUp) // Noise prevention.
-	waterExti.Connect(waterPort)
-	waterExti.FallTrigEnable()
-	waterExti.IntEnable()
-	rtos.IRQ(irq.Ext9_5).UseHandler(ext9_5__ISR)
-	rtos.IRQ(irq.Ext9_5).Enable()
-
-	// Setup USART to operate as 1-wire master.
-
-	onewPort.SetMode(onew, gpio.Alt)
-	onewPort.SetOutType(onew, gpio.OpenDrain)
-	onewPort.SetAltFunc(onew, gpio.USART3)
-
-	onewUART.SetWordLen(usart.Bits8)
-	onewUART.SetParity(usart.None)
-	onewUART.SetStopBits(usart.Stop1b)
-	onewUART.SetMode(usart.Tx | usart.Rx)
-	onewUART.SetHalfDuplex(true)
-	onewUART.EnableIRQs(usart.RxNotEmptyIRQ)
-	onewUART.Enable()
-
-	rtos.IRQ(irq.USART3).UseHandler(usart3__ISR)
-	rtos.IRQ(irq.USART3).Enable()
-
-	periph.APB2ClockDisable(periph.SysCfg)
+	Wpwm[0] = &t.CCR1.U32
+	Wpwm[1] = &t.CCR2.U32
+	Wpwm[2] = &t.CCR3.U32
 }
 
-func ext0__ISR() {
+// ISRs
+
+func exti0() {
 	exti.L0.ClearPending()
-	buttonIRQ()
+	Green.Set()
+	delay.Loop(1e5)
+	Green.Clear()
+	//buttonISR()
 }
 
-func ext9_5__ISR() {
+func exti9_5() {
 	p := exti.Pending()
 	(exti.L9 | exti.L8 | exti.L7 | exti.L6 | exti.L5).ClearPending()
-	if waterExti&p != 0 {
-		waterIRQ()
+	if p&exti.Lines(waterFlow) != 0 {
+		waterISR()
 	}
 }
 
-func usart3__ISR() {
-	onewSerial.IRQ()
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.EXTI0:   exti0,
+	irq.EXTI9_5: exti9_5,
 }
 
 func main() {
-	go heatingTask()
-	waterTask()
+	Wpwm[0].Store(PWMmax * 1 / 4)
+	Wpwm[1].Store(PWMmax * 2 / 4)
+	Wpwm[2].Store(PWMmax * 3 / 4)
+
+	for {
+		delay.Millisec(100)
+	}
+	//waterTask()
 }
