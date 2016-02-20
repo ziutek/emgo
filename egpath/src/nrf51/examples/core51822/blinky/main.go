@@ -15,7 +15,7 @@ import (
 	"nrf51/timer"
 )
 
-//c:const
+//emgo:const
 var leds = [...]byte{18, 19, 20, 21, 22}
 
 var (
@@ -35,16 +35,16 @@ func init() {
 
 	t0.SetPrescaler(8) // 62500 Hz
 	t0.SetCC(1, 65526/2)
-	t0.Event(timer.COMPARE0).EnableInt()
-	t0.Event(timer.COMPARE1).EnableInt()
+	t0.EVENT(timer.COMPARE0).EnableInt()
+	t0.EVENT(timer.COMPARE1).EnableInt()
 	rtos.IRQ(irq.Timer0).Enable()
-	t0.Task(timer.START).Trig()
+	t0.TASK(timer.START).Trigger()
 
-	rtc0.SetPrescaler(0) // 32768 Hz
-	rtc0.Event(rtc.COMPARE1).EnableInt()
+	rtc0.SetPRESCALER(0) // 32768 Hz
+	rtc0.EVENT(rtc.COMPARE1).EnableInt()
 	rtos.IRQ(irq.RTC0).Enable()
 	rtc0.SetCC(1, period)
-	rtc0.Task(rtc.START).Trig()
+	rtc0.TASK(rtc.START).Trigger()
 }
 
 func blink(led byte, dly int) {
@@ -54,32 +54,34 @@ func blink(led byte, dly int) {
 }
 
 func timerISR() {
-	if e := t0.Event(timer.COMPARE0); e.Happened() {
+	if e := t0.EVENT(timer.COMPARE0); e.IsSet() {
 		e.Clear()
 		blink(leds[3], 1e3)
 	}
-	if e := t0.Event(timer.COMPARE1); e.Happened() {
+	if e := t0.EVENT(timer.COMPARE1); e.IsSet() {
 		e.Clear()
 		blink(leds[4], 1e3)
 	}
 }
 
 func rtcISR() {
-	rtc0.Event(rtc.COMPARE1).Clear()
+	rtc0.EVENT(rtc.COMPARE1).Clear()
 	rtc0.SetCC(1, rtc0.CC(1)+period)
 	blink(leds[2], 1e3)
 }
 
-var ISRs = [...]func(){
-	irq.Timer0: timerISR,
-	irq.RTC0:   rtcISR,
-} //c:__attribute__((section(".InterruptVectors")))
-
 func main() {
 	// Sleep forever.
-	scb.SLEEPONEXIT.Set()
+	scb.SCB.SLEEPONEXIT().Set()
 	cortexm.DSB() // not necessary on Cortex-M0,M3,M4
 	cortexm.WFI()
 	// Execution should never reach there so LED0 should never light up.
 	p0.SetPin(int(leds[0]))
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.Timer0: timerISR,
+	irq.RTC0:   rtcISR,
 }

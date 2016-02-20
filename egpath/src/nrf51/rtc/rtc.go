@@ -40,35 +40,37 @@ const (
 	COMPARE3 Event = 19 // Compare event on CC[3] match.
 )
 
-func (p *Periph) IRQ() nvic.IRQ          { return p.ph.IRQ() }
-func (p *Periph) Task(n Task) te.Task    { return te.GetTask(&p.ph, int(n)) }
-func (p *Periph) Event(n Event) te.Event { return te.GetEvent(&p.ph, int(n)) }
+func (p *Periph) IRQ() nvic.IRQ              { return p.ph.IRQ() }
+func (p *Periph) TASK(n Task) *te.TaskReg    { return te.GetTaskReg(&p.ph, int(n)) }
+func (p *Periph) EVENT(n Event) *te.EventReg { return te.GetEventReg(&p.ph, int(n)) }
 
-// Counter returns value of counter register.
-func (p *Periph) Counter() uint32 {
+// COUNTER returns value of counter register.
+func (p *Periph) COUNTER() uint32 {
 	return p.counter.Bits(0xffffff)
 }
 
-// SetCounter sets value of counter register.
-func (p *Periph) SetCounter(c uint32) {
+// SetCOUNTER sets value of counter register.
+func (p *Periph) SetCOUNTER(c uint32) {
 	p.counter.Store(c)
 }
 
-// Prescaler returns value of prescaler register.
-func (p *Periph) Prescaler() uint32 {
+// PRESCALER returns value of prescaler register.
+func (p *Periph) PRESCALER() uint32 {
 	return p.counter.Bits(0xfff)
 }
 
-// SetPrescaler sets prescaler to pr (freq = 32768Hz/(pr+1)). Must only be used
+// SetPRESCALER sets prescaler to pr (freq = 32768Hz/(pr+1)). Must only be used
 // when the timer is stopped.
-func (p *Periph) SetPrescaler(pr int) {
+func (p *Periph) SetPRESCALER(pr int) {
 	p.prescaler.Store(uint32(pr))
 }
 
+// CC returns value of n-th compare register.
 func (p *Periph) CC(n int) uint32 {
 	return p.cc[n].Bits(0xffffff)
 }
 
+// SetCC sets n-th compare register to cc.
 func (p *Periph) SetCC(n int, cc uint32) {
 	p.cc[n].Store(cc)
 }

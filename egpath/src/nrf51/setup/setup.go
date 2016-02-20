@@ -5,22 +5,22 @@ import (
 )
 
 // Clocks setups HFCLK and LFCLK.
-func Clocks(hfsrc, lfsrc clock.Src, lfena bool) {
+func Clocks(hfsrc, lfsrc clock.SRC, lfena bool) {
 	clkm := clock.Mgmt
-	clkm.SetLFCLKSrc(lfsrc)
+	clkm.SetLFCLKSRC(lfsrc)
 	if hfsrc == clock.Xtal {
-		clkm.Task(clock.HFCLKSTART).Trig()
+		clkm.TASK(clock.HFCLKSTART).Trigger()
 	}
 	if lfena {
-		clkm.Task(clock.LFCLKSTART).Trig()
+		clkm.TASK(clock.LFCLKSTART).Trigger()
 	}
 wait:
-	src, run := clkm.HFCLKStat()
+	src, run := clkm.HFCLKSTAT()
 	if src != hfsrc || !run {
 		goto wait
 	}
 	if lfena {
-		src, run = clkm.LFCLKStat()
+		src, run = clkm.LFCLKSTAT()
 		if src != lfsrc || !run {
 			goto wait
 		}

@@ -11,7 +11,7 @@ import (
 	"nrf51/setup"
 )
 
-//c:const
+//emgo:const
 var leds = [...]byte{18, 19, 20, 21, 22}
 
 var (
@@ -26,8 +26,8 @@ func init() {
 		p0.SetMode(int(led), gpio.Out)
 	}
 
-	rtc0.SetPrescaler(0) // 32768 Hz
-	rtc0.Task(rtc.START).Trig()
+	rtc0.SetPRESCALER(0) // 32768 Hz
+	rtc0.TASK(rtc.START).Trigger()
 }
 
 func blink(led byte, dly int) {
@@ -38,13 +38,13 @@ func blink(led byte, dly int) {
 }
 
 func uptime() int64 {
-	return int64(rtc0.Counter()) * 1e9 / 32768
+	return int64(rtc0.COUNTER()) * 1e9 / 32768
 }
 
 func main() {
-	syscall.SetSysClock(uptime, nil)
+	syscall.SetSysTimer(uptime, nil)
 	for t := int64(0); ; t += 1e9 {
-		for rtos.Uptime() < t {
+		for rtos.Nanosec() < t {
 		}
 		blink(leds[2], 1)
 	}

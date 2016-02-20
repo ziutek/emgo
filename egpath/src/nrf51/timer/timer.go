@@ -57,12 +57,17 @@ const (
 	COMPARE3_STOP  Shorts = 0x100 << 3
 )
 
-func (p *Periph) IRQ() nvic.IRQ          { return p.ph.IRQ() }
-func (p *Periph) Task(n Task) te.Task    { return te.GetTask(&p.ph, int(n)) }
-func (p *Periph) Event(n Event) te.Event { return te.GetEvent(&p.ph, int(n)) }
-func (p *Periph) Shorts() Shorts         { return Shorts(p.ph.Shorts.Load()) }
-func (p *Periph) SetShorts(s Shorts)     { p.ph.Shorts.SetBits(uint32(s)) }
-func (p *Periph) ClearShorts(s Shorts)   { p.ph.Shorts.ClearBits(uint32(s)) }
+type ShortsReg struct{ u32 mmio.U32 }
+
+func (r *ShortsReg) Load() Shorts   { return Shorts(r.u32.Load()) }
+func (r *ShortsReg) Store(s Shorts) { r.u32.Store(uint32(s)) }
+func (r *ShortsReg) Set(s Shorts)   { r.u32.SetBits(uint32(s)) }
+func (r *ShortsReg) Clear(s Shorts) { r.u32.ClearBits(uint32(s)) }
+
+func (p *Periph) IRQ() nvic.IRQ              { return p.ph.IRQ() }
+func (p *Periph) TASK(n Task) *te.TaskReg    { return te.GetTaskReg(&p.ph, int(n)) }
+func (p *Periph) EVENT(n Event) *te.EventReg { return te.GetEventReg(&p.ph, int(n)) }
+func (p *Periph) SHORTS() *ShortsReg         { return (*ShortsReg)(unsafe.Pointer(p.ph.Shorts.Addr())) }
 
 type Mode byte
 
