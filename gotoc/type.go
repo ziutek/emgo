@@ -279,7 +279,7 @@ func (cdd *CDD) signature(sig *types.Signature, recv bool, pnames int) (res resu
 
 func escape(s string) (ret string) {
 	for {
-		i := strings.IndexAny(s, " ,*()")
+		i := strings.IndexAny(s, " ,*(){}\n; \t")
 		if i == -1 {
 			break
 		}
@@ -293,6 +293,14 @@ func escape(s string) (ret string) {
 			ret += "$0$"
 		case ',':
 			ret += "$1$"
+		case '{':
+			ret += "$2$"
+		case '}':
+			ret += "$3$"
+		case '\n', ';':
+			ret += "$4$"
+		case ' ', '\t':
+			// Nothing.
 		}
 		s = s[i+1:]
 	}
@@ -371,6 +379,9 @@ func (cdd *CDD) tiname(typ types.Type) string {
 		return "chan$$" + cdd.tiname(t.Elem())
 	case *types.Map:
 		return "map$$" + cdd.tiname(t.Key()) + cdd.tiname(t.Elem())
+	case *types.Struct:
+		s, _ := cdd.TypeStr(typ)
+		return "anon$$" + escape(s)
 	case *types.Named:
 		obj := t.Obj()
 		name := cdd.NameStr(obj, false)
