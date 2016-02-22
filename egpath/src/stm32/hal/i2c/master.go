@@ -6,16 +6,18 @@ import (
 )
 
 // MasterConn can be used by I2c master. It represents a virtual connection to
-// the slave device. One peripheral supports multiple concurrent master
-// connections. First read or write on inactive connection starts an I2C
-// transaction and the connection becomes active until the transaction end.
-// Peripheral supports only one active connection at the same time. Starting a
-// subsequent transaction in other connection is blocked until the current
-// transaction will end. Active connection supports both read and write
-// transactions. There is no need to terminate write transaction before
-// subsequent read transaction but read transaction must be terminated before
-// subsequent write transaction. By default auto-stop is enabled for read and
-// write operations.
+// the slave device.
+//
+// One peripheral supports multiple concurrent master connections. First read
+// or write on inactive connection starts an I2C transaction and the connection
+// becomes active until the transaction end. Peripheral supports only one
+// active connection at the same time. Starting a subsequent transaction in
+// other connection is blocked until the current transaction will end.
+//
+// Active connection supports both read and write transactions. There is no
+// need to terminate write transaction before subsequent read transaction but
+// read transaction must be terminated before subsequent write transaction. By
+// default auto-stop is enabled for read and write operations.
 type MasterConn struct {
 	d     *Driver
 	addr  uint16

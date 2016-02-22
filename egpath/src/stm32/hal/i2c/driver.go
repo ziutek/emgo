@@ -10,7 +10,7 @@ import (
 )
 
 // Driver implements polling and interrupt driven driver to I2C peripheral.
-// Default mode is polling .
+// Default mode is polling.
 type Driver struct {
 	Periph
 
