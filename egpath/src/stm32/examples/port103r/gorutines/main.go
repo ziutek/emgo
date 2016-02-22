@@ -46,12 +46,6 @@ func init() {
 	}
 }
 
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
-}
-
 func wait(ms int) {
 	delay.Millisec(ms)
 	//delay.Loop(ms * 1e4)
@@ -78,4 +72,10 @@ func main() {
 		// finished before next loop. In this case Blue LED blinks longest
 		// so this example works.
 	}
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.RTCAlarm: rtc.ISR,
 }

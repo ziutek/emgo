@@ -53,12 +53,6 @@ func init() {
 	keys.Setup(key3, &gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
 }
 
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
-}
-
 func main() {
 	i := 0
 	d := -1
@@ -72,4 +66,10 @@ func main() {
 		}
 		i += d
 	}
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.RTCAlarm: rtc.ISR,
 }

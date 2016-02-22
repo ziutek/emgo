@@ -64,13 +64,6 @@ func conISR() {
 	con.IRQ()
 }
 
-//emgo:const
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.USART1:   conISR,
-	irq.RTCAlarm: rtc.ISR,
-}
-
 func printDate(led gpio.Pins, dly int) {
 	for {
 		leds.SetPins(led)
@@ -107,4 +100,11 @@ func main() {
 		rtc.SetTime(time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC))
 	}
 	printDate(LED2, 500)
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.USART1:   conISR,
+	irq.RTCAlarm: rtc.ISR,
 }
