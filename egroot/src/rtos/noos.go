@@ -31,16 +31,16 @@ func atomicInitLoadState(p *syscall.Event) syscall.Event {
 func flagSet(f *EventFlag) {
 	state := atomicInitLoadState(&f.state) | 1
 	syscall.AtomicStoreEvent(&f.state, state)
-	state.Send()
+	(state &^ 1).Send()
 }
 
 func flagClear(f *EventFlag) {
 	state := atomicInitLoadState(&f.state) &^ 1
 	syscall.AtomicStoreEvent(&f.state, state)
-	state.Send()
 }
 
 func flagVal(f *EventFlag) int {
+	// This code rely on fact that uninitialized f is zero.
 	return int(syscall.AtomicLoadEvent(&f.state) & 1)
 }
 
@@ -54,7 +54,7 @@ func flagWait(f *EventFlag, deadline int64) bool {
 			return false
 		}
 		syscall.SetAlarm(deadline)
-		(state &^ 1).Wait()
+		state.Wait()
 	}
 }
 
