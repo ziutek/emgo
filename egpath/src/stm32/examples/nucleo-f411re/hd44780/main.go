@@ -10,8 +10,7 @@
 // P6 <-> DB6
 // P7 <-> DB7
 //
-// It seems that PCF8574T works well up to 200 kHz (VCC = 5V, short cables).
-// Tested up to 400 kHz but there are no any speed improvements above 200 kHz.
+// It seems that PCF8574T works up to 480 kHz (VCC = 5V, short cables, 16:9).
 package main
 
 import (
@@ -46,7 +45,7 @@ func init() {
 	twi = i2c.NewDriver(i2c.I2C1)
 	twi.EnableClock(true)
 	twi.Reset() // Mandatory!
-	twi.Setup(&i2c.Config{Speed: 200e3})
+	twi.Setup(&i2c.Config{Speed: 240e3, Duty: i2c.Duty16_9})
 	twi.SetIntMode(irq.I2C1_EV, irq.I2C1_ER)
 	twi.Enable()
 }

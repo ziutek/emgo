@@ -10,8 +10,7 @@
 // P6 <-> DB6
 // P7 <-> DB7
 //
-// It seems that PCF8574T works well up to 200 kHz (VCC = 5V, short cables).
-// Tested up to 400 kHz but there are no any speed improvements above 200 kHz.
+// It seems that PCF8574T works up to 480 kHz (VCC = 5V, short cables, 16:9).
 package main
 
 import (
