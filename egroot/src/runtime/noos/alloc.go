@@ -1,7 +1,7 @@
 package noos
 
 import (
-	"builtin"
+	"internal"
 	"mem"
 	"sync/atomic"
 	"unsafe"
@@ -63,6 +63,6 @@ func alloc(n int, size, align uintptr) unsafe.Pointer {
 	} else {
 		p = allocTop(n, size, align)
 	}
-	builtin.Memset(p, 0, size)
+	internal.Memset(p, 0, size)
 	return p
 }

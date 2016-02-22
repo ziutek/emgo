@@ -1,7 +1,7 @@
 package reflect
 
 import (
-	"builtin"
+	"internal"
 	"mem"
 	"unsafe"
 )
@@ -139,7 +139,7 @@ func (v Value) Pointer() uintptr {
 	case Ptr, UnsafePointer, Func, Slice:
 		return *(*uintptr)(pt)
 	case Chan:
-		return uintptr((*builtin.Chan)(pt).C)
+		return uintptr((*internal.Chan)(pt).C)
 	case Map:
 		// BUG: Not implemented
 	}
@@ -244,7 +244,7 @@ func (v Value) Interface() interface{} {
 	if size > unsafe.Sizeof(ei.val) {
 		return nil
 	}
-	builtin.Memmove(unsafe.Pointer(&ei.val), v.ptrto(), size)
+	internal.Memmove(unsafe.Pointer(&ei.val), v.ptrto(), size)
 	return *(*interface{})(unsafe.Pointer(&ei))
 }
 

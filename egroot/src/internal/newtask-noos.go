@@ -1,6 +1,6 @@
 // +build noos
 
-package builtin
+package internal
 
 //c:inline
 func b2u(bool) uintptr

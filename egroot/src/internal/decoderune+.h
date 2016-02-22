@@ -1,0 +1,1 @@
+#define DECODERUNE(s) internal$DecodeRune(s)

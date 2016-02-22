@@ -236,7 +236,7 @@ func (bt *BuildTools) Link(e string, imports []string, o ...string) error {
 	args = append(args, a...)
 
 	if bt.LDlibgcc != "" {
-		// Ugly trick to insert libgcc.a before last builtin.a.
+		// Ugly trick to insert libgcc.a before last internal.a.
 		lasta := len(args) - 1
 		args = append(args[:lasta], bt.LDlibgcc, args[lasta])
 	}

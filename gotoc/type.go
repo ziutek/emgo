@@ -451,8 +451,8 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		named = true
 		builtin = (t.Obj().Pkg() == nil)
 	}
-	if builtin && cdd.gtc.pkg.Path() != "builtin" {
-		// Generate tinfo for "builtin" types only in builtin package.
+	if builtin && cdd.gtc.pkg.Path() != "internal" {
+		// Generate tinfo for builtin types only in internal package.
 		return tname
 	}
 	if o, ok := cdd.gtc.tinfos[tname]; ok {

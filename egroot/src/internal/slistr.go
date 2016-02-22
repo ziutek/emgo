@@ -1,4 +1,4 @@
-package builtin
+package internal
 
 type Slice struct {
 	Addr, Len, Cap uintptr

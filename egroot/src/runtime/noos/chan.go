@@ -1,14 +1,14 @@
 package noos
 
 import (
-	"builtin"
+	"internal"
 	"sync/atomic"
 	"syscall"
 	"unsafe"
 )
 
 const (
-	cok = builtin.ChanOK + iota
+	cok = internal.ChanOK + iota
 	cclosed
 	cagain
 )
@@ -21,13 +21,13 @@ func panicCloseNil() {
 	panic("close: nil channel")
 }
 
-func makeChan(cap int, size, align uintptr) (c builtin.Chan) {
+func makeChan(cap int, size, align uintptr) (c internal.Chan) {
 	if cap == 0 {
 		c.C = unsafe.Pointer(makeChanS())
-		c.M = (*builtin.ChanMethods)(unsafe.Pointer(&csm))
+		c.M = (*internal.ChanMethods)(unsafe.Pointer(&csm))
 	} else {
 		c.C = unsafe.Pointer(makeChanA(cap, size, align))
-		c.M = (*builtin.ChanMethods)(unsafe.Pointer(&cam))
+		c.M = (*internal.ChanMethods)(unsafe.Pointer(&cam))
 	}
 	return
 }
@@ -37,7 +37,7 @@ type waiter struct {
 	next *waiter
 }
 
-func shuffle(comms []*builtin.Comm) {
+func shuffle(comms []*internal.Comm) {
 	rng := &tasker.tasks[tasker.curTask].rng
 	n := uint(len(comms))
 	for n > 1 {
@@ -52,7 +52,7 @@ func shuffle(comms []*builtin.Comm) {
 	// rng.Uint64() calls and will result in fasetr % operation.
 }
 
-func selectComm(comms []*builtin.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Pointer, d uintptr) {
+func selectComm(comms []*internal.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Pointer, d uintptr) {
 	shuffle(comms)
 
 	if dflt != nil {

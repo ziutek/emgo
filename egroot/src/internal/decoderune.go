@@ -1,4 +1,4 @@
-package builtin
+package internal
 
 // Code borrowed from Go standard library unicode/utf8 package.
 // Original copyrigth:

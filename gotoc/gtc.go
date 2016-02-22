@@ -194,14 +194,14 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		w = wh
 	}
 	_, err := io.WriteString(
-		w, "#include <internal/types.h>\n#include <builtin.h>\n",
+		w, "#include <internal/types.h>\n#include <internal.h>\n",
 	)
 	if err != nil {
 		return err
 	}
 	for pkg, export := range imp {
 		path := pkg.Path()
-		if path == "unsafe" || path == "builtin" {
+		if path == "unsafe" || path == "internal" {
 			continue
 		}
 		w := wc

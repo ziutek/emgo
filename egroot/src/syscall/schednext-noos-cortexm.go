@@ -4,7 +4,7 @@
 package syscall
 
 import (
-	"builtin"
+	"internal"
 
 	"arch/cortexm"
 	"arch/cortexm/scb"
@@ -14,7 +14,7 @@ func schedNext() {
 	switch cortexm.IPSR() & 0xff {
 	case 0:
 		// Called from thread mode.
-		builtin.Syscall0(SCHEDNEXT)
+		internal.Syscall0(SCHEDNEXT)
 	case cortexm.PendSV:
 		// Called from PendSV handler when it sends Alarm event.
 	default:

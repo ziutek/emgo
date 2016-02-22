@@ -1,11 +1,11 @@
-#define ithead builtin$ItHead
+#define ithead internal$ItHead
 
 struct minfo {
-	builtin$Method;
+	internal$Method;
 };
 
 struct tinfo {
-	builtin$Type;
+	internal$Type;
 	unsafe$Pointer imethods[];
 };
 
@@ -59,7 +59,7 @@ enum {
 
 #define IASSIGN(expr, etyp, ityp) INTERFACE(        \
 	expr,                                           \
-	builtin$ItableFor((tinfo*)&ityp, (tinfo*)&etyp) \
+	internal$ItableFor((tinfo*)&ityp, (tinfo*)&etyp) \
 )
 
 #define ICONVERTIE(iexpr) ({       \
@@ -71,7 +71,7 @@ enum {
 	interface e = iexpr;                                    \
 	(interface){                                            \
 		e.val$,                                             \
-		builtin$ItableFor((tinfo*)&ityp, (tinfo*)(e.itab$)) \
+		internal$ItableFor((tinfo*)&ityp, (tinfo*)(e.itab$)) \
 	};                                                      \
 })
 
@@ -80,11 +80,11 @@ enum {
 	interface e = iexpr;                                   \
 	(interface){                                           \
 		e.val$,                                            \
-		builtin$ItableFor((tinfo*)&ityp, (tinfo*)TINFO(e)) \
+		internal$ItableFor((tinfo*)&ityp, (tinfo*)TINFO(e)) \
 	};                                                     \
 })
 
 static inline
-bool implements(const builtin$Type* t, const builtin$Type * it) {
-	return builtin$Type$Implements((builtin$Type*)t, (builtin$Type*)it);
+bool implements(const internal$Type* t, const internal$Type * it) {
+	return internal$Type$Implements((internal$Type*)t, (internal$Type*)it);
 }

@@ -3,7 +3,7 @@
 package syscall
 
 import (
-	"builtin"
+	"internal"
 	"sync/atomic"
 	"unsafe"
 )
@@ -67,7 +67,7 @@ func TakeEventReg() Event {
 // is lost. Compiler doesn't reorder Wait with any memory operation that is
 // before or after it in the program code.
 func (e Event) Wait() {
-	builtin.Syscall1(EVENTWAIT, uintptr(e))
+	internal.Syscall1(EVENTWAIT, uintptr(e))
 }
 
 // Alarm is an event that is sent by runtime when asked by using SetAlarm.

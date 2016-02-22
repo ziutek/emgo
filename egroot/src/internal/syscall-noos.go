@@ -1,6 +1,6 @@
 // +build noos
 
-package builtin
+package internal
 
 const (
 	NEWTASK = iota

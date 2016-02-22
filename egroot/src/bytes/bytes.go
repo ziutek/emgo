@@ -1,7 +1,7 @@
 package bytes
 
 import (
-	"builtin"
+	"internal"
 	"unsafe"
 )
 
@@ -10,7 +10,7 @@ func Fill(s []byte, b byte) {
 	if len(s) == 0 {
 		return
 	}
-	builtin.Memset(unsafe.Pointer(&s[0]), b, uintptr(len(s)))
+	internal.Memset(unsafe.Pointer(&s[0]), b, uintptr(len(s)))
 }
 
 // IndexByte returns the index of first c in s or -1 if there is no c in s.

@@ -3,13 +3,13 @@
 .syntax unified
 
 // func Memset(s unsafe.Pointer, b byte, n uintptr)
-.global builtin$Memset
+.global internal$Memset
 
 // unsafe$Pointer memset(unsafe$Pointer s, byte b, uintptr n)
 .global memset
 
 .thumb_func
-builtin$Memset:
+internal$Memset:
 .thumb_func
 memset:
 	// Use ip as dst. r0 will be returned unmodified.

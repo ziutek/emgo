@@ -77,9 +77,9 @@ func compile(bp *build.Package) error {
 	ppath := bp.ImportPath
 	if bp.Name == "main" {
 		ppath = "main"
-		iimp = `_ "runtime";_ "builtin"`
-	} else if bp.ImportPath != "builtin" {
-		iimp = `_ "builtin"`
+		iimp = `_ "runtime";_ "internal"`
+	} else if bp.ImportPath != "internal" {
+		iimp = `_ "internal"`
 	}
 
 	f, err := parser.ParseFile(
@@ -327,12 +327,12 @@ func checkPkg(bp *build.Package) (bool, error) {
 			return false, err
 		}
 	}
-	if bp.ImportPath == "builtin" {
+	if bp.ImportPath == "internal" {
 		if len(bp.Imports) > 1 || len(bp.Imports) == 1 && bp.Imports[0] != "unsafe" {
-			return false, errors.New("builtin can't import other packages")
+			return false, errors.New("internal can't import other packages")
 		}
 	} else {
-		imports := addPkg(bp.Imports, "builtin")
+		imports := addPkg(bp.Imports, "internal")
 		for _, imp := range imports {
 			if imp == "unsafe" {
 				continue

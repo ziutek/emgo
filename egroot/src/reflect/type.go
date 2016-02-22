@@ -1,7 +1,7 @@
 package reflect
 
 import (
-	"builtin"
+	"internal"
 	"unsafe"
 )
 
@@ -83,7 +83,7 @@ func (k Kind) String() string {
 }
 
 type Type struct {
-	b *builtin.Type
+	b *internal.Type
 }
 
 const invalidT = "reflect: invalid type"

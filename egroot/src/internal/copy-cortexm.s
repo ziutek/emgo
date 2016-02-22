@@ -8,7 +8,7 @@
 // from Flash (all Flash acceleration on).
 
 // func Memmove(dst, src unsafe.Pointer, n uintptr)
-.global builtin$Memmove
+.global internal$Memmove
 
 // unsafe$Pointer memmove(unsafe$Pointer dst, unsafe$Pointer, src, uint n)
 .global memmove
@@ -17,7 +17,7 @@
 .global memcpy
 
 .thumb_func
-builtin$Memmove:
+internal$Memmove:
 .thumb_func
 memmove:
 .thumb_func

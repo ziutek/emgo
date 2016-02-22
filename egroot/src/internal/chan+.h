@@ -1,8 +1,8 @@
-typedef builtin$Chan chan;
+typedef internal$Chan chan;
 
 #define NILCHAN (chan){}
 
-#define MAKECHAN(typ, cap) builtin$MakeChan(cap, sizeof(typ), __alignof__(typ))
+#define MAKECHAN(typ, cap) internal$MakeChan(cap, sizeof(typ), __alignof__(typ))
 
 #define SEND(cx, typ, val) do {                     \
 	chan c = cx;                                    \
@@ -34,7 +34,7 @@ typedef builtin$Chan chan;
 		c.M->Done(c.C, r._1);                            \
 		vok._1 = true;                                   \
 	} else {                                             \
-		vok._1 = (r._1 == builtin$ChanOK);               \
+		vok._1 = (r._1 == internal$ChanOK);               \
 	}                                                    \
 	vok;                                                 \
 })
@@ -64,14 +64,14 @@ typedef builtin$Chan chan;
 }
 
 #define _SELECT(dflt, commList...)                              \
-	builtin$Comm arr[] = {commList};                            \
+	internal$Comm arr[] = {commList};                            \
 	int n = sizeof(arr)/sizeof(arr[0]);                         \
-	builtin$Comm *comms[n];                                     \
+	internal$Comm *comms[n];                                     \
 	int i = n;                                                  \
 	while (i--) {                                               \
 		comms[i] = &arr[i];                                     \
 	}                                                           \
-	unsafe$Pointer$$unsafe$Pointer$$uintptr r = builtin$Select( \
+	unsafe$Pointer$$unsafe$Pointer$$uintptr r = internal$Select( \
 		(slice){comms, n, n}, dflt                              \
 	);                                                          \
 	goto *r._0
@@ -101,7 +101,7 @@ typedef builtin$Chan chan;
 		chan##i.M->Done(chan##i.C, r._2);      \
 		val##i._1 = true;                      \
 	} else {                                   \
-		val##i._1 = (r._2 == builtin$ChanOK);  \
+		val##i._1 = (r._2 == internal$ChanOK);  \
 	}                                          \
 	val##i;                                    \
 })

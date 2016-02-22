@@ -1,10 +1,10 @@
 #include <internal/types.h>
-#include <builtin.h>
+#include <internal.h>
 
 void panic(interface i) {
 	for (;;) {
-		if (builtin$Panic != nil) {
-			builtin$Panic(i);
+		if (internal$Panic != nil) {
+			internal$Panic(i);
 		}
 	}
 }

@@ -1,9 +1,9 @@
 uintptr
-builtin$b2u(bool b) {
+internal$b2u(bool b) {
 	return (uintptr) (b);
 }
 
 uintptr
-builtin$f2u(void (*f) ()) {
+internal$f2u(void (*f) ()) {
 	return CAST(uintptr, f);
 }

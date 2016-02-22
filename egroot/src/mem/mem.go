@@ -1,7 +1,9 @@
 // Package mem provides more controll to memory allocation (not implemented!).
 package mem
 
-import "builtin"
+import (
+	"internal"
+)
 
 // Type is a bitfield that describes limitations of some memory type. Zero
 // value means no limitations.
@@ -9,11 +11,11 @@ type Type int
 
 const (
 	// TypeNoDMA bit means memory that can't be accessed by DMA.
-	TypeNoDMA Type = builtin.MemNoDMA
+	TypeNoDMA Type = internal.MemNoDMA
 
 	// Stack is special type, only allowed to be returned in case of len or cap
 	// parameter of make function.
-	TypeStack Type = builtin.MemStack
+	TypeStack Type = internal.MemStack
 )
 
 // Typer is an interface that can be implemented by any dynamically allocated

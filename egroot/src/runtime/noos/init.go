@@ -1,13 +1,13 @@
 package noos
 
-import "builtin"
+import "internal"
 
 func init() {
 	initCPU()
-	builtin.Panic = panic_
-	builtin.Alloc = alloc
-	builtin.MakeChan = makeChan
-	builtin.Select = selectComm
+	internal.Panic = panic_
+	internal.Alloc = alloc
+	internal.MakeChan = makeChan
+	internal.Select = selectComm
 	if maxTasks() > 0 {
 		tasker.init()
 	}

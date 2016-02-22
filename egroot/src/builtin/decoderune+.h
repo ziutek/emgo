@@ -1,1 +1,0 @@
-#define DECODERUNE(s) builtin$DecodeRune(s)

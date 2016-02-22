@@ -1,26 +1,26 @@
 package runtime
 
 import (
-	"builtin"
+	"internal"
 	"sync/atomic"
 	"unsafe"
 )
 
-func hash(ityp, etyp *builtin.Type) int {
+func hash(ityp, etyp *internal.Type) int {
 	h := uintptr(unsafe.Pointer(ityp)) ^ uintptr(unsafe.Pointer(etyp))
 	return int(h) & (len(itHashTab) - 1)
 }
 
 type itListElem struct {
-	ityp, etyp *builtin.Type
+	ityp, etyp *internal.Type
 	next       unsafe.Pointer // *itListElem
-	itab       *builtin.Itable
+	itab       *internal.Itable
 }
 
 var itHashTab [1 << 3]unsafe.Pointer // *itListElem
 
-// itableFor implements builtin.ItableFor.
-func itableFor(ityp, etyp *builtin.Type) *builtin.Itable {
+// itableFor implements internal.ItableFor.
+func itableFor(ityp, etyp *internal.Type) *internal.Itable {
 	// Find itable in hash table.
 	list := &itHashTab[hash(ityp, etyp)]
 	for {
@@ -37,7 +37,7 @@ func itableFor(ityp, etyp *builtin.Type) *builtin.Itable {
 	newel := new(itListElem)
 	newel.ityp = ityp
 	newel.etyp = etyp
-	newel.itab = builtin.NewItable(ityp, etyp)
+	newel.itab = internal.NewItable(ityp, etyp)
 	for {
 		if atomic.CompareAndSwapPointer(list, nil, unsafe.Pointer(newel)) {
 			return newel.itab
@@ -58,5 +58,5 @@ func itableFor(ityp, etyp *builtin.Type) *builtin.Itable {
 }
 
 func init() {
-	builtin.ItableFor = itableFor
+	internal.ItableFor = itableFor
 }
