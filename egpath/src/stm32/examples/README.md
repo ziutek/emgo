@@ -14,4 +14,4 @@ minidev: "STM32 Mini Development Board"
 
 port103r: [WaveShare Port103R](http://www.waveshare.net/wiki/Port103R)
 
-![WaveShare Port103R](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/board.jpg)
+![WaveShare Port103R](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/port103r/board.jpg)
