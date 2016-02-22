@@ -9,7 +9,7 @@ import (
 	"stm32/hal/dma"
 	"stm32/hal/irq"
 	"stm32/hal/system"
-	"stm32/hal/system/timer/rtc"
+	"stm32/hal/system/timer/systick"
 )
 
 var (
@@ -18,8 +18,8 @@ var (
 )
 
 func init() {
-	system.Setup(8, 72/8, false)
-	rtc.Setup(32768)
+	system.Setup32(0)
+	systick.Setup()
 
 	DMA := dma.DMA1
 	DMA.EnableClock(false)
@@ -56,6 +56,5 @@ func dmaISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm:      rtc.ISR,
 	irq.DMA1_Channel1: dmaISR,
 }
