@@ -1,4 +1,5 @@
 This directory contains examples for following STM32 development boards:
 
-f4-discovery
+f4-discovery: [STM32F4-Discovery](http://www.st.com/web/catalog/tools/FM116/SC959/SS1532/PF252419)
+
 ![STM32F4-Discovery](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/f4-discovery/board.jpg)
