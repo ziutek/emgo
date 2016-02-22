@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	//_ "golang.org/x/tools/go/gcimporter"
 
 	"github.com/ziutek/emgo/gotoc"
 )
@@ -27,6 +26,15 @@ type sampleDecl struct {
 	filePos string
 	goDecl  string
 	c       []*ddi
+}
+
+type dummyImporter struct{}
+
+func (_ dummyImporter) Import(path string) (*types.Package, error) {
+	if path == "unsafe" {
+		return types.Unsafe, nil
+	}
+	return nil, errors.New("dummyImporter can import only unsafe package")
 }
 
 func (s sampleDecl) testDecl() error {
@@ -44,7 +52,8 @@ func (s sampleDecl) testDecl() error {
 		Uses:       make(map[*ast.Ident]types.Object),
 		Selections: make(map[*ast.SelectorExpr]*types.Selection),
 	}
-	pkg, err := new(types.Config).Check("foo", fset, []*ast.File{f}, ti)
+	cfg := types.Config{Importer: new(dummyImporter)}
+	pkg, err := cfg.Check("foo", fset, []*ast.File{f}, ti)
 	if err != nil {
 		return err
 	}
