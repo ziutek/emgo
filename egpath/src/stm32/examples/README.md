@@ -12,6 +12,10 @@ minidev: "STM32 Mini Development Board"
 
 ![STM32 Mini Development Board](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/board.jpg)
 
+nucleo-f411re: [NUCLEO-F411RE](http://www.st.com/web/en/catalog/tools/FM116/SC959/SS1532/LN1847/PF260320)
+
+![STM32 Mini Development Board](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/nucleo-f411re/board.jpg)
+
 port103r: [WaveShare Port103R](http://www.waveshare.net/wiki/Port103R)
 
 ![WaveShare Port103R](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/port103r/board.jpg)
