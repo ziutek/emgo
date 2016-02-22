@@ -166,6 +166,7 @@ func (v Value) Elem() Value {
 		}
 		return v
 	case Interface:
+		// TODO
 	}
 	panic(badKind)
 }
