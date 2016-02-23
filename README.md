@@ -5,12 +5,17 @@ To build and install egc:
     cd egc
     go install
   
-To build some example:
+To build some example, you first have to set two enviroment variables:
 
-    cd egpath/src/stm32/examples/nucleo-f411re/rtc
+	export EGROOT=PATH_TO_EGROOT_DIRECTORY # eg. $HOME/emgo/egroot
+	export EGPATH=PATH_TO_EGPATH_DIRECTORY $ eg. $HOME/emgo/egpath
+
+Next go to example directory and build it:
+
+	cd $EGPATH/src/stm32/examples/nucleo-f411re/blinky
     ../build.sh
 
-To load binary build for running from SRAM:
+To load binary built to run from SRAM:
 
 	../load.sh      # This uses st-util
 
@@ -18,7 +23,7 @@ or
 
 	../load-oocd.sh # This uses openocd
 
-To load binary build for running from flash (this erases flash and program it with new firmware):
+To load binary built run from flash (this erases flash and programs it with new firmware):
 
 	../load.sh flash
 
