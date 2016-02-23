@@ -31,5 +31,15 @@ or
 
 	../load-oocd.sh flash
 
+To change this SRAM/flash build option you need to edit script.ld file and change the line:
+
+	INCLUDE stm32/loadram	
+
+to
+
+	INCLUDE stm32/loadflash
+
+
+or vice versa. More editing is need for STM32F1xx series.
 
 [Home page](https://sites.google.com/site/embeddedgo/)
