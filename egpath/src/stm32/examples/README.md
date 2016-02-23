@@ -1,4 +1,4 @@
-This directory contains examples for following STM32 development boards:
+This directory contains examples for the following STM32 development boards:
 
 f4-discovery: [STM32F4-Discovery](http://www.st.com/web/catalog/tools/FM116/SC959/SS1532/PF252419)
 
