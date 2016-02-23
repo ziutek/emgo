@@ -5,10 +5,14 @@ To build and install egc:
     cd egc
     go install
   
-To build some example, you first have to set two enviroment variables:
+To build some example, you first have to set some enviroment variables
 
-	export EGROOT=PATH_TO_EGROOT_DIRECTORY # eg. $HOME/emgo/egroot
-	export EGPATH=PATH_TO_EGPATH_DIRECTORY # eg. $HOME/emgo/egpath
+	export EGCC=path_to_arm_gcc            # eg. /usr/local/arm/bin/arm-none-eabi-gcc
+    export EGLD=path_to_arm_linekr         # eg. /usr/local/arm/bin/arm-none-eabi-ld
+    export EGAR=path_to_arm_archiver       # eg. /usr/local/arm/bin/arm-none-eabi-ar
+
+	export EGROOT=path_to_egroot_directory # eg. $HOME/emgo/egroot
+	export EGPATH=path_to_egpath_directory # eg. $HOME/emgo/egpath
 
 Next go to example directory and build it:
 
