@@ -70,6 +70,86 @@ type CR_Mask struct{ mmio.UM32 }
 func (rm CR_Mask) Load() CR_Bits   { return CR_Bits(rm.UM32.Load()) }
 func (rm CR_Mask) Store(b CR_Bits) { rm.UM32.Store(uint32(b)) }
 
+func (p *DMA_Stream_Periph) CHSEL() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(CHSEL)}}
+}
+
+func (p *DMA_Stream_Periph) MBURST() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(MBURST)}}
+}
+
+func (p *DMA_Stream_Periph) PBURST() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(PBURST)}}
+}
+
+func (p *DMA_Stream_Periph) ACK() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(ACK)}}
+}
+
+func (p *DMA_Stream_Periph) CT() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(CT)}}
+}
+
+func (p *DMA_Stream_Periph) DBM() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DBM)}}
+}
+
+func (p *DMA_Stream_Periph) PL() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(PL)}}
+}
+
+func (p *DMA_Stream_Periph) PINCOS() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(PINCOS)}}
+}
+
+func (p *DMA_Stream_Periph) MSIZE() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(MSIZE)}}
+}
+
+func (p *DMA_Stream_Periph) PSIZE() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(PSIZE)}}
+}
+
+func (p *DMA_Stream_Periph) MINC() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(MINC)}}
+}
+
+func (p *DMA_Stream_Periph) PINC() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(PINC)}}
+}
+
+func (p *DMA_Stream_Periph) CIRC() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(CIRC)}}
+}
+
+func (p *DMA_Stream_Periph) DIR() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DIR)}}
+}
+
+func (p *DMA_Stream_Periph) PFCTRL() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(PFCTRL)}}
+}
+
+func (p *DMA_Stream_Periph) TCIE() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(TCIE)}}
+}
+
+func (p *DMA_Stream_Periph) HTIE() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(HTIE)}}
+}
+
+func (p *DMA_Stream_Periph) TEIE() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(TEIE)}}
+}
+
+func (p *DMA_Stream_Periph) DMEIE() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DMEIE)}}
+}
+
+func (p *DMA_Stream_Periph) EN() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(EN)}}
+}
+
 type NDTR_Bits uint32
 
 type NDTR struct{ mmio.U32 }
@@ -149,3 +229,19 @@ type FCR_Mask struct{ mmio.UM32 }
 
 func (rm FCR_Mask) Load() FCR_Bits   { return FCR_Bits(rm.UM32.Load()) }
 func (rm FCR_Mask) Store(b FCR_Bits) { rm.UM32.Store(uint32(b)) }
+
+func (p *DMA_Stream_Periph) FEIE() FCR_Mask {
+	return FCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(FEIE)}}
+}
+
+func (p *DMA_Stream_Periph) FS() FCR_Mask {
+	return FCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(FS)}}
+}
+
+func (p *DMA_Stream_Periph) DMDIS() FCR_Mask {
+	return FCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(DMDIS)}}
+}
+
+func (p *DMA_Stream_Periph) FTH() FCR_Mask {
+	return FCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(FTH)}}
+}

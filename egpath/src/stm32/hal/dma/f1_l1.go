@@ -6,13 +6,7 @@ import (
 	"unsafe"
 
 	"stm32/hal/raw/dma"
-	"stm32/hal/raw/mmap"
 	"stm32/hal/raw/rcc"
-)
-
-var (
-	DMA1 = (*DMA)(unsafe.Pointer(mmap.DMA1_BASE))
-	DMA2 = (*DMA)(unsafe.Pointer(mmap.DMA2_BASE))
 )
 
 type dmaregs struct {
@@ -23,29 +17,27 @@ type dmaregs struct {
 	}
 }
 
-func pnum(p *DMA) int {
-	return int(uintptr(unsafe.Pointer(p))-mmap.AHBPERIPH_BASE) / 0x400
-}
-
 func enableClock(p *DMA, _ bool) {
-	bit := bit(p, &rcc.RCC.AHBENR.U32)
+	bit := bit(p, &rcc.RCC.AHBENR.U32, rcc.DMA1ENn)
 	bit.Set()
 	bit.Load() // RCC delay (workaround for silicon bugs).
 }
 
 func disableClock(p *DMA) {
-	bit(p, &rcc.RCC.AHBENR.U32).Clear()
+	bit(p, &rcc.RCC.AHBENR.U32, rcc.DMA1ENn).Clear()
 }
+
+func reset(p *DMA) {}
 
 type chanregs struct {
 	raw dma.DMA_Channel_Periph
 }
 
 func getChannel(p *DMA, n int) *Channel {
-	pn := pnum(p)
 	n--
-	if pn == 0 && uint(n) > 6 || uint(n) > 4 {
-		panic("dma: bad channel")
+	dman := dmanum(p)
+	if dman == 0 && uint(n) > 6 || dman != 0 && uint(n) > 4 {
+		panic(badChan)
 	}
 	return (*Channel)(unsafe.Pointer(&p.chs[n].raw))
 }

@@ -34,7 +34,11 @@ func addtoreg(pkgs []*Package, bits *Bits) bool {
 		}
 	}
 	if reg == nil {
-		// Try other peripherals from this package (this handles DMA channels).
+		// Try other peripherals from this package (handles DMA channels/streams).
+		switch {
+		case strings.HasPrefix(name, "Sx"): // DMA streams.
+			name = name[2:]
+		}
 		m = 0
 		for _, p := range pack.Periphs {
 			for _, r := range p.Regs {

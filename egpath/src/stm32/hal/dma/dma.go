@@ -2,6 +2,13 @@ package dma
 
 import (
 	"unsafe"
+
+	"stm32/hal/raw/mmap"
+)
+
+var (
+	DMA1 = (*DMA)(unsafe.Pointer(mmap.DMA1_BASE))
+	DMA2 = (*DMA)(unsafe.Pointer(mmap.DMA2_BASE))
 )
 
 type DMA struct {
@@ -14,6 +21,10 @@ func (p *DMA) EnableClock(lp bool) {
 
 func (p *DMA) DisableClock() {
 	disableClock(p)
+}
+
+func (p *DMA) Reset() {
+	reset(p)
 }
 
 // Channel returns n-th channel (1 <= n <= number of channels).
