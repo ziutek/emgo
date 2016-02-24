@@ -63,10 +63,6 @@ var (
 	G = (*Port)(unsafe.Pointer(mmap.GPIOG_BASE))
 )
 
-func pnum(p *Port) int {
-	return int(uintptr(unsafe.Pointer(p))-mmap.AHBPERIPH_BASE) / 0x400
-}
-
 func enreg() *mmio.U32   { return &rcc.RCC.AHBENR.U32 }
 func lpenreg() *mmio.U32 { return &rcc.RCC.AHBLPENR.U32 }
 func rstreg() *mmio.U32  { return &rcc.RCC.AHBRSTR.U32 }

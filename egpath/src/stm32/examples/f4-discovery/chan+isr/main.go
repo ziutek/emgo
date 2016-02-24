@@ -1,9 +1,9 @@
 // This example shows how to use channels to divide interrupt handler into two
 // parts: fast part - that runs in interrupt context and slow part - that runs
-// in user context.
+// in thread context.
 //
 // Fast part only enqueues events/data that receives from source (you) and
-// informs the source (using blue leds) if its buffer is full. Slow part
+// informs the source (using blue LED) if its buffer is full. Slow part
 // dequeues events/data and handles them. This scheme can be used to implement
 // interrupt driven I/O library.
 package main
@@ -72,10 +72,10 @@ func buttonISR() {
 	}
 }
 
-func toggle(colors gpio.Pins) {
-	leds.SetPins(colors)
+func toggle(pins gpio.Pins) {
+	leds.SetPins(pins)
 	delay.Millisec(500)
-	leds.ClearPins(colors)
+	leds.ClearPins(pins)
 	delay.Millisec(500)
 }
 

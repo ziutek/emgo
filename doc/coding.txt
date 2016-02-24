@@ -18,9 +18,11 @@ If your CPU guarantees ordered access to I/O address spece, you can use volatile
 
 Don't use volatile types/variables for other things. If you think that you need volatile for something other than MMIO you're wrong - use functions from sync/atmic package instead.
 
+Emgo standard library tries to limit the presence of volatile pragma to one package: mmio.
+
 ### Constant global variables
 
-To avoid copying some global variables (especially big arrays) from Flash to RAM use //c:const pragma. C compiler will warn you if your code may modify such variables.
+To avoid copying some global variables (especially big arrays) from Flash to RAM use //emgo:const pragma. C compiler will warn you if your code may modify such variables.
 
 ### Line length
 

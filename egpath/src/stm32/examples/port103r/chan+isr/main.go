@@ -1,4 +1,11 @@
-// This example doesnt work! There is a BUG somewhere in exti or ...
+// This example shows how to use channels to divide interrupt handler into two
+// parts: fast part - that runs in interrupt context and slow part - that runs
+// in thread context.
+//
+// Fast part only enqueues events/data that receives from source (you) and
+// informs the source (using LED3) if its buffer is full. Slow part dequeues
+// events/data and handles them. This scheme can be used to implement interrupt
+// driven I/O library.
 package main
 
 import (
@@ -44,19 +51,38 @@ func init() {
 	rtos.IRQ(irq.EXTI15_10).Enable()
 }
 
+var (
+	c   = make(chan gpio.Pins, 3)
+	led = LED1
+)
+
 func keyISR() {
 	exti.Lines(Key3).ClearPending()
-	leds.SetPins(LED3)
-	delay.Loop(1e5)
-	leds.ClearPins(LED3)
+	select {
+	case c <- led:
+		if led == LED1 {
+			led = LED2
+		} else {
+			led = LED1
+		}
+	default:
+		// Signal that c is full.
+		leds.SetPins(LED3)
+		delay.Loop(1e5)
+		leds.ClearPins(LED3)
+	}
+}
+
+func toggle(pins gpio.Pins) {
+	leds.SetPins(pins)
+	delay.Millisec(500)
+	leds.ClearPins(pins)
+	delay.Millisec(500)
 }
 
 func main() {
 	for {
-		leds.SetPins(LED1)
-		delay.Millisec(1000)
-		leds.ClearPins(LED1)
-		delay.Millisec(1000)
+		toggle(<-c)
 	}
 }
 

@@ -52,17 +52,20 @@ const (
 	veryHigh = 2
 )
 
-func pnum(p *Port) int {
-	return int(uintptr(unsafe.Pointer(p))-mmap.APB2PERIPH_BASE) / 0x400
-}
-
-func enreg() *mmio.U32  { return &rcc.RCC.APB2ENR.U32 }
-func rstreg() *mmio.U32 { return &rcc.RCC.APB2RSTR.U32 }
-
 func enableClock(p *Port, _ bool) {
-	bit := bit(p, enreg())
+	bit := bit(p, &rcc.RCC.APB2ENR.U32, rcc.IOPAENn)
 	bit.Set()
 	bit.Load() // RCC delay (workaround for silicon bugs).
+}
+
+func disableClock(p *Port) {
+	bit(p, &rcc.RCC.APB2ENR.U32, rcc.IOPAENn).Clear()
+}
+
+func reset(p *Port) {
+	bit := bit(p, &rcc.RCC.APB2RSTR.U32, rcc.IOPARSTn)
+	bit.Set()
+	bit.Clear()
 }
 
 func setup(p *Port, n int, cfg *Config) {

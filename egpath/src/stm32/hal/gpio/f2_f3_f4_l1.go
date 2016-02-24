@@ -5,6 +5,8 @@ package gpio
 import (
 	"bits"
 	"mmio"
+
+	"stm32/hal/raw/rcc"
 )
 
 type registers struct {
@@ -37,10 +39,20 @@ const (
 )
 
 func enableClock(p *Port, lp bool) {
-	enbit := bit(p, enreg())
+	enbit := bit(p, enreg(), rcc.GPIOAENn)
 	enbit.Set()
-	bit(p, lpenreg()).Store(bits.One(lp))
+	bit(p, lpenreg(), rcc.GPIOALPENn).Store(bits.One(lp))
 	enbit.Load() // RCC delay (workaround for silicon bugs).
+}
+
+func disableClock(p *Port) {
+	bit(p, enreg(), rcc.GPIOAENn).Clear()
+}
+
+func reset(p *Port) {
+	bit := bit(p, rstreg(), rcc.GPIOARSTn)
+	bit.Set()
+	bit.Clear()
 }
 
 func setup(p *Port, n int, cfg *Config) {

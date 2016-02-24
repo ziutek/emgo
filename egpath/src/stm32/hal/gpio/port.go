@@ -17,9 +17,9 @@ func (p *Port) Bus() system.Bus {
 	return internal.Bus(unsafe.Pointer(p))
 }
 
-// Num returns number of p on its peripheral bus.
+// Num returns port number: A.Num() == 0, B.Num() = 1, ...
 func (p *Port) Num() int {
-	return pnum(p)
+	return portnum(p)
 }
 
 // EnableClock enables clock for port p.
@@ -30,12 +30,10 @@ func (p *Port) EnableClock(lp bool) {
 
 // DisableClock disables clock for port p.
 func (p *Port) DisableClock() {
-	bit(p, enreg()).Clear()
+	disableClock(p)
 }
 
 // Reset resets port p.
 func (p *Port) Reset() {
-	bit := bit(p, rstreg())
-	bit.Set()
-	bit.Clear()
+	reset(p)
 }
