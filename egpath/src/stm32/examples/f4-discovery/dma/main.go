@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	ds  *dma.Stream
+	ch  dma.Channel
 	tce rtos.EventFlag
 )
 
@@ -23,9 +23,9 @@ func init() {
 	system.Setup168(8)
 	systick.Setup()
 
-	DMA := dma.DMA2
-	DMA.EnableClock(false)
-	ds = DMA.Stream(0)
+	d := dma.DMA2
+	d.EnableClock(false)
+	ch = d.Channel(0, 0)
 	rtos.IRQ(irq.DMA2_Stream0).Enable()
 }
 
@@ -35,13 +35,13 @@ var (
 )
 
 func main() {
-	ds.Setup(dma.MTM|dma.IncP|dma.IncM, 0)
-	ds.SetWordSize(unsafe.Sizeof(P[0]), unsafe.Sizeof(M[0]))
-	ds.SetNum(len(P))
-	ds.SetAddrP(unsafe.Pointer(&P[0]))
-	ds.SetAddrM(unsafe.Pointer(&M[0]))
-	ds.EnableInt(dma.TCE) // Simplified (should handle dma.ERR too).
-	ds.Enable()
+	ch.Setup(dma.MTM | dma.IncP | dma.IncM)
+	ch.SetWordSize(unsafe.Sizeof(P[0]), unsafe.Sizeof(M[0]))
+	ch.SetLen(len(P))
+	ch.SetAddrP(unsafe.Pointer(&P[0]))
+	ch.SetAddrM(unsafe.Pointer(&M[0]))
+	ch.EnableInt(dma.TCE) // Simplified (should handle dma.ERR too).
+	ch.Enable()
 	tce.Wait(0)
 
 	delay.Millisec(250) // Wait for OpenOCD (press reset if you see nothing).
@@ -49,8 +49,8 @@ func main() {
 }
 
 func dmaISR() {
-	if ds.Events()&dma.TCE != 0 {
-		ds.ClearEvents(dma.TCE)
+	if ch.Events()&dma.TCE != 0 {
+		ch.ClearEvents(dma.TCE)
 		tce.Set()
 	}
 }

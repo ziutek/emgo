@@ -29,28 +29,29 @@ func disableClock(p *DMA) {
 
 func reset(p *DMA) {}
 
-type stregs struct {
-	raw dma.DMA_Channel_Periph
+type channel struct {
+	raw *dma.DMA_Channel_Periph
 }
 
-func getStream(p *DMA, n int) *Stream {
+func getChannel(p *DMA, n, _ int) (ch Channel) {
 	n--
 	dman := dmanum(p)
 	if dman == 0 && uint(n) > 6 || dman != 0 && uint(n) > 4 {
 		panic(badStream)
 	}
-	return (*Stream)(unsafe.Pointer(&p.chs[n].raw))
+	ch.raw = &p.chs[n].raw
+	return
 }
 
-// snum returns channel number - 1, eg. 0 for fisrt channel.
-func snum(s *Stream) uintptr {
-	off := uintptr(unsafe.Pointer(s)) & 0x3ff
+// snum returns stream number - 1, eg. 0 for fisrt stream.
+func snum(ch Channel) uintptr {
+	off := uintptr(unsafe.Pointer(ch.raw)) & 0x3ff
 	step := unsafe.Sizeof(dmaregs{}.chs[0])
 	return (off - unsafe.Sizeof(dma.DMA_Periph{})) / step
 }
 
-func sdma(s *Stream) *dma.DMA_Periph {
-	addr := uintptr(unsafe.Pointer(s)) &^ 0x3ff
+func sdma(ch Channel) *dma.DMA_Periph {
+	addr := uintptr(unsafe.Pointer(ch.raw)) &^ 0x3ff
 	return (*dma.DMA_Periph)(unsafe.Pointer(addr))
 }
 
@@ -73,70 +74,70 @@ const (
 	err = 1 << 3
 )
 
-func events(s *Stream) Events {
-	isr := sdma(s).ISR.U32.Load()
-	return Events(isr >> (snum(s) * 4) & 0xf)
+func events(ch Channel) Events {
+	isr := sdma(ch).ISR.U32.Load()
+	return Events(isr >> (snum(ch) * 4) & 0xf)
 }
 
-func clearEvents(s *Stream, e Events) {
-	mask := uint32(e&0xf) << (snum(s) * 4)
-	sdma(s).IFCR.U32.Store(mask)
+func clearEvents(ch Channel, e Events) {
+	mask := uint32(e&0xf) << (snum(ch) * 4)
+	sdma(ch).IFCR.U32.Store(mask)
 }
 
-func enable(s *Stream) {
-	s.raw.EN().Set()
+func enable(ch Channel) {
+	ch.raw.EN().Set()
 }
 
-func disable(s *Stream) {
-	s.raw.EN().Clear()
+func disable(ch Channel) {
+	ch.raw.EN().Clear()
 }
 
-func intEnabled(s *Stream) Events {
-	return Events(s.raw.CCR.U32.Load() & 0xe)
+func intEnabled(ch Channel) Events {
+	return Events(ch.raw.CCR.U32.Load() & 0xe)
 }
 
-func enableInt(s *Stream, e Events) {
-	s.raw.CCR.U32.SetBits(uint32(e) & 0xe)
+func enableInt(ch Channel, e Events) {
+	ch.raw.CCR.U32.SetBits(uint32(e) & 0xe)
 }
 
-func disableInt(s *Stream, e Events) {
-	s.raw.CCR.U32.ClearBits(uint32(e) & 0xe)
+func disableInt(ch Channel, e Events) {
+	ch.raw.CCR.U32.ClearBits(uint32(e) & 0xe)
 }
 
 const modeMask = 0x70f0
 
-func mode(s *Stream) Mode {
-	return Mode(s.raw.CCR.Bits(modeMask))
+func mode(ch Channel) Mode {
+	return Mode(ch.raw.CCR.Bits(modeMask))
 }
 
-func setup(s *Stream, m Mode, _ Channel) {
-	s.raw.CCR.U32.StoreBits(0x70f0, uint32(m))
+func setup(ch Channel, m Mode) {
+	ch.raw.CCR.U32.StoreBits(0x70f0, uint32(m))
 }
 
-func wordSize(s *Stream) (p, m uintptr) {
-	ccr := uintptr(s.raw.CCR.Load())
+func wordSize(ch Channel) (p, m uintptr) {
+	ccr := uintptr(ch.raw.CCR.Load())
 	p = 1 << (ccr >> 8 & 3)
 	m = 1 << (ccr >> 10 & 3)
 	return
 }
 
-func setWordSize(s *Stream, p, m uintptr) {
+func setWordSize(ch Channel, p, m uintptr) {
 	ccr := p&6<<7 | m&6<<9
-	s.raw.CCR.U32.StoreBits(0xf00, uint32(ccr))
+	ch.raw.CCR.U32.StoreBits(0xf00, uint32(ccr))
 }
 
-func num(s *Stream) int {
-	return int(s.raw.NDT().Load())
+func length(ch Channel) int {
+	return int(ch.raw.NDT().Load())
 }
 
-func setNum(s *Stream, n int) {
-	s.raw.NDT().UM32.Store(uint32(n))
+func setLen(ch Channel, n int) {
+	ch.raw.NDT().UM32.Store(uint32(n))
 }
 
-func setAddrP(s *Stream, a unsafe.Pointer) {
-	s.raw.CPAR.U32.Store(uint32(uintptr(a)))
+func setAddrP(ch Channel, a unsafe.Pointer) {
+	ch.raw.CPAR.U32.Store(uint32(uintptr(a)))
 }
 
-func setAddrM(s *Stream, a unsafe.Pointer) {
-	s.raw.CMAR.U32.Store(uint32(uintptr(a)))
+func setAddrM(ch Channel, a unsafe.Pointer) {
+	ch.raw.CMAR.U32.Store(uint32(uintptr(a)))
 }

@@ -27,13 +27,14 @@ func (p *DMA) Reset() {
 	reset(p)
 }
 
-// Stream returns n-th stream (channel in F1 nomenclature).
-func (p *DMA) Stream(n int) *Stream {
-	return getStream(p, n)
+// Channel returns value that represents sn-th stream (channel in F1/L1 series
+// nomenclature) and cn-th channel (ignored in case of F1/L1 series).
+func (p *DMA) Channel(sn, cn int) Channel {
+	return getChannel(p, sn, cn)
 }
 
-type Stream struct {
-	stregs
+type Channel struct {
+	channel
 }
 
 type Events byte
@@ -45,38 +46,38 @@ const (
 )
 
 // Events returns current event flags.
-func (s *Stream) Events() Events {
-	return events(s)
+func (ch Channel) Events() Events {
+	return events(ch)
 }
 
 // ClearEvents clears specified event flags.
-func (s *Stream) ClearEvents(e Events) {
-	clearEvents(s, e)
+func (ch Channel) ClearEvents(e Events) {
+	clearEvents(ch, e)
 }
 
 // Enable enables channel.
-func (s *Stream) Enable() {
-	enable(s)
+func (ch Channel) Enable() {
+	enable(ch)
 }
 
 // Disable disables channel.
-func (s *Stream) Disable() {
-	disable(s)
+func (ch Channel) Disable() {
+	disable(ch)
 }
 
 // IntEnabled returns events that are enabled to generate interrupts.
-func (s *Stream) IntEnabled() Events {
-	return intEnabled(s)
+func (ch Channel) IntEnabled() Events {
+	return intEnabled(ch)
 }
 
 // EnableInt enables interrupt generation by events.
-func (s *Stream) EnableInt(e Events) {
-	enableInt(s, e)
+func (ch Channel) EnableInt(e Events) {
+	enableInt(ch, e)
 }
 
 // DisableInt disables interrupt generation by events.
-func (s *Stream) DisableInt(e Events) {
-	disableInt(s, e)
+func (ch Channel) DisableInt(e Events) {
+	disableInt(ch, e)
 }
 
 type Mode uint32
@@ -96,41 +97,39 @@ const (
 	PrioV Mode = prioV // Stream priority level: Very high.
 )
 
-type Channel byte
-
-// Setup configures stream.
-func (s *Stream) Setup(m Mode, ch Channel) {
-	setup(s, m, ch)
+// Setup configures channel.
+func (ch Channel) Setup(m Mode) {
+	setup(ch, m)
 }
 
 // WordSize returns the current word size (in bytes) for peripheral and memory
 // side of transfer.
-func (s *Stream) WordSize() (p, m uintptr) {
-	return wordSize(s)
+func (ch Channel) WordSize() (p, m uintptr) {
+	return wordSize(ch)
 }
 
 // SetWordSize sets the word size (in bytes) for peripheral and memory side of
 // transfer.
-func (s *Stream) SetWordSize(p, m uintptr) {
-	setWordSize(s, p, m)
+func (ch Channel) SetWordSize(p, m uintptr) {
+	setWordSize(ch, p, m)
 }
 
-// Num returns current number of words to transfer.
-func (s *Stream) Num() int {
-	return num(s)
+// Len returns current number of words to transfer.
+func (ch Channel) Len() int {
+	return length(ch)
 }
 
-// SetNum sets number of words to transfer (n <= 65535).
-func (s *Stream) SetNum(n int) {
-	setNum(s, n)
+// SetLen sets number of words to transfer (n <= 65535).
+func (ch Channel) SetLen(n int) {
+	setLen(ch, n)
 }
 
-// SetAddrP sets peripheral address.
-func (s *Stream) SetAddrP(a unsafe.Pointer) {
-	setAddrP(s, a)
+// SetAddrP sets peripheral address (or memory source address in case of MTM).
+func (ch Channel) SetAddrP(a unsafe.Pointer) {
+	setAddrP(ch, a)
 }
 
 // SetAddrM sets memory address.
-func (s *Stream) SetAddrM(a unsafe.Pointer) {
-	setAddrM(s, a)
+func (ch Channel) SetAddrM(a unsafe.Pointer) {
+	setAddrM(ch, a)
 }

@@ -33,28 +33,34 @@ func reset(p *DMA) {
 	bit.Clear()
 }
 
-type stregs struct {
-	raw dma.DMA_Stream_Periph
-}
+type channel uintptr
 
-func getStream(p *DMA, n int) *Stream {
-	if uint(n) > 7 {
+func getChannel(p *DMA, sn, cn int) Channel {
+	if uint(sn) > 7 {
 		panic(badStream)
 	}
-	return (*Stream)(unsafe.Pointer(&p.sts[n]))
+	if uint(cn) > 7 {
+		panic("dma: bad channel")
+	}
+	return Channel{channel(unsafe.Pointer(&p.sts[sn])) | channel(cn)}
 }
 
-// snum returns stream number.
-func snum(s *Stream) uintptr {
-	off := uintptr(unsafe.Pointer(s)) & 0x3ff
-	step := unsafe.Sizeof(dmaregs{}.sts[0])
+func sdma(ch Channel) *dma.DMA_Periph {
+	addr := ch.channel &^ 0x3ff
+	return (*dma.DMA_Periph)(unsafe.Pointer(addr))
+}
+
+func sraw(ch Channel) *dma.DMA_Stream_Periph {
+	return (*dma.DMA_Stream_Periph)(unsafe.Pointer(ch.channel &^ 7))
+}
+
+func snum(ch Channel) uintptr {
+	off := uintptr(ch.channel) & 0x3ff
+	step := unsafe.Sizeof(dma.DMA_Stream_Periph{})
 	return (off - unsafe.Sizeof(dma.DMA_Periph{})) / step
 }
 
-func sdma(s *Stream) *dma.DMA_Periph {
-	addr := uintptr(unsafe.Pointer(s)) &^ 0x3ff
-	return (*dma.DMA_Periph)(unsafe.Pointer(addr))
-}
+func cnum(ch Channel) int { return int(ch.channel & 7) }
 
 const (
 	FFERR Events = 1 << 0 // FIFO error.
@@ -66,9 +72,9 @@ const (
 	tce = 1 << 5
 )
 
-func events(s *Stream) Events {
-	d := sdma(s)
-	n := snum(s)
+func events(ch Channel) Events {
+	d := sdma(ch)
+	n := snum(ch)
 	var isr *mmio.U32
 	if n < 4 {
 		isr = &d.LISR.U32
@@ -83,9 +89,9 @@ func events(s *Stream) Events {
 	return Events(isr.Load() >> n & 0x3d)
 }
 
-func clearEvents(s *Stream, e Events) {
-	d := sdma(s)
-	n := snum(s)
+func clearEvents(ch Channel, e Events) {
+	d := sdma(ch)
+	n := snum(ch)
 	var ifcr *mmio.U32
 	if n < 4 {
 		ifcr = &d.LIFCR.U32
@@ -100,24 +106,24 @@ func clearEvents(s *Stream, e Events) {
 	ifcr.Store(uint32(e) & 0x3d << n)
 }
 
-func enable(s *Stream) {
-	s.raw.EN().Set()
+func enable(ch Channel) {
+	sraw(ch).EN().Set()
 }
 
-func disable(s *Stream) {
-	s.raw.EN().Clear()
+func disable(ch Channel) {
+	sraw(ch).EN().Clear()
 }
 
-func intEnabled(s *Stream) Events {
-	return Events(s.raw.CR.Load() & 0x1e << 1)
+func intEnabled(ch Channel) Events {
+	return Events(sraw(ch).CR.Load() & 0x1e << 1)
 }
 
-func enableInt(s *Stream, e Events) {
-	s.raw.CR.U32.SetBits(uint32(e) >> 1 & 0x1e)
+func enableInt(ch Channel, e Events) {
+	sraw(ch).CR.U32.SetBits(uint32(e) >> 1 & 0x1e)
 }
 
-func disableInt(s *Stream, e Events) {
-	s.raw.CR.U32.ClearBits(uint32(e) >> 1 & 0x1e)
+func disableInt(ch Channel, e Events) {
+	sraw(ch).CR.U32.ClearBits(uint32(e) >> 1 & 0x1e)
 }
 
 const (
@@ -133,41 +139,39 @@ const (
 	prioV = 3 << dma.PLn
 )
 
-func setup(s *Stream, m Mode, ch Channel) {
-	if ch&^7 != 0 {
-		panic("dma: bad channel")
-	}
-	cr := dma.CR_Bits(ch)<<dma.CHSELn | dma.CR_Bits(m)
+func setup(ch Channel, m Mode) {
+	cr := dma.CR_Bits(cnum(ch))<<dma.CHSELn | dma.CR_Bits(m)
 	mask := dma.CHSEL | dma.PL | dma.MINC | dma.PINC | dma.CIRC | dma.DIR
-	s.raw.CR.StoreBits(mask, cr)
+	st := sraw(ch)
+	st.CR.StoreBits(mask, cr)
 	// Enable FIFO with threshold set to 1/2.
-	s.raw.FCR.Store(dma.DMDIS | dma.FTH_0)
+	st.FCR.Store(dma.DMDIS | dma.FTH_0)
 }
 
-func wordSize(s *Stream) (p, m uintptr) {
-	cr := uintptr(s.raw.CR.Load())
+func wordSize(ch Channel) (p, m uintptr) {
+	cr := uintptr(sraw(ch).CR.Load())
 	p = 1 << (cr >> 11 & 3)
 	m = 1 << (cr >> 13 & 3)
 	return
 }
 
-func setWordSize(s *Stream, p, m uintptr) {
+func setWordSize(ch Channel, p, m uintptr) {
 	cr := p&6<<10 | m&6<<12
-	s.raw.CR.U32.StoreBits(0x7800, uint32(cr))
+	sraw(ch).CR.U32.StoreBits(0x7800, uint32(cr))
 }
 
-func num(s *Stream) int {
-	return int(s.raw.NDTR.Load() & 0xFFFF)
+func length(ch Channel) int {
+	return int(sraw(ch).NDTR.Load() & 0xFFFF)
 }
 
-func setNum(s *Stream, n int) {
-	s.raw.NDTR.U32.Store(uint32(n) & 0xFFFF)
+func setLen(ch Channel, n int) {
+	sraw(ch).NDTR.U32.Store(uint32(n) & 0xFFFF)
 }
 
-func setAddrP(s *Stream, a unsafe.Pointer) {
-	s.raw.PAR.U32.Store(uint32(uintptr(a)))
+func setAddrP(ch Channel, a unsafe.Pointer) {
+	sraw(ch).PAR.U32.Store(uint32(uintptr(a)))
 }
 
-func setAddrM(s *Stream, a unsafe.Pointer) {
-	s.raw.M0AR.U32.Store(uint32(uintptr(a)))
+func setAddrM(ch Channel, a unsafe.Pointer) {
+	sraw(ch).M0AR.U32.Store(uint32(uintptr(a)))
 }
