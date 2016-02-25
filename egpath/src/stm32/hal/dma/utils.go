@@ -9,7 +9,7 @@ import (
 	"stm32/hal/raw/mmap"
 )
 
-const badChan = "dma: bad channel"
+const badStream = "dma: bad stream"
 
 // Returns 0 for DMA1, 1 for DMA2.
 func dmanum(p *DMA) int {

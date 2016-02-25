@@ -1,7 +1,9 @@
-// This example shows how to use DMA for memory to memory transfers.
+// This example shows how to use DMA for memory to memory transfers. In case of
+// STM32F2xx/4xx only DMA2 supports MTM transfer.
 package main
 
 import (
+	"delay"
 	"fmt"
 	"rtos"
 	"unsafe"
@@ -9,7 +11,7 @@ import (
 	"stm32/hal/dma"
 	"stm32/hal/irq"
 	"stm32/hal/system"
-	"stm32/hal/system/timer/rtc"
+	"stm32/hal/system/timer/systick"
 )
 
 var (
@@ -18,17 +20,15 @@ var (
 )
 
 func init() {
-	system.Setup(8, 72/8, false)
-	rtc.Setup(32768)
+	system.Setup168(8)
+	systick.Setup()
 
-	DMA := dma.DMA1
+	DMA := dma.DMA2
 	DMA.EnableClock(false)
-	ds = DMA.Stream(1)
-	rtos.IRQ(irq.DMA1_Channel1).Enable()
+	ds = DMA.Stream(0)
+	rtos.IRQ(irq.DMA2_Stream0).Enable()
 }
 
-// Try different element types (eg. P [...]uint16, M [...]byte) to see how DMA
-// handles such asymetrical cases.
 var (
 	P = [...]int{1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -2, -3, -4, -5, -6, -7, -8, -9}
 	M [len(P)]int
@@ -43,6 +43,8 @@ func main() {
 	ds.EnableInt(dma.TCE) // Simplified (should handle dma.ERR too).
 	ds.Enable()
 	tce.Wait(0)
+
+	delay.Millisec(250) // Wait for OpenOCD (press reset if you see nothing).
 	fmt.Println(M[:])
 }
 
@@ -56,6 +58,5 @@ func dmaISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm:      rtc.ISR,
-	irq.DMA1_Channel1: dmaISR,
+	irq.DMA2_Stream0: dmaISR,
 }

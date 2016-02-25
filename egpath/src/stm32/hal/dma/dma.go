@@ -27,115 +27,110 @@ func (p *DMA) Reset() {
 	reset(p)
 }
 
-// Channel returns n-th channel (1 <= n <= number of channels).
-func (p *DMA) Channel(n int) *Channel {
-	return getChannel(p, n)
+// Stream returns n-th stream (channel in F1 nomenclature).
+func (p *DMA) Stream(n int) *Stream {
+	return getStream(p, n)
 }
 
-type Channel struct {
-	chanregs
+type Stream struct {
+	stregs
 }
 
 type Events byte
 
 const (
-	GE  = 1 << 0 // Global Event.
-	TCE = 1 << 1 // Transfer Complete Event.
-	HCE = 1 << 2 // Half transfer Complete Event.
-	ERR = 1 << 3 // Transfer Error event.
+	TCE = tce // Transfer Complete Event.
+	HCE = hce // Half transfer Complete Event.
+	ERR = err // Error event.
 )
 
 // Events returns current event flags.
-func (c *Channel) Events() Events {
-	return events(c)
+func (s *Stream) Events() Events {
+	return events(s)
 }
 
 // ClearEvents clears specified event flags.
-func (c *Channel) ClearEvents(e Events) {
-	clearEvents(c, e)
+func (s *Stream) ClearEvents(e Events) {
+	clearEvents(s, e)
 }
 
 // Enable enables channel.
-func (c *Channel) Enable() {
-	enable(c)
+func (s *Stream) Enable() {
+	enable(s)
 }
 
 // Disable disables channel.
-func (c *Channel) Disable() {
-	disable(c)
+func (s *Stream) Disable() {
+	disable(s)
 }
 
-// IntEnabled returns true if at least one from events (excluding GE) can
-// generate interrupt.
-func (c *Channel) IntEnabled(e Events) bool {
-	return intEnabled(c, e)
+// IntEnabled returns events that are enabled to generate interrupts.
+func (s *Stream) IntEnabled() Events {
+	return intEnabled(s)
 }
 
-// EnableInt enables interrupt generation by events (excluding GE).
-func (c *Channel) EnableInt(e Events) {
-	enableInt(c, e)
+// EnableInt enables interrupt generation by events.
+func (s *Stream) EnableInt(e Events) {
+	enableInt(s, e)
 }
 
 // DisableInt disables interrupt generation by events.
-func (c *Channel) DisableInt(e Events) {
-	disableInt(c, e)
+func (s *Stream) DisableInt(e Events) {
+	disableInt(s, e)
 }
 
-type Mode uint16
+type Mode uint32
 
 const (
-	ReadP Mode = 0 << 4 // Read from Peripheral, write to memory.
-	ReadM Mode = 1 << 4 // Read from Memory, write to peripheral.
-	Circ  Mode = 1 << 5 // Enable circular mode.
-	IncP  Mode = 1 << 6 // Peripheral increment mode.
-	IncM  Mode = 1 << 7 // Memory increment mode.
+	PTM Mode = 0   // Read from peripheral, write to memory.
+	MTP Mode = mtp // Read from memory, write to peripheral.
+	MTM Mode = mtm // Read from memory (AddrP), write to memory.
 
-	PrioL Mode = 0 << 12 // Channel priority level: Low.
-	PrioM Mode = 1 << 12 // Channel priority level: Medium.
-	PrioH Mode = 2 << 12 // Channel priority level: High.
-	PrioV Mode = 3 << 12 // Channel priority level: Very high.
+	Circ Mode = circ // Enable circular mode.
+	IncP Mode = incP // Peripheral increment mode.
+	IncM Mode = incM // Memory increment mode.
 
-	MTM = 1 << 14 //  Memory to memory mode.
+	PrioL Mode = 0     // Stream priority level: Low.
+	PrioM Mode = prioM // Stream priority level: Medium.
+	PrioH Mode = prioH // Stream priority level: High.
+	PrioV Mode = prioV // Stream priority level: Very high.
 )
 
-// Mode returns current mode of operation.
-func (c *Channel) Mode() Mode {
-	return mode(c)
-}
+type Channel byte
 
-// SetMode sets mode of operation.
-func (c *Channel) SetMode(m Mode) {
-	setMode(c, m)
+// Setup configures stream.
+func (s *Stream) Setup(m Mode, ch Channel) {
+	setup(s, m, ch)
 }
 
 // WordSize returns the current word size (in bytes) for peripheral and memory
 // side of transfer.
-func (c *Channel) WordSize() (p, m uintptr) {
-	return wordSize(c)
+func (s *Stream) WordSize() (p, m uintptr) {
+	return wordSize(s)
 }
 
 // SetWordSize sets the word size (in bytes) for peripheral and memory side of
 // transfer.
-func (c *Channel) SetWordSize(p, m uintptr) {
-	setWordSize(c, p, m)
+func (s *Stream) SetWordSize(p, m uintptr) {
+	setWordSize(s, p, m)
 }
 
 // Num returns current number of words to transfer.
-func (c *Channel) Num() int {
-	return num(c)
+func (s *Stream) Num() int {
+	return num(s)
 }
 
 // SetNum sets number of words to transfer (n <= 65535).
-func (c *Channel) SetNum(n int) {
-	setNum(c, n)
+func (s *Stream) SetNum(n int) {
+	setNum(s, n)
 }
 
 // SetAddrP sets peripheral address.
-func (c *Channel) SetAddrP(a unsafe.Pointer) {
-	setAddrP(c, a)
+func (s *Stream) SetAddrP(a unsafe.Pointer) {
+	setAddrP(s, a)
 }
 
 // SetAddrM sets memory address.
-func (c *Channel) SetAddrM(a unsafe.Pointer) {
-	setAddrM(c, a)
+func (s *Stream) SetAddrM(a unsafe.Pointer) {
+	setAddrM(s, a)
 }
