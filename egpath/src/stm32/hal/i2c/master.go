@@ -74,26 +74,26 @@ func (c *MasterConn) Write(buf []byte) (int, error) {
 		d.mutex.Lock()
 		c.state = actwr
 		p.START().Set()
-		if e = d.waitEvent(i2c.SB); e != 0 {
+		if e = d.i2cWaitEvent(i2c.SB); e != 0 {
 			goto err
 		}
 		p.DR.Store(i2c.DR_Bits(c.addr)) // BUG: 10-bit addr not supported.
-		if e = d.waitEvent(i2c.ADDR); e != 0 {
+		if e = d.i2cWaitEvent(i2c.ADDR); e != 0 {
 			goto err
 		}
 		p.SR2.Load()
 	}
-	for _, b := range buf {
+	for m, b := range buf {
 		p.DR.Store(i2c.DR_Bits(b))
-		if e = d.waitEvent(i2c.BTF); e != 0 {
+		if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
+			n = m
 			goto err
 		}
-		n++
 	}
 	if c.stop&ASWR != 0 {
 		c.StopWrite()
 	}
-	return n, nil
+	return len(buf), nil
 err:
 	p.SR1.Store(0) // Clear error flags.
 	if e&Timeout == 0 {
@@ -124,25 +124,27 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 	if c.stop&ASRD != 0 {
 		c.SetStopRead()
 	}
-	var err error
+	var (
+		e Error
+		n int
+	)
 	d := c.d
 	p := d.Periph.raw
+	stop := c.stop & stoprd
 	if c.state != actrd {
 		if c.state == nact {
 			d.mutex.Lock()
 		}
 		c.state = actrd
 		p.CR1.SetBits(i2c.ACK | i2c.START)
-		if e := d.waitEvent(i2c.SB); e != 0 {
-			err = e
+		if e = d.i2cWaitEvent(i2c.SB); e != 0 {
 			goto end
 		}
 		p.DR.Store(i2c.DR_Bits(c.addr | 1)) // BUG: 10-bit addr not supported.
-		if e := d.waitEvent(i2c.ADDR); e != 0 {
-			err = e
+		if e = d.i2cWaitEvent(i2c.ADDR); e != 0 {
 			goto end
 		}
-		if c.stop|stoprd != 0 {
+		if stop != 0 {
 			switch len(buf) {
 			case 1:
 				p.ACK().Clear()
@@ -150,11 +152,11 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 				p.SR2.Load()
 				p.STOP().Set()
 				cortexm.ClearPRIMASK()
-				if e := d.waitEvent(i2c.RXNE); e != 0 {
-					err = e
+				if e = d.i2cWaitEvent(i2c.RXNE); e != 0 {
 					goto end
 				}
 				buf[0] = byte(p.DR.Load())
+				n = 1
 				goto end
 			case 2:
 				p.POS().Set()
@@ -162,8 +164,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 				p.SR2.Load()
 				p.ACK().Clear()
 				cortexm.ClearPRIMASK()
-				if e := d.waitEvent(i2c.BTF); e != 0 {
-					err = e
+				if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
 					goto end
 				}
 				cortexm.SetPRIMASK()
@@ -173,26 +174,25 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 				p.POS().Clear()
 				buf[0] = byte(d)
 				buf[1] = byte(p.DR.Load())
+				n = 2
 				goto end
 			}
 		}
 		p.SR2.Load()
 	}
-	if c.stop|stoprd != 0 {
-		n := len(buf) - 3
-		if n < 0 {
-			err = BelatedStop
+	if stop != 0 {
+		m := len(buf) - 3
+		if m < 0 {
+			e = BelatedStop
 			goto end
 		}
-		for i := 0; i < n; i++ {
-			if e := d.waitEvent(i2c.BTF); e != 0 {
-				err = e
+		for n = 0; n < m; n++ {
+			if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
 				goto end
 			}
-			buf[i] = byte(p.DR.Load())
+			buf[n] = byte(p.DR.Load())
 		}
-		if e := d.waitEvent(i2c.BTF); e != 0 {
-			err = e
+		if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
 			goto end
 		}
 		p.ACK().Clear()
@@ -201,27 +201,31 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 		p.STOP().Set()
 		cortexm.ClearPRIMASK()
 		buf[n] = byte(b)
-		buf[n+1] = byte(p.DR.Load())
-		if e := d.waitEvent(i2c.RXNE); e != 0 {
-			err = e
+		n++
+		buf[n] = byte(p.DR.Load())
+		n++
+		if e = d.i2cWaitEvent(i2c.RXNE); e != 0 {
 			goto end
 		}
-		buf[n+2] = byte(p.DR.Load())
+		buf[n] = byte(p.DR.Load())
+		n++
 		goto end
 	}
-	for i := range buf {
-		if e := d.waitEvent(i2c.BTF); e != 0 {
-			err = e
+	for n = 0; n < len(buf); n++ {
+		if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
 			goto end
 		}
-		buf[i] = byte(p.DR.Load())
+		buf[n] = byte(p.DR.Load())
 	}
-	return len(buf), nil
+	return n, nil
 end:
 	c.stop &^= stoprd
 	c.state = nact
 	d.mutex.Unlock()
-	return len(buf), err
+	if e != 0 {
+		return n, e
+	}
+	return n, nil
 }
 
 // SetStopRead sets an internal flag which causes that subsequent read finishes

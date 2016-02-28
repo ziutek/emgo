@@ -128,3 +128,19 @@ func (p Periph) Setup(cfg *Config) {
 	p.raw.TRISE.Store(i2c.TRISE_Bits(trise))
 	p.raw.CR1.Store(i2c.CR1_Bits(cfg.Mode))
 }
+
+// SPeed returns actual clock speed set.
+func (p Periph) Speed() int {
+	pclk := p.Bus().Clock()
+	ccr := p.raw.CCR.Load()
+	var idiv uint
+	switch {
+	case ccr&i2c.FS == 0: // Standard mode.
+		idiv = 2
+	case ccr&i2c.DUTY == 0: // Fast mode 2/1.
+		idiv = 3
+	default: // Fast mode 16/9.
+		idiv = 25
+	}
+	return int(pclk / (idiv * uint(ccr&i2c.CCRVAL)))
+}

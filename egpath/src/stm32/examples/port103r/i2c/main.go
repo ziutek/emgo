@@ -1,5 +1,5 @@
-// This example blinks leds connected to pins P4, P5, P6, P7 of PCF8574T. Some
-// button can be connected to other pins and its state observed on SWO.
+// This example blinks leds connected to pins P4, P5, P6, P7 of PCF8574T.
+// Button can be connected to other pins and its state observed on SWO.
 package main
 
 import (
@@ -10,12 +10,13 @@ import (
 	"stm32/hal/system"
 	"stm32/hal/system/timer/rtc"
 
+	"stm32/hal/dma"
 	"stm32/hal/i2c"
 )
 
 var (
 	leds *gpio.Port
-	twi  = &i2c.Driver{Periph: i2c.I2C2}
+	twi  *i2c.Driver
 )
 
 const (
@@ -39,6 +40,10 @@ func init() {
 		Driver: gpio.OpenDrain,
 	}
 	port.Setup(pins, &cfg)
+	d := dma.DMA1
+	d.EnableClock(false)
+	//twi = i2c.NewDriverDMA(i2c.I2C2, d.Channel(4, 0), d.Channel(5, 0))
+	twi = i2c.NewDriver(i2c.I2C2)
 	twi.EnableClock(true)
 }
 
@@ -98,14 +103,18 @@ func main() {
 		if !checkI2CErr(err) {
 			continue
 		}
+		_, err = c.Write(out)
+		if !checkI2CErr(err) {
+			continue
+		}
 		var in [4]byte
-		n, err := c.Read(in[:])
+		n, err := c.Read(in[:4])
 		fmt.Printf("%2x\n", in[:n])
 		if !checkI2CErr(err) {
 			continue
 		}
 		c.SetStopRead()
-		n, err = c.Read(in[:2])
+		n, err = c.Read(in[:3])
 		fmt.Printf("%2x\n", in[:n])
 		if !checkI2CErr(err) {
 			continue

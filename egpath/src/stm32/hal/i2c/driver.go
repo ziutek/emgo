@@ -1,7 +1,6 @@
 package i2c
 
 import (
-	"rtos"
 	"sync"
 
 	"arch/cortexm/nvic"
@@ -14,10 +13,8 @@ import (
 type Driver struct {
 	Periph
 
-	mutex  sync.Mutex
-	evflag rtos.EventFlag
-	evirq  nvic.IRQ
-	errirq nvic.IRQ
+	mutex sync.Mutex
+	irqs  irqs
 }
 
 // NewDriver provides convenient way to create heap allocated Driver struct.
@@ -28,82 +25,22 @@ func NewDriver(p Periph) *Driver {
 }
 
 func (d *Driver) SetIntMode(evirq, errirq nvic.IRQ) {
-	d.evirq = evirq
-	d.errirq = errirq
+	d.irqs.i2cev = evirq
+	d.irqs.i2cerr = errirq
 	d.Periph.raw.CR2.SetBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
 }
 
 func (d *Driver) SetPollMode() {
-	d.evirq = 0
-	d.errirq = 0
+	d.irqs.i2cev = 0
+	d.irqs.i2cerr = 0
 	d.Periph.raw.CR2.ClearBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
 }
 
 func (d *Driver) ISR() {
-	d.evirq.Disable()
-	d.errirq.Disable()
-	d.evflag.Set()
-}
-
-type Error int16
-
-const (
-	BusErr   Error = 1 << 0
-	ArbLost  Error = 1 << 1
-	AckFail  Error = 1 << 2
-	Overrun  Error = 1 << 3
-	PECErr   Error = 1 << 4
-	Timeout  Error = 1 << 6
-	SMBAlert Error = 1 << 7
-
-	SoftTimeout Error = 1 << 8
-	BelatedStop Error = 1 << 9
-	ActiveRead  Error = 1 << 10 // Write when active read transaction.
-)
-
-func (e Error) Error() string {
-	return "I2C error"
-}
-
-func (d *Driver) waitIRQ(ev i2c.SR1_Bits, deadline int64) Error {
-	for {
-		rtos.IRQ(d.evirq).Enable()
-		rtos.IRQ(d.errirq).Enable()
-		if !d.evflag.Wait(deadline) {
-			return SoftTimeout
-		}
-		d.evflag.Clear()
-		sr1 := d.Periph.raw.SR1.Load()
-		if e := Error(sr1 >> 8); e != 0 {
-			return e
-		}
-		if sr1&ev != 0 {
-			return 0
-		}
-	}
-}
-
-func (d *Driver) pollEvent(ev i2c.SR1_Bits, deadline int64) Error {
-	for {
-		sr1 := d.raw.SR1.Load()
-		if e := Error(sr1 >> 8); e != 0 {
-			return e
-		}
-		if sr1&ev != 0 {
-			return 0
-		}
-		if rtos.Nanosec() >= deadline {
-			return SoftTimeout
-		}
-	}
-}
-
-func (d *Driver) waitEvent(ev i2c.SR1_Bits) Error {
-	deadline := rtos.Nanosec() + 100e6 // 100 ms
-	if d.evirq == 0 {
-		return d.pollEvent(ev, deadline)
-	}
-	return d.waitIRQ(ev, deadline)
+	irqs := &d.irqs
+	irqs.i2cev.Disable()
+	irqs.i2cerr.Disable()
+	irqs.evflag.Set()
 }
 
 // MasterConn returns initialized MasterConn struct that can be used to
@@ -120,4 +57,8 @@ func (d *Driver) NewMasterConn(addr int16, stm StopMode) *MasterConn {
 	mc := new(MasterConn)
 	*mc = d.MasterConn(addr, stm)
 	return mc
+}
+
+func (d *Driver) i2cWaitEvent(ev i2c.SR1_Bits) Error {
+	return i2cWaitEvent(d.Periph.raw, &d.irqs, ev)
 }
