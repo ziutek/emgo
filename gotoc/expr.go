@@ -80,7 +80,7 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev constant.Value, t types.Type) {
 		w.WriteString("i)")
 	case k == types.String || k == types.UntypedString:
 		w.WriteString("EGSTR(")
-		w.WriteString(ev.String())
+		w.WriteString(ev.ExactString())
 		w.WriteByte(')')
 	default:
 		fmt.Println("Kind", k)
