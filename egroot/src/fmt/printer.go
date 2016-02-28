@@ -247,6 +247,7 @@ func (p *printer) formatIntVal(v reflect.Value, width int, verb byte, zeros bool
 		} else {
 			p.WriteByte(byte(v.Uint()))
 		}
+		return
 	default:
 		p.badVerb(verb, v)
 	}
