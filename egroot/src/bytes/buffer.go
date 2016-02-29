@@ -26,6 +26,8 @@ func (b *Buffer) Len() int { return len(b.buf) - b.off }
 
 func (b *Buffer) Cap() int { return cap(b.buf) }
 
+func (b *Buffer) Bytes() []byte { return b.buf[b.off:] }
+
 func (b *Buffer) Truncate(n int) {
 	if n == 0 {
 		b.off = 0
