@@ -3,10 +3,12 @@
 package i2c
 
 import (
-	"stm32/hal/raw/i2c"
+	"unsafe"
+	
+	"stm32/hal/raw/mmap"
 )
 
 var (
-	I2C1 = Periph{i2c.I2C1}
-	I2C2 = Periph{i2c.I2C2}
+	I2C1 = (*Periph)(unsafe.Pointer(mmap.I2C1_BASE))
+	I2C2 = (*Periph)(unsafe.Pointer(mmap.I2C2_BASE))
 )

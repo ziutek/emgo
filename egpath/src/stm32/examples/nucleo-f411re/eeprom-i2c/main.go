@@ -4,6 +4,7 @@ package main
 import (
 	"delay"
 	"fmt"
+	"rtos"
 
 	"stm32/hal/gpio"
 	"stm32/hal/i2c"
@@ -27,12 +28,17 @@ func init() {
 	}
 	port.Setup(pins, &cfg)
 	port.SetAltFunc(pins, gpio.I2C1)
+	//d := dma.DMA1
+	//d.EnableClock(false)
+	//twi = i2c.NewDriverDMA(i2c.I2C1, d.Channel(5, 1), d.Channel(6, 1))
 	twi = i2c.NewDriver(i2c.I2C1)
 	twi.EnableClock(true)
 	twi.Reset() // Mandatory!
-	twi.Setup(&i2c.Config{Speed: 400e3})
-	twi.SetIntMode(irq.I2C1_EV, irq.I2C1_ER)
+	twi.Setup(&i2c.Config{Speed: 240e3, Duty: i2c.Duty16_9})
+	twi.SetIntMode(true)
 	twi.Enable()
+	rtos.IRQ(irq.I2C1_EV).Enable()
+	rtos.IRQ(irq.I2C1_ER).Enable()
 }
 
 func checkErr(err error) {
@@ -54,6 +60,7 @@ func main() {
 	_, err := c.Write(addr)
 	checkErr(err)
 	_, err = c.Write([]byte("**Hello EEPROM**"))
+	checkErr(err)
 	c.StopWrite()
 	fmt.Printf("OK.\n")
 

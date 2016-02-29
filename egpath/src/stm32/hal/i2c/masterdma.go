@@ -29,7 +29,7 @@ func (c *MasterConnDMA) Write(buf []byte) (int, error) {
 		n int
 	)
 	d := c.d
-	p := d.Periph.raw
+	p := &d.Periph.raw
 	txd := d.TxDMA
 	if c.state != actwr {
 		if c.state == actrd {
@@ -51,17 +51,23 @@ func (c *MasterConnDMA) Write(buf []byte) (int, error) {
 		}
 		p.SR2.Load()
 	}
-	if len(buf) == 1 {
-		p.DR.Store(i2c.DR_Bits(buf[0]))
-		n = 1
-	} else {
-		n, e = startDMA(txd, &buf[0], len(buf), d.Speed())
+	for {
+		m := len(buf) - n
+		if m == 0 {
+			break
+		}
+		if m == 1 {
+			p.DR.Store(i2c.DR_Bits(buf[n]))
+		} else {
+			m, e = startDMA(txd, &buf[n], m&0xffff, d.Speed())
+		}
+		n += m
 		if e != 0 {
 			goto err
 		}
-	}
-	if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
-		goto err
+		if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
+			goto err
+		}
 	}
 	if c.stop&ASWR != 0 {
 		c.StopWrite()
@@ -80,7 +86,7 @@ err:
 // StopWrite terminates current write transaction and deactivates connection.
 func (c *MasterConnDMA) StopWrite() {
 	if c.state == actwr {
-		p := c.d.Periph.raw
+		p := &c.d.Periph.raw
 		p.DMAEN().Clear()
 		p.STOP().Set()
 		c.state = nact
@@ -104,7 +110,7 @@ func (c *MasterConnDMA) Read(buf []byte) (int, error) {
 		n int
 	)
 	d := c.d
-	p := d.Periph.raw
+	p := &d.Periph.raw
 	rxd := d.RxDMA
 	stop := c.stop & stoprd
 	if c.state != actrd {
@@ -153,7 +159,8 @@ func (c *MasterConnDMA) Read(buf []byte) (int, error) {
 		buf[0] = byte(p.DR.Load())
 		return 1, nil
 	}
-	n, e = startDMA(rxd, &buf[0], len(buf), d.Speed())
+	// BUG: DMA doesn't support len(buf) > 0xffff.
+	n, e = startDMA(rxd, &buf[0], len(buf), d.Speed()) 
 	if e != 0 {
 		goto end
 	}

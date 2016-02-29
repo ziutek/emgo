@@ -9,41 +9,41 @@ import (
 )
 
 type Periph struct {
-	raw *i2c.I2C_Periph
+	raw i2c.I2C_Periph
 }
 
 // Bus returns a bus to which p is connected.
-func (p Periph) Bus() system.Bus {
-	return internal.Bus(unsafe.Pointer(p.raw))
+func (p *Periph) Bus() system.Bus {
+	return internal.Bus(unsafe.Pointer(&p.raw))
 }
 
 // EnableClock enables clock for p.
 // lp determines whether the clock remains on in low power (sleep) mode.
-func (p Periph) EnableClock(lp bool) {
-	addr := unsafe.Pointer(p.raw)
+func (p *Periph) EnableClock(lp bool) {
+	addr := unsafe.Pointer(&p.raw)
 	internal.APB_SetLPEnabled(addr, lp)
 	internal.APB_SetEnabled(addr, true)
 }
 
 // DisableClock disables clock for p..
-func (p Periph) DisableClock() {
-	internal.APB_SetEnabled(unsafe.Pointer(p.raw), false)
+func (p *Periph) DisableClock() {
+	internal.APB_SetEnabled(unsafe.Pointer(&p.raw), false)
 }
 
 // Reset resets p.
-func (p Periph) Reset() {
-	internal.APB_Reset(unsafe.Pointer(p.raw))
+func (p *Periph) Reset() {
+	internal.APB_Reset(unsafe.Pointer(&p.raw))
 }
 
-func (p Periph) Enable() {
+func (p *Periph) Enable() {
 	p.raw.PE().Set()
 }
 
-func (p Periph) Disable() {
+func (p *Periph) Disable() {
 	p.raw.PE().Clear()
 }
 
-func (p Periph) SoftReset() {
+func (p *Periph) SoftReset() {
 	p.raw.SWRST().Set()
 	p.raw.SWRST().Clear()
 }
@@ -92,7 +92,7 @@ type Config struct {
 //
 // To obtain 400 kHz SCL in 16/9 fast mode the PCLK must be configured to
 // multiple of 10 MHz.
-func (p Periph) Setup(cfg *Config) {
+func (p *Periph) Setup(cfg *Config) {
 	pclk := int(p.Bus().Clock()) // Pclk should fit in int.
 	pclkM := pclk / 1e6
 	var ccr, trise int
@@ -130,7 +130,7 @@ func (p Periph) Setup(cfg *Config) {
 }
 
 // SPeed returns actual clock speed set.
-func (p Periph) Speed() int {
+func (p *Periph) Speed() int {
 	pclk := p.Bus().Clock()
 	ccr := p.raw.CCR.Load()
 	var idiv uint

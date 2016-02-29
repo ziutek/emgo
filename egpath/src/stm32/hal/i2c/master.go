@@ -2,6 +2,7 @@ package i2c
 
 import (
 	"arch/cortexm"
+	
 	"stm32/hal/raw/i2c"
 )
 
@@ -66,7 +67,7 @@ func (c *MasterConn) Write(buf []byte) (int, error) {
 		n int
 	)
 	d := c.d
-	p := d.Periph.raw
+	p := &d.Periph.raw
 	if c.state != actwr {
 		if c.state == actrd {
 			return 0, ActiveRead
@@ -129,7 +130,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 		n int
 	)
 	d := c.d
-	p := d.Periph.raw
+	p := &d.Periph.raw
 	stop := c.stop & stoprd
 	if c.state != actrd {
 		if c.state == nact {

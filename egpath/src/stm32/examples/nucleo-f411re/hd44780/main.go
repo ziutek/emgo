@@ -46,8 +46,10 @@ func init() {
 	twi.EnableClock(true)
 	twi.Reset() // Mandatory!
 	twi.Setup(&i2c.Config{Speed: 240e3, Duty: i2c.Duty16_9})
-	twi.SetIntMode(irq.I2C1_EV, irq.I2C1_ER)
+	twi.SetIntMode(true)
 	twi.Enable()
+	rtos.IRQ(irq.I2C1_EV).Enable()
+	rtos.IRQ(irq.I2C1_ER).Enable()
 }
 
 func checkErr(err error) {
@@ -69,8 +71,7 @@ var (
 )
 
 func main() {
-	c := twi.NewMasterConn(0x27, i2c.ASRD)
-	lcd.ReadWriter = c
+	lcd.ReadWriter = twi.NewMasterConn(0x27, i2c.ASRD)
 
 	checkErr(lcd.Init())
 	checkErr(lcd.SetDisplayMode(hdc.DisplayOn))
