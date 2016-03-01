@@ -56,7 +56,7 @@ func init() {
 	twi.TxDMA = dma.Channel(4, 0)
 	twi.EnableClock(true)
 	twi.Reset() // Mandatory!
-	twi.Setup(&i2c.Config{Speed: 100e3})
+	twi.Setup(&i2c.Config{Speed: 240e3, Duty: i2c.Duty16_9})
 	twi.SetIntMode(true, true)
 	twi.Enable()
 	rtos.IRQ(irq.I2C2_EV).Enable()

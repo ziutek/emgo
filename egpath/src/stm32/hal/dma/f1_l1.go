@@ -69,9 +69,12 @@ const (
 )
 
 const (
-	tce = 1 << 1
-	hce = 1 << 2
-	err = 1 << 3
+	trce = 1 << 1
+	htce = 1 << 2
+
+	trerr = 1 << 3
+	fferr = 0
+	dmerr = 0
 )
 
 func events(ch Channel) Events {

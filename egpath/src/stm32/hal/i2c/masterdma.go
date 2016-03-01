@@ -63,6 +63,7 @@ func (c *MasterConnDMA) Write(buf []byte) (int, error) {
 		}
 		n += m
 		if e != 0 {
+			e |= getError(p.SR1.Load())
 			goto err
 		}
 		if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
@@ -162,6 +163,7 @@ func (c *MasterConnDMA) Read(buf []byte) (int, error) {
 	// BUG: DMA doesn't support len(buf) > 0xffff.
 	n, e = startDMA(rxd, &buf[0], len(buf), d.Speed()) 
 	if e != 0 {
+		e |= getError(p.SR1.Load())
 		goto end
 	}
 	if stop == 0 {

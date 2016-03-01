@@ -76,6 +76,6 @@ func startDMA(ch dma.Channel, addr *byte, n, speed int) (int, Error) {
 	deadline := rtos.Nanosec() + (2*9e9*int64(n)+int64(speed))/int64(speed)
 	e := dmaPoolTCE(ch, deadline)
 	ch.Disable()
-	ch.ClearEvents(dma.TCE | dma.HCE | dma.ERR)
+	ch.ClearEvents(dma.EV | dma.ERR)
 	return n - ch.Len(), e
 }

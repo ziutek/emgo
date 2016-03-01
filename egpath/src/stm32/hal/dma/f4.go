@@ -63,13 +63,12 @@ func snum(ch Channel) uintptr {
 func cnum(ch Channel) int { return int(ch.channel & 7) }
 
 const (
-	FFERR Events = 1 << 0 // FIFO error.
-	DMERR Events = 1 << 2 // Direct mode error.
-	TRERR Events = 1 << 3 // Transfer error.
+	fferr = 1 << 0
+	dmerr = 1 << 2
+	trerr = 1 << 3
 
-	err = FFERR | DMERR | TRERR
-	hce = 1 << 4
-	tce = 1 << 5
+	htce = 1 << 4
+	trce = 1 << 5
 )
 
 func events(ch Channel) Events {
@@ -115,15 +114,21 @@ func disable(ch Channel) {
 }
 
 func intEnabled(ch Channel) Events {
-	return Events(sraw(ch).CR.Load() & 0x1e << 1)
+	st := sraw(ch)
+	ev := Events(st.CR.Load()&0x1e<<1) | Events(st.FCR.Load()>>7&1)
+	return ev
 }
 
 func enableInt(ch Channel, e Events) {
-	sraw(ch).CR.U32.SetBits(uint32(e) >> 1 & 0x1e)
+	st := sraw(ch)
+	st.CR.U32.SetBits(uint32(e) >> 1 & 0x1e)
+	// st.FCR.U32.SetBits(uint32(e) & 1 << 7) Do not use
 }
 
 func disableInt(ch Channel, e Events) {
-	sraw(ch).CR.U32.ClearBits(uint32(e) >> 1 & 0x1e)
+	st := sraw(ch)
+	st.CR.U32.ClearBits(uint32(e) >> 1 & 0x1e)
+	st.FCR.U32.ClearBits(uint32(e) & 1 << 7)
 }
 
 const (

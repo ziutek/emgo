@@ -40,15 +40,15 @@ func main() {
 	ch.SetLen(len(P))
 	ch.SetAddrP(unsafe.Pointer(&P[0]))
 	ch.SetAddrM(unsafe.Pointer(&M[0]))
-	ch.EnableInt(dma.TCE) // Simplified (should handle dma.ERR too).
+	ch.EnableInt(dma.TRCE) // Simplified (should handle dma.ERR too).
 	ch.Enable()
 	tce.Wait(0)
 	fmt.Println(M[:])
 }
 
 func dmaISR() {
-	if ch.Events()&dma.TCE != 0 {
-		ch.ClearEvents(dma.TCE)
+	if ch.Events()&dma.TRCE != 0 {
+		ch.ClearEvents(dma.EV)
 		tce.Set()
 	}
 }

@@ -1,5 +1,9 @@
 package i2c
 
+import (
+	"stm32/hal/raw/i2c"
+)
+
 type Error int16
 
 const (
@@ -19,4 +23,8 @@ const (
 
 func (e Error) Error() string {
 	return "I2C error"
+}
+
+func getError(sr1 i2c.SR1_Bits) Error {
+	return Error(sr1 >> 8)
 }

@@ -40,9 +40,14 @@ type Channel struct {
 type Events byte
 
 const (
-	TCE = tce // Transfer Complete Event.
-	HCE = hce // Half transfer Complete Event.
-	ERR = err // Error event.
+	TRCE Events = trce // Transfer Complete Event.
+	HTCE Events = htce // Half Transfer Complete Event.
+	EV          = TRCE | HTCE
+
+	TRERR Events = trerr // Transfer Error.
+	DMERR Events = dmerr // Direct Mode Error.
+	FFERR Events = fferr // FIFO Error.
+	ERR          = TRERR | DMERR | FFERR
 )
 
 // Events returns current event flags.

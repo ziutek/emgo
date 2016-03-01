@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	ch  *dma.Channel
+	ch  dma.Channel
 	tce rtos.EventFlag
 )
 
@@ -23,7 +23,7 @@ func init() {
 
 	DMA := dma.DMA1
 	DMA.EnableClock(false)
-	ch = DMA.Channel(1)
+	ch = DMA.Channel(1, 0)
 	rtos.IRQ(irq.DMA1_Channel1).Enable()
 }
 
@@ -35,20 +35,20 @@ var (
 )
 
 func main() {
-	ch.SetMode(dma.ReadP | dma.IncP | dma.IncM | dma.MTM)
+	ch.Setup(dma.MTM | dma.IncP | dma.IncM)
 	ch.SetWordSize(unsafe.Sizeof(P[0]), unsafe.Sizeof(M[0]))
-	ch.SetNum(len(P))
+	ch.SetLen(len(P))
 	ch.SetAddrP(unsafe.Pointer(&P[0]))
 	ch.SetAddrM(unsafe.Pointer(&M[0]))
-	ch.EnableInt(dma.TCE) // Simplified (should handle dma.ERR too).
+	ch.EnableInt(dma.TRCE) // Simplified (should handle dma.ERR too).
 	ch.Enable()
 	tce.Wait(0)
 	fmt.Println(M[:])
 }
 
 func dmaISR() {
-	if ch.Events()&dma.TCE != 0 {
-		ch.ClearEvents(dma.TCE)
+	if ch.Events()&dma.TRCE != 0 {
+		ch.ClearEvents(dma.EV)
 		tce.Set()
 	}
 }
