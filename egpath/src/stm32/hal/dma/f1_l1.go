@@ -56,19 +56,6 @@ func sdma(ch Channel) *dma.DMA_Periph {
 }
 
 const (
-	mtp = 1 << dma.DIRn
-	mtm = 1 << dma.MEM2MEMn
-
-	circ = 1 << dma.CIRCn
-	incP = 1 << dma.PINCn
-	incM = 1 << dma.MINCn
-
-	prioM = 1 << dma.PLn
-	prioH = 2 << dma.PLn
-	prioV = 3 << dma.PLn
-)
-
-const (
 	trce = 1 << 1
 	htce = 1 << 2
 
@@ -107,14 +94,27 @@ func disableInt(ch Channel, e Events) {
 	ch.raw.CCR.U32.ClearBits(uint32(e) & 0xe)
 }
 
-const modeMask = 0x70f0
+const (
+	mtp = 1 << dma.DIRn
+	mtm = 1 << dma.MEM2MEMn
 
-func mode(ch Channel) Mode {
-	return Mode(ch.raw.CCR.Bits(modeMask))
-}
+	circ = 1 << dma.CIRCn
+	incP = 1 << dma.PINCn
+	incM = 1 << dma.MINCn
+
+	prioM = 1 << dma.PLn
+	prioH = 2 << dma.PLn
+	prioV = 3 << dma.PLn
+
+	fifo_1_4 = 0
+	fifo_2_4 = 0
+	fifo_3_4 = 0
+	fifo_4_4 = 0
+)
 
 func setup(ch Channel, m Mode) {
-	ch.raw.CCR.U32.StoreBits(0x70f0, uint32(m))
+	mask := dma.DIR | dma.MEM2MEM | dma.CIRC | dma.PINC | dma.MINC | dma.PL
+	ch.raw.CCR.StoreBits(mask, dma.CCR_Bits(m))
 }
 
 func wordSize(ch Channel) (p, m uintptr) {

@@ -38,8 +38,13 @@ func (d *DriverDMA) SetIntMode(i2cen, dmaen bool) {
 	d.dmaint = dmaen
 }
 
-func (d *DriverDMA) ISR() {
+func (d *DriverDMA) I2CISR() {
 	d.Periph.raw.CR2.ClearBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
+	d.evflag.Set()
+}
+
+func (d *DriverDMA) DMAISR(ch dma.Channel) {
+	ch.DisableInt(dma.EV | dma.ERR)
 	d.evflag.Set()
 }
 
@@ -58,7 +63,7 @@ func (d *DriverDMA) NewMasterConn(addr int16, stopm StopMode) *MasterConnDMA {
 	return mc
 }
 
-func (d *DriverDMA) i2cWaitEvent(ev i2c.SR1_Bits) Error {
+func i2cWaitEvent1(d *DriverDMA, ev i2c.SR1_Bits) Error {
 	p := &d.Periph.raw
 	deadline := rtos.Nanosec() + byteTimeout
 	if d.i2cint {
@@ -68,13 +73,19 @@ func (d *DriverDMA) i2cWaitEvent(ev i2c.SR1_Bits) Error {
 	return i2cPollEvent(p, ev, deadline)
 }
 
-func startDMA(ch dma.Channel, addr *byte, n, speed int) (int, Error) {
+func startDMA(d *DriverDMA, ch dma.Channel, addr *byte, n int) (int, Error) {
 	ch.SetAddrM(unsafe.Pointer(addr))
 	ch.SetLen(n)
 	ch.Enable()
 	// Set timeout to 2 * calculated transfer time.
+	speed := d.Speed()
 	deadline := rtos.Nanosec() + (2*9e9*int64(n)+int64(speed))/int64(speed)
-	e := dmaPoolTCE(ch, deadline)
+	var e Error
+	if d.dmaint {
+		e = dmaWaitTRCE(ch, &d.evflag, deadline)
+	} else {
+		e = dmaPoolTRCE(ch, deadline)
+	}
 	ch.Disable()
 	ch.ClearEvents(dma.EV | dma.ERR)
 	return n - ch.Len(), e

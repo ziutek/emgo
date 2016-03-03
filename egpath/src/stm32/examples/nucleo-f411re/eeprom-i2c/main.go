@@ -31,24 +31,17 @@ func init() {
 	port.SetAltFunc(pins, gpio.I2C1)
 	//twi = i2c.NewDriver(i2c.I2C1)
 	d := dma.DMA1
-	d.EnableClock(false)
+	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	twi = i2c.NewDriverDMA(i2c.I2C1, d.Channel(5, 1), d.Channel(6, 1))
 	twi.EnableClock(true)
 	twi.Reset() // Mandatory!
 	twi.Setup(&i2c.Config{Speed: 240e3, Duty: i2c.Duty16_9})
-	twi.SetIntMode(false, false)
+	twi.SetIntMode(true, true)
 	twi.Enable()
 	rtos.IRQ(irq.I2C1_EV).Enable()
 	rtos.IRQ(irq.I2C1_ER).Enable()
-}
-
-func checkErr(err error) {
-	if err == nil {
-		return
-	}
-	fmt.Printf("Error: %v.\n", err)
-	for {
-	}
+	rtos.IRQ(irq.DMA1_Stream5).Enable()
+	rtos.IRQ(irq.DMA1_Stream6).Enable()
 }
 
 func main() {
@@ -60,7 +53,7 @@ func main() {
 	fmt.Printf("Sending data to EEPROM... ")
 	_, err := c.Write(addr)
 	checkErr(err)
-	_, err = c.Write([]byte("++Hello EEPROM++"))
+	_, err = c.Write([]byte("**Hello EEPROM**"))
 	checkErr(err)
 	c.StopWrite()
 	fmt.Printf("OK.\n")
@@ -84,13 +77,60 @@ func main() {
 	fmt.Printf("%s\n", buf[:])
 }
 
-func twiISR() {
-	twi.ISR()
+func twiI2CISR() {
+	twi.I2CISR()
+}
+
+func twiRxDMAISR() {
+	twi.DMAISR(twi.RxDMA)
+}
+
+func twiTxDMAISR() {
+	twi.DMAISR(twi.TxDMA)
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.I2C1_EV: twiISR,
-	irq.I2C1_ER: twiISR,
+	irq.I2C1_EV:      twiI2CISR,
+	irq.I2C1_ER:      twiI2CISR,
+	irq.DMA1_Stream5: twiRxDMAISR,
+	irq.DMA1_Stream6: twiTxDMAISR,
+}
+
+func checkErr(err error) {
+	if err == nil {
+		return
+	}
+	fmt.Printf("Error:")
+	if e, ok := err.(i2c.Error); ok {
+		if e&i2c.BusErr != 0 {
+			fmt.Printf(" BusErr")
+		} else if e&i2c.ArbLost != 0 {
+			fmt.Printf(" ArbLost")
+		} else if e&i2c.AckFail != 0 {
+			fmt.Printf(" AckFail")
+		} else if e&i2c.Overrun != 0 {
+			fmt.Printf(" Overrun")
+		} else if e&i2c.PECErr != 0 {
+			fmt.Printf(" PECErr")
+		} else if e&i2c.Timeout != 0 {
+			fmt.Printf(" Timeout")
+		} else if e&i2c.SMBAlert != 0 {
+			fmt.Printf(" SMBAlert")
+		} else if e&i2c.SoftTimeout != 0 {
+			fmt.Printf(" SoftTimeout")
+		} else if e&i2c.BelatedStop != 0 {
+			fmt.Printf(" BelatedStop")
+		} else if e&i2c.ActiveRead != 0 {
+			fmt.Printf(" ActiveRead")
+		} else if e&i2c.DMAErr != 0 {
+			fmt.Printf(" DMAErr")
+		}
+	} else {
+		fmt.Printf(" %v", err)
+	}
+	fmt.Println()
+	for {
+	}
 }

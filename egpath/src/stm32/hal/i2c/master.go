@@ -2,7 +2,7 @@ package i2c
 
 import (
 	"arch/cortexm"
-	
+
 	"stm32/hal/raw/i2c"
 )
 
@@ -75,18 +75,18 @@ func (c *MasterConn) Write(buf []byte) (int, error) {
 		d.mutex.Lock()
 		c.state = actwr
 		p.START().Set()
-		if e = d.i2cWaitEvent(i2c.SB); e != 0 {
+		if e = i2cWaitEvent(d, i2c.SB); e != 0 {
 			goto err
 		}
 		p.DR.Store(i2c.DR_Bits(c.addr)) // BUG: 10-bit addr not supported.
-		if e = d.i2cWaitEvent(i2c.ADDR); e != 0 {
+		if e = i2cWaitEvent(d, i2c.ADDR); e != 0 {
 			goto err
 		}
 		p.SR2.Load()
 	}
 	for m, b := range buf {
 		p.DR.Store(i2c.DR_Bits(b))
-		if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
+		if e = i2cWaitEvent(d, i2c.BTF); e != 0 {
 			n = m
 			goto err
 		}
@@ -138,11 +138,11 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 		}
 		c.state = actrd
 		p.CR1.SetBits(i2c.ACK | i2c.START)
-		if e = d.i2cWaitEvent(i2c.SB); e != 0 {
+		if e = i2cWaitEvent(d, i2c.SB); e != 0 {
 			goto end
 		}
 		p.DR.Store(i2c.DR_Bits(c.addr | 1)) // BUG: 10-bit addr not supported.
-		if e = d.i2cWaitEvent(i2c.ADDR); e != 0 {
+		if e = i2cWaitEvent(d, i2c.ADDR); e != 0 {
 			goto end
 		}
 		if stop != 0 {
@@ -153,7 +153,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 				p.SR2.Load()
 				p.STOP().Set()
 				cortexm.ClearPRIMASK()
-				if e = d.i2cWaitEvent(i2c.RXNE); e != 0 {
+				if e = i2cWaitEvent(d, i2c.RXNE); e != 0 {
 					goto end
 				}
 				buf[0] = byte(p.DR.Load())
@@ -165,7 +165,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 				p.SR2.Load()
 				p.ACK().Clear()
 				cortexm.ClearPRIMASK()
-				if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
+				if e = i2cWaitEvent(d, i2c.BTF); e != 0 {
 					goto end
 				}
 				cortexm.SetPRIMASK()
@@ -188,12 +188,12 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 			goto end
 		}
 		for n = 0; n < m; n++ {
-			if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
+			if e = i2cWaitEvent(d, i2c.BTF); e != 0 {
 				goto end
 			}
 			buf[n] = byte(p.DR.Load())
 		}
-		if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
+		if e = i2cWaitEvent(d, i2c.BTF); e != 0 {
 			goto end
 		}
 		p.ACK().Clear()
@@ -205,7 +205,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 		n++
 		buf[n] = byte(p.DR.Load())
 		n++
-		if e = d.i2cWaitEvent(i2c.RXNE); e != 0 {
+		if e = i2cWaitEvent(d, i2c.RXNE); e != 0 {
 			goto end
 		}
 		buf[n] = byte(p.DR.Load())
@@ -213,7 +213,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 		goto end
 	}
 	for n = 0; n < len(buf); n++ {
-		if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
+		if e = i2cWaitEvent(d, i2c.BTF); e != 0 {
 			goto end
 		}
 		buf[n] = byte(p.DR.Load())

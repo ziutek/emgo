@@ -100,6 +100,12 @@ const (
 	PrioM Mode = prioM // Stream priority level: Medium.
 	PrioH Mode = prioH // Stream priority level: High.
 	PrioV Mode = prioV // Stream priority level: Very high.
+
+	Direct   = 0        // Direct mode.
+	FIFO_1_4 = fifo_1_4 // FIFO mode, threshold 1/4.
+	FIFO_2_4 = fifo_2_4 // FIFO mode, threshold 2/4.
+	FIFO_3_4 = fifo_3_4 // FIFO mode, threshold 3/4.
+	FIFO_4_4 = fifo_4_4 // FIFO mode, threshold 4/4.
 )
 
 // Setup configures channel.

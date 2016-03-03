@@ -42,18 +42,20 @@ func init() {
 	}
 	port.Setup(pins, &cfg)
 	d := dma.DMA1
-	d.EnableClock(false)
+	d.EnableClock(true)
 	twi = i2c.NewDriverDMA(i2c.I2C2, d.Channel(5, 0), d.Channel(4, 0))
 	//twi = i2c.NewDriver(i2c.I2C2)
 	twi.EnableClock(true)
 	rtos.IRQ(irq.I2C2_EV).Enable()
 	rtos.IRQ(irq.I2C2_ER).Enable()
+	rtos.IRQ(irq.DMA1_Channel4).Enable()
+	rtos.IRQ(irq.DMA1_Channel5).Enable()
 }
 
 func i2cConfigure() {
 	twi.Reset() // Mandatory!
 	twi.Setup(&i2c.Config{Speed: 5000})
-	twi.SetIntMode(true, false)
+	twi.SetIntMode(true, true)
 	twi.Enable()
 }
 
@@ -126,13 +128,22 @@ func main() {
 }
 
 func twiISR() {
-	twi.ISR()
+	twi.I2CISR()
+}
+func twiRxDMAISR() {
+	twi.DMAISR(twi.RxDMA)
+}
+
+func twiTxDMAISR() {
+	twi.DMAISR(twi.TxDMA)
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
-	irq.I2C2_EV:  twiISR,
-	irq.I2C2_ER:  twiISR,
+	irq.RTCAlarm:      rtc.ISR,
+	irq.I2C2_EV:       twiISR,
+	irq.I2C2_ER:       twiISR,
+	irq.DMA1_Channel4: twiTxDMAISR,
+	irq.DMA1_Channel5: twiRxDMAISR,
 }

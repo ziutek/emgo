@@ -49,12 +49,11 @@ func (d *Driver) NewMasterConn(addr int16, stopm StopMode) *MasterConn {
 	return mc
 }
 
-func (d *Driver) i2cWaitEvent(ev i2c.SR1_Bits) Error {
+func i2cWaitEvent(d *Driver, ev i2c.SR1_Bits) Error {
 	p := &d.Periph.raw
 	deadline := rtos.Nanosec() + byteTimeout
 	if d.i2cint {
 		return i2cWaitIRQ(p, &d.evflag, ev, deadline)
-
 	}
 	return i2cPollEvent(p, ev, deadline)
 }

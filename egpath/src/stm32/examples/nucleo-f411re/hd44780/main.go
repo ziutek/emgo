@@ -45,7 +45,7 @@ func init() {
 	port.SetAltFunc(pins, gpio.I2C1)
 	//twi = i2c.NewDriver(i2c.I2C1)
 	d := dma.DMA1
-	d.EnableClock(false)
+	d.EnableClock(true)
 	twi = i2c.NewDriverDMA(i2c.I2C1, d.Channel(5, 1), d.Channel(6, 1))
 	twi.EnableClock(true)
 	twi.Reset() // Mandatory!
@@ -54,15 +54,8 @@ func init() {
 	twi.Enable()
 	rtos.IRQ(irq.I2C1_EV).Enable()
 	rtos.IRQ(irq.I2C1_ER).Enable()
-}
-
-func checkErr(err error) {
-	if err == nil {
-		return
-	}
-	fmt.Printf("Error: %v.\n", err)
-	for {
-	}
+	rtos.IRQ(irq.DMA1_Stream5).Enable()
+	rtos.IRQ(irq.DMA1_Stream6).Enable()
 }
 
 var (
@@ -108,12 +101,69 @@ func writeScreen(lcd *hdc.Display, screen *[4 * 20]byte) {
 }
 
 func twiISR() {
-	twi.ISR()
+	twi.I2CISR()
+}
+
+func twiRxDMAISR() {
+	twi.DMAISR(twi.RxDMA)
+}
+
+func twiTxDMAISR() {
+	twi.DMAISR(twi.TxDMA)
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.I2C1_EV: twiISR,
-	irq.I2C1_ER: twiISR,
+	irq.I2C1_EV:      twiISR,
+	irq.I2C1_ER:      twiISR,
+	irq.DMA1_Stream5: twiRxDMAISR,
+	irq.DMA1_Stream6: twiTxDMAISR,
+}
+
+func checkErr(err error) {
+	if err == nil {
+		return
+	}
+	if e, ok := err.(i2c.Error); ok {
+		fmt.Printf("I2C error:")
+		if e&i2c.BusErr != 0 {
+			fmt.Printf(" BusErr")
+		}
+		if e&i2c.ArbLost != 0 {
+			fmt.Printf(" ArbLost")
+		}
+		if e&i2c.AckFail != 0 {
+			fmt.Printf(" AckFail")
+		}
+		if e&i2c.Overrun != 0 {
+			fmt.Printf(" Overrun")
+		}
+		if e&i2c.PECErr != 0 {
+			fmt.Printf(" PECErr")
+		}
+		if e&i2c.Timeout != 0 {
+			fmt.Printf(" Timeout")
+		}
+		if e&i2c.SMBAlert != 0 {
+			fmt.Printf(" SMBAlert")
+		}
+		if e&i2c.SoftTimeout != 0 {
+			fmt.Printf(" SoftTimeout")
+		}
+		if e&i2c.BelatedStop != 0 {
+			fmt.Printf(" BelatedStop")
+		}
+		if e&i2c.ActiveRead != 0 {
+			fmt.Printf(" ActiveRead")
+		}
+		if e&i2c.DMAErr != 0 {
+			fmt.Printf(" DMAErr")
+		}
+		fmt.Println()
+	} else {
+		fmt.Printf("Error %v\n", err)
+	}
+	for {
+	}
 }

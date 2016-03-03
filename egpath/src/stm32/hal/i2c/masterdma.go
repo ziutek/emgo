@@ -37,16 +37,16 @@ func (c *MasterConnDMA) Write(buf []byte) (int, error) {
 		}
 		d.mutex.Lock()
 		c.state = actwr
-		txd.Setup(dma.MTP | dma.IncM)
+		txd.Setup(dma.MTP | dma.IncM | dma.FIFO_4_4)
 		txd.SetWordSize(1, 1)
 		txd.SetAddrP(unsafe.Pointer(p.DR.U16.Addr()))
 		p.DMAEN().Set()
 		p.START().Set()
-		if e = d.i2cWaitEvent(i2c.SB); e != 0 {
+		if e = i2cWaitEvent1(d, i2c.SB); e != 0 {
 			goto err
 		}
 		p.DR.U16.Store(c.addr) // BUG: 10-bit addr not supported.
-		if e = d.i2cWaitEvent(i2c.ADDR); e != 0 {
+		if e = i2cWaitEvent1(d, i2c.ADDR); e != 0 {
 			goto err
 		}
 		p.SR2.Load()
@@ -59,14 +59,14 @@ func (c *MasterConnDMA) Write(buf []byte) (int, error) {
 		if m == 1 {
 			p.DR.Store(i2c.DR_Bits(buf[n]))
 		} else {
-			m, e = startDMA(txd, &buf[n], m&0xffff, d.Speed())
+			m, e = startDMA(d, txd, &buf[n], m&0xffff)
 		}
 		n += m
 		if e != 0 {
 			e |= getError(p.SR1.Load())
 			goto err
 		}
-		if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
+		if e = i2cWaitEvent1(d, i2c.BTF); e != 0 {
 			goto err
 		}
 	}
@@ -120,11 +120,11 @@ func (c *MasterConnDMA) Read(buf []byte) (int, error) {
 		}
 		c.state = actrd
 		p.CR1.SetBits(i2c.ACK | i2c.START)
-		if e = d.i2cWaitEvent(i2c.SB); e != 0 {
+		if e = i2cWaitEvent1(d, i2c.SB); e != 0 {
 			goto end
 		}
 		p.DR.Store(i2c.DR_Bits(c.addr | 1)) // BUG: 10-bit addr not supported.
-		if e = d.i2cWaitEvent(i2c.ADDR); e != 0 {
+		if e = i2cWaitEvent1(d, i2c.ADDR); e != 0 {
 			goto end
 		}
 		if stop != 0 && len(buf) == 1 {
@@ -133,14 +133,14 @@ func (c *MasterConnDMA) Read(buf []byte) (int, error) {
 			p.SR2.Load()
 			p.STOP().Set()
 			cortexm.ClearPRIMASK()
-			if e = d.i2cWaitEvent(i2c.RXNE); e != 0 {
+			if e = i2cWaitEvent1(d, i2c.RXNE); e != 0 {
 				goto end
 			}
 			buf[0] = byte(p.DR.Load())
 			n = 1
 			goto end
 		}
-		rxd.Setup(dma.PTM | dma.IncM)
+		rxd.Setup(dma.PTM | dma.IncM | dma.FIFO_1_4)
 		rxd.SetWordSize(1, 1)
 		rxd.SetAddrP(unsafe.Pointer(p.DR.U16.Addr()))
 		p.DMAEN().Set()
@@ -153,7 +153,7 @@ func (c *MasterConnDMA) Read(buf []byte) (int, error) {
 		}
 		p.LAST().Set()
 	}
-	if e = d.i2cWaitEvent(i2c.BTF); e != 0 {
+	if e = i2cWaitEvent1(d, i2c.BTF); e != 0 {
 		goto end
 	}
 	if len(buf) == 1 {
@@ -161,7 +161,7 @@ func (c *MasterConnDMA) Read(buf []byte) (int, error) {
 		return 1, nil
 	}
 	// BUG: DMA doesn't support len(buf) > 0xffff.
-	n, e = startDMA(rxd, &buf[0], len(buf), d.Speed()) 
+	n, e = startDMA(d, rxd, &buf[0], len(buf))
 	if e != 0 {
 		e |= getError(p.SR1.Load())
 		goto end

@@ -131,7 +131,6 @@ func (p *Periph) Setup(cfg *Config) {
 
 // SPeed returns actual clock speed set.
 func (p *Periph) Speed() int {
-	pclk := p.Bus().Clock()
 	ccr := p.raw.CCR.Load()
 	var idiv uint
 	switch {
@@ -142,5 +141,5 @@ func (p *Periph) Speed() int {
 	default: // Fast mode 16/9.
 		idiv = 25
 	}
-	return int(pclk / (idiv * uint(ccr&i2c.CCRVAL)))
+	return int(p.Bus().Clock() / (idiv * uint(ccr&i2c.CCRVAL)))
 }

@@ -132,16 +132,21 @@ func disableInt(ch Channel, e Events) {
 }
 
 const (
-	mtp = 1 << dma.DIRn
-	mtm = 2 << dma.DIRn
+	fifo_1_4 = 4 << 0
+	fifo_2_4 = 5 << 0
+	fifo_3_4 = 6 << 0
+	fifo_4_4 = 7 << 0
 
-	circ = 1 << dma.CIRCn
-	incP = 1 << dma.PINCn
-	incM = 1 << dma.MINCn
+	mtp = 1 << 6
+	mtm = 2 << 6
 
-	prioM = 1 << dma.PLn
-	prioH = 2 << dma.PLn
-	prioV = 3 << dma.PLn
+	circ = 1 << 8
+	incP = 1 << 9
+	incM = 1 << 10
+
+	prioM = 1 << 16
+	prioH = 2 << 16
+	prioV = 3 << 16
 )
 
 func setup(ch Channel, m Mode) {
@@ -149,8 +154,7 @@ func setup(ch Channel, m Mode) {
 	mask := dma.CHSEL | dma.PL | dma.MINC | dma.PINC | dma.CIRC | dma.DIR
 	st := sraw(ch)
 	st.CR.StoreBits(mask, cr)
-	// Enable FIFO with threshold set to 1/2.
-	st.FCR.Store(dma.DMDIS | dma.FTH_0)
+	st.FCR.StoreBits(dma.DMDIS|dma.FTH, dma.FCR_Bits(m))
 }
 
 func wordSize(ch Channel) (p, m uintptr) {
