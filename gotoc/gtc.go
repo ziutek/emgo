@@ -33,6 +33,7 @@ type GTC struct {
 	tinfos  map[string]types.Object
 	minfos  map[string]types.Object
 	cmap    ast.CommentMap
+	defs    map[types.Object]ast.Node
 }
 
 func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.Sizes) *GTC {
@@ -49,6 +50,7 @@ func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.S
 		tinfos:  make(map[string]types.Object),
 		minfos:  make(map[string]types.Object),
 		cmap:    make(ast.CommentMap),
+		defs:    make(map[types.Object]ast.Node),
 		siz:     siz,
 		sizPtr:  siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
 		sizIval: siz.Sizeof(types.Typ[types.Complex128]),
@@ -99,6 +101,28 @@ func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 	}
 }
 
+func (gtc *GTC) makeDefs(node ast.Node) bool {
+	switch n := node.(type) {
+	case *ast.FuncDecl:
+		if obj := gtc.ti.Defs[n.Name]; obj != nil {
+			gtc.defs[obj] = n
+		}
+	case *ast.TypeSpec:
+		if obj := gtc.ti.Defs[n.Name]; obj != nil {
+			gtc.defs[obj] = n
+		}
+		return false
+	case *ast.ValueSpec:
+		for _, name := range n.Names {
+			if obj := gtc.ti.Defs[name]; obj != nil {
+				gtc.defs[obj] = n
+			}
+		}
+		return false
+	}
+	return true
+}
+
 type imports map[*types.Package]bool
 
 // Translate translates files to C source.
@@ -112,6 +136,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		for k, v := range ast.NewCommentMap(gtc.fset, f, f.Comments) {
 			gtc.cmap[k] = v
 		}
+		ast.Inspect(f, gtc.makeDefs)
 	}
 	for _, f := range files {
 		// TODO: do this concurrently
@@ -416,7 +441,18 @@ func (gtc *GTC) methodSet(t types.Type) *types.MethodSet {
 	return types.NewMethodSet(t)
 }
 
-func (gtc *GTC) pragmas(nodes ...ast.Node) (pragmas, cattrs []string) {
+type pragmas []string
+
+func (prs pragmas) Contains(s string) bool {
+	for _, p := range prs {
+		if p == s {
+			return true
+		}
+	}
+	return false
+}
+
+func (gtc *GTC) pragmas(nodes ...ast.Node) (prs pragmas, cattrs []string) {
 	for _, n := range nodes {
 		for _, cg := range gtc.cmap[n] {
 			if cg == nil {
@@ -438,7 +474,7 @@ func (gtc *GTC) pragmas(nodes ...ast.Node) (pragmas, cattrs []string) {
 						if s == "" {
 							gtc.exit(n.Pos(), "empty Emgo pragma")
 						}
-						pragmas = append(pragmas, s)
+						prs = append(prs, s)
 					}
 				}
 			}
