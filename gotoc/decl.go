@@ -427,9 +427,9 @@ func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) (cex bool) {
 		}
 		return cdd.isConstExpr(arg, at)
 	case *ast.SelectorExpr:
-		if cdd.exprType(v.X) != nil {
+		if t := cdd.exprType(v.X); t != nil {
 			// Not package.
-			return false
+			return cdd.gtc.ti.Selections[v].Kind() == types.MethodExpr
 		}
 		_, ok := typ.(*types.Signature)
 		return ok
