@@ -31,6 +31,10 @@ func F() ([]byte, *int) {
 	return b, i
 }
 
+### Unexported methods
+
+By default Emgo does not include information about unexported methods in typeinfo. Use minfo pragma to disable this "feature"..
+
 ### Generated C code.
 
 Current gotoc generates C code that relies on many GCC extensions.

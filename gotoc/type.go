@@ -556,10 +556,12 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		w.WriteString(", ((const minfo*[]){\n")
 		acd.il++
 		for i, c := 0, false; i < mset.Len(); i++ {
-			o := mset.At(i).Obj()
-			pragmas, _ := acd.gtc.pragmas(acd.gtc.defs[o])
-			if pragmas.Contains("nominfo") {
-				continue
+			f := mset.At(i).Obj().(*types.Func)
+			if !f.Exported() {
+				pragmas, _ := acd.gtc.pragmas(acd.gtc.defs[f])
+				if !pragmas.Contains("minfo") {
+					continue
+				}
 			}
 			if c {
 				w.WriteString(",\n")
@@ -568,7 +570,7 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 			}
 			acd.indent(w)
 			w.WriteByte('&')
-			w.WriteString(acd.minfo(o.(*types.Func)))
+			w.WriteString(acd.minfo(f))
 		}
 		w.WriteByte('\n')
 		acd.il--
@@ -582,9 +584,12 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 			acd.il++
 			for i, c := 0, false; i < mset.Len(); i++ {
 				method := mset.At(i)
-				pragmas, _ := acd.gtc.pragmas(acd.gtc.defs[method.Obj()])
-				if pragmas.Contains("nominfo") {
-					continue
+				f := method.Obj().(*types.Func)
+				if !f.Exported() {
+					pragmas, _ := acd.gtc.pragmas(acd.gtc.defs[f])
+					if !pragmas.Contains("minfo") {
+						continue
+					}
 				}
 				if c {
 					w.WriteString(",\n")
