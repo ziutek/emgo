@@ -4,7 +4,7 @@ package time
 
 import (
 	"rtos"
-	"sync"
+	"sync/fence"
 )
 
 var start Time
@@ -12,9 +12,9 @@ var start Time
 // SetStart sets start time of rtos system clock.
 func SetStart(t Time) {
 	// BUG: This should be atomic operation.
-	sync.Fence()
+	fence.Compiler()
 	start = t
-	sync.Fence()
+	fence.Compiler()
 }
 
 func now() Time {
