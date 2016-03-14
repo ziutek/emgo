@@ -1,6 +1,11 @@
+// Package mmio provides data types that can be used to access memory mapped
+// registers of peripherals. All methods in this package guarantee that compiler
+// does not reorder method call with any memory load/store which is before it
+// in source code.
 package mmio
 
 import (
+	"sync/fence"
 	"bits"
 	"unsafe"
 )
@@ -18,11 +23,17 @@ func AsU8(addr *uint8) *U8 {
 	return (*U8)(unsafe.Pointer(addr))
 }
 
+func (r *U8) Addr() uintptr {
+	return uintptr(unsafe.Pointer(r))
+}
+
 func (r *U8) SetBit(n int) {
+	fence.Compiler()
 	r.r |= uint8(1) << uint(n)
 }
 
 func (r *U8) ClearBit(n int) {
+	fence.Compiler()
 	r.r &^= uint8(1) << uint(n)
 }
 
@@ -32,38 +43,42 @@ func (r *U8) Bit(n int) int {
 
 func (r *U8) StoreBit(n, v int) {
 	mask := uint8(1) << uint(n)
+	fence.Compiler()
 	r.r = r.r&^mask | uint8(v<<uint(n))&mask
 }
 
 func (r *U8) Bits(mask uint8) uint8 {
+	fence.Compiler()
 	return r.r & mask
 }
 
 func (r *U8) StoreBits(mask, bits uint8) {
+	fence.Compiler()
 	r.r = r.r&^mask | bits&mask
 }
 
 func (r *U8) SetBits(mask uint8) {
+	fence.Compiler()
 	r.r |= mask
 }
 
 func (r *U8) ClearBits(mask uint8) {
+	fence.Compiler()
 	r.r &^= mask
 }
 
 func (r *U8) Load() uint8 {
+	fence.Compiler()
 	return r.r
 }
 
 func (r *U8) Store(v uint8) {
+	fence.Compiler()
 	r.r = v
 }
 
-func (r *U8) Addr() uintptr {
-	return uintptr(unsafe.Pointer(r))
-}
-
 func (r *U8) Field(mask uint8) int {
+	fence.Compiler()
 	return bits.Field32(uint32(r.r), uint32(mask))
 }
 
@@ -96,52 +111,63 @@ func AsU16(addr *uint16) *U16 {
 	return (*U16)(unsafe.Pointer(addr))
 }
 
+func (r *U16) Addr() uintptr {
+	return uintptr(unsafe.Pointer(r))
+}
+
 func (r *U16) SetBit(n int) {
+	fence.Compiler()
 	r.r |= uint16(1) << uint(n)
 }
 
 func (r *U16) ClearBit(n int) {
+	fence.Compiler()
 	r.r &^= uint16(1) << uint(n)
 }
 
 func (r *U16) Bit(n int) int {
+	fence.Compiler()
 	return int(r.r>>uint(n)) & 1
 }
 
 func (r *U16) StoreBit(n, v int) {
 	mask := uint16(1) << uint(n)
+	fence.Compiler()
 	r.r = r.r&^mask | uint16(v<<uint(n))&mask
 }
 
 func (r *U16) Bits(mask uint16) uint16 {
+	fence.Compiler()
 	return r.r & mask
 }
 
 func (r *U16) StoreBits(mask, bits uint16) {
+	fence.Compiler()
 	r.r = r.r&^mask | bits&mask
 }
 
 func (r *U16) SetBits(mask uint16) {
+	fence.Compiler()
 	r.r |= mask
 }
 
 func (r *U16) ClearBits(mask uint16) {
+	fence.Compiler()
 	r.r &^= mask
 }
 
 func (r *U16) Load() uint16 {
+	fence.Compiler()
 	return r.r
 }
 
 func (r *U16) Store(v uint16) {
+	fence.Compiler()
 	r.r = v
 }
 
-func (r *U16) Addr() uintptr {
-	return uintptr(unsafe.Pointer(r))
-}
-
 func (r *U16) Field(mask uint16) int {
+	fence.Compiler()
 	return bits.Field32(uint32(r.r), uint32(mask))
 }
 
@@ -174,51 +200,62 @@ func AsU32(addr *uint32) *U32 {
 	return (*U32)(unsafe.Pointer(addr))
 }
 
+func (r *U32) Addr() uintptr {
+	return uintptr(unsafe.Pointer(r))
+}
+
 func (r *U32) SetBit(n int) {
+	fence.Compiler()
 	r.r |= uint32(1) << uint(n)
 }
 
 func (r *U32) ClearBit(n int) {
+	fence.Compiler()
 	r.r &^= uint32(1) << uint(n)
 }
 
 func (r *U32) Bit(n int) int {
+	fence.Compiler()
 	return int(r.r>>uint(n)) & 1
 }
 
 func (r *U32) StoreBit(n, v int) {
 	mask := uint32(1) << uint(n)
+	fence.Compiler()
 	r.r = r.r&^mask | uint32(v<<uint(n))&mask
 }
 func (r *U32) Bits(mask uint32) uint32 {
+	fence.Compiler()
 	return r.r & mask
 }
 
 func (r *U32) StoreBits(mask, bits uint32) {
+	fence.Compiler()
 	r.r = r.r&^mask | bits&mask
 }
 
 func (r *U32) SetBits(mask uint32) {
+	fence.Compiler()
 	r.r |= mask
 }
 
 func (r *U32) ClearBits(mask uint32) {
+	fence.Compiler()
 	r.r &^= mask
 }
 
 func (r *U32) Load() uint32 {
+	fence.Compiler()
 	return r.r
 }
 
 func (r *U32) Store(v uint32) {
+	fence.Compiler()
 	r.r = v
 }
 
-func (r *U32) Addr() uintptr {
-	return uintptr(unsafe.Pointer(r))
-}
-
 func (r *U32) Field(mask uint32) int {
+	fence.Compiler()
 	return bits.Field32(r.r, mask)
 }
 
