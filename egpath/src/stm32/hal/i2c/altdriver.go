@@ -29,6 +29,11 @@ func NewAltDriver(p *Periph) *AltDriver {
 	return d
 }
 
+// Unlock must be used after recovering from error.
+func (d *AltDriver) Unlock() {
+	d.mutex.Unlock()
+}
+
 // SetIntMode enables/disables interrupt mode.
 func (d *AltDriver) SetIntMode(en bool) {
 	d.i2cint = en

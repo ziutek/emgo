@@ -30,6 +30,10 @@ func (c *AltMasterConn) SetStopMode(stopm StopMode) {
 	c.stopm = stopm
 }
 
+func (c *AltMasterConn) UnlockDriver() {
+	c.d.Unlock()
+}
+
 // StopWrite terminates current write transaction and deactivates connection.
 func (c *AltMasterConn) StopWrite() {
 	if c.state == actwr {
@@ -85,7 +89,6 @@ err:
 		p.STOP().Set()
 	}
 	c.state = nact
-	d.mutex.Unlock()
 	return n, e
 }
 
@@ -206,10 +209,10 @@ func (c *AltMasterConn) Read(buf []byte) (int, error) {
 end:
 	c.stopm &^= stoprd
 	c.state = nact
-	d.mutex.Unlock()
 	if e != 0 {
 		return n, e
 	}
+	c.d.mutex.Unlock()
 	return n, nil
 }
 

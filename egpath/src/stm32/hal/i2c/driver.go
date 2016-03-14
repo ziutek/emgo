@@ -304,8 +304,7 @@ func (d *Driver) errorNOP() {
 }
 
 func (d *Driver) waitDone(n int) (e Error) {
-	speed := d.Speed()
-	deadline := rtos.Nanosec() + 2*9e9*int64(n+1)/int64(speed)
+	deadline := rtos.Nanosec() + 2*9e9*int64(n+1)/int64(d.Speed())
 	if d.done.Wait(deadline) {
 		d.done.Clear()
 	} else {

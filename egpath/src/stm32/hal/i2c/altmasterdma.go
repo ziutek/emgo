@@ -17,6 +17,21 @@ type MasterConnDMA struct {
 	state byte
 }
 
+func (c *MasterConnDMA) UnlockDriver() {
+	c.d.Unlock()
+}
+
+// StopWrite terminates current write transaction and deactivates connection.
+func (c *MasterConnDMA) StopWrite() {
+	if c.state == actwr {
+		p := &c.d.Periph.raw
+		p.DMAEN().Clear()
+		p.STOP().Set()
+		c.state = nact
+		c.d.mutex.Unlock()
+	}
+}
+
 // Write sends data from buf to slave device. If len(buf) == 0 Write does
 // nothing, especially it does not activate inactiv connection nor interrupt
 // previous read transaction.
@@ -80,19 +95,15 @@ err:
 		d.Periph.raw.STOP().Set()
 	}
 	c.state = nact
-	d.mutex.Unlock()
 	return n, e
 }
 
-// StopWrite terminates current write transaction and deactivates connection.
-func (c *MasterConnDMA) StopWrite() {
-	if c.state == actwr {
-		p := &c.d.Periph.raw
-		p.DMAEN().Clear()
-		p.STOP().Set()
-		c.state = nact
-		c.d.mutex.Unlock()
-	}
+// SetStopRead sets an internal flag which causes that subsequent read finishes
+// transaction and deactivates connection. It can be called at any time, but if
+// called after first read in current transaction, the subsequent read must read
+// at least 2 bytes to properly generate stop condition on I2C bus.
+func (c *MasterConnDMA) SetStopRead() {
+	c.stop |= stoprd
 }
 
 // Read reads data from slave device into buf. If len(buf) == 0 Read does
@@ -173,17 +184,9 @@ end:
 	p.CR2.ClearBits(i2c.DMAEN | i2c.LAST)
 	c.stop &^= stoprd
 	c.state = nact
-	d.mutex.Unlock()
 	if e != 0 {
 		return n, e
 	}
+	c.d.mutex.Unlock()
 	return n, nil
-}
-
-// SetStopRead sets an internal flag which causes that subsequent read finishes
-// transaction and deactivates connection. It can be called at any time, but if
-// called after first read in current transaction, the subsequent read must read
-// at least 2 bytes to properly generate stop condition on I2C bus.
-func (c *MasterConnDMA) SetStopRead() {
-	c.stop |= stoprd
 }

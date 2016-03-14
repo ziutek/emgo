@@ -33,6 +33,11 @@ func NewDriverDMA(p *Periph, rxch, txch dma.Channel) *DriverDMA {
 	return d
 }
 
+// Unlock must be used after recovering from error.
+func (d *DriverDMA) Unlock() {
+	d.mutex.Unlock()
+}
+
 func (d *DriverDMA) SetIntMode(i2cen, dmaen bool) {
 	d.i2cint = i2cen
 	d.dmaint = dmaen
@@ -78,8 +83,7 @@ func (d *DriverDMA) startDMA(ch dma.Channel, addr *byte, n int) (int, Error) {
 	ch.SetLen(n)
 	ch.Enable()
 	// Set timeout to 2 * calculated transfer time.
-	speed := d.Speed()
-	deadline := rtos.Nanosec() + (2*9e9*int64(n)+int64(speed))/int64(speed)
+	deadline := rtos.Nanosec() + 2*9e9*int64(n+1)/int64(d.Speed())
 	var e Error
 	if d.dmaint {
 		e = dmaWaitTRCE(ch, &d.evflag, deadline)
