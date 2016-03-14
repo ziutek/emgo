@@ -20,7 +20,7 @@ import (
 
 	"hdc"
 
-	"stm32/hal/dma"
+	//"stm32/hal/dma"
 	"stm32/hal/gpio"
 	"stm32/hal/i2c"
 	"stm32/hal/irq"
@@ -28,7 +28,7 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var twi *i2c.DriverDMA
+var twi *i2c.Driver
 
 func init() {
 	system.Setup96(8)
@@ -43,19 +43,20 @@ func init() {
 	}
 	port.Setup(pins, &cfg)
 	port.SetAltFunc(pins, gpio.I2C1)
-	//twi = i2c.NewDriver(i2c.I2C1)
-	d := dma.DMA1
-	d.EnableClock(true)
-	twi = i2c.NewDriverDMA(i2c.I2C1, d.Channel(5, 1), d.Channel(6, 1))
+	//twi = i2c.NewAltDriver(i2c.I2C1)
+	//d := dma.DMA1
+	//d.EnableClock(true)
+	//twi = i2c.NewDriverDMA(i2c.I2C1, d.Channel(5, 1), d.Channel(6, 1))
+	twi = i2c.NewDriver(i2c.I2C1)
 	twi.EnableClock(true)
 	twi.Reset() // Mandatory!
 	twi.Setup(&i2c.Config{Speed: 240e3, Duty: i2c.Duty16_9})
-	twi.SetIntMode(true, true)
+	//twi.SetIntMode(true)
 	twi.Enable()
 	rtos.IRQ(irq.I2C1_EV).Enable()
 	rtos.IRQ(irq.I2C1_ER).Enable()
-	rtos.IRQ(irq.DMA1_Stream5).Enable()
-	rtos.IRQ(irq.DMA1_Stream6).Enable()
+	//rtos.IRQ(irq.DMA1_Stream5).Enable()
+	//rtos.IRQ(irq.DMA1_Stream6).Enable()
 }
 
 var (
@@ -100,25 +101,35 @@ func writeScreen(lcd *hdc.Display, screen *[4 * 20]byte) {
 	checkErr(err)
 }
 
-func twiISR() {
-	twi.I2CISR()
+/*func twiISR() {
+	twi.ISR()
+}*/
+
+func twiEventISR() {
+	twi.EventISR()
 }
 
-func twiRxDMAISR() {
+func twiErrorISR() {
+	twi.ErrorISR()
+}
+
+/*func twiRxDMAISR() {
 	twi.DMAISR(twi.RxDMA)
 }
 
 func twiTxDMAISR() {
 	twi.DMAISR(twi.TxDMA)
-}
+}*/
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.I2C1_EV:      twiISR,
-	irq.I2C1_ER:      twiISR,
-	irq.DMA1_Stream5: twiRxDMAISR,
-	irq.DMA1_Stream6: twiTxDMAISR,
+	irq.I2C1_EV: twiEventISR,
+	irq.I2C1_ER: twiErrorISR,
+	//irq.I2C1_EV: twiISR,
+	//irq.I2C1_ER: twiISR,
+	//	irq.DMA1_Stream5: twiRxDMAISR,
+	//	irq.DMA1_Stream6: twiTxDMAISR,
 }
 
 func checkErr(err error) {

@@ -102,6 +102,8 @@ func (p *Periph) Setup(cfg *Config) {
 		ccr = (pclk + div - 1) / div
 		if ccr < 4 {
 			ccr = 4
+		} else if ccr > 0xfff {
+			ccr = 0xfff
 		}
 		trise = pclkM + 1 // SCL max. rise time 1000 ns.
 	} else {
@@ -110,7 +112,6 @@ func (p *Periph) Setup(cfg *Config) {
 		var div int
 		if cfg.Duty == Duty2_1 {
 			div = cfg.Speed * 3
-			ccr = (pclk + div - 1) / div
 		} else {
 			div = cfg.Speed * 25
 			ccr |= int(i2c.DUTY)
@@ -118,6 +119,8 @@ func (p *Periph) Setup(cfg *Config) {
 		ccrval := (pclk + div - 1) / div
 		if ccrval < 1 {
 			ccrval = 1
+		} else if ccrval > 0xfff {
+			ccrval = 0xfff
 		}
 		ccr |= ccrval
 		trise = pclkM*3/10 + 1 // SCL max. rise time 300 ns.
@@ -129,7 +132,7 @@ func (p *Periph) Setup(cfg *Config) {
 	p.raw.CR1.Store(i2c.CR1_Bits(cfg.Mode))
 }
 
-// SPeed returns actual clock speed set.
+// Speed returns actual clock speed set.
 func (p *Periph) Speed() int {
 	ccr := p.raw.CCR.Load()
 	var idiv uint

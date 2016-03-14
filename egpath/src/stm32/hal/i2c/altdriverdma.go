@@ -63,7 +63,7 @@ func (d *DriverDMA) NewMasterConn(addr int16, stopm StopMode) *MasterConnDMA {
 	return mc
 }
 
-func i2cWaitEvent1(d *DriverDMA, ev i2c.SR1_Bits) Error {
+func (d *DriverDMA) waitEvent(ev i2c.SR1_Bits) Error {
 	p := &d.Periph.raw
 	deadline := rtos.Nanosec() + byteTimeout
 	if d.i2cint {
@@ -73,7 +73,7 @@ func i2cWaitEvent1(d *DriverDMA, ev i2c.SR1_Bits) Error {
 	return i2cPollEvent(p, ev, deadline)
 }
 
-func startDMA(d *DriverDMA, ch dma.Channel, addr *byte, n int) (int, Error) {
+func (d *DriverDMA) startDMA(ch dma.Channel, addr *byte, n int) (int, Error) {
 	ch.SetAddrM(unsafe.Pointer(addr))
 	ch.SetLen(n)
 	ch.Enable()

@@ -17,23 +17,23 @@ type dmaregs struct {
 	}
 }
 
-func enableClock(p *DMA, _ bool) {
+func (p *DMA) enableClock(_ bool) {
 	bit := bit(p, &rcc.RCC.AHBENR.U32, rcc.DMA1ENn)
 	bit.Set()
 	bit.Load() // RCC delay (workaround for silicon bugs).
 }
 
-func disableClock(p *DMA) {
+func (p *DMA) disableClock() {
 	bit(p, &rcc.RCC.AHBENR.U32, rcc.DMA1ENn).Clear()
 }
 
-func reset(p *DMA) {}
+func (p *DMA) reset() {}
 
 type channel struct {
 	raw *dma.DMA_Channel_Periph
 }
 
-func getChannel(p *DMA, n, _ int) (ch Channel) {
+func (p *DMA) getChannel(n, _ int) (ch Channel) {
 	n--
 	dman := dmanum(p)
 	if dman == 0 && uint(n) > 6 || dman != 0 && uint(n) > 4 {
@@ -43,16 +43,16 @@ func getChannel(p *DMA, n, _ int) (ch Channel) {
 	return
 }
 
+func sdma(ch Channel) *dma.DMA_Periph {
+	addr := uintptr(unsafe.Pointer(ch.raw)) &^ 0x3ff
+	return (*dma.DMA_Periph)(unsafe.Pointer(addr))
+}
+
 // snum returns stream number - 1, eg. 0 for fisrt stream.
 func snum(ch Channel) uintptr {
 	off := uintptr(unsafe.Pointer(ch.raw)) & 0x3ff
 	step := unsafe.Sizeof(dmaregs{}.chs[0])
 	return (off - unsafe.Sizeof(dma.DMA_Periph{})) / step
-}
-
-func sdma(ch Channel) *dma.DMA_Periph {
-	addr := uintptr(unsafe.Pointer(ch.raw)) &^ 0x3ff
-	return (*dma.DMA_Periph)(unsafe.Pointer(addr))
 }
 
 const (
@@ -64,33 +64,33 @@ const (
 	dmerr = 0
 )
 
-func events(ch Channel) Events {
+func (ch Channel) events() Events {
 	isr := sdma(ch).ISR.U32.Load()
 	return Events(isr >> (snum(ch) * 4) & 0xf)
 }
 
-func clearEvents(ch Channel, e Events) {
+func (ch Channel) clearEvents(e Events) {
 	mask := uint32(e&0xf) << (snum(ch) * 4)
 	sdma(ch).IFCR.U32.Store(mask)
 }
 
-func enable(ch Channel) {
+func (ch Channel) enable() {
 	ch.raw.EN().Set()
 }
 
-func disable(ch Channel) {
+func (ch Channel) disable() {
 	ch.raw.EN().Clear()
 }
 
-func intEnabled(ch Channel) Events {
+func (ch Channel) intEnabled() Events {
 	return Events(ch.raw.CCR.U32.Load() & 0xe)
 }
 
-func enableInt(ch Channel, e Events) {
+func (ch Channel) enableInt(e Events) {
 	ch.raw.CCR.U32.SetBits(uint32(e) & 0xe)
 }
 
-func disableInt(ch Channel, e Events) {
+func (ch Channel) disableInt(e Events) {
 	ch.raw.CCR.U32.ClearBits(uint32(e) & 0xe)
 }
 
@@ -112,35 +112,35 @@ const (
 	fifo_4_4 = 0
 )
 
-func setup(ch Channel, m Mode) {
+func (ch Channel) setup(m Mode) {
 	mask := dma.DIR | dma.MEM2MEM | dma.CIRC | dma.PINC | dma.MINC | dma.PL
 	ch.raw.CCR.StoreBits(mask, dma.CCR_Bits(m))
 }
 
-func wordSize(ch Channel) (p, m uintptr) {
+func (ch Channel) wordSize() (p, m uintptr) {
 	ccr := uintptr(ch.raw.CCR.Load())
 	p = 1 << (ccr >> 8 & 3)
 	m = 1 << (ccr >> 10 & 3)
 	return
 }
 
-func setWordSize(ch Channel, p, m uintptr) {
+func (ch Channel) setWordSize(p, m uintptr) {
 	ccr := p&6<<7 | m&6<<9
 	ch.raw.CCR.U32.StoreBits(0xf00, uint32(ccr))
 }
 
-func length(ch Channel) int {
+func (ch Channel) len() int {
 	return int(ch.raw.NDT().Load())
 }
 
-func setLen(ch Channel, n int) {
+func (ch Channel) setLen(n int) {
 	ch.raw.NDT().UM32.Store(uint32(n))
 }
 
-func setAddrP(ch Channel, a unsafe.Pointer) {
+func (ch Channel) setAddrP(a unsafe.Pointer) {
 	ch.raw.CPAR.U32.Store(uint32(uintptr(a)))
 }
 
-func setAddrM(ch Channel, a unsafe.Pointer) {
+func (ch Channel) setAddrM(a unsafe.Pointer) {
 	ch.raw.CMAR.U32.Store(uint32(uintptr(a)))
 }

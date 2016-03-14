@@ -16,21 +16,21 @@ type DMA struct {
 }
 
 func (p *DMA) EnableClock(lp bool) {
-	enableClock(p, lp)
+	p.enableClock(lp)
 }
 
 func (p *DMA) DisableClock() {
-	disableClock(p)
+	p.disableClock()
 }
 
 func (p *DMA) Reset() {
-	reset(p)
+	p.reset()
 }
 
 // Channel returns value that represents sn-th stream (channel in F1/L1 series
 // nomenclature) and cn-th channel (ignored in case of F1/L1 series).
 func (p *DMA) Channel(sn, cn int) Channel {
-	return getChannel(p, sn, cn)
+	return p.getChannel(sn, cn)
 }
 
 type Channel struct {
@@ -52,37 +52,37 @@ const (
 
 // Events returns current event flags.
 func (ch Channel) Events() Events {
-	return events(ch)
+	return ch.events()
 }
 
 // ClearEvents clears specified event flags.
 func (ch Channel) ClearEvents(e Events) {
-	clearEvents(ch, e)
+	ch.clearEvents(e)
 }
 
 // Enable enables channel.
 func (ch Channel) Enable() {
-	enable(ch)
+	ch.enable()
 }
 
 // Disable disables channel.
 func (ch Channel) Disable() {
-	disable(ch)
+	ch.disable()
 }
 
 // IntEnabled returns events that are enabled to generate interrupts.
 func (ch Channel) IntEnabled() Events {
-	return intEnabled(ch)
+	return ch.intEnabled()
 }
 
 // EnableInt enables interrupt generation by events.
 func (ch Channel) EnableInt(e Events) {
-	enableInt(ch, e)
+	ch.enableInt(e)
 }
 
 // DisableInt disables interrupt generation by events.
 func (ch Channel) DisableInt(e Events) {
-	disableInt(ch, e)
+	ch.disableInt(e)
 }
 
 type Mode uint32
@@ -110,37 +110,37 @@ const (
 
 // Setup configures channel.
 func (ch Channel) Setup(m Mode) {
-	setup(ch, m)
+	ch.setup(m)
 }
 
 // WordSize returns the current word size (in bytes) for peripheral and memory
 // side of transfer.
 func (ch Channel) WordSize() (p, m uintptr) {
-	return wordSize(ch)
+	return ch.wordSize()
 }
 
 // SetWordSize sets the word size (in bytes) for peripheral and memory side of
 // transfer.
 func (ch Channel) SetWordSize(p, m uintptr) {
-	setWordSize(ch, p, m)
+	ch.setWordSize(p, m)
 }
 
 // Len returns current number of words to transfer.
 func (ch Channel) Len() int {
-	return length(ch)
+	return ch.len()
 }
 
 // SetLen sets number of words to transfer (n <= 65535).
 func (ch Channel) SetLen(n int) {
-	setLen(ch, n)
+	ch.setLen(n)
 }
 
 // SetAddrP sets peripheral address (or memory source address in case of MTM).
 func (ch Channel) SetAddrP(a unsafe.Pointer) {
-	setAddrP(ch, a)
+	ch.setAddrP(a)
 }
 
 // SetAddrM sets memory address.
 func (ch Channel) SetAddrM(a unsafe.Pointer) {
-	setAddrM(ch, a)
+	ch.setAddrM(a)
 }

@@ -1,79 +1,59 @@
 // This example blinks leds connected to pins P4, P5, P6, P7 of PCF8574T.
 // Button can be connected to other pins and its state observed on SWO.
+//
+// This application uses simple I2C error recovery. To generate some recoverable
+// error disconnect and after that connect PCF8574T.
 package main
 
 import (
+	"delay"
 	"fmt"
 	"rtos"
 
-	"stm32/hal/dma"
 	"stm32/hal/gpio"
 	"stm32/hal/i2c"
 	"stm32/hal/irq"
 	"stm32/hal/system"
-	"stm32/hal/system/timer/rtc"
+	"stm32/hal/system/timer/systick"
 )
 
-var (
-	leds *gpio.Port
-	twi  *i2c.DriverDMA
-)
-
-const (
-	LED1 = gpio.Pin7
-	LED2 = gpio.Pin6
-)
+var twi *i2c.Driver
 
 func init() {
-	system.Setup(8, 72/8, false)
-	rtc.Setup(32768)
+	system.Setup96(8)
+	systick.Setup()
 
 	gpio.B.EnableClock(true)
-	leds = gpio.B
-	port, pins := gpio.B, gpio.Pin10|gpio.Pin11
+	port, pins := gpio.B, gpio.Pin8|gpio.Pin9
 
-	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(LED1|LED2, &cfg)
-
-	cfg = gpio.Config{
+	cfg := gpio.Config{
 		Mode:   gpio.Alt,
 		Driver: gpio.OpenDrain,
 	}
 	port.Setup(pins, &cfg)
-	d := dma.DMA1
-	d.EnableClock(true)
-	twi = i2c.NewDriverDMA(i2c.I2C2, d.Channel(5, 0), d.Channel(4, 0))
-	//twi = i2c.NewDriver(i2c.I2C2)
+	port.SetAltFunc(pins, gpio.I2C1)
+	twi = i2c.NewDriver(i2c.I2C1)
 	twi.EnableClock(true)
-	rtos.IRQ(irq.I2C2_EV).Enable()
-	rtos.IRQ(irq.I2C2_ER).Enable()
-	rtos.IRQ(irq.DMA1_Channel4).Enable()
-	rtos.IRQ(irq.DMA1_Channel5).Enable()
+	rtos.IRQ(irq.I2C1_EV).Enable()
+	rtos.IRQ(irq.I2C1_ER).Enable()
 }
 
-func i2cConfigure() {
+func twiConfigure() {
+	fmt.Printf("Reset\n")
 	twi.Reset() // Mandatory!
 	twi.Setup(&i2c.Config{Speed: 5000})
-	twi.SetIntMode(true, true)
 	twi.Enable()
 }
 
-func checkI2CErr(err error) bool {
-	if err == nil {
-		return true
-	}
-	if err.(i2c.Error)&i2c.SoftTimeout != 0 {
-		fmt.Printf("SoftTimeout\n")
-		i2cConfigure()
-		return false
-	}
-	fmt.Printf("Error: 0x%02x\n", err)
-	twi.SoftReset()
-	return false
+func recover(err error) {
+	printError(err)
+	delay.Millisec(500) // Reduce CPU load in case of permanent error.
+	twiConfigure()
+	twi.Unlock()
 }
 
 func main() {
-	i2cConfigure()
+	twiConfigure()
 	c := twi.MasterConn(0x27, i2c.NOAS)
 
 	out := []byte{
@@ -94,55 +74,87 @@ func main() {
 		0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef,
 		0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef, 0xef,
 	}
-	var led bool
-	for {
-		if led {
-			leds.SetPins(LED1)
-			led = false
-		} else {
-			leds.ClearPins(LED1)
-			led = true
-		}
+	for i := 0; ; i++ {
 		_, err := c.Write(out)
-		if !checkI2CErr(err) {
+		if err != nil {
+			recover(err)
 			continue
 		}
 		_, err = c.Write(out)
-		if !checkI2CErr(err) {
+		if err != nil {
+			recover(err)
 			continue
 		}
-		var in [4]byte
+		var in [8]byte
 		n, err := c.Read(in[:4])
-		fmt.Printf("%2x\n", in[:n])
-		if !checkI2CErr(err) {
+		fmt.Printf("%d %2x\n", i, in[:n])
+		if err != nil {
+			recover(err)
 			continue
 		}
 		c.SetStopRead()
-		n, err = c.Read(in[:3])
-		fmt.Printf("%2x\n", in[:n])
-		if !checkI2CErr(err) {
+		n, err = c.Read(in[:4])
+		fmt.Printf("%d %2x\n", i, in[:n])
+		if err != nil {
+			recover(err)
 			continue
 		}
 	}
 }
 
-func twiISR() {
-	twi.I2CISR()
-}
-func twiRxDMAISR() {
-	twi.DMAISR(twi.RxDMA)
+func twiEventISR() {
+	twi.EventISR()
 }
 
-func twiTxDMAISR() {
-	twi.DMAISR(twi.TxDMA)
+func twiErrorISR() {
+	twi.ErrorISR()
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm:      rtc.ISR,
-	irq.I2C2_EV:       twiISR,
-	irq.I2C2_ER:       twiISR,
-	irq.DMA1_Channel4: twiTxDMAISR,
-	irq.DMA1_Channel5: twiRxDMAISR,
+	irq.I2C1_EV: twiEventISR,
+	irq.I2C1_ER: twiErrorISR,
+}
+
+func printError(err error) {
+	if e, ok := err.(i2c.Error); ok {
+		fmt.Printf("I2C error:")
+		if e&i2c.BusErr != 0 {
+			fmt.Printf(" BusErr")
+		}
+		if e&i2c.ArbLost != 0 {
+			fmt.Printf(" ArbLost")
+		}
+		if e&i2c.AckFail != 0 {
+			fmt.Printf(" AckFail")
+		}
+		if e&i2c.Overrun != 0 {
+			fmt.Printf(" Overrun")
+		}
+		if e&i2c.PECErr != 0 {
+			fmt.Printf(" PECErr")
+		}
+		if e&i2c.Timeout != 0 {
+			fmt.Printf(" Timeout")
+		}
+		if e&i2c.SMBAlert != 0 {
+			fmt.Printf(" SMBAlert")
+		}
+		if e&i2c.SoftTimeout != 0 {
+			fmt.Printf(" SoftTimeout")
+		}
+		if e&i2c.BelatedStop != 0 {
+			fmt.Printf(" BelatedStop")
+		}
+		if e&i2c.ActiveRead != 0 {
+			fmt.Printf(" ActiveRead")
+		}
+		if e&i2c.DMAErr != 0 {
+			fmt.Printf(" DMAErr")
+		}
+		fmt.Println()
+	} else {
+		fmt.Printf("Error %v\n", err)
+	}
 }
