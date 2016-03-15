@@ -14,8 +14,8 @@ import (
 // peripheral. Default mode is polling.
 type DriverDMA struct {
 	*Periph
-	RxDMA dma.Channel
-	TxDMA dma.Channel
+	RxDMA *dma.Channel
+	TxDMA *dma.Channel
 
 	mutex  sync.Mutex
 	evflag rtos.EventFlag
@@ -25,7 +25,7 @@ type DriverDMA struct {
 
 // NewDriverDMA provides convenient way to create heap allocated DriverDMA
 // struct.
-func NewDriverDMA(p *Periph, rxch, txch dma.Channel) *DriverDMA {
+func NewDriverDMA(p *Periph, rxch, txch *dma.Channel) *DriverDMA {
 	d := new(DriverDMA)
 	d.Periph = p
 	d.RxDMA = rxch
@@ -48,7 +48,7 @@ func (d *DriverDMA) I2CISR() {
 	d.evflag.Set()
 }
 
-func (d *DriverDMA) DMAISR(ch dma.Channel) {
+func (d *DriverDMA) DMAISR(ch *dma.Channel) {
 	ch.DisableInt(dma.EV | dma.ERR)
 	d.evflag.Set()
 }
@@ -78,7 +78,7 @@ func (d *DriverDMA) waitEvent(ev i2c.SR1_Bits) Error {
 	return i2cPollEvent(p, ev, deadline)
 }
 
-func (d *DriverDMA) startDMA(ch dma.Channel, addr *byte, n int) (int, Error) {
+func (d *DriverDMA) startDMA(ch *dma.Channel, addr *byte, n int) (int, Error) {
 	ch.SetAddrM(unsafe.Pointer(addr))
 	ch.SetLen(n)
 	ch.Enable()

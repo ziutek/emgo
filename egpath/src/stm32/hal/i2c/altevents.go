@@ -46,7 +46,7 @@ func i2cWaitIRQ(p *i2c.I2C_Periph, evflag *rtos.EventFlag, ev i2c.SR1_Bits, dead
 	}
 }
 
-func dmaPoolTRCE(ch dma.Channel, deadline int64) Error {
+func dmaPoolTRCE(ch *dma.Channel, deadline int64) Error {
 	for {
 		ev := ch.Events()
 		errmask := dma.ERR &^ dma.FFERR // Ignore FIFO error.
@@ -62,7 +62,7 @@ func dmaPoolTRCE(ch dma.Channel, deadline int64) Error {
 	}
 }
 
-func dmaWaitTRCE(ch dma.Channel, evflag *rtos.EventFlag, deadline int64) Error {
+func dmaWaitTRCE(ch *dma.Channel, evflag *rtos.EventFlag, deadline int64) Error {
 	errmask := dma.ERR &^ dma.FFERR // Ignore FIFO error.
 	for {
 		ch.EnableInt(dma.TRCE | errmask)

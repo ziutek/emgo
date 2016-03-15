@@ -11,9 +11,7 @@ var (
 	DMA2 = (*DMA)(unsafe.Pointer(mmap.DMA2_BASE))
 )
 
-type DMA struct {
-	dmaregs
-}
+type DMA dmaperiph
 
 func (p *DMA) EnableClock(lp bool) {
 	p.enableClock(lp)
@@ -29,13 +27,11 @@ func (p *DMA) Reset() {
 
 // Channel returns value that represents sn-th stream (channel in F1/L1 series
 // nomenclature) and cn-th channel (ignored in case of F1/L1 series).
-func (p *DMA) Channel(sn, cn int) Channel {
+func (p *DMA) Channel(sn, cn int) *Channel {
 	return p.getChannel(sn, cn)
 }
 
-type Channel struct {
-	channel
-}
+type Channel channel
 
 type Events byte
 
@@ -51,37 +47,37 @@ const (
 )
 
 // Events returns current event flags.
-func (ch Channel) Events() Events {
+func (ch *Channel) Events() Events {
 	return ch.events()
 }
 
 // ClearEvents clears specified event flags.
-func (ch Channel) ClearEvents(e Events) {
+func (ch *Channel) ClearEvents(e Events) {
 	ch.clearEvents(e)
 }
 
 // Enable enables channel.
-func (ch Channel) Enable() {
+func (ch *Channel) Enable() {
 	ch.enable()
 }
 
 // Disable disables channel.
-func (ch Channel) Disable() {
+func (ch *Channel) Disable() {
 	ch.disable()
 }
 
 // IntEnabled returns events that are enabled to generate interrupts.
-func (ch Channel) IntEnabled() Events {
+func (ch *Channel) IntEnabled() Events {
 	return ch.intEnabled()
 }
 
 // EnableInt enables interrupt generation by events.
-func (ch Channel) EnableInt(e Events) {
+func (ch *Channel) EnableInt(e Events) {
 	ch.enableInt(e)
 }
 
 // DisableInt disables interrupt generation by events.
-func (ch Channel) DisableInt(e Events) {
+func (ch *Channel) DisableInt(e Events) {
 	ch.disableInt(e)
 }
 
@@ -109,38 +105,38 @@ const (
 )
 
 // Setup configures channel.
-func (ch Channel) Setup(m Mode) {
+func (ch *Channel) Setup(m Mode) {
 	ch.setup(m)
 }
 
 // WordSize returns the current word size (in bytes) for peripheral and memory
 // side of transfer.
-func (ch Channel) WordSize() (p, m uintptr) {
+func (ch *Channel) WordSize() (p, m uintptr) {
 	return ch.wordSize()
 }
 
 // SetWordSize sets the word size (in bytes) for peripheral and memory side of
 // transfer.
-func (ch Channel) SetWordSize(p, m uintptr) {
+func (ch *Channel) SetWordSize(p, m uintptr) {
 	ch.setWordSize(p, m)
 }
 
 // Len returns current number of words to transfer.
-func (ch Channel) Len() int {
+func (ch *Channel) Len() int {
 	return ch.len()
 }
 
 // SetLen sets number of words to transfer (n <= 65535).
-func (ch Channel) SetLen(n int) {
+func (ch *Channel) SetLen(n int) {
 	ch.setLen(n)
 }
 
 // SetAddrP sets peripheral address (or memory source address in case of MTM).
-func (ch Channel) SetAddrP(a unsafe.Pointer) {
+func (ch *Channel) SetAddrP(a unsafe.Pointer) {
 	ch.setAddrP(a)
 }
 
 // SetAddrM sets memory address.
-func (ch Channel) SetAddrM(a unsafe.Pointer) {
+func (ch *Channel) SetAddrM(a unsafe.Pointer) {
 	ch.setAddrM(a)
 }

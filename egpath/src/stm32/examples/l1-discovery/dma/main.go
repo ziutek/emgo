@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	ch  dma.Channel
+	ch  *dma.Channel
 	tce rtos.EventFlag
 )
 
