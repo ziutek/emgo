@@ -24,12 +24,12 @@ func (i *Int64) CheckLoad(aba uintptr) (uintptr, bool) {
 	return aba1, aba1 == aba
 }
 
-// BUG: On 32bit CPUs Load doesnt guarantee that it returns valid value. The
+// BUG: On 32bit CPUs Load does not guarantee that it returns valid value. The
 // probability of failure depends on the frequency of updates:
 // 1 kHz: aba wraps onece per 1193 houres,
 // 1 MHz: aba wraps once per 72 minutes.
 // Load fails if aba wraps beetwen StartLoad and CheckLoad or between subsequent
-// CheckLoads and is read twice with the same value.
+// CheckLoads and after that is readed second time with the same value.
 func (i *Int64) Load() int64 {
 	aba := i.StartLoad()
 	for {
@@ -60,14 +60,6 @@ func (i *Int64) WriterStore(v int64) {
 // Only ONE writer can call WriterAdd at the same time.
 func (i *Int64) WriterAdd(v int64) int64 {
 	v += i.WriterLoad()
-	i.WriterStore(v)
-	return v
-}
-
-// WriterSub performs i -= v and returns new value of i. 
-// Only ONE writer can call WriterSub at the same time.
-func (i *Int64) WriterSub(v int64) int64 {
-	v = i.WriterLoad() - v
 	i.WriterStore(v)
 	return v
 }
