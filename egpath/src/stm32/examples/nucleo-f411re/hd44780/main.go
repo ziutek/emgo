@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	driver  = 1
-	twiaddr = 0x27
+	driver  = 1 // Select different drivers (1,2,3) to see their performance.
+	hdcaddr = 0x27
 )
 
 var (
@@ -67,11 +67,11 @@ func init() {
 	switch driver {
 	case 1:
 		drv = i2c.NewDriver(twi)
-		lcd.ReadWriter = drv.NewMasterConn(twiaddr, i2c.ASRD)
+		lcd.ReadWriter = drv.NewMasterConn(hdcaddr, i2c.ASRD)
 	case 2:
 		adrv = i2c.NewAltDriver(twi)
 		adrv.SetIntMode(true)
-		lcd.ReadWriter = adrv.NewMasterConn(twiaddr, i2c.ASRD)
+		lcd.ReadWriter = adrv.NewMasterConn(hdcaddr, i2c.ASRD)
 	case 3:
 		d := dma.DMA1
 		d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
@@ -79,7 +79,7 @@ func init() {
 		dmadrv.SetIntMode(true, true)
 		rtos.IRQ(irq.DMA1_Stream5).Enable()
 		rtos.IRQ(irq.DMA1_Stream6).Enable()
-		lcd.ReadWriter = dmadrv.NewMasterConn(twiaddr, i2c.ASRD)
+		lcd.ReadWriter = dmadrv.NewMasterConn(hdcaddr, i2c.ASRD)
 	}
 	twi.Enable()
 	rtos.IRQ(irq.I2C1_EV).Enable()

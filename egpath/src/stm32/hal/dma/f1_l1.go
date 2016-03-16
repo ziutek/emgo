@@ -9,14 +9,14 @@ import (
 	"stm32/hal/raw/rcc"
 )
 
-type channel struct {
+type chanregs struct {
 	raw dma.DMA_Channel_Periph
 	_   uint32
 }
 
 type dmaperiph struct {
 	raw dma.DMA_Periph
-	chs [7]channel
+	chs [7]chanregs
 }
 
 func (p *DMA) enableClock(_ bool) {
@@ -31,13 +31,18 @@ func (p *DMA) disableClock() {
 
 func (p *DMA) reset() {}
 
+type channel struct {
+	chanregs
+	_ [1<<31 - unsafe.Sizeof(chanregs{}) - 4]byte // Prevent allocation.
+}
+
 func (p *DMA) getChannel(n, _ int) *Channel {
 	n--
 	dman := dmanum(p)
 	if dman == 0 && uint(n) > 6 || dman != 0 && uint(n) > 4 {
 		panic(badStream)
 	}
-	return (*Channel)(&p.chs[n])
+	return (*Channel)(unsafe.Pointer(&p.chs[n]))
 }
 
 func sdma(ch *Channel) *dma.DMA_Periph {
@@ -48,7 +53,7 @@ func sdma(ch *Channel) *dma.DMA_Periph {
 // snum returns stream number - 1, eg. 0 for fisrt stream.
 func snum(ch *Channel) uintptr {
 	off := uintptr(unsafe.Pointer(ch)) & 0x3ff
-	step := unsafe.Sizeof(channel{})
+	step := unsafe.Sizeof(chanregs{})
 	return (off - unsafe.Sizeof(dma.DMA_Periph{})) / step
 }
 

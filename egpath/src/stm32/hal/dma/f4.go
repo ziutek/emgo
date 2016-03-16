@@ -33,7 +33,9 @@ func (p *DMA) reset() {
 	bit.Clear()
 }
 
-type channel struct{}
+type channel struct {
+	_ [1<<31 - 1]byte // Prevent allocation.
+}
 
 func (p *DMA) getChannel(sn, cn int) *Channel {
 	if uint(sn) > 7 {
