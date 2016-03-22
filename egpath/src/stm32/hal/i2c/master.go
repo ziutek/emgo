@@ -55,6 +55,7 @@ func (c *MasterConn) Write(buf []byte) (int, error) {
 	d.EventISR()
 	if e := d.waitDone(len(buf)); e != 0 {
 		c.locked = false // d.Unlock must be used to unlock the driver.
+		d.state = stateIdle
 		return d.n, e
 	}
 	if c.stopm&ASWR != 0 {
@@ -94,6 +95,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 	d.EventISR()
 	if e := d.waitDone(len(buf)); e != 0 {
 		c.locked = false // d.Unlock must be used to unlock the driver.
+		d.state = stateIdle
 		return d.n, e
 	}
 	if d.stop {

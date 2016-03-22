@@ -319,7 +319,6 @@ func (d *Driver) waitDone(n int) (e Error) {
 		if e&Timeout == 0 {
 			p.STOP().Set()
 		}
-		d.state = stateIdle
 		p.SR1.Store(0) // Clear error flags.
 	}
 	return
