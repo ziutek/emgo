@@ -84,7 +84,6 @@ const (
 	stateRead1
 	stateRead2
 	stateReadN
-	stateReadLast
 	stateReadWait
 
 	// All state numbers for errors should be >= stateI2CError
@@ -109,7 +108,6 @@ var eventHandlers = [...]func(d *Driver){
 	stateRead1:    (*Driver).read1ISR,
 	stateRead2:    (*Driver).read2ISR,
 	stateReadN:    (*Driver).readNISR,
-	stateReadLast: (*Driver).readLastISR,
 
 	stateI2CError:    (*Driver).errorNOP,
 	stateBelatedStop: (*Driver).errorNOP,
@@ -152,7 +150,7 @@ func (d *Driver) addrISR() {
 		p.DR.Store(i2c.DR_Bits(d.buf[0]))
 		return
 	}
-	// Read.
+	// Read (d.n = 0).
 	if !d.stop {
 		d.state = stateRead
 		p.SR2.Load()
@@ -210,16 +208,14 @@ func (d *Driver) readISR() {
 	}
 	d.buf[d.n] = byte(p.DR.Load())
 	d.n++
-	if d.n < len(d.buf) {
-		return
+	if d.n == len(d.buf) {
+		d.disableInt()
+		d.state = stateReadWait
+		d.done.Set()
 	}
-	d.disableInt()
-	d.state = stateReadWait
-	d.done.Set()
 }
 
 func (d *Driver) readWaitEH() {
-	d.n = 0
 	if d.stop {
 		d.state = stateReadN
 	} else {
@@ -234,8 +230,9 @@ func (d *Driver) read1ISR() {
 		return
 	}
 	d.disableInt()
-	d.buf[0] = byte(p.DR.Load())
-	d.n = 1
+	n := d.n
+	d.buf[n] = byte(p.DR.Load())
+	d.n = n + 1
 	d.state = stateIdle
 	d.done.Set()
 }
@@ -279,24 +276,11 @@ func (d *Driver) readNISR() {
 		cortexm.ClearPRIMASK()
 		d.buf[n] = byte(dr)
 		n++
-		d.state = stateReadLast
+		d.state = stateRead1
 		d.enableIntBuf()
 	}
 	d.buf[n] = byte(p.DR.Load())
 	d.n = n + 1
-}
-
-func (d *Driver) readLastISR() {
-	p := &d.Periph.raw
-	if p.SR1.Load()&i2c.RXNE == 0 {
-		return
-	}
-	d.disableInt()
-	n := d.n
-	d.buf[n] = byte(p.DR.Load())
-	d.n = n + 1
-	d.state = stateIdle
-	d.done.Set()
 }
 
 func (d *Driver) errorNOP() {
@@ -304,8 +288,8 @@ func (d *Driver) errorNOP() {
 }
 
 func (d *Driver) waitDone(n int) (e Error) {
-	deadline := rtos.Nanosec() + 2*9e9*int64(n+1)/int64(d.Speed())
-	if d.done.Wait(deadline) {
+	deadline := rtos.Nanosec() + 100e6 + 2*9e9*int64(n+1)/int64(d.Speed())
+	if d.done.Wait(timeout) {
 		d.done.Clear()
 	} else {
 		e = SoftTimeout
