@@ -39,6 +39,10 @@ type GTC struct {
 func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.Sizes) *GTC {
 	c := make(chan int, 1)
 	go nextIntGen(c)
+	sizIval := siz.Sizeof(&types.Slice{})
+	if sizIval < 16 {
+		sizIval = 16 // complex128
+	}
 	return &GTC{
 		fset:    fset,
 		pkg:     pkg,
@@ -53,7 +57,7 @@ func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.S
 		defs:    make(map[types.Object]ast.Node),
 		siz:     siz,
 		sizPtr:  siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
-		sizIval: siz.Sizeof(types.Typ[types.Complex128]),
+		sizIval: sizIval,
 	}
 }
 

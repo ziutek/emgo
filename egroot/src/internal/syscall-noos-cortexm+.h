@@ -1,7 +1,7 @@
 // +build noos
 // +build cortexm0 cortexm3 cortexm4 cortexm4f
 
-#define internal$Syscall0(trap) ({  \
+#define internal$Syscall0(trap) ({ \
 	register uintptr r0 asm("r0"); \
 	register uintptr r1 asm("r1"); \
 	asm volatile (                 \
@@ -13,7 +13,7 @@
 	(uintptr$$uintptr){r0, r1};    \
 })
 
-#define internal$Syscall1(trap, a1) ({   \
+#define internal$Syscall1(trap, a1) ({  \
 	register uintptr r0 asm("r0") = a1; \
 	register uintptr r1 asm("r1");      \
 	asm volatile (                      \

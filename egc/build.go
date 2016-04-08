@@ -45,6 +45,8 @@ var (
 		"cortexm3":  cortexmSizes,
 		"cortexm4":  cortexmSizes,
 		"cortexm4f": cortexmSizes,
+
+		"amd64": &gotoc.StdSizes{8, 8},
 	}
 )
 

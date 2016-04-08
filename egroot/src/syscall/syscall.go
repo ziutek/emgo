@@ -1,6 +1,6 @@
 package syscall
 
-type Errno uintptr
+type Errno int
 
 func (e Errno) Error() string {
 	if int(e) >= len(errnos) {

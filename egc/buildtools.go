@@ -15,12 +15,18 @@ var archMap = map[string]string{
 	"cortexm3":  "-mcpu=cortex-m3 -mthumb -mfloat-abi=soft",
 	"cortexm4":  "-mcpu=cortex-m4 -mthumb -mfloat-abi=soft",
 	"cortexm4f": "-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16",
+
+	"amd64": "",
 }
 
 var osMap = map[string]struct{ cc, ld string }{
 	"noos": {
 		cc: "-ffreestanding -nostdinc -fno-exceptions -nostartfiles",
-		ld: "-nostdlib  -nodefaultlibs  -nostartfiles -lgcc",
+		ld: "-nostdlib -nodefaultlibs  -nostartfiles -lgcc",
+	},
+	"linux": {
+		cc: "-ffreestanding -nostdinc -fno-exceptions -nostartfiles",
+		ld: "-nostdlib -nodefaultlibs -nostartfiles -lgcc",
 	},
 }
 
@@ -78,8 +84,6 @@ type BuildTools struct {
 	importPaths []string
 }
 
-const EGLDSCRIPT = "script.ld"
-
 func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	cflags := CFLAGS{
 		Dbg:  "-g",
@@ -94,9 +98,11 @@ func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	}
 
 	ldflags := LDFLAGS{
-		Script: EGLDSCRIPT,
-		Incl:   "-L" + filepath.Join(ctx.GOROOT, "ld"),
-		Opt:    "-gc-sections",
+		Incl: "-L" + filepath.Join(ctx.GOROOT, "ld"),
+		Opt:  "-gc-sections",
+	}
+	if ctx.GOOS == "noos" {
+		ldflags.Script = "script.ld"
 	}
 
 	if fl, ok := osMap[ctx.GOOS]; ok {

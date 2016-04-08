@@ -1,16 +1,16 @@
 extern byte HeapBegin, HeapEnd, MaxTasks;
 
-uintptr
+static uintptr
 runtime$noos$heapBegin() {
 	return (uintptr) (&HeapBegin);
 }
 
-uintptr
+static uintptr
 runtime$noos$heapEnd() {
 	return (uintptr) (&HeapEnd);
 }
 
-int
+static int
 runtime$noos$maxTasks() {
 	int mt = (int)&MaxTasks;
 

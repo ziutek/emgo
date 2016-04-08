@@ -1,4 +1,4 @@
-// build +noos
+// +build noos
 
 package syscall
 
@@ -13,7 +13,7 @@ const (
 
 //emgo:const
 var errnos = []string{
-	OK:      "success",
+	0:       "success",
 	ENORES:  "no resources",
 	ENFOUND: "not found",
 	EPERM:   "no permissions",

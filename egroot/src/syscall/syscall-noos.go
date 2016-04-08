@@ -1,4 +1,4 @@
-// build +noos
+// +build noos
 
 package syscall
 

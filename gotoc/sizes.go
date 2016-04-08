@@ -149,7 +149,10 @@ func (s *StdSizes) Sizeof(T types.Type) int64 {
 		a := s.Alignof(t)
 		return align(z, a)
 	case *types.Interface:
-		const ivalsiz = 128 / 8 // complex128
+		ivalsiz := s.WordSize * 3 // slice
+		if ivalsiz < 16 {
+			ivalsiz = 16 // complex128
+		}
 		z := int64(ivalsiz + s.WordSize)
 		a := s.WordSize
 		if ivalsiz >= s.MaxAlign {

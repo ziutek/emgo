@@ -1,6 +1,7 @@
 typedef union {
 	unsafe$Pointer ptr;
 	complex128     c128;
+	slice          sli;
 
 	// Additional fields, useful for debugging:
 	int8      i8;
@@ -11,7 +12,6 @@ typedef union {
 	float64   f64;
 	complex64 c64;
 	string    str;
-	slice     sli;
 } ival;
 
 typedef struct {

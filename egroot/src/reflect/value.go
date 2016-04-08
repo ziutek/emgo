@@ -13,13 +13,13 @@ const (
 )
 
 type Value struct {
-	val   complex128
+	val   ival
 	typ   Type
 	flags byte
 }
 
 type emptyI struct {
-	val complex128
+	val ival
 	typ Type
 }
 

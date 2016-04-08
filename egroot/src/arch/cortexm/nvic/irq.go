@@ -1,8 +1,3 @@
-// Package nvic allows to control Nested Vectored Interrupt Controller. It does
-// not expose NVIC registers directly but defines IRQ type with set of methods
-// that allow manage external interrupts.
-//
-// This package can not manage system exceptions. Use scb package instead.
 package nvic
 
 // IRQ represents Cortex-M external interrupt.
