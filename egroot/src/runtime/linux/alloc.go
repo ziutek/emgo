@@ -1,30 +1,41 @@
 package linux
 
 import (
-	"internal"
 	"mem"
 	"sync/atomic"
 	"syscall"
 	"unsafe"
 )
 
-func end() uintptr
+var (
+	aHeapBegin uintptr
+	aHeapEnd   uintptr
+)
 
-var aHeapEnd = end()
+func init() {
+	const length = 100 * 1024 * 1024
+	// Preallocate length bytes of (zeroed) virtual memory.
+	aHeapBegin, _ = syscall.Mmap(
+		^uintptr(0), length,
+		syscall.PROT_READ|syscall.PROT_WRITE,
+		syscall.MAP_PRIVATE|syscall.MAP_ANONYMOUS,
+		0, 0,
+	)
+	aHeapEnd = aHeapBegin + length
+}
 
-// alloc is very naive memory allocator that tries to be thread-safe without
-// using mutexes.
+// alloc is primitive non-blocking memory allocator.
 func alloc(n int, size, align uintptr) unsafe.Pointer {
 	size = mem.AlignUp(size, align) * uintptr(n)
 	for {
-		he := atomic.LoadUintptr(&aHeapEnd)
-		p := mem.AlignUp(he, align)
-		newhe := p + size
-		if syscall.Brk(unsafe.Pointer(newhe)) < newhe {
-			panic("out of memory")
-		}
-		if atomic.CompareAndSwapUintptr(&aHeapEnd, he, newhe) {
-			internal.Memset(unsafe.Pointer(p), 0, size)
+		hb := atomic.LoadUintptr(&aHeapBegin)
+		p := mem.AlignUp(hb, align)
+		newhb := p + size
+		if atomic.CompareAndSwapUintptr(&aHeapBegin, hb, newhb) {
+			if newhb > aHeapEnd {
+				panic("out of memory")
+			}
+			// Returned memory is zeroed by OS.
 			return unsafe.Pointer(p)
 		}
 	}

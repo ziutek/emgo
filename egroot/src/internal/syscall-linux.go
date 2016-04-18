@@ -2,6 +2,12 @@
 
 package internal
 
+var (
+	Argv uintptr
+	Env  uintptr
+	Auxv uintptr
+)
+
 //c:static inline
 func Syscall1(trap, a1 uintptr) uintptr
 

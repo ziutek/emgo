@@ -7,18 +7,25 @@ const (
 	sys_READ  = 0
 	sys_WRITE = 1
 	sys_OPEN  = 2
-	sys_CLOSE = 4
+	sys_CLOSE = 3
+
+	sys_MMAP = 9
 
 	sys_BRK = 12
 
-	sys_SOCKET = 41
+	sys_SOCKET  = 41
+	sys_CONNECT = 42
 
 	sys_BIND   = 49
 	sys_LISTEN = 50
 
 	sys_SETSOCKOPT = 54
 
+	sys_CLONE = 56
+
 	sys_EXIT = 60
+
+	sys_UNLINK = 81
 )
 
 const (
@@ -44,6 +51,33 @@ const (
 	O_SYNC      = 0x101000
 	O_TRUNC     = 0x200
 	O_WRONLY    = 0x1
+)
+
+const (
+	PROT_EXEC      = 0x4
+	PROT_GROWSDOWN = 0x1000000
+	PROT_GROWSUP   = 0x2000000
+	PROT_NONE      = 0x0
+	PROT_READ      = 0x1
+	PROT_WRITE     = 0x2
+
+	MAP_32BIT      = 0x40
+	MAP_ANON       = 0x20
+	MAP_ANONYMOUS  = 0x20
+	MAP_DENYWRITE  = 0x800
+	MAP_EXECUTABLE = 0x1000
+	MAP_FILE       = 0x0
+	MAP_FIXED      = 0x10
+	MAP_GROWSDOWN  = 0x100
+	MAP_HUGETLB    = 0x40000
+	MAP_LOCKED     = 0x2000
+	MAP_NONBLOCK   = 0x10000
+	MAP_NORESERVE  = 0x4000
+	MAP_POPULATE   = 0x8000
+	MAP_PRIVATE    = 0x2
+	MAP_SHARED     = 0x1
+	MAP_STACK      = 0x20000
+	MAP_TYPE       = 0xf
 )
 
 const (

@@ -57,6 +57,17 @@ func Close(fd int) error {
 	return nil
 }
 
+func Mmap(addr, length uintptr, prot, flags, fd, offset4k int) (uintptr, error) {
+	ret := internal.Syscall6(
+		sys_MMAP,
+		addr, length, uintptr(prot), uintptr(flags), uintptr(fd), uintptr(offset4k),
+	)
+	if ret >= minerr {
+		return 0, -Errno(ret)
+	}
+	return ret, nil
+}
+
 func Brk(brk unsafe.Pointer) uintptr {
 	return internal.Syscall1(sys_BRK, uintptr(brk))
 }

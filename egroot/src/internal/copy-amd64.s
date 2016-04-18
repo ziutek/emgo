@@ -21,6 +21,7 @@ memcpy:
 	jg   0f
 
 	// Backward copy:
+	dec  %rdx
 	std  
 	add  %rdx, %rdi
 	add  %rdx, %rsi
@@ -30,6 +31,7 @@ memcpy:
 	cld    
 1:
 	ret  
+
 
 
 

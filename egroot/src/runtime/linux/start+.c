@@ -3,7 +3,16 @@ int main$init();
 int main$main();
 
 void
-_start(int argc, byte ** argv, byte ** env) {
+start(uintptr argc, void **argv) {
+	internal$Argv = (uintptr) argv;
+	argv += argc + 1;
+	internal$Env = (uintptr) argv;
+	while (*argv != nil) {
+		argv++;
+	}
+	argv++;
+	internal$Auxv = (uintptr) argv;
+
 	runtime$init();
 	main$init();
 	main$main();

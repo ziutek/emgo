@@ -14,14 +14,29 @@ func checkErr(err error) {
 	}
 }
 
-func main() {
+func strlen(s *[2<<31 - 1]byte) int {
+	for n, c := range s {
+		if c == 0 {
+			return n
+		}
+	}
+	panic("strlen overflow")
+}
 
-	s := "Hello world!"
-	fmt.Println(s)
+func main() {
+	fmt.Println("Args:")
+	for i, a := range os.Args {
+		fmt.Printf("%d: %s\n", i, a)
+	}
+
+	fmt.Println("Env:")
+	for i, e := range os.Env {
+		fmt.Printf("%d: %s\n", i, e)
+	}
 
 	buf := make([]byte, 80)
-	n := copy(buf, s)
-	fmt.Printf("%s\n", buf[:n])
+	n := copy(buf, os.Args[0])
+	fmt.Printf("Program name: %s\n", buf[:n])
 
 	n, err := os.Stdin.Read(buf)
 	checkErr(err)

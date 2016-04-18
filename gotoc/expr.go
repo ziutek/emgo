@@ -414,6 +414,15 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 			cdd.interfaceExpr(w, arg, t)
 
 		default:
+			if b, ok := typ.(*types.Basic); ok && b.Kind() == types.String {
+				if _, ok := at.(*types.Slice); ok {
+					// string(bytes)
+					w.WriteString("NEWSTR(")
+					cdd.Expr(w, arg, typ)
+					w.WriteByte(')')
+					break
+				}
+			}
 			if _, ok := typ.(*types.Pointer); ok {
 				if _, ok := at.Underlying().(*types.Pointer); !ok {
 					// Casting unsafe.Pointer
