@@ -1,6 +1,8 @@
 package i2c
 
 import (
+	"stm32/hal/dma"
+
 	"stm32/hal/raw/i2c"
 )
 
@@ -31,10 +33,11 @@ const (
 	Timeout  Error = 1 << 6
 	SMBAlert Error = 1 << 7
 
-	SoftTimeout Error = 1 << 8
-	BelatedStop Error = 1 << 9
-	ActiveRead  Error = 1 << 10 // Write when active read transaction.
-	DMAErr      Error = 1 << 11
+	BadEvent    Error = 1 << 8
+	SoftTimeout Error = 1 << 9
+	BelatedStop Error = 1 << 10
+	ActiveRead  Error = 1 << 11 // Write when active read transaction.
+	DMAErr      Error = 1 << 12
 )
 
 func (e Error) Error() string {
@@ -44,3 +47,5 @@ func (e Error) Error() string {
 func getError(sr1 i2c.SR1_Bits) Error {
 	return Error(sr1 >> 8)
 }
+
+const dmaErrMask = dma.ERR &^ dma.FFERR // Ignore FIFO error.

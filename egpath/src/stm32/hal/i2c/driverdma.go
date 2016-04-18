@@ -1,0 +1,379 @@
+package i2c
+
+import (
+	"rtos"
+	"sync"
+	"unsafe"
+
+	"arch/cortexm"
+
+	"stm32/hal/dma"
+
+	"stm32/hal/raw/i2c"
+)
+
+type DriverDMA struct {
+	*Periph
+	RxDMA *dma.Channel
+	TxDMA *dma.Channel
+
+	mutex sync.Mutex
+	done  rtos.EventFlag
+	buf   []byte
+	n     int
+	addr  int16
+	stop  bool
+	state dstate
+}
+
+// NewDriver provides convenient way to create heap allocated Driver struct.
+func NewDriverDMA(p *Periph, rxdma, txdma *dma.Channel) *DriverDMA {
+	d := new(DriverDMA)
+	d.Periph = p
+	d.RxDMA = rxdma
+	d.TxDMA = txdma
+	return d
+}
+
+// MasterConn returns initialized MasterConn struct that can be used to
+// communicate with the slave device. Addr is the I2C address of the slave.
+func (d *DriverDMA) MasterConn(addr int16, stopm StopMode) MasterConnDMA {
+	return MasterConnDMA{d: d, addr: addr << 1, stopm: stopm}
+	// TODO: Add support for 10-bit addr.
+}
+
+// NewMasterConn is like MasterConn but returns pointer to heap allocated
+// MasterConn struct.
+func (d *DriverDMA) NewMasterConn(addr int16, stopm StopMode) *MasterConnDMA {
+	mc := new(MasterConnDMA)
+	*mc = d.MasterConn(addr, stopm)
+	return mc
+}
+
+// Unlock must be used after recovering from error.
+func (d *DriverDMA) Unlock() {
+	d.mutex.Unlock()
+}
+
+func (d *DriverDMA) I2CISR() {
+	sr1 := d.Periph.raw.SR1.Load()
+	if e := getError(sr1); e != 0 {
+		d.handleErrors()
+		return
+	}
+	eventHandlersDMA[d.state](d, sr1)
+}
+
+type dstate byte
+
+const (
+	dstateIdle dstate = iota
+	dstateStart
+	dstateAddr
+
+	dstateWriteDMA
+	dstateWriteWait
+	dstateWriteLast
+
+	dstateRead1
+	dstateReadDMA
+	dstateReadWait
+
+	dstateError
+	dstateBelatedStop
+	dstateBadEvent
+)
+
+//emgo:const
+var eventHandlersDMA = [...]func(d *DriverDMA, sr1 i2c.SR1_Bits){
+	dstateIdle:  (*DriverDMA).idleEH,
+	dstateStart: (*DriverDMA).startISR,
+	dstateAddr:  (*DriverDMA).addrISR,
+
+	dstateWriteDMA:  nil,
+	dstateWriteLast: (*DriverDMA).writeLastISR,
+	dstateWriteWait: (*DriverDMA).writeWaitEH,
+
+	dstateRead1:    (*DriverDMA).read1ISR,
+	dstateReadDMA:  nil,
+	dstateReadWait: (*DriverDMA).readWaitEH,
+}
+
+func (d *DriverDMA) idleEH(sr1 i2c.SR1_Bits) {
+	p := &d.Periph.raw
+	if d.addr < 0 {
+		// Slave - not implemented.
+	} else {
+		// Master
+		bits := i2c.START
+		if d.addr&1 != 0 {
+			bits |= i2c.ACK
+		}
+		p.CR1.SetBits(bits)
+		d.state = dstateStart
+	}
+	// In case of repeated start ensure that BTF was cleared before enable
+	// interrupts.
+	for sr1&i2c.BTF != 0 {
+		sr1 = p.SR1.Load()
+		if e := getError(sr1); e != 0 {
+			d.handleErrors()
+			return
+		}
+	}
+	d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN)
+}
+
+func (d *DriverDMA) startISR(sr1 i2c.SR1_Bits) {
+	if sr1&i2c.SB == 0 {
+		d.badEvent(sr1)
+		return
+	}
+	d.state = dstateAddr
+	p := &d.Periph.raw
+	p.DR.Store(i2c.DR_Bits(d.addr))
+	p.SR1.Load() // Ensure that SB was cleared before return.
+}
+
+func (d *DriverDMA) addrISR(sr1 i2c.SR1_Bits) {
+	if sr1&i2c.ADDR == 0 {
+		d.badEvent(sr1)
+		return
+	}
+	p := &d.Periph.raw
+	switch {
+	case d.addr&1 == 0: // Write.
+		p.SR2.Load()
+		d.write()
+	case len(d.buf) > 1: // Read many.
+		d.state = dstateReadDMA
+		p.SR2.Load()
+		d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4)
+		d.startDMA(d.RxDMA)
+	default: // Read one.
+		d.state = dstateRead1
+		if d.stop {
+			p.ACK().Clear()
+			cortexm.SetPRIMASK()
+			p.SR2.Load()
+			p.STOP().Set()
+			cortexm.ClearPRIMASK()
+			d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
+		} else {
+			p.SR2.Load()
+		}
+	}
+}
+
+func (d *DriverDMA) read1ISR(sr1 i2c.SR1_Bits) {
+	if sr1&i2c.RXNE == 0 {
+		d.badEvent(sr1)
+		return
+	}
+	d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
+	n := d.n
+	d.buf[n] = byte(d.Periph.raw.DR.Load())
+	d.n = n + 1
+	if d.stop {
+		d.state = dstateIdle
+	} else {
+		d.state = dstateReadWait
+	}
+	d.done.Set()
+}
+
+func (d *DriverDMA) readWaitEH(_ i2c.SR1_Bits) {
+	if d.stop {
+		if len(d.buf) < 2 {
+			d.state = dstateBelatedStop
+			d.handleErrors()
+			return
+		}
+		d.Periph.raw.LAST().Set()
+	}
+	if len(d.buf) > 1 {
+		d.state = dstateReadDMA
+		d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4)
+		d.startDMA(d.RxDMA)
+	} else {
+		d.state = dstateRead1
+		d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
+	}
+}
+
+func (d *DriverDMA) DMAISR(ch *dma.Channel) {
+	d.disableDMA(ch)
+	tx := d.addr&1 == 0
+	if tx && d.state != dstateWriteDMA || !tx && d.state != dstateReadDMA {
+		d.badEvent(0)
+		return
+	}
+	if ch.Events()&dmaErrMask != 0 {
+		d.n -= ch.Len()
+		d.handleErrors()
+		return
+	}
+	ch.ClearEvents(dma.EV | dma.ERR)
+	if len(d.buf)-d.n != 0 {
+		d.startDMA(ch)
+		return
+	}
+	if tx {
+		d.state = dstateWriteLast
+		d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN)
+		return
+	}
+	if d.stop {
+		d.state = dstateIdle
+	} else {
+		d.state = dstateReadWait
+	}
+	d.done.Set()
+}
+
+func (d *DriverDMA) writeLastISR(sr1 i2c.SR1_Bits) {
+	if sr1&i2c.BTF == 0 {
+		d.badEvent(sr1)
+		return
+	}
+	d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
+	d.state = dstateWriteWait
+	d.done.Set()
+}
+
+func (d *DriverDMA) writeWaitEH(_ i2c.SR1_Bits) {
+	d.write()
+}
+
+func (d *DriverDMA) write() {
+	if len(d.buf) > 1 {
+		d.state = dstateWriteDMA
+		d.n = 0
+		d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4)
+		d.startDMA(d.TxDMA)
+	} else {
+		d.state = dstateWriteLast
+		d.n = 1
+		d.Periph.raw.DR.Store(i2c.DR_Bits(d.buf[0]))
+	}
+}
+
+func (d *DriverDMA) setupDMA(ch *dma.Channel, mode dma.Mode) {
+	d.disableDMA(ch)
+	ch.ClearEvents(dma.EV | dma.ERR)
+	ch.Setup(mode)
+	ch.SetWordSize(1, 1)
+	ch.SetAddrP(unsafe.Pointer(d.Periph.raw.DR.U16.Addr()))
+}
+
+func (d *DriverDMA) startDMA(ch *dma.Channel) {
+	d.disableIntI2C(i2c.ITEVTEN | i2c.ITBUFEN)
+	n := d.n
+	m := (len(d.buf) - n) & 0xffff
+	if len(d.buf)-(n+m) == 1 {
+		m-- // Avoid last transfer size 1.
+	}
+	d.n = n + m
+	dmabits := i2c.DMAEN
+	if d.stop && d.n == len(d.buf) {
+		dmabits |= i2c.LAST
+	}
+	d.Periph.raw.CR2.SetBits(dmabits)
+	ch.SetAddrM(unsafe.Pointer(&d.buf[n]))
+	ch.SetLen(m)
+	ch.Enable()
+	ch.EnableInt(dma.TRCE | dmaErrMask)
+}
+
+func (d *DriverDMA) disableDMA(ch *dma.Channel) {
+	ch.Disable()
+	ch.DisableInt(dma.EV | dma.ERR)
+	d.Periph.raw.CR2.ClearBits(i2c.DMAEN | i2c.LAST)
+}
+
+func (d *DriverDMA) enableIntI2C(m i2c.CR2_Bits) {
+	d.Periph.raw.CR2.SetBits(m)
+}
+
+func (d *DriverDMA) disableIntI2C(m i2c.CR2_Bits) {
+	d.Periph.raw.CR2.ClearBits(m)
+}
+
+func (d *DriverDMA) handleErrors() {
+	d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
+	for _, ch := range [...]*dma.Channel{d.RxDMA, d.TxDMA} {
+		d.disableDMA(ch)
+	}
+	if d.state < dstateError {
+		d.state = dstateError
+	}
+	d.done.Set()
+}
+
+func (d *DriverDMA) badEvent(sr1 i2c.SR1_Bits) {
+	d.state = dstateBadEvent
+	d.handleErrors()
+}
+
+func (d *DriverDMA) waitDone(ch *dma.Channel) (e Error) {
+	timeout := 100e6 + 2*9e9*int64(len(d.buf)+1)/int64(d.Speed())
+	if d.done.Wait(rtos.Nanosec() + timeout) {
+		d.done.Clear()
+	} else {
+		e = SoftTimeout
+		d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
+		d.disableDMA(ch)
+		if d.state < dstateError {
+			d.state = dstateError
+		}
+	}
+	p := &d.Periph.raw
+	if d.state >= dstateError {
+		if d.state == dstateBelatedStop {
+			e |= BelatedStop
+		}
+		if d.state == dstateBadEvent {
+			e |= BadEvent
+		}
+		e |= getError(p.SR1.Load())
+		if e&Timeout == 0 {
+			p.STOP().Set()
+		}
+		p.SR1.Store(0) // Clear error flags.
+		if ch.Events()&dmaErrMask != 0 {
+			e |= DMAErr
+		}
+		ch.ClearEvents(dma.EV | dma.ERR)
+		d.state = dstateIdle
+	}
+	return
+}
+
+/*
+//emgo:const
+var stateTXT = [...]string{
+	dstateIdle:  " dstateIdle\n",
+	dstateStart: " dstateStart\n",
+	dstateAddr:  " dstateAddr\n",
+
+	dstateWriteDMA:  " dstateWriteDMA\n",
+	dstateWriteLast: " dstateWriteLast\n",
+	dstateWriteWait: " dstateWriteWait\n",
+
+	dstateRead1:    " dstateRead1\n",
+	dstateReadDMA:  " dstateReadDMA\n",
+	dstateReadWait: " dstateReadWait\n",
+
+	dstateError:       " dstateError\n",
+	dstateBelatedStop: " dstateBelatedStop\n",
+	dstateBadEvent:    " dstateBadEvent\n",
+}
+
+func (d *DriverDMA) printState(sr1 i2c.SR1_Bits) {
+	strconv.WriteUint32(dbg, uint32(sr1), 16, 4)
+	if int(d.state) >= len(stateTXT) {
+		dbg.WriteString("unknown\n")
+	}
+	dbg.WriteString(stateTXT[d.state])
+}
+*/

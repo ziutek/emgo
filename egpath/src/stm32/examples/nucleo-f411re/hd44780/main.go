@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"fmt"
 	"rtos"
+	"delay"
 
 	"hdc"
 
@@ -29,7 +30,7 @@ import (
 )
 
 const (
-	driver  = 1 // Select different drivers (1,2,3) to see their performance.
+	driver  = 3 // Select different drivers (1,2,3) to see their performance.
 	hdcaddr = 0x27
 )
 
@@ -76,7 +77,6 @@ func init() {
 		d := dma.DMA1
 		d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 		dmadrv = i2c.NewDriverDMA(twi, d.Channel(5, 1), d.Channel(6, 1))
-		dmadrv.SetIntMode(true, true)
 		rtos.IRQ(irq.DMA1_Stream5).Enable()
 		rtos.IRQ(irq.DMA1_Stream6).Enable()
 		lcd.ReadWriter = dmadrv.NewMasterConn(hdcaddr, i2c.ASRD)
@@ -87,6 +87,8 @@ func init() {
 }
 
 func main() {
+	delay.Millisec(250)
+
 	checkErr(lcd.Init())
 	checkErr(lcd.SetDisplayMode(hdc.DisplayOn))
 	checkErr(lcd.SetAUX()) // Backlight on.
@@ -124,7 +126,7 @@ func twiEventISR() {
 	case 2:
 		adrv.ISR()
 	case 3:
-		dmadrv.I2CISR()
+		dmadrv.I2CISR("evISR ")
 	}
 }
 
@@ -135,16 +137,16 @@ func twiErrorISR() {
 	case 2:
 		adrv.ISR()
 	case 3:
-		dmadrv.I2CISR()
+		dmadrv.I2CISR("erISR ")
 	}
 }
 
 func twiRxDMAISR() {
-	dmadrv.DMAISR(dmadrv.RxDMA)
+	dmadrv.RxDMAISR()
 }
 
 func twiTxDMAISR() {
-	dmadrv.DMAISR(dmadrv.TxDMA)
+	dmadrv.TxDMAISR()
 }
 
 //emgo:const
@@ -188,6 +190,9 @@ func checkErr(err error) {
 		}
 		if e&i2c.BelatedStop != 0 {
 			fmt.Printf(" BelatedStop")
+		}
+		if e&i2c.BadEvent != 0 {
+			fmt.Printf(" BadEvent")
 		}
 		if e&i2c.ActiveRead != 0 {
 			fmt.Printf(" ActiveRead")

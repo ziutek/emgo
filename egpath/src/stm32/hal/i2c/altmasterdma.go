@@ -10,19 +10,19 @@ import (
 	"stm32/hal/raw/i2c"
 )
 
-type MasterConnDMA struct {
-	d     *DriverDMA
+type AltMasterConnDMA struct {
+	d     *AltDriverDMA
 	addr  uint16
 	stop  StopMode
 	state byte
 }
 
-func (c *MasterConnDMA) UnlockDriver() {
+func (c *AltMasterConnDMA) UnlockDriver() {
 	c.d.Unlock()
 }
 
 // StopWrite terminates current write transaction and deactivates connection.
-func (c *MasterConnDMA) StopWrite() {
+func (c *AltMasterConnDMA) StopWrite() {
 	if c.state == actwr {
 		p := &c.d.Periph.raw
 		p.DMAEN().Clear()
@@ -35,7 +35,7 @@ func (c *MasterConnDMA) StopWrite() {
 // Write sends data from buf to slave device. If len(buf) == 0 Write does
 // nothing, especially it does not activate inactiv connection nor interrupt
 // previous read transaction.
-func (c *MasterConnDMA) Write(buf []byte) (int, error) {
+func (c *AltMasterConnDMA) Write(buf []byte) (int, error) {
 	if len(buf) == 0 {
 		return 0, nil
 	}
@@ -102,7 +102,7 @@ err:
 // transaction and deactivates connection. It can be called at any time, but if
 // called after first read in current transaction, the subsequent read must read
 // at least 2 bytes to properly generate stop condition on I2C bus.
-func (c *MasterConnDMA) SetStopRead() {
+func (c *AltMasterConnDMA) SetStopRead() {
 	c.stop |= stoprd
 }
 
@@ -110,7 +110,7 @@ func (c *MasterConnDMA) SetStopRead() {
 // nothing, especially it does not: activate inactiv connection, interrupt
 // previous write transaction, deactivate connection if SetStopRead was called
 // before.
-func (c *MasterConnDMA) Read(buf []byte) (int, error) {
+func (c *AltMasterConnDMA) Read(buf []byte) (int, error) {
 	if len(buf) == 0 {
 		return 0, nil
 	}

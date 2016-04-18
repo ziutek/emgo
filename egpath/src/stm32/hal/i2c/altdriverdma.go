@@ -10,9 +10,9 @@ import (
 	"stm32/hal/raw/i2c"
 )
 
-// DriverDMA uses DMA to implement polling and interrupt driven driver to I2C
+// AltDriverDMA uses DMA to implement polling and interrupt driven driver to I2C
 // peripheral. Default mode is polling.
-type DriverDMA struct {
+type AltDriverDMA struct {
 	*Periph
 	RxDMA *dma.Channel
 	TxDMA *dma.Channel
@@ -23,10 +23,10 @@ type DriverDMA struct {
 	dmaint bool
 }
 
-// NewDriverDMA provides convenient way to create heap allocated DriverDMA
+// NewAltDriverDMA provides convenient way to create heap allocated AltDriverDMA
 // struct.
-func NewDriverDMA(p *Periph, rxch, txch *dma.Channel) *DriverDMA {
-	d := new(DriverDMA)
+func NewAltDriverDMA(p *Periph, rxch, txch *dma.Channel) *AltDriverDMA {
+	d := new(AltDriverDMA)
 	d.Periph = p
 	d.RxDMA = rxch
 	d.TxDMA = txch
@@ -34,41 +34,41 @@ func NewDriverDMA(p *Periph, rxch, txch *dma.Channel) *DriverDMA {
 }
 
 // Unlock must be used after recovering from error.
-func (d *DriverDMA) Unlock() {
+func (d *AltDriverDMA) Unlock() {
 	d.mutex.Unlock()
 }
 
-func (d *DriverDMA) SetIntMode(i2cen, dmaen bool) {
+func (d *AltDriverDMA) SetIntMode(i2cen, dmaen bool) {
 	d.i2cint = i2cen
 	d.dmaint = dmaen
 }
 
-func (d *DriverDMA) I2CISR() {
+func (d *AltDriverDMA) I2CISR() {
 	d.Periph.raw.CR2.ClearBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
 	d.evflag.Set()
 }
 
-func (d *DriverDMA) DMAISR(ch *dma.Channel) {
+func (d *AltDriverDMA) DMAISR(ch *dma.Channel) {
 	ch.DisableInt(dma.EV | dma.ERR)
 	d.evflag.Set()
 }
 
-// MasterConn returns initialized MasterConnDMA struct that can be used to
+// MasterConn returns initialized AltMasterConnDMA struct that can be used to
 // communicate with the slave device. Addr is the I2C address of the slave.
 // See MasterConnDMA.SetStopMode for description of stopm.
-func (d *DriverDMA) MasterConn(addr int16, stopm StopMode) MasterConnDMA {
-	return MasterConnDMA{d: d, addr: uint16(addr << 1), stop: stopm}
+func (d *AltDriverDMA) MasterConn(addr int16, stopm StopMode) AltMasterConnDMA {
+	return AltMasterConnDMA{d: d, addr: uint16(addr << 1), stop: stopm}
 }
 
 // NewMasterConn is like MasterConn but returns pointer to heap allocated
-// MasterConnDMA struct.
-func (d *DriverDMA) NewMasterConn(addr int16, stopm StopMode) *MasterConnDMA {
-	mc := new(MasterConnDMA)
+// AltMasterConnDMA struct.
+func (d *AltDriverDMA) NewMasterConn(addr int16, stopm StopMode) *AltMasterConnDMA {
+	mc := new(AltMasterConnDMA)
 	*mc = d.MasterConn(addr, stopm)
 	return mc
 }
 
-func (d *DriverDMA) waitEvent(ev i2c.SR1_Bits) Error {
+func (d *AltDriverDMA) waitEvent(ev i2c.SR1_Bits) Error {
 	p := &d.Periph.raw
 	deadline := rtos.Nanosec() + byteTimeout
 	if d.i2cint {
@@ -78,7 +78,7 @@ func (d *DriverDMA) waitEvent(ev i2c.SR1_Bits) Error {
 	return i2cPollEvent(p, ev, deadline)
 }
 
-func (d *DriverDMA) startDMA(ch *dma.Channel, addr *byte, n int) (int, Error) {
+func (d *AltDriverDMA) startDMA(ch *dma.Channel, addr *byte, n int) (int, Error) {
 	ch.SetAddrM(unsafe.Pointer(addr))
 	ch.SetLen(n)
 	ch.Enable()
