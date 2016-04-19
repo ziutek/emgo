@@ -20,7 +20,7 @@ type eventFlag struct {
 func atomicInitLoadState(p *syscall.Event) syscall.Event {
 	state := syscall.AtomicLoadEvent(p)
 	if state == 0 {
-		state = syscall.AssignEventFlag() | syscall.Alarm
+		state = syscall.AssignEventFlag()
 		if !syscall.AtomicCompareAndSwapEvent(p, 0, state) {
 			state = syscall.AtomicLoadEvent(p)
 		}
@@ -46,35 +46,52 @@ func flagVal(f *EventFlag) int {
 
 func flagWait(f *EventFlag, deadline int64) bool {
 	state := atomicInitLoadState(&f.state)
+	if deadline != 0 {
+		state |= syscall.Alarm
+	}
 	for {
 		if state&1 != 0 {
 			return true
 		}
-		if deadline != 0 && Nanosec() >= deadline {
-			return false
+		if deadline != 0 {
+			if Nanosec() >= deadline {
+				return false
+			}
+			syscall.SetAlarm(deadline)
 		}
-		syscall.SetAlarm(deadline)
 		state.Wait()
 		state = syscall.AtomicLoadEvent(&f.state)
 	}
 }
 
 func waitEvent(deadline int64, flags []*EventFlag) uint32 {
-	var sum syscall.Event
-	for _, f := range flags {
-		sum |= atomicInitLoadState(&f.state)
+	var (
+		sum syscall.Event
+		ret uint32
+	)
+	if deadline != 0 {
+		sum = syscall.Alarm
+	}
+	for n, f := range flags {
+		state := atomicInitLoadState(&f.state)
+		sum |= state
+		ret |= uint32(state&1) << uint(n)
 	}
 	sum &^= 1
-	var ret uint32
 	for {
+		if ret != 0 {
+			return ret
+		}
+		if deadline != 0 {
+			if Nanosec() >= deadline {
+				return 0
+			}
+			syscall.SetAlarm(deadline)
+		}
+		sum.Wait()
 		for n, f := range flags {
 			state := syscall.AtomicLoadEvent(&f.state)
 			ret |= uint32(state&1) << uint(n)
 		}
-		if ret != 0 || deadline != 0 && Nanosec() >= deadline {
-			return ret
-		}
-		syscall.SetAlarm(deadline)
-		sum.Wait()
 	}
 }
