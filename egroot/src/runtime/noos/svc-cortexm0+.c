@@ -1,7 +1,7 @@
 // +build cortexm0
 
-__attribute__ ((naked)) static
-void runtime$noos$svcHandler() {
+__attribute__ ((naked)) static void
+runtime$noos$svcHandler() {
 	asm volatile (
 		"mov    r1, lr\n\t"
 		"movs   r0, #4\n\t"

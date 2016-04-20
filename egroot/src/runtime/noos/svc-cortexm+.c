@@ -1,7 +1,7 @@
 // +build cortexm3 cortexm4 cortexm4f
 
-__attribute__ ((naked)) static
-void runtime$noos$svcHandler() {
+__attribute__ ((naked)) static void
+runtime$noos$svcHandler() {
 	asm volatile (
 		"tst	lr, 4\n\t"
 		"ite 	eq\n\t"

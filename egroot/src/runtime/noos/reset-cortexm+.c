@@ -1,8 +1,8 @@
 // +build cortexm0 cortexm3 cortexm4 cortexm4f
 
-int runtime$init();
-int main$init();
-int main$main();
+int_ runtime$init();
+int_ main$init();
+int_ main$main();
 
 // All external symbols as byte to prevent compiler to optimize any runtime
 // align checks.

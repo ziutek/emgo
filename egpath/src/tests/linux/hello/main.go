@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"syscall"
 )
 
 func checkErr(err error) {
@@ -14,16 +15,14 @@ func checkErr(err error) {
 	}
 }
 
-func strlen(s *[2<<31 - 1]byte) int {
-	for n, c := range s {
-		if c == 0 {
-			return n
-		}
-	}
-	panic("strlen overflow")
-}
-
 func main() {
+	var tp syscall.Timespec
+
+	for {
+		checkErr(syscall.ClockGettime(syscall.CLOCK_REALTIME, &tp))
+		fmt.Printf("Time: %d.%09d\n", tp.Sec, tp.Nsec)
+	}
+
 	fmt.Println("Args:")
 	for i, a := range os.Args {
 		fmt.Printf("%d: %s\n", i, a)

@@ -113,3 +113,16 @@ func SetsockoptInt(fd, level, opt, value int) error {
 func Exit(code int) {
 	internal.Syscall1(sys_EXIT, uintptr(code))
 }
+
+type Timespec struct {
+	Sec  int64
+	Nsec int64
+}
+
+func ClockGettime(clkid int, tp *Timespec) error {
+	ret := clock_gettime(clkid, tp)
+	if ret >= minerr {
+		return -Errno(ret)
+	}
+	return nil
+}

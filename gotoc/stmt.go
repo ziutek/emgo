@@ -361,7 +361,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					key = ks
 				}
 			}
-			w.WriteString("int " + key + " = 0;\n")
+			w.WriteString("int_ " + key + " = 0;\n")
 
 			cdd.indent(w)
 			w.WriteString("for (; " + key + " < " + xl + "; ++" + key + ") ")
@@ -382,10 +382,10 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					key = ks
 				}
 			}
-			w.WriteString("int " + key + " = 0;\n")
+			w.WriteString("int_ " + key + " = 0;\n")
 
 			cdd.indent(w)
-			w.WriteString("rune$$int$$bool _tup;\n")
+			w.WriteString("rune$$int_$$bool _tup;\n")
 			cdd.indent(w)
 			w.WriteString("for (; " + key + " < len(" + xs + "); " +
 				key + " += _tup._1) {\n")

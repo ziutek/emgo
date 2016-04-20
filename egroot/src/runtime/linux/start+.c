@@ -1,6 +1,6 @@
-int runtime$init();
-int main$init();
-int main$main();
+int_ runtime$init();
+int_ main$init();
+int_ main$main();
 
 void
 start(uintptr argc, void **argv) {

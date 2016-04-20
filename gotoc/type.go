@@ -43,6 +43,8 @@ writeType:
 			w.WriteString("unsafe$Pointer")
 		case types.UntypedString:
 			w.WriteString("string")
+		case types.Int:
+			w.WriteString("int_")
 		default:
 			types.WriteType(w, t, nil)
 		}

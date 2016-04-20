@@ -10,9 +10,9 @@ runtime$noos$heapEnd() {
 	return (uintptr) (&HeapEnd);
 }
 
-static int
+static int_
 runtime$noos$maxTasks() {
-	int mt = (int)&MaxTasks;
+	int_ mt = (int_)&MaxTasks;
 
 	// 0 is valid value of &MaxTasks. GCC during optimization assumes that
 	// &MaxTask can't be 0 and removes any code that should be executed only

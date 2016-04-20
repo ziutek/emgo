@@ -65,9 +65,9 @@ typedef internal$Chan chan;
 
 #define _SELECT(dflt, commList...)                              \
 	internal$Comm arr[] = {commList};                            \
-	int n = sizeof(arr)/sizeof(arr[0]);                         \
+	int_ n = sizeof(arr)/sizeof(arr[0]);                         \
 	internal$Comm *comms[n];                                     \
-	int i = n;                                                  \
+	int_ i = n;                                                  \
 	while (i--) {                                               \
 		comms[i] = &arr[i];                                     \
 	}                                                           \
@@ -112,11 +112,11 @@ void close(chan c) {
 }
 
 static inline
-int clen(chan c) {
+int_ clen(chan c) {
 	return c.M->Len(c.C);
 }
 
 static inline
-int ccap(chan c) {
+int_ ccap(chan c) {
 	return c.M->Cap(c.C);
 }

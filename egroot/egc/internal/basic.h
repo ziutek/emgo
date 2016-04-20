@@ -7,10 +7,12 @@ typedef __UINT8_TYPE__ uint8;
 typedef __UINT16_TYPE__ uint16;
 typedef __UINT32_TYPE__ uint32;
 typedef __UINT64_TYPE__ uint64;
-typedef unsigned int uint;
 
 typedef __UINTPTR_TYPE__ uintptr;
 typedef void *unsafe$Pointer;
+
+typedef unsigned long uint;
+typedef signed long int_;
 
 typedef float float32;
 typedef double float64;
@@ -21,6 +23,7 @@ typedef double _Complex complex128;
 #ifndef EG_ALLOW_C_TYPES
 
 // Forget about C types
+#define int			XXint / / /
 #define	unsigned	XXunsigned / / /
 #define	signed		XXsigned / / /
 #define	char		XXchar / / /

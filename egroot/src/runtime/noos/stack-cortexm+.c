@@ -2,17 +2,17 @@
 
 extern byte StackTaskLog2, StackTaskFrac, StackEnd;
 
-static inline
-uint runtime$noos$stackTaskLog2() {
-	return (uint)&StackTaskLog2;
+static inline uint
+runtime$noos$stackTaskLog2() {
+	return (uint) & StackTaskLog2;
 }
 
-static inline
-uint runtime$noos$stackTaskFrac() {
-	return (uint)&StackTaskFrac;
+static inline uint
+runtime$noos$stackTaskFrac() {
+	return (uint) & StackTaskFrac;
 }
 
-static inline
-uint runtime$noos$stackEnd() {
-	return (uintptr)&StackEnd;
+static inline uintptr
+runtime$noos$stackEnd() {
+	return (uintptr) & StackEnd;
 }
