@@ -141,16 +141,15 @@ func (d *DriverDMA) addrISR(sr1 i2c.SR1_Bits) {
 		return
 	}
 	p := &d.Periph.raw
-	switch {
-	case d.addr&1 == 0: // Write.
+	if d.addr&1 == 0 {
+		// Write.
 		p.SR2.Load()
 		d.write()
-	case len(d.buf) > 1: // Read many.
-		d.state = dstateReadDMA
-		p.SR2.Load()
-		d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4)
-		d.startDMA(d.RxDMA)
-	default: // Read one.
+		return
+	}
+	// Read
+	switch {
+	case len(d.buf) == 1: // Read one.
 		d.state = dstateRead1
 		if d.stop {
 			p.ACK().Clear()
@@ -162,6 +161,11 @@ func (d *DriverDMA) addrISR(sr1 i2c.SR1_Bits) {
 		} else {
 			p.SR2.Load()
 		}
+	default: // Read many.
+		d.state = dstateReadDMA
+		p.SR2.Load()
+		d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4)
+		d.startDMA(d.RxDMA)
 	}
 }
 

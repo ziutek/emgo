@@ -15,9 +15,9 @@ package main
 
 import (
 	"bytes"
+	"delay"
 	"fmt"
 	"rtos"
-	"delay"
 
 	"hdc"
 
@@ -30,14 +30,13 @@ import (
 )
 
 const (
-	driver  = 3 // Select different drivers (1,2,3) to see their performance.
+	driver  = 2 // Select different drivers (1,2) to see their performance.
 	hdcaddr = 0x27
 )
 
 var (
-	drv    *i2c.Driver
-	adrv   *i2c.AltDriver
-	dmadrv *i2c.DriverDMA
+	adrv *i2c.AltDriver
+	drv  *i2c.Driver
 
 	lcd = &hdc.Display{
 		Cols: 20, Rows: 4,
@@ -67,19 +66,17 @@ func init() {
 	twi.Setup(&i2c.Config{Speed: 480e3, Duty: i2c.Duty16_9})
 	switch driver {
 	case 1:
-		drv = i2c.NewDriver(twi)
-		lcd.ReadWriter = drv.NewMasterConn(hdcaddr, i2c.ASRD)
-	case 2:
 		adrv = i2c.NewAltDriver(twi)
 		adrv.SetIntMode(true)
 		lcd.ReadWriter = adrv.NewMasterConn(hdcaddr, i2c.ASRD)
-	case 3:
+	case 2:
 		d := dma.DMA1
 		d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
-		dmadrv = i2c.NewDriverDMA(twi, d.Channel(5, 1), d.Channel(6, 1))
+		drv = i2c.NewDriver(twi, d.Channel(5, 1), d.Channel(6, 1))
+		//drv = i2c.NewDriver(twi, nil, nil)
 		rtos.IRQ(irq.DMA1_Stream5).Enable()
 		rtos.IRQ(irq.DMA1_Stream6).Enable()
-		lcd.ReadWriter = dmadrv.NewMasterConn(hdcaddr, i2c.ASRD)
+		lcd.ReadWriter = drv.NewMasterConn(hdcaddr, i2c.ASRD)
 	}
 	twi.Enable()
 	rtos.IRQ(irq.I2C1_EV).Enable()
@@ -119,41 +116,28 @@ func writeScreen(lcd *hdc.Display, screen *[4 * 20]byte) {
 	checkErr(err)
 }
 
-func twiEventISR() {
+func twiI2CISR() {
 	switch driver {
 	case 1:
-		drv.EventISR()
-	case 2:
 		adrv.ISR()
-	case 3:
-		dmadrv.I2CISR("evISR ")
-	}
-}
-
-func twiErrorISR() {
-	switch driver {
-	case 1:
-		drv.ErrorISR()
 	case 2:
-		adrv.ISR()
-	case 3:
-		dmadrv.I2CISR("erISR ")
+		drv.I2CISR()
 	}
 }
 
 func twiRxDMAISR() {
-	dmadrv.RxDMAISR()
+	drv.DMAISR(drv.RxDMA)
 }
 
 func twiTxDMAISR() {
-	dmadrv.TxDMAISR()
+	drv.DMAISR(drv.TxDMA)
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.I2C1_EV:      twiEventISR,
-	irq.I2C1_ER:      twiErrorISR,
+	irq.I2C1_EV:      twiI2CISR,
+	irq.I2C1_ER:      twiI2CISR,
 	irq.DMA1_Stream5: twiRxDMAISR,
 	irq.DMA1_Stream6: twiTxDMAISR,
 }

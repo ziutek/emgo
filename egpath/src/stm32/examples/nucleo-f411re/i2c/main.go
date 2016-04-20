@@ -113,11 +113,11 @@ func twiISR() {
 }
 
 func twiTxDMAISR() {
-	twi.TxDMAISR()
+	twi.DMAISR(twi.TxDMA)
 }
 
 func twiRxDMAISR() {
-	twi.RxDMAISR()
+	twi.DMAISR(twi.RxDMA)
 }
 
 //emgo:const

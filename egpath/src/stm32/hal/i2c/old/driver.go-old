@@ -3,26 +3,16 @@ package i2c
 import (
 	"rtos"
 	"sync"
-	"unsafe"
 
 	"arch/cortexm"
-
-	"stm32/hal/dma"
 
 	"stm32/hal/raw/i2c"
 )
 
-// Driver implements interrupt driven driver to I2C peripheral. To use the
-// Driver the Periph field must be set and the I2CISR method must be setup as
-// I2C interrupt handler for both (event and error) interrupts.
-//
-// Setting the RxDMA or/and TxDMA fields enables using DMA for Rx or/and Tx data
-// transfer. If DMA is enabled for some direction the DMAISR method must be
-// setup as DMA interrupt handler for this direction.
+// Driver implements interrupt driven driver to I2C peripheral. Most of
+// data/event processing is performed in interrupt handler mode.
 type Driver struct {
 	*Periph
-	RxDMA *dma.Channel
-	TxDMA *dma.Channel
 
 	mutex sync.Mutex
 	done  rtos.EventFlag
@@ -34,11 +24,9 @@ type Driver struct {
 }
 
 // NewDriver provides convenient way to create heap allocated Driver struct.
-func NewDriver(p *Periph, rxdma, txdma *dma.Channel) *Driver {
+func NewDriver(p *Periph) *Driver {
 	d := new(Driver)
 	d.Periph = p
-	d.RxDMA = rxdma
-	d.TxDMA = txdma
 	return d
 }
 
@@ -62,14 +50,13 @@ func (d *Driver) Unlock() {
 	d.mutex.Unlock()
 }
 
-// I2CISR is I2C (event and error) interrupt handler.
 func (d *Driver) I2CISR() {
 	sr1 := d.Periph.raw.SR1.Load()
 	if e := getError(sr1); e != 0 {
 		d.handleErrors()
 		return
 	}
-	eventHandlersDMA[d.state](d, sr1)
+	eventHandlers[d.state](d, sr1)
 }
 
 type state byte
@@ -79,35 +66,35 @@ const (
 	stateStart
 	stateAddr
 
-	stateWriteDMA
-	stateWriteWait
 	stateWrite
+	stateWriteWait
 
-	stateReadDMA
-	stateReadWait
 	stateRead
 	stateRead1
 	stateRead2
 	stateReadN
+	stateReadWait
 
+	// All state numbers for errors should be >= stateI2CError
 	stateError
 	stateBelatedStop
 	stateBadEvent
 )
 
+// eventHandlers is an array containing functions that performs state
+// transitions in response to hardware or software events.
+//
 //emgo:const
-var eventHandlersDMA = [...]func(d *Driver, sr1 i2c.SR1_Bits){
+var eventHandlers = [...]func(d *Driver, sr1 i2c.SR1_Bits){
 	stateIdle:  (*Driver).idleEH,
 	stateStart: (*Driver).startISR,
 	stateAddr:  (*Driver).addrISR,
 
-	stateWriteDMA:  nil,
 	stateWrite:     (*Driver).writeISR,
 	stateWriteWait: (*Driver).writeWaitEH,
 
-	stateReadDMA:  nil,
-	stateReadWait: (*Driver).readWaitEH,
 	stateRead:     (*Driver).readISR,
+	stateReadWait: (*Driver).readWaitEH,
 	stateRead1:    (*Driver).read1ISR,
 	stateRead2:    (*Driver).read2ISR,
 	stateReadN:    (*Driver).readNISR,
@@ -157,18 +144,13 @@ func (d *Driver) addrISR(sr1 i2c.SR1_Bits) {
 	p := &d.Periph.raw
 	if d.addr&1 == 0 {
 		// Write.
+		d.n = 1
+		d.state = stateWrite
 		p.SR2.Load()
-		d.write()
+		p.DR.Store(i2c.DR_Bits(d.buf[0]))
 		return
 	}
-	// Read
-	if d.RxDMA != nil && len(d.buf) > 1 {
-		d.state = stateReadDMA
-		p.SR2.Load()
-		d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4)
-		d.startDMA(d.RxDMA)
-		return
-	}
+	// Read.
 	if !d.stop {
 		d.state = stateRead
 		p.SR2.Load()
@@ -196,6 +178,29 @@ func (d *Driver) addrISR(sr1 i2c.SR1_Bits) {
 	}
 }
 
+func (d *Driver) writeISR(sr1 i2c.SR1_Bits) {
+	if sr1&i2c.BTF == 0 {
+		d.badEvent(sr1)
+		return
+	}
+	n := d.n
+	if n == len(d.buf) {
+		d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
+		d.state = stateWriteWait
+		d.done.Set()
+		return
+	}
+	d.Periph.raw.DR.Store(i2c.DR_Bits(d.buf[n]))
+	d.n = n + 1
+}
+
+func (d *Driver) writeWaitEH(sr1 i2c.SR1_Bits) {
+	d.Periph.raw.DR.Store(i2c.DR_Bits(d.buf[0]))
+	d.n = 1
+	d.state = stateWrite
+	d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN)
+}
+
 func (d *Driver) readISR(sr1 i2c.SR1_Bits) {
 	if sr1&i2c.BTF == 0 {
 		d.badEvent(sr1)
@@ -208,6 +213,15 @@ func (d *Driver) readISR(sr1 i2c.SR1_Bits) {
 		d.state = stateReadWait
 		d.done.Set()
 	}
+}
+
+func (d *Driver) readWaitEH(sr1 i2c.SR1_Bits) {
+	if d.stop {
+		d.state = stateReadN
+	} else {
+		d.state = stateRead
+	}
+	d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN)
 }
 
 func (d *Driver) read1ISR(sr1 i2c.SR1_Bits) {
@@ -271,93 +285,6 @@ func (d *Driver) readNISR(sr1 i2c.SR1_Bits) {
 	d.n = n + 1
 }
 
-func (d *Driver) readWaitEH(_ i2c.SR1_Bits) {
-	if d.RxDMA != nil && len(d.buf) > 1 {
-		d.state = stateReadDMA
-		if d.stop {
-			d.Periph.raw.LAST().Set()
-		}
-		d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4)
-		d.startDMA(d.RxDMA)
-		return
-	}
-	if d.stop {
-		d.state = stateReadN
-	} else {
-		d.state = stateRead
-	}
-	d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN)
-}
-
-func (d *Driver) writeISR(sr1 i2c.SR1_Bits) {
-	if sr1&i2c.BTF == 0 {
-		d.badEvent(sr1)
-		return
-	}
-	n := d.n
-	if n == len(d.buf) {
-		d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
-		d.state = stateWriteWait
-		d.done.Set()
-		return
-	}
-	d.Periph.raw.DR.Store(i2c.DR_Bits(d.buf[n]))
-	d.n = n + 1
-}
-
-func (d *Driver) writeWaitEH(_ i2c.SR1_Bits) {
-	d.write()
-	if d.state == stateWrite {
-		d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN)
-	}
-}
-
-func (d *Driver) write() {
-	if d.TxDMA != nil && len(d.buf) > 1 {
-		d.state = stateWriteDMA
-		d.n = 0
-		d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4)
-		d.startDMA(d.TxDMA)
-	} else {
-		d.state = stateWrite
-		d.n = 1
-		d.Periph.raw.DR.Store(i2c.DR_Bits(d.buf[0]))
-	}
-}
-
-func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode) {
-	d.disableDMA(ch)
-	ch.ClearEvents(dma.EV | dma.ERR)
-	ch.Setup(mode)
-	ch.SetWordSize(1, 1)
-	ch.SetAddrP(unsafe.Pointer(d.Periph.raw.DR.U16.Addr()))
-}
-
-func (d *Driver) startDMA(ch *dma.Channel) {
-	d.disableIntI2C(i2c.ITEVTEN | i2c.ITBUFEN)
-	n := d.n
-	m := (len(d.buf) - n) & 0xffff
-	if len(d.buf)-(n+m) == 1 {
-		m-- // Avoid last transfer size 1.
-	}
-	d.n = n + m
-	dmabits := i2c.DMAEN
-	if d.stop && d.n == len(d.buf) {
-		dmabits |= i2c.LAST
-	}
-	d.Periph.raw.CR2.SetBits(dmabits)
-	ch.SetAddrM(unsafe.Pointer(&d.buf[n]))
-	ch.SetLen(m)
-	ch.Enable()
-	ch.EnableInt(dma.TRCE | dmaErrMask)
-}
-
-func (d *Driver) disableDMA(ch *dma.Channel) {
-	ch.Disable()
-	ch.DisableInt(dma.EV | dma.ERR)
-	d.Periph.raw.CR2.ClearBits(i2c.DMAEN | i2c.LAST)
-}
-
 func (d *Driver) enableIntI2C(m i2c.CR2_Bits) {
 	d.Periph.raw.CR2.SetBits(m)
 }
@@ -366,14 +293,9 @@ func (d *Driver) disableIntI2C(m i2c.CR2_Bits) {
 	d.Periph.raw.CR2.ClearBits(m)
 }
 
+
 func (d *Driver) handleErrors() {
 	d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
-	if d.RxDMA != nil {
-		d.disableDMA(d.RxDMA)
-	}
-	if d.TxDMA != nil {
-		d.disableDMA(d.TxDMA)
-	}
 	if d.state < stateError {
 		d.state = stateError
 	}
@@ -385,99 +307,23 @@ func (d *Driver) badEvent(sr1 i2c.SR1_Bits) {
 	d.handleErrors()
 }
 
-func (d *Driver) DMAISR(ch *dma.Channel) {
-	d.disableDMA(ch)
-	tx := d.addr&1 == 0
-	if tx && d.state != stateWriteDMA || !tx && d.state != stateReadDMA {
-		d.badEvent(0)
-		return
-	}
-	if ch.Events()&dmaErrMask != 0 {
-		d.n -= ch.Len()
-		d.handleErrors()
-		return
-	}
-	ch.ClearEvents(dma.EV | dma.ERR)
-	if len(d.buf)-d.n != 0 {
-		d.startDMA(ch)
-		return
-	}
-	if tx {
-		d.state = stateWrite
-		d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN)
-		return
-	}
-	if d.stop {
-		d.state = stateIdle
-	} else {
-		d.state = stateReadWait
-	}
-	d.done.Set()
-}
-
-func (d *Driver) waitDone(ch *dma.Channel) (e Error) {
-	timeout := 100e6 + 2*9e9*int64(len(d.buf)+1)/int64(d.Speed())
-	if d.done.Wait(rtos.Nanosec() + timeout) {
+func (d *Driver) waitDone(n int) (e Error) {
+	deadline := rtos.Nanosec() + 100e6 + 2*9e9*int64(n+1)/int64(d.Speed())
+	if d.done.Wait(deadline) {
 		d.done.Clear()
 	} else {
 		e = SoftTimeout
-		d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
-		if ch != nil {
-			d.disableDMA(ch)
-		}
-		if d.state < stateError {
-			d.state = stateError
-		}
 	}
-	p := &d.Periph.raw
 	if d.state >= stateError {
 		if d.state == stateBelatedStop {
 			e |= BelatedStop
 		}
-		if d.state == stateBadEvent {
-			e |= BadEvent
-		}
+		p := &d.Periph.raw
 		e |= getError(p.SR1.Load())
 		if e&Timeout == 0 {
 			p.STOP().Set()
 		}
 		p.SR1.Store(0) // Clear error flags.
-		if ch != nil {
-			if ch.Events()&dmaErrMask != 0 {
-				e |= DMAErr
-			}
-			ch.ClearEvents(dma.EV | dma.ERR)
-		}
-		d.state = stateIdle
 	}
 	return
 }
-
-/*
-//emgo:const
-var stateTXT = [...]string{
-	stateIdle:  " stateIdle\n",
-	stateStart: " stateStart\n",
-	stateAddr:  " stateAddr\n",
-
-	stateWriteDMA:  " stateWriteDMA\n",
-	stateWrite:     " stateWrite\n",
-	stateWriteWait: " stateWriteWait\n",
-
-	stateRead1:    " stateRead1\n",
-	stateReadDMA:  " stateReadDMA\n",
-	stateReadWait: " stateReadWait\n",
-
-	stateError:       " stateError\n",
-	stateBelatedStop: " stateBelatedStop\n",
-	stateBadEvent:    " stateBadEvent\n",
-}
-
-func (d *Driver) printState(sr1 i2c.SR1_Bits) {
-	strconv.WriteUint32(dbg, uint32(sr1), 16, 4)
-	if int(d.state) >= len(stateTXT) {
-		dbg.WriteString("unknown\n")
-	}
-	dbg.WriteString(stateTXT[d.state])
-}
-*/

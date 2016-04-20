@@ -54,7 +54,7 @@ func (c *MasterConn) Write(buf []byte) (int, error) {
 	d.addr = c.addr
 	d.stop = false
 	d.I2CISR()
-	if e := d.waitDone(d.TxDMA); e != 0 {
+	if e := d.waitDone(len(buf)); e != 0 {
 		c.locked = false // d.Unlock must be used to unlock the driver.
 		d.state = stateIdle
 		return d.n, e
@@ -94,7 +94,7 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 		d.state = stateIdle
 	}
 	d.I2CISR()
-	if e := d.waitDone(d.RxDMA); e != 0 {
+	if e := d.waitDone(len(buf)); e != 0 {
 		c.locked = false // d.Unlock must be used to unlock the driver.
 		d.state = stateIdle
 		return d.n, e

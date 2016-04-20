@@ -7,7 +7,7 @@ main$SizeByte() {
 
 uintptr
 main$SizeInt() {
-	return sizeof(int);
+	return sizeof(int_);
 }
 
 uintptr
@@ -47,7 +47,7 @@ main$AlignByte() {
 
 uintptr
 main$AlignInt() {
-	return __alignof__(int);
+	return __alignof__(int_);
 }
 
 uintptr
