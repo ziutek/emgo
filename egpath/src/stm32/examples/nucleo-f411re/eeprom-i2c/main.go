@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	driver  = 2
-	twiaddr = 0x50
+	driver = 2
+	addr   = 0x50
 )
 
 type conn interface {
@@ -27,8 +27,10 @@ type conn interface {
 }
 
 var (
-	adrv   *i2c.AltDriver
-	drv    *i2c.Driver
+	drv     *i2c.Driver
+	adrv    *i2c.AltDriver
+	adrvdma *i2c.AltDriverDMA
+
 	eeprom conn
 )
 
@@ -49,20 +51,30 @@ func init() {
 	twi := i2c.I2C1
 	twi.EnableClock(true)
 	twi.Reset() // Mandatory!
-	twi.Setup(&i2c.Config{Speed: 240e3, Duty: i2c.Duty16_9})
+	twi.Setup(&i2c.Config{Speed: 480e3, Duty: i2c.Duty16_9})
 	switch driver {
-	case 1:
-		adrv = i2c.NewAltDriver(twi)
-		adrv.SetIntMode(true)
-		eeprom = adrv.NewMasterConn(twiaddr, i2c.ASRD)
-	case 2:
+	case 1: // Driver, no DMA
+		drv = i2c.NewDriver(twi, nil, nil)
+		eeprom = drv.NewMasterConn(addr, i2c.ASRD)
+	case 2: // Driver, DMA for Rx and Tx.
 		d := dma.DMA1
 		d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
-		//drv = i2c.NewDriver(twi, d.Channel(5, 1), d.Channel(6, 1))
-		drv = i2c.NewDriver(twi, nil, nil)
-		//rtos.IRQ(irq.DMA1_Stream5).Enable()
-		//rtos.IRQ(irq.DMA1_Stream6).Enable()
-		eeprom = drv.NewMasterConn(twiaddr, i2c.ASRD)
+		rtos.IRQ(irq.DMA1_Stream5).Enable()
+		rtos.IRQ(irq.DMA1_Stream6).Enable()
+		drv = i2c.NewDriver(twi, d.Channel(5, 1), d.Channel(6, 1))
+		eeprom = drv.NewMasterConn(addr, i2c.ASRD)
+	case 3: // AltDriver, interrupt mode.
+		adrv = i2c.NewAltDriver(twi)
+		adrv.SetIntMode(true)
+		eeprom = adrv.NewMasterConn(addr, i2c.ASRD)
+	case 4: // AltDriverDMA, interrupt mode.
+		d := dma.DMA1
+		d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
+		rtos.IRQ(irq.DMA1_Stream5).Enable()
+		rtos.IRQ(irq.DMA1_Stream6).Enable()
+		adrvdma = i2c.NewAltDriverDMA(twi, d.Channel(5, 1), d.Channel(6, 1))
+		adrvdma.SetIntMode(true, true)
+		eeprom = adrvdma.NewMasterConn(addr, i2c.ASRD)
 	}
 	twi.Enable()
 	rtos.IRQ(irq.I2C1_EV).Enable()
@@ -77,7 +89,7 @@ func main() {
 	fmt.Printf("Sending data to EEPROM... ")
 	_, err := eeprom.Write(addr)
 	checkErr(err)
-	_, err = eeprom.Write([]byte(">>Hello EEPROM<<"))
+	_, err = eeprom.Write([]byte("-+Hello EEPROM+-"))
 	checkErr(err)
 	eeprom.StopWrite()
 	fmt.Printf("OK.\n")
@@ -99,24 +111,49 @@ func main() {
 	var buf [16]byte
 	_, err = eeprom.Read(buf[:])
 	checkErr(err)
-	fmt.Printf("Read: \"%s\"\n", buf[:])
+	fmt.Printf("Read string: \"%s\"\n", buf[:])
+	t1 := rtos.Nanosec()
+	n := 0
+	for {
+		_, err = eeprom.Read(buf[:])
+		checkErr(err)
+		if n++; n == 2000 {
+			t2 := rtos.Nanosec()
+			fmt.Printf(
+				"Read speed: %d bit/s\n",
+				int64(len(buf)*n)*8e9/(t2-t1),
+			)
+			n = 0
+			t1 = t2
+		}
+	}
 }
 
 func twiI2CISR() {
 	switch driver {
-	case 1:
-		adrv.ISR()
-	case 2:
+	case 1, 2:
 		drv.I2CISR()
+	case 3:
+		adrv.ISR()
+	default:
+		adrvdma.I2CISR()
 	}
 }
 
 func twiRxDMAISR() {
-	drv.DMAISR(drv.RxDMA)
+	if driver == 2 {
+		drv.DMAISR(drv.RxDMA)
+	} else {
+		adrvdma.DMAISR(adrvdma.RxDMA)
+	}
 }
 
 func twiTxDMAISR() {
-	drv.DMAISR(drv.TxDMA)
+	if driver == 2 {
+		drv.DMAISR(drv.TxDMA)
+	} else {
+		adrvdma.DMAISR(adrvdma.TxDMA)
+	}
 }
 
 //emgo:const
@@ -132,35 +169,7 @@ func checkErr(err error) {
 	if err == nil {
 		return
 	}
-	fmt.Printf("Error:")
-	if e, ok := err.(i2c.Error); ok {
-		if e&i2c.BusErr != 0 {
-			fmt.Printf(" BusErr")
-		} else if e&i2c.ArbLost != 0 {
-			fmt.Printf(" ArbLost")
-		} else if e&i2c.AckFail != 0 {
-			fmt.Printf(" AckFail")
-		} else if e&i2c.Overrun != 0 {
-			fmt.Printf(" Overrun")
-		} else if e&i2c.PECErr != 0 {
-			fmt.Printf(" PECErr")
-		} else if e&i2c.Timeout != 0 {
-			fmt.Printf(" Timeout")
-		} else if e&i2c.SMBAlert != 0 {
-			fmt.Printf(" SMBAlert")
-		} else if e&i2c.SoftTimeout != 0 {
-			fmt.Printf(" SoftTimeout")
-		} else if e&i2c.BelatedStop != 0 {
-			fmt.Printf(" BelatedStop")
-		} else if e&i2c.ActiveRead != 0 {
-			fmt.Printf(" ActiveRead")
-		} else if e&i2c.DMAErr != 0 {
-			fmt.Printf(" DMAErr")
-		}
-	} else {
-		fmt.Printf(" %v", err)
-	}
-	fmt.Println()
+	fmt.Printf("Error %v\n", err)
 	for {
 	}
 }

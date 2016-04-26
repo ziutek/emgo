@@ -30,13 +30,14 @@ import (
 )
 
 const (
-	driver  = 2 // Select different drivers (1,2) to see their performance.
-	hdcaddr = 0x27
+	driver = 2 // Select different drivers (1,2,3,4) to see their performance.
+	addr   = 0x27
 )
 
 var (
-	adrv *i2c.AltDriver
-	drv  *i2c.Driver
+	drv     *i2c.Driver
+	adrv    *i2c.AltDriver
+	adrvdma *i2c.AltDriverDMA
 
 	lcd = &hdc.Display{
 		Cols: 20, Rows: 4,
@@ -65,18 +66,28 @@ func init() {
 	twi.Reset() // Mandatory!
 	twi.Setup(&i2c.Config{Speed: 480e3, Duty: i2c.Duty16_9})
 	switch driver {
-	case 1:
-		adrv = i2c.NewAltDriver(twi)
-		adrv.SetIntMode(true)
-		lcd.ReadWriter = adrv.NewMasterConn(hdcaddr, i2c.ASRD)
-	case 2:
+	case 1: // Driver, no DMA
+		drv = i2c.NewDriver(twi, nil, nil)
+		lcd.ReadWriter = drv.NewMasterConn(addr, i2c.ASRD)
+	case 2: // Driver, DMA for Rx and Tx.
 		d := dma.DMA1
 		d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
-		drv = i2c.NewDriver(twi, d.Channel(5, 1), d.Channel(6, 1))
-		//drv = i2c.NewDriver(twi, nil, nil)
 		rtos.IRQ(irq.DMA1_Stream5).Enable()
 		rtos.IRQ(irq.DMA1_Stream6).Enable()
-		lcd.ReadWriter = drv.NewMasterConn(hdcaddr, i2c.ASRD)
+		drv = i2c.NewDriver(twi, d.Channel(5, 1), d.Channel(6, 1))
+		lcd.ReadWriter = drv.NewMasterConn(addr, i2c.ASRD)
+	case 3: // AltDriver, interrupt mode.
+		adrv = i2c.NewAltDriver(twi)
+		adrv.SetIntMode(true)
+		lcd.ReadWriter = adrv.NewMasterConn(addr, i2c.ASRD)
+	case 4: // AltDriverDMA, interrupt mode.
+		d := dma.DMA1
+		d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
+		rtos.IRQ(irq.DMA1_Stream5).Enable()
+		rtos.IRQ(irq.DMA1_Stream6).Enable()
+		adrvdma = i2c.NewAltDriverDMA(twi, d.Channel(5, 1), d.Channel(6, 1))
+		adrvdma.SetIntMode(true, true)
+		lcd.ReadWriter = adrvdma.NewMasterConn(addr, i2c.ASRD)
 	}
 	twi.Enable()
 	rtos.IRQ(irq.I2C1_EV).Enable()
@@ -118,19 +129,29 @@ func writeScreen(lcd *hdc.Display, screen *[4 * 20]byte) {
 
 func twiI2CISR() {
 	switch driver {
-	case 1:
-		adrv.ISR()
-	case 2:
+	case 1, 2:
 		drv.I2CISR()
+	case 3:
+		adrv.ISR()
+	default:
+		adrvdma.I2CISR()
 	}
 }
 
 func twiRxDMAISR() {
-	drv.DMAISR(drv.RxDMA)
+	if driver == 2 {
+		drv.DMAISR(drv.RxDMA)
+	} else {
+		adrvdma.DMAISR(adrvdma.RxDMA)
+	}
 }
 
 func twiTxDMAISR() {
-	drv.DMAISR(drv.TxDMA)
+	if driver == 2 {
+		drv.DMAISR(drv.TxDMA)
+	} else {
+		adrvdma.DMAISR(adrvdma.TxDMA)
+	}
 }
 
 //emgo:const
@@ -146,48 +167,7 @@ func checkErr(err error) {
 	if err == nil {
 		return
 	}
-	if e, ok := err.(i2c.Error); ok {
-		fmt.Printf("I2C error:")
-		if e&i2c.BusErr != 0 {
-			fmt.Printf(" BusErr")
-		}
-		if e&i2c.ArbLost != 0 {
-			fmt.Printf(" ArbLost")
-		}
-		if e&i2c.AckFail != 0 {
-			fmt.Printf(" AckFail")
-		}
-		if e&i2c.Overrun != 0 {
-			fmt.Printf(" Overrun")
-		}
-		if e&i2c.PECErr != 0 {
-			fmt.Printf(" PECErr")
-		}
-		if e&i2c.Timeout != 0 {
-			fmt.Printf(" Timeout")
-		}
-		if e&i2c.SMBAlert != 0 {
-			fmt.Printf(" SMBAlert")
-		}
-		if e&i2c.SoftTimeout != 0 {
-			fmt.Printf(" SoftTimeout")
-		}
-		if e&i2c.BelatedStop != 0 {
-			fmt.Printf(" BelatedStop")
-		}
-		if e&i2c.BadEvent != 0 {
-			fmt.Printf(" BadEvent")
-		}
-		if e&i2c.ActiveRead != 0 {
-			fmt.Printf(" ActiveRead")
-		}
-		if e&i2c.DMAErr != 0 {
-			fmt.Printf(" DMAErr")
-		}
-		fmt.Println()
-	} else {
-		fmt.Printf("Error %v\n", err)
-	}
+	fmt.Printf("Error %v\n", err)
 	for {
 	}
 }

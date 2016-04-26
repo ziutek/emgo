@@ -18,7 +18,7 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var twi *i2c.DriverDMA
+var twi *i2c.Driver
 
 func init() {
 	system.Setup96(8)
@@ -35,7 +35,7 @@ func init() {
 	port.SetAltFunc(pins, gpio.I2C1)
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
-	twi = i2c.NewDriverDMA(i2c.I2C1, d.Channel(5, 1), d.Channel(6, 1))
+	twi = i2c.NewDriver(i2c.I2C1, d.Channel(5, 1), d.Channel(6, 1))
 	twi.EnableClock(true)
 	rtos.IRQ(irq.I2C1_EV).Enable()
 	rtos.IRQ(irq.I2C1_ER).Enable()

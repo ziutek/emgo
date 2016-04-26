@@ -41,7 +41,20 @@ const (
 )
 
 func (e Error) Error() string {
-	return "I2C error"
+	switch e {
+	case BadEvent:
+		return "I2C bad event"
+	case SoftTimeout:
+		return "I2C soft timeout"
+	case BelatedStop:
+		return "I2C belated stop"
+	case ActiveRead:
+		return "I2C active read"
+	case DMAErr:
+		return "I2C DMA error"
+	default:
+		return "I2C hw error"
+	}
 }
 
 func getError(sr1 i2c.SR1_Bits) Error {

@@ -14,7 +14,7 @@ import (
 
 // Driver implements interrupt driven driver to I2C peripheral. To use the
 // Driver the Periph field must be set and the I2CISR method must be setup as
-// I2C interrupt handler for both (event and error) interrupts.
+// I2C interrupt handler for both (event and error) Periph's IRQs.
 //
 // Setting the RxDMA or/and TxDMA fields enables using DMA for Rx or/and Tx data
 // transfer. If DMA is enabled for some direction the DMAISR method must be
@@ -256,18 +256,23 @@ func (d *Driver) readNISR(sr1 i2c.SR1_Bits) {
 		d.done.Set()
 		return
 	}
+	var dr i2c.DR_Bits
 	if m == 3 {
 		p.ACK().Clear()
 		cortexm.SetPRIMASK()
-		dr := p.DR.Load()
+		dr = p.DR.Load()
 		p.STOP().Set()
 		cortexm.ClearPRIMASK()
 		d.buf[n] = byte(dr)
 		n++
+		dr = p.DR.Load()
 		d.state = stateRead1
+		// ITBUFEN must be set after second DR read.
 		d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
+	} else {
+		dr = p.DR.Load()
 	}
-	d.buf[n] = byte(p.DR.Load())
+	d.buf[n] = byte(dr)
 	d.n = n + 1
 }
 
@@ -416,7 +421,7 @@ func (d *Driver) DMAISR(ch *dma.Channel) {
 }
 
 func (d *Driver) waitDone(ch *dma.Channel) (e Error) {
-	timeout := 100e6 + 2*9e9*int64(len(d.buf)+1)/int64(d.Speed())
+	timeout := byteTimeout + 2*9e9*int64(len(d.buf)+1)/int64(d.Speed())
 	if d.done.Wait(rtos.Nanosec() + timeout) {
 		d.done.Clear()
 	} else {

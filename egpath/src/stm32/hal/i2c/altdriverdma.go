@@ -82,8 +82,8 @@ func (d *AltDriverDMA) startDMA(ch *dma.Channel, addr *byte, n int) (int, Error)
 	ch.SetAddrM(unsafe.Pointer(addr))
 	ch.SetLen(n)
 	ch.Enable()
-	// Set timeout to 2 * calculated transfer time.
-	deadline := rtos.Nanosec() + 2*9e9*int64(n+1)/int64(d.Speed())
+	timeout := byteTimeout + 2*9e9*int64(n+1)/int64(d.Speed())
+	deadline := rtos.Nanosec() + timeout
 	var e Error
 	if d.dmaint {
 		e = dmaWaitTRCE(ch, &d.evflag, deadline)

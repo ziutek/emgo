@@ -16,7 +16,7 @@ import (
 
 var (
 	leds *gpio.Port
-	twi  *i2c.DriverDMA
+	twi  *i2c.Driver
 )
 
 const (
@@ -42,7 +42,7 @@ func init() {
 	port.Setup(pins, &cfg)
 	d := dma.DMA1
 	d.EnableClock(true)
-	twi = i2c.NewDriverDMA(i2c.I2C2, d.Channel(5, 0), d.Channel(4, 0))
+	twi = i2c.NewDriver(i2c.I2C2, d.Channel(5, 0), d.Channel(4, 0))
 	//twi = i2c.NewDriver(i2c.I2C2)
 	twi.EnableClock(true)
 	rtos.IRQ(irq.I2C2_EV).Enable()
@@ -54,7 +54,6 @@ func init() {
 func i2cConfigure() {
 	twi.Reset() // Mandatory!
 	twi.Setup(&i2c.Config{Speed: 5000})
-	twi.SetIntMode(true, true)
 	twi.Enable()
 }
 
