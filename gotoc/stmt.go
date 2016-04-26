@@ -494,6 +494,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			w.WriteString("bool _tag = true;\n")
 		}
 
+		var fallthr string
 		for _, stmt := range s.Body.List {
 			cdd.indent(w)
 
@@ -509,13 +510,17 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				w.WriteString(") ")
 			}
 			w.WriteString("{\n")
-			cdd.il++
 
-			brk := true
+			if fallthr != "" {
+				cdd.indent(w)
+				w.WriteString(fallthr + ":\n")
+				fallthr = ""
+			}
+			cdd.il++
 			if n := len(cs.Body) - 1; n >= 0 {
 				bs, ok := cs.Body[n].(*ast.BranchStmt)
 				if ok && bs.Tok == token.FALLTHROUGH {
-					brk = false
+					fallthr = "_fallthr" + cdd.gtc.uniqueId()
 					cs.Body = cs.Body[:n]
 				}
 			}
@@ -523,8 +528,10 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				cdd.indent(w)
 				updateEnd(cdd.Stmt(w, s, "", resultT, tup))
 			}
-			if brk {
-				cdd.indent(w)
+			cdd.indent(w)
+			if fallthr != "" {
+				w.WriteString("goto " + fallthr + ";\n")
+			} else {
 				w.WriteString("break;\n")
 			}
 
