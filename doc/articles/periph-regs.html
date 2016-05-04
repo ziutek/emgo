@@ -22,12 +22,13 @@ Simplest approach, many believe that it ensures the best performance. Registers 
 </p>
 
 <pre>
+//c:volatile
 type Regset struct {
 	A uint32
 	_  [61]uint32
 	B uint32
 	C uint32
-} //c:volatile
+}
 
 var p = (*Regset)(unsafe.Pointer(uintptr(0xe000e000)))
 
@@ -62,7 +63,7 @@ Let's see what the compiler will do with this code:
 </pre>
 
 <p>
-All examples in this document are complied for Cortex-M0 architecture. In the secodn column you can see hexadecimal opcode of instruction (most of Cortex-M0 instructions use only 16 bits). Subsequent columns contain symbolic name of instruction and its arguments.
+All examples in this document are complied for Cortex-M0 architecture. In the second column you can see hexadecimal opcode of instruction (most of Cortex-M0 instructions use only 16 bits). Subsequent columns contain symbolic name of instruction and its arguments.
 </p>
 
 <p>
@@ -204,7 +205,7 @@ func main() {
 </pre>
 
 <p>
-As you can see, generated code is shorter by one instruction. Now, first instruction loads address of A directly from 58: to r3. Following instructions are identical to previous two examples. We save 6 bytes of memory and one instruction to execute. This doesn't make big difference in speed nor memory consumption, although saving some memory is very nice. This approach is used in Emgo standard library when some peripheral can exist only in one instance (eg. Cortex-M peripherals like SCB, SysTick or NVIC).
+As you can see, generated code is shorter by one instruction. Now, first instruction loads address of A directly from 58: to r3. Following instructions are identical to previous two examples. We save 6 bytes of memory and one instruction to execute. This doesn't make big difference in speed nor memory consumption, although saving some memory is very nice. This approach <strike>is used</strike> in Emgo standard library when some peripheral can exist only in one instance (eg. Cortex-M peripherals like SCB, SysTick or NVIC).
 </p>
 
 <p>
@@ -247,7 +248,7 @@ A you can see, this file defines some methods on Reg. They uses it as index in <
 </p>
 
 <p>
-To see why it is default approach in Emgo standard library, let's see a piece of code from arch/cortexm/scb package:
+To see why <strike>it is default approach</strike> in Emgo standard library, let's see a piece of code from arch/cortexm/scb package:
 </p>
 
 <pre>
