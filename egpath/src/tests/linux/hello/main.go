@@ -16,13 +16,6 @@ func checkErr(err error) {
 }
 
 func main() {
-	var tp syscall.Timespec
-
-	for {
-		checkErr(syscall.ClockGettime(syscall.CLOCK_REALTIME, &tp))
-		fmt.Printf("Time: %d.%09d\n", tp.Sec, tp.Nsec)
-	}
-
 	fmt.Println("Args:")
 	for i, a := range os.Args {
 		fmt.Printf("%d: %s\n", i, a)
@@ -33,44 +26,45 @@ func main() {
 		fmt.Printf("%d: %s\n", i, e)
 	}
 
-	buf := make([]byte, 80)
-	n := copy(buf, os.Args[0])
-	fmt.Printf("Program name: %s\n", buf[:n])
-
-	n, err := os.Stdin.Read(buf)
-	checkErr(err)
-
-	f, err := os.OpenFile(
-		"file.txt",
-		os.O_CREATE|os.O_RDWR|os.O_EXCL,
-		0660,
-	)
-	checkErr(err)
-
-	n, err = f.Write(buf[:n])
-	checkErr(err)
-
-	f.Close()
-	fmt.Printf("%d bytes written.\n", n)
-
 	/*
-		sd, e := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, 0)
-		checkErrno(e)
-		e = syscall.SetsockoptInt(sd, syscall.SOL_SOCKET, syscall.SO_RCVBUF, 524288)
-		checkErrno(e)
+		buf := make([]byte, 80)
+		n := copy(buf, os.Args[0])
+		fmt.Printf("Program name: %s\n", buf[:n])
 
-		sa := syscall.RawSockaddrInet4{
-			Family: syscall.AF_INET,
-			Port:   0xd204,
-		}
-		e = syscall.Bind(sd, &sa)
-		checkErrno(e)
+		n, err := os.Stdin.Read(buf)
+		checkErr(err)
 
-		var buf [2048]byte
-		for {
-			_, e := syscall.Read(sd, buf[:])
-			checkErrno(e)
-			syscall.WriteString(1, "udp pkt\n")
-		}
+		f, err := os.OpenFile(
+			"file.txt",
+			os.O_CREATE|os.O_RDWR|os.O_EXCL,
+			0660,
+		)
+		checkErr(err)
+
+		n, err = f.Write(buf[:n])
+		checkErr(err)
+
+		f.Close()
+		fmt.Printf("%d bytes written.\n", n)
 	*/
+
+	sd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, 0)
+	checkErr(err)
+	err = syscall.SetsockoptInt(sd, syscall.SOL_SOCKET, syscall.SO_RCVBUF, 524288)
+	checkErr(err)
+
+	sa := syscall.RawSockaddrInet4{
+		Family: syscall.AF_INET,
+		Port:   0xd204,
+	}
+	err = syscall.Bind(sd, &sa)
+	checkErr(err)
+
+	var buf [2048]byte
+	for {
+		_, err := syscall.Read(sd, buf[:])
+		checkErr(err)
+		syscall.WriteString(1, "udp pkt\n")
+	}
+
 }

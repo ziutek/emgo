@@ -559,7 +559,7 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		acd.il++
 		for i, c := 0, false; i < mset.Len(); i++ {
 			f := mset.At(i).Obj().(*types.Func)
-			if !f.Exported() {
+			if !isi && !f.Exported() {
 				pragmas, _ := acd.gtc.pragmas(acd.gtc.defs[f])
 				if !pragmas.Contains("minfo") {
 					continue

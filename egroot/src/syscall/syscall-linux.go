@@ -82,6 +82,10 @@ func Socket(domain, typ, proto int) (int, error) {
 	return int(ret), nil
 }
 
+type Sockaddr interface {
+	sockaddr() (ptr, size uintptr, err error)
+}
+
 type RawSockaddrInet4 struct {
 	Family uint16
 	Port   uint16
@@ -89,10 +93,17 @@ type RawSockaddrInet4 struct {
 	Zero   [8]uint8
 }
 
-func Bind(fd int, sa *RawSockaddrInet4) error {
-	ret := internal.Syscall3(
-		sys_BIND, uintptr(fd), uintptr(unsafe.Pointer(sa)), unsafe.Sizeof(*sa),
-	)
+//emgo:minfo
+func (sa *RawSockaddrInet4) sockaddr() (ptr, size uintptr, err error) {
+	return uintptr(unsafe.Pointer(sa)), unsafe.Sizeof(*sa), nil
+}
+
+func Bind(fd int, sa Sockaddr) error {
+	ptr, size, err := sa.sockaddr()
+	if err != nil {
+		return err
+	}
+	ret := internal.Syscall3(sys_BIND, uintptr(fd), ptr, size)
 	if ret >= minerr {
 		return -Errno(ret)
 	}
