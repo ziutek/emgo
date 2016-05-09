@@ -62,9 +62,12 @@ func main() {
 
 	var buf [2048]byte
 	for {
-		_, err := syscall.Read(sd, buf[:])
+		n, err := syscall.Read(sd, buf[:])
 		checkErr(err)
-		syscall.WriteString(1, "udp pkt\n")
+		var tp syscall.Timespec
+		checkErr(syscall.ClockGettime(syscall.CLOCK_MONOTONIC, &tp))
+
+		fmt.Printf("%d.%09d pkt %d B\n", tp.Sec, tp.Nsec, n)
 	}
 
 }
