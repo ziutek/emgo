@@ -74,7 +74,11 @@ func (c *AltMasterConnDMA) Write(buf []byte) (int, error) {
 		if m == 1 {
 			p.DR.Store(i2c.DR_Bits(buf[n]))
 		} else {
-			m, e = d.startDMA(txd, &buf[n], m&0xffff)
+			m &= 0xffff
+			if len(buf)-(n+m) == 1 {
+				m-- // Avoid last transfer size 1.
+			}
+			m, e = d.startDMA(txd, &buf[n], m)
 		}
 		n += m
 		if e != 0 {
@@ -157,25 +161,35 @@ func (c *AltMasterConnDMA) Read(buf []byte) (int, error) {
 		p.DMAEN().Set()
 		p.SR2.Load()
 	}
-	if stop != 0 {
-		if len(buf) < 2 {
-			e = BelatedStop
-			goto end
-		}
-		p.LAST().Set()
-	}
 	if e = d.waitEvent(i2c.BTF); e != 0 {
 		goto end
 	}
 	if len(buf) == 1 {
+		if stop != 0 {
+			e = BelatedStop
+			goto end
+		}
 		buf[0] = byte(p.DR.Load())
 		return 1, nil
 	}
-	// BUG: DMA doesn't support len(buf) > 0xffff.
-	n, e = d.startDMA(rxd, &buf[0], len(buf))
-	if e != 0 {
-		e |= getError(p.SR1.Load())
-		goto end
+	for {
+		m := len(buf) - n
+		if m == 0 {
+			break
+		}
+		m &= 0xffff
+		if len(buf)-(n+m) == 1 {
+			m-- // Avoid last transfer size 1.
+		}
+		if stop != 0 && n+m == len(buf) {
+			p.LAST().Set()
+		}
+		m, e = d.startDMA(rxd, &buf[n], m)
+		n += m
+		if e != 0 {
+			e |= getError(p.SR1.Load())
+			goto end
+		}
 	}
 	if stop == 0 {
 		return n, nil

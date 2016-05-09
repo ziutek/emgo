@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	driver = 2 // Select different drivers (1,2,3,4) to see their performance.
+	driver = 1 // Select different drivers (1,2,3,4) to see their performance.
 	addr   = 0x27
 )
 

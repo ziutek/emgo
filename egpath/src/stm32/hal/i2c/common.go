@@ -62,3 +62,5 @@ func getError(sr1 i2c.SR1_Bits) Error {
 }
 
 const dmaErrMask = dma.ERR &^ dma.FFERR // Ignore FIFO error.
+
+const byteTimeout = 100e6 // 100 ms

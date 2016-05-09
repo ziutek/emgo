@@ -8,8 +8,6 @@ import (
 	"stm32/hal/raw/i2c"
 )
 
-const byteTimeout = 100e6 // 100 ms
-
 func i2cPollEvent(p *i2c.I2C_Periph, ev i2c.SR1_Bits, deadline int64) Error {
 	for {
 		sr1 := p.SR1.Load()

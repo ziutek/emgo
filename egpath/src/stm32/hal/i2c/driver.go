@@ -93,6 +93,7 @@ const (
 	stateError
 	stateBelatedStop
 	stateBadEvent
+	stateTimeout
 )
 
 //emgo:const
@@ -126,13 +127,25 @@ func (d *Driver) idleEH(sr1 i2c.SR1_Bits) {
 		p.CR1.SetBits(bits)
 		d.state = stateStart
 	}
-	// In case of repeated start ensure that BTF was cleared before enable
-	// interrupts.
-	for sr1&i2c.BTF != 0 {
-		sr1 = p.SR1.Load()
-		if e := getError(sr1); e != 0 {
-			d.handleErrors()
-			return
+	if sr1&i2c.BTF != 0 {
+		// Repeated start (most likely).
+		// Eensure that BTF was cleared before enable interrupts.
+		maxrep := (d.Periph.Bus().Clock() + 16) / 32 // Timeout: 1/32 s.
+		for {
+			if getError(sr1) != 0 {
+				d.handleErrors()
+				return
+			}
+			sr1 = p.SR1.Load()
+			if sr1&i2c.BTF == 0 {
+				break
+			}
+			if maxrep == 0 {
+				d.state = stateTimeout
+				d.handleErrors()
+				return
+			}
+			maxrep--
 		}
 	}
 	d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN)
@@ -436,11 +449,13 @@ func (d *Driver) waitDone(ch *dma.Channel) (e Error) {
 	}
 	p := &d.Periph.raw
 	if d.state >= stateError {
-		if d.state == stateBelatedStop {
+		switch d.state {
+		case stateBelatedStop:
 			e |= BelatedStop
-		}
-		if d.state == stateBadEvent {
+		case stateBadEvent:
 			e |= BadEvent
+		case stateTimeout:
+			e |= SoftTimeout
 		}
 		e |= getError(p.SR1.Load())
 		if e&Timeout == 0 {
