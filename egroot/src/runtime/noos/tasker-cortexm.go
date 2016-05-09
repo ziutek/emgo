@@ -233,6 +233,6 @@ func (ts *taskSched) SetAlarm(t int64) {
 	if t > ts.alarm {
 		return
 	}
-	// Can be read only in PendSV so non-atomic assignment is enough.
+	// Can be read only in SVC or PendSV so non-atomic assignment is good.
 	ts.alarm = t
 }

@@ -64,12 +64,12 @@ func Nanosec() int64 {
 	if freqHz == 0 {
 		return 0
 	}
-	aba := counter.StartLoad()
+	aba := counter.ABA()
 	for {
 		cnt := counter.TryLoad(aba)
 		add := periodTicks - uint32(systick.SYSTICK.CURRENT().Load())
 		var ok bool
-		if aba, ok = counter.CheckLoad(aba); ok {
+		if aba, ok = counter.CheckABA(aba); ok {
 			return tons(cnt + int64(add))
 		}
 	}

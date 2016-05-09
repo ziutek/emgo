@@ -46,9 +46,6 @@ func flagVal(f *EventFlag) int {
 
 func flagWait(f *EventFlag, deadline int64) bool {
 	state := atomicInitLoadState(&f.state)
-	if deadline != 0 {
-		state |= syscall.Alarm
-	}
 	for {
 		if state&1 != 0 {
 			return true
@@ -58,6 +55,7 @@ func flagWait(f *EventFlag, deadline int64) bool {
 				return false
 			}
 			syscall.SetAlarm(deadline)
+			state |= syscall.Alarm
 		}
 		state.Wait()
 		state = syscall.AtomicLoadEvent(&f.state)
