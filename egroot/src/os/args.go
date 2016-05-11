@@ -36,3 +36,15 @@ func init() {
 	Args = args(internal.Argv, internal.Env)
 	Env = args(internal.Env, internal.Auxv)
 }
+
+func Getenv(key string) string {
+	for _, s := range Env {
+		if len(s) <= len(key) {
+			continue
+		}
+		if s[len(key)] == '=' && s[:len(key)] == key {
+			return s[len(key)+1:]
+		}
+	}
+	return ""
+}

@@ -25,6 +25,7 @@ func main() {
 	for i, e := range os.Env {
 		fmt.Printf("%d: %s\n", i, e)
 	}
+	fmt.Printf("EGPATH = '%s'\n", os.Getenv("EGPATH"))
 
 	/*
 		buf := make([]byte, 80)
