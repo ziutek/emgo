@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	USART1 = (*USART)(unsafe.Pointer(mmap.USART1_BASE))
-	USART2 = (*USART)(unsafe.Pointer(mmap.USART2_BASE))
-	USART3 = (*USART)(unsafe.Pointer(mmap.USART3_BASE))
-	UART4  = (*USART)(unsafe.Pointer(mmap.UART4_BASE))
-	UART5  = (*USART)(unsafe.Pointer(mmap.UART5_BASE))
+	USART1 = (*Periph)(unsafe.Pointer(mmap.USART1_BASE))
+	USART2 = (*Periph)(unsafe.Pointer(mmap.USART2_BASE))
+	USART3 = (*Periph)(unsafe.Pointer(mmap.USART3_BASE))
+	UART4  = (*Periph)(unsafe.Pointer(mmap.UART4_BASE))
+	UART5  = (*Periph)(unsafe.Pointer(mmap.UART5_BASE))
 )

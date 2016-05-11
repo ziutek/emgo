@@ -13,7 +13,7 @@ import (
 // Status, Load, Store, EnableIRQs, DisableIRQs methods (last two are used to
 // enable/disable TxEmpty and TxDone interrupts).
 type Dev struct {
-	dev    *usart.USART
+	dev    *usart.Periph
 	rx     chan uint16
 	tx     chan uint16
 	txdone chan struct{}
@@ -25,7 +25,7 @@ type Dev struct {
 
 // New creates new Dev for USART device with Rx/Tx buffer of specified
 // lengths in 9-bit words.
-func New(dev *usart.USART, rxlen, txlen int) *Dev {
+func New(dev *usart.Periph, rxlen, txlen int) *Dev {
 	s := new(Dev)
 	s.dev = dev
 	s.rx = make(chan uint16, rxlen)
@@ -82,7 +82,7 @@ func (s *Dev) IRQ() {
 		if st&usart.TxDone == 0 {
 			return
 		}
-		s.dev.DisableIRQs(usart.TxDoneIRQ)
+		s.dev.DisableIRQ(usart.TxDoneIRQ)
 		s.flush = false
 		s.txdone <- struct{}{}
 	}
@@ -96,16 +96,16 @@ func (s *Dev) IRQ() {
 					break
 				}
 				s.flush = true
-				s.dev.EnableIRQs(usart.TxDoneIRQ)
+				s.dev.EnableIRQ(usart.TxDoneIRQ)
 				break
 			}
 			s.dev.Store(int(d))
 		default:
 			// Tx channel is empty.
-			s.dev.DisableIRQs(usart.TxEmptyIRQ)
+			s.dev.DisableIRQ(usart.TxEmptyIRQ)
 		}
 	} else {
-		s.dev.EnableIRQs(usart.TxEmptyIRQ)
+		s.dev.EnableIRQ(usart.TxEmptyIRQ)
 	}
 }
 
@@ -134,7 +134,7 @@ func (s *Dev) SetFlushLF(enable bool) {
 // WriteBits can write 9-bit words to s. Text mode doesn't affect written data.
 func (s *Dev) WriteBits(d uint16) error {
 	s.tx <- d & 0x1ff
-	s.dev.EnableIRQs(usart.TxEmptyIRQ)
+	s.dev.EnableIRQ(usart.TxEmptyIRQ)
 	return nil
 }
 
@@ -220,7 +220,7 @@ func (s *Dev) Read(buf []byte) (n int, err error) {
 	return
 }
 
-// USART returns wrapped USART device.
-func (s *Dev) USART() *usart.USART {
+// Periph returns wrapped peripheral.
+func (s *Dev) Periph() *usart.Periph {
 	return s.dev
 }
