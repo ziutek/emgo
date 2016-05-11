@@ -69,7 +69,12 @@ func (d *Driver) I2CISR() {
 		d.handleErrors()
 		return
 	}
-	eventHandlersDMA[d.state](d, sr1)
+	if d.state > stateReadN {
+		d.state = stateBadEvent
+		d.handleErrors()
+		return
+	}
+	eventHandlers[d.state](d, sr1)
 }
 
 type state byte
@@ -79,16 +84,17 @@ const (
 	stateStart
 	stateAddr
 
-	stateWriteDMA
 	stateWriteWait
 	stateWrite
 
-	stateReadDMA
 	stateReadWait
 	stateRead
 	stateRead1
 	stateRead2
-	stateReadN
+	stateReadN // Must be the last number of defined eventHandler (see I2CISR).
+
+	stateWriteDMA
+	stateReadDMA
 
 	stateError
 	stateBelatedStop
@@ -97,16 +103,14 @@ const (
 )
 
 //emgo:const
-var eventHandlersDMA = [...]func(d *Driver, sr1 i2c.SR1_Bits){
+var eventHandlers = [...]func(d *Driver, sr1 i2c.SR1_Bits){
 	stateIdle:  (*Driver).idleEH,
 	stateStart: (*Driver).startISR,
 	stateAddr:  (*Driver).addrISR,
 
-	stateWriteDMA:  nil,
 	stateWrite:     (*Driver).writeISR,
 	stateWriteWait: (*Driver).writeWaitEH,
 
-	stateReadDMA:  nil,
 	stateReadWait: (*Driver).readWaitEH,
 	stateRead:     (*Driver).readISR,
 	stateRead1:    (*Driver).read1ISR,
@@ -354,7 +358,10 @@ func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode) {
 func (d *Driver) startDMA(ch *dma.Channel) {
 	d.disableIntI2C(i2c.ITEVTEN | i2c.ITBUFEN)
 	n := d.n
-	m := (len(d.buf) - n) & 0xffff
+	m := len(d.buf) - n
+	if m > 0xffff {
+		m = 0xffff
+	}
 	if len(d.buf)-(n+m) == 1 {
 		m-- // Avoid last transfer size 1.
 	}
@@ -472,32 +479,3 @@ func (d *Driver) waitDone(ch *dma.Channel) (e Error) {
 	}
 	return
 }
-
-/*
-//emgo:const
-var stateTXT = [...]string{
-	stateIdle:  " stateIdle\n",
-	stateStart: " stateStart\n",
-	stateAddr:  " stateAddr\n",
-
-	stateWriteDMA:  " stateWriteDMA\n",
-	stateWrite:     " stateWrite\n",
-	stateWriteWait: " stateWriteWait\n",
-
-	stateRead1:    " stateRead1\n",
-	stateReadDMA:  " stateReadDMA\n",
-	stateReadWait: " stateReadWait\n",
-
-	stateError:       " stateError\n",
-	stateBelatedStop: " stateBelatedStop\n",
-	stateBadEvent:    " stateBadEvent\n",
-}
-
-func (d *Driver) printState(sr1 i2c.SR1_Bits) {
-	strconv.WriteUint32(dbg, uint32(sr1), 16, 4)
-	if int(d.state) >= len(stateTXT) {
-		dbg.WriteString("unknown\n")
-	}
-	dbg.WriteString(stateTXT[d.state])
-}
-*/

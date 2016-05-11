@@ -8,6 +8,7 @@ import (
 	"stm32/hal/raw/i2c"
 )
 
+// Periph represents I2C peripheral.
 type Periph struct {
 	raw i2c.I2C_Periph
 }

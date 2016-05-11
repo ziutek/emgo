@@ -74,7 +74,9 @@ func (c *AltMasterConnDMA) Write(buf []byte) (int, error) {
 		if m == 1 {
 			p.DR.Store(i2c.DR_Bits(buf[n]))
 		} else {
-			m &= 0xffff
+			if m > 0xffff {
+				m = 0xffff
+			}
 			if len(buf)-(n+m) == 1 {
 				m-- // Avoid last transfer size 1.
 			}
@@ -177,7 +179,9 @@ func (c *AltMasterConnDMA) Read(buf []byte) (int, error) {
 		if m == 0 {
 			break
 		}
-		m &= 0xffff
+		if m > 0xffff {
+			m = 0xffff
+		}
 		if len(buf)-(n+m) == 1 {
 			m-- // Avoid last transfer size 1.
 		}
