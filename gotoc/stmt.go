@@ -93,6 +93,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 	case *ast.DeclStmt:
 		cdds := cdd.gtc.Decl(s.Decl, cdd.il)
 		for _, c := range cdds {
+			for u, typPtr := range c.DeclUses {
+				cdd.DefUses[u] = typPtr
+			}
 			for u, typPtr := range c.DefUses {
 				cdd.DefUses[u] = typPtr
 			}
