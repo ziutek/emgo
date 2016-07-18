@@ -43,7 +43,7 @@ func init() {
 	s.EnableClock(true)
 	s.SetBaudRate(115200)
 	s.SetConf(usart.RxEna | usart.TxEna)
-	s.EnableIRQs(usart.RxNotEmptyIRQ)
+	s.EnableIRQ(usart.RxNotEmptyIRQ)
 	s.Enable()
 
 	con = serial.New(s, 80, 8)

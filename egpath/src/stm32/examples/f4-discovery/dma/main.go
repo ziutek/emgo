@@ -40,17 +40,23 @@ func main() {
 	ch.SetLen(len(P))
 	ch.SetAddrP(unsafe.Pointer(&P[0]))
 	ch.SetAddrM(unsafe.Pointer(&M[0]))
-	ch.EnableInt(dma.TRCE) // Simplified (should handle dma.ERR too).
+	ch.EnableInt(dma.Complete, dma.ErrAll)
 	ch.Enable()
 	tce.Wait(0)
 
 	delay.Millisec(250) // Wait for OpenOCD (press reset if you see nothing).
-	fmt.Println(M[:])
+
+	if _, err := ch.Status(); err != 0 {
+		fmt.Printf("Error: %v\n", err)
+	} else {
+		fmt.Println(M[:])
+	}
 }
 
 func dmaISR() {
-	if ch.Events()&dma.TRCE != 0 {
-		ch.ClearEvents(dma.TRCE)
+	ch.DisableInt(dma.EvAll, dma.ErrAll)
+	ev, err := ch.Status()
+	if ev&dma.Complete != 0 || err != 0 {
 		tce.Set()
 	}
 }
