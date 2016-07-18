@@ -81,7 +81,7 @@ const (
 	trce = 1 << 5
 )
 
-func (ch *Channel) events() Events {
+func (ch *Channel) status() byte {
 	d := sdma(ch)
 	n := snum(ch)
 	var isr *mmio.U32
@@ -95,10 +95,10 @@ func (ch *Channel) events() Events {
 	if n > 6 {
 		n += 4
 	}
-	return Events(isr.Load() >> n & 0x3d)
+	return byte(isr.Load() >> n & 0x3d)
 }
 
-func (ch *Channel) clearEvents(e Events) {
+func (ch *Channel) clear(flags byte) {
 	d := sdma(ch)
 	n := snum(ch)
 	var ifcr *mmio.U32
@@ -112,7 +112,7 @@ func (ch *Channel) clearEvents(e Events) {
 	if n > 6 {
 		n += 4
 	}
-	ifcr.Store(uint32(e) & 0x3d << n)
+	ifcr.Store(uint32(flags) & 0x3d << n)
 }
 
 func (ch *Channel) enable() {
@@ -123,22 +123,22 @@ func (ch *Channel) disable() {
 	sraw(ch).EN().Clear()
 }
 
-func (ch *Channel) intEnabled() Events {
+func (ch *Channel) intEnabled() byte {
 	st := sraw(ch)
-	ev := Events(st.CR.Load()&0x1e<<1) | Events(st.FCR.Load()>>7&1)
+	ev := byte(st.CR.Load()&0x1e<<1) | byte(st.FCR.Load()>>7&1)
 	return ev
 }
 
-func (ch *Channel) enableInt(e Events) {
+func (ch *Channel) enableInt(flags byte) {
 	st := sraw(ch)
-	st.CR.U32.SetBits(uint32(e) >> 1 & 0x1e)
-	// st.FCR.U32.SetBits(uint32(e) & 1 << 7) Do not use
+	st.CR.U32.SetBits(uint32(flags) >> 1 & 0x1e)
+	//st.FCR.U32.SetBits(uint32(flags) & 1 << 7) Do not use
 }
 
-func (ch *Channel) disableInt(e Events) {
+func (ch *Channel) disableInt(flags byte) {
 	st := sraw(ch)
-	st.CR.U32.ClearBits(uint32(e) >> 1 & 0x1e)
-	st.FCR.U32.ClearBits(uint32(e) & 1 << 7)
+	st.CR.U32.ClearBits(uint32(flags) >> 1 & 0x1e)
+	st.FCR.U32.ClearBits(uint32(flags) & 1 << 7)
 }
 
 const (

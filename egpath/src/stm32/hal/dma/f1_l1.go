@@ -66,13 +66,13 @@ const (
 	dmerr = 0
 )
 
-func (ch *Channel) events() Events {
+func (ch *Channel) status() byte {
 	isr := sdma(ch).ISR.U32.Load()
-	return Events(isr >> (snum(ch) * 4) & 0xf)
+	return byte(isr >> (snum(ch) * 4) & 0xf)
 }
 
-func (ch *Channel) clearEvents(e Events) {
-	mask := uint32(e&0xf) << (snum(ch) * 4)
+func (ch *Channel) clear(flags byte) {
+	mask := uint32(flags&0xf) << (snum(ch) * 4)
 	sdma(ch).IFCR.U32.Store(mask)
 }
 
@@ -84,16 +84,16 @@ func (ch *Channel) disable() {
 	ch.raw.EN().Clear()
 }
 
-func (ch *Channel) intEnabled() Events {
-	return Events(ch.raw.CCR.U32.Load() & 0xe)
+func (ch *Channel) intEnabled() byte {
+	return byte(ch.raw.CCR.U32.Load() & 0xe)
 }
 
-func (ch *Channel) enableInt(e Events) {
-	ch.raw.CCR.U32.SetBits(uint32(e) & 0xe)
+func (ch *Channel) enableInt(flags byte) {
+	ch.raw.CCR.U32.SetBits(uint32(flags) & 0xe)
 }
 
-func (ch *Channel) disableInt(e Events) {
-	ch.raw.CCR.U32.ClearBits(uint32(e) & 0xe)
+func (ch *Channel) disableInt(flags byte) {
+	ch.raw.CCR.U32.ClearBits(uint32(flags) & 0xe)
 }
 
 const (

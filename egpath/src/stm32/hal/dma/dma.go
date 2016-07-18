@@ -33,27 +33,58 @@ func (p *DMA) Channel(sn, cn int) *Channel {
 
 type Channel channel
 
-type Events byte
+type Event byte
 
 const (
-	TRCE Events = trce // Transfer Complete Event.
-	HTCE Events = htce // Half Transfer Complete Event.
-	EV          = TRCE | HTCE
+	Complete     Event = trce // Transfer Complete Event.
+	HalfComplete Event = htce // Half Transfer Complete Event.
 
-	TRERR Events = trerr // Transfer Error.
-	DMERR Events = dmerr // Direct Mode Error.
-	FFERR Events = fferr // FIFO Error.
-	ERR          = TRERR | DMERR | FFERR
+	EvAll = Complete | HalfComplete
 )
 
-// Events returns current event flags.
-func (ch *Channel) Events() Events {
-	return ch.events()
+type Error byte
+
+const (
+	ErrTransfer   Error = trerr // Transfer Error.
+	ErrDirectMode Error = dmerr // Direct Mode Error.
+	ErrFIFO       Error = fferr // FIFO Error.
+
+	ErrAll = ErrTransfer | ErrDirectMode | ErrFIFO
+)
+
+func (e Error) Error() string {
+	var (
+		s string
+		d Error
+	)
+	switch {
+	case e&ErrTransfer != 0:
+		d = ErrTransfer
+		s = "DMA transfer+"
+	case e&ErrDirectMode != 0:
+		d = ErrDirectMode
+		s = "DMA direct mode+"
+	case e&ErrFIFO != 0:
+		d = ErrFIFO
+		s = "DMA FIFO+"
+	default:
+		return ""
+	}
+	if e&^d == 0 {
+		s = s[:len(s)-1]
+	}
+	return s
+}
+
+// Status returns current event and error flags.
+func (ch *Channel) Status() (Event, Error) {
+	flags := ch.status()
+	return Event(flags) & EvAll, Error(flags) & ErrAll
 }
 
 // ClearEvents clears specified event flags.
-func (ch *Channel) ClearEvents(e Events) {
-	ch.clearEvents(e)
+func (ch *Channel) Clear(ev Event, err Error) {
+	ch.clear(byte(ev) | byte(err))
 }
 
 // Enable enables channel.
@@ -67,18 +98,19 @@ func (ch *Channel) Disable() {
 }
 
 // IntEnabled returns events that are enabled to generate interrupts.
-func (ch *Channel) IntEnabled() Events {
-	return ch.intEnabled()
+func (ch *Channel) IntEnabled() (Event, Error) {
+	flags := ch.intEnabled()
+	return Event(flags) & EvAll, Error(flags) & ErrAll
 }
 
 // EnableInt enables interrupt generation by events.
-func (ch *Channel) EnableInt(e Events) {
-	ch.enableInt(e)
+func (ch *Channel) EnableInt(ev Event, err Error) {
+	ch.enableInt(byte(ev) | byte(err))
 }
 
 // DisableInt disables interrupt generation by events.
-func (ch *Channel) DisableInt(e Events) {
-	ch.disableInt(e)
+func (ch *Channel) DisableInt(ev Event, err Error) {
+	ch.disableInt(byte(ev) | byte(err))
 }
 
 type Mode uint32
@@ -97,11 +129,11 @@ const (
 	PrioH Mode = prioH // Stream priority level: High.
 	PrioV Mode = prioV // Stream priority level: Very high.
 
-	Direct   = 0        // Direct mode.
-	FIFO_1_4 = fifo_1_4 // FIFO mode, threshold 1/4.
-	FIFO_2_4 = fifo_2_4 // FIFO mode, threshold 2/4.
-	FIFO_3_4 = fifo_3_4 // FIFO mode, threshold 3/4.
-	FIFO_4_4 = fifo_4_4 // FIFO mode, threshold 4/4.
+	Direct   Mode = 0        // Direct mode.
+	FIFO_1_4 Mode = fifo_1_4 // FIFO mode, threshold 1/4.
+	FIFO_2_4 Mode = fifo_2_4 // FIFO mode, threshold 2/4.
+	FIFO_3_4 Mode = fifo_3_4 // FIFO mode, threshold 3/4.
+	FIFO_4_4 Mode = fifo_4_4 // FIFO mode, threshold 4/4.
 )
 
 // Setup configures channel.
