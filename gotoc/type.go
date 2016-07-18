@@ -330,7 +330,6 @@ func (cdd *CDD) tupleName(tup *types.Tuple) (tupName string, fields []*types.Var
 	}
 
 	if o, ok := cdd.gtc.tuples[tupName]; ok {
-		//cdd.DeclUses[o] = true
 		cdd.addObject(o, true)
 		return
 	}
@@ -388,7 +387,7 @@ func (cdd *CDD) tiname(typ types.Type) string {
 		obj := t.Obj()
 		name := cdd.NameStr(obj, false)
 		if cdd.gtc.isLocal(obj) {
-			name = upath(obj.Pkg().Path()) + "$" + name + "$" +
+			name = Upath(obj.Pkg().Path()) + "$" + name + "$" +
 				strconv.Itoa(int(obj.Pos()))
 		} else {
 			name += "$$"

@@ -96,7 +96,7 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, direct bool) {
 	switch o := obj.(type) {
 	case *types.PkgName:
 		// Imported package name in SelectorExpr: pkgname.Name
-		w.WriteString(upath(o.Pkg().Path()))
+		w.WriteString(Upath(o.Pkg().Path()))
 		return
 
 	case *types.Func:
@@ -119,7 +119,7 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, direct bool) {
 	var hasPrefix bool
 	if p := obj.Pkg(); p != nil && !cdd.gtc.isLocal(obj) {
 		cdd.addObject(obj, direct)
-		w.WriteString(upath(obj.Pkg().Path()))
+		w.WriteString(Upath(obj.Pkg().Path()))
 		w.WriteByte('$')
 		hasPrefix = true
 	}
@@ -1028,7 +1028,15 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 		} else if ltyp == unil {
 			w.WriteString("ISNILI(" + rhs + ")")
 		} else {
-			w.WriteString("EQUALI(" + lhs + ", " + rhs + ")")
+			_, li := ltyp.Underlying().(*types.Interface)
+			_, ri := rtyp.Underlying().(*types.Interface)
+			if li && ri {
+				w.WriteString("EQUALI(" + lhs + ", " + rhs + ")")
+			} else if li {
+
+			} else {
+
+			}
 		}
 		return
 	case *types.Basic:

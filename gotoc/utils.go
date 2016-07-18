@@ -5,8 +5,27 @@ import (
 	"strings"
 )
 
-func upath(path string) string {
-	return strings.Replace(path, "/", "$", -1)
+func Upath(s string) (ret string) {
+	for {
+		i := strings.IndexAny(s, "/.+-")
+		if i == -1 {
+			break
+		}
+		ret += s[:i]
+		switch s[i] {
+		case '/':
+			ret += "$"
+		case '.':
+			ret += "$0$"
+		case '-':
+			ret += "$1$"
+		case '+':
+			ret += "$2$"
+		}
+		s = s[i+1:]
+	}
+	ret += s
+	return
 }
 
 func write(s string, ws ...io.Writer) error {

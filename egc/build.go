@@ -186,7 +186,7 @@ func compile(bp *build.Package) error {
 		h := filepath.Base(hpath)
 		_, err = io.WriteString(wc, "#include \""+h+"\"\n\n")
 	} else {
-		up := strings.Replace(ppath, "/", "$", -1)
+		up := gotoc.Upath(ppath)
 		_, err = io.WriteString(wh, "#ifndef "+up+"\n#define "+up+"\n\n")
 	}
 	if err != nil {

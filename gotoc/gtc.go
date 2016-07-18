@@ -151,10 +151,6 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 
 	// Determine inline for any function except main.main()
 	for _, cdd := range cdds {
-		/*fmt.Printf(
-			"Origin: %s <%d>\n DeclUses: %+v\n BodyUses: %+v\n",
-			cdd.Origin, cdd.Typ, cdd.DeclUses, cdd.BodyUses,
-		)*/
 		if cdd.Typ == ImportDecl {
 			continue
 		}
@@ -165,7 +161,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		}
 	}
 
-	// Export code need by exported declarations and inlined function bodies
+	// Export code need by exported declarations and inlined function bodies.
 	for _, cdd := range cdds {
 		if cdd.Export || cdd.Typ == ImportDecl {
 			continue
@@ -343,7 +339,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	if err := write("// init\n", wh, wc); err != nil {
 		return err
 	}
-	up := upath(gtc.pkg.Path())
+	up := Upath(gtc.pkg.Path())
 	if _, err = io.WriteString(wh, "void "+up+"$init();\n"); err != nil {
 		return err
 	}
@@ -356,7 +352,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	n := buf.Len()
 
 	for i := range imp {
-		buf.WriteString("\t" + upath(i.Path()) + "$init();\n")
+		buf.WriteString("\t" + Upath(i.Path()) + "$init();\n")
 	}
 
 	for _, i := range gtc.ti.InitOrder {
