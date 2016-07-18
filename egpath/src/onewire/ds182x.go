@@ -73,7 +73,7 @@ func (m *Master) ReadScratchpad() (s Scratchpad, err error) {
 	if err = m.WriteByte(readScratchpad); err != nil {
 		return
 	}
-	if _, err = m.ReadFull(s[:]); err != nil {
+	if _, err = m.Read(s[:]); err != nil {
 		return
 	}
 	if CRC8(0, s[:8]) != s.CRC() {

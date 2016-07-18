@@ -13,4 +13,6 @@ type Driver interface {
 	Reset() error
 	ReadBit() (bit byte, err error)
 	WriteBit(bit byte) error
+	ReadByte() (byte, error)
+	WriteByte(b byte) error
 }

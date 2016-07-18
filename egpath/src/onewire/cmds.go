@@ -10,7 +10,7 @@ const (
 )
 
 // ReadROM allows the bus master to read the slave’s 64-bit ROM code without
-// using the SearcROM method. It can only be used when there is only one slave
+// using the SearchROM method. It can only be used when there is only one slave
 // device on the bus.
 func (m *Master) ReadROM() (d Dev, err error) {
 	if err = m.Reset(); err != nil {
@@ -19,7 +19,7 @@ func (m *Master) ReadROM() (d Dev, err error) {
 	if err = m.WriteByte(readROM); err != nil {
 		return
 	}
-	_, err = m.ReadFull(d[:])
+	_, err = m.Read(d[:])
 	return
 }
 
