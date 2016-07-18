@@ -19,21 +19,6 @@ func (p *Periph) Bus() system.Bus {
 	return internal.Bus(unsafe.Pointer(p))
 }
 
-type Status uint16
-
-const (
-	ParityErr  = Status(usart.PE)   // Parity error.
-	FramingErr = Status(usart.FE)   // Framing error.
-	NoiseErr   = Status(usart.NE)   // Noise error flag.
-	OverrunErr = Status(usart.ORE)  // Overrun error.
-	Idle       = Status(usart.IDLE) // IDLE line detected.
-	RxNotEmpty = Status(usart.RXNE) // Read data register not empty.
-	TxDone     = Status(usart.TC)   // Transmission complete.
-	TxEmpty    = Status(usart.TXE)  // Transmit data register empty.
-	LINBreak   = Status(usart.LBD)  // LIN break detection flag.
-	CTS        = Status(usart.CTS)  // CTS flag.
-)
-
 // EnableClock enables clock for p.
 // lp determines whether the clock remains on in low power (sleep) mode.
 func (p *Periph) EnableClock(lp bool) {
@@ -52,9 +37,106 @@ func (p *Periph) Reset() {
 	internal.APB_Reset(unsafe.Pointer(p))
 }
 
-// Status return current status.
-func (p *Periph) Status() Status {
-	return Status(p.raw.SR.Load())
+// Event is bitmask that describes events in USART peripheral.
+type Event byte
+
+const (
+	Idle       = Event(usart.IDLE >> 4) // IDLE line detected.
+	RxNotEmpty = Event(usart.RXNE >> 4) // Read data register not empty.
+	TxDone     = Event(usart.TC >> 4)   // Transmission complete.
+	TxEmpty    = Event(usart.TXE >> 4)  // Transmit data register empty.
+	LINBreak   = Event(usart.LBD >> 4)  // LIN break detection flag.
+	CTS        = Event(usart.CTS >> 4)  // Change on CTS status line
+)
+
+func (e Event) reg() uint16 {
+	return uint16(e) << 4
+}
+
+// Error is bitmask that describes errors that can be detected by USART hardware
+// when receiving data.
+type Error byte
+
+const (
+	ErrParity  = Error(usart.PE)  // Parity error.
+	ErrFraming = Error(usart.FE)  // Framing error.
+	ErrNoise   = Error(usart.NE)  // Noise error flag.
+	ErrOverrun = Error(usart.ORE) // Overrun error.
+)
+
+func (e Error) Error() string {
+	var (
+		s string
+		d Error
+	)
+	switch {
+	case e&ErrOverrun != 0:
+		d = ErrOverrun
+		s = "USART overrun+"
+	case e&ErrNoise != 0:
+		d = ErrNoise
+		s = "USART noise+"
+	case e&ErrFraming != 0:
+		d = ErrFraming
+		s = "USART framing+"
+	case e&ErrParity != 0:
+		d = ErrParity
+		s = "USART parity+"
+	default:
+		return ""
+	}
+	if e&^d == 0 {
+		s = s[:len(s)-1]
+	}
+	return s
+}
+
+// Status return current status of p.
+func (p *Periph) Status() (Event, Error) {
+	sr := p.raw.SR.Load()
+	return Event(sr >> 4), Error(sr & 0xf)
+}
+
+// Clear clears events e. Only RxNotEmpty, TxDone, LINBreak and CTS can be
+// cleared this way. Other events can be cleared only by specific sequence of
+// reading status register and read or write data register.
+func (p *Periph) Clear(e Event) {
+	p.raw.SR.U16.Store(^e.reg())
+}
+
+// EnableEventIRQ enables generating of IRQ by events e.
+func (p *Periph) EnableIRQ(e Event) {
+	if cr1e := e & (Idle | RxNotEmpty | TxDone | TxEmpty); cr1e != 0 {
+		p.raw.CR1.U16.SetBits(cr1e.reg())
+	}
+	if e&LINBreak != 0 {
+		p.raw.LBDIE().Set()
+	}
+	if e&CTS != 0 {
+		p.raw.CTSIE().Set()
+	}
+}
+
+func (p *Periph) DisableIRQ(e Event) {
+	if cr1e := e & (Idle | RxNotEmpty | TxDone | TxEmpty); cr1e != 0 {
+		p.raw.CR1.U16.ClearBits(cr1e.reg())
+	}
+	if e&LINBreak != 0 {
+		p.raw.LBDIE().Clear()
+	}
+	if e&CTS != 0 {
+		p.raw.CTSIE().Clear()
+	}
+}
+
+// EnableErrorIRQ enables generating of IRQ by ErrNoise, ErrOverrun, ErrFraming
+// errors when DMA is used to handle incoming data.
+func (p *Periph) EnableErrorIRQ() {
+	p.raw.EIE().Set()
+}
+
+func (p *Periph) DisableErrorIRQ() {
+	p.raw.EIE().Clear()
 }
 
 // SetBaudRate sets baudrate [sym/s]. APB1 and APB2 clock in stm32/hal/system
@@ -97,6 +179,14 @@ const (
 	Stop1b5 Conf = 3 << (16 + 12) // Use 1.5 stop bits instead of 1.
 )
 
+func (p *Periph) Conf() Conf {
+	mask := uint16(RxEna | TxEna | ParOdd)
+	cfg := p.raw.CR1.U16.Bits(mask)
+	mask = uint16(Stop1b5 >> 16)
+	cfg |= p.raw.CR2.U16.Bits(mask) << 16
+	return Conf(cfg)
+}
+
 func (p *Periph) SetConf(cfg Conf) {
 	mask := uint16(RxEna | TxEna | ParOdd)
 	p.raw.CR1.U16.StoreBits(mask, uint16(cfg))
@@ -117,29 +207,6 @@ func (p *Periph) SetMode(mode Mode) {
 	mode >>= 16
 	mask := uint16(HalfDuplex >> 16)
 	p.raw.CR3.U16.StoreBits(mask, uint16(mask))
-}
-
-type IRQ uint16
-
-const (
-	IdleIRQ       = IRQ(usart.IDLEIE)
-	RxNotEmptyIRQ = IRQ(usart.RXNEIE)
-	TxDoneIRQ     = IRQ(usart.TCIE)
-	TxEmptyIRQ    = IRQ(usart.TXEIE)
-	ParityErrIRQ  = IRQ(usart.PEIE)
-)
-
-func (p *Periph) IRQEnabled() IRQ {
-	irqmask := IdleIRQ | RxNotEmptyIRQ | TxDoneIRQ | TxEmptyIRQ | ParityErrIRQ
-	return IRQ(p.raw.CR1.U16.Bits(uint16(irqmask)))
-}
-
-func (p *Periph) EnableIRQ(irq IRQ) {
-	p.raw.CR1.U16.SetBits(uint16(irq))
-}
-
-func (p *Periph) DisableIRQ(irq IRQ) {
-	p.raw.CR1.U16.ClearBits(uint16(irq))
 }
 
 func (p *Periph) Store(d int) {

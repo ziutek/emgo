@@ -2,106 +2,213 @@ package usart
 
 import (
 	"rtos"
+	"sync/atomic"
 	"unsafe"
 
 	"stm32/hal/dma"
-
-	"stm32/hal/raw/usart"
 )
 
-type Error byte
+type DriverError byte
 
 const (
-	noErr    Error = 0
-	ErrUSART Error = 1
-	ErrDMA   Error = 2
+	ErrBufOverflow DriverError = iota
+	ErrTimeout
 )
 
-func (e Error) Error() string {
+func (e DriverError) Error() string {
 	switch e {
-	case ErrUSART:
-		return "USART error"
-	case ErrDMA:
-		return "DMA error"
-	case ErrUSART | ErrDMA:
-		return "USART and DMA error"
+	case ErrBufOverflow:
+		return "buffer overflow"
+	case ErrTimeout:
+		return "timeout"
 	default:
 		return ""
 	}
 }
 
 type Driver struct {
-	*Periph
-	RxRing []byte // Rx ring buffer required for RxDMA.
-	RxDMA  *dma.Channel
-	TxDMA  *dma.Channel
+	rxDeadline int64
+	txDeadline int64
 
-	rxdone, txdone rtos.EventFlag
-	rxbuf, txbuf   []byte
-	rxn, txn       int
-	rxe, txe       Error
+	*Periph
+	RxDMA *dma.Channel
+	TxDMA *dma.Channel
+	RxBuf []byte // Rx ring buffer for RxDMA.
+
+	txdone   rtos.EventFlag
+	rxready  rtos.EventFlag
+	rxM, rxN uint32
+	dmaN     uint32
 }
 
-const dmaErrMask = dma.ERR &^ dma.FFERR // Ignore FIFO error.
-
-func (d *Driver) disableDMA(ch *dma.Channel, enbit usart.CR3_Bits) {
+// NewDriver provides convenient way to create heap allocated Driver struct.
+func NewDriver(p *Periph, rxdma, txdma *dma.Channel, rxbuf []byte) *Driver {
+	d := new(Driver)
+	d.Periph = p
+	d.RxDMA = rxdma
+	d.TxDMA = txdma
+	d.RxBuf = rxbuf
+	return d
+}
+func disableDMA(ch *dma.Channel) {
 	ch.Disable()
-	ch.DisableInt(dma.EV | dma.ERR)
-	d.Periph.raw.CR3.ClearBits(enbit)
+	ch.DisableInt(dma.EvAll, dma.ErrAll)
 }
 
 func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode) {
-	ch.ClearEvents(dma.EV | dma.ERR)
 	ch.Setup(mode)
 	ch.SetWordSize(1, 1)
 	ch.SetAddrP(unsafe.Pointer(d.Periph.raw.DR.U16.Addr()))
 }
 
-func (d *Driver) startDMA(ch *dma.Channel, enbit usart.CR3_Bits, maddr unsafe.Pointer, mlen int) {
-	d.Periph.raw.CR3.SetBits(enbit)
+func startDMA(ch *dma.Channel, maddr unsafe.Pointer, mlen int) {
 	ch.SetAddrM(maddr)
 	ch.SetLen(mlen)
+	ch.Clear(dma.EvAll, dma.ErrAll)
 	ch.Enable()
-	ch.EnableInt(dma.TRCE | dmaErrMask)
+	ch.EnableInt(dma.Complete, dma.ErrAll&^dma.ErrFIFO) // Ignore FIFO error.
+}
+
+// EnableRx
+func (d *Driver) EnableRx() {
+	p := &d.Periph.raw
+	ch := d.RxDMA
+	p.RE().Set()
+	p.DMAR().Set()
+	d.setupDMA(ch, dma.PTM|dma.IncM|dma.Circ)
+	startDMA(ch, unsafe.Pointer(&d.RxBuf[0]), len(d.RxBuf))
+}
+
+func (d *Driver) dmaNM() (n, m uint32) {
+	ch := d.RxDMA
+	n = atomic.LoadUint32(&d.dmaN)
+	for {
+		cl := ch.Len()
+		nn := atomic.LoadUint32(&d.dmaN)
+		if n == nn {
+			return n, uint32(len(d.RxBuf) - cl)
+		}
+		n = nn
+	}
+}
+
+func (d *Driver) rxNMadd(m int) {
+	d.rxM += uint32(m)
+	if d.rxM >= uint32(len(d.RxBuf)) {
+		d.rxM -= uint32(len(d.RxBuf))
+		d.rxN++
+	}
+}
+
+func (d *Driver) Read(buf []byte) (int, error) {
+	for {
+		dmaN, dmaM := d.dmaNM()
+		switch dmaN - d.rxN {
+		case 0:
+			if dmaM == d.rxM {
+				d.Periph.EnableIRQ(RxNotEmpty)
+				d.Periph.EnableErrorIRQ()
+				if !d.rxready.Wait(d.rxDeadline) {
+					return 0, ErrTimeout
+				}
+				d.rxready.Clear()
+				if _, e := d.Periph.Status(); e != 0 {
+					// BUG? Need to clear errors (by reading data register)?
+					return 0, e
+				}
+				if _, e := d.RxDMA.Status(); e != 0 {
+					return 0, e
+				}
+				continue
+			}
+			n := copy(buf, d.RxBuf[d.rxM:dmaM])
+			d.rxNMadd(n)
+			return n, nil
+		case 1:
+			if dmaM > d.rxM {
+				break
+			}
+			n := copy(buf, d.RxBuf[d.rxM:])
+			if n < len(buf) {
+				n += copy(buf[n:], d.RxBuf[:dmaM])
+			}
+			dmaN, dmaM = d.dmaNM()
+			if dmaN-d.rxN != 1 || dmaM > d.rxM {
+				break
+			}
+			d.rxNMadd(n)
+			return n, nil
+		}
+		d.rxN = dmaN
+		d.rxM = dmaM
+		return 0, ErrBufOverflow
+	}
+}
+
+func (d *Driver) ReadByte() (byte, error) {
+	var buf [1]byte
+	_, err := d.Read(buf[:])
+	return buf[0], err
+}
+
+func (d *Driver) USARTISR() {
+	d.Periph.DisableIRQ(RxNotEmpty)
+	d.Periph.Clear(RxNotEmpty)
+	d.Periph.DisableErrorIRQ()
+	d.rxready.Set()
+}
+
+func (d *Driver) RxDMAISR() {
+	if _, e := d.RxDMA.Status(); e != 0 {
+		d.rxready.Set()
+		return
+	}
+	d.RxDMA.Clear(dma.EvAll, dma.ErrAll)
+	atomic.AddUint32(&d.dmaN, 1)
+}
+
+func (d *Driver) EnableTx() {
+	p := &d.Periph.raw
+	p.TE().Set()
+	p.DMAT().Set()
+	d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4)
+}
+
+func (d *Driver) DisableTx() {
+	p := &d.Periph.raw
+	p.TE().Clear()
 }
 
 func (d *Driver) Write(buf []byte) (int, error) {
-	ch := d.TxDMA
-	d.disableDMA(ch, usart.DMAT)
-	d.setupDMA(ch, dma.MTP|dma.IncM|dma.FIFO_4_4)
-	m := len(buf)
-	if m > 0xffff {
-		m = 0xffff
+	var n int
+	for {
+		m := len(buf) - n
+		if m == 0 {
+			break
+		}
+		if m > 0xffff {
+			m = 0xffff
+		}
+		d.Periph.raw.SR.Store(0) // Clear TC.
+		startDMA(d.TxDMA, unsafe.Pointer(&buf[n]), m)
+		n += m
+		if !d.txdone.Wait(d.txDeadline) {
+			return n - d.TxDMA.Len(), ErrTimeout
+		}
+		d.txdone.Clear()
+		if _, e := d.RxDMA.Status(); e&^dma.ErrFIFO != 0 {
+			return n - d.RxDMA.Len(), e
+		}
 	}
-	d.txbuf = buf
-	d.txn = m
-	d.txe = noErr
-	d.startDMA(ch, usart.DMAT, unsafe.Pointer(&buf[0]), m)
-	d.txdone.Wait(0)
-	d.txdone.Clear()
-	if d.txe != 0 {
-		return d.txn, d.txe
-	}
-	return d.txn, nil
+	return n, nil
+}
+
+func (d *Driver) WriteByte(b byte) error {
+	_, err := d.Write([]byte{b})
+	return err
 }
 
 func (d *Driver) TxDMAISR() {
-	ch := d.TxDMA
-	d.disableDMA(ch, usart.DMAT)
-	if ch.Events()&dmaErrMask != 0 {
-		d.txn -= ch.Len()
-		d.txe |= ErrDMA
-		d.txdone.Set()
-		return
-	}
-	if d.txn == len(d.txbuf) {
-		d.txdone.Set()
-		return
-	}
-	m := len(d.txbuf) - d.txn
-	if m > 0xffff {
-		m = 0xffff
-	}
-	d.startDMA(ch, usart.DMAT, unsafe.Pointer(&d.txbuf[d.txn]), m)
-	d.txn += m
+	disableDMA(d.TxDMA)
+	d.txdone.Set()
 }
