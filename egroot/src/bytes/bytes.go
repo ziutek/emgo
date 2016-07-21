@@ -5,6 +5,18 @@ import (
 	"unsafe"
 )
 
+func Equal(s1, s2 []byte) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+	for i, b := range s1 {
+		if s2[i] != b {
+			return false
+		}
+	}
+	return true
+}
+
 // Fill fills s with b.
 func Fill(s []byte, b byte) {
 	if len(s) == 0 {
