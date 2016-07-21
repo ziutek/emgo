@@ -1,6 +1,8 @@
 package onedrv
 
 import (
+	"io"
+
 	"onewire"
 
 	"stm32/hal/usart"
@@ -12,7 +14,10 @@ type USARTDriver struct {
 
 func (d USARTDriver) Reset() error {
 	d.USART.SetBaudRate(9600)
-	d.USART.WriteByte(0xf0)
+	err := d.USART.WriteByte(0xf0)
+	if err != nil {
+		return err
+	}
 	r, err := d.USART.ReadByte()
 	if err != nil {
 		return err
@@ -24,9 +29,34 @@ func (d USARTDriver) Reset() error {
 	return nil
 }
 
+// resetRx resets internal ring buffer in usart.Driver.
+func (d USARTDriver) resetRX() {
+	d.USART.DisableRx()
+	d.USART.EnableRx()
+}
+
 func (d USARTDriver) sendRecvSlot(slot byte) (byte, error) {
-	d.USART.WriteByte(slot)
-	return d.USART.ReadByte()
+	if err := d.USART.WriteByte(slot); err != nil {
+		d.resetRX()
+		return 0, err
+	}
+	b, err := d.USART.ReadByte()
+	if err != nil {
+		d.resetRX()
+	}
+	return b, err
+}
+
+func (d USARTDriver) sendRecv(slots *[8]byte) error {
+	if _, err := d.USART.Write(slots[:]); err != nil {
+		d.resetRX()
+		return err
+	}
+	_, err := io.ReadFull(d.USART, slots[:])
+	if err != nil {
+		d.resetRX()
+	}
+	return err
 }
 
 func (d USARTDriver) ReadBit() (byte, error) {
@@ -45,23 +75,10 @@ func (d USARTDriver) WriteBit(bit byte) error {
 		return err
 	}
 	if slot != bit {
+		d.resetRX()
 		return onewire.ErrBusFault
 	}
 	return nil
-}
-
-func (d USARTDriver) sendRecv(slots *[8]byte) error {
-	d.USART.Write(slots[:])
-	var n int
-	for {
-		m, err := d.USART.Read(slots[n:])
-		if n += m; n == len(slots) {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-	}
 }
 
 func (d USARTDriver) ReadByte() (byte, error) {
@@ -93,6 +110,7 @@ func (d USARTDriver) WriteByte(b byte) error {
 			r = 0xff
 		}
 		if int(slot) != r {
+			d.resetRX()
 			return onewire.ErrBusFault
 		}
 	}

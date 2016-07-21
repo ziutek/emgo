@@ -123,6 +123,10 @@ func (ch *Channel) disable() {
 	sraw(ch).EN().Clear()
 }
 
+func (ch *Channel) enabled() bool {
+	return sraw(ch).EN().Load() != 0
+}
+
 func (ch *Channel) intEnabled() byte {
 	st := sraw(ch)
 	ev := byte(st.CR.Load()&0x1e<<1) | byte(st.FCR.Load()>>7&1)

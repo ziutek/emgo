@@ -79,6 +79,22 @@ func (d *Driver) EnableRx() {
 	startDMA(ch, unsafe.Pointer(&d.RxBuf[0]), len(d.RxBuf))
 }
 
+// DisableRx disables recieve of data and resets the state of internal ring
+// buffer.
+func (d *Driver) DisableRx() {
+	p := &d.Periph.raw
+	ch := d.RxDMA
+	disableDMA(ch)
+	p.RE().Clear()
+	p.DMAR().Clear()
+	d.rxN = 0
+	d.rxM = 0
+	for ch.Enabled() {
+		// Wait dma really stops.
+	}
+	d.dmaN = 0
+}
+
 func (d *Driver) dmaNM() (n, m uint32) {
 	ch := d.RxDMA
 	n = atomic.LoadUint32(&d.dmaN)
@@ -113,7 +129,8 @@ func (d *Driver) Read(buf []byte) (int, error) {
 				}
 				d.rxready.Clear()
 				if _, e := d.Periph.Status(); e != 0 {
-					// BUG? Need to clear errors (by reading data register)?
+					// Clear errors (complete "read SR then DR" sequence).
+					d.Periph.Load()
 					return 0, e
 				}
 				if _, e := d.RxDMA.Status(); e != 0 {
@@ -212,3 +229,19 @@ func (d *Driver) TxDMAISR() {
 	disableDMA(d.TxDMA)
 	d.txdone.Set()
 }
+
+/*
+func (d *Driver) NM() (dmaN, dmaM, rxN, rxM uint32) {
+	ch := d.RxDMA
+	n := atomic.LoadUint32(&d.dmaN)
+	for {
+		cl := ch.Len()
+		nn := atomic.LoadUint32(&d.dmaN)
+		if n == nn {
+			return n, uint32(len(d.RxBuf) - cl), d.rxN, d.rxM
+		}
+		n = nn
+	}
+
+}
+*/

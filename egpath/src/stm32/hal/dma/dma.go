@@ -97,6 +97,11 @@ func (ch *Channel) Disable() {
 	ch.disable()
 }
 
+// Returns true if channel is enabled.
+func (ch *Channel) Enabled() bool {
+	return ch.enabled()
+}
+
 // IntEnabled returns events that are enabled to generate interrupts.
 func (ch *Channel) IntEnabled() (Event, Error) {
 	flags := ch.intEnabled()

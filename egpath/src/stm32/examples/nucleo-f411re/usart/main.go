@@ -4,8 +4,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"rtos"
+	"text/linewriter"
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
@@ -16,8 +18,8 @@ import (
 )
 
 var (
-	tts    *usart.Driver
-	dmabuf [80]byte
+	tts      *usart.Driver
+	dmarxbuf [80]byte
 )
 
 func init() {
@@ -33,7 +35,7 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	tts = usart.NewDriver(
-		usart.USART2, d.Channel(5, 4), d.Channel(6, 4), dmabuf[:],
+		usart.USART2, d.Channel(5, 4), d.Channel(6, 4), dmarxbuf[:],
 	)
 	tts.EnableClock(true)
 	tts.SetBaudRate(115200)
@@ -43,14 +45,21 @@ func init() {
 	rtos.IRQ(irq.USART2).Enable()
 	rtos.IRQ(irq.DMA1_Stream5).Enable()
 	rtos.IRQ(irq.DMA1_Stream6).Enable()
-	fmt.DefaultWriter = tts
+	fmt.DefaultWriter = linewriter.New(
+		bufio.NewWriterSize(tts, 88),
+		linewriter.CRLF,
+	)
 }
 
 func main() {
+	fmt.Printf("Enter/paste some text that contains newlines:\n")
 	var buf [40]byte
-	for i := 0; ; i++ {
-		k, err := tts.Read(buf[:])
-		fmt.Printf("%d '%s' %v\r\n", i, buf[:k], err)
+	for {
+		n, err := tts.Read(buf[:])
+		fmt.DefaultWriter.Write(buf[:n])
+		if err != nil {
+			fmt.Printf("\n\n*** Error: %v ***\n\n", err)
+		}
 	}
 }
 

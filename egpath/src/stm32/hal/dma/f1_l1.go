@@ -84,6 +84,10 @@ func (ch *Channel) disable() {
 	ch.raw.EN().Clear()
 }
 
+func (p *Channel) enabled() bool {
+	return ch.raw.EN().Load() != 0
+}
+
 func (ch *Channel) intEnabled() byte {
 	return byte(ch.raw.CCR.U32.Load() & 0xe)
 }

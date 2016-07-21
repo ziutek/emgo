@@ -27,7 +27,7 @@ func (s *Search) Init(typ Type, alarm bool) {
 	}
 }
 
-func NewSearch(typ Type, alarm bool) Search {
+func MakeSearch(typ Type, alarm bool) Search {
 	var s Search
 	s.Init(typ, alarm)
 	return s
