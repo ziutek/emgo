@@ -349,7 +349,6 @@ func (d *Driver) write() {
 
 func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode) {
 	d.disableDMA(ch)
-	ch.ClearEvents(dma.EV | dma.ERR)
 	ch.Setup(mode)
 	ch.SetWordSize(1, 1)
 	ch.SetAddrP(unsafe.Pointer(d.Periph.raw.DR.U16.Addr()))
@@ -373,13 +372,14 @@ func (d *Driver) startDMA(ch *dma.Channel) {
 	d.Periph.raw.CR2.SetBits(dmabits)
 	ch.SetAddrM(unsafe.Pointer(&d.buf[n]))
 	ch.SetLen(m)
+	ch.Clear(dma.EvAll, dma.ErrAll)
 	ch.Enable()
-	ch.EnableInt(dma.TRCE | dmaErrMask)
+	ch.EnableInt(dma.Complete, dmaErrMask)
 }
 
 func (d *Driver) disableDMA(ch *dma.Channel) {
 	ch.Disable()
-	ch.DisableInt(dma.EV | dma.ERR)
+	ch.DisableInt(dma.EvAll, dma.ErrAll)
 	d.Periph.raw.CR2.ClearBits(i2c.DMAEN | i2c.LAST)
 }
 
@@ -417,12 +417,12 @@ func (d *Driver) DMAISR(ch *dma.Channel) {
 		d.badEvent(0)
 		return
 	}
-	if ch.Events()&dmaErrMask != 0 {
+	if _, err := ch.Status(); err&dmaErrMask != 0 {
 		d.n -= ch.Len()
 		d.handleErrors()
 		return
 	}
-	ch.ClearEvents(dma.EV | dma.ERR)
+	ch.Clear(dma.EvAll, dma.ErrAll)
 	if len(d.buf)-d.n != 0 {
 		d.startDMA(ch)
 		return
@@ -470,10 +470,10 @@ func (d *Driver) waitDone(ch *dma.Channel) (e Error) {
 		}
 		p.SR1.Store(0) // Clear error flags.
 		if ch != nil {
-			if ch.Events()&dmaErrMask != 0 {
+			if _, err := ch.Status(); err&dmaErrMask != 0 {
 				e |= DMAErr
 			}
-			ch.ClearEvents(dma.EV | dma.ERR)
+			ch.Clear(dma.EvAll, dma.ErrAll)
 		}
 		d.state = stateIdle
 	}

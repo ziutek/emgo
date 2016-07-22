@@ -46,11 +46,11 @@ func i2cWaitIRQ(p *i2c.I2C_Periph, evflag *rtos.EventFlag, ev i2c.SR1_Bits, dead
 
 func dmaPoolTRCE(ch *dma.Channel, deadline int64) Error {
 	for {
-		ev := ch.Events()
-		if ev&dmaErrMask != 0 {
+		ev, err := ch.Status()
+		if err&dmaErrMask != 0 {
 			return DMAErr
 		}
-		if ev&dma.TRCE != 0 {
+		if ev&dma.Complete != 0 {
 			return 0
 		}
 		if rtos.Nanosec() >= deadline {
@@ -61,16 +61,16 @@ func dmaPoolTRCE(ch *dma.Channel, deadline int64) Error {
 
 func dmaWaitTRCE(ch *dma.Channel, evflag *rtos.EventFlag, deadline int64) Error {
 	for {
-		ch.EnableInt(dma.TRCE | dmaErrMask)
+		ch.EnableInt(dma.Complete, dmaErrMask)
 		if !evflag.Wait(deadline) {
 			return SoftTimeout
 		}
 		evflag.Clear()
-		ev := ch.Events()
-		if ev&dmaErrMask != 0 {
+		ev, err := ch.Status()
+		if err&dmaErrMask != 0 {
 			return DMAErr
 		}
-		if ev&dma.TRCE != 0 {
+		if ev&dma.Complete != 0 {
 			return 0
 		}
 	}

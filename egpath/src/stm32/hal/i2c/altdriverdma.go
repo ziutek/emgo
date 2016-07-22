@@ -49,7 +49,7 @@ func (d *AltDriverDMA) I2CISR() {
 }
 
 func (d *AltDriverDMA) DMAISR(ch *dma.Channel) {
-	ch.DisableInt(dma.EV | dma.ERR)
+	ch.DisableInt(dma.EvAll, dma.ErrAll)
 	d.evflag.Set()
 }
 
@@ -91,6 +91,6 @@ func (d *AltDriverDMA) startDMA(ch *dma.Channel, addr *byte, n int) (int, Error)
 		e = dmaPoolTRCE(ch, deadline)
 	}
 	ch.Disable()
-	ch.ClearEvents(dma.EV | dma.ERR)
+	ch.Clear(dma.EvAll, dma.ErrAll)
 	return n - ch.Len(), e
 }
