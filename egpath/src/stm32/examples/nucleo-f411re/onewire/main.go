@@ -94,8 +94,8 @@ func init() {
 	rtos.IRQ(irq.DMA2_Stream7).Enable()
 }
 
-func conUSARTISR() {
-	con.USARTISR()
+func conISR() {
+	con.ISR()
 }
 func conRxDMAISR() {
 	con.RxDMAISR()
@@ -104,8 +104,8 @@ func conTxDMAISR() {
 	con.TxDMAISR()
 }
 
-func oneUSARTISR() {
-	one.USARTISR()
+func oneISR() {
+	one.ISR()
 }
 func oneRxDMAISR() {
 	one.RxDMAISR()
@@ -208,11 +208,11 @@ start:
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.USART2:       conUSARTISR,
+	irq.USART2:       conISR,
 	irq.DMA1_Stream5: conRxDMAISR,
 	irq.DMA1_Stream6: conTxDMAISR,
 
-	irq.USART6:       oneUSARTISR,
+	irq.USART6:       oneISR,
 	irq.DMA2_Stream1: oneRxDMAISR,
 	irq.DMA2_Stream7: oneTxDMAISR,
 }

@@ -31,7 +31,10 @@ func (d USARTDriver) Reset() error {
 
 // resetRx resets internal ring buffer in usart.Driver.
 func (d USARTDriver) resetRX() {
+	// Clear Rx buffer and all errors.
 	d.USART.DisableRx()
+	d.USART.Status()
+	d.USART.Load()
 	d.USART.EnableRx()
 }
 
@@ -116,3 +119,44 @@ func (d USARTDriver) WriteByte(b byte) error {
 	}
 	return nil
 }
+
+/*
+func printStatus(u *usart.Driver) {
+	ev, err := u.Status()
+
+	fmt.Printf("Events: ")
+	if ev&usart.Idle != 0 {
+		fmt.Printf("Idle ")
+	}
+	if ev&usart.RxNotEmpty != 0 {
+		fmt.Printf("RxNotEmpty ")
+	}
+	if ev&usart.TxDone != 0 {
+		fmt.Printf("TxDone ")
+	}
+	if ev&usart.TxEmpty != 0 {
+		fmt.Printf("TxEmpty ")
+	}
+	if ev&usart.LINBreak != 0 {
+		fmt.Printf("LINBreak ")
+	}
+	if ev&usart.CTS != 0 {
+		fmt.Printf("CTS ")
+	}
+
+	fmt.Printf("Errors:")
+	if err&usart.ErrParity != 0 {
+		fmt.Printf(" ErrParity")
+	}
+	if err&usart.ErrFraming != 0 {
+		fmt.Printf(" ErrFraming")
+	}
+	if err&usart.ErrNoise != 0 {
+		fmt.Printf(" ErrNoise")
+	}
+	if err&usart.ErrOverrun != 0 {
+		fmt.Printf(" ErrOverrun")
+	}
+	fmt.Println()
+}
+*/

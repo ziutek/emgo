@@ -47,6 +47,8 @@ const (
 	TxEmpty    = Event(usart.TXE >> 4)  // Transmit data register empty.
 	LINBreak   = Event(usart.LBD >> 4)  // LIN break detection flag.
 	CTS        = Event(usart.CTS >> 4)  // Change on CTS status line
+
+	EvAll = Idle | RxNotEmpty | TxDone | TxEmpty | LINBreak | CTS
 )
 
 func (e Event) reg() uint16 {

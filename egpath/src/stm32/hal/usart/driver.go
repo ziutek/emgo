@@ -27,8 +27,8 @@ func (e DriverError) Error() string {
 }
 
 type Driver struct {
-	rxDeadline int64
-	txDeadline int64
+	deadlineRx int64
+	deadlineTx int64
 
 	*Periph
 	RxDMA *dma.Channel
@@ -124,7 +124,7 @@ func (d *Driver) Read(buf []byte) (int, error) {
 			if dmaM == d.rxM {
 				d.Periph.EnableIRQ(RxNotEmpty)
 				d.Periph.EnableErrorIRQ()
-				if !d.rxready.Wait(d.rxDeadline) {
+				if !d.rxready.Wait(d.deadlineRx) {
 					return 0, ErrTimeout
 				}
 				d.rxready.Clear()
@@ -168,7 +168,7 @@ func (d *Driver) ReadByte() (byte, error) {
 	return buf[0], err
 }
 
-func (d *Driver) USARTISR() {
+func (d *Driver) ISR() {
 	d.Periph.DisableIRQ(RxNotEmpty)
 	d.Periph.Clear(RxNotEmpty)
 	d.Periph.DisableErrorIRQ()
@@ -209,7 +209,7 @@ func (d *Driver) Write(buf []byte) (int, error) {
 		d.Periph.raw.SR.Store(0) // Clear TC.
 		startDMA(d.TxDMA, unsafe.Pointer(&buf[n]), m)
 		n += m
-		if !d.txdone.Wait(d.txDeadline) {
+		if !d.txdone.Wait(d.deadlineTx) {
 			return n - d.TxDMA.Len(), ErrTimeout
 		}
 		d.txdone.Clear()
@@ -228,6 +228,14 @@ func (d *Driver) WriteByte(b byte) error {
 func (d *Driver) TxDMAISR() {
 	disableDMA(d.TxDMA)
 	d.txdone.Set()
+}
+
+func (d *Driver) SetReadDeadline(t int64) {
+	d.deadlineRx = t
+}
+
+func (d *Driver) SetWriteDeadline(t int64) {
+	d.deadlineTx = t
 }
 
 /*

@@ -63,8 +63,8 @@ func main() {
 	}
 }
 
-func ttsUSARTISR() {
-	tts.USARTISR()
+func ttsISR() {
+	tts.ISR()
 }
 
 func ttsRxDMAISR() {
@@ -78,7 +78,7 @@ func ttsTxDMAISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.USART2:       ttsUSARTISR,
+	irq.USART2:       ttsISR,
 	irq.DMA1_Stream5: ttsRxDMAISR,
 	irq.DMA1_Stream6: ttsTxDMAISR,
 }

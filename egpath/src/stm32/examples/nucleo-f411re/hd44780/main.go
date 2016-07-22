@@ -44,7 +44,6 @@ var (
 		DS: 4,
 		RS: 1 << 0, RW: 1 << 1, E: 1 << 2, AUX: 1 << 3,
 	}
-	screen [20 * 4]byte
 )
 
 func init() {
@@ -93,6 +92,8 @@ func init() {
 	rtos.IRQ(irq.I2C1_EV).Enable()
 	rtos.IRQ(irq.I2C1_ER).Enable()
 }
+
+var screen [20 * 4]byte
 
 func main() {
 	delay.Millisec(250)
