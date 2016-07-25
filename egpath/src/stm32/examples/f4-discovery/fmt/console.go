@@ -1,45 +1,52 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"rtos"
+	"text/linewriter"
 
+	"stm32/hal/dma"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/usart"
-	"stm32/serial"
 )
 
-var con *serial.Dev
+var tts *usart.Driver
 
 func initConsole() {
 	gpio.A.EnableClock(true)
-	port, tx, rx := gpio.A, gpio.Pin2, gpio.Pin3
+	port, tx := gpio.A, gpio.Pin2
 
 	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
-	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
-	port.SetAltFunc(tx|rx, gpio.USART2)
+	port.SetAltFunc(tx, gpio.USART2)
+	d := dma.DMA1
+	d.EnableClock(true) // DMA clock must remain enabled in sleep mode
 
-	s := usart.USART2
-
-	s.EnableClock(true)
-	s.SetBaudRate(115200)
-	s.SetConf(usart.RxEna | usart.TxEna)
-	s.EnableIRQs(usart.RxNotEmptyIRQ)
-	s.Enable()
-
-	con = serial.New(s, 80, 8)
-	con.SetUnix(true)
-	fmt.DefaultWriter = con
-
+	tts = usart.NewDriver(usart.USART2, nil, d.Channel(6, 4), nil)
+	tts.EnableClock(true)
+	tts.SetBaudRate(115200)
+	tts.Enable()
+	tts.EnableTx()
 	rtos.IRQ(irq.USART2).Enable()
+	rtos.IRQ(irq.DMA1_Stream6).Enable()
+	fmt.DefaultWriter = linewriter.New(
+		bufio.NewWriterSize(tts, 88),
+		linewriter.CRLF,
+	)
 }
 
-func conISR() {
-	con.IRQ()
+func ttsISR() {
+	tts.ISR()
 }
 
+func ttsTxDMAISR() {
+	tts.TxDMAISR()
+}
+
+//emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.USART2: conISR,
+	irq.USART2:       ttsISR,
+	irq.DMA1_Stream6: ttsTxDMAISR,
 }

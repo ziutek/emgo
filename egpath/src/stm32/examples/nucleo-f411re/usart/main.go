@@ -19,7 +19,7 @@ import (
 
 var (
 	tts      *usart.Driver
-	dmarxbuf [80]byte
+	dmarxbuf [88]byte
 )
 
 func init() {

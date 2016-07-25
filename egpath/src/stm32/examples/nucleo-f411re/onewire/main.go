@@ -10,14 +10,13 @@ import (
 
 	"onewire"
 
-	"stm32/onedrv"
-
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
 	"stm32/hal/usart"
+	"stm32/onedrv"
 )
 
 const Green = gpio.Pin5
