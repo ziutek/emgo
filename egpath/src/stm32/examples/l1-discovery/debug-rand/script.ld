@@ -1,4 +1,4 @@
-StackISR = 5000;
+StackISR = 4096; 
 
 StackTaskLog2 = 0;
 StackTaskFrac = 0; 

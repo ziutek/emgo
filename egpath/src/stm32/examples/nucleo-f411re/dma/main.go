@@ -24,7 +24,7 @@ func init() {
 	systick.Setup()
 
 	d := dma.DMA2
-	d.EnableClock(false)
+	d.EnableClock(true)
 	ch = d.Channel(0, 0)
 	rtos.IRQ(irq.DMA2_Stream0).Enable()
 }

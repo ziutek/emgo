@@ -8,7 +8,7 @@ import (
 	"stm32/hal/system"
 )
 
-var dbg = rtos.Debug(0)
+const dbg = rtos.Debug(0)
 
 func main() {
 	system.Setup32(0)

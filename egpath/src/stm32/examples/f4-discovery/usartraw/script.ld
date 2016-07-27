@@ -1,4 +1,4 @@
-StackISR = 2000; /* 2 kB */
+StackISR = 2048; /* 2 kB */
 
 StackTaskLog2 = 12; /* 4 KiB */
 StackTaskFrac = 8;  /* 8/8 */

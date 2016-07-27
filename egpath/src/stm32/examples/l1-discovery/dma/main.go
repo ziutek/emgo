@@ -2,6 +2,7 @@
 package main
 
 import (
+	"delay"
 	"fmt"
 	"rtos"
 	"unsafe"
@@ -22,7 +23,7 @@ func init() {
 	systick.Setup()
 
 	DMA := dma.DMA1
-	DMA.EnableClock(false)
+	DMA.EnableClock(true)
 	ch = DMA.Channel(1, 0)
 	rtos.IRQ(irq.DMA1_Channel1).Enable()
 }
@@ -40,15 +41,23 @@ func main() {
 	ch.SetLen(len(P))
 	ch.SetAddrP(unsafe.Pointer(&P[0]))
 	ch.SetAddrM(unsafe.Pointer(&M[0]))
-	ch.EnableInt(dma.TRCE) // Simplified (should handle dma.ERR too).
+	ch.EnableInt(dma.Complete, dma.ErrAll)
 	ch.Enable()
 	tce.Wait(0)
-	fmt.Println(M[:])
+	
+	delay.Millisec(250) // Wait for OpenOCD (press reset if you see nothing).
+
+	if _, err := ch.Status(); err != 0 {
+		fmt.Printf("Error: %v\n", err)
+	} else {
+		fmt.Println(M[:])
+	}
 }
 
 func dmaISR() {
-	if ch.Events()&dma.TRCE != 0 {
-		ch.ClearEvents(dma.EV)
+	ch.DisableInt(dma.EvAll, dma.ErrAll)
+	ev, err := ch.Status()
+	if ev&dma.Complete != 0 || err != 0 {
 		tce.Set()
 	}
 }
