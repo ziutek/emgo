@@ -423,6 +423,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 					break
 				}
 			}
+			/* Not need because -fno-strict-aliasing
 			if _, ok := typ.(*types.Pointer); ok {
 				if _, ok := at.Underlying().(*types.Pointer); !ok {
 					// Casting unsafe.Pointer
@@ -438,12 +439,13 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 					break
 				}
 			}
-			w.WriteByte('(')
+			*/
+			w.WriteString("((")
 			dim := cdd.Type(w, t)
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteString(")(")
 			cdd.Expr(w, arg, t)
-			w.WriteByte(')')
+			w.WriteString("))")
 		}
 	}
 }
@@ -865,14 +867,14 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 		} else {
 			w.WriteString("AIDX(")
 		}
+		if !isPtr {
+			w.WriteByte('&')
+		}
 	case *types.Map:
 		indT = t.Key()
 		cdd.notImplemented(&ast.IndexExpr{}, t)
 	default:
 		panic(t)
-	}
-	if isPtr {
-		w.WriteByte('*')
 	}
 	w.WriteString(xs)
 	w.WriteString(", ")
@@ -893,12 +895,14 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 	pt, isPtr := typ.(*types.Pointer)
 	if isPtr {
 		typ = pt.Elem()
-		sx = "(*" + sx + ")"
 	}
 	var slice *types.Slice
 	empty := e.Low == nil && e.High == nil && e.Max == nil
 	switch t := typ.Underlying().(type) {
 	case *types.Array:
+		if !isPtr {
+			sx = "(&" + sx + ")"
+		}
 		if empty {
 			w.WriteString("ASLICE(" + sx + ")")
 			return

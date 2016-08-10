@@ -419,11 +419,14 @@ func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) (cex bool) {
 					return false
 				}
 			}
-		case *types.Pointer:
-			if _, ok := at.Underlying().(*types.Pointer); !ok {
-				// Casting unsafe.Pointer
-				return false
-			}
+
+			/* Not need because -fno-strict-aliasing
+			case *types.Pointer:
+				if _, ok := at.Underlying().(*types.Pointer); !ok {
+					// Casting unsafe.Pointer
+					return false
+				}
+			*/
 		}
 		return cdd.isConstExpr(arg, at)
 	case *ast.SelectorExpr:

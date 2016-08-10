@@ -21,11 +21,11 @@ var archMap = map[string]string{
 
 var osMap = map[string]struct{ cc, ld string }{
 	"noos": {
-		cc: "-ffreestanding -nostdinc -fno-exceptions -nostartfiles",
+		cc: "-ffreestanding -nostdinc -fno-exceptions -nostartfiles -fno-strict-aliasing",
 		ld: "-nostdlib -nodefaultlibs  -nostartfiles -lgcc",
 	},
 	"linux": {
-		cc: "-ffreestanding -nostdinc -fno-exceptions -nostartfiles",
+		cc: "-ffreestanding -nostdinc -fno-exceptions -nostartfiles -fno-strict-aliasing",
 		ld: "-nostdlib -nodefaultlibs -nostartfiles -lgcc",
 	},
 }
