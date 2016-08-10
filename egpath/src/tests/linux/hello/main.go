@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sync"
 	"syscall"
 )
 
@@ -56,19 +57,24 @@ func main() {
 
 	sa := syscall.RawSockaddrInet4{
 		Family: syscall.AF_INET,
-		Port:   0xd204,
+		Port:   syscall.Htons(1234),
 	}
 	err = syscall.Bind(sd, &sa)
 	checkErr(err)
 
+	con := os.NewFile(uintptr(sd), "")
+
 	var buf [2048]byte
+	var m sync.Mutex
 	for {
-		n, err := syscall.Read(sd, buf[:])
+		m.Lock()
+		n, err := con.Read(buf[:])
 		checkErr(err)
 		var tp syscall.Timespec
 		checkErr(syscall.ClockGettime(syscall.CLOCK_MONOTONIC, &tp))
 
 		fmt.Printf("%d.%09d pkt %d B\n", tp.Sec, tp.Nsec, n)
+		m.Unlock()
 	}
 
 }

@@ -41,6 +41,10 @@ func Open(name string) (File, error) {
 	return OpenFile(name, O_RDONLY, 0)
 }
 
+func NewFile(fd uintptr, name string) File {
+	return File{fd: int(fd)}
+}
+
 func Create(name string) (File, error) {
 	return OpenFile(name, O_RDWR|O_CREATE|O_TRUNC, 0666)
 }
@@ -59,4 +63,14 @@ func (f File) Read(b []byte) (int, error) {
 
 func (f File) Close() error {
 	return syscall.Close(f.fd)
+}
+
+type PathError struct {
+	Op   string
+	Path string
+	Err  error
+}
+
+func (e *PathError) Error() string {
+	return e.Err.Error()
 }
