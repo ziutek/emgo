@@ -143,23 +143,24 @@ func main() {
 	// temperature sensors on the bus. It is fast, but doesn't work in case of
 	// parasite power mode.
 
+
 start:
 	for {
 		fmt.Print("\nConfigure all DS18B20, DS1822 to 10bit resolution: ")
 		if printErr(m.SkipROM()) {
-			goto start
+			continue start
 		}
 		if printErr(m.WriteScratchpad(127, -128, onewire.T10bit)) {
-			goto start
+			continue start
 		}
 		printOK()
 
 		fmt.Print("Sending ConvertT command (SkipROM addressing): ")
 		if printErr(m.SkipROM()) {
-			goto start
+			continue start
 		}
 		if printErr(m.ConvertT()) {
-			goto start
+			continue start
 		}
 		printOK()
 
@@ -168,7 +169,7 @@ start:
 			delay.Millisec(50)
 			b, err := m.ReadBit()
 			if printErr(err) {
-				goto start
+				continue start
 			}
 			fmt.Print(". ")
 			if b != 0 {
@@ -183,20 +184,20 @@ start:
 				d := s.Dev()
 				fmt.Printf("\n %v : ", d)
 				if printErr(m.MatchROM(d)) {
-					goto start
+					continue start
 				}
 				s, err := m.ReadScratchpad()
 				if printErr(err) {
-					goto start
+					continue start
 				}
 				t, err := s.Temp(typ)
 				if printErr(err) {
-					goto start
+					continue start
 				}
 				fmt.Printf("%6.2f C", t)
 			}
 			if printErr(s.Err()) {
-				goto start
+				continue start
 			}
 		}
 		fmt.Println("\nDone.")
