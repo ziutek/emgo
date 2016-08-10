@@ -242,18 +242,18 @@ const (
 	OC2M_1   CCMR1_Bits = 0x02 << 12 //  Bit 1.
 	OC2M_2   CCMR1_Bits = 0x04 << 12 //  Bit 2.
 	OC2CE    CCMR1_Bits = 0x01 << 15 //+ Output Compare 2 Clear Enable.
-	IC1PSC   CCMR1_Bits = 0x03 << 2  //  IC1PSC[1:0] bits (Input Capture 1 Prescaler).
+	IC1PSC   CCMR1_Bits = 0x03 << 2  //+ IC1PSC[1:0] bits (Input Capture 1 Prescaler).
 	IC1PSC_0 CCMR1_Bits = 0x01 << 2  //  Bit 0.
 	IC1PSC_1 CCMR1_Bits = 0x01 << 3  //  Bit 1.
-	IC1F     CCMR1_Bits = 0x0F << 4  //  IC1F[3:0] bits (Input Capture 1 Filter).
+	IC1F     CCMR1_Bits = 0x0F << 4  //+ IC1F[3:0] bits (Input Capture 1 Filter).
 	IC1F_0   CCMR1_Bits = 0x01 << 4  //  Bit 0.
 	IC1F_1   CCMR1_Bits = 0x02 << 4  //  Bit 1.
 	IC1F_2   CCMR1_Bits = 0x04 << 4  //  Bit 2.
 	IC1F_3   CCMR1_Bits = 0x01 << 7  //  Bit 3.
-	IC2PSC   CCMR1_Bits = 0x03 << 10 //  IC2PSC[1:0] bits (Input Capture 2 Prescaler).
+	IC2PSC   CCMR1_Bits = 0x03 << 10 //+ IC2PSC[1:0] bits (Input Capture 2 Prescaler).
 	IC2PSC_0 CCMR1_Bits = 0x01 << 10 //  Bit 0.
 	IC2PSC_1 CCMR1_Bits = 0x01 << 11 //  Bit 1.
-	IC2F     CCMR1_Bits = 0x0F << 12 //  IC2F[3:0] bits (Input Capture 2 Filter).
+	IC2F     CCMR1_Bits = 0x0F << 12 //+ IC2F[3:0] bits (Input Capture 2 Filter).
 	IC2F_0   CCMR1_Bits = 0x01 << 12 //  Bit 0.
 	IC2F_1   CCMR1_Bits = 0x02 << 12 //  Bit 1.
 	IC2F_2   CCMR1_Bits = 0x04 << 12 //  Bit 2.
@@ -261,16 +261,20 @@ const (
 )
 
 const (
-	CC1Sn  = 0
-	OC1FEn = 2
-	OC1PEn = 3
-	OC1Mn  = 4
-	OC1CEn = 7
-	CC2Sn  = 8
-	OC2FEn = 10
-	OC2PEn = 11
-	OC2Mn  = 12
-	OC2CEn = 15
+	CC1Sn   = 0
+	OC1FEn  = 2
+	OC1PEn  = 3
+	OC1Mn   = 4
+	OC1CEn  = 7
+	CC2Sn   = 8
+	OC2FEn  = 10
+	OC2PEn  = 11
+	OC2Mn   = 12
+	OC2CEn  = 15
+	IC1PSCn = 2
+	IC1Fn   = 4
+	IC2PSCn = 10
+	IC2Fn   = 12
 )
 
 const (
@@ -294,18 +298,18 @@ const (
 	OC4M_1   CCMR2_Bits = 0x02 << 12 //  Bit 1.
 	OC4M_2   CCMR2_Bits = 0x04 << 12 //  Bit 2.
 	OC4CE    CCMR2_Bits = 0x01 << 15 //+ Output Compare 4 Clear Enable.
-	IC3PSC   CCMR2_Bits = 0x03 << 2  //  IC3PSC[1:0] bits (Input Capture 3 Prescaler).
+	IC3PSC   CCMR2_Bits = 0x03 << 2  //+ IC3PSC[1:0] bits (Input Capture 3 Prescaler).
 	IC3PSC_0 CCMR2_Bits = 0x01 << 2  //  Bit 0.
 	IC3PSC_1 CCMR2_Bits = 0x01 << 3  //  Bit 1.
-	IC3F     CCMR2_Bits = 0x0F << 4  //  IC3F[3:0] bits (Input Capture 3 Filter).
+	IC3F     CCMR2_Bits = 0x0F << 4  //+ IC3F[3:0] bits (Input Capture 3 Filter).
 	IC3F_0   CCMR2_Bits = 0x01 << 4  //  Bit 0.
 	IC3F_1   CCMR2_Bits = 0x02 << 4  //  Bit 1.
 	IC3F_2   CCMR2_Bits = 0x04 << 4  //  Bit 2.
 	IC3F_3   CCMR2_Bits = 0x01 << 7  //  Bit 3.
-	IC4PSC   CCMR2_Bits = 0x03 << 10 //  IC4PSC[1:0] bits (Input Capture 4 Prescaler).
+	IC4PSC   CCMR2_Bits = 0x03 << 10 //+ IC4PSC[1:0] bits (Input Capture 4 Prescaler).
 	IC4PSC_0 CCMR2_Bits = 0x01 << 10 //  Bit 0.
 	IC4PSC_1 CCMR2_Bits = 0x01 << 11 //  Bit 1.
-	IC4F     CCMR2_Bits = 0x0F << 12 //  IC4F[3:0] bits (Input Capture 4 Filter).
+	IC4F     CCMR2_Bits = 0x0F << 12 //+ IC4F[3:0] bits (Input Capture 4 Filter).
 	IC4F_0   CCMR2_Bits = 0x01 << 12 //  Bit 0.
 	IC4F_1   CCMR2_Bits = 0x02 << 12 //  Bit 1.
 	IC4F_2   CCMR2_Bits = 0x04 << 12 //  Bit 2.
@@ -313,16 +317,20 @@ const (
 )
 
 const (
-	CC3Sn  = 0
-	OC3FEn = 2
-	OC3PEn = 3
-	OC3Mn  = 4
-	OC3CEn = 7
-	CC4Sn  = 8
-	OC4FEn = 10
-	OC4PEn = 11
-	OC4Mn  = 12
-	OC4CEn = 15
+	CC3Sn   = 0
+	OC3FEn  = 2
+	OC3PEn  = 3
+	OC3Mn   = 4
+	OC3CEn  = 7
+	CC4Sn   = 8
+	OC4FEn  = 10
+	OC4PEn  = 11
+	OC4Mn   = 12
+	OC4CEn  = 15
+	IC3PSCn = 2
+	IC3Fn   = 4
+	IC4PSCn = 10
+	IC4Fn   = 12
 )
 
 const (

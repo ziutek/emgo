@@ -1,11 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 )
 
 func tweaks(pkg *Package) {
 	for _, p := range pkg.Periphs {
+		for _, r := range p.Regs {
+			fixbits(r)
+		}
 		switch p.Name {
 		case "RTC":
 			rtc(p)
@@ -17,6 +21,33 @@ func tweaks(pkg *Package) {
 			bkp(p)
 		case "I2C":
 			i2c(p)
+		case "TIM":
+			tim(p)
+		}
+	}
+}
+
+func fixbits(r *Register) {
+	if len(r.Bits) == 1 && r.Bits[0].Name == r.Name {
+		r.Bits = nil
+		return
+	}
+	for i, m := range r.Bits {
+		if m.Val {
+			continue
+		}
+		mask := m.Mask << m.LSL
+		for _, v := range r.Bits[i+1:] {
+			if v.Mask == 0 {
+				v.LSL = m.LSL
+				v.Val = true
+			} else if v.Mask<<v.LSL&mask != 0 {
+				if v.LSL > m.LSL {
+					v.Mask <<= v.LSL - m.LSL
+					v.LSL = m.LSL
+				}
+				v.Val = true
+			}
 		}
 	}
 }
@@ -139,6 +170,36 @@ func i2c(p *Periph) {
 				if b.Name == "CCR" {
 					b.Name = "CCRVAL"
 					break
+				}
+			}
+		}
+	}
+}
+
+func tim(p *Periph) {
+	for _, r := range p.Regs {
+		fmt.Println(r.Name)
+		switch r.Name {
+		case "CCMR1":
+			for _, b := range r.Bits {
+				if b == nil {
+					continue
+				}
+				switch b.Name {
+				case "IC1PSC", "IC1F", "IC2PSC", "IC2F":
+					fmt.Println("\t", b.Name)
+					b.Val = false
+				}
+			}
+		case "CCMR2":
+			for _, b := range r.Bits {
+				if b == nil {
+					continue
+				}
+				switch b.Name {
+				case "IC3PSC", "IC3F", "IC4PSC", "IC4F":
+					fmt.Println("\t", b.Name)
+					b.Val = false
 				}
 			}
 		}

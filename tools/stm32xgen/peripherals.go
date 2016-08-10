@@ -25,31 +25,6 @@ type Register struct {
 	Bits   []*Bits
 }
 
-func (r *Register) fixbits() {
-	if len(r.Bits) == 1 && r.Bits[0].Name == r.Name {
-		r.Bits = nil
-		return
-	}
-	for i, m := range r.Bits {
-		if m.Val {
-			continue
-		}
-		mask := m.Mask << m.LSL
-		for _, v := range r.Bits[i+1:] {
-			if v.Mask == 0 {
-				v.LSL = m.LSL
-				v.Val = true
-			} else if v.Mask<<v.LSL&mask != 0 {
-				if v.LSL > m.LSL {
-					v.Mask <<= v.LSL - m.LSL
-					v.LSL = m.LSL
-				}
-				v.Val = true
-			}
-		}
-	}
-}
-
 type Instance struct {
 	Name  string
 	Base  string
@@ -100,7 +75,6 @@ func (p *Periph) Save(base, pkgname string) {
 	fmt.Fprintln(w, "package", pkgname)
 	w.donotedit()
 	for _, r := range p.Regs {
-		r.fixbits()
 		if len(r.Bits) == 0 {
 			continue
 		}

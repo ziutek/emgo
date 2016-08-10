@@ -491,6 +491,22 @@ func (p *TIM_Periph) OC2CE() CCMR1_Mask {
 	return CCMR1_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint16(OC2CE)}}
 }
 
+func (p *TIM_Periph) IC1PSC() CCMR1_Mask {
+	return CCMR1_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint16(IC1PSC)}}
+}
+
+func (p *TIM_Periph) IC1F() CCMR1_Mask {
+	return CCMR1_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint16(IC1F)}}
+}
+
+func (p *TIM_Periph) IC2PSC() CCMR1_Mask {
+	return CCMR1_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint16(IC2PSC)}}
+}
+
+func (p *TIM_Periph) IC2F() CCMR1_Mask {
+	return CCMR1_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint16(IC2F)}}
+}
+
 type CCMR2_Bits uint16
 
 type CCMR2 struct{ mmio.U16 }
@@ -545,6 +561,22 @@ func (p *TIM_Periph) OC4M() CCMR2_Mask {
 
 func (p *TIM_Periph) OC4CE() CCMR2_Mask {
 	return CCMR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint16(OC4CE)}}
+}
+
+func (p *TIM_Periph) IC3PSC() CCMR2_Mask {
+	return CCMR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint16(IC3PSC)}}
+}
+
+func (p *TIM_Periph) IC3F() CCMR2_Mask {
+	return CCMR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint16(IC3F)}}
+}
+
+func (p *TIM_Periph) IC4PSC() CCMR2_Mask {
+	return CCMR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint16(IC4PSC)}}
+}
+
+func (p *TIM_Periph) IC4F() CCMR2_Mask {
+	return CCMR2_Mask{mmio.UM16{(*mmio.U16)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint16(IC4F)}}
 }
 
 type CCER_Bits uint16
