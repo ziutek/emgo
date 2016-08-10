@@ -1,68 +1,55 @@
 package main
 
 import (
-	"rtos"
-	"sync/atomic"
+	"stm32/hal/raw/tim"
 )
 
-var WaterHeaterOn int32
-
-var water struct {
-	Flag    rtos.EventFlag
-	Counter int32
+type counter struct {
+	t *tim.TIM_Periph
 }
 
-// waterISR is called for every pulse from water flow sensor.
-func waterISR() {
-	atomic.AddInt32(&water.Counter, 1)
-	water.Flag.Set()
+func (c *counter) Init(t *tim.TIM_Periph) {
+	c.t = t
+	t.CKD().Store(2 << tim.CKDn)
+	// Connect CC1 to TI1, setup input filter.
+	t.CCMR1.StoreBits(tim.CC1S|tim.IC1F, 1<<tim.CC1Sn|0xf<<tim.IC1Fn)
+	// Set falling edge detection, enable CC1.
+	t.CCER.SetBits(tim.CC1P | tim.CC1E)
+	// Set external clock mode 1, clock from filtered TI1.
+	t.SMCR.StoreBits(tim.SMS|tim.TS, 7<<tim.SMSn|5<<tim.TSn)
+	// Use CC2 to generate an interrupt after first count.
+	t.CCR2.Store(1)
+	t.DIER.Store(tim.CC2IE)
+	t.CEN().Set()
 }
 
-/*
-func waterTask() {
-	const (
-		period = 500 // ms
-		scale  = 40
-	)
-	r0, r1, r2 := W0, W1, W2
-	for {
-		if water.Flag.Val() == 0 {
-			// Shuffle relays when idle to evenly use all heaters.
-			r0, r1, r2 = r2, r0, r1
-			atomic.StoreInt32(&WaterHeaterOn, 0)
-			water.Flag.Wait(0)
-		}
-		water.Flag.Clear()
-		ht := int(atomic.SwapInt32(&water.Counter, 0))
-		if ht == 0 {
-			continue
-		}
-		atomic.StoreInt32(&WaterHeaterOn, 1)
-
-		start := rtos.Nanosec()
-		ht *= scale // Heat time (if ht>period more than one heater is need).
-		if ht > 3*period {
-			// Only 3 heaters are connected.
-			ht = 3 * period
-			Blue.Set()
-		}
-		switch {
-		case ht <= period:
-			SSR.SetPins(r0)
-			rtos.SleepUntil(start + int64(ht)*1e6)
-			SSR.ClearPins(r0)
-		case ht <= 2*period:
-			SSR.SetPins(r0 | r1)
-			rtos.SleepUntil(start + int64(ht-period)*1e6)
-			SSR.ClearPins(r1)
-		default:
-			SSR.SetPins(r0 | r1 | r2)
-			rtos.SleepUntil(start + int64(ht-2*period)*1e6)
-			SSR.ClearPins(r2)
-		}
-		Blue.Clear()
-		rtos.SleepUntil(start + period*1e6)
-		SSR.ClearPins(r0 | r1 | r2)
-	}
+func (c *counter) Load() int {
+	return int(c.t.CNT.Load())
 }
-*/
+
+func (c *counter) LoadAndReset() int {
+	cnt := int(c.t.CNT.Load())
+	c.t.EGR.Store(tim.UG)
+	return cnt
+}
+
+func (c *counter) ClearIF() {
+	c.t.SR.Store(0)
+}
+
+var (
+	waterPWM pulsePWM3
+	waterCnt counter
+	pulseNum int
+)
+
+func waterCntISR() {
+	waterCnt.ClearIF()
+	waterPWM.Pulse()
+}
+
+func waterPWMISR() {
+	waterPWM.ClearIF()
+	cnt := waterCnt.LoadAndReset()
+	waterPWM.Set(cnt * 1000)
+}
