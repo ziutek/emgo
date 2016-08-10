@@ -18,10 +18,19 @@ func (irq IRQ) Disable() error {
 type IRQPrio int
 
 const (
-	IRQPrioLowest  = IRQPrio(syscall.IRQPrioLowest)
+	// IRQPrioLowest is the lowest IRQ priority.
+	IRQPrioLowest = IRQPrio(syscall.IRQPrioLowest)
+
+	// IRQPrioHighest is the highest IRQ priority.
 	IRQPrioHighest = IRQPrio(syscall.IRQPrioHighest)
-	IRQPrioStep    = IRQPrio(syscall.IRQPrioStep)
-	IRQPrioNum     = IRQPrio(syscall.IRQPrioNum)
+
+	// IRQPrioNum is the number of priority levels.
+	IRQPrioNum = IRQPrio(syscall.IRQPrioNum)
+
+	// IRQPrioStep if added to priority increases it to next, highest level. In
+	// many cases number of effective levels is less than IRQPrioNum and adding
+	// one step to priority does not guarantee highest effective level.
+	IRQPrioStep = IRQPrio(syscall.IRQPrioStep)
 )
 
 // Lower resturns true if priority p is lower than o.
@@ -46,7 +55,7 @@ func (irq IRQ) SetPrio(p IRQPrio) error {
 }
 
 // UseHandler sets h as handler for irq. It can be not supported by some
-// architectures or when vector table is located in ROM/Flash. 
+// architectures or when vector table is located in ROM/Flash.
 func (irq IRQ) UseHandler(h func()) error {
 	return mkerror(syscall.SetIRQHandler(int(irq), h))
 }

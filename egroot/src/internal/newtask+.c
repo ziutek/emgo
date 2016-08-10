@@ -5,5 +5,5 @@ internal$b2u(bool b) {
 
 uintptr
 internal$f2u(void (*f) ()) {
-	return CAST(uintptr, f);
+	return (uintptr) (f);
 }

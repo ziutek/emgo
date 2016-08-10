@@ -8,6 +8,7 @@ import (
 	"stm32/hal/raw/mmap"
 )
 
+//emgo:const
 var (
 	I2C1 = (*Periph)(unsafe.Pointer(mmap.I2C1_BASE))
 	I2C2 = (*Periph)(unsafe.Pointer(mmap.I2C2_BASE))

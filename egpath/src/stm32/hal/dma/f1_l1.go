@@ -84,7 +84,7 @@ func (ch *Channel) disable() {
 	ch.raw.EN().Clear()
 }
 
-func (p *Channel) enabled() bool {
+func (ch *Channel) enabled() bool {
 	return ch.raw.EN().Load() != 0
 }
 

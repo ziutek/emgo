@@ -30,7 +30,9 @@ const (
 
 	sys_EXIT = 60
 
-	sys_UNLINK = 81
+	sys_UNLINK = 87
+
+	sys_FUTEX = 202
 )
 
 const (
@@ -203,7 +205,26 @@ const (
 	CLOCK_MONOTONIC = 1
 )
 
-// The following code is borrowed from:
+const (
+	FUTEX_WAIT            = 0
+	FUTEX_WAKE            = 1
+	FUTEX_FD              = 2
+	FUTEX_REQUEUE         = 3
+	FUTEX_CMP_REQUEUE     = 4
+	FUTEX_WAKE_OP         = 5
+	FUTEX_LOCK_PI         = 6
+	FUTEX_UNLOCK_PI       = 7
+	FUTEX_TRYLOCK_PI      = 8
+	FUTEX_WAIT_BITSET     = 9
+	FUTEX_WAKE_BITSET     = 10
+	FUTEX_WAIT_REQUEUE_PI = 11
+	FUTEX_CMP_REQUEUE_PI  = 12
+
+	FUTEX_PRIVATE_FLAG   = 128
+	FUTEX_CLOCK_REALTIME = 256
+)
+
+// The following VDSO code is borrowed from:
 // https://golang.org/src/runtime/vdso_linux_amd64.go
 // https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/vDSO/parse_vdso.c
 

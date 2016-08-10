@@ -25,13 +25,14 @@ typedef struct {
 	a.itab$ == b.itab$ && a.val$.c128 == b.val$.c128; \
 })
 
-#define CAST(t, e) ({                               \
+
+#define _CAST(t, e) ({                               \
 	union {typeof(e) in; typeof(t) out;} cast = {}; \
 	cast.in = (e);                                  \
 	cast.out;                                       \
 })
+#define INTERFACE(e, itab) ((interface){_CAST(ival, e), itab})
+#define IVAL(i, typ) _CAST(typ, (i).val$)
 
-#define INTERFACE(e, itab) ((interface){CAST(ival, e), itab})
-#define IVAL(i, typ) CAST(typ, (i).val$)
 #define NILI ((interface){})
 #define ISNILI(e) ((e).itab$ == nil)

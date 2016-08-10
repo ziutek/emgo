@@ -98,6 +98,11 @@ func (sa *RawSockaddrInet4) sockaddr() (ptr, size uintptr, err error) {
 	return uintptr(unsafe.Pointer(sa)), unsafe.Sizeof(*sa), nil
 }
 
+func Htons(u uint16) uint16 {
+	p := (*[2]byte)(unsafe.Pointer(&u))
+	return uint16(p[0])<<8 + uint16(p[1])
+}
+
 func Bind(fd int, sa Sockaddr) error {
 	ptr, size, err := sa.sockaddr()
 	if err != nil {
@@ -136,4 +141,15 @@ func ClockGettime(clkid int, tp *Timespec) error {
 		return -Errno(ret)
 	}
 	return nil
+}
+
+func Futex(uaddr *int32, op, val int, utime *Timespec, uaddr2 *int32, val3 int) (int, error) {
+	ret := internal.Syscall6(
+		sys_FUTEX, uintptr(unsafe.Pointer(uaddr)), uintptr(op), uintptr(val),
+		uintptr(unsafe.Pointer(utime)), uintptr(unsafe.Pointer(uaddr2)), uintptr(val3),
+	)
+	if ret >= minerr {
+		return 0, -Errno(ret)
+	}
+	return int(ret), nil
 }

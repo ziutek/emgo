@@ -53,6 +53,7 @@ const (
 	veryHigh = 1  // Not supported.
 )
 
+//emgo:const
 var (
 	A = (*Port)(unsafe.Pointer(mmap.GPIOA_BASE))
 	B = (*Port)(unsafe.Pointer(mmap.GPIOB_BASE))

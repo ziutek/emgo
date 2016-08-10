@@ -89,67 +89,79 @@ typedef struct {
 	s;                                    \
 })
 
-#define _ALEN(arx) (sizeof(arx) / sizeof((arx).arr[0]))
+#define _ALEN(a) (sizeof(a->arr) / sizeof(a->arr[0]))
 
-#define ASLICEL(arx, lowx) ({           \
-	uintptr l = lowx;                   \
-	uintptr newl = _ALEN(arx) - l;      \
-	(slice){(arx).arr + l, newl, newl}; \
+#define ASLICEL(arx, lowx) ({        \
+	typeof(arx) a = arx;             \
+	uintptr l = lowx;                \
+	uintptr newl = _ALEN(a) - l;     \
+	(slice){a->arr + l, newl, newl}; \
 })
 
-#define ASLICELC(arx, lowx) ({          \
-	uintptr l = lowx;                   \
-	if (l > _ALEN(arx)) panicIndex();   \
-	uintptr newl = _ALEN(arx) - l;      \
-	(slice){(arx).arr + l, newl, newl}; \
+#define ASLICELC(arx, lowx) ({       \
+	typeof(arx) a = arx;             \
+	uintptr l = lowx;                \
+	if (l > _ALEN(a)) panicIndex();  \
+	uintptr newl = _ALEN(a) - l;     \
+	(slice){a->arr + l, newl, newl}; \
 })
 
-#define ASLICELH(arx, lowx, highx) ({                    \
-	uintptr l = lowx;                                    \
-	(slice){(arx).arr + l, (highx) - l, _ALEN(arx) - l}; \
-})
-
-#define ASLICELHC(arx, lowx, highx) ({              \
+#define ASLICELH(arx, lowx, highx) ({               \
+	typeof(arx) a = arx;                            \
 	uintptr l = lowx;                               \
-	uintptr h = highx;                              \
-	if (l > h || h > _ALEN(arx)) panicIndex();      \
-	(slice){(arx).arr + l, h - l, _ALEN(arx) - l};  \
+	(slice){a->arr + l, (highx) - l, _ALEN(a) - l}; \
 })
 
-#define ASLICELHM(arx, lowx, highx, maxx) ({         \
-	uintptr l = lowx;                                \
-	(slice){(arx).arr + l, (highx) - l, (maxx) - l}; \
+#define ASLICELHC(arx, lowx, highx) ({         \
+	typeof(arx) a = arx;                       \
+	uintptr l = lowx;                          \
+	uintptr h = highx;                         \
+	if (l > h || h > _ALEN(a)) panicIndex();   \
+	(slice){a->arr + l, h - l, _ALEN(a) - l};  \
+})
+
+#define ASLICELHM(arx, lowx, highx, maxx) ({      \
+	typeof(arx) a = arx;                          \
+	uintptr l = lowx;                             \
+	(slice){a->arr + l, (highx) - l, (maxx) - l}; \
 })
 	
-#define ASLICELHMC(arx, lowx, highx, maxx) ({           \
-	uintptr l = lowx;                                   \
-	uintptr h = highx;                                  \
-	uintptr m = maxx;                                   \
-	if (l > h || h > m || m > _ALEN(arx)) panicIndex(); \
-	(slice){(arx).arr + l, h - l, m - l};               \
+#define ASLICELHMC(arx, lowx, highx, maxx) ({         \
+	typeof(arx) a = arx;                              \
+	uintptr l = lowx;                                 \
+	uintptr h = highx;                                \
+	uintptr m = maxx;                                 \
+	if (l > h || h > m || m > _ALEN(a)) panicIndex(); \
+	(slice){a->arr + l, h - l, m - l};                \
 })
 	
-#define ASLICE(arx) ((slice){(arx).arr, _ALEN(arx), _ALEN(arx)})
+#define ASLICE(arx) ({                   \
+	typeof(arx) a = arx;                 \
+	(slice){a->arr, _ALEN(a), _ALEN(a)}; \
+})
 
 #define CSLICE(len, ptrx) ((slice){(ptrx), len, len})
 
-#define ASLICEH(arx, highx) ((slice){(arx).arr, highx, _ALEN(arx)})
-
-#define ASLICEHC(arx, highx) ({        \
-	uintptr h = highx;                 \
-	if (h > _ALEN(arx)) panicIndex();  \
-	(slice){(arx).arr, h, _ALEN(arx)}; \
+#define ASLICEH(arx, highx) ({         \
+	typeof(arx) a = arx;               \
+	((slice){a->arr, highx, _ALEN(a)}; \
 })
 
-// #define ASLICEM(arx, max) Go 1.2 doesn't allow [::max].
+#define ASLICEHC(arx, highx) ({     \
+	typeof(arx) a = arx;            \
+	uintptr h = highx;              \
+	if (h > _ALEN(a)) panicIndex(); \
+	(slice){a->arr, h, _ALEN(a)};   \
+})
 	
-#define ASLICEHM(arx, highx, maxx) ((slice){(arx).arr, highx, maxx})
+#define ASLICEHM(arx, highx, maxx) ((slice){(arx)->arr, highx, maxx})
 
-#define ASLICEHMC(arx, highx, maxx) ({         \
-	uintptr h = highx;                         \
-	uintptr m = maxx;                          \
-	if (h > m || m > _ALEN(arx)) panicIndex(); \
-	(slice){(arx).arr, h, m};                  \
+#define ASLICEHMC(arx, highx, maxx) ({       \
+	typeof(arx) a = arx;                     \
+	uintptr h = highx;                       \
+	uintptr m = maxx;                        \
+	if (h > m || m > _ALEN(a)) panicIndex(); \
+	(slice){a->arr, h, m};                   \
 })
 
 #define SLICPY(typ, dstx, srcx) ({            \
@@ -171,10 +183,11 @@ typedef struct {
 	(typ)s.arr + i;               \
 })[0]
 
-#define AIDX(arx, idx) ((arx).arr[idx])
+#define AIDX(arx, idx) ((arx)->arr[idx])
 
-#define AIDXC(arx, idx) ({             \
-	uintptr i = idx;                   \
-	if (i >= _ALEN(arx)) panicIndex(); \
-	(arx).arr + i;                     \
+#define AIDXC(arx, idx) ({           \
+	typeof(arx) a = arx;             \
+	uintptr i = idx;                 \
+	if (i >= _ALEN(a)) panicIndex(); \
+	a->arr + i;                      \
 })[0]

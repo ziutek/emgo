@@ -75,6 +75,7 @@ const (
 	veryHigh = 2  // 100 MHz (CL = 30 pF, VDD > 2.7 V)
 )
 
+//emgo:const
 var (
 	A = (*Port)(unsafe.Pointer(mmap.GPIOA_BASE))
 	B = (*Port)(unsafe.Pointer(mmap.GPIOB_BASE))

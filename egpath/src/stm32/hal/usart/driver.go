@@ -1,6 +1,7 @@
 package usart
 
 import (
+	"reflect"
 	"rtos"
 	"sync/atomic"
 	"unsafe"
@@ -196,10 +197,11 @@ func (d *Driver) DisableTx() {
 	p.TE().Clear()
 }
 
-func (d *Driver) Write(buf []byte) (int, error) {
+func (d *Driver) WriteString(s string) (int, error) {
+	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
 	var n int
 	for {
-		m := len(buf) - n
+		m := sh.Len - n
 		if m == 0 {
 			break
 		}
@@ -207,7 +209,7 @@ func (d *Driver) Write(buf []byte) (int, error) {
 			m = 0xffff
 		}
 		d.Periph.raw.SR.Store(0) // Clear TC.
-		startDMA(d.TxDMA, unsafe.Pointer(&buf[n]), m)
+		startDMA(d.TxDMA, unsafe.Pointer(sh.Data+uintptr(n)), m)
 		n += m
 		if !d.txdone.Wait(d.deadlineTx) {
 			return n - d.TxDMA.Len(), ErrTimeout
@@ -220,8 +222,13 @@ func (d *Driver) Write(buf []byte) (int, error) {
 	return n, nil
 }
 
+func (d *Driver) Write(buf []byte) (int, error) {
+	return d.WriteString(*(*string)(unsafe.Pointer(&buf)))
+}
+
 func (d *Driver) WriteByte(b byte) error {
-	_, err := d.Write([]byte{b})
+	buf := [1]byte{b}
+	_, err := d.Write(buf[:])
 	return err
 }
 
