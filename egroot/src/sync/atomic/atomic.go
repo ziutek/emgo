@@ -12,6 +12,9 @@ func CompareAndSwapInt32(addr *int32, old, new int32) (swapped bool) {
 func CompareAndSwapUint32(addr *uint32, old, new uint32) (swapped bool) {
 	return compareAndSwapUint32(addr, old, new)
 }
+func CompareAndSwapInt(addr *int, old, new int) (swapped bool) {
+	return compareAndSwapInt(addr, old, new)
+}
 func CompareAndSwapUintptr(addr *uintptr, old, new uintptr) (swapped bool) {
 	return compareAndSwapUintptr(addr, old, new)
 }
@@ -24,6 +27,9 @@ func AddInt32(addr *int32, delta int32) (new int32) {
 }
 func AddUint32(addr *uint32, delta uint32) (new uint32) {
 	return addUint32(addr, delta)
+}
+func AddInt(addr *int, delta int) (new int) {
+	return addInt(addr, delta)
 }
 func AddUintptr(addr *uintptr, delta uintptr) (new uintptr) {
 	return addUintptr(addr, delta)
@@ -65,6 +71,9 @@ func SwapInt32(addr *int32, new int32) (old int32) {
 func SwapUint32(addr *uint32, new uint32) (old uint32) {
 	return swapUint32(addr, new)
 }
+func SwapInt(addr *int, new int) (old int) {
+	return swapInt(addr, new)
+}
 func SwapUintptr(addr *uintptr, new uintptr) (old uintptr) {
 	return swapUintptr(addr, new)
 }
@@ -78,6 +87,9 @@ func LoadInt32(addr *int32) (val int32) {
 func LoadUint32(addr *uint32) (val uint32) {
 	return loadUint32(addr)
 }
+func LoadInt(addr *int) (val int) {
+	return loadInt(addr)
+}
 func LoadUintptr(addr *uintptr) (val uintptr) {
 	return loadUintptr(addr)
 }
@@ -90,6 +102,9 @@ func StoreInt32(addr *int32, val int32) {
 }
 func StoreUint32(addr *uint32, val uint32) {
 	storeUint32(addr, val)
+}
+func StoreInt(addr *int, val int) {
+	storeInt(addr, val)
 }
 func StoreUintptr(addr *uintptr, val uintptr) {
 	storeUintptr(addr, val)

@@ -148,6 +148,14 @@ func swapInt32(addr *int32, new int32) (old int32) {
 	return
 }
 
+func swapInt(addr *int, new int) (old int) {
+	cortexm.SetPRIMASK()
+	old = *addr
+	*addr = new
+	cortexm.ClearPRIMASK()
+	return
+}
+
 func swapUint32(addr *uint32, new uint32) (old uint32) {
 	cortexm.SetPRIMASK()
 	old = *addr

@@ -2,23 +2,33 @@
 
 bool
 sync$atomic$compareAndSwapInt32(int32 * addr, int32 old, int32 new) {
-	return __atomic_compare_exchange_n(addr, &old, new, false, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE);
+	return __atomic_compare_exchange_n(addr, &old, new, false, __ATOMIC_ACQ_REL,
+		__ATOMIC_ACQUIRE);
 }
 
 bool
 sync$atomic$compareAndSwapUint32(uint32 * addr, uint32 old, uint32 new) {
-	return __atomic_compare_exchange_n(addr, &old, new, false, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE);
+	return __atomic_compare_exchange_n(addr, &old, new, false, __ATOMIC_ACQ_REL,
+		__ATOMIC_ACQUIRE);
+}
+
+bool
+sync$atomic$compareAndSwapInt(int_ * addr, int_ old, int_ new) {
+	return __atomic_compare_exchange_n(addr, &old, new, false, __ATOMIC_ACQ_REL,
+		__ATOMIC_ACQUIRE);
 }
 
 bool
 sync$atomic$compareAndSwapUintptr(uintptr * addr, uintptr old, uintptr new) {
-	return __atomic_compare_exchange_n(addr, &old, new, false, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE);
+	return __atomic_compare_exchange_n(addr, &old, new, false, __ATOMIC_ACQ_REL,
+		__ATOMIC_ACQUIRE);
 }
 
 bool
 sync$atomic$compareAndSwapPointer(unsafe$Pointer * addr, unsafe$Pointer old,
 	unsafe$Pointer new) {
-	return __atomic_compare_exchange_n(addr, &old, new, false, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE);
+	return __atomic_compare_exchange_n(addr, &old, new, false, __ATOMIC_ACQ_REL,
+		__ATOMIC_ACQUIRE);
 }
 
 int32
@@ -28,6 +38,11 @@ sync$atomic$addInt32(int32 * addr, int32 delta) {
 
 uint32
 sync$atomic$addUint32(uint32 * addr, uint32 delta) {
+	return __atomic_add_fetch(addr, delta, __ATOMIC_ACQ_REL);
+}
+
+int_
+sync$atomic$addInt(int_ * addr, int_ delta) {
 	return __atomic_add_fetch(addr, delta, __ATOMIC_ACQ_REL);
 }
 
@@ -86,6 +101,11 @@ sync$atomic$swapInt32(int32 * addr, int32 new) {
 	return __atomic_exchange_n(addr, new, __ATOMIC_ACQ_REL);
 }
 
+int_
+sync$atomic$swapInt(int_ * addr, int_ new) {
+	return __atomic_exchange_n(addr, new, __ATOMIC_ACQ_REL);
+}
+
 unsafe$Pointer
 sync$atomic$swapPointer(unsafe$Pointer * addr, unsafe$Pointer new) {
 	return __atomic_exchange_n(addr, new, __ATOMIC_ACQ_REL);
@@ -111,6 +131,11 @@ sync$atomic$loadUint32(uint32 * addr) {
 	return __atomic_load_n(addr, __ATOMIC_ACQUIRE);
 }
 
+int_
+sync$atomic$loadInt(int_ * addr) {
+	return __atomic_load_n(addr, __ATOMIC_ACQUIRE);
+}
+
 uintptr
 sync$atomic$loadUintptr(uintptr * addr) {
 	return __atomic_load_n(addr, __ATOMIC_ACQUIRE);
@@ -132,11 +157,16 @@ sync$atomic$storeUint32(uint32 * addr, uint32 val) {
 }
 
 void
-sync$atomic$storePointer(unsafe$Pointer * addr, unsafe$Pointer val) {
+sync$atomic$storeInt(int_ * addr, int_ val) {
 	return __atomic_store_n(addr, val, __ATOMIC_RELEASE);
 }
 
 void
 sync$atomic$storeUintptr(uintptr * addr, uintptr val) {
+	return __atomic_store_n(addr, val, __ATOMIC_RELEASE);
+}
+
+void
+sync$atomic$storePointer(unsafe$Pointer * addr, unsafe$Pointer val) {
 	return __atomic_store_n(addr, val, __ATOMIC_RELEASE);
 }
