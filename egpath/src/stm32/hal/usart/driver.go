@@ -177,11 +177,12 @@ func (d *Driver) ISR() {
 }
 
 func (d *Driver) RxDMAISR() {
-	if _, e := d.RxDMA.Status(); e != 0 {
+	ch := d.RxDMA
+	if _, e := ch.Status(); e != 0 {
 		d.rxready.Set()
 		return
 	}
-	d.RxDMA.Clear(dma.EvAll, dma.ErrAll)
+	ch.Clear(dma.EvAll, dma.ErrAll)
 	atomic.AddUint32(&d.dmaN, 1)
 }
 
@@ -198,6 +199,7 @@ func (d *Driver) DisableTx() {
 }
 
 func (d *Driver) WriteString(s string) (int, error) {
+	ch := d.TxDMA
 	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
 	var n int
 	for {
@@ -209,14 +211,14 @@ func (d *Driver) WriteString(s string) (int, error) {
 			m = 0xffff
 		}
 		d.Periph.raw.SR.Store(0) // Clear TC.
-		startDMA(d.TxDMA, unsafe.Pointer(sh.Data+uintptr(n)), m)
+		startDMA(ch, unsafe.Pointer(sh.Data+uintptr(n)), m)
 		n += m
 		if !d.txdone.Wait(d.deadlineTx) {
-			return n - d.TxDMA.Len(), ErrTimeout
+			return n - ch.Len(), ErrTimeout
 		}
 		d.txdone.Clear()
-		if _, e := d.RxDMA.Status(); e&^dma.ErrFIFO != 0 {
-			return n - d.RxDMA.Len(), e
+		if _, e := ch.Status(); e&^dma.ErrFIFO != 0 {
+			return n - ch.Len(), e
 		}
 	}
 	return n, nil
