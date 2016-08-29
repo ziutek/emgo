@@ -8,18 +8,18 @@ import (
 	"unsafe"
 )
 
-// Event represents an event that multiple tasks or ISRs can send and multiple
-// tasks (but not ISRs) can wait for. Events are intended for use by low-level
-// library rutines to implement higher level communication and synchronization
-// primitives like channels and mutexes. They are specific to noos runtime so
-// can be unavailable if RTOS is used.
+// Event bitmask that represents events that multiple tasks or ISRs can send
+// and multiple tasks (but not ISRs) can wait for. Events are intended to be
+// used by low-level library rutines to implement higher level communication and
+// synchronization primitives like channels and mutexes. They are specific to
+// noos runtime so can be unavailable if RTOS is used.
 type Event uintptr
 
-const eventBits = uint32(unsafe.Sizeof(Event(0)) * 8)
+const eventBits = uintptr(unsafe.Sizeof(Event(0)) * 8)
 
 var (
 	eventReg Event
-	gen      uint32
+	gen      uintptr
 )
 
 // AssignEvent returns event from some internal event pool.
@@ -27,14 +27,14 @@ var (
 // different events, which means that AssignEvent can return Event already
 // assigned by current or another task.
 func AssignEvent() Event {
-	u := atomic.AddUint32(&gen, 1)
+	u := atomic.AddUintptr(&gen, 1)
 	return Event(1) << (u & (eventBits - 1))
 }
 
 // AssignEventFlag works like AssignEvent but guarantees that the least
 // significant bit of returned value is zero.
 func AssignEventFlag() Event {
-	u := atomic.AddUint32(&gen, 1)
+	u := atomic.AddUintptr(&gen, 1)
 	return Event(2) << (u % (eventBits - 1))
 }
 
@@ -45,13 +45,6 @@ func AssignEventFlag() Event {
 func (e Event) Send() {
 	atomic.OrUintptr((*uintptr)(&eventReg), uintptr(e))
 	schedNext()
-}
-
-// Sum returns logical sum of events.
-// Sending the sum of events is equal to send all that events at once. Waiting
-// for sum of events means waiting for at least one event from sum.
-func (e Event) Sum(a Event) Event {
-	return e | a
 }
 
 // TakeEventReg is intended to be used by runtime to obtain accumulated events.
@@ -82,7 +75,7 @@ func AtomicStoreEvent(p *Event, e Event) {
 }
 
 func AtomicAddEvent(p *Event, delta int) Event {
-	return Event(atomic.AddUintptr((*uintptr)(p), 1))
+	return Event(atomic.AddUintptr((*uintptr)(p), uintptr(delta)))
 }
 
 func AtomicCompareAndSwapEvent(p *Event, old, new Event) bool {
