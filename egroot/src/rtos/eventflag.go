@@ -22,8 +22,8 @@ func (f *EventFlag) Val() int {
 }
 
 // Wait waits until flag is set or deadline occured. It returns false in case of
-// deadline or true otherwise. Deadline == 0 means no deadline. Wait does not
-// clear the flag after return. Typical usage looks like:
+// timeout, true otherwise. Deadline == 0 means no deadline. Wait does not clear
+// the flag after return. Typical usage looks like:
 //
 //	for {
 //		if !flag.Wait(deadline) {
@@ -34,8 +34,8 @@ func (f *EventFlag) Val() int {
 //		handleEvent()
 //	}
 //
-// Sometimes there is need some action just before Wait (eg. enable interrupt)
-// or between Wait and Clear.
+// Sometimes there is need for some action just before Wait (eg. enable
+// interrupt) or between Wait and Clear.
 func (f *EventFlag) Wait(deadline int64) bool {
 	return flagWait(f, deadline)
 }
