@@ -96,6 +96,16 @@ func (d *Driver) DisableRx() {
 	d.dmaN = 0
 }
 
+func (d *Driver) RxDMAISR() {
+	ch := d.RxDMA
+	if _, e := ch.Status(); e != 0 {
+		d.rxready.Set()
+		return
+	}
+	ch.Clear(dma.EvAll, dma.ErrAll)
+	atomic.AddUint32(&d.dmaN, 1)
+}
+
 func (d *Driver) dmaNM() (n, m uint32) {
 	ch := d.RxDMA
 	n = atomic.LoadUint32(&d.dmaN)
@@ -117,73 +127,77 @@ func (d *Driver) rxNMadd(m int) {
 	}
 }
 
+func (d *Driver) disableRxIRQ() {
+	d.Periph.DisableIRQ(RxNotEmpty)
+	d.Periph.Clear(RxNotEmpty)
+	d.Periph.DisableErrorIRQ()
+
+}
+
+func (d *Driver) ISR() {
+	d.disableRxIRQ()
+	d.rxready.Set()
+}
+
 func (d *Driver) Read(buf []byte) (int, error) {
-	for {
-		dmaN, dmaM := d.dmaNM()
-		switch dmaN - d.rxN {
-		case 0:
-			if dmaM == d.rxM {
-				d.Periph.EnableIRQ(RxNotEmpty)
-				d.Periph.EnableErrorIRQ()
-				if !d.rxready.Wait(d.deadlineRx) {
-					return 0, ErrTimeout
-				}
-				d.rxready.Clear()
-				if _, e := d.Periph.Status(); e != 0 {
-					// Clear errors (complete "read SR then DR" sequence).
-					d.Periph.Load()
-					return 0, e
-				}
-				if _, e := d.RxDMA.Status(); e != 0 {
-					return 0, e
-				}
-				continue
-			}
-			n := copy(buf, d.RxBuf[d.rxM:dmaM])
-			d.rxNMadd(n)
-			return n, nil
-		case 1:
-			if dmaM > d.rxM {
-				break
-			}
-			n := copy(buf, d.RxBuf[d.rxM:])
-			if n < len(buf) {
-				n += copy(buf[n:], d.RxBuf[:dmaM])
-			}
+start:
+	dmaN, dmaM := d.dmaNM()
+	switch dmaN - d.rxN {
+	case 0:
+		if dmaM == d.rxM {
+			d.rxready.Clear()
+			d.Periph.EnableIRQ(RxNotEmpty)
+			d.Periph.EnableErrorIRQ()
 			dmaN, dmaM = d.dmaNM()
-			if dmaN-d.rxN != 1 || dmaM > d.rxM {
-				break
+			if dmaM != d.rxM || dmaN != d.rxN {
+				d.disableRxIRQ()
+				goto start
 			}
-			d.rxNMadd(n)
-			return n, nil
+			if !d.rxready.Wait(d.deadlineRx) {
+				return 0, ErrTimeout
+			}
+			if _, e := d.Periph.Status(); e != 0 {
+				// Clear errors (complete "read SR then DR" sequence).
+				d.Periph.Load()
+				return 0, e
+			}
+			if _, e := d.RxDMA.Status(); e != 0 {
+				return 0, e
+			}
+			goto start
 		}
-		d.rxN = dmaN
-		d.rxM = dmaM
-		return 0, ErrBufOverflow
+		if dmaM == 0 {
+			// Belated RxDMAISR: dmaNM read NDTR just after it was reloaded and
+			// before TC interrupt was taken.
+			dmaM = uint32(len(d.RxBuf))
+		}
+		n := copy(buf, d.RxBuf[d.rxM:dmaM])
+		d.rxNMadd(n)
+		return n, nil
+	case 1:
+		if dmaM > d.rxM {
+			break
+		}
+		n := copy(buf, d.RxBuf[d.rxM:])
+		if n < len(buf) {
+			n += copy(buf[n:], d.RxBuf[:dmaM])
+		}
+		dmaN, dmaM = d.dmaNM()
+		if dmaN-d.rxN != 1 || dmaM > d.rxM {
+			break
+		}
+		d.rxNMadd(n)
+		return n, nil
 	}
+	d.rxN = dmaN
+	d.rxM = dmaM
+	return 0, ErrBufOverflow
 }
 
 func (d *Driver) ReadByte() (byte, error) {
 	var buf [1]byte
 	_, err := d.Read(buf[:])
 	return buf[0], err
-}
-
-func (d *Driver) ISR() {
-	d.Periph.DisableIRQ(RxNotEmpty)
-	d.Periph.Clear(RxNotEmpty)
-	d.Periph.DisableErrorIRQ()
-	d.rxready.Set()
-}
-
-func (d *Driver) RxDMAISR() {
-	ch := d.RxDMA
-	if _, e := ch.Status(); e != 0 {
-		d.rxready.Set()
-		return
-	}
-	ch.Clear(dma.EvAll, dma.ErrAll)
-	atomic.AddUint32(&d.dmaN, 1)
 }
 
 func (d *Driver) EnableTx() {
@@ -217,7 +231,8 @@ func (d *Driver) WriteString(s string) (int, error) {
 			return n - ch.Len(), ErrTimeout
 		}
 		d.txdone.Clear()
-		if _, e := ch.Status(); e&^dma.ErrFIFO != 0 {
+		_, e := ch.Status()
+		if e &^= dma.ErrFIFO; e != 0 {
 			return n - ch.Len(), e
 		}
 	}
