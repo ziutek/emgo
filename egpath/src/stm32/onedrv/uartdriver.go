@@ -2,8 +2,8 @@ package onedrv
 
 import (
 	"io"
-
 	"onewire"
+	"rtos"
 
 	"stm32/hal/usart"
 )
@@ -12,12 +12,17 @@ type USARTDriver struct {
 	USART *usart.Driver
 }
 
+func (d USARTDriver) setReadTimeout() {
+	d.USART.SetReadDeadline(rtos.Nanosec() + 1e9)
+}
+
 func (d USARTDriver) Reset() error {
 	d.USART.SetBaudRate(9600)
 	err := d.USART.WriteByte(0xf0)
 	if err != nil {
 		return err
 	}
+	d.setReadTimeout()
 	r, err := d.USART.ReadByte()
 	if err != nil {
 		return err
@@ -43,6 +48,7 @@ func (d USARTDriver) sendRecvSlot(slot byte) (byte, error) {
 		d.resetRX()
 		return 0, err
 	}
+	d.setReadTimeout()
 	b, err := d.USART.ReadByte()
 	if err != nil {
 		d.resetRX()
@@ -55,6 +61,7 @@ func (d USARTDriver) sendRecv(slots *[8]byte) error {
 		d.resetRX()
 		return err
 	}
+	d.setReadTimeout()
 	_, err := io.ReadFull(d.USART, slots[:])
 	if err != nil {
 		d.resetRX()
