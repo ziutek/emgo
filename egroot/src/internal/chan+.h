@@ -34,7 +34,7 @@ typedef internal$Chan chan;
 		c.M->Done(c.C, r._1);                            \
 		vok._1 = true;                                   \
 	} else {                                             \
-		vok._1 = (r._1 == internal$ChanOK);               \
+		vok._1 = (r._1 == internal$ChanOK);              \
 	}                                                    \
 	vok;                                                 \
 })
@@ -63,17 +63,17 @@ typedef internal$Chan chan;
 	.Cancel = chan##i.M->CancelRecv \
 }
 
-#define _SELECT(dflt, commList...)                              \
+#define _SELECT(dflt, commList...)                               \
 	internal$Comm arr[] = {commList};                            \
 	int_ n = sizeof(arr)/sizeof(arr[0]);                         \
 	internal$Comm *comms[n];                                     \
 	int_ i = n;                                                  \
-	while (i--) {                                               \
-		comms[i] = &arr[i];                                     \
-	}                                                           \
+	while (i--) {                                                \
+		comms[i] = &arr[i];                                      \
+	}                                                            \
 	unsafe$Pointer$$unsafe$Pointer$$uintptr r = internal$Select( \
-		(slice){comms, n, n}, dflt                              \
-	);                                                          \
+		(slice){comms, n, n}, dflt                               \
+	);                                                           \
 	goto *r._0
 
 #define SELECT(commList...) _SELECT(nil, commList)
@@ -101,7 +101,7 @@ typedef internal$Chan chan;
 		chan##i.M->Done(chan##i.C, r._2);      \
 		val##i._1 = true;                      \
 	} else {                                   \
-		val##i._1 = (r._2 == internal$ChanOK);  \
+		val##i._1 = (r._2 == internal$ChanOK); \
 	}                                          \
 	val##i;                                    \
 })

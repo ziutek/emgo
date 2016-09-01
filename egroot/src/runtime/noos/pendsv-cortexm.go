@@ -6,7 +6,6 @@ import (
 	"syscall"
 
 	"arch/cortexm"
-	//"arch/cortexm/debug/itm"
 	"arch/cortexm/scb"
 )
 
@@ -61,6 +60,7 @@ again:
 		ns = tasker.alarm
 	}
 	//dbg.WriteString("*nt* N\n")
+	setStackGuard(n)
 	tasker.wakeup(ns)
 	return tasker.tasks[n].sp
 }

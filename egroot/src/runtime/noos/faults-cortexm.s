@@ -26,8 +26,8 @@ runtime$noos$faultHandler:
 
 // R0 contains exception number:
 // 3: HardFault  - see HFSR: x/xw 0xE000ED2C
-// 4: MemManage  - see MMSR: x/xb 0xE000ED28, MMAR: x 0xE000ED34
-// 5: BusFault   - see BFSR: x/xb 0xE000ED29, BFAR: x 0xE000ED38
+// 4: MemManage  - see MMSR: x/xb 0xE000ED28, MMAR: x/xw 0xE000ED34
+// 5: BusFault   - see BFSR: x/xb 0xE000ED29, BFAR: x/xw 0xE000ED38
 // 6: UsageFault - see UFSR: x/xh 0xE000ED2A
 
 // R1 should contain pointer to the exception stack frame:

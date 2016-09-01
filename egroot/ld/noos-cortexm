@@ -5,7 +5,7 @@ SECTIONS {
 		/* Vector table. */
 		VectorsStart = .;
 		
-		LONG(StackEnd)
+		LONG(StacksEnd)
 		KEEP(*(.Reset))
 		KEEP(*(.NMI))
 		KEEP(*(.HardFault))
@@ -47,12 +47,16 @@ SECTIONS {
 		__exidx_end = .;
 	} >loadTo
 	
-	.stack : {} >RAM
+	.stacks : {} >RAM
 	
-	tasksBegin = ALIGN(ADDR(.stack) + StackISR, (1 << StackTaskLog2) / 8);
-	StackEnd = tasksBegin + (1 << StackTaskLog2) * StackTaskFrac / 8 * MaxTasks;
+	StacksBegin = ADDR(.stacks);
+	ISRStack = ALIGN(StacksBegin + ISRStack, 32) - StacksBegin;
+	MainStack = ALIGN(MainStack, 32);
+	TaskStack = ALIGN(TaskStack, 32);
+	StacksEnd = StacksBegin + ISRStack +
+		(MaxTasks < 1 ? 0 : MainStack + TaskStack * (MaxTasks - 1));
        
-	.data StackEnd : {
+	.data StacksEnd : {
 		. = ALIGN(4);
 		*(
 			SORT_BY_ALIGNMENT(.data)

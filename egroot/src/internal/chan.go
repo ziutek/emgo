@@ -4,7 +4,7 @@ import "unsafe"
 
 const ChanOK uintptr = 0
 
-// TODO: Channels was implemented before interfaces. Consider use
+// TODO: Channels were implemented before interfaces. Consider use
 // `type Chan interface { ... }` to implement channels.
 
 // A Chan is internal representation of chan T type.

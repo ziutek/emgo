@@ -77,7 +77,7 @@ func scSetSysTimer(fp *cortexm.StackFrame, lr uintptr) {
 	// Raise PendSV to cause to call wakeup for the first time. System timer
 	// implementation can rely on the fact, that wakeup is called by PendSV
 	// handler immediately after setup (can be used to initialize/start timer).
-	raisePendSV() 
+	raisePendSV()
 }
 
 func scNanosec(fp *cortexm.StackFrame, lr uintptr) {

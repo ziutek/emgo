@@ -8,6 +8,7 @@ import (
 	"unsafe"
 
 	"arch/cortexm"
+	"arch/cortexm/mpu"
 	"arch/cortexm/nvic"
 	"arch/cortexm/scb"
 )
@@ -112,6 +113,13 @@ func (ts *taskSched) deliverEvent(e syscall.Event) {
 	}
 }
 
+const (
+	regionFlash = iota
+	regionSRAM
+	regionPeriph
+	regionStackGuard
+)
+
 func (ts *taskSched) init() {
 	ts.tasks = make([]taskInfo, maxTasks())
 
@@ -126,32 +134,45 @@ func (ts *taskSched) init() {
 	// of stacks area, which is at the same time, the beginning of the RAM, so
 	// stack overflow in exception handler is always caught (even if MPU isn't
 	// used).
-	cortexm.SetMSP(unsafe.Pointer(stackTop(len(ts.tasks))))
+	cortexm.SetMSP(unsafe.Pointer(stacksBegin() + isrStackSize()))
 
 	// After reset all exceptions have highest priority. Change this to
 	// achieve folowing assumptions (even in case of Cortex-M0 which has only
-	// four priority levels: 0, 64, 128, 192):
-	// 1. PendSV has lowest priority (can be preempt by any exception).
-	// 2. SVC can be used in external interrupt handlers if they have lower
-	//    priority.
-	// 3. There is priority level higher than SVC priority that is required
-	//    for system clock implementation and can be used by external
-	//    interrupts if they must preempt SVC.
+	// four effective priority levels:
+	// 1. PendSV has absolutely lowest priority.
+	// 2. SVC has lowest possible priority that is effectively higher than
+	//    priority of PendSV exception.
 	spnum := cortexm.PrioStep * cortexm.PrioNum
 	SCB := scb.SCB
-	SCB.PRI_SVCall().Store(scb.PRI_SVCall.J(cortexm.PrioLowest + spnum*2/4))
 	SCB.PRI_PendSV().Store(scb.PRI_PendSV.J(cortexm.PrioLowest + spnum*0/4))
+	SCB.PRI_SVCall().Store(scb.PRI_SVCall.J(cortexm.PrioLowest + spnum*1/4))
 	for irq := nvic.IRQ(0); irq < 240; irq++ {
-		irq.SetPrio(cortexm.PrioLowest + spnum*1/4)
+		irq.SetPrio(cortexm.PrioLowest + spnum*2/4)
 	}
 
-	// Setup MPU.
-	//mpu.SetMode(mpu.PrivDef)
-	//mpu.Enable()
+	// Setup MPU. MPU is used mainly to detect stack overflows: regionStackGuard
+	// is used to setup stack guard area at the bottom of the stack of active
+	// task. Below there is configuration that more or less corresponds to
+	// default behavior without MPU enabled. Stack guard region for active task
+	// is configured by setStackGuard function.
+	mpu.SetRegion(mpu.BaseAttr{
+		0x00000000 + mpu.VALID + regionFlash,
+		mpu.ENA | mpu.SIZE(29) | mpu.C | mpu.Ar_r_,
+	})
+	mpu.SetRegion(mpu.BaseAttr{
+		0x20000000 + mpu.VALID + regionSRAM,
+		mpu.ENA | mpu.SIZE(29) | mpu.C | mpu.S | mpu.Arwrw,
+	})
+	mpu.SetRegion(mpu.BaseAttr{
+		0x40000000 + mpu.VALID + regionPeriph,
+		mpu.ENA | mpu.SIZE(29) | mpu.B | mpu.S | mpu.Arwrw | mpu.XN,
+	})
+	mpu.Set(mpu.ENABLE | mpu.PRIVDEFENA)
 
 	// Set taskInfo for initial (current) task.
 	ts.tasks[0].Init(0, ts.nanosec())
 	ts.tasks[0].SetState(taskReady)
+	setStackGuard(0)
 
 	// Leave privileged level.
 	cortexm.SetCONTROL(cortexm.CONTROL() | cortexm.Unpriv)

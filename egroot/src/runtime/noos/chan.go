@@ -78,7 +78,7 @@ func selectComm(comms []*internal.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Poin
 	)
 	for _, comm := range comms {
 		if comm.C != nil {
-			e = e.Sum(*(*syscall.Event)(comm.C))
+			e |= *(*syscall.Event)(comm.C)
 		}
 	}
 	w.addr = unsafe.Pointer(&sel)
