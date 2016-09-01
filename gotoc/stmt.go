@@ -692,7 +692,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		dim := cdd.Type(w, et)
 		w.WriteString(dimFuncPtr("", dim))
 		w.WriteString(", ")
-		cdd.Expr(w, s.Value, et)
+		cdd.interfaceExpr(w, s.Value, et)
 		w.WriteString(");\n")
 
 	case *ast.SelectStmt:
@@ -727,7 +727,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				dim := cdd.Type(w, et)
 				dimFuncPtr("", dim)
 				w.WriteString(", ")
-				cdd.Expr(w, s.Value, et)
+				cdd.interfaceExpr(w, s.Value, et)
 				w.WriteString(");\n")
 
 			default:
