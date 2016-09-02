@@ -3,9 +3,13 @@ package main
 
 import (
 	"delay"
+	"fmt"
 	"rtos"
 
 	"arch/cortexm/bitband"
+	"arch/cortexm/nvic"
+
+	"onewire"
 
 	"stm32/hal/dma"
 	"stm32/hal/exti"
@@ -27,6 +31,13 @@ var (
 	RoomHeater [3]bitband.Bit // Room heating solid state relays.
 )
 
+// prio16 must be in the range [0;15]. Do not use prio16 <= 4 for realtime ISRs.
+func irqen(irq nvic.IRQ, prio16 rtos.IRQPrio) {
+	e := rtos.IRQ(irq)
+	e.SetPrio(rtos.IRQPrioLowest + prio16*rtos.IRQPrioStep*(rtos.IRQPrioNum/16))
+	e.Enable()
+}
+
 func init() {
 	system.Setup32(0)
 	systick.Setup()
@@ -35,11 +46,13 @@ func init() {
 
 	gpio.A.EnableClock(true)
 	btnport, btnpin := gpio.A, gpio.Pin0
-	wsport, wspin := gpio.A, gpio.Pin15
+	encport, encpins := gpio.A, gpio.Pin1|gpio.Pin5
+	ebtnport, ebtnpin := gpio.A, 4
 
 	gpio.B.EnableClock(true)
 	ledport, bluepin, greenpin := gpio.B, 6, 7
 	lcdport, lcdpins := gpio.B, gpio.Pin10|gpio.Pin11
+	wsport, wspin := gpio.B, gpio.Pin13
 
 	gpio.C.EnableClock(true)
 	rhport, rhpins := gpio.C, []int{0, 1, 2}
@@ -56,7 +69,7 @@ func init() {
 	line.Connect(btnport)
 	line.EnableRiseTrig()
 	line.EnableInt()
-	rtos.IRQ(irq.EXTI0).Enable()
+	irqen(irq.EXTI0, 1)
 
 	slowOutCfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 
@@ -81,44 +94,72 @@ func init() {
 	t := tim.TIM3
 	setupPulsePWM(t, system.APB1.Clock(), 500, 9999)
 	waterPWM.Init(t)
-	waterIRQPrio := rtos.IRQPrioHighest - rtos.IRQPrioStep*rtos.IRQPrioNum/4
-	e := rtos.IRQ(irq.TIM3)
-	e.SetPrio(waterIRQPrio)
-	e.Enable()
+	irqen(irq.TIM3, 12) // Prio must be the same as for water flow sensor.
 
 	// Water flow sensor.
 	wsport.Setup(wspin, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
-	wsport.SetAltFunc(wspin, gpio.TIM2)
-	rcc.RCC.TIM2EN().Set()
-	waterCnt.Init(tim.TIM2)
-	e = rtos.IRQ(irq.TIM2)
-	e.SetPrio(waterIRQPrio)
-	e.Enable()
+	wsport.SetAltFunc(wspin, gpio.TIM9)
+	rcc.RCC.TIM9EN().Set()
+	waterCnt.Init(tim.TIM9)
+	irqen(irq.TIM9, 12) // Prio must be the same as for PWM IRQ prio.
 
 	// 1-wire bus.
 	owport.Setup(owpin, &gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
 	owport.SetAltFunc(owpin, gpio.USART3)
-	tempd.Init(usart.USART3, dma1.Channel(3, 0), dma1.Channel(2, 0))
-	rtos.IRQ(irq.USART3).Enable()
-	rtos.IRQ(irq.DMA1_Channel3).Enable()
-	rtos.IRQ(irq.DMA1_Channel2).Enable()
+	owd.Start(usart.USART3, dma1.Channel(3, 0), dma1.Channel(2, 0))
+	irqen(irq.USART3, 11)
+	irqen(irq.DMA1_Channel3, 11)
+	irqen(irq.DMA1_Channel2, 11)
 
 	// I2C LCD (PCF8574T + HD44780)
 	lcdport.Setup(lcdpins, &gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
 	lcdport.SetAltFunc(lcdpins, gpio.I2C2)
 	initI2C(i2c.I2C2, dma1.Channel(5, 0), dma1.Channel(4, 0))
-	rtos.IRQ(irq.I2C2_EV).Enable()
-	rtos.IRQ(irq.I2C2_ER).Enable()
-	rtos.IRQ(irq.DMA1_Channel5).Enable()
-	rtos.IRQ(irq.DMA1_Channel4).Enable()
+	irqen(irq.I2C2_EV, 10)
+	irqen(irq.I2C2_ER, 10)
+	irqen(irq.DMA1_Channel5, 10)
+	irqen(irq.DMA1_Channel4, 10)
+
+	// Encoder.
+	encport.Setup(encpins, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	encport.SetAltFunc(encpins, gpio.TIM2)
+	rcc.RCC.TIM2EN().Set()
+	ebtnport.SetupPin(ebtnpin, &gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
+	line = exti.LineN(ebtnpin)
+	line.Connect(ebtnport)
+	encoder.Init(tim.TIM2, ebtnport.InPins().Bit(ebtnpin), line)
+	irqen(irq.TIM2, 9)
+	irqen(irq.EXTI4, 9)
 
 	initLCD(i2cdrv.NewMasterConn(0x27, i2c.ASRD))
 }
 
 func main() {
 	//go waterTask()
-	lcd.WriteString("Blaaa!")
-	tempd.Loop()
+	searchResp := make(chan onewire.Dev, 1)
+	tempResp := make(chan float32, 1)
+	for i := 0; ; i++ {
+		es := <-encoder.State
+		if es.Btn {
+			encoder.SetCnt(0)
+		}
+		owd.Cmd <- SearchCmd{Typ: onewire.DS18B20, Resp: searchResp}
+		var dev onewire.Dev
+		for d := range searchResp {
+			if d.Type() == 0 {
+				break
+			}
+			fmt.Println(i, d)
+			dev = d
+		}
+		var temp float32
+		if dev.Type() != 0 {
+			owd.Cmd <- TempCmd{Dev: dev, Resp: tempResp}
+			temp = <-tempResp
+		}
+		lcd.ReturnHome()
+		fmt.Fprintf(lcd, "%5.1f C %+2d %t ", temp, es.Cnt, es.Btn)
+	}
 }
 
 func exti0ISR() {
@@ -135,15 +176,18 @@ func exti0ISR() {
 var ISRs = [...]func(){
 	irq.EXTI0: exti0ISR,
 
-	irq.TIM2: waterCntISR,
 	irq.TIM3: waterPWMISR,
+	irq.TIM9: waterCntISR,
 
-	irq.USART3:        tempdUSARTISR,
-	irq.DMA1_Channel3: tempdRxDMAISR,
-	irq.DMA1_Channel2: tempdTxDMAISR,
+	irq.USART3:        owdUSARTISR,
+	irq.DMA1_Channel3: owdRxDMAISR,
+	irq.DMA1_Channel2: owdTxDMAISR,
 
 	irq.I2C2_EV:       i2cISR,
 	irq.I2C2_ER:       i2cISR,
 	irq.DMA1_Channel5: i2cRxDMAISR,
 	irq.DMA1_Channel4: i2cTxDMAISR,
+
+	irq.TIM2:  encoderISR,
+	irq.EXTI4: encoderISR,
 }

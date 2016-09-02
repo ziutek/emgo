@@ -11,24 +11,25 @@ import (
 	"stm32/onedrv"
 )
 
-var tempd tempDaemon
-
-type tempDaemon struct {
-	m onewire.Master
+type OneWireDaemon struct {
+	m   onewire.Master
+	Cmd chan interface{}
 }
 
-func (td *tempDaemon) Init(u *usart.Periph, rxdma, txdma *dma.Channel) {
-	d := usart.NewDriver(u, rxdma, txdma, make([]byte, 16))
-	d.EnableClock(true)
-	d.SetBaudRate(115200)
-	d.SetMode(usart.HalfDuplex)
-	d.Enable()
-	d.EnableRx()
-	d.EnableTx()
-	td.m.Driver = onedrv.USARTDriver{d}
+func (d *OneWireDaemon) Start(u *usart.Periph, rxdma, txdma *dma.Channel) {
+	drv := usart.NewDriver(u, rxdma, txdma, make([]byte, 16))
+	drv.EnableClock(true)
+	drv.SetBaudRate(115200)
+	drv.SetMode(usart.HalfDuplex)
+	drv.Enable()
+	drv.EnableRx()
+	drv.EnableTx()
+	d.m.Driver = onedrv.USARTDriver{drv}
+	d.Cmd = make(chan interface{}, 1)
+	go d.loop()
 }
 
-func printErr(err error) bool {
+func checkPrintErr(err error) bool {
 	if err == nil {
 		return false
 	}
@@ -42,72 +43,71 @@ func printErr(err error) bool {
 	return true
 }
 
-func printOK() {
-	fmt.Printf("OK.\n")
+type SearchCmd struct {
+	Typ  onewire.Type
+	Resp chan onewire.Dev
 }
 
-//emgo:const
-var dstypes = [...]onewire.Type{onewire.DS18B20}
+type TempCmd struct {
+	Dev  onewire.Dev
+	Resp chan float32
+}
 
-func (td *tempDaemon) Loop() {
-start:
-	for {
-		if printErr(td.m.SkipROM()) {
-			continue start
-		}
-		if printErr(td.m.WriteScratchpad(127, -128, onewire.T10bit)) {
-			continue start
-		}
-		if printErr(td.m.SkipROM()) {
-			continue start
-		}
-		if printErr(td.m.ConvertT()) {
-			continue start
-		}
-		for {
-			delay.Millisec(50)
-			b, err := td.m.ReadBit()
-			if printErr(err) {
-				continue start
+func (d *OneWireDaemon) loop() {
+	for cmd := range d.Cmd {
+		switch c := cmd.(type) {
+		case SearchCmd:
+			s := onewire.MakeSearch(c.Typ, false)
+			for d.m.SearchNext(&s) {
+				c.Resp <- s.Dev()
 			}
-			if b != 0 {
+			c.Resp <- onewire.Dev{}
+			checkPrintErr(s.Err())
+		case TempCmd:
+			for {
+				if checkPrintErr(d.m.MatchROM(c.Dev)) {
+					continue
+				}
+				if checkPrintErr(d.m.WriteScratchpad(
+					127, -128, onewire.T10bit,
+				)) {
+					continue
+				}
+				if checkPrintErr(d.m.MatchROM(c.Dev)) {
+					continue
+				}
+				if checkPrintErr(d.m.ConvertT()) {
+					continue
+				}
+				delay.Millisec(200)
+				if checkPrintErr(d.m.MatchROM(c.Dev)) {
+					continue
+				}
+				s, err := d.m.ReadScratchpad()
+				if checkPrintErr(err) {
+					continue
+				}
+				t, err := s.Temp(c.Dev.Type())
+				if checkPrintErr(err) {
+					continue
+				}
+				c.Resp <- t
 				break
 			}
 		}
-		for _, typ := range dstypes {
-			s := onewire.MakeSearch(onewire.DS18B20, false)
-			for td.m.SearchNext(&s) {
-				d := s.Dev()
-				fmt.Printf("%v : ", d)
-				if printErr(td.m.MatchROM(d)) {
-					continue start
-				}
-				s, err := td.m.ReadScratchpad()
-				if printErr(err) {
-					continue start
-				}
-				t, err := s.Temp(typ)
-				if printErr(err) {
-					continue start
-				}
-				fmt.Printf("%6.2f C\n", t)
-			}
-			if printErr(s.Err()) {
-				continue start
-			}
-		}
-		delay.Millisec(4e3)
 	}
 }
 
-func tempdUSARTISR() {
-	tempd.m.Driver.(onedrv.USARTDriver).USART.ISR()
+var owd OneWireDaemon
+
+func owdUSARTISR() {
+	owd.m.Driver.(onedrv.USARTDriver).USART.ISR()
 }
 
-func tempdRxDMAISR() {
-	tempd.m.Driver.(onedrv.USARTDriver).USART.RxDMAISR()
+func owdRxDMAISR() {
+	owd.m.Driver.(onedrv.USARTDriver).USART.RxDMAISR()
 }
 
-func tempdTxDMAISR() {
-	tempd.m.Driver.(onedrv.USARTDriver).USART.TxDMAISR()
+func owdTxDMAISR() {
+	owd.m.Driver.(onedrv.USARTDriver).USART.TxDMAISR()
 }

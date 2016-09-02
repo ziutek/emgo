@@ -14,7 +14,7 @@ func (c *counter) Init(t *tim.TIM_Periph) {
 	// Connect CC1 to TI1, setup input filter.
 	t.CCMR1.StoreBits(tim.CC1S|tim.IC1F, 1<<tim.CC1Sn|0xf<<tim.IC1Fn)
 	// Set falling edge detection, enable CC1.
-	t.CCER.SetBits(tim.CC1P | tim.CC1E)
+	t.CCER.SetBits(tim.CC1P)
 	// Set external clock mode 1, clock from filtered TI1.
 	t.SMCR.StoreBits(tim.SMS|tim.TS, 7<<tim.SMSn|5<<tim.TSn)
 	// Use CC2 to generate an interrupt after first count.

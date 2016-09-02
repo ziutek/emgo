@@ -1,7 +1,6 @@
-StackISR = 2000; /* 2 kB */
-
-StackTaskLog2 = 11; /* 2 KiB */
-StackTaskFrac = 6; /* 6/8 */
+ISRStack = 2048;
+MainStack = 2048;
+TaskStack = 0;
 MaxTasks = 1;
 
 INCLUDE stm32/l152rb
