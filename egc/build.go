@@ -187,7 +187,7 @@ func compile(bp *build.Package) error {
 		_, err = io.WriteString(wc, "#include \""+h+"\"\n\n")
 	} else {
 		up := gotoc.Upath(ppath)
-		_, err = io.WriteString(wh, "#ifndef "+up+"\n#define "+up+"\n\n")
+		_, err = io.WriteString(wh, "#ifndef $"+up+"$\n#define $"+up+"$\n\n")
 	}
 	if err != nil {
 		return err
