@@ -29,10 +29,13 @@ func (b *Buffer) Cap() int { return cap(b.buf) }
 func (b *Buffer) Bytes() []byte { return b.buf[b.off:] }
 
 func (b *Buffer) Truncate(n int) {
-	if n == 0 {
+	switch {
+	case n == 0:
 		b.off = 0
+	case uint(n) > uint(b.Len()):
+		panic("bytes.Buffer: truncation out of range")
 	}
-	b.buf = b.buf[0 : b.off+n]
+	b.buf = b.buf[:b.off+n]
 }
 
 func (b *Buffer) Reset() { b.Truncate(0) }
@@ -40,7 +43,7 @@ func (b *Buffer) Reset() { b.Truncate(0) }
 // Grow tries to grow the buffer to make space for n more bytes. In case of
 // fixed buffer it can not allocate more space than current buffer has. Grow
 // returns index wher bytes should be copied.
-func grow(b *Buffer, n int) int {
+func (b *Buffer) grow(n int) int {
 	m := len(b.buf)
 	n += m
 	if n > cap(b.buf) {
@@ -57,7 +60,7 @@ func grow(b *Buffer, n int) int {
 }
 
 func (b *Buffer) Write(s []byte) (int, error) {
-	m := grow(b, len(s))
+	m := b.grow(len(s))
 	n := copy(b.buf[m:], s)
 	if n != len(s) {
 		return n, ErrTooLarge
@@ -66,7 +69,7 @@ func (b *Buffer) Write(s []byte) (int, error) {
 }
 
 func (b *Buffer) WriteString(s string) (int, error) {
-	m := grow(b, len(s))
+	m := b.grow(len(s))
 	n := copy(b.buf[m:], s)
 	if n != len(s) {
 		return n, ErrTooLarge
