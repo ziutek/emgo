@@ -1,7 +1,6 @@
-StackISR = 2000;    /* 2 KB */
-
-StackTaskLog2 = 12; /* 4 KB */
-StackTaskFrac = 8;  /* 8/8 */
+ISRStack = 2048;
+MainStack = 4096;
+TaskStack = 4096;
 MaxTasks = 6;
 
 INCLUDE stm32/f407xg

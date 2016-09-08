@@ -1,11 +1,11 @@
 package hdc
 
 func (d *Display) ClearDisplay() error {
-	return writeCmd(d, 0x01)
+	return d.writeCmd(0x01)
 }
 
 func (d *Display) ReturnHome() error {
-	return writeCmd(d, 0x02)
+	return d.writeCmd(0x02)
 }
 
 type EntryMode byte
@@ -18,7 +18,7 @@ const (
 )
 
 func (d *Display) SetEntryMode(f EntryMode) error {
-	return writeCmd(d, byte(0x04|f&0x03))
+	return d.writeCmd(byte(0x04 | f&0x03))
 }
 
 type DisplayMode byte
@@ -33,20 +33,20 @@ const (
 )
 
 func (d *Display) SetDisplayMode(f DisplayMode) error {
-	return writeCmd(d, byte(0x08|f&7))
+	return d.writeCmd(byte(0x08 | f&7))
 }
 
 type Shift byte
 
 const (
-	ShiftCuror  Shift = 0
-	ShiftScreen Shift = 1 << 3
-	ShiftLeft   Shift = 0
-	ShiftRight  Shift = 1 << 2
+	Cursor Shift = 0
+	Screen Shift = 1 << 3
+	Left   Shift = 0
+	Right  Shift = 1 << 2
 )
 
-func (d *Display) SetShift(f Shift) error {
-	return writeCmd(d, byte(0x10|f&0xc))
+func (d *Display) Shift(f Shift) error {
+	return d.writeCmd(byte(0x10 | f&0xc))
 }
 
 type Function byte
@@ -59,15 +59,15 @@ const (
 )
 
 func (d *Display) SetFunction(f Function) error {
-	return writeCmd(d, byte(0x20|f&0x0f))
+	return d.writeCmd(byte(0x20 | f&0x0f))
 }
 
 func (d *Display) SetAddrCGRAM(addr int) error {
-	return writeCmd(d, byte(0x40|addr&0x3f))
+	return d.writeCmd(byte(0x40 | addr&0x3f))
 }
 
 func (d *Display) SetAddrDDRAM(addr int) error {
-	return writeCmd(d, byte(0x80|addr&0x7f))
+	return d.writeCmd(byte(0x80 | addr&0x7f))
 }
 
 // Flush calls bufio.Writer.Flush if bufio.Writer was used as io.Write
@@ -88,7 +88,7 @@ func (d *Display) MoveCursor(col, row int) error {
 
 func (d *Display) Write(data []byte) (int, error) {
 	for i, b := range data {
-		if err := writeData(d, b); err != nil {
+		if err := d.WriteByte(b); err != nil {
 			return i, err
 		}
 	}
@@ -97,7 +97,7 @@ func (d *Display) Write(data []byte) (int, error) {
 
 func (d *Display) WriteString(s string) (int, error) {
 	for i, n := 0, len(s); i < n; i++ {
-		if err := writeData(d, s[i]); err != nil {
+		if err := d.WriteByte(s[i]); err != nil {
 			return i, err
 		}
 	}

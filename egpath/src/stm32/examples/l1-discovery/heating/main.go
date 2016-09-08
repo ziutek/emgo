@@ -138,6 +138,7 @@ func main() {
 	//go waterTask()
 	searchResp := make(chan onewire.Dev, 1)
 	tempResp := make(chan float32, 1)
+	line := lcd.NewSlice(20, 40)
 	for i := 0; ; i++ {
 		es := <-encoder.State
 		if es.Btn {
@@ -157,8 +158,10 @@ func main() {
 			owd.Cmd <- TempCmd{Dev: dev, Resp: tempResp}
 			temp = <-tempResp
 		}
-		lcd.ReturnHome()
-		fmt.Fprintf(lcd, "%5.1f C %+2d %t ", temp, es.Cnt, es.Btn)
+		fmt.Fprintf(line, "%5.1f C %+2d %t ", temp, es.Cnt, es.Btn)
+		line.Flush()
+		lcd.Swap()
+		lcd.Draw()
 	}
 }
 

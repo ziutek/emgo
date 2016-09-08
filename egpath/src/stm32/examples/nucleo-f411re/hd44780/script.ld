@@ -1,7 +1,6 @@
-StackISR = 3000;
-
-StackTaskLog2 = 13;
-StackTaskFrac = 8;
+ISRStack = 2048;
+MainStack = 8192;
+TaskStack = 0;
 MaxTasks = 1;
 
 INCLUDE stm32/f411xe

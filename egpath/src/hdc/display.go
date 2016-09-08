@@ -21,53 +21,55 @@ import (
 // Display reads busy flag before executing a command. Read command is written
 // with all data bits set to 1.
 type Display struct {
+	ReadWriter io.ReadWriter
 	Cols       byte
 	Rows       byte
-	ReadWriter io.ReadWriter
-	DS         byte // Data shift: 4-bit nible uses bits DS to DS+3.
+	DS         byte // Data shift: 4-bit nible uses bit numbers from DS to DS+3.
 	E          byte // E line.
 	RW         byte // R/W line.
 	RS         byte // RS line.
-	AUX        byte // AUX line (typically used for backlight).
+	AUX        byte // AUX line (typically used for control backlight).
 
 	auxst byte
 }
 
 func (d *Display) SetAUX() error {
 	d.auxst = d.AUX
-	_, err := d.ReadWriter.Write([]byte{d.AUX, d.AUX, d.AUX})
+	s := [3]byte{d.AUX, d.AUX, d.AUX}
+	_, err := d.ReadWriter.Write(s[:])
 	return err
 }
 
 func (d *Display) ClearAUX() error {
 	d.auxst = 0
-	_, err := d.ReadWriter.Write([]byte{0, 0, 0})
+	var s [3]byte
+	_, err := d.ReadWriter.Write(s[:])
 	return err
 }
 
-func writeByte(d *Display, rs, b byte) error {
+func (d *Display) writeByte(rs, b byte) error {
 	h := (b>>4)<<d.DS | rs | d.auxst
 	l := (b&0xf)<<d.DS | rs | d.auxst
 	buf := []byte{
 		h, h | d.E, h,
 		l, l | d.E, l,
 	}
-	if err := waitBusy(d); err != nil {
+	if err := d.waitBusy(); err != nil {
 		return err
 	}
 	_, err := d.ReadWriter.Write(buf)
 	return err
 }
 
-func writeCmd(d *Display, b byte) error {
-	return writeByte(d, 0, b)
+func (d *Display) writeCmd(b byte) error {
+	return d.writeByte(0, b)
 }
 
-func writeData(d *Display, b byte) error {
-	return writeByte(d, d.RS, b)
+func (d *Display) WriteByte(b byte) error {
+	return d.writeByte(d.RS, b)
 }
 
-func waitBusy(d *Display) error {
+func (d *Display) waitBusy() error {
 	rba := d.RW | 0xf<<d.DS | d.auxst
 	out := []byte{rba, rba | d.E, rba}
 	var in [1]byte

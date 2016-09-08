@@ -1,8 +1,7 @@
-StackISR = 2000; /* 2 KB */
-
-StackTaskLog2 = 13; /* 8 KB */
-StackTaskFrac = 8;  /* 8/8 */
-MaxTasks = 2;
+ISRStack = 2048;
+MainStack = 4096;
+TaskStack = 0;
+MaxTasks = 1;
 
 INCLUDE stm32/f411xe
 INCLUDE stm32/loadram
