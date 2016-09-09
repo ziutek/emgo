@@ -29,9 +29,10 @@ func atomicInitLoadState(p *syscall.Event) syscall.Event {
 }
 
 func flagSet(f *EventFlag) {
-	state := atomicInitLoadState(&f.state) | 1
-	syscall.AtomicStoreEvent(&f.state, state)
-	(state &^ 1).Send()
+	state := atomicInitLoadState(&f.state) &^ 1
+	if syscall.AtomicCompareAndSwapEvent(&f.state, state, state|1) {
+		state.Send()
+	}
 }
 
 func flagClear(f *EventFlag) {
