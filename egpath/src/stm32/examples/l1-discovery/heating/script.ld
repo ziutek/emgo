@@ -1,7 +1,7 @@
-ISRStack = 2048;
-MainStack = 5120;
-TaskStack = 4096;
-MaxTasks = 2;
+ISRStack = 1280;
+MainStack = 5000;
+TaskStack = 3100;
+MaxTasks = 3;
 
 INCLUDE stm32/l152rb
 INCLUDE stm32/loadflash

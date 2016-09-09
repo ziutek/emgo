@@ -131,7 +131,7 @@ func init() {
 	irqen(irq.TIM2, 9)
 	irqen(irq.EXTI4, 9)
 
-	initLCD(i2cdrv.NewMasterConn(0x27, i2c.ASRD))
+	startLCD(i2cdrv.NewMasterConn(0x27, i2c.ASRD))
 }
 
 func main() {
@@ -159,9 +159,7 @@ func main() {
 			temp = <-tempResp
 		}
 		fmt.Fprintf(line, "%5.1f C %+2d %t ", temp, es.Cnt, es.Btn)
-		line.Flush()
-		lcd.Swap()
-		lcd.Draw()
+		line.Flush(0)
 	}
 }
 

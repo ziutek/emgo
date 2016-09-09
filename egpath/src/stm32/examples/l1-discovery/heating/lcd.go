@@ -3,14 +3,24 @@ package main
 import (
 	"fmt"
 	"io"
+	"rtos"
 
 	"hdc"
 	"hdc/hdcfb"
 )
 
+func checkErr(err error) {
+	if err == nil {
+		return
+	}
+	fmt.Printf("Error %v\n", err)
+	for {
+	}
+}
+
 var lcd *hdcfb.FB
 
-func initLCD(rw io.ReadWriter) {
+func startLCD(rw io.ReadWriter) {
 	d := new(hdc.Display)
 	*d = hdc.Display{
 		ReadWriter: rw,
@@ -24,13 +34,15 @@ func initLCD(rw io.ReadWriter) {
 	checkErr(d.SetAUX()) // Backlight on.
 
 	lcd = hdcfb.NewFB(d)
+	go lcdLoop()
 }
 
-func checkErr(err error) {
-	if err == nil {
-		return
-	}
-	fmt.Printf("Error %v\n", err)
-	for {
+func lcdLoop() {
+	line := lcd.NewSyncSlice(15, 20)
+	for i := 0; ; i++ {
+		lcd.WaitAndSwap(rtos.Nanosec() + 1e9)
+		fmt.Fprintf(line, "%5d", i)
+		line.SetPos(0)
+		checkErr(lcd.Draw())
 	}
 }
