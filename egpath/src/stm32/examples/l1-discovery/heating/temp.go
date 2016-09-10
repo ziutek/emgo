@@ -29,7 +29,7 @@ func (d *OneWireDaemon) Start(u *usart.Periph, rxdma, txdma *dma.Channel) {
 	go d.loop()
 }
 
-func checkPrintErr(err error) bool {
+func log1wireErr(err error) bool {
 	if err == nil {
 		return false
 	}
@@ -62,33 +62,33 @@ func (d *OneWireDaemon) loop() {
 				c.Resp <- s.Dev()
 			}
 			c.Resp <- onewire.Dev{}
-			checkPrintErr(s.Err())
+			log1wireErr(s.Err())
 		case TempCmd:
 			for {
-				if checkPrintErr(d.m.MatchROM(c.Dev)) {
+				if log1wireErr(d.m.MatchROM(c.Dev)) {
 					continue
 				}
-				if checkPrintErr(d.m.WriteScratchpad(
+				if log1wireErr(d.m.WriteScratchpad(
 					127, -128, onewire.T10bit,
 				)) {
 					continue
 				}
-				if checkPrintErr(d.m.MatchROM(c.Dev)) {
+				if log1wireErr(d.m.MatchROM(c.Dev)) {
 					continue
 				}
-				if checkPrintErr(d.m.ConvertT()) {
+				if log1wireErr(d.m.ConvertT()) {
 					continue
 				}
 				delay.Millisec(200)
-				if checkPrintErr(d.m.MatchROM(c.Dev)) {
+				if log1wireErr(d.m.MatchROM(c.Dev)) {
 					continue
 				}
 				s, err := d.m.ReadScratchpad()
-				if checkPrintErr(err) {
+				if log1wireErr(err) {
 					continue
 				}
 				t, err := s.Temp(c.Dev.Type())
-				if checkPrintErr(err) {
+				if log1wireErr(err) {
 					continue
 				}
 				c.Resp <- t

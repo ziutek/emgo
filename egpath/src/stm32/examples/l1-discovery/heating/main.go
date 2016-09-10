@@ -9,8 +9,6 @@ import (
 	"arch/cortexm/bitband"
 	"arch/cortexm/nvic"
 
-	"onewire"
-
 	"stm32/hal/dma"
 	"stm32/hal/exti"
 	"stm32/hal/gpio"
@@ -136,29 +134,13 @@ func init() {
 
 func main() {
 	//go waterTask()
-	searchResp := make(chan onewire.Dev, 1)
-	tempResp := make(chan float32, 1)
 	line := lcd.NewSlice(20, 40)
 	for i := 0; ; i++ {
 		es := <-encoder.State
 		if es.Btn {
 			encoder.SetCnt(0)
 		}
-		owd.Cmd <- SearchCmd{Typ: onewire.DS18B20, Resp: searchResp}
-		var dev onewire.Dev
-		for d := range searchResp {
-			if d.Type() == 0 {
-				break
-			}
-			fmt.Println(i, d)
-			dev = d
-		}
-		var temp float32
-		if dev.Type() != 0 {
-			owd.Cmd <- TempCmd{Dev: dev, Resp: tempResp}
-			temp = <-tempResp
-		}
-		fmt.Fprintf(line, "%5.1f C %+2d %t ", temp, es.Cnt, es.Btn)
+		fmt.Fprintf(line, "%d %v ", es.Cnt, es.Btn)
 		line.Flush(0)
 	}
 }

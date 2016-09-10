@@ -9,10 +9,14 @@ var i2cdrv *i2c.Driver
 
 func initI2C(twi *i2c.Periph, rxdma, txdma *dma.Channel) {
 	twi.EnableClock(true)
-	twi.Reset() // Mandatory!
-	twi.Setup(&i2c.Config{Speed: 100e3})
 	i2cdrv = i2c.NewDriver(twi, rxdma, txdma)
-	twi.Enable()
+	resetI2C()
+}
+
+func resetI2C() {
+	i2cdrv.Reset() // Mandatory!
+	i2cdrv.Setup(&i2c.Config{Speed: 480e3, Duty: i2c.Duty16_9})
+	i2cdrv.Enable()
 }
 
 func i2cISR() {

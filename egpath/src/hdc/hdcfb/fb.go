@@ -34,6 +34,10 @@ func NewFB(d *hdc.Display) *FB {
 	return fb
 }
 
+func (fb *FB) Display() *hdc.Display {
+	return fb.d
+}
+
 const minInt32 = -2147483648
 
 // WaitAndSwap waits until any write to the active buffer or deadline occurs. It
