@@ -67,9 +67,9 @@ func lcdLoop() {
 	t := rtos.Nanosec()
 	var lastPrint int64
 	for {
-		lcd.WaitAndSwap(t + 2e9)
+		lcd.WaitAndSwap(t + 1e9)
 		t = rtos.Nanosec()
-		if t-lastPrint >= 2e9 {
+		if t-lastPrint >= 1e9 {
 			lastPrint = t
 			owd.Cmd <- SearchCmd{Typ: onewire.DS18B20, Resp: searchResp}
 			var (
@@ -92,7 +92,11 @@ func lcdLoop() {
 				owd.Cmd <- TempCmd{Dev: d, Resp: tempResp}
 				temps[i] = <-tempResp
 			}
-			fmt.Fprintf(lcdHead, "%8d ", t/1e9)
+			dt := readRTC()
+			fmt.Fprintf(
+				lcdHead, "%02d:%02d:%02d  ",
+				dt.Hour(), dt.Minute(), dt.Second(),
+			)
 			for _, temp := range temps {
 				fmt.Fprintf(lcdHead, "%2.1f ", temp)
 			}

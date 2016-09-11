@@ -130,6 +130,14 @@ func init() {
 	irqen(irq.EXTI4, 9)
 
 	startLCD(i2cdrv.NewMasterConn(0x27, i2c.ASRD))
+
+	initRTC()
+	if !checkRTC() {
+		fmt.Printf("RTC not set. Setting...\n")
+		t := makeDateTime(2016, 9, 11, 22, 51, 20, Sunday)
+		setRTC(t)
+		fmt.Printf("Done.\n")
+	}
 }
 
 func main() {
@@ -142,6 +150,12 @@ func main() {
 		}
 		fmt.Fprintf(line, "%d %v ", es.Cnt, es.Btn)
 		line.Flush(0)
+		t := readRTC()
+		fmt.Printf(
+			"%s %04d-%02d-%02d",
+			t.Weekday(), t.Year(), t.Month(), t.Day(),
+		)
+		fmt.Printf(" %02d:%02d:%02d\n", t.Hour(), t.Minute(), t.Second())
 	}
 }
 
