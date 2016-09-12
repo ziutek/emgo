@@ -24,7 +24,7 @@ func schedNext() {
 			// Wakeup PendSV handler.
 			cortexm.SEV()
 		} else {
-			// Rise PendSV exception.
+			// Raise PendSV exception.
 			SCB.ICSR.Store(scb.PENDSVSET)
 		}
 	}
