@@ -93,7 +93,16 @@ type DateTime struct {
 
 func readRTC() DateTime {
 	RTC := rtc.RTC
-	return DateTime{RTC.TR.U32.Load(), RTC.DR.U32.Load()}
+	var t DateTime
+	t.dr = RTC.DR.U32.Load()
+	for {
+		t.tr = RTC.TR.U32.Load()
+		dr = RTC.DR.U32.Load()
+		if dr == t.dr {
+			return t
+		}
+		t.dr = dr
+	}
 }
 
 func (t DateTime) Year() int {
