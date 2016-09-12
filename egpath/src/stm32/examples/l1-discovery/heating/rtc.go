@@ -29,7 +29,6 @@ func initRTC() {
 		RCC.PWREN().Clear()
 		fmt.Println("Done.")
 	}
-
 }
 
 func checkRTC() bool {
@@ -48,7 +47,7 @@ func setRTC(t DateTime) {
 	RTC.INIT().Set()
 	for RTC.INITF().Load() == 0 {
 	}
-	//const prer = (2-1)<<16 + (1 - 1)
+	//const prer = (x-1)<<16 + (y-1)
 	//RTC.PRER.Store(prer)
 	//RTC.PRER.Store(prer)
 	RTC.DR.U32.Store(t.dr)
@@ -97,7 +96,7 @@ func readRTC() DateTime {
 	t.dr = RTC.DR.U32.Load()
 	for {
 		t.tr = RTC.TR.U32.Load()
-		dr = RTC.DR.U32.Load()
+		dr := RTC.DR.U32.Load()
 		if dr == t.dr {
 			return t
 		}

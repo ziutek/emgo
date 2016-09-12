@@ -38,7 +38,7 @@ func (c *counter) ClearIF() {
 }
 
 var (
-	waterPWM pulsePWM3
+	waterPWM PulsePWM3
 	waterCnt counter
 	pulseNum int
 )

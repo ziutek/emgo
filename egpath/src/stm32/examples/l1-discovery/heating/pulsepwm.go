@@ -23,8 +23,8 @@ import (
 // means that for CCRx > 0 channel x remains in active state after pulse
 // generation). Ensure CCRx value is always less than maxCCR then the x channel
 // will be always set inactive at the end of the pulse and stays inactive until
-// the next pulse will be generated. This ensures automatic disable of heater
-// after most software crashes.
+// the next pulse will be generated. This ensures automatic disable of
+// controlled device (eg: heater) after most software crashes.
 func setupPulsePWM(t *tim.TIM_Periph, pclk uint, periodms, maxCCR int) {
 	t.PSC.U16.Store(uint16(int(pclk/1000)*periodms/(maxCCR+1) - 1))
 	t.ARR.U32.Store(uint32(maxCCR))
@@ -44,27 +44,27 @@ func setupPulsePWM(t *tim.TIM_Periph, pclk uint, periodms, maxCCR int) {
 	t.DIER.Store(tim.UIE)
 }
 
-type pulsePWM3 struct {
+type PulsePWM3 struct {
 	t   *tim.TIM_Periph
 	ccr [3]*mmio.U32
 }
 
-func (p *pulsePWM3) Init(t *tim.TIM_Periph) {
+func (p *PulsePWM3) Init(t *tim.TIM_Periph) {
 	p.t = t
 	p.ccr[0] = &t.CCR1.U32
 	p.ccr[1] = &t.CCR2.U32
 	p.ccr[2] = &t.CCR3.U32
 }
 
-func (p *pulsePWM3) Timer() *tim.TIM_Periph {
+func (p *PulsePWM3) Timer() *tim.TIM_Periph {
 	return p.t
 }
 
-func (p *pulsePWM3) Next() {
+func (p *PulsePWM3) Next() {
 	p.ccr[0], p.ccr[1], p.ccr[2] = p.ccr[1], p.ccr[2], p.ccr[0]
 }
 
-func (p *pulsePWM3) Set(v int) {
+func (p *PulsePWM3) Set(v int) {
 	max := p.t.ARR.U32.Load() - 1
 	v32 := uint32(v)
 	switch {
@@ -87,11 +87,11 @@ func (p *pulsePWM3) Set(v int) {
 	}
 }
 
-func (p *pulsePWM3) Pulse() {
+func (p *PulsePWM3) Pulse() {
 	p.t.EGR.Store(tim.UG)
 	p.t.CEN().Set()
 }
 
-func (p *pulsePWM3) ClearIF() {
+func (p *PulsePWM3) ClearIF() {
 	p.t.SR.Store(0)
 }
