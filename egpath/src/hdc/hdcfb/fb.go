@@ -40,27 +40,27 @@ func (fb *FB) Display() *hdc.Display {
 
 const minInt32 = -2147483648
 
-// WaitAndSwap waits until any write to the active buffer or deadline occurs. It
-// returns false in case of timeout, otherwise it swaps internal buffers and
-// returns true. Deadline == 0 means no deadline.
-func (fb *FB) WaitAndSwap(deadline int64) bool {
-	ok := fb.buf0.mod.Wait(deadline)
-	if ok {
-		fb.buf0, fb.buf1 = fb.buf1, fb.buf0
+// Swap swaps internal buffers. It reports whather active buffer was modified
+// and need to be drawed.
+func (fb *FB) Swap() bool {
+	if fb.buf1.used < 0 {
+		panic("hcdfb: Draw not called")
 	}
-	atomic.AddInt32(&fb.buf1.used, minInt32)
-	return ok
+	fb.buf0, fb.buf1 = fb.buf1, fb.buf0
+	buf1 := fb.buf1
+	atomic.AddInt32(&buf1.used, minInt32)
+	mod := buf1.mod.Val() != 0
+	if !mod {
+		buf1.used = 0
+	}
+	return mod
 }
 
-// Swap checks if there was any write to the active buffer. If it occured Swap
-// swaps internal buffers and returns true. Otherwise it returns false.
-func (fb *FB) Swap() bool {
-	ok := fb.buf0.mod.Val() != 0
-	if ok {
-		fb.buf0, fb.buf1 = fb.buf1, fb.buf0
-	}
-	atomic.AddInt32(&fb.buf1.used, minInt32)
-	return ok
+// WaitAndSwap waits until any write to the active buffer or deadline occurs.
+// After that it calls Swap and forwards its return value.
+func (fb *FB) WaitAndSwap(deadline int64) bool {
+	fb.buf0.mod.Wait(deadline)
+	return fb.Swap()
 }
 
 func (fb *FB) draw(data []byte) (err error) {
@@ -79,16 +79,17 @@ func (fb *FB) draw(data []byte) (err error) {
 }
 
 // Draw draws content of the previously swapped internal buffer to the display.
-// It can block if there are still writers of swapped buffer that did not called
-// Slice.Flush method.
+// It blocks until all writes to swapped buffer were finished.
 func (fb *FB) Draw() error {
-	buf := fb.buf1
-	for atomic.LoadInt32(&buf.used) != minInt32 {
-		fb.e.Wait()
+	buf1 := fb.buf1
+	if buf1.mod.Val() != 0 {
+		for atomic.LoadInt32(&buf1.used) != minInt32 {
+			fb.e.Wait()
+		}
+		buf1.used = 0
+		buf1.mod.Clear()
 	}
-	buf.used = 0
-	buf.mod.Clear()
-	data := buf.data
+	data := buf1.data
 	if fb.d.Rows != 4 {
 		return fb.draw(data)
 	}

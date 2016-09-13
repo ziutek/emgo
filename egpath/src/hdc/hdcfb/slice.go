@@ -1,6 +1,7 @@
 package hdcfb
 
 import (
+	"bytes"
 	"errors"
 	"sync/atomic"
 )
@@ -48,7 +49,7 @@ func (sl *Slice) start() {
 	for {
 		sl.buf = sl.fb.buf0
 		if atomic.AddInt32(&sl.buf.used, 1) > 0 {
-			sl.fb.buf0.mod.Set()
+			sl.buf.mod.Set()
 			return
 		}
 		if atomic.AddInt32(&sl.buf.used, -1) == minInt32 {
@@ -68,6 +69,10 @@ func (sl *Slice) SetPos(p int) {
 		sl.p = sl.n
 	}
 	sl.p = sl.m + byte(p)
+}
+
+func (sl *Slice) Remain() int {
+	return int(sl.n - sl.p)
 }
 
 // Flush marks slice as ready to draw and sets write position to p. There is no
@@ -92,6 +97,16 @@ func (sl *Slice) WriteString(s string) (int, error) {
 		return n, ErrTooLarge
 	}
 	return n, nil
+}
+
+func (sl *Slice) Fill(n int, b byte) {
+	sl.start()
+	n += int(sl.p)
+	if n > int(sl.n) {
+		n = int(sl.n)
+	}
+	bytes.Fill(sl.buf.data[sl.p:n], b)
+	sl.p = byte(n)
 }
 
 // SyncSlice is simplified version of Slice. It is intended to be used by
@@ -139,4 +154,17 @@ func (sl *SyncSlice) SetPos(p int) {
 		sl.p = sl.n
 	}
 	sl.p = sl.m + byte(p)
+}
+
+func (sl *SyncSlice) Remain() int {
+	return int(sl.n - sl.p)
+}
+
+func (sl *SyncSlice) Fill(n int, b byte) {
+	n += int(sl.p)
+	if n > int(sl.n) {
+		n = int(sl.n)
+	}
+	bytes.Fill(sl.fb.buf1.data[sl.p:n], b)
+	sl.p = byte(n)
 }
