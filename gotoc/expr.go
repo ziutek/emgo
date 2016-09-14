@@ -8,6 +8,7 @@ import (
 	"go/token"
 	"go/types"
 	"strconv"
+	"strings"
 )
 
 func writeInt(w *bytes.Buffer, ev constant.Value, k types.BasicKind) {
@@ -80,7 +81,30 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev constant.Value, t types.Type) {
 		w.WriteString("i)")
 	case k == types.String || k == types.UntypedString:
 		w.WriteString("EGSTR(")
-		w.WriteString(ev.ExactString())
+		str := ev.ExactString()
+		for {
+			i := strings.Index(str, `\x`)
+			if i == -1 || len(str) <= i+4 {
+				break
+			}
+			if i > 0 && str[i-1] == '\\' {
+				w.WriteString(str[:i+1])
+				str = str[i+1:]
+				continue
+			}
+			d := str[i+4]
+			if d >= '0' && d <= '9' || d >= 'a' && d <= 'f' ||
+				d >= 'A' && d <= 'F' {
+
+				w.WriteString(str[:i+4])
+				w.WriteString(`""`)
+				str = str[i+4:]
+				continue
+			}
+			w.WriteString(str[:i+5])
+			str = str[i+5:]
+		}
+		w.WriteString(str)
 		w.WriteByte(')')
 	default:
 		fmt.Println("Kind", k)
