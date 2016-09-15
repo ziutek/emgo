@@ -1,6 +1,7 @@
-void memmove(unsafe$Pointer dst, unsafe$Pointer src, uint n);
-void memcpy(unsafe$Pointer dst, unsafe$Pointer src, uint n);
-void memset(unsafe$Pointer s, byte b, uint n);
+void memmove(unsafe$Pointer dst, unsafe$Pointer src, uintptr n);
+void memcpy(unsafe$Pointer dst, unsafe$Pointer src, uintptr n);
+void memset(unsafe$Pointer s, byte b, uintptr n);
+bool memeq(unsafe$Pointer p1, unsafe$Pointer p2, uintptr n);
 bool equals(string s1, string s2);
 
 __attribute__ ((noreturn))

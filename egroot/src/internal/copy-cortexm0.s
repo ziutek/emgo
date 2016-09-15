@@ -5,10 +5,10 @@
 // func Memmove(dst, src unsafe.Pointer, n uintptr)
 .global internal$Memmove
 
-// unsafe$Pointer memmove(unsafe$Pointer dst, unsafe$Pointer, src, uint n)
+// unsafe$Pointer memmove(unsafe$Pointer dst, unsafe$Pointer, src, uintptr n)
 .global memmove
 
-// unsafe$Pointer memcpy(unsafe$Pointer dst, unsafe$Pointer src, uint n)
+// unsafe$Pointer memcpy(unsafe$Pointer dst, unsafe$Pointer src, uintptr n)
 .global memcpy
 
 .thumb_func
