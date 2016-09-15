@@ -129,6 +129,10 @@ func init() {
 	irqen(irq.TIM2, 9)
 	irqen(irq.EXTI4, 9)
 
+	rcc.RCC.TIM6EN().Set()
+	menu.Setup(tim.TIM6, system.APB1.Clock())
+	irqen(irq.TIM6, 5)
+
 	startLCD(i2cdrv.NewMasterConn(0x27, i2c.ASRD))
 
 	initRTC()
@@ -142,21 +146,7 @@ func init() {
 
 func main() {
 	//go waterTask()
-	line := lcd.NewSlice(20, 40)
-	for i := 0; ; i++ {
-		es := <-encoder.State
-		if es.Btn {
-			encoder.SetCnt(0)
-		}
-		fmt.Fprintf(line, "%d %v ", es.Cnt, es.Btn)
-		line.Flush(0)
-		t := readRTC()
-		fmt.Printf(
-			"%s %04d-%02d-%02d",
-			t.Weekday(), t.Year(), t.Month(), t.Day(),
-		)
-		fmt.Printf(" %02d:%02d:%02d\n", t.Hour(), t.Minute(), t.Second())
-	}
+	menu.Loop()
 }
 
 func exti0ISR() {
@@ -187,4 +177,6 @@ var ISRs = [...]func(){
 
 	irq.TIM2:  encoderISR,
 	irq.EXTI4: encoderISR,
+
+	irq.TIM6: menuISR,
 }

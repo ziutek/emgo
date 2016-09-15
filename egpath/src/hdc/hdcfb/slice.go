@@ -99,7 +99,20 @@ func (sl *Slice) WriteString(s string) (int, error) {
 	return n, nil
 }
 
+func (sl *Slice) WriteByte(b byte) error {
+	sl.start()
+	if sl.p >= sl.n {
+		return ErrTooLarge
+	}
+	sl.buf.data[sl.p] = b
+	sl.p++
+	return nil
+}
+
 func (sl *Slice) Fill(n int, b byte) {
+	if n <= 0 {
+		return
+	}
 	sl.start()
 	n += int(sl.p)
 	if n > int(sl.n) {
@@ -143,6 +156,15 @@ func (sl *SyncSlice) WriteString(s string) (int, error) {
 	return n, nil
 }
 
+func (sl *SyncSlice) WriteByte(b byte) error {
+	if sl.p >= sl.n {
+		return ErrTooLarge
+	}
+	sl.fb.buf1.data[sl.p] = b
+	sl.p++
+	return nil
+}
+
 // Pos: see Slice.Pos.
 func (sl *SyncSlice) Pos() int {
 	return int(sl.p - sl.m)
@@ -161,6 +183,9 @@ func (sl *SyncSlice) Remain() int {
 }
 
 func (sl *SyncSlice) Fill(n int, b byte) {
+	if n <= 0 {
+		return
+	}
 	n += int(sl.p)
 	if n > int(sl.n) {
 		n = int(sl.n)

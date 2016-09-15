@@ -4,7 +4,6 @@ import (
 	"delay"
 	"fmt"
 	"io"
-	"rtos"
 
 	"hdc"
 	"hdc/hdcfb"
@@ -42,10 +41,8 @@ start:
 }
 
 var (
-	lcd        *hdcfb.FB
-	lcdHead    *hdcfb.SyncSlice
-	searchResp = make(chan onewire.Dev, 1)
-	tempResp   = make(chan float32, 1)
+	lcd      *hdcfb.FB
+	tempResp = make(chan float32, 0)
 )
 
 func startLCD(rw io.ReadWriter) {
@@ -62,46 +59,17 @@ func startLCD(rw io.ReadWriter) {
 	go lcdLoop()
 }
 
+func readTemp(d onewire.Dev) float32 {
+	if d.Type() == 0 {
+		return -1
+	}
+	owd.Cmd <- TempCmd{Dev: d, Resp: tempResp}
+	return <-tempResp
+}
+
 func lcdLoop() {
-	lcdHead = lcd.NewSyncSlice(0, 20)
-	t := rtos.Nanosec()
-	var lastPrint int64
 	for {
-		lcd.WaitAndSwap(t + 1e9)
-		t = rtos.Nanosec()
-		if t-lastPrint >= 1e9 {
-			lastPrint = t
-			owd.Cmd <- SearchCmd{Typ: onewire.DS18B20, Resp: searchResp}
-			var (
-				devs [2]onewire.Dev
-				i    int
-			)
-			for d := range searchResp {
-				if d.Type() == 0 {
-					break
-				}
-				devs[i] = d
-				i++
-			}
-			var temps [len(devs)]float32
-			for i, d := range devs {
-				if d.Type() == 0 {
-					temps[i] = -99
-					continue
-				}
-				owd.Cmd <- TempCmd{Dev: d, Resp: tempResp}
-				temps[i] = <-tempResp
-			}
-			dt := readRTC()
-			fmt.Fprintf(
-				lcdHead, "%02d:%02d:%02d  ",
-				dt.Hour(), dt.Minute(), dt.Second(),
-			)
-			for _, temp := range temps {
-				fmt.Fprintf(lcdHead, "%2.1f ", temp)
-			}
-			lcdHead.SetPos(0)
-		}
+		lcd.WaitAndSwap(0)
 		if logLCDErr(lcd.Draw()) {
 			hdcInit(lcd.Display())
 		}
