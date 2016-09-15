@@ -4,10 +4,10 @@ func New() **int{
 }
 // C code:
 // decl
-int **foo$New();
+int_ **foo$New();
 // def
-int **foo$New() {
-	return NEW(int*);
+int_ **foo$New() {
+	return NEW(int_*);
 }
 // end
 
@@ -17,10 +17,10 @@ func MakeSli(n int) []*int {
 }
 // C code:
 // decl
-slice foo$MakeSli(int n$);
+slice foo$MakeSli(int_ n$);
 // def
-slice foo$MakeSli(int n$) {
-	return MAKESLI(int*, n$);
+slice foo$MakeSli(int_ n$) {
+	return MAKESLI(int_*, n$);
 }
 // end
 
@@ -30,10 +30,10 @@ func MakeSli(n int) []*int {
 }
 // C code:
 // decl
-slice foo$MakeSli(int n$);
+slice foo$MakeSli(int_ n$);
 // def
-slice foo$MakeSli(int n$) {
-	return MAKESLIC(int*, n$, n$);
+slice foo$MakeSli(int_ n$) {
+	return MAKESLIC(int_*, n$, n$);
 }
 // end
 
@@ -46,7 +46,7 @@ func MakeChan() chan *int {
 chan foo$MakeChan();
 // def
 chan foo$MakeChan() {
-	return MAKECHAN(int*, 0);
+	return MAKECHAN(int_*, 0);
 }
 // end
 
@@ -56,9 +56,9 @@ func MakeChan(n int) chan *int {
 }
 // C code:
 // decl
-chan foo$MakeChan(int n$);
+chan foo$MakeChan(int_ n$);
 // def
-chan foo$MakeChan(int n$) {
-	return MAKECHAN(int*, n$);
+chan foo$MakeChan(int_ n$) {
+	return MAKECHAN(int_*, n$);
 }
 // end

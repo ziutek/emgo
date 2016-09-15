@@ -9,9 +9,9 @@ next:
 }
 // C code:
 // decl
-int foo$Goto(int i$);
+int_ foo$Goto(int_ i$);
 // def
-int foo$Goto(int i$) {
+int_ foo$Goto(int_ i$) {
 	if ((i$>0)) {
 		goto next$;
 	}

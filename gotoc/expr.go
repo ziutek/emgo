@@ -82,6 +82,7 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev constant.Value, t types.Type) {
 	case k == types.String || k == types.UntypedString:
 		w.WriteString("EGSTR(")
 		str := ev.ExactString()
+		// Handle problem with infinite hexadecimal escapes in C.
 		for {
 			i := strings.Index(str, `\x`)
 			if i == -1 || len(str) <= i+4 {
@@ -97,7 +98,7 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev constant.Value, t types.Type) {
 				d >= 'A' && d <= 'F' {
 
 				w.WriteString(str[:i+4])
-				w.WriteString(`""`)
+				w.WriteString(`""`) // Separate escape from subsequent char.
 				str = str[i+4:]
 				continue
 			}
@@ -925,7 +926,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 	switch t := typ.Underlying().(type) {
 	case *types.Array:
 		if !isPtr {
-			sx = "(&" + sx + ")"
+			sx = "&" + sx
 		}
 		if empty {
 			w.WriteString("ASLICE(" + sx + ")")
@@ -1037,16 +1038,6 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 		typ = rtyp
 	}
 	switch t := typ.Underlying().(type) {
-	case *types.Slice:
-		nilv := "nil"
-		sel := ".arr"
-		if rtyp == unil {
-			lhs += sel
-			rhs = nilv
-		} else {
-			lhs = nilv
-			rhs += sel
-		}
 	case *types.Interface:
 		if op == "!=" {
 			w.WriteByte('!')
@@ -1076,6 +1067,39 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 		}
 		w.WriteString("equals(" + lhs + ", " + rhs + ")")
 		return
+	case *types.Struct:
+		lo := "&&"
+		if op == "!=" {
+			lo = "||"
+		}
+		w.WriteString("({_l = " + lhs + "; _r = " + rhs + "; ")
+		n := t.NumFields()
+		for i := 0; i < n; i++ {
+			f := t.Field(i).Name()
+			if i != 0 {
+				w.WriteString(lo)
+			}
+			w.WriteString("_l." + f + op + "_r." + f)
+		}
+		w.WriteString("})")
+		return
+	case *types.Array:
+		if op == "!=" {
+			w.WriteByte('!')
+		}
+		w.WriteString("memeq((" + lhs + ").arr, (" + rhs + ").arr, ")
+		w.WriteString(strconv.FormatInt(t.Len(), 10) + ")")
+		return
+	case *types.Slice:
+		nilv := "nil"
+		sel := ".arr"
+		if rtyp == unil {
+			lhs += sel
+			rhs = nilv
+		} else {
+			lhs = nilv
+			rhs += sel
+		}
 	}
 	w.WriteString("(" + lhs + " " + op + " " + rhs + ")")
 }

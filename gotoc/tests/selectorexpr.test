@@ -17,8 +17,8 @@ const tinfo foo$S$$ = {
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
 		.elems = CSLICE(2, ((const tinfo*[]){
-			&int$$,
-			&int$$
+			&int_$$,
+			&int_$$
 		}))
 	}
 };
@@ -38,17 +38,17 @@ struct foo$S_struct;
 typedef struct foo$S_struct foo$S;
 // def
 struct foo$S_struct {
-	int a;
-	int b;
+	int_ a;
+	int_ b;
 };
 // decl
 foo$S foo$s;
 // def
 __typeof__(foo$s) foo$s = {};
 // decl
-int foo$F();
+int_ foo$F();
 // def
-int foo$F() {
+int_ foo$F() {
 	return (foo$s.a+foo$s.b);
 }
 // end
@@ -62,15 +62,15 @@ func F() int {
 // C code:
 // decl
 struct {
-	int a;
-	int b;
+	int_ a;
+	int_ b;
 } foo$s;
 // def
 __typeof__(foo$s) foo$s = {};
 // decl
-int foo$F();
+int_ foo$F();
 // def
-int foo$F() {
+int_ foo$F() {
 	return (foo$s.a+foo$s.b);
 }
 // end
@@ -137,7 +137,7 @@ const tinfo $8$foo$T$$ = {
 	}
 };
 // decl
-typedef int foo$T;
+typedef int_ foo$T;
 // decl
 void foo$T$Add(foo$T *t$, foo$T a$);
 // def
@@ -199,7 +199,7 @@ const tinfo $8$foo$T$$ = {
 	}
 };
 // decl
-typedef int foo$T;
+typedef int_ foo$T;
 // decl
 void foo$T$Add(foo$T *t$, foo$T a$);
 // def
@@ -236,7 +236,7 @@ const tinfo foo$A$$ = {
 		.name = EGSTR("foo.A"),
 		.kind = Struct,
 		.elems = CSLICE(1, ((const tinfo*[]){
-			&int$$
+			&int_$$
 		}))
 	}
 };
@@ -271,7 +271,7 @@ struct foo$A_struct;
 typedef struct foo$A_struct foo$A;
 // def
 struct foo$A_struct {
-	int Fa;
+	int_ Fa;
 };
 // decl
 const tinfo foo$B$$;
@@ -282,7 +282,7 @@ const tinfo foo$B$$ = {
 		.kind = Struct,
 		.elems = CSLICE(2, ((const tinfo*[]){
 			&foo$A$$,
-			&int$$
+			&int_$$
 		}))
 	}
 };
@@ -314,7 +314,7 @@ typedef struct foo$B_struct foo$B;
 // def
 struct foo$B_struct {
 	foo$A A;
-	int Fb;
+	int_ Fb;
 };
 // decl
 void foo$A$F(foo$A *a$, foo$B *b$);

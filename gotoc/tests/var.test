@@ -2,7 +2,7 @@
 var A = 3
 // C code:
 // decl
-int foo$A;
+int_ foo$A;
 // def
 __typeof__(foo$A) foo$A = 3;
 // end
@@ -11,17 +11,17 @@ __typeof__(foo$A) foo$A = 3;
 var A = []int{1, 2, 3}
 // C code:
 // decl
-struct $3_$int_struct;
-typedef struct $3_$int_struct $3_$int;
+struct $3_$int__struct;
+typedef struct $3_$int__struct $3_$int_;
 // def
-#ifndef $3_$int$
-#define $3_$int$
-struct $3_$int_struct {
-	int arr[3];
+#ifndef $3_$int_$
+#define $3_$int_$
+struct $3_$int__struct {
+	int_ arr[3];
 };
 #endif
 // decl
-$3_$int _cl0;
+$3_$int_ _cl0;
 // def
 __typeof__(_cl0) _cl0 = {{1, 2, 3}};
 // decl
@@ -34,17 +34,17 @@ __typeof__(foo$A) foo$A = {&_cl0, 3, 3};
 var A = []int{10: 1, 20: 2, 30: 3}
 // C code:
 // decl
-struct $31_$int_struct;
-typedef struct $31_$int_struct $31_$int;
+struct $31_$int__struct;
+typedef struct $31_$int__struct $31_$int_;
 // def
-#ifndef $31_$int$
-#define $31_$int$
-struct $31_$int_struct {
-	int arr[31];
+#ifndef $31_$int_$
+#define $31_$int_$
+struct $31_$int__struct {
+	int_ arr[31];
 };
 #endif
 // decl
-$31_$int _cl0;
+$31_$int_ _cl0;
 // def
 __typeof__(_cl0) _cl0 = {{[10] = 1, [20] = 2, [30] = 3}};
 // decl
@@ -57,17 +57,17 @@ __typeof__(foo$A) foo$A = {&_cl0, 31, 31};
 var A = []int{1, 2, 30: 3, 4}
 // C code:
 // decl
-struct $32_$int_struct;
-typedef struct $32_$int_struct $32_$int;
+struct $32_$int__struct;
+typedef struct $32_$int__struct $32_$int_;
 // def
-#ifndef $32_$int$
-#define $32_$int$
-struct $32_$int_struct {
-	int arr[32];
+#ifndef $32_$int_$
+#define $32_$int_$
+struct $32_$int__struct {
+	int_ arr[32];
 };
 #endif
 // decl
-$32_$int _cl0;
+$32_$int_ _cl0;
 // def
 __typeof__(_cl0) _cl0 = {{1, 2, [30] = 3, 4}};
 // decl
@@ -88,8 +88,8 @@ const tinfo foo$S$$ = {
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
 		.elems = CSLICE(2, ((const tinfo*[]){
-			&int$$,
-			&int$$
+			&int_$$,
+			&int_$$
 		}))
 	}
 };
@@ -109,8 +109,8 @@ struct foo$S_struct;
 typedef struct foo$S_struct foo$S;
 // def
 struct foo$S_struct {
-	int a;
-	int b;
+	int_ a;
+	int_ b;
 };
 // decl
 foo$S _cl0;
@@ -137,7 +137,7 @@ struct bool$$int32_struct {
 };
 #endif
 // decl
-bool$$int32 (*foo$F)(byte, int);
+bool$$int32 (*foo$F)(byte, int_);
 // def
 __typeof__(foo$F) foo$F = nil;
 // end

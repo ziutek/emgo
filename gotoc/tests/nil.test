@@ -23,10 +23,10 @@ func Nil() *int {
 }
 // C code:
 // decl
-int *foo$Nil();
+int_ *foo$Nil();
 // def
-int *foo$Nil() {
-	int *i$ = nil;
+int_ *foo$Nil() {
+	int_ *i$ = nil;
 	i$ = nil;
 	return i$;
 }

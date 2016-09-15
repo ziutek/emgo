@@ -23,9 +23,9 @@ byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
-			int k$ = 0;
+			int_ k$ = 0;
 			for (; k$ < 4; ++k$) {
-				r$ += (byte)(k$);
+				r$ += ((byte)(k$));
 			}
 		}
 		goto end;
@@ -60,9 +60,9 @@ byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
-			int k$ = 0;
+			int_ k$ = 0;
 			for (; k$ < 4; ++k$) {
-				r$ += (byte)(k$);
+				r$ += ((byte)(k$));
 			}
 		}
 		goto end;
@@ -100,14 +100,14 @@ byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
-			int k$ = 0;
+			int_ k$ = 0;
 			for (; k$ < 4; ++k$) {
-				byte v$ = AIDX(a$, k$);
+				byte v$ = AIDX(&a$, k$);
 				{
 					if ((r$>4)) {
 						continue;
 					}
-					r$ += ((byte)(k$)+v$);
+					r$ += (((byte)(k$))+v$);
 				}
 			}
 		}
@@ -146,9 +146,9 @@ byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
-			int _$ = 0;
+			int_ _$ = 0;
 			for (; _$ < 4; ++_$) {
-				byte v$ = AIDX(a$, _$);
+				byte v$ = AIDX(&a$, _$);
 				{
 					if ((r$>4)) {
 						break;
@@ -189,10 +189,10 @@ byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
-			slice _x = ASLICEL(a$, 1);
-			int k$ = 0;
+			slice _x = ASLICEL(&a$, 1);
+			int_ k$ = 0;
 			for (; k$ < len(_x); ++k$) {
-				r$ += (byte)(k$);
+				r$ += ((byte)(k$));
 			}
 		}
 		goto end;
@@ -227,10 +227,10 @@ byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
-			slice _x = ASLICEL(a$, 1);
-			int k$ = 0;
+			slice _x = ASLICEL(&a$, 1);
+			int_ k$ = 0;
 			for (; k$ < len(_x); ++k$) {
-				r$ += (byte)(k$);
+				r$ += ((byte)(k$));
 			}
 		}
 		goto end;
@@ -270,15 +270,15 @@ byte foo$F($4_$byte a$) {
 	{
 	loop$:;
 		{
-			slice _x = ASLICEL(a$, 1);
-			int k$ = 0;
+			slice _x = ASLICEL(&a$, 1);
+			int_ k$ = 0;
 			for (; k$ < len(_x); ++k$) {
 				byte v$ = SLIDX(byte*, _x, k$);
 				{
 					if ((r$>4)) {
 						goto loop$_continue;
 					}
-					r$ += ((byte)(k$)+v$);
+					r$ += (((byte)(k$))+v$);
 				}
 			loop$_continue:;
 			}
@@ -321,8 +321,8 @@ byte foo$F($4_$byte a$) {
 	{
 	loop$:;
 		{
-			slice _x = ASLICEL(a$, 1);
-			int _$ = 0;
+			slice _x = ASLICEL(&a$, 1);
+			int_ _$ = 0;
 			for (; _$ < len(_x); ++_$) {
 				byte v$ = SLIDX(byte*, _x, _$);
 				{
@@ -361,7 +361,7 @@ byte foo$F(slice a$) {
 	loop$:;
 		{
 			slice _x = SLICEL(a$, byte*, 1);
-			int _ = 0;
+			int_ _ = 0;
 			for (; _ < len(_x); ++_) {
 				{
 					++(r$);
@@ -392,7 +392,7 @@ byte foo$F(slice a$) {
 	byte b$ = 0;
 	{
 		{
-			int _ = 0;
+			int_ _ = 0;
 			for (; _ < len(a$); ++_) {
 				b$ = SLIDX(byte*, a$, _);
 				{
@@ -508,26 +508,26 @@ func F(s string) (r rune, i int) {
 }
 // C code:
 // decl
-struct rune$$int_struct;
-typedef struct rune$$int_struct rune$$int;
+struct rune$$int__struct;
+typedef struct rune$$int__struct rune$$int_;
 // def
-#ifndef rune$$int$
-#define rune$$int$
-struct rune$$int_struct {
+#ifndef rune$$int_$
+#define rune$$int_$
+struct rune$$int__struct {
 	rune _0;
-	int _1;
+	int_ _1;
 };
 #endif
 // decl
-rune$$int foo$F(string s$);
+rune$$int_ foo$F(string s$);
 // def
-rune$$int foo$F(string s$) {
+rune$$int_ foo$F(string s$) {
 	rune r$ = 0;
-	int i$ = 0;
+	int_ i$ = 0;
 	{
 		{
-			int _ = 0;
-			rune$$int$$bool _tup;
+			int_ _ = 0;
+			rune$$int_$$bool _tup;
 			for (; _ < len(s$); _ += _tup._1) {
 				_tup = DECODERUNE(SSLICELC(s$, _));
 				r$ = _tup._0;
@@ -539,7 +539,7 @@ rune$$int foo$F(string s$) {
 		goto end;
 	}
 end:
-	return (rune$$int){r$, i$};
+	return (rune$$int_){r$, i$};
 }
 // end
 
@@ -552,14 +552,14 @@ func F(s string) (n int) {
 }
 // C code:
 // decl
-int foo$F(string s$);
+int_ foo$F(string s$);
 // def
-int foo$F(string s$) {
-	int n$ = 0;
+int_ foo$F(string s$) {
+	int_ n$ = 0;
 	{
 		{
-			int _ = 0;
-			rune$$int$$bool _tup;
+			int_ _ = 0;
+			rune$$int_$$bool _tup;
 			for (; _ < len(s$); _ += _tup._1) {
 				_tup = DECODERUNE(SSLICELC(s$, _));
 				{

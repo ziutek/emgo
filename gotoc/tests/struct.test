@@ -9,8 +9,8 @@ const tinfo foo$S$$ = {
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
 		.elems = CSLICE(2, ((const tinfo*[]){
-			&int$$,
-			&int$$
+			&int_$$,
+			&int_$$
 		}))
 	}
 };
@@ -30,8 +30,8 @@ struct foo$S_struct;
 typedef struct foo$S_struct foo$S;
 // def
 struct foo$S_struct {
-	int a;
-	int b;
+	int_ a;
+	int_ b;
 };
 // end
 
@@ -87,21 +87,21 @@ type S struct {
 }
 // C code:
 // decl
-struct uint$$int$$byte_struct;
-typedef struct uint$$int$$byte_struct uint$$int$$byte;
+struct uint$$int_$$byte_struct;
+typedef struct uint$$int_$$byte_struct uint$$int_$$byte;
 // def
-#ifndef uint$$int$$byte$
-#define uint$$int$$byte$
-struct uint$$int$$byte_struct {
+#ifndef uint$$int_$$byte$
+#define uint$$int_$$byte$
+struct uint$$int_$$byte_struct {
 	uint _0;
-	int _1;
+	int_ _1;
 	byte _2;
 };
 #endif
 // decl
-const tinfo func$$$int$$int$$$uint$$int$$uint8$$;
+const tinfo func$$$int_$$int_$$$uint$$int_$$uint8$$;
 // def
-const tinfo func$$$int$$int$$$uint$$int$$uint8$$ = {
+const tinfo func$$$int_$$int_$$$uint$$int_$$uint8$$ = {
 	{
 		.kind = Func
 	}
@@ -114,7 +114,7 @@ const tinfo foo$S$$ = {
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
 		.elems = CSLICE(1, ((const tinfo*[]){
-			&func$$$int$$int$$$uint$$int$$uint8$$
+			&func$$$int_$$int_$$$uint$$int_$$uint8$$
 		}))
 	}
 };
@@ -134,6 +134,87 @@ struct foo$S_struct;
 typedef struct foo$S_struct foo$S;
 // def
 struct foo$S_struct {
-	uint$$int$$byte (*F)(int, int);
+	uint$$int_$$byte (*F)(int_, int_);
 };
+// end
+
+// Go code:
+type S struct {
+	a int
+	b byte
+	c [3]byte
+}
+
+func f() bool {
+	var s1, s2 S
+	eq := s1 == s2
+	neq := s1 != s2
+	return eq && neq
+}
+// C code:
+// decl
+struct $3_$byte_struct;
+typedef struct $3_$byte_struct $3_$byte;
+// def
+#ifndef $3_$byte$
+#define $3_$byte$
+struct $3_$byte_struct {
+	byte arr[3];
+};
+#endif
+// decl
+const tinfo $3_$byte$$;
+// def
+const tinfo $3_$byte$$ = {
+	{
+		.kind = Array - 3,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&uint8$$
+		}))
+	}
+};
+// decl
+const tinfo foo$S$$;
+// def
+const tinfo foo$S$$ = {
+	{
+		.name = EGSTR("foo.S"),
+		.kind = Struct,
+		.elems = CSLICE(3, ((const tinfo*[]){
+			&int_$$,
+			&uint8$$,
+			&$3_$byte$$
+		}))
+	}
+};
+// decl
+const tinfo $8$foo$S$$;
+// def
+const tinfo $8$foo$S$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$S$$
+		}))
+	}
+};
+// decl
+struct foo$S_struct;
+typedef struct foo$S_struct foo$S;
+// def
+struct foo$S_struct {
+	int_ a;
+	byte b;
+	$3_$byte c;
+};
+// decl
+bool foo$f();
+// def
+bool foo$f() {
+	foo$S s1$ = {};
+	foo$S s2$ = {};
+	bool eq$ = ({_l = s1$; _r = s2$; _l.a==_r.a&&_l.b==_r.b&&_l.c==_r.c});
+	bool neq$ = ({_l = s1$; _r = s2$; _l.a!=_r.a||_l.b!=_r.b||_l.c!=_r.c});
+	return (eq$&&neq$);
+}
 // end

@@ -106,7 +106,7 @@ const tinfo $8$foo$T$$ = {
 	}
 };
 // decl
-typedef int foo$T;
+typedef int_ foo$T;
 // decl
 void foo$T$F(foo$T *t$);
 // def

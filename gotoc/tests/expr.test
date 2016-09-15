@@ -6,21 +6,21 @@ func CompositeLitSlice() int {
 }
 // C code:
 // decl
-struct $2_$int_struct;
-typedef struct $2_$int_struct $2_$int;
+struct $2_$int__struct;
+typedef struct $2_$int__struct $2_$int_;
 // def
-#ifndef $2_$int$
-#define $2_$int$
-struct $2_$int_struct {
-	int arr[2];
+#ifndef $2_$int_$
+#define $2_$int_$
+struct $2_$int__struct {
+	int_ arr[2];
 };
 #endif
 // decl
-int foo$CompositeLitSlice();
+int_ foo$CompositeLitSlice();
 // def
-int foo$CompositeLitSlice() {
-	slice a$ = CSLICE(3, (($2_$int[]){(($2_$int){{1, 2}}), (($2_$int){{3, 4}}), (($2_$int){{4, 5}})}));
-	slice b$ = CSLICE(3, (($2_$int*[]){&SLIDX($2_$int*, a$, 0), &SLIDX($2_$int*, a$, 1), &SLIDX($2_$int*, a$, 2)}));
+int_ foo$CompositeLitSlice() {
+	slice a$ = CSLICE(3, (($2_$int_[]){(($2_$int_){{1, 2}}), (($2_$int_){{3, 4}}), (($2_$int_){{4, 5}})}));
+	slice b$ = CSLICE(3, (($2_$int_*[]){&SLIDX($2_$int_*, a$, 0), &SLIDX($2_$int_*, a$, 1), &SLIDX($2_$int_*, a$, 2)}));
 	return len(b$);
 }
 // end
@@ -43,8 +43,8 @@ const tinfo foo$S$$51 = {
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
 		.elems = CSLICE(2, ((const tinfo*[]){
-			&int$$,
-			&int$$
+			&int_$$,
+			&int_$$
 		}))
 	}
 };
@@ -60,14 +60,14 @@ const tinfo $8$foo$S$$51 = {
 	}
 };
 // decl
-int foo$CompositeLitStruct();
+int_ foo$CompositeLitStruct();
 // def
-int foo$CompositeLitStruct() {
+int_ foo$CompositeLitStruct() {
 	struct S$_struct;
 	typedef struct S$_struct S$;
 	struct S$_struct {
-		int a;
-		int b;
+		int_ a;
+		int_ b;
 	};
 	S$ s$ = ((S$){1, 2});
 	s$ = ((S$){.a = 2, .b = 3});
@@ -83,24 +83,24 @@ func F() (int, int) {
 }
 // C code:
 // decl
-struct int$$int_struct;
-typedef struct int$$int_struct int$$int;
+struct int_$$int__struct;
+typedef struct int_$$int__struct int_$$int_;
 // def
-#ifndef int$$int$
-#define int$$int$
-struct int$$int_struct {
-	int _0;
-	int _1;
+#ifndef int_$$int_$
+#define int_$$int_$
+struct int_$$int__struct {
+	int_ _0;
+	int_ _1;
 };
 #endif
 // decl
-int$$int foo$F();
+int_$$int_ foo$F();
 // def
-int$$int foo$F() {
-	int a$ = 0;
-	int$$int _tmp0 = foo$F();
+int_$$int_ foo$F() {
+	int_ a$ = 0;
+	int_$$int_ _tmp0 = foo$F();
 	a$ = _tmp0._0;
-	return (int$$int){a$, a$};
+	return (int_$$int_){a$, a$};
 }
 // end
 
@@ -112,13 +112,13 @@ func F() int {
 }
 // C code:
 // decl
-int foo$F();
+int_ foo$F();
 // def
-int foo$F() {
-	int a$ = 1;
+int_ foo$F() {
+	int_ a$ = 1;
 	(void)((foo$F()+foo$F()));
 	(void)((3*foo$F()));
-	int _tmp0 = 2;
+	int_ _tmp0 = 2;
 	(void)((3*foo$F()));
 	a$ = _tmp0;
 	return a$;
@@ -132,28 +132,28 @@ func F(v interface{}) (int, bool) {
 }
 // C code:
 // decl
-struct int$$bool_struct;
-typedef struct int$$bool_struct int$$bool;
+struct int_$$bool_struct;
+typedef struct int_$$bool_struct int_$$bool;
 // def
-#ifndef int$$bool$
-#define int$$bool$
-struct int$$bool_struct {
-	int _0;
+#ifndef int_$$bool$
+#define int_$$bool$
+struct int_$$bool_struct {
+	int_ _0;
 	bool _1;
 };
 #endif
 // decl
-int$$bool foo$F(interface v$);
+int_$$bool foo$F(interface v$);
 // def
-int$$bool foo$F(interface v$) {
-	int$$bool _tmp0 = ({
+int_$$bool foo$F(interface v$) {
+	int_$$bool _tmp0 = ({
 		interface _i = v$;
-		bool _ok = (_i.itab$ == &int$$);
-		(int$$bool){IVAL(_i, int), _ok};
+		bool _ok = (_i.itab$ == &int_$$);
+		(int_$$bool){IVAL(_i, int_), _ok};
 	});
-	int i$ = _tmp0._0;
+	int_ i$ = _tmp0._0;
 	bool ok$ = _tmp0._1;
-	return (int$$bool){i$, ok$};
+	return (int_$$bool){i$, ok$};
 }
 // end
 
@@ -163,13 +163,13 @@ func F(v interface{}) int {
 }
 // C code:
 // decl
-int foo$F(interface v$);
+int_ foo$F(interface v$);
 // def
-int foo$F(interface v$) {
+int_ foo$F(interface v$) {
 	return ({
 		interface _i = v$;
-		if (!(_i.itab$ == &int$$)) panicIC();
-		IVAL(_i, int);
+		if (!(_i.itab$ == &int_$$)) panicIC();
+		IVAL(_i, int_);
 	});
 }
 // end

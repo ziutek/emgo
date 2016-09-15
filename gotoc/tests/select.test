@@ -25,31 +25,31 @@ func S(c1, c2 chan int) (d int) {
 }
 // C code:
 // decl
-struct int$$bool_struct;
-typedef struct int$$bool_struct int$$bool;
+struct int_$$bool_struct;
+typedef struct int_$$bool_struct int_$$bool;
 // def
-#ifndef int$$bool$
-#define int$$bool$
-struct int$$bool_struct {
-	int _0;
+#ifndef int_$$bool$
+#define int_$$bool$
+struct int_$$bool_struct {
+	int_ _0;
 	bool _1;
 };
 #endif
 // decl
-int foo$S(chan c1$, chan c2$);
+int_ foo$S(chan c1$, chan c2$);
 // def
-int foo$S(chan c1$, chan c2$) {
-	int d$ = 0;
+int_ foo$S(chan c1$, chan c2$) {
+	int_ d$ = 0;
 	{
 		switch(0){case 0:{
 			__label__ case0, case1, case2, case3, case4, case5, case6, dflt;
-			RECVINIT(0, c1$, int);
-			RECVINIT(1, c2$, int);
-			RECVINIT(2, c1$, int);
-			RECVINIT(3, c2$, int);
-			RECVINIT(4, c2$, int);
-			SENDINIT(5, c1$, int, 1);
-			SENDINIT(6, c2$, int, 2);
+			RECVINIT(0, c1$, int_);
+			RECVINIT(1, c2$, int_);
+			RECVINIT(2, c1$, int_);
+			RECVINIT(3, c2$, int_);
+			RECVINIT(4, c2$, int_);
+			SENDINIT(5, c1$, int_, 1);
+			SENDINIT(6, c2$, int_, 2);
 			NBSELECT(
 				RECVCOMM(0),
 				RECVCOMM(1),
@@ -60,7 +60,7 @@ int foo$S(chan c1$, chan c2$) {
 				SENDCOMM(6)
 			);
 			case0:{
-				int i$ = SELRECV(0);
+				int_ i$ = SELRECV(0);
 				return i$;
 				break;
 			}
@@ -75,8 +75,8 @@ int foo$S(chan c1$, chan c2$) {
 				break;
 			}
 			case3:{
-				int$$bool _tmp0 = SELRECVOK(3);
-				int i$ = _tmp0._0;
+				int_$$bool _tmp0 = SELRECVOK(3);
+				int_ i$ = _tmp0._0;
 				bool ok$ = _tmp0._1;
 				if (!ok$) {
 					break;
@@ -85,8 +85,8 @@ int foo$S(chan c1$, chan c2$) {
 				break;
 			}
 			case4:{
-				int$$bool _tmp1 = SELRECVOK(4);
-				int i$ = _tmp1._0;
+				int_$$bool _tmp1 = SELRECVOK(4);
+				int_ i$ = _tmp1._0;
 				return i$;
 				break;
 			}
@@ -130,36 +130,36 @@ loop:
 }
 // C code:
 // decl
-struct int$$bool_struct;
-typedef struct int$$bool_struct int$$bool;
+struct int_$$bool_struct;
+typedef struct int_$$bool_struct int_$$bool;
 // def
-#ifndef int$$bool$
-#define int$$bool$
-struct int$$bool_struct {
-	int _0;
+#ifndef int_$$bool$
+#define int_$$bool$
+struct int_$$bool_struct {
+	int_ _0;
 	bool _1;
 };
 #endif
 // decl
-int foo$S(chan c1$, chan c2$);
+int_ foo$S(chan c1$, chan c2$);
 // def
-int foo$S(chan c1$, chan c2$) {
-	int d$ = 0;
+int_ foo$S(chan c1$, chan c2$) {
+	int_ d$ = 0;
 	{
 	loop$:;
 		for (;;) {
 			{
 				switch(0){case 0:{
 					__label__ case0, case1;
-					RECVINIT(0, c1$, int);
-					RECVINIT(1, c2$, int);
+					RECVINIT(0, c1$, int_);
+					RECVINIT(1, c2$, int_);
 					SELECT(
 						RECVCOMM(0),
 						RECVCOMM(1)
 					);
 					case0:{
-						int$$bool _tmp0 = SELRECVOK(0);
-						int i$ = _tmp0._0;
+						int_$$bool _tmp0 = SELRECVOK(0);
+						int_ i$ = _tmp0._0;
 						bool ok$ = _tmp0._1;
 						if (((i$ == 0)||!ok$)) {
 							goto loop$_break;

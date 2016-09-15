@@ -6,11 +6,11 @@ func F(a, b int) int {
 }
 // C code:
 // decl
-int foo$F(int a$, int b$);
+int_ foo$F(int_ a$, int_ b$);
 // def
-int foo$F(int a$, int b$) {
+int_ foo$F(int_ a$, int_ b$) {
 	return ({
-		int func$(int x$) {
+		int_ func$(int_ x$) {
 			return (x$+b$);
 		}
 		func$;
@@ -26,23 +26,23 @@ func F(a, b int) (int, int) {
 }
 // C code:
 // decl
-struct int$$int_struct;
-typedef struct int$$int_struct int$$int;
+struct int_$$int__struct;
+typedef struct int_$$int__struct int_$$int_;
 // def
-#ifndef int$$int$
-#define int$$int$
-struct int$$int_struct {
-	int _0;
-	int _1;
+#ifndef int_$$int_$
+#define int_$$int_$
+struct int_$$int__struct {
+	int_ _0;
+	int_ _1;
 };
 #endif
 // decl
-int$$int foo$F(int a$, int b$);
+int_$$int_ foo$F(int_ a$, int_ b$);
 // def
-int$$int foo$F(int a$, int b$) {
+int_$$int_ foo$F(int_ a$, int_ b$) {
 	return ({
-		int$$int func$(int x$) {
-			return (int$$int){(x$+b$), (x$-b$)};
+		int_$$int_ func$(int_ x$) {
+			return (int_$$int_){(x$+b$), (x$-b$)};
 		}
 		func$;
 	})(a$);
@@ -65,20 +65,20 @@ func F(b bool) func(int) bool{
 }
 // C code:
 // decl
-bool (*foo$F(bool b$))(int);
+bool (*foo$F(bool b$))(int_);
 // def
-bool (*foo$F(bool b$))(int) {
-	bool (*g$)(int) = nil;
+bool (*foo$F(bool b$))(int_) {
+	bool (*g$)(int_) = nil;
 	if (b$) {
 		g$ = ({
-			bool func$(int a$) {
+			bool func$(int_ a$) {
 				return (a$>0);
 			}
 			func$;
 		});
 	} else {
 		g$ = ({
-			bool func$(int a$) {
+			bool func$(int_ a$) {
 				return (a$<0);
 			}
 			func$;

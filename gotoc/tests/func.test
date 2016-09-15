@@ -16,14 +16,14 @@ struct byte$$byte_struct {
 };
 #endif
 // decl
-byte$$byte foo$F(int a$, int b$);
+byte$$byte foo$F(int_ a$, int_ b$);
 // def
-byte$$byte foo$F(int a$, int b$) {
+byte$$byte foo$F(int_ a$, int_ b$) {
 	byte x$ = 0;
 	byte y$ = 0;
 	{
-		byte _tmp0 = ((byte)(a$)+y$);
-		byte _tmp1 = ((byte)(b$)+x$);
+		byte _tmp0 = (((byte)(a$))+y$);
+		byte _tmp1 = (((byte)(b$))+x$);
 		x$ = _tmp0;
 		y$ = _tmp1;
 		goto end;
@@ -40,30 +40,30 @@ func F(a, b int) (x, y int) {
 }
 // C code:
 // decl
-struct int$$int_struct;
-typedef struct int$$int_struct int$$int;
+struct int_$$int__struct;
+typedef struct int_$$int__struct int_$$int_;
 // def
-#ifndef int$$int$
-#define int$$int$
-struct int$$int_struct {
-	int _0;
-	int _1;
+#ifndef int_$$int_$
+#define int_$$int_$
+struct int_$$int__struct {
+	int_ _0;
+	int_ _1;
 };
 #endif
 // decl
-int$$int foo$F(int a$, int b$);
+int_$$int_ foo$F(int_ a$, int_ b$);
 // def
-int$$int foo$F(int a$, int b$) {
-	int x$ = 0;
-	int y$ = 0;
+int_$$int_ foo$F(int_ a$, int_ b$) {
+	int_ x$ = 0;
+	int_ y$ = 0;
 	{
-		int$$int _tmp0 = foo$F(a$, b$);
+		int_$$int_ _tmp0 = foo$F(a$, b$);
 		x$ = _tmp0._0;
 		y$ = _tmp0._1;
 		goto end;
 	}
 end:
-	return (int$$int){x$, y$};
+	return (int_$$int_){x$, y$};
 }
 // end
 
@@ -73,31 +73,31 @@ func F(a [2]int) (int, int) {
 }
 // C code:
 // decl
-struct int$$int_struct;
-typedef struct int$$int_struct int$$int;
+struct int_$$int__struct;
+typedef struct int_$$int__struct int_$$int_;
 // def
-#ifndef int$$int$
-#define int$$int$
-struct int$$int_struct {
-	int _0;
-	int _1;
+#ifndef int_$$int_$
+#define int_$$int_$
+struct int_$$int__struct {
+	int_ _0;
+	int_ _1;
 };
 #endif
 // decl
-struct $2_$int_struct;
-typedef struct $2_$int_struct $2_$int;
+struct $2_$int__struct;
+typedef struct $2_$int__struct $2_$int_;
 // def
-#ifndef $2_$int$
-#define $2_$int$
-struct $2_$int_struct {
-	int arr[2];
+#ifndef $2_$int_$
+#define $2_$int_$
+struct $2_$int__struct {
+	int_ arr[2];
 };
 #endif
 // decl
-int$$int foo$F($2_$int a$);
+int_$$int_ foo$F($2_$int_ a$);
 // def
-int$$int foo$F($2_$int a$) {
-	return (int$$int){AIDX(a$, 0), AIDX(a$, 1)};
+int_$$int_ foo$F($2_$int_ a$) {
+	return (int_$$int_){AIDX(&a$, 0), AIDX(&a$, 1)};
 }
 // end
 
@@ -108,26 +108,26 @@ func F(a, b int) (x, y int) {
 }
 // C code:
 // decl
-struct int$$int_struct;
-typedef struct int$$int_struct int$$int;
+struct int_$$int__struct;
+typedef struct int_$$int__struct int_$$int_;
 // def
-#ifndef int$$int$
-#define int$$int$
-struct int$$int_struct {
-	int _0;
-	int _1;
+#ifndef int_$$int_$
+#define int_$$int_$
+struct int_$$int__struct {
+	int_ _0;
+	int_ _1;
 };
 #endif
 // decl
-int$$int foo$F(int a$, int b$);
+int_$$int_ foo$F(int_ a$, int_ b$);
 // def
-int$$int foo$F(int a$, int b$) {
-	int x$ = 0;
-	int y$ = 0;
+int_$$int_ foo$F(int_ a$, int_ b$) {
+	int_ x$ = 0;
+	int_ y$ = 0;
 	{
-		int$$int _tmp0 = foo$F(a$, b$);
-		int c$ = _tmp0._0;
-		return (int$$int){c$, (a$+b$)};
+		int_$$int_ _tmp0 = foo$F(a$, b$);
+		int_ c$ = _tmp0._0;
+		return (int_$$int_){c$, (a$+b$)};
 	}
 }
 // end
@@ -139,27 +139,27 @@ func F(a int) (x, _ int) {
 }
 // C code:
 // decl
-struct int$$int_struct;
-typedef struct int$$int_struct int$$int;
+struct int_$$int__struct;
+typedef struct int_$$int__struct int_$$int_;
 // def
-#ifndef int$$int$
-#define int$$int$
-struct int$$int_struct {
-	int _0;
-	int _1;
+#ifndef int_$$int_$
+#define int_$$int_$
+struct int_$$int__struct {
+	int_ _0;
+	int_ _1;
 };
 #endif
 // decl
-int$$int foo$F(int a$);
+int_$$int_ foo$F(int_ a$);
 // def
-int$$int foo$F(int a$) {
-	int x$ = 0;
+int_$$int_ foo$F(int_ a$) {
+	int_ x$ = 0;
 	{
 		x$ = a$;
 		goto end;
 	}
 end:
-	return (int$$int){._0=x$};
+	return (int_$$int_){._0=x$};
 }
 // end
 
@@ -172,18 +172,18 @@ func F(n int, a ...int) {
 }
 // C code:
 // decl
-void foo$F(int n$, slice a$);
+void foo$F(int_ n$, slice a$);
 // def
-void foo$F(int n$, slice a$) {
+void foo$F(int_ n$, slice a$) {
 	foo$F(10, NILSLICE);
 	({
-		int _0 = 20;
-		int _a[] = {1};
+		int_ _0 = 20;
+		int_ _a[] = {1};
 		foo$F(_0, CSLICE(1, _a));
 	});
 	({
-		int _0 = 30;
-		int _a[] = {1, 2};
+		int_ _0 = 30;
+		int_ _a[] = {1, 2};
 		foo$F(_0, CSLICE(2, _a));
 	});
 	foo$F(40, a$);
@@ -196,23 +196,23 @@ func F(a interface{}, b int) (int, int) {
 }
 // C code:
 // decl
-struct int$$int_struct;
-typedef struct int$$int_struct int$$int;
+struct int_$$int__struct;
+typedef struct int_$$int__struct int_$$int_;
 // def
-#ifndef int$$int$
-#define int$$int$
-struct int$$int_struct {
-	int _0;
-	int _1;
+#ifndef int_$$int_$
+#define int_$$int_$
+struct int_$$int__struct {
+	int_ _0;
+	int_ _1;
 };
 #endif
 // decl
-int$$int foo$F(interface a$, int b$);
+int_$$int_ foo$F(interface a$, int_ b$);
 // def
-int$$int foo$F(interface a$, int b$) {
+int_$$int_ foo$F(interface a$, int_ b$) {
 	return ({
-		int$$int _tup = foo$F(a$, b$);
-		foo$F(INTERFACE(_tup._0, &int$$), _tup._1);
+		int_$$int_ _tup = foo$F(a$, b$);
+		foo$F(INTERFACE(_tup._0, &int_$$), _tup._1);
 	});
 }
 // end
@@ -225,24 +225,24 @@ func (s S) M(a, b interface{}) (int, int) {
 }
 // C code:
 // decl
-const minfo M$$$interface$$interface$$$int$$int$$;
+const minfo M$$$interface$$interface$$$int_$$int_$$;
 // def
-const minfo M$$$interface$$interface$$$int$$int$$;
+const minfo M$$$interface$$interface$$$int_$$int_$$;
 // decl
-struct int$$int_struct;
-typedef struct int$$int_struct int$$int;
+struct int_$$int__struct;
+typedef struct int_$$int__struct int_$$int_;
 // def
-#ifndef int$$int$
-#define int$$int$
-struct int$$int_struct {
-	int _0;
-	int _1;
+#ifndef int_$$int_$
+#define int_$$int_$
+struct int_$$int__struct {
+	int_ _0;
+	int_ _1;
 };
 #endif
 // decl
-int$$int foo$S$M$1(ival* s$, interface a$, interface b$);
+int_$$int_ foo$S$M$1(ival* s$, interface a$, interface b$);
 // def
-int$$int foo$S$M$1(ival* s$, interface a$, interface b$) {
+int_$$int_ foo$S$M$1(ival* s$, interface a$, interface b$) {
 	return foo$S$M((*(foo$S*)s$), a$, b$);
 }
 // decl
@@ -253,16 +253,16 @@ const tinfo foo$S$$ = {
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
 		.methods = CSLICE(1, ((const minfo*[]){
-			&M$$$interface$$interface$$$int$$int$$
+			&M$$$interface$$interface$$$int_$$int_$$
 		}))
 	}, {
 		foo$S$M$1
 	}
 };
 // decl
-int$$int foo$S$M$0(ival* s$, interface a$, interface b$);
+int_$$int_ foo$S$M$0(ival* s$, interface a$, interface b$);
 // def
-int$$int foo$S$M$0(ival* s$, interface a$, interface b$) {
+int_$$int_ foo$S$M$0(ival* s$, interface a$, interface b$) {
 	return foo$S$M(*((foo$S*)s$->ptr), a$, b$);
 }
 // decl
@@ -275,7 +275,7 @@ const tinfo $8$foo$S$$ = {
 			&foo$S$$
 		})),
 		.methods = CSLICE(1, ((const minfo*[]){
-			&M$$$interface$$interface$$$int$$int$$
+			&M$$$interface$$interface$$$int_$$int_$$
 		}))
 	}, {
 		foo$S$M$0
@@ -287,12 +287,12 @@ typedef struct foo$S_struct foo$S;
 // def
 struct foo$S_structE;
 // decl
-int$$int foo$S$M(foo$S s$, interface a$, interface b$);
+int_$$int_ foo$S$M(foo$S s$, interface a$, interface b$);
 // def
-int$$int foo$S$M(foo$S s$, interface a$, interface b$) {
+int_$$int_ foo$S$M(foo$S s$, interface a$, interface b$) {
 	return ({
-		int$$int _tup = foo$S$M(s$, a$, b$);
-		foo$S$M(s$, INTERFACE(_tup._0, &int$$), INTERFACE(_tup._1, &int$$));
+		int_$$int_ _tup = foo$S$M(s$, a$, b$);
+		foo$S$M(s$, INTERFACE(_tup._0, &int_$$), INTERFACE(_tup._1, &int_$$));
 	});
 }
 // end

@@ -6,12 +6,12 @@ func F() int {
 }
 // C code:
 // decl
-int foo$F();
+int_ foo$F();
 // def
-int foo$F() {
-	int a$ = 1;
+int_ foo$F() {
+	int_ a$ = 1;
 	a$ = 2;
-	int b$ = 3;
+	int_ b$ = 3;
 	return (a$+b$);
 }
 // end
@@ -24,24 +24,24 @@ func F() (int, int) {
 }
 // C code:
 // decl
-struct int$$int_struct;
-typedef struct int$$int_struct int$$int;
+struct int_$$int__struct;
+typedef struct int_$$int__struct int_$$int_;
 // def
-#ifndef int$$int$
-#define int$$int$
-struct int$$int_struct {
-	int _0;
-	int _1;
+#ifndef int_$$int_$
+#define int_$$int_$
+struct int_$$int__struct {
+	int_ _0;
+	int_ _1;
 };
 #endif
 // decl
-int$$int foo$F();
+int_$$int_ foo$F();
 // def
-int$$int foo$F() {
-	int a$ = 1;
-	int$$int _tmp0 = foo$F();
+int_$$int_ foo$F() {
+	int_ a$ = 1;
+	int_$$int_ _tmp0 = foo$F();
 	a$ = _tmp0._0;
-	int b$ = _tmp0._1;
-	return (int$$int){a$, b$};
+	int_ b$ = _tmp0._1;
+	return (int_$$int_){a$, b$};
 }
 // end

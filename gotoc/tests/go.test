@@ -17,15 +17,15 @@ func F(i int) {
 }
 // C code:
 // decl
-void foo$F(int i$);
+void foo$F(int_ i$);
 // def
-void foo$F(int i$) {
+void foo$F(int_ i$) {
 	{
-		void wrap(int _0) {
+		void wrap(int_ _0) {
 			goready();
 			foo$F(_0);
 		}
-		int _0 = (2*i$);
+		int_ _0 = (2*i$);
 		GO(wrap(_0), true);
 	}
 }
@@ -40,13 +40,13 @@ func (i I) F(k int) int {
 }
 // C code:
 // decl
-const minfo F$$$int$$$int$$;
+const minfo F$$$int_$$$int_$$;
 // def
-const minfo F$$$int$$$int$$;
+const minfo F$$$int_$$$int_$$;
 // decl
-int foo$I$F$1(ival* i$, int k$);
+int_ foo$I$F$1(ival* i$, int_ k$);
 // def
-int foo$I$F$1(ival* i$, int k$) {
+int_ foo$I$F$1(ival* i$, int_ k$) {
 	return foo$I$F((*(foo$I*)i$), k$);
 }
 // decl
@@ -57,16 +57,16 @@ const tinfo foo$I$$ = {
 		.name = EGSTR("foo.I"),
 		.kind = Int,
 		.methods = CSLICE(1, ((const minfo*[]){
-			&F$$$int$$$int$$
+			&F$$$int_$$$int_$$
 		}))
 	}, {
 		foo$I$F$1
 	}
 };
 // decl
-int foo$I$F$0(ival* i$, int k$);
+int_ foo$I$F$0(ival* i$, int_ k$);
 // def
-int foo$I$F$0(ival* i$, int k$) {
+int_ foo$I$F$0(ival* i$, int_ k$) {
 	return foo$I$F(*((foo$I*)i$->ptr), k$);
 }
 // decl
@@ -79,28 +79,28 @@ const tinfo $8$foo$I$$ = {
 			&foo$I$$
 		})),
 		.methods = CSLICE(1, ((const minfo*[]){
-			&F$$$int$$$int$$
+			&F$$$int_$$$int_$$
 		}))
 	}, {
 		foo$I$F$0
 	}
 };
 // decl
-typedef int foo$I;
+typedef int_ foo$I;
 // decl
-int foo$I$F(foo$I i$, int k$);
+int_ foo$I$F(foo$I i$, int_ k$);
 // def
-int foo$I$F(foo$I i$, int k$) {
+int_ foo$I$F(foo$I i$, int_ k$) {
 	{
-		void wrap(foo$I _r, int _0) {
+		void wrap(foo$I _r, int_ _0) {
 			goready();
 			foo$I$F(_r, _0);
 		}
 		foo$I _r = i$;
-		int _0 = ((int)(i$)*k$);
+		int_ _0 = (((int_)(i$))*k$);
 		GO(wrap(_r, _0), true);
 	}
-	return ((int)(i$)-k$);
+	return (((int_)(i$))-k$);
 }
 // end
 
@@ -111,30 +111,30 @@ func F(a, b interface{}) (int, int) {
 }
 // C code:
 // decl
-struct int$$int_struct;
-typedef struct int$$int_struct int$$int;
+struct int_$$int__struct;
+typedef struct int_$$int__struct int_$$int_;
 // def
-#ifndef int$$int$
-#define int$$int$
-struct int$$int_struct {
-	int _0;
-	int _1;
+#ifndef int_$$int_$
+#define int_$$int_$
+struct int_$$int__struct {
+	int_ _0;
+	int_ _1;
 };
 #endif
 // decl
-int$$int foo$F(interface a$, interface b$);
+int_$$int_ foo$F(interface a$, interface b$);
 // def
-int$$int foo$F(interface a$, interface b$) {
+int_$$int_ foo$F(interface a$, interface b$) {
 	{
 		void wrap(interface _0, interface _1) {
 			goready();
 			foo$F(_0, _1);
 		}
-		int$$int _tup = foo$F(a$, b$);
-		interface _0 = INTERFACE(_tup._0, &int$$);
-		interface _1 = INTERFACE(_tup._1, &int$$);
+		int_$$int_ _tup = foo$F(a$, b$);
+		interface _0 = INTERFACE(_tup._0, &int_$$);
+		interface _1 = INTERFACE(_tup._1, &int_$$);
 		GO(wrap(_0, _1), true);
 	}
-	return (int$$int){0, 0};
+	return (int_$$int_){0, 0};
 }
 // end

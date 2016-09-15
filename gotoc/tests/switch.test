@@ -10,9 +10,9 @@ func Switch(i int) int {
 }
 // C code:
 // decl
-int foo$Switch(int i$);
+int_ foo$Switch(int_ i$);
 // def
-int foo$Switch(int i$) {
+int_ foo$Switch(int_ i$) {
 	switch(0){case 0:{
 		bool _tag = true;
 		if ((_tag == ((i$+1)<2))) {
@@ -42,11 +42,11 @@ func Switch(i int) int {
 }
 // C code:
 // decl
-int foo$Switch(int i$);
+int_ foo$Switch(int_ i$);
 // def
-int foo$Switch(int i$) {
+int_ foo$Switch(int_ i$) {
 	switch(0){case 0:{
-		int _tag = i$;
+		int_ _tag = i$;
 		if ((_tag == 1)) {
 			return 10;
 			break;
@@ -87,16 +87,18 @@ func Switch(i int) int {
 }
 // C code:
 // decl
-int foo$Switch(int i$);
+int_ foo$Switch(int_ i$);
 // def
-int foo$Switch(int i$) {
+int_ foo$Switch(int_ i$) {
 	for (;(i$<10);) {
 		switch(0){case 0:{
-			int _tag = i$;
+			int_ _tag = i$;
 			if ((_tag == 1)) {
 				i$ += 1;
+				goto _fallthr0;
 			}
 			if ((_tag == 2)) {
+			_fallthr0:
 				i$ += 2;
 				continue;
 				break;
@@ -187,8 +189,8 @@ bool foo$Switch(interface *i$) {
 			}
 			break;
 		}
-		if (_tag.itab$ == &int$$) {
-			int v$ = IVAL(_tag, int);
+		if (_tag.itab$ == &int_$$) {
+			int_ v$ = IVAL(_tag, int_);
 			{
 				return (v$ == 1);
 			}
