@@ -9,12 +9,8 @@ func Equal(s1, s2 []byte) bool {
 	if len(s1) != len(s2) {
 		return false
 	}
-	// Fast path.
-	if len(s1) == 0 {
-		return true
-	}
-	p1 := unsafe.Pointer(&s1[0])
-	p2 := unsafe.Pointer(&s2[0])
+	p1 := unsafe.Pointer((*internal.SliceHeader)(unsafe.Pointer(&s1)).Data)
+	p2 := unsafe.Pointer((*internal.SliceHeader)(unsafe.Pointer(&s2)).Data)
 	return internal.Memcmp(p1, p2, uintptr(len(s1))) == 0
 }
 

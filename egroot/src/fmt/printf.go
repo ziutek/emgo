@@ -2,7 +2,7 @@ package fmt
 
 import (
 	"io"
-	"stack"
+	"stack" // Use noinline to avoid stack overflows.
 	"strings"
 	"unsafe"
 )
@@ -27,6 +27,7 @@ func findVerb(f string) (int, string, byte) {
 	return start, "", 0
 }
 
+//emgo:noinline
 func Fprintf(w io.Writer, f string, a ...interface{}) (int, error) {
 	p, ok := w.(printer)
 	if !ok {

@@ -1,12 +1,9 @@
 package reflect
 
-type StringHeader struct {
-	Data uintptr
-	Len  int
-}
+import "internal"
 
-type SliceHeader struct {
-	Data uintptr
-	Len  int
-	Cap  int
-}
+// StringHeader: do not use or see internal.StringHeader.
+type StringHeader internal.StringHeader
+
+// SliceHeader: do not use or see internal.SliceHeader.
+type SliceHeader internal.SliceHeader

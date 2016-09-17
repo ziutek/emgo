@@ -2,10 +2,12 @@ package fmt
 
 import (
 	"io"
-	"stack"
+	"stack" // Use noinline to avoid stack overflows.
 	"unsafe"
 )
 
+
+//emgo:noinline
 func Fprint(w io.Writer, a ...interface{}) (int, error) {
 	p, ok := w.(printer)
 	if !ok {
@@ -23,6 +25,7 @@ func Fprint(w io.Writer, a ...interface{}) (int, error) {
 	return p.n, p.err
 }
 
+//emgo:noinline
 func Fprintln(w io.Writer, a ...interface{}) (int, error) {
 	p, ok := w.(printer)
 	if !ok {

@@ -1,11 +1,6 @@
 void memmove(unsafe$Pointer dst, unsafe$Pointer src, uintptr n);
 void memcpy(unsafe$Pointer dst, unsafe$Pointer src, uintptr n);
 void memset(unsafe$Pointer s, byte b, uintptr n);
-bool memeq(unsafe$Pointer p1, unsafe$Pointer p2, uintptr n);
-bool equals(string s1, string s2);
-
-__attribute__ ((noreturn))
-void panic(interface i);
 
 __attribute__ ((noreturn))
 void panicIC();
@@ -31,3 +26,19 @@ void panicIC();
 })
 
 #define EQUALA(a1, a2) (internal$Memcmp((a1).arr,(a2).arr,sizeof(a1.arr)) == 0)
+
+static inline int_
+cmpstr(string s1, string s2) {
+	int_ n = len(s1);
+	if (n > len(s2)) {
+		n = len(s2);
+	}
+	int_ ret = internal$Memcmp(s1.str, s2.str, n);
+	if (ret != 0 || len(s1) == len(s2)) {
+		return ret;
+	}
+	if (len(s1) < len(s2)) {
+		return -1;
+	}
+	return 1;
+}
