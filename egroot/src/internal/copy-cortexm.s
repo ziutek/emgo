@@ -2,10 +2,8 @@
 
 .syntax unified
 
-// TODO: Implement full aligned copy using LDM and STM
-// and check difference on real Cortex-M application:
-// a microcontroler with small SRAM and instructions read
-// from Flash (all Flash acceleration on).
+// TODO: Implement full aligned copy using LDM and STM and check does this
+// improves performance.
 
 // func Memmove(dst, src unsafe.Pointer, n uintptr)
 .global internal$Memmove
@@ -22,41 +20,47 @@ internal$Memmove:
 memmove:
 .thumb_func
 memcpy:
-	// Use ip as dst. r0 will be returned unmodified.
-	mov  ip, r0
-	// TODO: Check will be better to always
-	// use forward copy on non-overlaping data.
+	// Fast path for 0, 1, 2, 3, 4 bytes (uses only 16-bit instructions: 44 B).
+	cmp     r2, 1
+	blo     0f  // n == 0
+	ittt    eq
+	ldrbeq  r3, [r1]  // n == 1
+	strbeq  r3, [r0]
+	bxeq    lr
+	cmp     r2, 4
+	bhi     1f  // n > 4
+	ittt    eq
+	ldreq   r3, [r1]  // n == 4
+	streq   r3, [r0]
+	bxeq    lr
+	cmp     r2, 2
+	ittt    eq
+	ldrheq  r3, [r1]  // n == 2
+	strheq  r3, [r0]
+	bxeq    lr
+	ldrh    r3, [r1]  // n == 3
+	ldrb    r2, [r1, 2]
+	strh    r3, [r0]
+	strb    r2, [r0, 2]
+0:
+	bx  lr
+1:
+
+	mov  ip, r0  // Use ip as dst. r0 will be returned unmodified.
+
 	cmp  r1, r0
 	blo  10f
 
-// Forward copy
-	cmp    r2, 4
-	itt    lo
-	movlo  r3, r2
-	blo    5f
+	// Forward copy
+	cmp  r2, 4
+	blo  6f
 
-	// calculate number of bytes to copy
-	// to make dst (ip) word aligned
-	ands   r3, ip, 3
-	itt    ne
-	rsbne  r3, 4
-	bne    5f
+	// Calculate the number of bytes to copy to make dst (ip) word aligned.
+	ands  r3, ip, 3
+	beq   5f
+	rsb   r3, 4
 
-	// copy words
-6:
-	subs   r2, 4
-	ittt   hs
-	ldrhs  r3, [r1], 4
-	strhs  r3, [ip], 4
-	bhs    6b
-
-	adds  r2, 4
-	beq   9f
-	mov   r3, r2
-
-	// head/tail copy
-5:
-	// copy up to 3 bytes
+	// Head copy (up to 3 bytes).
 	subs  r2, r3
 	tbb   [pc, r3]
 0:
@@ -74,8 +78,37 @@ memcpy:
 	ldrb  r3, [r1], 1
 	strb  r3, [ip], 1
 4:
-	bne  6b
-9:
+
+5:
+	// Copy words.
+	subs   r2, 4
+	ittt   hs
+	ldrhs  r3, [r1], 4
+	strhs  r3, [ip], 4
+	bhs    5b
+
+	// Restore the number of remaining bytes.
+	adds  r2, 4
+
+6:
+	// Tail copy (up to 3 bytes).
+	tbb  [pc, r2]
+0:
+	.byte  (4f-0b)/2
+	.byte  (3f-0b)/2
+	.byte  (2f-0b)/2
+	.byte  (1f-0b)/2
+1:
+	ldrb  r3, [r1], 1
+	strb  r3, [ip], 1
+2:
+	ldrb  r3, [r1], 1
+	strb  r3, [ip], 1
+3:
+	ldrb  r3, [r1], 1
+	strb  r3, [ip], 1
+4:
+
 	bx  lr
 
 // Backward copy:
@@ -83,31 +116,11 @@ memcpy:
 	add  r1, r2
 	add  ip, r2
 
-	cmp    r2, 4
-	itt    lo
-	movlo  r3, r2
-	blo    5f
-
-	// calculate number of bytes to copy
-	// to make dst (ip) word aligned
+	// Calculate the number of bytes to copy to make dst (ip) word aligned.
 	ands  r3, ip, 3
-	bne   5f
+	beq   5f
 
-	// copy words
-6:
-	subs   r2, 4
-	ittt   hs
-	ldrhs  r3, [r1, -4]!
-	strhs  r3, [ip, -4]!
-	bhs    6b
-
-	adds  r2, 4
-	beq   9f
-	mov   r3, r2
-
-	// head/tail copy
-5:
-	// copy up to 3 bytes
+	// Tail copy (up to 3 bytes).
 	subs  r2, r3
 	tbb   [pc, r3]
 0:
@@ -125,6 +138,57 @@ memcpy:
 	ldrb  r3, [r1, -1]!
 	strb  r3, [ip, -1]!
 4:
-	bne  6b
-9:
+
+5:
+	// Copy words.
+	subs   r2, 4
+	ittt   hs
+	ldrhs  r3, [r1, -4]!
+	strhs  r3, [ip, -4]!
+	bhs    5b
+
+	// Restore the number of remaining bytes.
+	adds  r2, 4
+
+6:
+	// Head copy (up to 3 bytes).
+	tbb  [pc, r2]
+0:
+	.byte  (4f-0b)/2
+	.byte  (3f-0b)/2
+	.byte  (2f-0b)/2
+	.byte  (1f-0b)/2
+1:
+	ldrb  r3, [r1, -1]!
+	strb  r3, [ip, -1]!
+2:
+	ldrb  r3, [r1, -1]!
+	strb  r3, [ip, -1]!
+3:
+	ldrb  r3, [r1, -1]!
+	strb  r3, [ip, -1]!
+4:
+
 	bx  lr
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

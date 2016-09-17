@@ -29,3 +29,5 @@ void panicIC();
 	internal$Memmove(s.str, b.arr, b.len);                   \
 	s;                                                       \
 })
+
+#define EQUALA(a1, a2) (internal$Memcmp((a1).arr,(a2).arr,sizeof(a1.arr)) == 0)

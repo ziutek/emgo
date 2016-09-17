@@ -494,7 +494,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		rhs := cdd.ExprStr(e.Y, rtyp)
 
 		if op == "==" || op == "!=" {
-			eq(w, lhs, op, rhs, ltyp, rtyp)
+			cdd.eq(w, lhs, op, rhs, ltyp, rtyp)
 			break
 		}
 		// BUG: strings
@@ -1032,7 +1032,7 @@ func (cdd *CDD) Nil(w *bytes.Buffer, t types.Type) {
 
 var unil = types.Typ[types.UntypedNil]
 
-func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
+func (cdd *CDD) eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 	typ := ltyp
 	if typ == unil {
 		typ = rtyp
@@ -1068,27 +1068,37 @@ func eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) {
 		w.WriteString("equals(" + lhs + ", " + rhs + ")")
 		return
 	case *types.Struct:
-		lo := "&&"
+		lo := " &&\n"
 		if op == "!=" {
-			lo = "||"
+			lo = " ||\n"
 		}
-		w.WriteString("({_l = " + lhs + "; _r = " + rhs + "; ")
+		w.WriteString("({\n")
+		cdd.il++
+		cdd.indent(w)
+		w.WriteString("_l = " + lhs + "; _r = " + rhs + ";\n")
 		n := t.NumFields()
-		for i := 0; i < n; i++ {
-			f := t.Field(i).Name()
-			if i != 0 {
+		for i := 0; i < n; {
+			f := t.Field(i)
+			ft := f.Type()
+			fn := f.Name()
+			cdd.indent(w)
+			cdd.eq(w, "_l."+fn, op, "_r."+fn, ft, ft)
+			i++
+			if i != n {
 				w.WriteString(lo)
+			} else {
+				w.WriteByte('\n')
 			}
-			w.WriteString("_l." + f + op + "_r." + f)
 		}
+		cdd.il--
+		cdd.indent(w)
 		w.WriteString("})")
 		return
 	case *types.Array:
 		if op == "!=" {
 			w.WriteByte('!')
 		}
-		w.WriteString("memeq((" + lhs + ").arr, (" + rhs + ").arr, ")
-		w.WriteString(strconv.FormatInt(t.Len(), 10) + ")")
+		w.WriteString("EQUALA(" + lhs + ", " + rhs + ")")
 		return
 	case *types.Slice:
 		nilv := "nil"
