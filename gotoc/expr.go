@@ -428,7 +428,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 				w.WriteString("BYTES(")
 				cdd.Expr(w, arg, typ)
 				w.WriteByte(')')
-
+				cdd.Complexity += 1e3 // BUG: Workaround because alloca in BYTES.
 			default: // slice
 				w.WriteByte('(')
 				cdd.Expr(w, arg, typ)
@@ -493,11 +493,14 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		lhs := cdd.ExprStr(e.X, ltyp)
 		rhs := cdd.ExprStr(e.Y, rtyp)
 
+		if t, ok := ltyp.Underlying().(*types.Basic); ok && t.Kind() == types.String {
+			w.WriteString("(cmpstr(" + lhs + ", " + rhs + ") " + op + " 0)")
+			break
+		}
 		if op == "==" || op == "!=" {
 			cdd.eq(w, lhs, op, rhs, ltyp, rtyp)
 			break
 		}
-		// BUG: strings
 		if op == "&^" {
 			op = "&~"
 		}
@@ -535,9 +538,11 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.Expr(w, e.X, nil)
 
 	case *ast.CallExpr:
+		cdd.Complexity--
 		cdd.CallExpr(w, e)
 
 	case *ast.Ident:
+		cdd.Complexity--
 		if e.Name == "nil" {
 			cdd.Nil(w, nilT)
 			break
@@ -572,6 +577,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.interfaceExpr(w, e.Value, nilT)
 
 	case *ast.ParenExpr:
+		cdd.Complexity--
 		w.WriteByte('(')
 		cdd.Expr(w, e.X, nilT)
 		w.WriteByte(')')
@@ -1052,9 +1058,9 @@ func (cdd *CDD) eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) 
 			if li && ri {
 				w.WriteString("EQUALI(" + lhs + ", " + rhs + ")")
 			} else if li {
-
+				panic("TODO")
 			} else {
-
+				panic("TODO")
 			}
 		}
 		return
@@ -1062,10 +1068,7 @@ func (cdd *CDD) eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) 
 		if t.Kind() != types.String {
 			break
 		}
-		if op == "!=" {
-			w.WriteByte('!')
-		}
-		w.WriteString("equals(" + lhs + ", " + rhs + ")")
+		w.WriteString("(cmpstr(" + lhs + ", " + rhs + ") " + op + " 0)")
 		return
 	case *types.Struct:
 		lo := " &&\n"

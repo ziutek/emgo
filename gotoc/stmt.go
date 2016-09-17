@@ -111,6 +111,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 
 	case *ast.AssignStmt:
+		cdd.Complexity--
 		rhs := make([]string, len(s.Lhs))
 		typ := make([]types.Type, len(s.Lhs))
 
@@ -118,11 +119,6 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 		if rhsIsTuple {
 			tup := cdd.exprType(s.Rhs[0]).(*types.Tuple)
-			/*tupName, _ := cdd.tupleName(tup)
-			w.WriteString(tupName)
-			tupName = "_tmp" + cdd.gtc.uniqueId()
-			w.WriteString(" " + tupName + " = ")
-			cdd.Expr(w, s.Rhs[0], nil)*/
 			tupName := "_tmp" + cdd.gtc.uniqueId()
 			cdd.varDecl(w, tup, tupName, s.Rhs[0], "", false)
 			w.WriteByte('\n')
@@ -267,6 +263,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteString(");\n")
 
 	case *ast.BlockStmt:
+		cdd.Complexity--
 		updateEnd(cdd.BlockStmt(w, s, resultT, tup))
 		w.WriteByte('\n')
 
@@ -478,6 +475,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 
 	case *ast.ReturnStmt:
+		cdd.Complexity--
 		updateEnd(cdd.ReturnStmt(w, s, resultT, tup))
 
 	case *ast.SwitchStmt:
