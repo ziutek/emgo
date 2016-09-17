@@ -28,10 +28,21 @@ func main() {
 	copy(a2[:3], a1[:3])
 	copy(a2[:4], a1[:4])
 	a2 = a1
-	copy(a2[1:], a1[1:])
 
+	copy(a2[1:], a1[1:])
 	a2[11] = 0
 
 	fmt.Println(a2[:])
 	fmt.Println(bytes.Equal(a1[1:], a2[1:]))
+
+	s1 := "aaaa"
+	s2 := "aaaaa"
+
+	fmt.Printf("s1='%s' s2='%s\n", s1, s2)
+	fmt.Printf("s1 < s2:  %t\n", s1 < s2)
+	fmt.Printf("s1 <= s2: %t\n", s1 <= s2)
+	fmt.Printf("s1 == s2: %t\n", s1 == s2)
+	fmt.Printf("s1 != s2: %t\n", s1 != s2)
+	fmt.Printf("s1 >= s2: %t\n", s1 >= s2)
+	fmt.Printf("s1 > s2:  %t\n", s1 > s2)
 }
