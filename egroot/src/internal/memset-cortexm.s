@@ -12,38 +12,43 @@
 internal$Memset:
 .thumb_func
 memset:
-	// Use ip as dst. r0 will be returned unmodified.
-	mov  ip, r0
+	// Fast path for 0, 1 bytes.
+	cmp     r2, 1
+	blo     0f  // n == 0
+	itt     eq
+	strbeq  r1, [r0]  // n == 1
+	bxeq    lr
+
+	// Setup full word of bytes.
 	and  r1, 0xff
 	orr  r1, r1, r1, lsl 8
 	orr  r1, r1, r1, lsl 16
 
-	cmp    r2, 4
-	itt    lo
-	movlo  r3, r2
-	blo    5f
+	// Fast path for 2, 3, 4 bytes.
+	cmp     r2, 4
+	bhi     1f  // n > 4
+	itt     eq
+	streq   r1, [r0]  // n == 4
+	bxeq    lr
+	cmp     r2, 2
+	itt     eq
+	strheq  r1, [r0]  // n == 2
+	bxeq    lr
+	strh    r1, [r0]  // n == 3
+	strb    r1, [r0, 2]
+0:
+	bx  lr
+1:
 
-	// calculate number of bytes to set
-	// to make s (ip) word aligned
-	ands   r3, ip, 3
-	itt    ne
-	rsbne  r3, 4
-	bne    5f
+	// Use ip as dst. r0 will be returned unmodified.
+	mov  ip, r0
 
-	// set words
-6:
-	subs   r2, 4
-	itt    hs
-	strhs  r1, [ip], 4
-	bhs    6b
+	// Calculate the number of bytes to copy to make dst (ip) word aligned.
+	ands  r3, ip, 3
+	beq   5f
+	rsb   r3, 4
 
-	adds  r2, 4
-	beq   9f
-	mov   r3, r2
-
-	// head/tail set
-5:
-	// set up to 3 bytes
+	// Head set (up to 3 bytes).
 	subs  r2, r3
 	tbb   [pc, r3]
 0:
@@ -58,6 +63,34 @@ memset:
 3:
 	strb  r1, [ip], 1
 4:
-	bne  6b
-9:
+
+5:
+	// Set words.
+	subs   r2, 4
+	itt    hs
+	strhs  r1, [ip], 4
+	bhs    5b
+
+	// Restore the number of remaining bytes.
+	adds  r2, 4
+
+	// Tail set (up to 3 bytes).
+	tbb  [pc, r2]
+0:
+	.byte  (4f-0b)/2
+	.byte  (3f-0b)/2
+	.byte  (2f-0b)/2
+	.byte  (1f-0b)/2
+1:
+	strb  r1, [ip], 1
+2:
+	strb  r1, [ip], 1
+3:
+	strb  r1, [ip], 1
+4:
+
 	bx  lr
+
+
+
+

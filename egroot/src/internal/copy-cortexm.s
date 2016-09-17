@@ -46,14 +46,13 @@ memcpy:
 	bx  lr
 1:
 
-	mov  ip, r0  // Use ip as dst. r0 will be returned unmodified.
+	// Use ip as dst. r0 will be returned unmodified.
+	mov  ip, r0
 
 	cmp  r1, r0
 	blo  10f
 
 	// Forward copy
-	cmp  r2, 4
-	blo  6f
 
 	// Calculate the number of bytes to copy to make dst (ip) word aligned.
 	ands  r3, ip, 3
@@ -90,7 +89,6 @@ memcpy:
 	// Restore the number of remaining bytes.
 	adds  r2, 4
 
-6:
 	// Tail copy (up to 3 bytes).
 	tbb  [pc, r2]
 0:
@@ -150,7 +148,6 @@ memcpy:
 	// Restore the number of remaining bytes.
 	adds  r2, 4
 
-6:
 	// Head copy (up to 3 bytes).
 	tbb  [pc, r2]
 0:
@@ -170,6 +167,7 @@ memcpy:
 4:
 
 	bx  lr
+
 
 
 
