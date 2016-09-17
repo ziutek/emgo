@@ -9,12 +9,13 @@ func Equal(s1, s2 []byte) bool {
 	if len(s1) != len(s2) {
 		return false
 	}
-	for i, b := range s1 {
-		if s2[i] != b {
-			return false
-		}
+	// Fast path.
+	if len(s1) == 0 {
+		return true
 	}
-	return true
+	p1 := unsafe.Pointer(&s1[0])
+	p2 := unsafe.Pointer(&s2[0])
+	return internal.Memcmp(p1, p2, uintptr(len(s1))) == 0
 }
 
 // Fill fills s with b.
