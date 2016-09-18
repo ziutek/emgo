@@ -136,7 +136,7 @@ func main() {
 			checkErr(s.Err())
 		}
 		fmt.Println("Done.")
-		//delay.Millisec(4e3)
+		delay.Millisec(2e3)
 	}
 }
 

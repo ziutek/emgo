@@ -1,8 +1,7 @@
-StackISR = 2000;    /* 2 kB */
-
-/* Stack size: 7/8 KB */
-StackTaskLog2 = 10;
-StackTaskFrac = 7;
+ISRStack = 1024;
+MainStack = 1024;
+TaskStack = 0;
+MaxTasks = 1;
 
 /* One task, two stacks. */
 MaxTasks = 1;
