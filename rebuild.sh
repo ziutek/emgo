@@ -11,7 +11,7 @@ rm -rf egpath/pkg/*
 list=$(find egroot/src -type d)
 
 for p in $list; do
-	if [ -n "$(find $p -maxdepth 1 -type f -name '*.go' |grep -v '/_')" ]; then
+	if [ -n "$(find $p -maxdepth 1 -type f -name '*.go' |egrep -v '/_|/os|linux')" ]; then
 		cd $p
 		printf "%-44s   " ${p#*/*/}
 		if $EGC; then
