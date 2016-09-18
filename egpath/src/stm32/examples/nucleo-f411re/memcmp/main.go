@@ -35,19 +35,13 @@ func main() {
 	fmt.Println(a2[:])
 	fmt.Println(bytes.Equal(a1[1:], a2[1:]))
 
-	for {
-		s1 := "bbbbb"
-		s2 := "aaaaa"
-		for i := len(s1); i > 0; i-- {
-			s1 = s1[:i]
-			s2 = s2[:i]
-			fmt.Printf("s1='%s' s2='%s\n", s1, s2)
-			fmt.Printf("s1 < s2:  %t\n", s1 < s2)
-			fmt.Printf("s1 <= s2: %t\n", s1 <= s2)
-			fmt.Printf("s1 == s2: %t\n", s1 == s2)
-			fmt.Printf("s1 != s2: %t\n", s1 != s2)
-			fmt.Printf("s1 >= s2: %t\n", s1 >= s2)
-			fmt.Printf("s1 > s2:  %t\n", s1 > s2)
-		}
-	}
+	s1 := "babaa"
+	s2 := "abbaa"
+	fmt.Printf("s1='%s' s2='%s\n", s1, s2)
+	fmt.Printf("s1 < s2:  %t\n", s1 < s2)
+	fmt.Printf("s1 <= s2: %t\n", s1 <= s2)
+	fmt.Printf("s1 == s2: %t\n", s1 == s2)
+	fmt.Printf("s1 != s2: %t\n", s1 != s2)
+	fmt.Printf("s1 >= s2: %t\n", s1 >= s2)
+	fmt.Printf("s1 > s2:  %t\n", s1 > s2)
 }

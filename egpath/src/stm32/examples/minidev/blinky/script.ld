@@ -1,7 +1,6 @@
-StackISR = 2000; /* 2 KB */
-
-StackTaskLog2 = 10; /* 1 KiB */
-StackTaskFrac = 8;  /* 8/8 */
+ISRStack = 2048;
+MainStack = 4096;
+TaskStack = 0;
 MaxTasks = 1;
 
 /* bootSRAM code should by placed at 0x200001E0. */
