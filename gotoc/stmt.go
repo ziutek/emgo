@@ -111,7 +111,6 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 
 	case *ast.AssignStmt:
-		cdd.Complexity--
 		rhs := make([]string, len(s.Lhs))
 		typ := make([]types.Type, len(s.Lhs))
 
@@ -154,6 +153,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		lhs := make([]string, len(s.Lhs))
 
 		if s.Tok == token.DEFINE {
+			cdd.Complexity--
 			for i, e := range s.Lhs {
 				name := cdd.NameStr(cdd.object(e.(*ast.Ident)), true)
 				if name == "_$" {
@@ -268,6 +268,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteByte('\n')
 
 	case *ast.ForStmt:
+		cdd.Complexity++
 		if s.Init != nil {
 			w.WriteString("{\n")
 			cdd.il++
@@ -313,6 +314,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 
 	case *ast.RangeStmt:
+		cdd.Complexity++
 		w.WriteString("{\n")
 		cdd.il++
 		xt := cdd.exprType(s.X)
@@ -475,7 +477,6 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 
 	case *ast.ReturnStmt:
-		cdd.Complexity--
 		updateEnd(cdd.ReturnStmt(w, s, resultT, tup))
 
 	case *ast.SwitchStmt:
@@ -501,8 +502,8 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 		var fallthr string
 		for _, stmt := range s.Body.List {
+			cdd.Complexity++
 			cdd.indent(w)
-
 			cs := stmt.(*ast.CaseClause)
 			if len(cs.List) > 0 {
 				w.WriteString("if (")
@@ -580,6 +581,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		cdd.varDecl(w, cdd.exprType(x), "_tag", x, "", false)
 		w.WriteByte('\n')
 		for _, stmt := range s.Body.List {
+			cdd.Complexity++
 			cdd.indent(w)
 			cs := stmt.(*ast.CaseClause)
 			caseTyp := ityp
@@ -680,6 +682,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteString(";\n")
 
 	case *ast.GoStmt:
+		cdd.Complexity++
 		cdd.GoStmt(w, s)
 
 	case *ast.SendStmt:
@@ -713,6 +716,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		w.WriteString(";\n")
 
 		for i, stmt := range s.Body.List {
+			cdd.Complexity++
 			switch s := stmt.(*ast.CommClause).Comm.(type) {
 			case nil:
 

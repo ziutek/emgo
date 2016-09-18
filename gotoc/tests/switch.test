@@ -199,7 +199,7 @@ bool foo$Switch(interface *i$) {
 		if (implements(_tag.itab$, &error$$)) {
 			interface v$ = ICONVERTEI(_tag,  error$$);
 			{
-				return equals(((error*)(v$.itab$))->Error(&v$.val$), EGSTR(""));
+				return (cmpstr(((error*)(v$.itab$))->Error(&v$.val$), EGSTR("")) == 0);
 			}
 			break;
 		}

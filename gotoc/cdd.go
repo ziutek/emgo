@@ -7,6 +7,7 @@ import (
 	"go/token"
 	"go/types"
 	"io"
+	"strconv"
 )
 
 type DeclType int
@@ -34,11 +35,11 @@ type CDD struct {
 	DefUses    map[types.Object]bool // Function body, variable initialisation.
 	Complexity int
 
-	Typ    DeclType
-	Export bool
-	Weak   bool
+	Typ     DeclType
+	Export  bool
+	Weak    bool
 	NoAlloc bool
-	Inline bool // set by DetermineInline()
+	Inline  bool // set by DetermineInline()
 
 	Decl []byte
 	Def  []byte
@@ -152,12 +153,13 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 	case FuncDecl:
 		if cdd.Export {
 			if cdd.Inline {
-				prefix = "static inline\n"
+				prefix = "static inline "
 				w = wh
 			}
 		} else {
-			prefix = "static\n"
+			prefix = "static "
 		}
+		prefix += "// " + strconv.Itoa(cdd.Complexity) + "\n"
 
 	case VarDecl:
 		if cdd.NoAlloc {

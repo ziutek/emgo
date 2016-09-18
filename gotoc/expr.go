@@ -253,9 +253,11 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 	case "len":
 		switch t := cdd.exprType(args[0]).Underlying().(type) {
 		case *types.Slice, *types.Basic: // Basic == String
+			cdd.Complexity--
 			return "len", ""
 
 		case *types.Array:
+			cdd.Complexity--
 			panic("builtin len(array) isn't handled as constant expression")
 			// return "", strconv.FormatInt(t.Len(), 10)
 
@@ -267,6 +269,7 @@ func (cdd *CDD) builtin(b *types.Builtin, args []ast.Expr) (fun, recv string) {
 		}
 
 	case "cap":
+		cdd.Complexity--
 		switch t := cdd.exprType(args[0]).Underlying().(type) {
 		case *types.Slice:
 			return "cap", ""
@@ -419,6 +422,7 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 		}
 
 	default:
+		cdd.Complexity--
 		arg := e.Args[0]
 		at := cdd.exprType(arg)
 		switch typ := t.Underlying().(type) {
@@ -448,22 +452,23 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 					break
 				}
 			}
-			/* Not need because -fno-strict-aliasing
-			if _, ok := typ.(*types.Pointer); ok {
-				if _, ok := at.Underlying().(*types.Pointer); !ok {
-					// Casting unsafe.Pointer
-					// TODO: Don't use CAST if can check that type under
-					// unsafe.Pointer is pointer that points to type of the same
-					// size. This will allow clasify such cast as constant.
-					w.WriteString("CAST(")
-					dim := cdd.Type(w, t)
-					w.WriteString(dimFuncPtr("", dim))
-					w.WriteString(", ")
-					cdd.Expr(w, arg, t)
-					w.WriteByte(')')
-					break
+			/*
+				// Not need because -fno-strict-aliasing
+				if _, ok := typ.(*types.Pointer); ok {
+					if _, ok := at.Underlying().(*types.Pointer); !ok {
+						// Casting unsafe.Pointer
+						// TODO: Don't use CAST if can check that type under
+						// unsafe.Pointer is pointer that points to type of the same
+						// size. This will allow clasify such cast as constant.
+						w.WriteString("CAST(")
+						dim := cdd.Type(w, t)
+						w.WriteString(dimFuncPtr("", dim))
+						w.WriteString(", ")
+						cdd.Expr(w, arg, t)
+						w.WriteByte(')')
+						break
+					}
 				}
-			}
 			*/
 			w.WriteString("((")
 			dim := cdd.Type(w, t)
@@ -476,14 +481,14 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 }
 
 func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
-	cdd.Complexity++
-
 	if t := cdd.gtc.ti.Types[expr]; t.Value != nil {
 		// Constant expression
 		cdd.Value(w, t.Value, t.Type)
 		return
 	}
 
+	cdd.Complexity++
+	
 	switch e := expr.(type) {
 	case *ast.BinaryExpr:
 		op := e.Op.String()
@@ -527,6 +532,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			break
 		}
 		if e.Op == token.AND {
+			cdd.Complexity--
 			cdd.ptrExpr(w, e.X)
 			break
 		}
@@ -538,7 +544,6 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		cdd.Expr(w, e.X, nil)
 
 	case *ast.CallExpr:
-		cdd.Complexity--
 		cdd.CallExpr(w, e)
 
 	case *ast.Ident:
@@ -591,6 +596,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		s, fun, recvt, recvs := cdd.SelectorExprStr(e)
 		if recvt == nil {
 			w.WriteString(s)
+			cdd.Complexity--
 			break
 		}
 		sig := fun.(*types.Signature)

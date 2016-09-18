@@ -59,20 +59,46 @@ func Eq(s1, s2 string) bool {
 bool foo$Eq(string s1$, string s2$);
 // def
 bool foo$Eq(string s1$, string s2$) {
-	return equals(s1$, s2$);
+	return (cmpstr(s1$, s2$) == 0);
 }
 // end
 
 // Go code:
-func Neq(s1, s2 string) bool {
+func Cmp(s1, s2 string) bool {
 	return s1 != s2
 }
 // C code:
 // decl
-bool foo$Neq(string s1$, string s2$);
+bool foo$Cmp(string s1$, string s2$);
 // def
-bool foo$Neq(string s1$, string s2$) {
-	return !equals(s1$, s2$);
+bool foo$Cmp(string s1$, string s2$) {
+	return (cmpstr(s1$, s2$) != 0);
+}
+// end
+
+// Go code:
+func Cmp(s1, s2 string) bool {
+	return s1 < s2
+}
+// C code:
+// decl
+bool foo$Cmp(string s1$, string s2$);
+// def
+bool foo$Cmp(string s1$, string s2$) {
+	return (cmpstr(s1$, s2$) < 0);
+}
+// end
+
+// Go code:
+func Cmp(s1, s2 string) bool {
+	return s1 >= s2
+}
+// C code:
+// decl
+bool foo$Cmp(string s1$, string s2$);
+// def
+bool foo$Cmp(string s1$, string s2$) {
+	return (cmpstr(s1$, s2$) >= 0);
 }
 // end
 
