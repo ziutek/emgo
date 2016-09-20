@@ -38,7 +38,7 @@ type waiter struct {
 }
 
 func shuffle(comms []*internal.Comm) {
-	rng := &tasker.tasks[tasker.curTask].rng
+	rng := &tasker.rng[tasker.curTask]
 	n := uint(len(comms))
 	for n > 1 {
 		i := uint(rng.Uint64()) % n

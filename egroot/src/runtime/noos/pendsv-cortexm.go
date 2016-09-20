@@ -21,6 +21,9 @@ func pendSVHandler()
 // nextTask returns taskInfo.sp for next task or 0.
 // TODO: better scheduler
 func nextTask(sp uintptr) uintptr {
+	if softStackGuard {
+		checkStackGuard(tasker.curTask)
+	}
 again:
 	ns := tasker.nanosec()
 	if ns >= tasker.alarm {
@@ -35,7 +38,7 @@ again:
 		if n++; n == len(tasker.tasks) {
 			n = 0
 		}
-		if tasker.tasks[n].State() == taskReady {
+		if tasker.tasks[n].state() == taskReady {
 			break
 		}
 		if n == tasker.curTask {
@@ -60,7 +63,9 @@ again:
 		ns = tasker.alarm
 	}
 	//dbg.WriteString("*nt* N\n")
-	setStackGuard(n)
+	if hasMPU {
+		setMPUStackGuard(n)
+	}
 	tasker.wakeup(ns)
 	return tasker.tasks[n].sp
 }

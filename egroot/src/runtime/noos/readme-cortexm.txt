@@ -1,12 +1,8 @@
 ### Configuration options for noos/cortexm target.
 
-#### StackExp, StackFrac (no default value)
+#### ISRStack, MainStack, TaskStack (no default value)
 
-Defines the size of the stack for one task as follows: 
-
-	(1 << StackExp) * StackFrac / 8.
-
-Such a little complicated definition allows to easy use MPU (if available) for stack protection.
+Defines the size of the stack for ISRs, main task and other tasks. It is ounding up to a multiple of 32 bytes.
 
 #### MaxTasks
 
