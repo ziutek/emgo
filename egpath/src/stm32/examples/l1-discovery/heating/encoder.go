@@ -9,13 +9,18 @@ import (
 	"stm32/hal/raw/tim"
 )
 
-type EncState struct {
-	Cnt int16
-	Btn bool
+type EncState int
+
+func (es EncState) Cnt() int {
+	return int(es >> 1)
 }
 
-func (s EncState) equal(e EncState) bool {
-	return s.Cnt == e.Cnt && s.Btn == e.Btn
+func (es EncState) ModCnt(m int) int {
+	return (m + es.Cnt()%m) % m
+}
+
+func (es EncState) Btn() bool {
+	return es&1 != 0
 }
 
 type Encoder struct {
@@ -23,7 +28,7 @@ type Encoder struct {
 	b       bitband.Bit
 	base    uint32
 	lastCnt uint32
-	lastBtn bool
+	lastBtn int
 
 	State chan EncState
 }
@@ -51,16 +56,16 @@ func (e *Encoder) Init(t *tim.TIM_Periph, b bitband.Bit, l exti.Lines) {
 	l.EnableInt()
 }
 
-func (e *Encoder) SetCnt(cnt int16) {
-	atomic.StoreUint32(&e.base, e.t.CNT.U32.Load()-uint32(int32(cnt)))
+func (e *Encoder) SetCnt(cnt int) {
+	atomic.StoreUint32(&e.base, e.t.CNT.U32.Load()-uint32(cnt))
 }
 
 func (e *Encoder) ISR() {
-	exti.L4.ClearPending()
-	e.t.SR.Store(0)
 	for {
+		exti.L4.ClearPending()
+		e.t.SR.Store(0)
 		cnt := e.t.CNT.U32.Load()
-		btn := e.b.Load() == 0
+		btn := e.b.Load()
 		if cnt == e.lastCnt && btn == e.lastBtn {
 			return
 		}
@@ -72,12 +77,12 @@ func (e *Encoder) ISR() {
 		e.lastBtn = btn
 		cnt -= atomic.LoadUint32(&e.base)
 		select {
-		case e.State <- EncState{Cnt: int16(cnt), Btn: btn}:
+		case e.State <- EncState(int(int16(cnt))<<1 + 1 - btn):
+			//ledGreen.Set()
+			//delay.Loop(1e4)
+			//ledGreen.Clear()
 		default:
 		}
-		//ledGreen.Set()
-		//delay.Loop(1e4)
-		//ledGreen.Clear()
 	}
 }
 

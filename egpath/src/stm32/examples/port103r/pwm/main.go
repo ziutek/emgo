@@ -25,11 +25,11 @@ func init() {
 	leds := gpio.B
 
 	cfg := gpio.Config{Mode: gpio.Alt, Speed: gpio.Low}
-	leds.Setup(gpio.Pin7|gpio.Pin6, &cfg)
+	leds.Setup(gpio.Pin7|gpio.Pin6, cfg)
 	rcc.RCC.TIM4EN().Set()
 	t := tim.TIM4
 	const (
-		pwmfreq = 100 // Hz
+		pwmfreq = 200 // Hz
 		pwmmode = 6   // Mode 1
 	)
 	pclk := system.APB1.Clock()

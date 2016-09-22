@@ -44,18 +44,18 @@ func init() {
 	port, tx, rx := gpio.B, gpio.Pin10, gpio.Pin11
 	leds = gpio.B
 
-	// LEDS
+	// LEDs
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(Green|Blue, &cfg)
+	leds.Setup(Green|Blue, cfg)
 
 	// USART
 
-	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
-	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	port.Setup(tx, gpio.Config{Mode: gpio.Alt})
+	port.Setup(rx, gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	port.SetAltFunc(tx|rx, gpio.USART3)
 	d := dma.DMA1
-	d.EnableClock(true) // DMA clock must remain enabled in s
+	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	tts = usart.NewDriver(
 		usart.USART3, d.Channel(3, 0), d.Channel(2, 0), dmarxbuf[:],
 	)

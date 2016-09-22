@@ -25,7 +25,7 @@ func init() {
 	gpio.A.EnableClock(true)
 	port, tx := gpio.A, gpio.Pin2
 
-	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
+	port.Setup(tx, gpio.Config{Mode: gpio.Alt})
 	port.SetAltFunc(tx, gpio.USART2)
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode

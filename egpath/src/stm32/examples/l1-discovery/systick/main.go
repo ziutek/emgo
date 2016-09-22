@@ -37,7 +37,7 @@ func main() {
 	gpio.B.EnableClock(false)
 	leds = gpio.B
 
-	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	leds.Setup(Blue|Green, cfg)
 
 	st := systick.SYSTICK

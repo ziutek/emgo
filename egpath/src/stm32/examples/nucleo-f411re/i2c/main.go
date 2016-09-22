@@ -31,7 +31,7 @@ func init() {
 		Mode:   gpio.Alt,
 		Driver: gpio.OpenDrain,
 	}
-	port.Setup(pins, &cfg)
+	port.Setup(pins, cfg)
 	port.SetAltFunc(pins, gpio.I2C1)
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
@@ -46,7 +46,7 @@ func init() {
 func twiConfigure() {
 	fmt.Printf("Reset\n")
 	twi.Reset() // Mandatory!
-	twi.Setup(&i2c.Config{Speed: 5000})
+	twi.Setup(i2c.Config{Speed: 5000})
 	twi.Enable()
 }
 

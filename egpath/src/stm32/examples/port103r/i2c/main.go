@@ -33,13 +33,13 @@ func init() {
 	port, pins := gpio.B, gpio.Pin10|gpio.Pin11
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(LED1|LED2, &cfg)
+	leds.Setup(LED1|LED2, cfg)
 
 	cfg = gpio.Config{
 		Mode:   gpio.Alt,
 		Driver: gpio.OpenDrain,
 	}
-	port.Setup(pins, &cfg)
+	port.Setup(pins, cfg)
 	d := dma.DMA1
 	d.EnableClock(true)
 	twi = i2c.NewDriver(i2c.I2C2, d.Channel(5, 0), d.Channel(4, 0))
@@ -53,7 +53,7 @@ func init() {
 
 func i2cConfigure() {
 	twi.Reset() // Mandatory!
-	twi.Setup(&i2c.Config{Speed: 5000})
+	twi.Setup(i2c.Config{Speed: 5000})
 	twi.Enable()
 }
 

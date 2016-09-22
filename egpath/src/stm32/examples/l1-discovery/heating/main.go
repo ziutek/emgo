@@ -62,14 +62,14 @@ func init() {
 	dma1.EnableClock(true)
 
 	// Button.
-	btnport.Setup(btnpin, &gpio.Config{Mode: gpio.In})
+	btnport.Setup(btnpin, gpio.Config{Mode: gpio.In})
 	line := exti.Lines(btnpin)
 	line.Connect(btnport)
 	line.EnableRiseTrig()
 	line.EnableInt()
 	irqen(irq.EXTI0, 1)
 
-	slowOutCfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	slowOutCfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 
 	// LEDs.
 	ledport.SetupPin(bluepin, slowOutCfg)
@@ -86,7 +86,7 @@ func init() {
 	}
 
 	// Water PWM.
-	whport.Setup(whpins, &gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
+	whport.Setup(whpins, gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
 	whport.SetAltFunc(whpins, gpio.TIM3)
 	rcc.RCC.TIM3EN().Set()
 	t := tim.TIM3
@@ -95,14 +95,14 @@ func init() {
 	irqen(irq.TIM3, 12) // Prio must be the same as for water flow sensor.
 
 	// Water flow sensor.
-	wsport.Setup(wspin, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	wsport.Setup(wspin, gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	wsport.SetAltFunc(wspin, gpio.TIM9)
 	rcc.RCC.TIM9EN().Set()
 	waterCnt.Init(tim.TIM9)
 	irqen(irq.TIM9, 12) // Prio must be the same as for PWM IRQ prio.
 
 	// 1-wire bus.
-	owport.Setup(owpin, &gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
+	owport.Setup(owpin, gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
 	owport.SetAltFunc(owpin, gpio.USART3)
 	owd.Start(usart.USART3, dma1.Channel(3, 0), dma1.Channel(2, 0))
 	irqen(irq.USART3, 11)
@@ -110,7 +110,7 @@ func init() {
 	irqen(irq.DMA1_Channel2, 11)
 
 	// I2C LCD (PCF8574T + HD44780)
-	lcdport.Setup(lcdpins, &gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
+	lcdport.Setup(lcdpins, gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
 	lcdport.SetAltFunc(lcdpins, gpio.I2C2)
 	initI2C(i2c.I2C2, dma1.Channel(5, 0), dma1.Channel(4, 0))
 	irqen(irq.I2C2_EV, 10)
@@ -119,10 +119,10 @@ func init() {
 	irqen(irq.DMA1_Channel4, 10)
 
 	// Encoder.
-	encport.Setup(encpins, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	encport.Setup(encpins, gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	encport.SetAltFunc(encpins, gpio.TIM2)
 	rcc.RCC.TIM2EN().Set()
-	ebtnport.SetupPin(ebtnpin, &gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
+	ebtnport.SetupPin(ebtnpin, gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
 	line = exti.LineN(ebtnpin)
 	line.Connect(ebtnport)
 	encoder.Init(tim.TIM2, ebtnport.InPins().Bit(ebtnpin), line)

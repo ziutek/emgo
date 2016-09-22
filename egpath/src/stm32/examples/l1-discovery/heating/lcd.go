@@ -7,7 +7,6 @@ import (
 
 	"hdc"
 	"hdc/hdcfb"
-	"onewire"
 
 	"stm32/hal/i2c"
 )
@@ -57,14 +56,6 @@ func startLCD(rw io.ReadWriter) {
 	hdcInit(d)
 	lcd = hdcfb.NewFB(d)
 	go lcdLoop()
-}
-
-func readTemp(d onewire.Dev) float32 {
-	if d.Type() == 0 {
-		return -1
-	}
-	owd.Cmd <- TempCmd{Dev: d, Resp: tempResp}
-	return <-tempResp
 }
 
 func lcdLoop() {

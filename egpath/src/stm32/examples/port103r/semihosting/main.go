@@ -1,4 +1,3 @@
-// This example shows how to use DMA for memory to memory transfers.
 package main
 
 import (

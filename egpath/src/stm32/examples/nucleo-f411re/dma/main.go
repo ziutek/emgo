@@ -54,8 +54,8 @@ func main() {
 }
 
 func dmaISR() {
-	ch.DisableInt(dma.EvAll, dma.ErrAll)
 	ev, err := ch.Status()
+	ch.Clear(ev, err)
 	if ev&dma.Complete != 0 || err != 0 {
 		tce.Set()
 	}

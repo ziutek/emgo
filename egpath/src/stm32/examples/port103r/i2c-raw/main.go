@@ -31,13 +31,13 @@ func init() {
 	port, pins := gpio.B, gpio.Pin10|gpio.Pin11
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(LED1|LED2, &cfg)
+	leds.Setup(LED1|LED2, cfg)
 
 	cfg = gpio.Config{
 		Mode:   gpio.Alt,
 		Driver: gpio.OpenDrain,
 	}
-	port.Setup(pins, &cfg)
+	port.Setup(pins, cfg)
 
 	rcc.RCC.I2C2EN().Set()
 	// Mandatory reset.

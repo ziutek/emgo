@@ -25,7 +25,7 @@ func init() {
 	leds = gpio.D
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(Green|Orange|Red|Blue, &cfg)
+	leds.Setup(Green|Orange|Red|Blue, cfg)
 }
 
 func wait() {

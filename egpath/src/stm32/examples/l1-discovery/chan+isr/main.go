@@ -37,11 +37,11 @@ func init() {
 	gpio.B.EnableClock(false)
 	leds = gpio.B
 
-	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	leds.Setup(Green|Blue, cfg)
 
 	// Setup external interrupt source: user button.
-	bport.Setup(Button, &gpio.Config{Mode: gpio.In})
+	bport.Setup(Button, gpio.Config{Mode: gpio.In})
 	line := exti.Lines(Button)
 	line.Connect(bport)
 	line.EnableRiseTrig()

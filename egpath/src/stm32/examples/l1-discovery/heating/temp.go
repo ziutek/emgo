@@ -3,6 +3,7 @@ package main
 import (
 	"delay"
 	"fmt"
+	"math"
 
 	"onewire"
 
@@ -48,6 +49,12 @@ type SearchCmd struct {
 	Resp chan onewire.Dev
 }
 
+type ConfigureCmd struct {
+	Dev  onewire.Dev
+	Cfg  byte
+	Resp chan onewire.Dev
+}
+
 type TempCmd struct {
 	Dev  onewire.Dev
 	Resp chan float32
@@ -63,37 +70,59 @@ func (d *OneWireDaemon) loop() {
 			}
 			c.Resp <- onewire.Dev{}
 			log1wireErr(s.Err())
+		case ConfigureCmd:
+			{
+				if log1wireErr(d.m.MatchROM(c.Dev)) {
+					goto abortConfigureCmd
+				}
+				if log1wireErr(d.m.WriteScratchpad(127, -128, c.Cfg)) {
+					goto abortConfigureCmd
+				}
+				if log1wireErr(d.m.MatchROM(c.Dev)) {
+					goto abortConfigureCmd
+				}
+				if log1wireErr(d.m.CopyScratchpad()) {
+					goto abortConfigureCmd
+				}
+				c.Resp <- c.Dev
+				break
+			}
+		abortConfigureCmd:
+			c.Resp <- onewire.Dev{}
 		case TempCmd:
-			for {
+			{
 				if log1wireErr(d.m.MatchROM(c.Dev)) {
-					continue
-				}
-				if log1wireErr(d.m.WriteScratchpad(
-					127, -128, onewire.T10bit,
-				)) {
-					continue
-				}
-				if log1wireErr(d.m.MatchROM(c.Dev)) {
-					continue
+					goto abortTempCmd
 				}
 				if log1wireErr(d.m.ConvertT()) {
-					continue
+					goto abortTempCmd
 				}
-				delay.Millisec(200)
+				for i := 0; i < 750/50; i++ {
+					delay.Millisec(50)
+					b, err := d.m.ReadBit()
+					if log1wireErr(err) {
+						goto abortTempCmd
+					}
+					if b != 0 {
+						break
+					}
+				}
 				if log1wireErr(d.m.MatchROM(c.Dev)) {
-					continue
+					goto abortTempCmd
 				}
 				s, err := d.m.ReadScratchpad()
 				if log1wireErr(err) {
-					continue
+					goto abortTempCmd
 				}
 				t, err := s.Temp(c.Dev.Type())
 				if log1wireErr(err) {
-					continue
+					goto abortTempCmd
 				}
 				c.Resp <- t
 				break
 			}
+		abortTempCmd:
+			c.Resp <- math.MaxFloat32
 		}
 	}
 }

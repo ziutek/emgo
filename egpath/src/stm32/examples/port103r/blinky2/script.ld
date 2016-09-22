@@ -1,12 +1,9 @@
-StackISR = 2000; /* 2 KB */
-
-StackTaskLog2 = 12; /* 4 KiB */
-StackTaskFrac = 8;  /* 8/8 */
-
-/* One task, two stacks. */
+ISRStack  = 2048;
+MainStack = 2048;
+TaskStack = 0;
 MaxTasks = 1;
 
-/* bootSRAM code should by placed at 0x200001E0. */
+/* bootRAM code should by placed at 0x200001E0. */
 bootOffset = 0x1E0;
 
 INCLUDE stm32/f103xc

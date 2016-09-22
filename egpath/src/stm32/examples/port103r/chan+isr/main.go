@@ -39,10 +39,10 @@ func init() {
 	keys = gpio.C
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(LED1|LED2|LED3, &cfg)
+	leds.Setup(LED1|LED2|LED3, cfg)
 
 	cfg = gpio.Config{Mode: gpio.In, Pull: gpio.PullUp}
-	keys.Setup(Key3, &cfg)
+	keys.Setup(Key3, cfg)
 	line := exti.Lines(Key3)
 	line.Connect(keys)
 	line.EnableFallTrig()
