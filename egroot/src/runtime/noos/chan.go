@@ -21,7 +21,8 @@ func panicCloseNil() {
 	panic("close: nil channel")
 }
 
-func makeChan(cap int, size, align uintptr) (c internal.Chan) {
+func makeChan(cap int, size, align uintptr) *internal.Chan {
+	c := new(internal.Chan)
 	if cap == 0 {
 		c.C = unsafe.Pointer(makeChanS())
 		c.M = (*internal.ChanMethods)(unsafe.Pointer(&csm))
@@ -29,7 +30,7 @@ func makeChan(cap int, size, align uintptr) (c internal.Chan) {
 		c.C = unsafe.Pointer(makeChanA(cap, size, align))
 		c.M = (*internal.ChanMethods)(unsafe.Pointer(&cam))
 	}
-	return
+	return c
 }
 
 type waiter struct {

@@ -29,7 +29,7 @@ type ChanMethods struct {
 }
 
 // MakeChan is used internally to implement make(chan T, cap) operation.
-var MakeChan func(cap int, size, align uintptr) Chan
+var MakeChan func(cap int, size, align uintptr) *Chan
 
 // A Comm represents send statement or receive expression. It is used
 // internally to implement select statement.
