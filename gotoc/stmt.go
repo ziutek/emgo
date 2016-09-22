@@ -262,6 +262,17 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		cdd.Expr(w, s.X, nil)
 		w.WriteString(");\n")
 
+	case *ast.LabeledStmt:
+		cdd.Complexity--
+		label := s.Label.Name + "$"
+		buf := w.Bytes()
+		if n := len(buf) - 1; n >= 0 && buf[n] == '\t' {
+			w.Truncate(n)
+		}
+		w.WriteString(label + ":;\n")
+		cdd.indent(w)
+		updateEnd(cdd.Stmt(w, s.Stmt, label, resultT, tup))
+
 	case *ast.BlockStmt:
 		cdd.Complexity--
 		updateEnd(cdd.BlockStmt(w, s, resultT, tup))
@@ -1137,34 +1148,21 @@ func (cdd *CDD) GoStmt(w *bytes.Buffer, s *ast.GoStmt) {
 }
 
 func (cdd *CDD) BlockStmt(w *bytes.Buffer, bs *ast.BlockStmt, resultT string, tup *types.Tuple) (end bool) {
-	updateEnd := func(e bool) {
-		if e {
-			end = true
-		}
-	}
-
 	w.WriteString("{\n")
 	cdd.il++
-	for _, stmt := range bs.List {
-		switch s := stmt.(type) {
-		case *ast.LabeledStmt:
-			label := s.Label.Name + "$"
-			cdd.label(w, label, "")
-			cdd.indent(w)
-			updateEnd(cdd.Stmt(w, s.Stmt, label, resultT, tup))
-
-		default:
-			m := w.Len()
-			cdd.indent(w)
-			n := w.Len()
-			updateEnd(cdd.Stmt(w, s, "", resultT, tup))
-			if w.Len() == n {
-				w.Truncate(m)
-			}
+	for _, s := range bs.List {
+		m := w.Len()
+		cdd.indent(w)
+		n := w.Len()
+		if cdd.Stmt(w, s, "", resultT, tup) {
+			end = true
+		}
+		if w.Len() == n {
+			w.Truncate(m)
 		}
 	}
 	cdd.il--
 	cdd.indent(w)
-	w.WriteString("}")
+	w.WriteByte('}')
 	return
 }
