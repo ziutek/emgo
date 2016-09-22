@@ -51,8 +51,9 @@ SECTIONS {
 	
 	StacksBegin = ADDR(.stacks);
 	ISRStack = ALIGN(StacksBegin + ISRStack, 32) - StacksBegin;
-	MainStack = ALIGN(MainStack, 32);
-	TaskStack = ALIGN(TaskStack, 32);
+	stackGuard = 32;
+	MainStack = ALIGN(MainStack, 32) + stackGuard;
+	TaskStack = ALIGN(TaskStack, 32) + stackGuard;
 	StacksEnd = StacksBegin + ISRStack +
 		(MaxTasks < 1 ? 0 : MainStack + TaskStack * (MaxTasks - 1));
        
