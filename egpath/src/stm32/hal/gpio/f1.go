@@ -69,7 +69,7 @@ func reset(p *Port) {
 	bit.Clear()
 }
 
-func setup(p *Port, n int, cfg *Config) {
+func setup(p *Port, n int, cfg Config) {
 	cr := &p.cr[n>>3]
 	pos := uint(n & 7 * 4)
 	sel := uint32(0xf) << pos
