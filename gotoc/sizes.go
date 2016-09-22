@@ -159,6 +159,8 @@ func (s *StdSizes) Sizeof(T types.Type) int64 {
 			a = s.MaxAlign
 		}
 		return align(z, a)
+	case *types.Chan:
+		return s.WordSize * 2
 	}
 	return s.WordSize // catch-all
 }

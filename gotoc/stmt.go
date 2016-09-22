@@ -698,14 +698,21 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 	case *ast.SendStmt:
 		et := cdd.exprType(s.Chan).(*types.Chan).Elem()
+		val := cdd.interfaceExprStr(s.Value, et)
+		/*
+			if _, ok := s.Value.(*ast.Ident); !ok {
+				tmp := "_tmp" + cdd.gtc.uniqueId()
+				dim := cdd.Type(w, et)
+				w.WriteString(" " + dimFuncPtr(tmp, dim) + " = " + val + ";\n")
+				val = tmp
+				cdd.indent(w)
+			}
+		*/
 		w.WriteString("SEND(")
 		cdd.Expr(w, s.Chan, nil)
 		w.WriteString(", ")
 		dim := cdd.Type(w, et)
-		w.WriteString(dimFuncPtr("", dim))
-		w.WriteString(", ")
-		cdd.interfaceExpr(w, s.Value, et)
-		w.WriteString(");\n")
+		w.WriteString(dimFuncPtr("", dim) + ", " + val + ");\n")
 
 	case *ast.SelectStmt:
 		w.WriteString("switch(0){case 0:{\n")

@@ -488,7 +488,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 	}
 
 	cdd.Complexity++
-	
+
 	switch e := expr.(type) {
 	case *ast.BinaryExpr:
 		op := e.Op.String()
@@ -750,15 +750,20 @@ func (cdd *CDD) newVar(name string, typ types.Type, global bool, val ast.Expr) {
 }
 
 func (cdd *CDD) ptrExpr(w *bytes.Buffer, e ast.Expr) {
-	w.WriteByte('&')
 	cl, ok := e.(*ast.CompositeLit)
-	if !ok || cdd.Typ != VarDecl || !cdd.gtc.isGlobal(cdd.Origin) {
+	if !ok {
+		w.WriteByte('&')
 		cdd.Expr(w, e, nil)
 		return
 	}
+	if cdd.Typ != VarDecl || !cdd.gtc.isGlobal(cdd.Origin) {
+		cdd.exit(
+			e.Pos(),
+			"pointer to composite literal only supported in declaration of global variables")
+	}
 	name := "_cl" + cdd.gtc.uniqueId()
-	w.WriteString(name)
 	cdd.newVar(name, cdd.exprType(cl), true, cl)
+	w.WriteString("&" + name)
 }
 
 func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Type) {
