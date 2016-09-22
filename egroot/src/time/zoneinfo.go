@@ -88,7 +88,8 @@ func (l *Location) String() string {
 // FixedZone returns a Location that always uses
 // the given zone name and offset (seconds east of UTC).
 func FixedZone(name string, offset int) *Location {
-	l := &Location{
+	l := new(Location) // BUG: emgo: memory leak!
+	*l = Location{
 		name:       name,
 		zone:       []zone{{name, offset, false}},
 		tx:         []zoneTrans{{alpha, 0, false, false}},
