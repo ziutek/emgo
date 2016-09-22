@@ -15,3 +15,6 @@ func Syscall3(trap, a1, a2, a3 uintptr) (r, e uintptr)
 
 func Syscall1i64(trap, uintptr int64) (r, e uintptr)
 func Syscall0r64(trap uintptr) int64
+
+//c:static inline
+func NewTask(f func(), lock bool)
