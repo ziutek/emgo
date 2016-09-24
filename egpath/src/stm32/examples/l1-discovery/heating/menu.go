@@ -5,6 +5,7 @@ import (
 	"math"
 	"rtos"
 	"strconv"
+	"sync/atomic"
 
 	"hdc/hdcfb"
 	"onewire"
@@ -23,6 +24,7 @@ var menuItems = [...]MenuItem{
 	{Status: showStatus, Period: 1000},
 	{Status: showWaterTempSensor, Action: setWaterTempSensor},
 	{Status: showEnvTempSensor, Action: setEnvTempSensor},
+	{Status: showDesiredWaterTemp, Action: setDesiredWaterTemp},
 }
 
 type Menu struct {
@@ -32,10 +34,11 @@ type Menu struct {
 }
 
 var (
-	menu            Menu
-	waterTempSensor onewire.Dev
-	envTempSensor   onewire.Dev
-	devResp         = make(chan onewire.Dev, 1)
+	menu             Menu
+	envTempSensor    onewire.Dev
+	waterTempSensor  onewire.Dev
+	devResp          = make(chan onewire.Dev, 1)
+	desiredWaterTemp = 450 // d°C
 )
 
 func (m *Menu) Setup(t *tim.TIM_Periph, pclk uint) {
@@ -63,20 +66,19 @@ func (m *Menu) Loop() {
 	for {
 		item := menuItems[m.curItem]
 		var (
-			es EncState
-			t1 int64
+			es   EncState
+			next int64
 		)
 		if item.Period > 0 {
-			t1 = rtos.Nanosec()
+			next = rtos.Nanosec()
 		}
 	status:
 		for {
 			item.Status(fbs)
 			fbs.Flush(0)
 			if item.Period > 0 {
-				t2 := rtos.Nanosec()
-				m.setTimeout(item.Period - int((t2-t1)/1e6))
-				t1 = t2
+				next += int64(item.Period * 1e6)
+				m.setTimeout(int((next - rtos.Nanosec() + 0.5e6) / 1e6))
 			}
 			select {
 			case es = <-encoder.State:
@@ -196,17 +198,20 @@ func setTempSensor(fbs *hdcfb.Slice, d *onewire.Dev) {
 			if *d == dev {
 				break
 			}
+
+			// BUG: Not atomic operation. Works, because reading from 1-wire
+			// sensor is generally unrealiable so code that uses it muse be
+			// fault-tolerant.
 			*d = dev
+
 			owd.Cmd <- ConfigureCmd{
 				Dev: dev, Cfg: onewire.T10bit, Resp: devResp,
 			}
 			dev = <-devResp
-			/*
-				if dev.Type() == 0 {
-					*d = onewire.Dev{}
-					sel = -1
-				}
-			*/
+			if dev.Type() == 0 {
+				*d = onewire.Dev{}
+				sel = -1
+			}
 			break
 		}
 		sel = es.ModCnt(n)
@@ -219,4 +224,38 @@ func setWaterTempSensor(fbs *hdcfb.Slice) {
 
 func setEnvTempSensor(fbs *hdcfb.Slice) {
 	setTempSensor(fbs, &envTempSensor)
+}
+
+func showDesiredWaterTemp(fbs *hdcfb.Slice) {
+	fbs.WriteString("Zadana temp. wody")
+	fbs.Fill(30, ' ')
+	fmt.Fprintf(fbs, "%2d.%d\xdfC", desiredWaterTemp/10, desiredWaterTemp%10)
+	fbs.Fill(fbs.Remain(), ' ')
+}
+
+func setDesiredWaterTemp(fbs *hdcfb.Slice) {
+	const (
+		min = 300 // d°C
+		max = 500 // d°C
+	)
+	encoder.SetCnt(desiredWaterTemp)
+	for es := range encoder.State {
+		if es.Btn() {
+			for es.Btn() {
+				es = <-encoder.State
+			}
+			break
+		}
+		temp := es.Cnt()
+		if temp < min {
+			temp = min
+			encoder.SetCnt(min)
+		} else if temp > max {
+			temp = max
+			encoder.SetCnt(max)
+		}
+		atomic.StoreInt(&desiredWaterTemp, temp)
+		showDesiredWaterTemp(fbs)
+		fbs.Flush(0)
+	}
 }
