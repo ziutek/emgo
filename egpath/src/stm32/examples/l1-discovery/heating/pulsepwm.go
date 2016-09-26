@@ -45,8 +45,9 @@ func setupPulsePWM(t *tim.TIM_Periph, pclk uint, periodms, maxCCR int) {
 }
 
 type PulsePWM3 struct {
-	t   *tim.TIM_Periph
-	ccr [3]*mmio.U32
+	t        *tim.TIM_Periph
+	ccr      [3]*mmio.U32
+	lastSwap int
 }
 
 func (p *PulsePWM3) Init(t *tim.TIM_Periph) {
@@ -60,10 +61,6 @@ func (p *PulsePWM3) Timer() *tim.TIM_Periph {
 	return p.t
 }
 
-func (p *PulsePWM3) Next() {
-	p.ccr[0], p.ccr[1], p.ccr[2] = p.ccr[1], p.ccr[2], p.ccr[0]
-}
-
 func (p *PulsePWM3) Set(v int) {
 	max := p.t.ARR.U32.Load() - 1
 	v32 := uint32(v)
@@ -72,18 +69,31 @@ func (p *PulsePWM3) Set(v int) {
 		p.ccr[0].Store(v32)
 		p.ccr[1].Store(0)
 		p.ccr[2].Store(0)
+		if p.lastSwap != 0 {
+			p.ccr[1], p.ccr[2] = p.ccr[2], p.ccr[1]
+			p.lastSwap = 0
+		}
 	case v32 <= 2*max:
 		p.ccr[0].Store(max)
 		p.ccr[1].Store(v32 - max)
 		p.ccr[2].Store(0)
+		p.lastSwap = 1
 	case v32 <= 3*max:
 		p.ccr[0].Store(max)
 		p.ccr[1].Store(max)
 		p.ccr[2].Store(v32 - 2*max)
+		if p.lastSwap != 2 {
+			p.ccr[0], p.ccr[1] = p.ccr[1], p.ccr[0]
+			p.lastSwap = 2
+		}
 	default:
 		p.ccr[0].Store(max)
 		p.ccr[1].Store(max)
 		p.ccr[2].Store(max)
+		if p.lastSwap != 3 {
+			p.ccr[0], p.ccr[1], p.ccr[2] = p.ccr[1], p.ccr[2], p.ccr[0]
+			p.lastSwap = 3
+		}
 	}
 }
 
