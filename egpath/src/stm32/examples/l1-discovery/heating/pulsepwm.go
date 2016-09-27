@@ -48,22 +48,31 @@ type PulsePWM3 struct {
 	t        *tim.TIM_Periph
 	ccr      [3]*mmio.U32
 	lastSwap int
+	chmax    uint32
 }
 
+// Init initialises p. t must be initialiset using setupPulsePWM before pass it
+// to Init.
 func (p *PulsePWM3) Init(t *tim.TIM_Periph) {
 	p.t = t
 	p.ccr[0] = &t.CCR1.U32
 	p.ccr[1] = &t.CCR2.U32
 	p.ccr[2] = &t.CCR3.U32
+	p.chmax = t.ARR.U32.Load() - 1 // Always disable after pulse generation.
 }
 
 func (p *PulsePWM3) Timer() *tim.TIM_Periph {
 	return p.t
 }
 
+// Max returns maximum value that passed to Set enables 100% all 3 channels.
+func (p *PulsePWM3) Max() int {
+	return int(3 * p.chmax)
+}
+
 func (p *PulsePWM3) Set(v int) {
-	max := p.t.ARR.U32.Load() - 1
 	v32 := uint32(v)
+	max := p.chmax
 	switch {
 	case v32 <= max:
 		p.ccr[0].Store(v32)
@@ -77,22 +86,21 @@ func (p *PulsePWM3) Set(v int) {
 		p.ccr[0].Store(max)
 		p.ccr[1].Store(v32 - max)
 		p.ccr[2].Store(0)
-		p.lastSwap = 1
 	case v32 <= 3*max:
 		p.ccr[0].Store(max)
 		p.ccr[1].Store(max)
 		p.ccr[2].Store(v32 - 2*max)
-		if p.lastSwap != 2 {
+		if p.lastSwap != 1 {
 			p.ccr[0], p.ccr[1] = p.ccr[1], p.ccr[0]
-			p.lastSwap = 2
+			p.lastSwap = 1
 		}
 	default:
 		p.ccr[0].Store(max)
 		p.ccr[1].Store(max)
 		p.ccr[2].Store(max)
-		if p.lastSwap != 3 {
+		if p.lastSwap != 2 {
 			p.ccr[0], p.ccr[1], p.ccr[2] = p.ccr[1], p.ccr[2], p.ccr[0]
-			p.lastSwap = 3
+			p.lastSwap = 2
 		}
 	}
 }

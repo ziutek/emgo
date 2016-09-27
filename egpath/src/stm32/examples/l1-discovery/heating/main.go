@@ -3,7 +3,6 @@ package main
 
 import (
 	"delay"
-	"fmt"
 	"rtos"
 
 	"arch/cortexm/bitband"
@@ -89,17 +88,15 @@ func init() {
 	whport.Setup(whpins, gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
 	whport.SetAltFunc(whpins, gpio.TIM3)
 	rcc.RCC.TIM3EN().Set()
-	t := tim.TIM3
-	setupPulsePWM(t, system.APB1.Clock(), 500, 9999)
-	waterPWM.Init(t)
 	irqen(irq.TIM3, 12) // Prio must be the same as for water flow sensor.
 
 	// Water flow sensor.
 	wsport.Setup(wspin, gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	wsport.SetAltFunc(wspin, gpio.TIM9)
 	rcc.RCC.TIM9EN().Set()
-	waterCnt.Init(tim.TIM9)
 	irqen(irq.TIM9, 12) // Prio must be the same as for PWM IRQ prio.
+
+	water.Init(tim.TIM3, tim.TIM9, system.APB1.Clock())
 
 	// 1-wire bus.
 	owport.Setup(owpin, gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
@@ -136,12 +133,14 @@ func init() {
 	startLCD(i2cdrv.NewMasterConn(0x27, i2c.ASRD))
 
 	initRTC()
-	if !checkRTC() {
-		fmt.Printf("RTC not set. Setting...\n")
-		t := makeDateTime(2016, 9, 11, 22, 51, 20, Sunday)
-		setRTC(t)
-		fmt.Printf("Done.\n")
-	}
+	/*
+		if !checkRTC() {
+			fmt.Printf("RTC not set. Setting...\n")
+			t := makeDateTime(2016, 9, 11, 22, 51, 20, Sunday)
+			setRTC(t)
+			fmt.Printf("Done.\n")
+		}
+	*/
 }
 
 func main() {

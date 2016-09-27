@@ -37,19 +37,28 @@ func (c *counter) ClearIF() {
 	c.t.SR.Store(0)
 }
 
-var (
-	waterPWM PulsePWM3
-	waterCnt counter
-	pulseNum int
-)
+type waterHeaterControl struct {
+	pwm   PulsePWM3
+	cnt   counter
+	scale int
+}
+
+func (w *waterHeaterControl) Init(timPWM, timCnt *tim.TIM_Periph, pclk uint) {
+	setupPulsePWM(timPWM, pclk, 500, 9999)
+	w.pwm.Init(timPWM)
+	w.cnt.Init(timCnt)
+	w.scale = water.pwm.Max() / 47
+}
+
+var water waterHeaterControl
 
 func waterCntISR() {
-	waterCnt.ClearIF()
-	waterPWM.Pulse()
+	water.cnt.ClearIF()
+	water.pwm.Pulse()
 }
 
 func waterPWMISR() {
-	waterPWM.ClearIF()
-	cnt := waterCnt.LoadAndReset()
-	waterPWM.Set(cnt * 1000)
+	water.pwm.ClearIF()
+	cnt := water.cnt.LoadAndReset()
+	water.pwm.Set(cnt * water.scale)
 }

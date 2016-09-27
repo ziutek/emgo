@@ -9,17 +9,17 @@ import (
 	"stm32/hal/raw/tim"
 )
 
-type EncState int
+type EncoderState int
 
-func (es EncState) Cnt() int {
+func (es EncoderState) Cnt() int {
 	return int(es >> 1)
 }
 
-func (es EncState) ModCnt(m int) int {
+func (es EncoderState) ModCnt(m int) int {
 	return (m + es.Cnt()%m) % m
 }
 
-func (es EncState) Btn() bool {
+func (es EncoderState) Btn() bool {
 	return es&1 != 0
 }
 
@@ -30,13 +30,13 @@ type Encoder struct {
 	lastCnt uint32
 	lastBtn int
 
-	State chan EncState
+	State chan EncoderState
 }
 
 func (e *Encoder) Init(t *tim.TIM_Periph, b bitband.Bit, l exti.Lines) {
 	e.t = t
 	e.b = b
-	e.State = make(chan EncState, 3)
+	e.State = make(chan EncoderState, 3)
 
 	t.CKD().Store(2 << tim.CKDn)
 	t.SMCR.StoreBits(tim.SMS, 1<<tim.SMSn)
@@ -77,7 +77,7 @@ func (e *Encoder) ISR() {
 		e.lastBtn = btn
 		cnt -= atomic.LoadUint32(&e.base)
 		select {
-		case e.State <- EncState(int(int16(cnt))<<1 + 1 - btn):
+		case e.State <- EncoderState(int(int16(cnt))<<1 + 1 - btn):
 			//ledGreen.Set()
 			//delay.Loop(1e4)
 			//ledGreen.Clear()

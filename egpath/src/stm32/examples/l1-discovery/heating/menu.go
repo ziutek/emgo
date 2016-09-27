@@ -25,6 +25,7 @@ var menuItems = [...]MenuItem{
 	{Status: showWaterTempSensor, Action: setWaterTempSensor},
 	{Status: showEnvTempSensor, Action: setEnvTempSensor},
 	{Status: showDesiredWaterTemp, Action: setDesiredWaterTemp},
+	{Status: showDateTime, Period: 1000, Action: setDateTime},
 }
 
 type Menu struct {
@@ -57,8 +58,20 @@ func (m *Menu) setTimeout(ms int) {
 		ms = 10
 	}
 	t := m.timer
+	t.CEN().Clear()
+	t.CNT.Store(0)
 	t.ARR.U32.Store(uint32(ms))
 	t.CEN().Set()
+}
+
+func btnPreRel(es EncoderState) bool {
+	if !es.Btn() {
+		return false
+	}
+	for es.Btn() {
+		es = <-encoder.State
+	}
+	return true
 }
 
 func (m *Menu) Loop() {
@@ -66,7 +79,7 @@ func (m *Menu) Loop() {
 	for {
 		item := menuItems[m.curItem]
 		var (
-			es   EncState
+			es   EncoderState
 			next int64
 		)
 		if item.Period > 0 {
@@ -86,10 +99,7 @@ func (m *Menu) Loop() {
 			case <-m.timeout:
 			}
 		}
-		if es.Btn() && item.Action != nil {
-			for es.Btn() {
-				es = <-encoder.State
-			}
+		if item.Action != nil && btnPreRel(es) {
 			item.Action(fbs)
 			encoder.SetCnt(m.curItem)
 		}
@@ -169,6 +179,7 @@ func setTempSensor(fbs *hdcfb.Slice, d *onewire.Dev) {
 			n++
 		}
 	}
+	encoder.SetCnt(0)
 	sel := -1
 	for {
 		for i := 0; i < n; i++ {
@@ -187,10 +198,7 @@ func setTempSensor(fbs *hdcfb.Slice, d *onewire.Dev) {
 		fbs.Fill(fbs.Remain(), ' ')
 		fbs.Flush(0)
 		es := <-encoder.State
-		if es.Btn() {
-			for es.Btn() {
-				es = <-encoder.State
-			}
+		if btnPreRel(es) {
 			if sel == -1 {
 				break
 			}
@@ -240,10 +248,7 @@ func setDesiredWaterTemp(fbs *hdcfb.Slice) {
 	)
 	encoder.SetCnt(desiredWaterTemp)
 	for es := range encoder.State {
-		if es.Btn() {
-			for es.Btn() {
-				es = <-encoder.State
-			}
+		if btnPreRel(es) {
 			break
 		}
 		temp := es.Cnt()
@@ -258,4 +263,47 @@ func setDesiredWaterTemp(fbs *hdcfb.Slice) {
 		showDesiredWaterTemp(fbs)
 		fbs.Flush(0)
 	}
+}
+
+func printDateTime(fbs *hdcfb.Slice, dt DateTime) {
+	fbs.WriteString("Data i czas")
+	fbs.Fill(29, ' ')
+	fmt.Fprintf(fbs, "%04d-%02d-%02d", 2000+dt.Year(), dt.Month(), dt.Day())
+	fmt.Fprintf(fbs, "  %02d:%02d:%02d", dt.Hour(), dt.Minute(), dt.Second())
+	wd := dt.Weekday().String()
+	fbs.Fill(10-len(wd)/2, ' ')
+	fbs.WriteString(wd)
+	fbs.Fill(fbs.Remain(), ' ')
+}
+
+func showDateTime(fbs *hdcfb.Slice) {
+	printDateTime(fbs, readRTC())
+}
+
+func updateDateTime(fbs *hdcfb.Slice, dt *DateTime, get func(DateTime) int,
+	set func(*DateTime, int), offs, mod int) {
+
+	encoder.SetCnt(get(*dt))
+	for es := range encoder.State {
+		if btnPreRel(es) {
+			break
+		}
+		set(dt, offs+es.ModCnt(mod))
+		printDateTime(fbs, *dt)
+		fbs.Flush(0)
+	}
+}
+
+func setDateTime(fbs *hdcfb.Slice) {
+	dt := readRTC()
+	updateDateTime(fbs, &dt, (DateTime).Year, (*DateTime).SetYear, 0, 100)
+	updateDateTime(fbs, &dt, (DateTime).Month, (*DateTime).SetMonth, 1, 12)
+	updateDateTime(fbs, &dt, (DateTime).Day, (*DateTime).SetDay, 1, 31)
+	dt.SetWeekday(dayofweek(2000+dt.Year(), dt.Month(), dt.Day()))
+	printDateTime(fbs, dt)
+	fbs.Flush(0)
+	updateDateTime(fbs, &dt, (DateTime).Hour, (*DateTime).SetHour, 0, 24)
+	updateDateTime(fbs, &dt, (DateTime).Minute, (*DateTime).SetMinute, 0, 60)
+	updateDateTime(fbs, &dt, (DateTime).Second, (*DateTime).SetSecond, 0, 60)
+	setRTC(dt)
 }
