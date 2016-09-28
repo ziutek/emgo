@@ -1,6 +1,7 @@
 package main
 
 import (
+	"delay"
 	"fmt"
 
 	"stm32/hal/raw/pwr"
@@ -51,6 +52,9 @@ func setRTC(t DateTime) {
 	RTC.WPR.Store(0xff)
 	PWR.DBP().Clear()
 	RCC.PWREN().Clear()
+	for RTC.RSF().Load() == 0 {
+		delay.Millisec(50)
+	}
 }
 
 type Weekday byte
@@ -173,6 +177,9 @@ func makeDateTime(Y, M, D, h, m, s int, wd Weekday) (t DateTime) {
 }
 
 func dayofweek(y, m, d int) Weekday {
+	if y <= 1752 || m < 1 || m > 12 || d < 1 || d > 31 {
+		return 0
+	}
 	t := [...]byte{0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4}
 	if m < 3 {
 		y--

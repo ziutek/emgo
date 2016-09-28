@@ -36,7 +36,6 @@ start:
 	if logLCDErr(d.SetAUX()) {
 		goto start
 	}
-
 }
 
 var (

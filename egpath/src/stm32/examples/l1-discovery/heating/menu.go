@@ -26,12 +26,14 @@ var menuItems = [...]MenuItem{
 	{Status: showEnvTempSensor, Action: setEnvTempSensor},
 	{Status: showDesiredWaterTemp, Action: setDesiredWaterTemp},
 	{Status: showDateTime, Period: 1000, Action: setDateTime},
+	{Status: showDisplOffTimeout, Action: setDisplOffTimeout},
 }
 
 type Menu struct {
-	curItem int
-	timer   *tim.TIM_Periph
-	timeout chan struct{}
+	curItem         int
+	timer           *tim.TIM_Periph
+	timeout         chan struct{}
+	displOffTimeout int
 }
 
 var (
@@ -45,6 +47,7 @@ var (
 func (m *Menu) Setup(t *tim.TIM_Periph, pclk uint) {
 	m.timeout = make(chan struct{}, 1)
 	m.timer = t
+	m.displOffTimeout = 20
 	t.PSC.U16.Store(uint16(pclk/1000 - 1)) // 1 ms
 	t.CR1.StoreBits(
 		tim.OPM|tim.URS,
@@ -58,10 +61,13 @@ func (m *Menu) setTimeout(ms int) {
 		ms = 10
 	}
 	t := m.timer
-	t.CEN().Clear()
-	t.CNT.Store(0)
 	t.ARR.U32.Store(uint32(ms))
+	t.EGR.Store(tim.UG)
 	t.CEN().Set()
+}
+
+func (m *Menu) stopTimeout() {
+	m.timer.CEN().Clear()
 }
 
 func btnPreRel(es EncoderState) bool {
@@ -74,30 +80,63 @@ func btnPreRel(es EncoderState) bool {
 	return true
 }
 
+func (m *Menu) waitEncoder(deadline1, deadline2 int64) (EncoderState, int) {
+	d := 1
+	if deadline1 == 0 || deadline2 > 0 && deadline2 < deadline1 {
+		deadline1 = deadline2
+		d = 2
+	}
+	if deadline1 > 0 {
+		m.setTimeout(int((deadline1 - rtos.Nanosec() + 0.5e6) / 1e6))
+	}
+	select {
+	case es := <-encoder.State:
+		m.stopTimeout()
+		select {
+		case <-m.timeout:
+		default:
+		}
+		return es, 0
+	case <-m.timeout:
+		return 0, d
+	}
+
+}
+
 func (m *Menu) Loop() {
 	fbs := lcd.NewSlice(0, 80)
+	disp := lcd.Display()
 	for {
 		item := menuItems[m.curItem]
-		var (
-			es   EncoderState
-			next int64
-		)
-		if item.Period > 0 {
-			next = rtos.Nanosec()
+		now := rtos.Nanosec()
+		var displOff, next int64
+		if m.displOffTimeout > 0 {
+			displOff = now + int64(m.displOffTimeout)*1e9
 		}
-	status:
-		for {
-			item.Status(fbs)
-			fbs.Flush(0)
-			if item.Period > 0 {
-				next += int64(item.Period * 1e6)
-				m.setTimeout(int((next - rtos.Nanosec() + 0.5e6) / 1e6))
-			}
-			select {
-			case es = <-encoder.State:
-				break status
-			case <-m.timeout:
-			}
+		if item.Period > 0 {
+			next = now + int64(item.Period)*1e6
+		}
+
+	printStatus:
+		item.Status(fbs)
+		fbs.Flush(0)
+
+	waitEncoder:
+		es, dn := m.waitEncoder(displOff, next)
+
+		switch dn {
+		case 1:
+			logLCDErr(disp.ClearAUX()) // Backlight off.
+			displOff = 0
+			next = 0
+			goto waitEncoder
+		case 2:
+			next += int64(item.Period) * 1e6
+			goto printStatus
+		}
+
+		if displOff == 0 {
+			logLCDErr(disp.SetAUX()) // Backlight on.
 		}
 		if item.Action != nil && btnPreRel(es) {
 			item.Action(fbs)
@@ -306,4 +345,31 @@ func setDateTime(fbs *hdcfb.Slice) {
 	updateDateTime(fbs, &dt, (DateTime).Minute, (*DateTime).SetMinute, 0, 60)
 	updateDateTime(fbs, &dt, (DateTime).Second, (*DateTime).SetSecond, 0, 60)
 	setRTC(dt)
+}
+
+func showDisplOffTimeout(fbs *hdcfb.Slice) {
+	fbs.WriteString("Wygaszanie ekranu po")
+	fbs.Fill(26, ' ')
+	fmt.Fprintf(fbs, "%4d s", menu.displOffTimeout)
+	fbs.Fill(fbs.Remain(), ' ')
+}
+
+func setDisplOffTimeout(fbs *hdcfb.Slice) {
+	encoder.SetCnt(menu.displOffTimeout)
+	for es := range encoder.State {
+		if btnPreRel(es) {
+			break
+		}
+		cnt := es.Cnt()
+		if cnt < 0 {
+			cnt = 0
+			encoder.SetCnt(cnt)
+		} else if cnt > 65 {
+			cnt = 65 // == 65000 ms (can not be more than 65535 ms).
+			encoder.SetCnt(cnt)
+		}
+		menu.displOffTimeout = cnt
+		showDisplOffTimeout(fbs)
+		fbs.Flush(0)
+	}
 }
