@@ -38,10 +38,7 @@ start:
 	}
 }
 
-var (
-	lcd      *hdcfb.FB
-	tempResp = make(chan float32, 0)
-)
+var lcd *hdcfb.FB
 
 func startLCD(rw io.ReadWriter) {
 	d := new(hdc.Display)
@@ -53,8 +50,13 @@ func startLCD(rw io.ReadWriter) {
 		RS:         1 << 0, RW: 1 << 1, E: 1 << 2, AUX: 1 << 3,
 	}
 	hdcInit(d)
-	lcd = hdcfb.NewFB(d)
-	go lcdLoop()
+	lcd = hdcfb.NewFB(d, false)
+}
+
+func lcdDraw() {
+	for logLCDErr(lcd.Draw()) {
+		hdcInit(lcd.Display())
+	}
 }
 
 func lcdLoop() {

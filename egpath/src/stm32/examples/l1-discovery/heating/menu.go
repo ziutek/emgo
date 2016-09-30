@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"rtos"
 	"strconv"
-	"sync/atomic"
 
 	"hdc/hdcfb"
 	"onewire"
@@ -14,9 +12,9 @@ import (
 )
 
 type MenuItem struct {
-	Status func(fbs *hdcfb.Slice) // Should not call fbs.Flush.
-	Period int                    // Status refersh in ms (0 means show once).
-	Action func(fbs *hdcfb.Slice) // Must call fbs.Flush(0) before return.
+	Status func(fbs *hdcfb.SyncSlice)
+	Period int // Status refersh in ms (0 means show once).
+	Action func(fbs *hdcfb.SyncSlice)
 }
 
 //emgo:const
@@ -33,21 +31,23 @@ type Menu struct {
 	curItem         int
 	timer           *tim.TIM_Periph
 	timeout         chan struct{}
+	tempResp        chan int
+	devResp         chan onewire.Dev
 	displOffTimeout int
 }
 
 var (
-	menu             Menu
-	envTempSensor    onewire.Dev
-	waterTempSensor  onewire.Dev
-	devResp          = make(chan onewire.Dev, 1)
-	desiredWaterTemp = 450 // d°C
+	menu          Menu
+	envTempSensor onewire.Dev
 )
 
 func (m *Menu) Setup(t *tim.TIM_Periph, pclk uint) {
 	m.timeout = make(chan struct{}, 1)
 	m.timer = t
 	m.displOffTimeout = 20
+	m.tempResp = make(chan int, 1)
+	m.devResp = make(chan onewire.Dev, 1)
+
 	t.PSC.U16.Store(uint16(pclk/1000 - 1)) // 1 ms
 	t.CR1.StoreBits(
 		tim.OPM|tim.URS,
@@ -82,7 +82,7 @@ func btnPreRel(es EncoderState) bool {
 
 func (m *Menu) waitEncoder(deadline1, deadline2 int64) (EncoderState, int) {
 	d := 1
-	if deadline1 == 0 || deadline2 > 0 && deadline2 < deadline1 {
+	if deadline1 <= 0 || deadline2 > 0 && deadline2 < deadline1 {
 		deadline1 = deadline2
 		d = 2
 	}
@@ -104,7 +104,7 @@ func (m *Menu) waitEncoder(deadline1, deadline2 int64) (EncoderState, int) {
 }
 
 func (m *Menu) Loop() {
-	fbs := lcd.NewSlice(0, 80)
+	fbs := lcd.NewSyncSlice(0, 80)
 	disp := lcd.Display()
 	for {
 		item := menuItems[m.curItem]
@@ -119,7 +119,6 @@ func (m *Menu) Loop() {
 
 	printStatus:
 		item.Status(fbs)
-		fbs.Flush(0)
 
 	waitEncoder:
 		es, dn := m.waitEncoder(displOff, next)
@@ -127,16 +126,17 @@ func (m *Menu) Loop() {
 		switch dn {
 		case 1:
 			logLCDErr(disp.ClearAUX()) // Backlight off.
-			displOff = 0
-			next = 0
+			displOff = -1
+			next = -1
 			goto waitEncoder
 		case 2:
 			next += int64(item.Period) * 1e6
 			goto printStatus
 		}
-
-		if displOff == 0 {
+		if displOff == -1 {
+			encoder.SetCnt(m.curItem)
 			logLCDErr(disp.SetAUX()) // Backlight on.
+			continue
 		}
 		if item.Action != nil && btnPreRel(es) {
 			item.Action(fbs)
@@ -154,36 +154,39 @@ func menuISR() {
 	}
 }
 
-func printTemp(fbs *hdcfb.Slice, d onewire.Dev) {
+func printTemp(fbs *hdcfb.SyncSlice, d onewire.Dev) {
 	if d.Type() == 0 {
 		fbs.WriteString(" ---- ")
 		return
 	}
-	owd.Cmd <- TempCmd{Dev: d, Resp: tempResp}
-	t := <-tempResp
-	if t == math.MaxFloat32 {
+	owd.Cmd <- TempCmd{Dev: d, Resp: menu.tempResp}
+	t := <-menu.tempResp
+	if t == InvalidTemp {
 		fbs.WriteString(" blad ")
 		return
 	}
-	strconv.WriteFloat(fbs, float64(t), 'f', 4, 1, 32)
+	strconv.WriteFloat(fbs, float64(t)*0.0625, 'f', 4, 1, 32)
 	fbs.WriteString("\xdfC")
 }
 
-func showStatus(fbs *hdcfb.Slice) {
+func showStatus(fbs *hdcfb.SyncSlice) {
 	dt := readRTC()
+	fbs.SetPos(0)
 	fmt.Fprintf(
 		fbs, "Status      %02d:%02d:%02d",
 		dt.Hour(), dt.Minute(), dt.Second(),
 	)
-	fbs.WriteString(" Woda:      ")
-	printTemp(fbs, waterTempSensor)
-	fbs.WriteString("   Otoczenie: ")
+	fmt.Fprintf(fbs, " Woda: (%2dkW) ", water.LastPower())
+	printTemp(fbs, water.TempSensor)
+	fbs.WriteString(" Otoczenie:   ")
 	printTemp(fbs, envTempSensor)
 	fbs.Fill(fbs.Remain(), ' ')
+	lcdDraw()
 }
 
-func showTempSensor(fbs *hdcfb.Slice, name string, d *onewire.Dev) {
+func showTempSensor(fbs *hdcfb.SyncSlice, name string, d *onewire.Dev) {
 	tempsensor := "Czujnik temp. "
+	fbs.SetPos(0)
 	fbs.WriteString(tempsensor)
 	fbs.WriteString(name)
 	fbs.Fill(41-len(tempsensor)-len(name), ' ')
@@ -193,23 +196,24 @@ func showTempSensor(fbs *hdcfb.Slice, name string, d *onewire.Dev) {
 		fmt.Fprint(fbs, *d)
 	}
 	fbs.Fill(fbs.Remain(), ' ')
+	lcdDraw()
 }
 
-func showWaterTempSensor(fbs *hdcfb.Slice) {
-	showTempSensor(fbs, "wody", &waterTempSensor)
+func showWaterTempSensor(fbs *hdcfb.SyncSlice) {
+	showTempSensor(fbs, "wody", &water.TempSensor)
 }
 
-func showEnvTempSensor(fbs *hdcfb.Slice) {
+func showEnvTempSensor(fbs *hdcfb.SyncSlice) {
 	showTempSensor(fbs, "otocz.", &envTempSensor)
 }
 
-func setTempSensor(fbs *hdcfb.Slice, d *onewire.Dev) {
-	owd.Cmd <- SearchCmd{Typ: onewire.DS18B20, Resp: devResp}
+func setTempSensor(fbs *hdcfb.SyncSlice, d *onewire.Dev) {
+	owd.Cmd <- SearchCmd{Typ: onewire.DS18B20, Resp: menu.devResp}
 	var (
 		devs [4]onewire.Dev
 		n    int
 	)
-	for dev := range devResp {
+	for dev := range menu.devResp {
 		if dev.Type() == 0 {
 			break
 		}
@@ -221,6 +225,7 @@ func setTempSensor(fbs *hdcfb.Slice, d *onewire.Dev) {
 	encoder.SetCnt(0)
 	sel := -1
 	for {
+		fbs.SetPos(0)
 		for i := 0; i < n; i++ {
 			dev := devs[i]
 			if sel == -1 && dev == *d {
@@ -235,7 +240,7 @@ func setTempSensor(fbs *hdcfb.Slice, d *onewire.Dev) {
 			fmt.Fprintf(fbs, "%c%v", c, dev)
 		}
 		fbs.Fill(fbs.Remain(), ' ')
-		fbs.Flush(0)
+		lcdDraw()
 		es := <-encoder.State
 		if btnPreRel(es) {
 			if sel == -1 {
@@ -252,9 +257,9 @@ func setTempSensor(fbs *hdcfb.Slice, d *onewire.Dev) {
 			*d = dev
 
 			owd.Cmd <- ConfigureCmd{
-				Dev: dev, Cfg: onewire.T10bit, Resp: devResp,
+				Dev: dev, Cfg: onewire.T10bit, Resp: menu.devResp,
 			}
-			dev = <-devResp
+			dev = <-menu.devResp
 			if dev.Type() == 0 {
 				*d = onewire.Dev{}
 				sel = -1
@@ -265,27 +270,29 @@ func setTempSensor(fbs *hdcfb.Slice, d *onewire.Dev) {
 	}
 }
 
-func setWaterTempSensor(fbs *hdcfb.Slice) {
-	setTempSensor(fbs, &waterTempSensor)
+func setWaterTempSensor(fbs *hdcfb.SyncSlice) {
+	setTempSensor(fbs, &water.TempSensor)
 }
 
-func setEnvTempSensor(fbs *hdcfb.Slice) {
+func setEnvTempSensor(fbs *hdcfb.SyncSlice) {
 	setTempSensor(fbs, &envTempSensor)
 }
 
-func showDesiredWaterTemp(fbs *hdcfb.Slice) {
+func showDesiredWaterTemp(fbs *hdcfb.SyncSlice) {
+	fbs.SetPos(0)
 	fbs.WriteString("Zadana temp. wody")
 	fbs.Fill(30, ' ')
-	fmt.Fprintf(fbs, "%2d.%d\xdfC", desiredWaterTemp/10, desiredWaterTemp%10)
+	fmt.Fprintf(fbs, "%2d\xdfC", water.DesiredTemp())
 	fbs.Fill(fbs.Remain(), ' ')
+	lcdDraw()
 }
 
-func setDesiredWaterTemp(fbs *hdcfb.Slice) {
+func setDesiredWaterTemp(fbs *hdcfb.SyncSlice) {
 	const (
-		min = 300 // d°C
-		max = 500 // d°C
+		min = 30 // °C
+		max = 60 // °C
 	)
-	encoder.SetCnt(desiredWaterTemp)
+	encoder.SetCnt(water.DesiredTemp())
 	for es := range encoder.State {
 		if btnPreRel(es) {
 			break
@@ -298,13 +305,13 @@ func setDesiredWaterTemp(fbs *hdcfb.Slice) {
 			temp = max
 			encoder.SetCnt(max)
 		}
-		atomic.StoreInt(&desiredWaterTemp, temp)
+		water.SetDesiredTemp(temp)
 		showDesiredWaterTemp(fbs)
-		fbs.Flush(0)
 	}
 }
 
-func printDateTime(fbs *hdcfb.Slice, dt DateTime) {
+func printDateTime(fbs *hdcfb.SyncSlice, dt DateTime) {
+	fbs.SetPos(0)
 	fbs.WriteString("Data i czas")
 	fbs.Fill(29, ' ')
 	fmt.Fprintf(fbs, "%04d-%02d-%02d", 2000+dt.Year(), dt.Month(), dt.Day())
@@ -313,13 +320,14 @@ func printDateTime(fbs *hdcfb.Slice, dt DateTime) {
 	fbs.Fill(10-len(wd)/2, ' ')
 	fbs.WriteString(wd)
 	fbs.Fill(fbs.Remain(), ' ')
+	lcdDraw()
 }
 
-func showDateTime(fbs *hdcfb.Slice) {
+func showDateTime(fbs *hdcfb.SyncSlice) {
 	printDateTime(fbs, readRTC())
 }
 
-func updateDateTime(fbs *hdcfb.Slice, dt *DateTime, get func(DateTime) int,
+func updateDateTime(fbs *hdcfb.SyncSlice, dt *DateTime, get func(DateTime) int,
 	set func(*DateTime, int), offs, mod int) {
 
 	encoder.SetCnt(get(*dt))
@@ -329,32 +337,32 @@ func updateDateTime(fbs *hdcfb.Slice, dt *DateTime, get func(DateTime) int,
 		}
 		set(dt, offs+es.ModCnt(mod))
 		printDateTime(fbs, *dt)
-		fbs.Flush(0)
 	}
 }
 
-func setDateTime(fbs *hdcfb.Slice) {
+func setDateTime(fbs *hdcfb.SyncSlice) {
 	dt := readRTC()
 	updateDateTime(fbs, &dt, (DateTime).Year, (*DateTime).SetYear, 0, 100)
 	updateDateTime(fbs, &dt, (DateTime).Month, (*DateTime).SetMonth, 1, 12)
 	updateDateTime(fbs, &dt, (DateTime).Day, (*DateTime).SetDay, 1, 31)
 	dt.SetWeekday(dayofweek(2000+dt.Year(), dt.Month(), dt.Day()))
 	printDateTime(fbs, dt)
-	fbs.Flush(0)
 	updateDateTime(fbs, &dt, (DateTime).Hour, (*DateTime).SetHour, 0, 24)
 	updateDateTime(fbs, &dt, (DateTime).Minute, (*DateTime).SetMinute, 0, 60)
 	updateDateTime(fbs, &dt, (DateTime).Second, (*DateTime).SetSecond, 0, 60)
 	setRTC(dt)
 }
 
-func showDisplOffTimeout(fbs *hdcfb.Slice) {
+func showDisplOffTimeout(fbs *hdcfb.SyncSlice) {
+	fbs.SetPos(0)
 	fbs.WriteString("Wygaszanie ekranu po")
 	fbs.Fill(26, ' ')
 	fmt.Fprintf(fbs, "%4d s", menu.displOffTimeout)
 	fbs.Fill(fbs.Remain(), ' ')
+	lcdDraw()
 }
 
-func setDisplOffTimeout(fbs *hdcfb.Slice) {
+func setDisplOffTimeout(fbs *hdcfb.SyncSlice) {
 	encoder.SetCnt(menu.displOffTimeout)
 	for es := range encoder.State {
 		if btnPreRel(es) {
@@ -370,6 +378,5 @@ func setDisplOffTimeout(fbs *hdcfb.Slice) {
 		}
 		menu.displOffTimeout = cnt
 		showDisplOffTimeout(fbs)
-		fbs.Flush(0)
 	}
 }

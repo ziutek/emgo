@@ -3,7 +3,6 @@ package main
 import (
 	"delay"
 	"fmt"
-	"math"
 
 	"onewire"
 
@@ -57,8 +56,10 @@ type ConfigureCmd struct {
 
 type TempCmd struct {
 	Dev  onewire.Dev
-	Resp chan float32
+	Resp chan int
 }
+
+const InvalidTemp = -300 * 16
 
 func (d *OneWireDaemon) loop() {
 	for cmd := range d.Cmd {
@@ -97,6 +98,8 @@ func (d *OneWireDaemon) loop() {
 				if log1wireErr(d.m.ConvertT()) {
 					goto abortTempCmd
 				}
+				//delay.Millisec(200)
+
 				for i := 0; i < 750/50; i++ {
 					delay.Millisec(50)
 					b, err := d.m.ReadBit()
@@ -107,6 +110,7 @@ func (d *OneWireDaemon) loop() {
 						break
 					}
 				}
+
 				if log1wireErr(d.m.MatchROM(c.Dev)) {
 					goto abortTempCmd
 				}
@@ -114,7 +118,7 @@ func (d *OneWireDaemon) loop() {
 				if log1wireErr(err) {
 					goto abortTempCmd
 				}
-				t, err := s.Temp(c.Dev.Type())
+				t, err := s.Temp16(c.Dev.Type())
 				if log1wireErr(err) {
 					goto abortTempCmd
 				}
@@ -122,7 +126,7 @@ func (d *OneWireDaemon) loop() {
 				break
 			}
 		abortTempCmd:
-			c.Resp <- math.MaxFloat32
+			c.Resp <- InvalidTemp
 		}
 	}
 }

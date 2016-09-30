@@ -2,7 +2,6 @@
 package main
 
 import (
-	"delay"
 	"rtos"
 
 	"arch/cortexm/bitband"
@@ -130,31 +129,18 @@ func init() {
 	menu.Setup(tim.TIM6, system.APB1.Clock())
 	irqen(irq.TIM6, 5)
 
-	startLCD(i2cdrv.NewMasterConn(0x27, i2c.ASRD))
-
 	initRTC()
-	/*
-		if !checkRTC() {
-			fmt.Printf("RTC not set. Setting...\n")
-			t := makeDateTime(2016, 9, 11, 22, 51, 20, Sunday)
-			setRTC(t)
-			fmt.Printf("Done.\n")
-		}
-	*/
+	
+	// startLCD must be last to allow work without LCD.
+	startLCD(i2cdrv.NewMasterConn(0x27, i2c.ASRD))
 }
 
 func main() {
-	//go waterTask()
 	menu.Loop()
 }
 
 func exti0ISR() {
 	exti.L0.ClearPending()
-	ledGreen.Set()
-	delay.Loop(1e5)
-	ledGreen.Clear()
-	//buttonISR()
-	//waterISR()
 }
 
 //emgo:const
