@@ -32,6 +32,9 @@ type Slice struct {
 // Slice returns slice of framebuffer started at byte m and ended just before
 // byte n.
 func (fb *FB) Slice(m, n int) Slice {
+	if fb.buf0 == nil {
+		panicSingleBuffer()
+	}
 	return Slice{fb: fb, m: byte(m), n: byte(n), p: byte(m)}
 }
 
@@ -122,10 +125,11 @@ func (sl *Slice) Fill(n int, b byte) {
 	sl.p = byte(n)
 }
 
-// SyncSlice is simplified version of Slice. It is intended to be used by
-// gorutine that performs drawing framebuffer to the LCD display. Its Write and
-// WriteString methods can be only called between FB.Swap and FB.Draw calls.
-// Typically it is used to draw something periodically (eg: current time).
+// SyncSlice is simplified version of Slice. It is intended to be used in case
+// when only one gorutine needs to print on the display or by gorutine that
+// periodically draws framebuffer to the LCD display (it can use Write* methods
+// between FB.Swap and FB.Draw calls, typically to print something periodically
+// eg: current time).
 type SyncSlice struct {
 	fb   *FB
 	m, n byte
