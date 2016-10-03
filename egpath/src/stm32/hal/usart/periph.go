@@ -14,7 +14,7 @@ type Periph struct {
 	raw usart.USART_Periph
 }
 
-// Bus returns a bus to which p is connected.
+// Bus returns a bus to which p is connected to.
 func (p *Periph) Bus() system.Bus {
 	return internal.Bus(unsafe.Pointer(p))
 }
@@ -141,7 +141,7 @@ func (p *Periph) DisableErrorIRQ() {
 	p.raw.EIE().Clear()
 }
 
-// SetBaudRate sets baudrate [sym/s]. APB1 and APB2 clock in stm32/hal/system
+// SetBaudRate sets baud rate [sym/s]. APB1 and APB2 clock in stm32/hal/system
 // package must be set properly before use this function.
 func (p *Periph) SetBaudRate(baudrate int) {
 	br := uint(baudrate)
@@ -200,15 +200,20 @@ func (p *Periph) SetConf(cfg Conf) {
 type Mode uint32
 
 const (
+	// HalfDuplex enables half-duplx operation.
 	HalfDuplex Mode = 1 << (16 + 3)
+
+	// OneBit sets sampling method to one bit and disables Noise error
+	// detection.
+	OneBit Mode = 1 << (16 + 11)
 )
 
 func (p *Periph) SetMode(mode Mode) {
 	//mask :=
 	//p.raw.CR2.U16.StoreBits(mask, uint16(mode))
 	mode >>= 16
-	mask := uint16(HalfDuplex >> 16)
-	p.raw.CR3.U16.StoreBits(mask, uint16(mask))
+	mask := uint16((HalfDuplex | OneBit) >> 16)
+	p.raw.CR3.U16.StoreBits(mask, uint16(mode))
 }
 
 func (p *Periph) Store(d int) {

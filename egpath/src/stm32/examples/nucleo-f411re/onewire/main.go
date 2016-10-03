@@ -84,7 +84,7 @@ func init() {
 	)
 	one.EnableClock(true)
 	one.SetBaudRate(115200)
-	one.SetMode(usart.HalfDuplex)
+	one.SetMode(usart.HalfDuplex | usart.OneBit)
 	one.Enable()
 	one.EnableRx()
 	one.EnableTx()

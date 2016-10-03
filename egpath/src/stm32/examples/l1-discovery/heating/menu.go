@@ -222,6 +222,17 @@ func setTempSensor(fbs *hdcfb.SyncSlice, d *onewire.Dev) {
 			n++
 		}
 	}
+	if n == 0 {
+		fbs.SetPos(0)
+		fbs.WriteString("   nie znaleziono")
+		fbs.Fill(fbs.Remain(), ' ')
+		lcdDraw()
+		for es := range encoder.State {
+			if btnPreRel(es) {
+				return
+			}
+		}
+	}
 	encoder.SetCnt(0)
 	sel := -1
 	for {

@@ -54,7 +54,7 @@ func init() {
 	)
 	one.EnableClock(true)
 	one.SetBaudRate(115200)
-	one.SetMode(usart.HalfDuplex)
+	one.SetMode(usart.HalfDuplex | usart.OneBit)
 	one.Enable()
 	one.EnableRx()
 	one.EnableTx()
@@ -161,7 +161,7 @@ start:
 			}
 		}
 		fmt.Println("\nDone.")
-		delay.Millisec(4e3)
+		delay.Millisec(2e3)
 	}
 }
 
