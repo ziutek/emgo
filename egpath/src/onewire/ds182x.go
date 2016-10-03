@@ -2,6 +2,7 @@ package onewire
 
 // Types of DS18x20 family.
 const (
+	DS1820  Type = 0x10
 	DS18S20 Type = 0x10
 	DS1822  Type = 0x22
 	DS18B20 Type = 0x28
@@ -47,11 +48,16 @@ func (m *Master) WriteScratchpad(th, tl int8, cfg byte) error {
 // Scratchpad represents 9 bytes of data that can be read from DS18x2x device.
 type Scratchpad [9]byte
 
-// Temp16 returns temperature data from s as int equal to T[C] * 16.
+// Temp16 returns temperature data from s equal to T[C] * 16.
 func (s *Scratchpad) Temp16(typ Type) (int, error) {
 	switch typ {
 	case DS18B20, DS1822:
 		return int(uint(s[1])<<8 + uint(s[0])), nil
+	case DS1820:
+		temp16 := int(uint(s[1])<<11 + uint(s[0])>>1<<4)
+		remain := int(s[6])
+		perC := int(s[7])
+		return temp16 - 4 + (perC-remain)*16/perC, nil
 	}
 	return -300 * 16, ErrDevType
 }

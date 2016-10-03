@@ -80,62 +80,88 @@ func blink(pins gpio.Pins, d int) {
 	leds.ClearPins(pins)
 }
 
-func checkErr(err error) {
+func printErr(err error) bool {
 	if err == nil {
-		return
+		return false
 	}
-	fmt.Println("Error: ", err)
-	for {
+	fmt.Printf("Error: %v\n", err)
+	for i := 0; i < 5; i++ {
 		blink(Red, 100)
 		delay.Millisec(100)
 	}
+	return true
+}
+
+func printOK() {
+	fmt.Println("OK.")
 }
 
 func main() {
 	m := onewire.Master{Driver: onedrv.USARTDriver{one}}
 	dtypes := []onewire.Type{onewire.DS18S20, onewire.DS18B20, onewire.DS1822}
 
-	delay.Millisec(100)
-
-	fmt.Println("\nConfigure all DS18B20, DS1822 to 10bit resolution.")
-
 	// This algorithm configures and starts conversion simultaneously on all
 	// temperature sensors on the bus. It is fast, but doesn't work in case of
 	// parasite power mode.
 
-	checkErr(m.SkipROM())
-	checkErr(m.WriteScratchpad(127, -128, onewire.T10bit))
+start:
 	for {
-		fmt.Println("\nSending ConvertT command on the bus (SkipROM addressing).")
-		checkErr(m.SkipROM())
-		checkErr(m.ConvertT())
-		fmt.Print("Waiting until all devices finish the conversion")
+		fmt.Print("\nConfigure all DS18B20, DS1822 to 10bit resolution: ")
+		if printErr(m.SkipROM()) {
+			continue start
+		}
+		if printErr(m.WriteScratchpad(127, -128, onewire.T12bit)) {
+			continue start
+		}
+		printOK()
+
+		fmt.Print("Sending ConvertT command (SkipROM addressing): ")
+		if printErr(m.SkipROM()) {
+			continue start
+		}
+		if printErr(m.ConvertT()) {
+			continue start
+		}
+		printOK()
+
+		fmt.Print("Waiting until all devices finish the conversion: ")
 		for {
 			delay.Millisec(50)
-			fmt.Print(".")
 			b, err := m.ReadBit()
-			checkErr(err)
+			if printErr(err) {
+				continue start
+			}
+			fmt.Print(". ")
 			if b != 0 {
+				printOK()
 				break
 			}
 		}
-		fmt.Println("\nSearching for temperature sensors:")
+		fmt.Print("Searching for temperature sensors: ")
 		for _, typ := range dtypes {
 			s := onewire.MakeSearch(typ, false)
 			for m.SearchNext(&s) {
 				d := s.Dev()
-				fmt.Print(d, ": ")
-				checkErr(m.MatchROM(d))
+				fmt.Printf("\n %v : ", d)
+				if printErr(m.MatchROM(d)) {
+					continue start
+				}
 				s, err := m.ReadScratchpad()
-				checkErr(err)
+				if printErr(err) {
+					continue start
+				}
 				t, err := s.Temp(typ)
-				checkErr(err)
-				fmt.Printf("%6.2f C\n", t)
+				if printErr(err) {
+					continue start
+				}
+				fmt.Printf("%6.2f C", t)
 			}
-			checkErr(s.Err())
+			if printErr(s.Err()) {
+				continue start
+			}
 		}
-		fmt.Println("Done.")
-		delay.Millisec(2e3)
+		fmt.Println("\nDone.")
+		delay.Millisec(4e3)
 	}
 }
 

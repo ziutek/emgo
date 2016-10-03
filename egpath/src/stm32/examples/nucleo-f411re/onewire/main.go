@@ -143,7 +143,6 @@ func main() {
 	// temperature sensors on the bus. It is fast, but doesn't work in case of
 	// parasite power mode.
 
-
 start:
 	for {
 		fmt.Print("\nConfigure all DS18B20, DS1822 to 10bit resolution: ")
