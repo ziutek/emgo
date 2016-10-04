@@ -72,7 +72,7 @@ func (w *waterHeaterControl) Init(timPWM, timCnt *tim.TIM_Periph, pclk uint) {
 	w.cnt.Init(timCnt)
 	w.tempResp = make(chan int, 1)
 	w.SetDesiredTemp(40) // °C
-	w.scale = w.pwm.Max() / 1300
+	w.scale = w.pwm.Max() / 1200
 }
 
 var water waterHeaterControl
