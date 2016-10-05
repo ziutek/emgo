@@ -27,7 +27,9 @@ func (p *DMA) Reset() {
 }
 
 // Channel returns value that represents sn-th stream (channel in F1/L1 series
-// nomenclature) and cn-th channel (ignored in case of F1/L1 series).
+// nomenclature) with cn-th request channel set (ignored in case of F1/L1
+// series). Channels with the same sn points to the same DMA stream so they can
+// not be used concurently.
 func (p *DMA) Channel(sn, cn int) *Channel {
 	return p.getChannel(sn, cn)
 }
