@@ -24,7 +24,7 @@ func (c *AltMasterConnDMA) UnlockDriver() {
 // StopWrite terminates current write transaction and deactivates connection.
 func (c *AltMasterConnDMA) StopWrite() {
 	if c.state == actwr {
-		p := &c.d.Periph.raw
+		p := &c.d.P.raw
 		p.DMAEN().Clear()
 		p.STOP().Set()
 		c.state = nact
@@ -44,7 +44,7 @@ func (c *AltMasterConnDMA) Write(buf []byte) (int, error) {
 		n int
 	)
 	d := c.d
-	p := &d.Periph.raw
+	p := &d.P.raw
 	txd := d.TxDMA
 	if c.state != actwr {
 		if c.state == actrd {
@@ -98,7 +98,7 @@ func (c *AltMasterConnDMA) Write(buf []byte) (int, error) {
 err:
 	p.SR1.Store(0) // Clear error flags.
 	if e&Timeout == 0 {
-		d.Periph.raw.STOP().Set()
+		d.P.raw.STOP().Set()
 	}
 	c.state = nact
 	return n, e
@@ -128,7 +128,7 @@ func (c *AltMasterConnDMA) Read(buf []byte) (int, error) {
 		n int
 	)
 	d := c.d
-	p := &d.Periph.raw
+	p := &d.P.raw
 	rxd := d.RxDMA
 	stop := c.stop & stoprd
 	if c.state != actrd {

@@ -52,10 +52,9 @@ func init() {
 	one = usart.NewDriver(
 		usart.USART6, usart6rxdma, usart6txdma, make([]byte, 16),
 	)
-	one.EnableClock(true)
-	one.SetBaudRate(115200)
-	one.SetMode(usart.HalfDuplex | usart.OneBit)
-	one.Enable()
+	one.P.EnableClock(true)
+	one.P.SetMode(usart.HalfDuplex | usart.OneBit)
+	one.P.Enable()
 	one.EnableRx()
 	one.EnableTx()
 	rtos.IRQ(irq.USART6).Enable()

@@ -14,7 +14,7 @@ import (
 // remaining porcessing of events/data for both modes is handled by the same
 // code that is executed in thread mode.
 type AltDriver struct {
-	*Periph
+	P *Periph
 
 	mutex  sync.Mutex
 	evflag rtos.EventFlag
@@ -25,7 +25,7 @@ type AltDriver struct {
 // struct.
 func NewAltDriver(p *Periph) *AltDriver {
 	d := new(AltDriver)
-	d.Periph = p
+	d.P = p
 	return d
 }
 
@@ -40,7 +40,7 @@ func (d *AltDriver) SetIntMode(en bool) {
 }
 
 func (d *AltDriver) ISR() {
-	d.Periph.raw.CR2.ClearBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
+	d.P.raw.CR2.ClearBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
 	d.evflag.Set()
 }
 
@@ -60,7 +60,7 @@ func (d *AltDriver) NewMasterConn(addr int16, stopm StopMode) *AltMasterConn {
 }
 
 func (d *AltDriver) waitEvent(ev i2c.SR1_Bits) Error {
-	p := &d.Periph.raw
+	p := &d.P.raw
 	deadline := rtos.Nanosec() + byteTimeout
 	if d.i2cint {
 		return i2cWaitIRQ(p, &d.evflag, ev, deadline)

@@ -51,14 +51,14 @@ func init() {
 	port.Setup(pins, cfg)
 	d := dma.DMA1
 	d.EnableClock(true)
-	twi.Periph = i2c.I2C2
+	twi.P = i2c.I2C2
+	twi.P.EnableClock(true)
+	twi.P.Reset() // Mandatory!
+	twi.P.Setup(i2c.Config{Speed: 240e3, Duty: i2c.Duty16_9})
+	twi.P.Enable()
+	twi.SetIntMode(true, true)
 	twi.RxDMA = d.Channel(5, 0)
 	twi.TxDMA = d.Channel(4, 0)
-	twi.EnableClock(true)
-	twi.Reset() // Mandatory!
-	twi.Setup(i2c.Config{Speed: 240e3, Duty: i2c.Duty16_9})
-	twi.SetIntMode(true, true)
-	twi.Enable()
 	rtos.IRQ(irq.I2C2_EV).Enable()
 	rtos.IRQ(irq.I2C2_ER).Enable()
 	rtos.IRQ(irq.DMA1_Channel4).Enable()

@@ -37,7 +37,7 @@ func (c *AltMasterConn) UnlockDriver() {
 // StopWrite terminates current write transaction and deactivates connection.
 func (c *AltMasterConn) StopWrite() {
 	if c.state == actwr {
-		c.d.Periph.raw.STOP().Set()
+		c.d.P.raw.STOP().Set()
 		c.state = nact
 		c.d.mutex.Unlock()
 	}
@@ -55,7 +55,7 @@ func (c *AltMasterConn) Write(buf []byte) (int, error) {
 		n int
 	)
 	d := c.d
-	p := &d.Periph.raw
+	p := &d.P.raw
 	if c.state != actwr {
 		if c.state == actrd {
 			return 0, ActiveRead
@@ -100,7 +100,6 @@ func (c *AltMasterConn) SetStopRead() {
 	c.stopm |= stoprd
 }
 
-
 // Read reads data from slave device into buf. If len(buf) == 0 Read does
 // nothing, especially it does not: activate inactiv connection, interrupt
 // previous write transaction, deactivate connection if SetStopRead was called
@@ -117,7 +116,7 @@ func (c *AltMasterConn) Read(buf []byte) (int, error) {
 		n int
 	)
 	d := c.d
-	p := &d.Periph.raw
+	p := &d.P.raw
 	stop := c.stopm & stoprd
 	if c.state != actrd {
 		if c.state == nact {

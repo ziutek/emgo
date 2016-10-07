@@ -13,7 +13,7 @@ import (
 // AltDriverDMA uses DMA to implement polling and interrupt driven driver to I2C
 // peripheral. Default mode is polling.
 type AltDriverDMA struct {
-	*Periph
+	P     *Periph
 	RxDMA *dma.Channel
 	TxDMA *dma.Channel
 
@@ -27,13 +27,13 @@ type AltDriverDMA struct {
 // struct.
 func NewAltDriverDMA(p *Periph, rxch, txch *dma.Channel) *AltDriverDMA {
 	d := new(AltDriverDMA)
-	d.Periph = p
+	d.P = p
 	d.RxDMA = rxch
 	d.TxDMA = txch
 	return d
 }
 
-// Unlock must be used after recovering from error.
+// Unlock must be used after recovering from an error.
 func (d *AltDriverDMA) Unlock() {
 	d.mutex.Unlock()
 }
@@ -44,7 +44,7 @@ func (d *AltDriverDMA) SetIntMode(i2cen, dmaen bool) {
 }
 
 func (d *AltDriverDMA) I2CISR() {
-	d.Periph.raw.CR2.ClearBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
+	d.P.raw.CR2.ClearBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
 	d.evflag.Set()
 }
 
@@ -69,7 +69,7 @@ func (d *AltDriverDMA) NewMasterConn(addr int16, stopm StopMode) *AltMasterConnD
 }
 
 func (d *AltDriverDMA) waitEvent(ev i2c.SR1_Bits) Error {
-	p := &d.Periph.raw
+	p := &d.P.raw
 	deadline := rtos.Nanosec() + byteTimeout
 	if d.i2cint {
 		return i2cWaitIRQ(p, &d.evflag, ev, deadline)
@@ -82,7 +82,7 @@ func (d *AltDriverDMA) startDMA(ch *dma.Channel, addr *byte, n int) (int, Error)
 	ch.SetAddrM(unsafe.Pointer(addr))
 	ch.SetLen(n)
 	ch.Enable()
-	timeout := byteTimeout + 2*9e9*int64(n+1)/int64(d.Speed())
+	timeout := byteTimeout + 2*9e9*int64(n+1)/int64(d.P.Speed())
 	deadline := rtos.Nanosec() + timeout
 	var e Error
 	if d.dmaint {

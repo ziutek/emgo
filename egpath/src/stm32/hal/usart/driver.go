@@ -12,7 +12,7 @@ import (
 type DriverError byte
 
 const (
-	ErrBufOverflow DriverError = iota
+	ErrBufOverflow DriverError = iota + 1
 	ErrTimeout
 )
 
@@ -31,7 +31,7 @@ type Driver struct {
 	deadlineRx int64
 	deadlineTx int64
 
-	*Periph
+	P     *Periph
 	RxDMA *dma.Channel
 	TxDMA *dma.Channel
 	RxBuf []byte // Rx ring buffer for RxDMA.
@@ -45,12 +45,13 @@ type Driver struct {
 // NewDriver provides convenient way to create heap allocated Driver struct.
 func NewDriver(p *Periph, rxdma, txdma *dma.Channel, rxbuf []byte) *Driver {
 	d := new(Driver)
-	d.Periph = p
+	d.P = p
 	d.RxDMA = rxdma
 	d.TxDMA = txdma
 	d.RxBuf = rxbuf
 	return d
 }
+
 func disableDMA(ch *dma.Channel) {
 	ch.Disable()
 	ch.DisableInt(dma.EvAll, dma.ErrAll)
@@ -59,7 +60,7 @@ func disableDMA(ch *dma.Channel) {
 func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode) {
 	ch.Setup(mode)
 	ch.SetWordSize(1, 1)
-	ch.SetAddrP(unsafe.Pointer(d.Periph.raw.DR.U16.Addr()))
+	ch.SetAddrP(unsafe.Pointer(d.P.raw.DR.U16.Addr()))
 }
 
 func startDMA(ch *dma.Channel, maddr unsafe.Pointer, mlen int) {
@@ -70,9 +71,11 @@ func startDMA(ch *dma.Channel, maddr unsafe.Pointer, mlen int) {
 	ch.EnableInt(dma.Complete, dma.ErrAll&^dma.ErrFIFO) // Ignore FIFO error.
 }
 
-// EnableRx
+// EnableRx enables Rx part of P, setups RxDMA in circular mode and enables it
+// to continuous reception of data. Driver assumes that it has exclusive access
+// to P and RxDMA between EnableRx and DisableRx.
 func (d *Driver) EnableRx() {
-	p := &d.Periph.raw
+	p := &d.P.raw
 	ch := d.RxDMA
 	p.RE().Set()
 	p.DMAR().Set()
@@ -83,7 +86,7 @@ func (d *Driver) EnableRx() {
 // DisableRx disables recieve of data and resets the state of internal ring
 // buffer.
 func (d *Driver) DisableRx() {
-	p := &d.Periph.raw
+	p := &d.P.raw
 	ch := d.RxDMA
 	disableDMA(ch)
 	p.RE().Clear()
@@ -128,9 +131,9 @@ func (d *Driver) rxNMadd(m int) {
 }
 
 func (d *Driver) disableRxIRQ() {
-	d.Periph.DisableIRQ(RxNotEmpty)
-	d.Periph.Clear(RxNotEmpty)
-	d.Periph.DisableErrorIRQ()
+	d.P.DisableIRQ(RxNotEmpty)
+	d.P.Clear(RxNotEmpty)
+	d.P.DisableErrorIRQ()
 
 }
 
@@ -146,8 +149,8 @@ start:
 	case 0:
 		if dmaM == d.rxM {
 			d.rxready.Clear()
-			d.Periph.EnableIRQ(RxNotEmpty)
-			d.Periph.EnableErrorIRQ()
+			d.P.EnableIRQ(RxNotEmpty)
+			d.P.EnableErrorIRQ()
 			dmaN, dmaM = d.dmaNM()
 			if dmaM != d.rxM || dmaN != d.rxN {
 				d.disableRxIRQ()
@@ -156,9 +159,9 @@ start:
 			if !d.rxready.Wait(d.deadlineRx) {
 				return 0, ErrTimeout
 			}
-			if _, e := d.Periph.Status(); e != 0 {
+			if _, e := d.P.Status(); e != 0 {
 				// Clear errors (complete "read SR then DR" sequence).
-				d.Periph.Load()
+				d.P.Load()
 				return 0, e
 			}
 			if _, e := d.RxDMA.Status(); e != 0 {
@@ -200,15 +203,17 @@ func (d *Driver) ReadByte() (byte, error) {
 	return buf[0], err
 }
 
+// EnableTx enables Tx part of P and setups TxDMA. Driver assumes that it has
+// exclusive access to P and TxDMA between EnableTx and DisableTx.
 func (d *Driver) EnableTx() {
-	p := &d.Periph.raw
+	p := &d.P.raw
 	p.TE().Set()
 	p.DMAT().Set()
 	d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4)
 }
 
 func (d *Driver) DisableTx() {
-	p := &d.Periph.raw
+	p := &d.P.raw
 	p.TE().Clear()
 }
 
@@ -224,7 +229,7 @@ func (d *Driver) WriteString(s string) (int, error) {
 		if m > 0xffff {
 			m = 0xffff
 		}
-		d.Periph.raw.SR.Store(0) // Clear TC.
+		d.P.raw.SR.Store(0) // Clear TC.
 		startDMA(ch, unsafe.Pointer(sh.Data+uintptr(n)), m)
 		n += m
 		if !d.txdone.Wait(d.deadlineTx) {

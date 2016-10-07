@@ -106,7 +106,7 @@ func (p *Periph) Clear(e Event) {
 	p.raw.SR.U16.Store(^e.reg())
 }
 
-// EnableEventIRQ enables generating of IRQ by events e.
+// EnableIRQ enables generating of IRQ by events e.
 func (p *Periph) EnableIRQ(e Event) {
 	if cr1e := e & (Idle | RxNotEmpty | TxDone | TxEmpty); cr1e != 0 {
 		p.raw.CR1.U16.SetBits(cr1e.reg())
@@ -119,6 +119,7 @@ func (p *Periph) EnableIRQ(e Event) {
 	}
 }
 
+// DisableIRQ disables generating of IRQ by events e.
 func (p *Periph) DisableIRQ(e Event) {
 	if cr1e := e & (Idle | RxNotEmpty | TxDone | TxEmpty); cr1e != 0 {
 		p.raw.CR1.U16.ClearBits(cr1e.reg())

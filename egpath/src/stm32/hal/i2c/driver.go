@@ -20,7 +20,7 @@ import (
 // transfer. If DMA is enabled for some direction the DMAISR method must be
 // setup as DMA interrupt handler for this direction.
 type Driver struct {
-	*Periph
+	P     *Periph
 	RxDMA *dma.Channel
 	TxDMA *dma.Channel
 
@@ -36,7 +36,7 @@ type Driver struct {
 // NewDriver provides convenient way to create heap allocated Driver struct.
 func NewDriver(p *Periph, rxdma, txdma *dma.Channel) *Driver {
 	d := new(Driver)
-	d.Periph = p
+	d.P = p
 	d.RxDMA = rxdma
 	d.TxDMA = txdma
 	return d
@@ -64,7 +64,7 @@ func (d *Driver) Unlock() {
 
 // I2CISR is I2C (event and error) interrupt handler.
 func (d *Driver) I2CISR() {
-	sr1 := d.Periph.raw.SR1.Load()
+	sr1 := d.P.raw.SR1.Load()
 	if e := getError(sr1); e != 0 {
 		d.handleErrors()
 		return
@@ -119,7 +119,7 @@ var eventHandlers = [...]func(d *Driver, sr1 i2c.SR1_Bits){
 }
 
 func (d *Driver) idleEH(sr1 i2c.SR1_Bits) {
-	p := &d.Periph.raw
+	p := &d.P.raw
 	if d.addr < 0 {
 		// Slave - not implemented.
 	} else {
@@ -134,7 +134,7 @@ func (d *Driver) idleEH(sr1 i2c.SR1_Bits) {
 	if sr1&i2c.BTF != 0 {
 		// Repeated start (most likely).
 		// Eensure that BTF was cleared before enable interrupts.
-		maxrep := (d.Periph.Bus().Clock() + 16) / 32 // Timeout: 1/32 s.
+		maxrep := (d.P.Bus().Clock() + 16) / 32 // Timeout: 1/32 s.
 		for {
 			if getError(sr1) != 0 {
 				d.handleErrors()
@@ -161,7 +161,7 @@ func (d *Driver) startISR(sr1 i2c.SR1_Bits) {
 		return
 	}
 	d.state = stateAddr
-	p := &d.Periph.raw
+	p := &d.P.raw
 	p.DR.Store(i2c.DR_Bits(d.addr))
 	p.SR1.Load() // Ensure that SB was cleared before return.
 }
@@ -171,7 +171,7 @@ func (d *Driver) addrISR(sr1 i2c.SR1_Bits) {
 		d.badEvent(sr1)
 		return
 	}
-	p := &d.Periph.raw
+	p := &d.P.raw
 	if d.addr&1 == 0 {
 		// Write.
 		p.SR2.Load()
@@ -218,7 +218,7 @@ func (d *Driver) readISR(sr1 i2c.SR1_Bits) {
 		d.badEvent(sr1)
 		return
 	}
-	d.buf[d.n] = byte(d.Periph.raw.DR.Load())
+	d.buf[d.n] = byte(d.P.raw.DR.Load())
 	d.n++
 	if d.n == len(d.buf) {
 		d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
@@ -234,7 +234,7 @@ func (d *Driver) read1ISR(sr1 i2c.SR1_Bits) {
 	}
 	d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
 	n := d.n
-	d.buf[n] = byte(d.Periph.raw.DR.Load())
+	d.buf[n] = byte(d.P.raw.DR.Load())
 	d.n = n + 1
 	d.state = stateIdle
 	d.done.Set()
@@ -245,7 +245,7 @@ func (d *Driver) read2ISR(sr1 i2c.SR1_Bits) {
 		d.badEvent(sr1)
 		return
 	}
-	p := &d.Periph.raw
+	p := &d.P.raw
 	cortexm.SetPRIMASK()
 	p.STOP().Set()
 	dr := p.DR.Load()
@@ -264,7 +264,7 @@ func (d *Driver) readNISR(sr1 i2c.SR1_Bits) {
 		d.badEvent(sr1)
 		return
 	}
-	p := &d.Periph.raw
+	p := &d.P.raw
 	n := d.n
 	m := len(d.buf) - n
 	if m < 3 {
@@ -297,7 +297,7 @@ func (d *Driver) readWaitEH(_ i2c.SR1_Bits) {
 	if d.RxDMA != nil && len(d.buf) > 1 {
 		d.state = stateReadDMA
 		if d.stop {
-			d.Periph.raw.LAST().Set()
+			d.P.raw.LAST().Set()
 		}
 		d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4)
 		d.startDMA(d.RxDMA)
@@ -323,7 +323,7 @@ func (d *Driver) writeISR(sr1 i2c.SR1_Bits) {
 		d.done.Set()
 		return
 	}
-	d.Periph.raw.DR.Store(i2c.DR_Bits(d.buf[n]))
+	d.P.raw.DR.Store(i2c.DR_Bits(d.buf[n]))
 	d.n = n + 1
 }
 
@@ -343,7 +343,7 @@ func (d *Driver) write() {
 	} else {
 		d.state = stateWrite
 		d.n = 1
-		d.Periph.raw.DR.Store(i2c.DR_Bits(d.buf[0]))
+		d.P.raw.DR.Store(i2c.DR_Bits(d.buf[0]))
 	}
 }
 
@@ -351,7 +351,7 @@ func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode) {
 	d.disableDMA(ch)
 	ch.Setup(mode)
 	ch.SetWordSize(1, 1)
-	ch.SetAddrP(unsafe.Pointer(d.Periph.raw.DR.U16.Addr()))
+	ch.SetAddrP(unsafe.Pointer(d.P.raw.DR.U16.Addr()))
 }
 
 func (d *Driver) startDMA(ch *dma.Channel) {
@@ -369,7 +369,7 @@ func (d *Driver) startDMA(ch *dma.Channel) {
 	if d.stop && d.n == len(d.buf) {
 		dmabits |= i2c.LAST
 	}
-	d.Periph.raw.CR2.SetBits(dmabits)
+	d.P.raw.CR2.SetBits(dmabits)
 	ch.SetAddrM(unsafe.Pointer(&d.buf[n]))
 	ch.SetLen(m)
 	ch.Clear(dma.EvAll, dma.ErrAll)
@@ -380,15 +380,15 @@ func (d *Driver) startDMA(ch *dma.Channel) {
 func (d *Driver) disableDMA(ch *dma.Channel) {
 	ch.Disable()
 	ch.DisableInt(dma.EvAll, dma.ErrAll)
-	d.Periph.raw.CR2.ClearBits(i2c.DMAEN | i2c.LAST)
+	d.P.raw.CR2.ClearBits(i2c.DMAEN | i2c.LAST)
 }
 
 func (d *Driver) enableIntI2C(m i2c.CR2_Bits) {
-	d.Periph.raw.CR2.SetBits(m)
+	d.P.raw.CR2.SetBits(m)
 }
 
 func (d *Driver) disableIntI2C(m i2c.CR2_Bits) {
-	d.Periph.raw.CR2.ClearBits(m)
+	d.P.raw.CR2.ClearBits(m)
 }
 
 func (d *Driver) handleErrors() {
@@ -441,7 +441,7 @@ func (d *Driver) DMAISR(ch *dma.Channel) {
 }
 
 func (d *Driver) waitDone(ch *dma.Channel) (e Error) {
-	timeout := byteTimeout + 2*9e9*int64(len(d.buf)+1)/int64(d.Speed())
+	timeout := byteTimeout + 2*9e9*int64(len(d.buf)+1)/int64(d.P.Speed())
 	if d.done.Wait(rtos.Nanosec() + timeout) {
 		d.done.Clear()
 	} else {
@@ -454,7 +454,7 @@ func (d *Driver) waitDone(ch *dma.Channel) (e Error) {
 			d.state = stateError
 		}
 	}
-	p := &d.Periph.raw
+	p := &d.P.raw
 	if d.state >= stateError {
 		switch d.state {
 		case stateBelatedStop:

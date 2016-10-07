@@ -14,9 +14,9 @@ func initI2C(twi *i2c.Periph, rxdma, txdma *dma.Channel) {
 }
 
 func resetI2C() {
-	i2cdrv.Reset() // Mandatory!
-	i2cdrv.Setup(i2c.Config{Speed: 320e3, Duty: i2c.Duty16_9})
-	i2cdrv.Enable()
+	i2cdrv.P.Reset() // Mandatory!
+	i2cdrv.P.Setup(i2c.Config{Speed: 320e3, Duty: i2c.Duty16_9})
+	i2cdrv.P.Enable()
 }
 
 func i2cISR() {

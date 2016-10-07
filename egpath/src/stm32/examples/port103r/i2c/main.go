@@ -44,7 +44,7 @@ func init() {
 	d.EnableClock(true)
 	twi = i2c.NewDriver(i2c.I2C2, d.Channel(5, 0), d.Channel(4, 0))
 	//twi = i2c.NewDriver(i2c.I2C2)
-	twi.EnableClock(true)
+	twi.P.EnableClock(true)
 	rtos.IRQ(irq.I2C2_EV).Enable()
 	rtos.IRQ(irq.I2C2_ER).Enable()
 	rtos.IRQ(irq.DMA1_Channel4).Enable()
@@ -52,9 +52,9 @@ func init() {
 }
 
 func i2cConfigure() {
-	twi.Reset() // Mandatory!
-	twi.Setup(i2c.Config{Speed: 5000})
-	twi.Enable()
+	twi.P.Reset() // Mandatory!
+	twi.P.Setup(i2c.Config{Speed: 5000})
+	twi.P.Enable()
 }
 
 func checkI2CErr(err error) bool {
@@ -67,7 +67,7 @@ func checkI2CErr(err error) bool {
 		return false
 	}
 	fmt.Printf("Error: 0x%02x\n", err)
-	twi.SoftReset()
+	twi.P.SoftReset()
 	return false
 }
 

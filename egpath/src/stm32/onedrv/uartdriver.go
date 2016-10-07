@@ -17,7 +17,7 @@ func (d USARTDriver) setReadTimeout() {
 }
 
 func (d USARTDriver) Reset() error {
-	d.USART.SetBaudRate(9600)
+	d.USART.P.SetBaudRate(9600)
 	err := d.USART.WriteByte(0xf0)
 	if err != nil {
 		return err
@@ -30,7 +30,7 @@ func (d USARTDriver) Reset() error {
 	if r == 0xf0 {
 		return onewire.ErrNoResponse
 	}
-	d.USART.SetBaudRate(115200)
+	d.USART.P.SetBaudRate(115200)
 	return nil
 }
 
@@ -38,8 +38,8 @@ func (d USARTDriver) Reset() error {
 func (d USARTDriver) resetRX() {
 	// Clear Rx buffer and all errors.
 	d.USART.DisableRx()
-	d.USART.Status()
-	d.USART.Load()
+	d.USART.P.Status()
+	d.USART.P.Load()
 	d.USART.EnableRx()
 }
 

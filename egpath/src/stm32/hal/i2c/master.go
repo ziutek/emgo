@@ -35,7 +35,7 @@ func (c *MasterConn) StopWrite() {
 	if d.state == stateIdle {
 		return
 	}
-	p := &d.Periph.raw
+	p := &d.P.raw
 	p.STOP().Set()
 	d.state = stateIdle
 	c.unlockDriver()

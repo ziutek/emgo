@@ -62,9 +62,9 @@ func init() {
 	tts = usart.NewDriver(
 		usart.USART2, d.Channel(5, 4), d.Channel(6, 4), dmarxbuf[:],
 	)
-	tts.EnableClock(true)
-	tts.SetBaudRate(115200)
-	tts.Enable()
+	tts.P.EnableClock(true)
+	tts.P.SetBaudRate(115200)
+	tts.P.Enable()
 	tts.EnableRx()
 	tts.EnableTx()
 	rtos.IRQ(irq.USART2).Enable()

@@ -36,7 +36,7 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	twi = i2c.NewDriver(i2c.I2C1, d.Channel(5, 1), d.Channel(6, 1))
-	twi.EnableClock(true)
+	twi.P.EnableClock(true)
 	rtos.IRQ(irq.I2C1_EV).Enable()
 	rtos.IRQ(irq.I2C1_ER).Enable()
 	rtos.IRQ(irq.DMA1_Stream5).Enable()
@@ -45,9 +45,9 @@ func init() {
 
 func twiConfigure() {
 	fmt.Printf("Reset\n")
-	twi.Reset() // Mandatory!
-	twi.Setup(i2c.Config{Speed: 5000})
-	twi.Enable()
+	twi.P.Reset() // Mandatory!
+	twi.P.Setup(i2c.Config{Speed: 5000})
+	twi.P.Enable()
 }
 
 func recover(err error) {
