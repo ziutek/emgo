@@ -18,18 +18,17 @@ func add(wg *WaitGroup, delta int) {
 		panic("sync: negative WaitGroup counter")
 	}
 	if delta < 0 && cnt == 0 {
-		e := syscall.AtomicLoadEvent(&wg.e)
-		if e != 0 {
-			// Waiter should check cnt.
+		if e := syscall.AtomicLoadEvent(&wg.e); e != 0 {
 			e.Send()
 		}
 	}
 }
 
 func wait(wg *WaitGroup) {
-	e := syscall.AssignEvent()
-	syscall.AtomicStoreEvent(&wg.e, e)
+	if wg.e == 0 {
+		syscall.AtomicStoreEvent(&wg.e, syscall.AssignEvent())
+	}
 	for atomic.LoadInt32(&wg.cnt) != 0 {
-		e.Wait()
+		wg.e.Wait()
 	}
 }
