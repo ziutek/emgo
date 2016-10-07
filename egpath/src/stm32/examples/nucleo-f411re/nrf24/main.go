@@ -8,6 +8,7 @@ import (
 	"arch/cortexm/bitband"
 	"arch/cortexm/debug/itm"
 
+	"stm32/hal/dma"
 	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
@@ -40,14 +41,19 @@ func init() {
 	spiport.Setup(sck|mosi, gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	spiport.Setup(miso, gpio.Config{Mode: gpio.AltIn})
 	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
-	nrfspi = spi.NewDriver(spi.SPI1, nil, nil)
-	nrfspi.EnableClock(true)
-	nrfspi.SetConf(
+	d := dma.DMA2
+	d.EnableClock(true)
+	nrfspi = spi.NewDriver(spi.SPI1, d.Channel(2, 3), d.Channel(3, 3))
+	nrfspi.P.EnableClock(true)
+	nrfspi.P.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			nrfspi.BR(10e6) | // 10 MHz max.
+			nrfspi.P.BR(10e6) | // 10 MHz max.
 			spi.SoftSS | spi.ISSHigh,
 	)
-	nrfspi.Enable()
+	nrfspi.P.Enable()
+	rtos.IRQ(irq.SPI1).Enable()
+	rtos.IRQ(irq.DMA2_Stream2).Enable()
+	rtos.IRQ(irq.DMA2_Stream3).Enable()
 
 	// nRF24 control lines.
 
@@ -58,42 +64,22 @@ func init() {
 	nrfirq.Connect(ctrport)
 	nrfirq.EnableFallTrig()
 	nrfirq.EnableInt()
-
 	rtos.IRQ(irq.EXTI9_5).Enable()
 }
 
-func wait(e spi.Event) bool {
-	for {
-		ev, err := nrfspi.Status()
-		if err != 0 {
-			fmt.Printf("Error: %v\n", err)
-			return false
-		}
-		if ev&e != 0 {
-			return true
-		}
-	}
-}
-
 func main() {
+	delay.Millisec(500) // For openocd setting SWO.
+	fmt.Printf(
+		"PCLK: %d Hz, SPI speed: %d Hz\n",
+		nrfspi.P.Bus().Clock(), nrfspi.P.Baudrate(nrfspi.P.Conf()),
+	)
 	for {
-		delay.Millisec(1e3)
+		var resp [2]byte
 		nrfcsn.Clear()
-		nrfspi.StoreByte(5)
-		if !wait(spi.TxEmpty) {
-			break
-		}
-		nrfspi.StoreByte(0)
-		if !wait(spi.RxNotEmpty) {
-			break
-		}
-		status := nrfspi.LoadByte()
-		if !wait(spi.RxNotEmpty) {
-			break
-		}
-		ch := nrfspi.LoadByte()
+		n := nrfspi.WriteRead([]byte{5}, resp[:])
 		nrfcsn.Set()
-		fmt.Printf("status=%02x ch=%d\n", status, ch)
+		fmt.Printf("n=%d data=%x err=%v\n", n, resp, nrfspi.Err())
+		delay.Millisec(100)
 	}
 }
 
@@ -105,8 +91,23 @@ func exti9_5ISR() {
 	}
 }
 
+func nrfSPIISR() {
+	nrfspi.ISR()
+}
+
+func nrfRxDMAISR() {
+	nrfspi.DMAISR(nrfspi.RxDMA)
+}
+
+func nrfTxDMAISR() {
+	nrfspi.DMAISR(nrfspi.TxDMA)
+}
+
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.EXTI9_5: exti9_5ISR,
+	irq.EXTI9_5:      exti9_5ISR,
+	irq.SPI1:         nrfSPIISR,
+	irq.DMA2_Stream2: nrfRxDMAISR,
+	irq.DMA2_Stream3: nrfTxDMAISR,
 }

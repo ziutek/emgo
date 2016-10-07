@@ -85,7 +85,14 @@ func (p *Periph) BR(baudrate int) Conf {
 	return Conf(br << spi.BRn)
 }
 
-const cfgMask = ^uint16(spi.SPE)
+// Baudrate returns real baudrate [bit/s] that will be set by cfg. APB1 and APB2
+// clock in stm32/hal/system package must be set properly before use this
+// function.
+func (p *Periph) Baudrate(cfg Conf) uint {
+	return p.Bus().Clock() >> (cfg&BR256>>spi.BRn + 1)
+}
+
+const cfgMask = ^uint16(spi.SPE | spi.BIDIMODE | spi.BIDIOE)
 
 // Conf returns the current configuration.
 func (p *Periph) Conf() Conf {
@@ -97,6 +104,7 @@ func (p *Periph) SetConf(cfg Conf) {
 	p.raw.CR1.U16.StoreBits(cfgMask, uint16(cfg))
 }
 
+// Event is a bitfield that encodes possible peripheral events.
 type Event byte
 
 const (
@@ -104,9 +112,11 @@ const (
 	TxEmpty    = Event(spi.TXE)  // Transmit buffer empty.
 	Busy       = Event(spi.BSY)  // Periph is busy (not a real event).
 
-	eventMask = RxNotEmpty | TxEmpty | Busy
+	realEventMask = RxNotEmpty | TxEmpty
+	eventMask     = realEventMask | Busy
 )
 
+// Error is a bitfield that encodes possible peripheral errors.
 type Error byte
 
 const (
@@ -151,6 +161,65 @@ func (p *Periph) Status() (Event, Error) {
 	return Event(sr) & eventMask, Error(sr>>3) & errorMask
 }
 
+// EnableIRQ enables generating of IRQ by events e.
+func (p *Periph) EnableIRQ(e Event) {
+	if e &= realEventMask; e != 0 {
+		p.raw.CR2.U16.SetBits(uint16(e) << spi.RXNEIEn)
+	}
+}
+
+// DisableIRQ disables generating of IRQ by events e.
+func (p *Periph) DisableIRQ(e Event) {
+	if e &= realEventMask; e != 0 {
+		p.raw.CR2.U16.ClearBits(uint16(e) << spi.RXNEIEn)
+	}
+}
+
+// SetIRQ enables generating of IRQ by events e and disables for other events.
+func (p *Periph) SetIRQ(e Event) {
+	const mask = uint16(realEventMask) << spi.RXNEIEn
+	v := uint16(e) << spi.RXNEIEn & mask
+	cr2 := p.raw.CR2.U16.Load()
+	if cr2&mask != v {
+		p.raw.CR2.U16.Store(cr2&^mask | v)
+	}
+}
+
+// EnableErrorIRQ enables generating of IRQ by errors.
+func (p *Periph) EnableErrorIRQ() {
+	p.raw.ERRIE().Set()
+}
+
+// DisableErrorIRQ disables generating of IRQ by errors.
+func (p *Periph) DisableErrorIRQ() {
+	p.raw.ERRIE().Clear()
+}
+
+// EnableDMA enables generating of DMA requests by events e.
+func (p *Periph) EnableDMA(e Event) {
+	if e &= realEventMask; e != 0 {
+		p.raw.CR2.U16.SetBits(uint16(e))
+	}
+}
+
+// DisableDMA disables generating of DMA requests by events e.
+func (p *Periph) DisableDMA(e Event) {
+	if e &= realEventMask; e != 0 {
+		p.raw.CR2.U16.ClearBits(uint16(e))
+	}
+}
+
+// SetDMA enables generating of DMA requests by events e and disables for other
+// events.
+func (p *Periph) SetDMA(e Event) {
+	const mask = uint16(realEventMask)
+	v := uint16(e) & mask
+	cr2 := p.raw.CR2.U16.Load()
+	if cr2&mask != v {
+		p.raw.CR2.U16.Store(cr2&^mask | v)
+	}
+}
+
 // Enable enables p.
 func (p *Periph) Enable() {
 	p.raw.SPE().Set()
@@ -161,18 +230,45 @@ func (p *Periph) Disable() {
 	p.raw.SPE().Clear()
 }
 
+type Duplex byte
+
+const (
+	Full Duplex = iota
+	HalfIn
+	HalfOut
+)
+
+func (p *Periph) SetDuplex(duplex Duplex) {
+	cr1 := p.raw.CR1.Load() &^ (spi.BIDIMODE | spi.BIDIOE)
+	switch duplex {
+	case HalfIn:
+		cr1 |= spi.BIDIMODE
+	case HalfOut:
+		cr1 |= spi.BIDIMODE | spi.BIDIOE
+	}
+	p.raw.CR1.Store(cr1)
+}
+
+// StoreU16 stores a halfword to the data register. Use it only when 16-bit
+// frame is configured.
 func (p *Periph) StoreU16(v uint16) {
 	p.raw.DR.U16.Store(v)
 }
 
+// LoadU16 loads a halfword from the data register. Use it only when 16-bit
+// frame is configured.
 func (p *Periph) LoadU16() uint16 {
 	return p.raw.DR.U16.Load()
 }
 
+// StoreByte stores a byte to the data register. Use it only when 8-bit frame is
+// configured.
 func (p *Periph) StoreByte(v byte) {
 	(*mmio.U8)(unsafe.Pointer(&p.raw.DR)).Store(v)
 }
 
+// LoadByte loads a byte from the data register. Use it only when 8-bit frame is
+// configured.
 func (p *Periph) LoadByte() byte {
 	return (*mmio.U8)(unsafe.Pointer(&p.raw.DR)).Load()
 }
