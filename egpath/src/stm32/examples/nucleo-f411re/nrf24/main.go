@@ -8,6 +8,8 @@ import (
 	"arch/cortexm/bitband"
 	"arch/cortexm/debug/itm"
 
+	"nrf24"
+
 	"stm32/hal/dma"
 	"stm32/hal/exti"
 	"stm32/hal/gpio"
@@ -19,11 +21,24 @@ import (
 
 const dbg = itm.Port(0)
 
-var (
-	nrfirq exti.Lines
-	nrfspi *spi.Driver
-	nrfcsn bitband.Bit
-)
+type nrfDCI struct {
+	spi *spi.Driver
+	csn bitband.Bit
+	irq exti.Lines
+}
+
+func (ll *nrfDCI) WriteRead(oi ...[]byte) (n int, err error) {
+	ll.csn.Clear()
+	ll.spi.WriteReadMany(oi...)
+	ll.csn.Set()
+	return n, ll.spi.Err()
+}
+
+func (ll *nrfDCI) SetCE(v int) error {
+	return nil
+}
+
+var nrfdci nrfDCI
 
 func init() {
 	system.Setup96(8)
@@ -34,7 +49,7 @@ func init() {
 
 	gpio.B.EnableClock(true)
 	ctrport, csn, irqn, ce := gpio.B, gpio.Pin6, gpio.Pin8, gpio.Pin9
-	nrfcsn = ctrport.OutPins().Bit(6)
+	nrfdci.csn = ctrport.OutPins().Bit(6)
 
 	// nRF24 SPI.
 
@@ -43,14 +58,14 @@ func init() {
 	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
 	d := dma.DMA2
 	d.EnableClock(true)
-	nrfspi = spi.NewDriver(spi.SPI1, d.Channel(2, 3), d.Channel(3, 3))
-	nrfspi.P.EnableClock(true)
-	nrfspi.P.SetConf(
+	nrfdci.spi = spi.NewDriver(spi.SPI1, d.Channel(2, 3), d.Channel(3, 3))
+	nrfdci.spi.P.EnableClock(true)
+	nrfdci.spi.P.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			nrfspi.P.BR(10e6) | // 10 MHz max.
+			nrfdci.spi.P.BR(10e6) | // 10 MHz max.
 			spi.SoftSS | spi.ISSHigh,
 	)
-	nrfspi.P.Enable()
+	nrfdci.spi.P.Enable()
 	rtos.IRQ(irq.SPI1).Enable()
 	rtos.IRQ(irq.DMA2_Stream2).Enable()
 	rtos.IRQ(irq.DMA2_Stream3).Enable()
@@ -60,10 +75,10 @@ func init() {
 	ctrport.Setup(csn|ce, gpio.Config{Mode: gpio.Out, Speed: gpio.High})
 	ctrport.SetPins(csn)
 	ctrport.Setup(irqn, gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
-	nrfirq = exti.Lines(irqn)
-	nrfirq.Connect(ctrport)
-	nrfirq.EnableFallTrig()
-	nrfirq.EnableInt()
+	nrfdci.irq = exti.Lines(irqn)
+	nrfdci.irq.Connect(ctrport)
+	nrfdci.irq.EnableFallTrig()
+	nrfdci.irq.EnableInt()
 	rtos.IRQ(irq.EXTI9_5).Enable()
 }
 
@@ -71,14 +86,12 @@ func main() {
 	delay.Millisec(500) // For openocd setting SWO.
 	fmt.Printf(
 		"PCLK: %d Hz, SPI speed: %d Hz\n",
-		nrfspi.P.Bus().Clock(), nrfspi.P.Baudrate(nrfspi.P.Conf()),
+		nrfdci.spi.P.Bus().Clock(), nrfdci.spi.P.Baudrate(nrfdci.spi.P.Conf()),
 	)
+	nrf := nrf24.Device{DCI: &nrfdci}
 	for {
-		var resp [2]byte
-		nrfcsn.Clear()
-		n := nrfspi.WriteRead([]byte{5}, resp[:])
-		nrfcsn.Set()
-		fmt.Printf("n=%d data=%x err=%v\n", n, resp, nrfspi.Err())
+		nrf.NOP()
+		fmt.Printf("status=%x err=%v\n", nrf.Status, nrf.Err)
 		delay.Millisec(100)
 	}
 }
@@ -86,21 +99,21 @@ func main() {
 func exti9_5ISR() {
 	lines := exti.Pending() & (exti.L9 | exti.L8 | exti.L7 | exti.L6 | exti.L5)
 	lines.ClearPending()
-	if lines&nrfirq != 0 {
+	if lines&nrfdci.irq != 0 {
 		dbg.WriteString("nRF24 ISR\n")
 	}
 }
 
 func nrfSPIISR() {
-	nrfspi.ISR()
+	nrfdci.spi.ISR()
 }
 
 func nrfRxDMAISR() {
-	nrfspi.DMAISR(nrfspi.RxDMA)
+	nrfdci.spi.DMAISR(nrfdci.spi.RxDMA)
 }
 
 func nrfTxDMAISR() {
-	nrfspi.DMAISR(nrfspi.TxDMA)
+	nrfdci.spi.DMAISR(nrfdci.spi.TxDMA)
 }
 
 //emgo:const

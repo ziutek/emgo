@@ -71,6 +71,10 @@ func startDMA(ch *dma.Channel, addr uintptr, n int) {
 	ch.EnableInt(dma.Complete, dma.ErrAll&^dma.ErrFIFO) // Ignore FIFO error.
 }
 
+func (d *Driver) SetDeadline(deadline int64) {
+	d.deadline = deadline
+}
+
 func (d *Driver) waitDone() bool {
 	if !d.done.Wait(d.deadline) {
 		d.TxDMA.Disable()
@@ -216,30 +220,15 @@ func (d *Driver) WriteRead(out, in []byte) int {
 	return d.WriteStringRead(*(*string)(unsafe.Pointer(&out)), in)
 }
 
-/*
-func (d *Driver) WriteRead(oi ...[]byte) (n int, err error) {
+func (d *Driver) WriteReadMany(oi ...[]byte) int {
+	var n int
 	for k := 0; k < len(oi); k += 2 {
 		var in []byte
 		if k+1 < len(oi) {
 			in = oi[k+1]
 		}
 		out := oi[k]
-		if m := len(out); m == len(in) {
-			if m == 0 {
-				continue
-			}
-			m, err = d.writeRead(
-				unsafe.Pointer(&out[0]), unsafe.Pointer(&in[0]),
-				m, m,
-			)
-			n += m
-			if err != nil {
-				return n, err
-			}
-		} else {
-			panic("nwww")
-		}
+		n += d.WriteRead(out, in)
 	}
-	return n, err
+	return n
 }
-*/

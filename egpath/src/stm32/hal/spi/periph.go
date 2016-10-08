@@ -230,23 +230,24 @@ func (p *Periph) Disable() {
 	p.raw.SPE().Clear()
 }
 
-type Duplex byte
+// Duplex describes duplex mode. In full-duplex mode transmission is performed
+// using MOSI and MISO lines. In half-duplex mode only MOSI at master side and
+// MISO at slave side are used.
+type Duplex uint16
 
 const (
-	Full Duplex = iota
-	HalfIn
-	HalfOut
+	Full    = Duplex(0)                         // Full-duplex mode.
+	HalfIn  = Duplex(spi.BIDIMODE)              // Half-duplex input mode.
+	HalfOut = Duplex(spi.BIDIMODE | spi.BIDIOE) // Half-duplex output mode.
 )
 
+func (p *Periph) Duplex() Duplex {
+	return Duplex(p.raw.CR1.Load()) & HalfOut
+}
+
 func (p *Periph) SetDuplex(duplex Duplex) {
-	cr1 := p.raw.CR1.Load() &^ (spi.BIDIMODE | spi.BIDIOE)
-	switch duplex {
-	case HalfIn:
-		cr1 |= spi.BIDIMODE
-	case HalfOut:
-		cr1 |= spi.BIDIMODE | spi.BIDIOE
-	}
-	p.raw.CR1.Store(cr1)
+	cr1 := p.raw.CR1.U16.Load()
+	p.raw.CR1.U16.Store(cr1&^uint16(HalfOut) | uint16(duplex))
 }
 
 // StoreU16 stores a halfword to the data register. Use it only when 16-bit
