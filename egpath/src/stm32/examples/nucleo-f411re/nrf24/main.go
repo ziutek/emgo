@@ -27,14 +27,14 @@ type nrfDCI struct {
 	irq exti.Lines
 }
 
-func (ll *nrfDCI) WriteRead(oi ...[]byte) (n int, err error) {
-	ll.csn.Clear()
-	ll.spi.WriteReadMany(oi...)
-	ll.csn.Set()
-	return n, ll.spi.Err()
+func (dc *nrfDCI) WriteRead(oi ...[]byte) (n int, err error) {
+	dc.csn.Clear()
+	dc.spi.WriteReadMany(oi...)
+	dc.csn.Set()
+	return n, dc.spi.Err()
 }
 
-func (ll *nrfDCI) SetCE(v int) error {
+func (dc *nrfDCI) SetCE(v int) error {
 	return nil
 }
 
@@ -85,14 +85,21 @@ func init() {
 func main() {
 	delay.Millisec(500) // For openocd setting SWO.
 	fmt.Printf(
-		"PCLK: %d Hz, SPI speed: %d Hz\n",
+		"\nPCLK: %d Hz, SPI speed: %d Hz\n",
 		nrfdci.spi.P.Bus().Clock(), nrfdci.spi.P.Baudrate(nrfdci.spi.P.Conf()),
 	)
 	nrf := nrf24.Device{DCI: &nrfdci}
+	//rtos.SleepUntil(100e6) // nRF24 requires wait at least 100 ms from start.
 	for {
-		nrf.NOP()
-		fmt.Printf("status=%x err=%v\n", nrf.Status, nrf.Err)
-		delay.Millisec(100)
+		delay.Millisec(500)
+		fmt.Printf("\n")
+		config := nrf.Config()
+		if nrf.Err != nil {
+			fmt.Printf("error: %v\n", nrf.Err)
+			continue
+		}
+		fmt.Printf("CONFIG: %v\n", config)
+		fmt.Printf("STATUS: %v\n", nrf.Status)
 	}
 }
 

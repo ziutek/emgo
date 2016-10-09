@@ -198,7 +198,7 @@ func (d *Driver) WriteStringRead(out string, in []byte) int {
 		d.write(oaddr, olen)
 		return n
 	}
-	if ilen < olen {
+	if ilen > olen {
 		var n int
 		if olen > 0 {
 			n = d.writeRead(oaddr, iaddr, olen, olen)
