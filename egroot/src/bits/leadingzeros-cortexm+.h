@@ -17,13 +17,15 @@ bits$leadingZerosPtr(uintptr u) {
 uint
 bits$leadingZeros64(uint64 u) {
 	uint n;
-	asm volatile ("clz %0, %R1\n\t"
+	asm volatile (
+		"clz %0, %R1\n\t"
 		"cmp %0, 32\n\t"
 		"itt eq\n\t"
 		"clzeq %0, %Q1\n\t"
 		"addeq %0, 32\n\t"
 		:"=&r" (n)
 		:"r"(u)
-		:"cc");
+		:"cc"
+	);
 	return n;
 }
