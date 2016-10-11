@@ -88,8 +88,7 @@ func S(c chan int, i int) {
 void foo$S(chan c$, int_ i$);
 // def
 void foo$S(chan c$, int_ i$) {
-	int_ _tmp0 = (i$+1);
-	SEND(c$, int_, _tmp0);
+	SEND(c$, int_, (i$+1));
 	close(c$);
 }
 // end

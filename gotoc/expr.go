@@ -565,7 +565,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		}
 
 	case *ast.IndexExpr:
-		cdd.indexExpr(w, cdd.exprType(e.X), cdd.ExprStr(e.X, nil), e.Index)
+		cdd.indexExpr(w, cdd.exprType(e.X), cdd.ExprStr(e.X, nil), e.Index, "")
 
 	case *ast.KeyValueExpr:
 		kt := cdd.exprType(e.Key)
@@ -878,7 +878,8 @@ func (cdd *CDD) elts(w *bytes.Buffer, elts []ast.Expr, nilT types.Type, st *type
 	}
 }
 
-func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Expr) {
+// indexExpr assumes that if idx == nil then ids is checked index.
+func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Expr, ids string) {
 	pt, isPtr := typ.(*types.Pointer)
 	if isPtr {
 		typ = pt.Elem()
@@ -887,13 +888,13 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 
 	switch t := typ.Underlying().(type) {
 	case *types.Basic: // string
-		if cdd.gtc.boundsCheck {
+		if cdd.gtc.boundsCheck && idx != nil {
 			w.WriteString("STRIDXC(")
 		} else {
 			w.WriteString("STRIDX(")
 		}
 	case *types.Slice:
-		if cdd.gtc.boundsCheck {
+		if cdd.gtc.boundsCheck && idx != nil {
 			w.WriteString("SLIDXC(")
 		} else {
 			w.WriteString("SLIDX(")
@@ -903,7 +904,7 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 		w.WriteString(dimFuncPtr("", dim))
 		w.WriteString(", ")
 	case *types.Array:
-		if cdd.gtc.boundsCheck &&
+		if cdd.gtc.boundsCheck && idx != nil &&
 			!cdd.isConstExpr(idx, types.Typ[types.UntypedInt]) {
 			w.WriteString("AIDXC(")
 		} else {
@@ -920,13 +921,18 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 	}
 	w.WriteString(xs)
 	w.WriteString(", ")
-	cdd.Expr(w, idx, indT)
+	if idx != nil {
+		cdd.Expr(w, idx, indT)
+	} else {
+		w.WriteString(ids)
+	}
 	w.WriteByte(')')
 }
 
-func (cdd *CDD) indexExprStr(typ types.Type, xs string, idx ast.Expr) string {
+// indexExprStr assumes that if idx == nil then ids is checked index.
+func (cdd *CDD) indexExprStr(typ types.Type, xs string, idx ast.Expr, ids string) string {
 	buf := new(bytes.Buffer)
-	cdd.indexExpr(buf, typ, xs, idx)
+	cdd.indexExpr(buf, typ, xs, idx, ids)
 	return buf.String()
 }
 
