@@ -12,11 +12,12 @@ import (
 	"stm32/hal/gpio"
 	"stm32/hal/i2c"
 	"stm32/hal/irq"
-	"stm32/hal/raw/rcc"
-	"stm32/hal/raw/tim"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
 	"stm32/hal/usart"
+
+	"stm32/hal/raw/rcc"
+	"stm32/hal/raw/tim"
 )
 
 var (
@@ -130,7 +131,7 @@ func init() {
 	irqen(irq.TIM6, 5)
 
 	initRTC()
-	
+
 	// startLCD must be last to allow work without LCD.
 	startLCD(i2cdrv.NewMasterConn(0x27, i2c.ASRD))
 }
