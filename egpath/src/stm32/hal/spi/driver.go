@@ -50,7 +50,6 @@ func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode, wordSize uintptr) {
 }
 
 func (d *Driver) DMAISR(ch *dma.Channel) {
-	ch.Disable()
 	ch.DisableInt(dma.EvAll, dma.ErrAll)
 	_, e := ch.Status()
 	if e&^dma.ErrFIFO != 0 || atomic.AddInt32(&d.dmacnt, -1) == 0 {
@@ -59,7 +58,7 @@ func (d *Driver) DMAISR(ch *dma.Channel) {
 }
 
 func (d *Driver) ISR() {
-	d.P.DisableErrorIRQ()
+	d.P.DisableIRQ(RxNotEmpty | Err)
 	d.done.Set()
 }
 
@@ -75,29 +74,51 @@ func (d *Driver) SetDeadline(deadline int64) {
 	d.deadline = deadline
 }
 
-func (d *Driver) waitDone() bool {
+func (d *Driver) WriteReadByte(b byte) byte {
+	if d.err != 0 {
+		return 0
+	}
+	d.P.SetDuplex(Full)
+	d.P.EnableIRQ(RxNotEmpty | Err)
+	d.done.Clear()
+	d.P.StoreByte(b)
 	if !d.done.Wait(d.deadline) {
+		d.err = uint(ErrTimeout) << 16
+		return 0
+	}
+	b = d.P.LoadByte()
+	if _, e := d.P.Status(); e != 0 {
+		d.err = uint(e) << 8
+		return 0
+	}
+	return b
+}
+
+func (d *Driver) waitDoneDMA() bool {
+	done := d.done.Wait(d.deadline)
+	d.P.DisableDMA(RxNotEmpty | TxEmpty)
+	if !done {
 		d.TxDMA.Disable()
 		d.RxDMA.Disable()
-		d.done.Clear()
-		d.err = uint(ErrTimeout) << 8
+		d.err = uint(ErrTimeout) << 16
 		return false
 	}
-	d.done.Clear()
 	if _, e := d.P.Status(); e != 0 {
-		d.err = uint(e)
+		d.TxDMA.Disable()
+		d.RxDMA.Disable()
+		d.err = uint(e) << 8
 		return false
 	}
 	_, rxe := d.RxDMA.Status()
 	_, txe := d.TxDMA.Status()
 	if e := (rxe | txe) &^ dma.ErrFIFO; e != 0 {
-		d.err = uint(e) << 16
+		d.err = uint(e)
 		return false
 	}
 	return true
 }
 
-func (d *Driver) writeRead(out, in uintptr, olen, ilen int) int {
+func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int) int {
 	txdmacfg := dma.MTP | dma.FIFO_4_4
 	if olen > 1 {
 		txdmacfg |= dma.IncM
@@ -105,8 +126,8 @@ func (d *Driver) writeRead(out, in uintptr, olen, ilen int) int {
 	d.setupDMA(d.TxDMA, txdmacfg, 1)
 	d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4, 1)
 	d.P.SetDuplex(Full)
-	d.P.SetDMA(RxNotEmpty | TxEmpty)
-	d.P.EnableErrorIRQ()
+	d.P.EnableDMA(RxNotEmpty | TxEmpty)
+	d.P.EnableIRQ(Err)
 	var n int
 	for {
 		m := ilen - n
@@ -116,7 +137,8 @@ func (d *Driver) writeRead(out, in uintptr, olen, ilen int) int {
 		if m > 0xffff {
 			m = 0xffff
 		}
-		atomic.StoreInt32(&d.dmacnt, 2)
+		d.dmacnt = 2
+		d.done.Clear()
 		startDMA(d.RxDMA, in, m)
 		startDMA(d.TxDMA, out, m)
 		if olen > 1 {
@@ -124,17 +146,17 @@ func (d *Driver) writeRead(out, in uintptr, olen, ilen int) int {
 		}
 		in += uintptr(m)
 		n += m
-		if !d.waitDone() {
+		if !d.waitDoneDMA() {
 			return n - d.RxDMA.Len()
 		}
 	}
 }
 
-func (d *Driver) write(out uintptr, olen int) {
+func (d *Driver) writeDMA(out uintptr, olen int) {
 	d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4, 1)
 	d.P.SetDuplex(HalfOut) // Avoid ErrOverflow.
-	d.P.SetDMA(TxEmpty)
-	d.P.EnableErrorIRQ()
+	d.P.EnableDMA(TxEmpty)
+	d.P.EnableIRQ(Err)
 	var n int
 	for {
 		m := olen - n
@@ -144,10 +166,11 @@ func (d *Driver) write(out uintptr, olen int) {
 		if m > 0xffff {
 			m = 0xffff
 		}
-		atomic.StoreInt32(&d.dmacnt, 1)
+		d.dmacnt = 1
+		d.done.Clear()
 		startDMA(d.TxDMA, out+uintptr(n), m)
 		n += m
-		if !d.waitDone() {
+		if !d.waitDoneDMA() {
 			return
 		}
 	}
@@ -161,18 +184,17 @@ func (d *Driver) Err() error {
 		return nil
 	}
 	d.err = 0
-	if err := e >> 16; err != 0 {
-		return dma.Error(err)
+	if err := DriverError(e >> 16); err != 0 {
+		return err
 	}
-	if err := e >> 8; err != 0 {
-		return DriverError(e)
+	if err := Error(e >> 8); err != 0 {
+		if err&ErrOverrun != 0 {
+			d.P.LoadByte()
+			d.P.Status()
+		}
+		return err
 	}
-	err := Error(e)
-	if err&ErrOverrun != 0 {
-		d.P.LoadByte()
-		d.P.Status()
-	}
-	return err
+	return dma.Error(e)
 }
 
 var ffff uint16 = 0xffff
@@ -183,25 +205,38 @@ func (d *Driver) WriteStringRead(out string, in []byte) int {
 	if d.err != 0 || olen == 0 && ilen == 0 {
 		return 0
 	}
+	if olen <= 1 && ilen <= 1 {
+		// Avoid DMA for one byte transfers.
+		b := byte(0xff)
+		if olen != 0 {
+			b = out[0]
+		}
+		b = d.WriteReadByte(b)
+		if ilen != 0 {
+			in[0] = b
+			return 1
+		}
+		return 0
+	}
 	oaddr := (*reflect.StringHeader)(unsafe.Pointer(&out)).Data
 	iaddr := (*reflect.SliceHeader)(unsafe.Pointer(&in)).Data
 	if olen > ilen {
 		var n int
 		if ilen > 0 {
-			n = d.writeRead(oaddr, iaddr, ilen, ilen)
+			n = d.writeReadDMA(oaddr, iaddr, ilen, ilen)
 			if d.err != 0 {
 				return n
 			}
 			olen -= ilen
 			oaddr += uintptr(ilen)
 		}
-		d.write(oaddr, olen)
+		d.writeDMA(oaddr, olen)
 		return n
 	}
 	if ilen > olen {
 		var n int
 		if olen > 0 {
-			n = d.writeRead(oaddr, iaddr, olen, olen)
+			n = d.writeReadDMA(oaddr, iaddr, olen, olen)
 			if d.err != 0 {
 				return n
 			}
@@ -211,9 +246,9 @@ func (d *Driver) WriteStringRead(out string, in []byte) int {
 		} else {
 			oaddr = uintptr(unsafe.Pointer(&ffff))
 		}
-		return n + d.writeRead(oaddr, iaddr, 1, ilen)
+		return n + d.writeReadDMA(oaddr, iaddr, 1, ilen)
 	}
-	return d.writeRead(oaddr, iaddr, ilen, ilen)
+	return d.writeReadDMA(oaddr, iaddr, ilen, ilen)
 }
 
 func (d *Driver) WriteRead(out, in []byte) int {
