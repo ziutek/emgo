@@ -6,26 +6,27 @@ import (
 	"strconv"
 )
 
-func fflags(f fmt.State, format string, mask, b byte) {
+func fflags(fs fmt.State, format string, mask, b byte) {
 	m := byte(0x80)
 	k := 0
-	for i, c := range format {
+	for i := 0; i < len(format); i++ {
+		c := format[i]
 		if c == '+' {
 			for mask&m == 0 {
 				m >>= 1
 			}
 			if b&m == 0 {
-				io.WriteString(f, format[k:i])
-				f.Write([]byte{'-'})
+				io.WriteString(fs, format[k:i])
+				fs.Write([]byte{'-'})
 			} else {
-				io.WriteString(f, format[k:i+1])
+				io.WriteString(fs, format[k:i+1])
 			}
 			m >>= 1
 			k = i + 1
 		}
 	}
 	if k < len(format) {
-		io.WriteString(f, format[k:])
+		io.WriteString(fs, format[k:])
 	}
 }
 
@@ -44,8 +45,8 @@ const (
 	RxDR   Status = 1 << 6 // Data Ready Rx FIFO interrupt.
 )
 
-// RxPipe returns data pipe number for the payload available for reading from
-// RxFifo or -1 if RxFifo is empty
+// RxPipe returns the data pipe number for the payload available for reading
+// from RxFifo or -1 if RxFifo is empty
 func (s Status) RxPipe() int {
 	n := int(s) & 0x0e
 	if n == 0x0e {
@@ -54,9 +55,9 @@ func (s Status) RxPipe() int {
 	return n >> 1
 }
 
-func (s Status) Format(f fmt.State, _ rune) {
-	fflags(f, "RxDR+ TxDS+ MaxRT+ FullTx+ RxPipe:", 0x71, byte(s))
-	strconv.WriteInt(f, s.RxPipe(), 10, 1)
+func (s Status) Format(fs fmt.State, _ rune) {
+	fflags(fs, "RxDR+ TxDS+ MaxRT+ FullTx+ RxPipe:", 0x71, byte(s))
+	strconv.WriteInt(fs, s.RxPipe(), 10, 0)
 }
 
 type Config byte
@@ -71,86 +72,88 @@ const (
 	MaskRxDR  Config = 1 << 6 // If 1 then mask interrupt caused by RxDR.
 )
 
-func (c Config) Format(f fmt.State, _ rune) {
+func (c Config) Format(fs fmt.State, _ rune) {
 	fflags(
-		f, "Mask(RxDR+ TxDS+ MaxRT+) EnCRC+ CRCO+ PwrUp+ PrimRx+",
+		fs, "Mask(RxDR+ TxDS+ MaxRT+) EnCRC+ CRCO+ PwrUp+ PrimRx+",
 		0x7f, byte(c),
 	)
 }
 
-// Config returns value of CONFIG register.
+// Config returns the value of the CONFIG register.
 func (d *Device) Config() Config {
 	return Config(d.byteReg(0))
 }
 
-// SetConfig sets value of CONFIG register.
+// SetConfig sets the value of the CONFIG register.
 func (d *Device) SetConfig(c Config) {
 	d.SetReg(0, byte(c))
 }
 
-/*
-// Pipe is a bitfield that represents nRF24L01+ Rx data pipes.
-type Pipe byte
+// Pipes is a bitfield that represents the nRF24L01+ Rx data pipes.
+type Pipes byte
 
 const (
-	P0 Pipe = 1 << iota
-	P1
-	P2
-	P3
-	P4
-	P5
-	PAll = P0 | P1 | P2 | P3 | P4 | P5
+	P0   Pipes = 1 << 0
+	P1   Pipes = 1 << 1
+	P2   Pipes = 1 << 2
+	P3   Pipes = 1 << 3
+	P4   Pipes = 1 << 4
+	P5   Pipes = 1 << 5
+	PAll       = P0 | P1 | P2 | P3 | P4 | P5
 )
 
-func (p Pipe) String() string {
-	return flags("P5+ P4+ P3+ P2+ P1+ P0+", 0x3f, byte(p))
+func (p Pipes) Format(fs fmt.State, _ rune) {
+	fflags(fs, "P5+ P4+ P3+ P2+ P1+ P0+", 0x3f, byte(p))
 }
 
-// AA returns value of EN_AA (Enable ‘Auto Acknowledgment’ Function) register.
-func (d *Device) AA() Pipe {
-	return Pipe(d.byteReg(1))
+// AA returns the value of the EN_AA (Enable ‘Auto Acknowledgment’ Function)
+// register.
+func (d *Device) AA() Pipes {
+	return Pipes(d.byteReg(1))
 }
 
-// SetAA sets value of EN_AA (Enable ‘Auto Acknowledgment’ Function) register.
-func (d *Device) SetAA(p Pipe) {
+// SetAA sets the value of the EN_AA (Enable ‘Auto Acknowledgment’ Function)
+// register.
+func (d *Device) SetAA(p Pipes) {
 	d.SetReg(1, byte(p))
 }
 
-// RxAE returns value of EN_RXADDR (Enabled RX Addresses) register.
-func (d *Device) RxAE() Pipe {
-	return Pipe(d.byteReg(2))
+// RxAEn returns the value of the EN_RXADDR (Enabled RX Addresses) register.
+func (d *Device) RxAEn() Pipes {
+	return Pipes(d.byteReg(2))
 }
 
-// SetRxAE sets value of EN_RXADDR (Enabled RX Addresses) register.
-func (d *Device) SetRxAE(p Pipe) {
+// SetRxAEn sets the value of the EN_RXADDR (Enabled RX Addresses) register.
+func (d *Device) SetRxAEn(p Pipes) {
 	d.SetReg(2, byte(p))
 }
 
-// AW returns value of SETUP_AW (Setup of Address Widths) register increased
-// by two.
+// AW returns the value of the SETUP_AW (Setup of Address Widths) register
+// increased by two, that is the address length in bytes.
 func (d *Device) AW() int {
 	return int(d.byteReg(3)) + 2
 }
 
-// SetAW sets value of SETUP_AW (Setup of Address Widths) register to (alen-2).
-func (d *Device) SetALen(alen int) {
+// SetAW sets the value of the SETUP_AW (Setup of Address Widths) register to
+// (alen-2), that is it sets the address length to alen bytes.
+func (d *Device) SetAW(alen int) {
 	if alen < 3 || alen > 5 {
 		panic("alen<3 || alen>5")
 	}
 	d.SetReg(3, byte(alen-2))
 }
 
-// Retr returns value of SETUP_RETR (Setup of Automatic Retransmission)
+// Retr returns the value of the SETUP_RETR (Setup of Automatic Retransmission)
 // register converted to number of retries and delay betwee retries.
 func (d *Device) Retr() (cnt, dlyus int) {
 	b := d.byteReg(4)
 	cnt = int(b & 0xf)
 	dlyus = (int(b>>4) + 1) * 250
-	return
+	return cnt, dlyus
 }
 
-// SetRetr sets value of SETUP_RETR (Setup of Automatic Retransmission)
-// register using cnt as number of retries and dlyus as delay betwee retries.
+// SetRetr sets the value of the SETUP_RETR (Setup of Automatic Retransmission)
+// register using cnt as number of retries and dlyus as delay between retries.
 func (d *Device) SetRetr(cnt, dlyus int) {
 	if uint(cnt) > 15 {
 		panic("cnt<0 || cnt>15")
@@ -158,10 +161,10 @@ func (d *Device) SetRetr(cnt, dlyus int) {
 	if dlyus < 250 || dlyus > 4000 {
 		panic("dlyus<250 || dlyus>4000")
 	}
-	d.SetReg(4, byte((dlyus/250-1)<<4|cnt))
+	d.SetReg(4, byte(((dlyus+125)/250-1)<<4|cnt))
 }
 
-// Ch returns value of RF_CH (RF Channel) register.
+// Ch returns the value of the RF_CH (RF Channel) register.
 func (d *Device) Ch() int {
 	return int(d.byteReg(5))
 }
@@ -177,14 +180,11 @@ func (d *Device) SetCh(ch int) {
 type RF byte
 
 const (
-	LNAHC RF = 1 << iota // (nRF24L01.LNA_HCURR) Rx LNA gain 0: -1.5dB,-0.8mA.
-	_
-	_
-	DRHigh // (RF_DR_HIGH) Select high speed data rate 0: 1Mbps, 1: 2Mbps.
-	Lock   // (PLL_LOCK) Force PLL lock signal. Only used in test.
-	DRLow  // (RF_DR_LOW) Set RF Data Rate to 250kbps.
-	_
-	Wave // (CONT_WAVE) Enables continuous carrier transmit when 1.
+	LNAHC  RF = 1 << 0 // (nRF24L01.LNA_HCURR) Rx LNA gain 0: -1.5dB,-0.8mA.
+	DRHigh RF = 1 << 3 // (RF_DR_HIGH) High speed data rate 0: 1Mbps, 1: 2Mbps.
+	Lock   RF = 1 << 4 // (PLL_LOCK) Force PLL lock signal. Only used in test.
+	DRLow  RF = 1 << 5 // (RF_DR_LOW) Set RF Data Rate to 250kbps.
+	Wave   RF = 1 << 7 // (CONT_WAVE) Enable continuous carrier transmit.
 )
 
 // Pwr returns RF output power in Tx mode [dBm].
@@ -202,40 +202,42 @@ func Pwr(dbm int) RF {
 	return RF((18+dbm)/3) & 6
 }
 
-func (rf RF) String() string {
-	return flags("Wave+ DRLow+ Lock+ DRHigh+ LNAHC+ Pwr:", 0xb9, byte(rf)) +
-		strconv.Itoa(rf.Pwr()) + "dBm"
+func (rf RF) Format(fs fmt.State, _ rune) {
+	fflags(fs, "Wave+ DRLow+ Lock+ DRHigh+ LNAHC+ Pwr:", 0xb9, byte(rf))
+	strconv.WriteInt(fs, rf.Pwr(), 10, 0)
+	io.WriteString(fs, " dBm")
 }
 
-// RF returns value of RF_SETUP register.
+// RF returns the value of the RF_SETUP register.
 func (d *Device) RF() RF {
 	return RF(d.byteReg(6))
 }
 
-// RF sets value of RF_SETUP register.
+// RF sets the value of the RF_SETUP register.
 func (d *Device) SetRF(rf RF) {
 	d.SetReg(6, byte(rf))
 }
 
-// Clear clears specified bits in STATUS register.
+// Clear clears the specified bits in the STATUS register.
 func (d *Device) Clear(stat Status) {
 	d.SetReg(7, byte(stat))
 }
 
-// TxCnt returns values of PLOS and ARC counters from OBSERVE_TX register.
-func (d *Device) TxCnt() (plos, arc int) {
+// ObserveTx returns the values of PLOS and ARC counters from the OBSERVE_TX
+// register.
+func (d *Device) ObserveTx() (plos, arc int) {
 	b := d.byteReg(8)
 	arc = int(b & 0xf)
 	plos = int(b >> 4)
 	return
 }
 
-// RPD returns value of RPD (Received Power Detector) register (is RP > -64dBm).
-// In case of nRF24L01 it returns value of.CD (Carrier Detect) register.
+// RPD returns the value of the RPD (Received Power Detector) register
+// (true if RP > -64dBm, false otherwise).
+// In case of nRF24L01 it returns the value of the CD (Carrier Detect) register.
 func (d *Device) RPD() bool {
 	return d.byteReg(9)&1 != 0
 }
-*/
 
 func checkPayNum(pn int) {
 	if uint(pn) > 5 {
@@ -302,21 +304,18 @@ func (d *Device) SetRxPW(pn, pw int) {
 	d.SetReg(byte(0x11+pn), byte(pw))
 }
 
-/*
 type FIFO byte
 
 const (
-	RxEmpty FIFO = 1 << iota // 1: Rx FIFO empty, 0: Data in Rx FIFO.
-	RxFull                   // 1: Rx FIFO full, 0: Avail.locations in Rx FIFO.
-	_
-	_
-	TxEmpty // 1: Tx FIFO empty, 0: Data in Tx FIFO.
-	TxFull  // 1: Tx FIFO full, 0: Available locations in Tx FIFO.
-	TxReuse // 1: Reuse last transmitted payload.
+	RxEmpty FIFO = 1 << 0 // 1: Rx FIFO empty, 0: Data in Rx FIFO.
+	RxFull  FIFO = 1 << 1 // 1: Rx FIFO full, 0: Avail.locations in Rx FIFO.
+	TxEmpty FIFO = 1 << 4 // 1: Tx FIFO empty, 0: Data in Tx FIFO.
+	TxFull  FIFO = 1 << 5 // 1: Tx FIFO full, 0: Available locations in Tx FIFO.
+	TxReuse FIFO = 1 << 6 // 1: Reuse last transmitted payload.
 )
 
-func (f FIFO) String() string {
-	return flags("TxReuse+ TxFull+ TxEmpty+ RxFull+ RxEmpty+", 0x73, byte(f))
+func (f FIFO) Format(fs fmt.State, _ rune) {
+	fflags(fs, "TxReuse+ TxFull+ TxEmpty+ RxFull+ RxEmpty+", 0x73, byte(f))
 }
 
 // FIFO returns value of FIFO_STATUS register.
@@ -324,26 +323,26 @@ func (d *Device) FIFO() FIFO {
 	return FIFO(d.byteReg(0x17))
 }
 
-// DynPD returns value of DYNPD (Enable dynamic payload length) register.
-func (d *Device) DynPD() Pipe {
-	return Pipe(d.byteReg(0x1c))
+// DPL returns value of DYNPD (Enable dynamic payload length) register.
+func (d *Device) DPL() Pipes {
+	return Pipes(d.byteReg(0x1c))
 }
 
-// SetDynPD sets value of DYNPD (Enable dynamic payload length) register.
-func (d *Device) SetDynPD(p Pipe) {
+// SetDPL sets value of DYNPD (Enable dynamic payload length) register.
+func (d *Device) SetDPL(p Pipes) {
 	d.SetReg(0x1c, byte(p))
 }
 
 type Feature byte
 
 const (
-	DynAck Feature = 1 << iota // 1: Enables the W_TX_PAYLOAD_NOACK command.
-	AckPay                     // 1: Enables payload with ACK
-	DPL                        // 1: Enables dynamic payload length
+	DynAck Feature = 1 << 0 // 1: Enables the W_TX_PAYLOAD_NOACK command.
+	AckPay Feature = 1 << 1 // 1: Enables payload with ACK
+	DPL    Feature = 1 << 2 // 1: Enables dynamic payload length
 )
 
-func (f Feature) String() string {
-	return flags("DPL+ AckPay+ DynAck+", 7, byte(f))
+func (f Feature) Format(fs fmt.State, _ rune) {
+	fflags(fs, "DPL+ AckPay+ DynAck+", 7, byte(f))
 }
 
 // Feature returns value of FEATURE register.
@@ -355,4 +354,3 @@ func (d *Device) Feature() Feature {
 func (d *Device) SetFeature(f Feature) {
 	d.SetReg(0x1d, byte(f))
 }
-*/
