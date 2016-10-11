@@ -30,12 +30,18 @@ func (f *EventFlag) Val() int {
 //			handleTimeout()
 //			continue
 //		}
+//		// We can miss some events here as long as flag is not cleared.
 //		flag.Clear()
 //		handleEvent()
 //	}
 //
-// Sometimes there is need for some action just before Wait (eg. enable
-// interrupt) or between Wait and Clear.
+// or
+//
+//	param = 3456  // Prepare some data in memory.
+//	flag.Clear()  // This works as memory barrier.
+//	start()       // ISR will signal that the work was done by setting flag.
+//	done := flag.Wait(deadline)
+//
 func (f *EventFlag) Wait(deadline int64) bool {
 	return flagWait(f, deadline)
 }
