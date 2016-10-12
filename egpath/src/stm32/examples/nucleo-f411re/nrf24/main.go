@@ -2,13 +2,10 @@ package main
 
 import (
 	"bufio"
-	"delay"
 	"fmt"
-	"mmio"
 	"rtos"
 	"text/linewriter"
 
-	"arch/cortexm/bitband"
 	"arch/cortexm/debug/itm"
 
 	"nrf24"
@@ -28,87 +25,10 @@ import (
 
 const dbg = itm.Port(0)
 
-type nrfDCI struct {
-	spi  *spi.Driver
-	csn  bitband.Bit
-	cet  *tim.TIM_Periph
-	ocmn uint
-	irq  exti.Lines
-}
-
-func (dci *nrfDCI) WriteRead(oi ...[]byte) (n int, err error) {
-	dci.csn.Clear()
-	dci.spi.WriteReadMany(oi...)
-	dci.csn.Set()
-	return n, dci.spi.Err()
-}
-
-func (dci *nrfDCI) SetCE(v int) error {
-	switch v {
-	case 0:
-		dci.cet.CCMR2.Store(4 << dci.ocmn)
-	case 1:
-		dci.cet.CCMR2.Store(5 << dci.ocmn)
-	case 2:
-		dci.cet.CCMR2.Store(7 << dci.ocmn)
-		dci.cet.CR1.Store(tim.OPM | tim.CEN)
-	}
-	return nil
-}
-
-func (dci *nrfDCI) Setup(spidrv *spi.Driver, csn bitband.Bit, pclk uint, cet *tim.TIM_Periph, ch int, irqline exti.Lines) {
-	dci.spi = spidrv
-	spidrv.P.SetConf(
-		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			spidrv.P.BR(10e6) | // 10 MHz max.
-			spi.SoftSS | spi.ISSHigh,
-	)
-	spidrv.P.Enable()
-
-	dci.csn = csn
-	csn.Set()
-
-	dci.cet = cet
-	if pclk != system.AHB.Clock() {
-		pclk *= 2
-	}
-	cet.PSC.U16.Store(48e3 - 1) // 2e3 Hz
-	cet.ARR.U32.Store(1e3 - 1)  // 1 Hz
-	cet.UG().Set()
-	var (
-		ccr *mmio.U32
-		cce tim.CCER_Bits
-	)
-	switch ch {
-	case 1:
-		ccr = &cet.CCR1.U32
-		cce = tim.CC1E
-		dci.ocmn = tim.OC1Mn
-	case 2:
-		ccr = &cet.CCR2.U32
-		cce = tim.CC2E
-		dci.ocmn = tim.OC2Mn
-	case 3:
-		ccr = &cet.CCR3.U32
-		cce = tim.CC3E
-		dci.ocmn = tim.OC3Mn
-	case 4:
-		ccr = &cet.CCR4.U32
-		cce = tim.CC4E
-		dci.ocmn = tim.OC4Mn
-	}
-	ccr.Store(200)
-	cet.CCER.Store(cce)
-
-	dci.irq = irqline
-	irqline.EnableFallTrig()
-	irqline.EnableInt()
-}
-
 var (
 	tts      *usart.Driver
 	dmarxbuf [88]byte
-	nrfdci   nrfDCI
+	nrfdci   *NRFDCI
 )
 
 func init() {
@@ -173,7 +93,7 @@ func init() {
 	irqline.Connect(ctrport)
 	rtos.IRQ(irq.EXTI9_5).Enable()
 
-	nrfdci.Setup(spid, csnbb, system.APB1.Clock(), tim.TIM4, 4, irqline)
+	nrfdci = NewNRFDCI(spid, csnbb, system.APB1.Clock(), tim.TIM4, 4, irqline)
 
 	// nRF24 requires wait at least 100 ms from start before use it.
 	rtos.SleepUntil(start + 100e6)
@@ -224,28 +144,31 @@ func printRegs(nrf *nrf24.Radio) {
 }
 
 func main() {
-	fmt.Printf(
-		"\nPCLK: %.1f MHz, SPI speed: %.1f MHz\n\n",
-		float32(nrfdci.spi.P.Bus().Clock())*1e-6,
-		float32(nrfdci.spi.P.Baudrate(nrfdci.spi.P.Conf()))*1e-6,
-	)
-	nrf := nrf24.NewRadio(&nrfdci)
+	fmt.Printf("\nSPI speed: %d hz\n\n", nrfdci.Baudrate())
+	nrf := nrf24.NewRadio(nrfdci)
 	nrf.SetAA(0)
+	nrf.SetConfig(nrf24.PwrUp)
 
 	printRegs(nrf)
+	fmt.Println()
 
-	nrf.SetCE(1)
-	delay.Millisec(2000)
-	nrf.SetCE(0)
-	delay.Millisec(2000)
-	nrf.SetCE(2)
+	var buf [32]byte
+
+	for {
+		nrf.WriteTx(buf[:])
+		fmt.Println(nrf.Err, nrf.Status)
+		nrf.SetCE(2)
+		nrfdci.Wait(0)
+		nrf.Clear(nrf24.TxDS)
+		fmt.Println(nrf.Err, nrf.Status)
+	}
 }
 
 func exti9_5ISR() {
-	lines := exti.Pending() & (exti.L9 | exti.L8 | exti.L7 | exti.L6 | exti.L5)
-	lines.ClearPending()
-	if lines&nrfdci.irq != 0 {
-		dbg.WriteString("nRF24 ISR\n")
+	p := exti.Pending() & (exti.L9 | exti.L8 | exti.L7 | exti.L6 | exti.L5)
+	p.ClearPending()
+	if p&nrfdci.IRQ() != 0 {
+		nrfdci.ISR()
 	}
 }
 
