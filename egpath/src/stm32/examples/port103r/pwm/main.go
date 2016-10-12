@@ -38,6 +38,11 @@ func init() {
 	}
 	t.PSC.U16.Store(uint16(pclk/(PWMmax*pwmfreq) - 1))
 	t.ARR.Store(PWMmax - 1)
+	
+	// Following PWM configuration is very readable but not optimal. The same 
+	// registers are accessed many times. All read-modify-write Set/Store bits
+	// operations can be replaced by simple Store whole register.
+	
 	t.OC1M().Store(pwmmode << tim.OC1Mn)
 	t.OC2M().Store(pwmmode << tim.OC2Mn)
 	t.OC1PE().Set()
