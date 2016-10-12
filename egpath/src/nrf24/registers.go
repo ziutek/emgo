@@ -30,7 +30,7 @@ func fflags(fs fmt.State, format string, mask, b byte) {
 	}
 }
 
-func (d *Device) byteReg(addr byte) byte {
+func (d *Radio) byteReg(addr byte) byte {
 	var buf [1]byte
 	d.Reg(addr, buf[:])
 	return buf[0]
@@ -80,12 +80,12 @@ func (c Config) Format(fs fmt.State, _ rune) {
 }
 
 // Config returns the value of the CONFIG register.
-func (d *Device) Config() Config {
+func (d *Radio) Config() Config {
 	return Config(d.byteReg(0))
 }
 
 // SetConfig sets the value of the CONFIG register.
-func (d *Device) SetConfig(c Config) {
+func (d *Radio) SetConfig(c Config) {
 	d.SetReg(0, byte(c))
 }
 
@@ -108,35 +108,35 @@ func (p Pipes) Format(fs fmt.State, _ rune) {
 
 // AA returns the value of the EN_AA (Enable ‘Auto Acknowledgment’ Function)
 // register.
-func (d *Device) AA() Pipes {
+func (d *Radio) AA() Pipes {
 	return Pipes(d.byteReg(1))
 }
 
 // SetAA sets the value of the EN_AA (Enable ‘Auto Acknowledgment’ Function)
 // register.
-func (d *Device) SetAA(p Pipes) {
+func (d *Radio) SetAA(p Pipes) {
 	d.SetReg(1, byte(p))
 }
 
 // RxAEn returns the value of the EN_RXADDR (Enabled RX Addresses) register.
-func (d *Device) RxAEn() Pipes {
+func (d *Radio) RxAEn() Pipes {
 	return Pipes(d.byteReg(2))
 }
 
 // SetRxAEn sets the value of the EN_RXADDR (Enabled RX Addresses) register.
-func (d *Device) SetRxAEn(p Pipes) {
+func (d *Radio) SetRxAEn(p Pipes) {
 	d.SetReg(2, byte(p))
 }
 
 // AW returns the value of the SETUP_AW (Setup of Address Widths) register
 // increased by two, that is the address length in bytes.
-func (d *Device) AW() int {
+func (d *Radio) AW() int {
 	return int(d.byteReg(3)) + 2
 }
 
 // SetAW sets the value of the SETUP_AW (Setup of Address Widths) register to
 // (alen-2), that is it sets the address length to alen bytes.
-func (d *Device) SetAW(alen int) {
+func (d *Radio) SetAW(alen int) {
 	if alen < 3 || alen > 5 {
 		panic("alen<3 || alen>5")
 	}
@@ -145,7 +145,7 @@ func (d *Device) SetAW(alen int) {
 
 // Retr returns the value of the SETUP_RETR (Setup of Automatic Retransmission)
 // register converted to number of retries and delay betwee retries.
-func (d *Device) Retr() (cnt, dlyus int) {
+func (d *Radio) Retr() (cnt, dlyus int) {
 	b := d.byteReg(4)
 	cnt = int(b & 0xf)
 	dlyus = (int(b>>4) + 1) * 250
@@ -154,7 +154,7 @@ func (d *Device) Retr() (cnt, dlyus int) {
 
 // SetRetr sets the value of the SETUP_RETR (Setup of Automatic Retransmission)
 // register using cnt as number of retries and dlyus as delay between retries.
-func (d *Device) SetRetr(cnt, dlyus int) {
+func (d *Radio) SetRetr(cnt, dlyus int) {
 	if uint(cnt) > 15 {
 		panic("cnt<0 || cnt>15")
 	}
@@ -165,12 +165,12 @@ func (d *Device) SetRetr(cnt, dlyus int) {
 }
 
 // Ch returns the value of the RF_CH (RF Channel) register.
-func (d *Device) Ch() int {
+func (d *Radio) Ch() int {
 	return int(d.byteReg(5))
 }
 
 // SetCh sets value of RF_CH (RF Channel) register.
-func (d *Device) SetCh(ch int) {
+func (d *Radio) SetCh(ch int) {
 	if uint(ch) > 127 {
 		panic("ch<0 || ch>127")
 	}
@@ -209,23 +209,23 @@ func (rf RF) Format(fs fmt.State, _ rune) {
 }
 
 // RF returns the value of the RF_SETUP register.
-func (d *Device) RF() RF {
+func (d *Radio) RF() RF {
 	return RF(d.byteReg(6))
 }
 
 // RF sets the value of the RF_SETUP register.
-func (d *Device) SetRF(rf RF) {
+func (d *Radio) SetRF(rf RF) {
 	d.SetReg(6, byte(rf))
 }
 
 // Clear clears the specified bits in the STATUS register.
-func (d *Device) Clear(stat Status) {
+func (d *Radio) Clear(stat Status) {
 	d.SetReg(7, byte(stat))
 }
 
 // ObserveTx returns the values of PLOS and ARC counters from the OBSERVE_TX
 // register.
-func (d *Device) ObserveTx() (plos, arc int) {
+func (d *Radio) ObserveTx() (plos, arc int) {
 	b := d.byteReg(8)
 	arc = int(b & 0xf)
 	plos = int(b >> 4)
@@ -235,7 +235,7 @@ func (d *Device) ObserveTx() (plos, arc int) {
 // RPD returns the value of the RPD (Received Power Detector) register
 // (true if RP > -64dBm, false otherwise).
 // In case of nRF24L01 it returns the value of the CD (Carrier Detect) register.
-func (d *Device) RPD() bool {
+func (d *Radio) RPD() bool {
 	return d.byteReg(9)&1 != 0
 }
 
@@ -260,43 +260,43 @@ func checkPayNumAddr(pn int, addr []byte) {
 }
 
 // RxAddr reads address assigned to Rx pipe pn into addr.
-func (d *Device) RxAddr(pn int, addr []byte) {
+func (d *Radio) RxAddr(pn int, addr []byte) {
 	checkPayNumAddr(pn, addr)
 	d.Reg(byte(0xa+pn), addr)
 }
 
 // RxAddr0 returns least significant byte of address assigned to Rx pipe pn.
-func (d *Device) RxAddr0(pn int) byte {
+func (d *Radio) RxAddr0(pn int) byte {
 	checkPayNum(pn)
 	return d.byteReg(byte(0xa + pn))
 }
 
 // SetRxAddr sets address assigned to Rx pipe pn to addr.
-func (d *Device) SetRxAddr(pn int, addr ...byte) {
+func (d *Radio) SetRxAddr(pn int, addr ...byte) {
 	checkPayNumAddr(pn, addr)
 	d.SetReg(byte(0xa+pn), addr...)
 }
 
 // TxAddr reads value of TX_ADDR (Transmit address) into addr.
-func (d *Device) TxAddr(addr []byte) {
+func (d *Radio) TxAddr(addr []byte) {
 	checkAddr(addr)
 	d.Reg(0x10, addr)
 }
 
 // SetTxAddr sets value of TX_ADDR (Transmit address).
-func (d *Device) SetTxAddr(addr ...byte) {
+func (d *Radio) SetTxAddr(addr ...byte) {
 	checkAddr(addr)
 	d.SetReg(0x10, addr...)
 }
 
 // RxPW returns Rx payload width set for pipe pn.
-func (d *Device) RxPW(pn int) int {
+func (d *Radio) RxPW(pn int) int {
 	checkPayNum(pn)
 	return int(d.byteReg(byte(0x11+pn))) & 0x3f
 }
 
 // SetRxPW sets Rx payload width for pipe pn.
-func (d *Device) SetRxPW(pn, pw int) {
+func (d *Radio) SetRxPW(pn, pw int) {
 	checkPayNum(pn)
 	if uint(pw) > 32 {
 		panic("pw<0 || pw>32")
@@ -319,17 +319,17 @@ func (f FIFO) Format(fs fmt.State, _ rune) {
 }
 
 // FIFO returns value of FIFO_STATUS register.
-func (d *Device) FIFO() FIFO {
+func (d *Radio) FIFO() FIFO {
 	return FIFO(d.byteReg(0x17))
 }
 
 // DPL returns value of DYNPD (Enable dynamic payload length) register.
-func (d *Device) DPL() Pipes {
+func (d *Radio) DPL() Pipes {
 	return Pipes(d.byteReg(0x1c))
 }
 
 // SetDPL sets value of DYNPD (Enable dynamic payload length) register.
-func (d *Device) SetDPL(p Pipes) {
+func (d *Radio) SetDPL(p Pipes) {
 	d.SetReg(0x1c, byte(p))
 }
 
@@ -346,11 +346,11 @@ func (f Feature) Format(fs fmt.State, _ rune) {
 }
 
 // Feature returns value of FEATURE register.
-func (d *Device) Feature() Feature {
+func (d *Radio) Feature() Feature {
 	return Feature(d.byteReg(0x1d))
 }
 
 // SetFeature sets value of FEATURE register.
-func (d *Device) SetFeature(f Feature) {
+func (d *Radio) SetFeature(f Feature) {
 	d.SetReg(0x1d, byte(f))
 }

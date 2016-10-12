@@ -13,20 +13,29 @@ type DCI interface {
 	SetCE(v int) error
 }
 
-// Device provides interface to nRF24L01(+) transceiver.
-type Device struct {
+// Radio provides interface to nRF24L01(+) transceiver.
+type Radio struct {
 	DCI DCI
 
-	// Status is value of status register just before the last executed command.
+	// Status is the value of the STATUS register received by the last executed
+	// command.
 	Status Status
 
-	// Err is error value of last executed command. You can freely invoke many
-	// commands before check an error. If one command have returned an error
-	// the subsequent commands will not be executed.
+	// Err is the error value of the last executed command. You can freely
+	// invoke many commands before check an error. If one command have returned
+	// an error the subsequent commands will not be executed as long as
+	// Err != nil.
 	Err error
 }
 
-func (d *Device) SetCE(v int) error {
+// NewRadio provides convenient way to create heap allocated Radio struct.
+func NewRadio(dci DCI) *Radio {
+	dev := new(Radio)
+	dev.DCI = dci
+	return dev
+}
+
+func (d *Radio) SetCE(v int) error {
 	d.DCI.SetCE(v)
 	return nil
 }
