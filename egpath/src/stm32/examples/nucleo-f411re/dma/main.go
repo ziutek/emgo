@@ -40,7 +40,7 @@ func main() {
 	ch.SetLen(len(P))
 	ch.SetAddrP(unsafe.Pointer(&P[0]))
 	ch.SetAddrM(unsafe.Pointer(&M[0]))
-	ch.EnableInt(dma.Complete, dma.ErrAll)
+	ch.EnableIRQ(dma.Complete, dma.ErrAll)
 	ch.Enable()
 	tce.Wait(0)
 

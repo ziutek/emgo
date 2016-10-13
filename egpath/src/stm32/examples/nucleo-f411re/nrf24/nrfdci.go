@@ -88,6 +88,8 @@ func (dci *NRFDCI) WriteRead(oi ...[]byte) (n int, err error) {
 	return n, dci.spi.Err()
 }
 
+// SetCE allows to control CE line.. v==0 sets CE low, v==1 sets CE high, v==2
+// pulses CE high for 10 µs and leaves it low.
 func (dci *NRFDCI) SetCE(v int) error {
 	switch v {
 	case 0:

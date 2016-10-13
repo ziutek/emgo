@@ -4,5 +4,5 @@ TaskStack = 0;
 MaxTasks = 1;
 
 INCLUDE stm32/f411xe
-INCLUDE stm32/loadram
+INCLUDE stm32/loadflash
 INCLUDE noos-cortexm

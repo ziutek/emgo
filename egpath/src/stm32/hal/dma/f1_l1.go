@@ -88,15 +88,15 @@ func (ch *Channel) enabled() bool {
 	return ch.raw.EN().Load() != 0
 }
 
-func (ch *Channel) intEnabled() byte {
+func (ch *Channel) irqEnabled() byte {
 	return byte(ch.raw.CCR.U32.Load() & 0xe)
 }
 
-func (ch *Channel) enableInt(flags byte) {
+func (ch *Channel) enableIRQ(flags byte) {
 	ch.raw.CCR.U32.SetBits(uint32(flags) & 0xe)
 }
 
-func (ch *Channel) disableInt(flags byte) {
+func (ch *Channel) disableIRQ(flags byte) {
 	ch.raw.CCR.U32.ClearBits(uint32(flags) & 0xe)
 }
 

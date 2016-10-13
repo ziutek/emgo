@@ -127,19 +127,19 @@ func (ch *Channel) enabled() bool {
 	return sraw(ch).EN().Load() != 0
 }
 
-func (ch *Channel) intEnabled() byte {
+func (ch *Channel) irqEnabled() byte {
 	st := sraw(ch)
 	ev := byte(st.CR.Load()&0x1e<<1) | byte(st.FCR.Load()>>7&1)
 	return ev
 }
 
-func (ch *Channel) enableInt(flags byte) {
+func (ch *Channel) enableIRQ(flags byte) {
 	st := sraw(ch)
 	st.CR.U32.SetBits(uint32(flags) >> 1 & 0x1e)
 	//st.FCR.U32.SetBits(uint32(flags) & 1 << 7) Do not use
 }
 
-func (ch *Channel) disableInt(flags byte) {
+func (ch *Channel) disableIRQ(flags byte) {
 	st := sraw(ch)
 	st.CR.U32.ClearBits(uint32(flags) >> 1 & 0x1e)
 	st.FCR.U32.ClearBits(uint32(flags) & 1 << 7)

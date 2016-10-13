@@ -54,24 +54,21 @@ func dmaPoolTRCE(ch *dma.Channel, deadline int64) Error {
 			return 0
 		}
 		if rtos.Nanosec() >= deadline {
+			ch.Disable()
 			return SoftTimeout
 		}
 	}
 }
 
-func dmaWaitTRCE(ch *dma.Channel, evflag *rtos.EventFlag, deadline int64) Error {
-	for {
-		ch.EnableInt(dma.Complete, dmaErrMask)
-		if !evflag.Wait(deadline) {
-			return SoftTimeout
-		}
-		evflag.Clear()
-		ev, err := ch.Status()
-		if err&dmaErrMask != 0 {
-			return DMAErr
-		}
-		if ev&dma.Complete != 0 {
-			return 0
-		}
+func dmaWait(ch *dma.Channel, evflag *rtos.EventFlag, deadline int64) Error {
+	if !evflag.Wait(deadline) {
+		ch.Disable()
+		ch.DisableIRQ(dma.EvAll, dma.ErrAll)
+		return SoftTimeout
 	}
+	_, err := ch.Status()
+	if err&dmaErrMask != 0 {
+		return DMAErr
+	}
+	return 0
 }

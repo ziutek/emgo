@@ -49,7 +49,7 @@ func (d *AltDriverDMA) I2CISR() {
 }
 
 func (d *AltDriverDMA) DMAISR(ch *dma.Channel) {
-	ch.DisableInt(dma.EvAll, dma.ErrAll)
+	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 	d.evflag.Set()
 }
 
@@ -78,19 +78,24 @@ func (d *AltDriverDMA) waitEvent(ev i2c.SR1_Bits) Error {
 	return i2cPollEvent(p, ev, deadline)
 }
 
-func (d *AltDriverDMA) startDMA(ch *dma.Channel, addr *byte, n int) (int, Error) {
+func (d *AltDriverDMA) performDMA(ch *dma.Channel, addr *byte, n int) (int, Error) {
 	ch.SetAddrM(unsafe.Pointer(addr))
 	ch.SetLen(n)
-	ch.Enable()
+	ch.Clear(dma.EvAll, dma.ErrAll)
 	timeout := byteTimeout + 2*9e9*int64(n+1)/int64(d.P.Speed())
 	deadline := rtos.Nanosec() + timeout
 	var e Error
 	if d.dmaint {
-		e = dmaWaitTRCE(ch, &d.evflag, deadline)
+		d.evflag.Clear()
+		ch.EnableIRQ(dma.Complete, dmaErrMask)
+		ch.Enable()
+		e = dmaWait(ch, &d.evflag, deadline)
 	} else {
+		ch.Enable()
 		e = dmaPoolTRCE(ch, deadline)
 	}
-	ch.Disable()
-	ch.Clear(dma.EvAll, dma.ErrAll)
-	return n - ch.Len(), e
+	if e != 0 {
+		n -= ch.Len()
+	}
+	return n, e
 }

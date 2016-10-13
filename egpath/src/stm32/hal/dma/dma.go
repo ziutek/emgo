@@ -90,7 +90,8 @@ func (ch *Channel) Clear(ev Event, err Error) {
 	ch.clear(byte(ev) | byte(err))
 }
 
-// Enable enables channel.
+// Enable enables the channel ch. All events and errors should be cleared
+// before call this method.
 func (ch *Channel) Enable() {
 	ch.enable()
 }
@@ -105,20 +106,26 @@ func (ch *Channel) Enabled() bool {
 	return ch.enabled()
 }
 
-// IntEnabled returns events that are enabled to generate interrupts.
-func (ch *Channel) IntEnabled() (Event, Error) {
-	flags := ch.intEnabled()
+// IRQEnabled returns events that are enabled to generate interrupt requests.
+func (ch *Channel) IRQEnabled() (Event, Error) {
+	flags := ch.irqEnabled()
 	return Event(flags) & EvAll, Error(flags) & ErrAll
 }
 
-// EnableInt enables interrupt generation by events.
-func (ch *Channel) EnableInt(ev Event, err Error) {
-	ch.enableInt(byte(ev) | byte(err))
+// EnableIRQ enables generation of IRQs by ev, err. Documentation does not
+// mention it, but IRQ can be not generated if an event was asserted before
+// enable IRQ for it. So always enable IRQs before channel. Typically, the
+// correct sequence is as follows:
+//	ch.Clear(EvAll, ErrAll)
+//	ch.EnableIRQ(ev, err)
+//	ch.Enable()
+func (ch *Channel) EnableIRQ(ev Event, err Error) {
+	ch.enableIRQ(byte(ev) | byte(err))
 }
 
-// DisableInt disables interrupt generation by events.
-func (ch *Channel) DisableInt(ev Event, err Error) {
-	ch.disableInt(byte(ev) | byte(err))
+// DisableIRQ disables IRQs generation by ev, err.
+func (ch *Channel) DisableIRQ(ev Event, err Error) {
+	ch.disableIRQ(byte(ev) | byte(err))
 }
 
 type Mode uint32

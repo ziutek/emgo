@@ -54,7 +54,7 @@ func NewDriver(p *Periph, rxdma, txdma *dma.Channel, rxbuf []byte) *Driver {
 
 func disableDMA(ch *dma.Channel) {
 	ch.Disable()
-	ch.DisableInt(dma.EvAll, dma.ErrAll)
+	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 }
 
 func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode) {
@@ -67,8 +67,8 @@ func startDMA(ch *dma.Channel, maddr unsafe.Pointer, mlen int) {
 	ch.SetAddrM(maddr)
 	ch.SetLen(mlen)
 	ch.Clear(dma.EvAll, dma.ErrAll)
+	ch.EnableIRQ(dma.Complete, dma.ErrAll&^dma.ErrFIFO) // Ignore FIFO error.
 	ch.Enable()
-	ch.EnableInt(dma.Complete, dma.ErrAll&^dma.ErrFIFO) // Ignore FIFO error.
 }
 
 // EnableRx enables Rx part of P, setups RxDMA in circular mode and enables it
@@ -229,13 +229,14 @@ func (d *Driver) WriteString(s string) (int, error) {
 		if m > 0xffff {
 			m = 0xffff
 		}
+		d.txdone.Clear()
 		d.P.raw.SR.Store(0) // Clear TC.
 		startDMA(ch, unsafe.Pointer(sh.Data+uintptr(n)), m)
 		n += m
 		if !d.txdone.Wait(d.deadlineTx) {
+			disableDMA(ch)
 			return n - ch.Len(), ErrTimeout
 		}
-		d.txdone.Clear()
 		_, e := ch.Status()
 		if e &^= dma.ErrFIFO; e != 0 {
 			return n - ch.Len(), e
@@ -255,7 +256,7 @@ func (d *Driver) WriteByte(b byte) error {
 }
 
 func (d *Driver) TxDMAISR() {
-	disableDMA(d.TxDMA)
+	d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
 	d.txdone.Set()
 }
 

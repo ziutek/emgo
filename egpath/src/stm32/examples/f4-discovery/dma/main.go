@@ -40,7 +40,7 @@ func main() {
 	ch.SetLen(len(P))
 	ch.SetAddrP(unsafe.Pointer(&P[0]))
 	ch.SetAddrM(unsafe.Pointer(&M[0]))
-	ch.EnableInt(dma.Complete, dma.ErrAll)
+	ch.EnableIRQ(dma.Complete, dma.ErrAll)
 	ch.Enable()
 	tce.Wait(0)
 
@@ -54,7 +54,7 @@ func main() {
 }
 
 func dmaISR() {
-	ch.DisableInt(dma.EvAll, dma.ErrAll)
+	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 	ev, err := ch.Status()
 	if ev&dma.Complete != 0 || err != 0 {
 		tce.Set()

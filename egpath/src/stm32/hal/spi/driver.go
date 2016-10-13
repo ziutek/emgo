@@ -50,7 +50,7 @@ func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode, wordSize uintptr) {
 }
 
 func (d *Driver) DMAISR(ch *dma.Channel) {
-	ch.DisableInt(dma.EvAll, dma.ErrAll)
+	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 	_, e := ch.Status()
 	if e&^dma.ErrFIFO != 0 || atomic.AddInt32(&d.dmacnt, -1) == 0 {
 		d.done.Set()
@@ -66,8 +66,8 @@ func startDMA(ch *dma.Channel, addr uintptr, n int) {
 	ch.SetAddrM(unsafe.Pointer(addr))
 	ch.SetLen(n)
 	ch.Clear(dma.EvAll, dma.ErrAll)
+	ch.EnableIRQ(dma.Complete, dma.ErrAll&^dma.ErrFIFO) // Ignore FIFO error.
 	ch.Enable()
-	ch.EnableInt(dma.Complete, dma.ErrAll&^dma.ErrFIFO) // Ignore FIFO error.
 }
 
 func (d *Driver) SetDeadline(deadline int64) {

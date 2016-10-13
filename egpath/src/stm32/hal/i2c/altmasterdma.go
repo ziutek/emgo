@@ -80,7 +80,7 @@ func (c *AltMasterConnDMA) Write(buf []byte) (int, error) {
 			if len(buf)-(n+m) == 1 {
 				m-- // Avoid last transfer size 1.
 			}
-			m, e = d.startDMA(txd, &buf[n], m)
+			m, e = d.performDMA(txd, &buf[n], m)
 		}
 		n += m
 		if e != 0 {
@@ -188,7 +188,7 @@ func (c *AltMasterConnDMA) Read(buf []byte) (int, error) {
 		if stop != 0 && n+m == len(buf) {
 			p.LAST().Set()
 		}
-		m, e = d.startDMA(rxd, &buf[n], m)
+		m, e = d.performDMA(rxd, &buf[n], m)
 		n += m
 		if e != 0 {
 			e |= getError(p.SR1.Load())

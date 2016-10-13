@@ -373,13 +373,13 @@ func (d *Driver) startDMA(ch *dma.Channel) {
 	ch.SetAddrM(unsafe.Pointer(&d.buf[n]))
 	ch.SetLen(m)
 	ch.Clear(dma.EvAll, dma.ErrAll)
+	ch.EnableIRQ(dma.Complete, dmaErrMask)
 	ch.Enable()
-	ch.EnableInt(dma.Complete, dmaErrMask)
 }
 
 func (d *Driver) disableDMA(ch *dma.Channel) {
 	ch.Disable()
-	ch.DisableInt(dma.EvAll, dma.ErrAll)
+	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 	d.P.raw.CR2.ClearBits(i2c.DMAEN | i2c.LAST)
 }
 

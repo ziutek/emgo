@@ -157,9 +157,10 @@ func main() {
 	for {
 		nrf.WriteTx(buf[:])
 		fmt.Println(nrf.Err, nrf.Status)
-		nrf.SetCE(2)
-		nrfdci.Wait(0)
 		nrf.Clear(nrf24.TxDS)
+		nrfdci.SetCE(2)
+		nrfdci.Wait(0)
+		nrf.NOP()
 		fmt.Println(nrf.Err, nrf.Status)
 	}
 }
