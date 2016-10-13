@@ -26,6 +26,15 @@ func compareAndSwapUint32(addr *uint32, old, new uint32) (swapped bool) {
 	return
 }
 
+func compareAndSwapInt(addr *int, old, new int) (swapped bool) {
+	cortexm.SetPRIMASK()
+	if swapped = (*addr == old); swapped {
+		*addr = new
+	}
+	cortexm.ClearPRIMASK()
+	return
+}
+
 func compareAndSwapUintptr(addr *uintptr, old, new uintptr) (swapped bool) {
 	cortexm.SetPRIMASK()
 	if swapped = (*addr == old); swapped {
@@ -34,6 +43,7 @@ func compareAndSwapUintptr(addr *uintptr, old, new uintptr) (swapped bool) {
 	cortexm.ClearPRIMASK()
 	return
 }
+
 
 func compareAndSwapPointer(addr *unsafe.Pointer, old, new unsafe.Pointer) (swapped bool) {
 	cortexm.SetPRIMASK()
@@ -53,6 +63,14 @@ func addInt32(addr *int32, delta int32) (new int32) {
 }
 
 func addUint32(addr *uint32, delta uint32) (new uint32) {
+	cortexm.SetPRIMASK()
+	new = *addr + delta
+	*addr = new
+	cortexm.ClearPRIMASK()
+	return
+}
+
+func addInt(addr *int, delta int) (new int) {
 	cortexm.SetPRIMASK()
 	new = *addr + delta
 	*addr = new
@@ -188,6 +206,10 @@ func loadUint32(addr *uint32) uint32 {
 	return *addr
 }
 
+func loadInt(addr *int) int {
+	return *addr
+}
+
 func loadUintptr(addr *uintptr) uintptr {
 	return *addr
 }
@@ -201,6 +223,10 @@ func storeInt32(addr *int32, val int32) {
 }
 
 func storeUint32(addr *uint32, val uint32) {
+	*addr = val
+}
+
+func storeInt(addr *int, val int) {
 	*addr = val
 }
 
