@@ -1,16 +1,11 @@
 package nrf24
 
-// DCI represents simplified nRF24L01(+) Data and Control Interface.
-// It allows to perform two basic operations: communicate with nRF24L01(+) over
-// SPI and enable/disable its RF part.
+// DCI represents the simplified nRF24L01(+) Data and Control Interface: only SPI
+// part of full DCI is need.
 type DCI interface {
 	// WriteRead perform SPI conversation: sets CSN low, writes and reads oi
-	// data, sets CSN high.
+	// data and sets CSN high.
 	WriteRead(oi ...[]byte) (n int, err error)
-
-	// Set CE line. v==0 sets CE low, v==1 sets CE high, v==2 pulses CE high for
-	// 10 µs and leaves it low.
-	SetCE(v int) error
 }
 
 // Radio provides interface to nRF24L01(+) transceiver.
@@ -33,9 +28,4 @@ func NewRadio(dci DCI) *Radio {
 	dev := new(Radio)
 	dev.DCI = dci
 	return dev
-}
-
-func (d *Radio) SetCE(v int) error {
-	d.DCI.SetCE(v)
-	return nil
 }
