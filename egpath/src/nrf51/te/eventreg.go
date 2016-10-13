@@ -37,20 +37,20 @@ func phmask(r *EventReg) (*internal.Pheader, uint32) {
 	return (*internal.Pheader)(unsafe.Pointer(pha)), 1 << n
 }
 
-// IntEnabled reports whether the occurence of an event will generat interrupt.
-func (r *EventReg) IntEnabled() bool {
+// IntEnabled reports whether the occurence of an event will generate IRQ.
+func (r *EventReg) IRQEnabled() bool {
 	ph, mask := phmask(r)
 	return ph.IntEnSet.Load()&mask != 0
 }
 
-// EnableInt enables generating interrupts by event recorded by r.
-func (r *EventReg) EnableInt() {
+// EnableIRQ enables generating of IRQ by event recorded by r.
+func (r *EventReg) EnableIRQ() {
 	ph, mask := phmask(r)
 	ph.IntEnSet.Store(mask)
 }
 
-// DisableInt disables generating interrupts by event recorded by r.
-func (r *EventReg) DisableInt() {
+// DisableIRQ disables generating of IRQ by event recorded by r.
+func (r *EventReg) DisableIRQ() {
 	ph, mask := phmask(r)
 	ph.IntEnClr.Store(mask)
 }

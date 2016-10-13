@@ -35,13 +35,13 @@ func init() {
 
 	t0.SetPrescaler(8) // 62500 Hz
 	t0.SetCC(1, 65526/2)
-	t0.EVENT(timer.COMPARE0).EnableInt()
-	t0.EVENT(timer.COMPARE1).EnableInt()
+	t0.EVENT(timer.COMPARE0).EnableIRQ()
+	t0.EVENT(timer.COMPARE1).EnableIRQ()
 	rtos.IRQ(irq.Timer0).Enable()
 	t0.TASK(timer.START).Trigger()
 
 	rtc0.SetPRESCALER(0) // 32768 Hz
-	rtc0.EVENT(rtc.COMPARE1).EnableInt()
+	rtc0.EVENT(rtc.COMPARE1).EnableIRQ()
 	rtos.IRQ(irq.RTC0).Enable()
 	rtc0.SetCC(1, period)
 	rtc0.TASK(rtc.START).Trigger()

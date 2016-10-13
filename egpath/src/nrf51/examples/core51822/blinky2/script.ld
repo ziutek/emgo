@@ -1,7 +1,6 @@
-StackISR = 2000; /* 2kB */
-
-StackTaskLog2 = 12; /* 4 KiB */
-StackTaskFrac = 6; /* 6/8 */
+ISRStack = 2048;
+MainStack = 2048;
+TaskStack = 0;
 MaxTasks = 1;
 
 INCLUDE nrf51/822
