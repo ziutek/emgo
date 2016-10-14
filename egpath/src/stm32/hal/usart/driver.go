@@ -250,8 +250,7 @@ func (d *Driver) Write(buf []byte) (int, error) {
 }
 
 func (d *Driver) WriteByte(b byte) error {
-	buf := [1]byte{b}
-	_, err := d.Write(buf[:])
+	_, err := d.Write([]byte{b})
 	return err
 }
 
