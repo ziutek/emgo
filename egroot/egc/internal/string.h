@@ -3,7 +3,8 @@ typedef struct {
 	uintptr len;
 } string;
 
-#define EGSTR(str) ((string){(byte*)(str), sizeof(str)-1})
+#define EGSTR(str) {str, sizeof(str)-1}
+#define EGSTL(str) ((string){str, sizeof(str)-1})
 
 #define SSLICEL(strx, lowx) ({ \
 	string s = strx;           \

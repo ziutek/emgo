@@ -1,13 +1,13 @@
 typedef struct {
 	unsafe$Pointer arr;
-	uintptr len;
-	uintptr cap;
+	uint len;
+	uint cap;
 } slice;
 
 
 #define SLICEL(slx, typ, lowx) ({ \
 	slice s = slx;                \
-	uintptr l = lowx;             \
+	uint l = lowx;                \
 	s.arr = ((typ)s.arr) + l;     \
 	s.len -= l;                   \
 	s.cap -= l;                   \
@@ -16,7 +16,7 @@ typedef struct {
 
 #define SLICELC(slx, typ, lowx) ({ \
 	slice s = slx;                 \
-	uintptr l = lowx;              \
+	uint l = lowx;                 \
 	if (l > s.len) panicIndex();   \
 	s.arr = ((typ)s.arr) + l;      \
 	s.len -= l;                    \
@@ -26,7 +26,7 @@ typedef struct {
 
 #define SLICELH(slx, typ, lowx, highx) ({ \
 	slice s = slx;                        \
-	uintptr l = lowx;                     \
+	uint l = lowx;                        \
 	s.arr = ((typ)s.arr) + l;             \
 	s.len = (highx) - l;                  \
 	s.cap -= l;                           \
@@ -35,8 +35,8 @@ typedef struct {
 
 #define SLICELHC(slx, typ, lowx, highx) ({ \
 	slice s = slx;                         \
-	uintptr l = lowx;                      \
-	uintptr h = highx;                     \
+	uint l = lowx;                         \
+	uint h = highx;                        \
 	if (l > h || h > s.cap) panicIndex();  \
 	s.arr = ((typ)s.arr) + l;              \
 	s.len = h - l;                         \
@@ -45,15 +45,15 @@ typedef struct {
 })
 
 #define SLICELHM(slx, typ, lowx, highx, maxx) ({            \
-	uintptr l = lowx;                                       \
+	uint l = lowx;                                          \
 	(slice){((typ)(slx).arr) + l, (highx) - l, (maxx) - l}; \
 })
 
 #define SLICELHMC(slx, typ, lowx, highx, maxx) ({  \
 	slice s = slx;                                 \
-	uintptr l = lowx;                              \
-	uintptr h = highx;                             \
-	uintptr m = maxx;                              \
+	uint l = lowx;                                 \
+	uint h = highx;                                \
+	uint m = maxx;                                 \
 	if (l > h || h > m || m > s.cap) panicIndex(); \
 	s.arr = ((typ)s.arr) + l;                      \
 	s.len = h - l;                                 \
@@ -69,7 +69,7 @@ typedef struct {
 
 #define SLICEHC(slx, highx) ({   \
 	slice s = slx;               \
-	uintptr h = highx;           \
+	uint h = highx;              \
 	if (h > s.cap) panicIndex(); \
 	s.len = h;                   \
 	s;                           \
@@ -81,8 +81,8 @@ typedef struct {
 
 #define SLICEHMC(slx, highx, maxx) ({     \
 	slice s = slx;                        \
-	uintptr h = highx;                    \
-	uintptr m = maxx;                     \
+	uint h = highx;                       \
+	uint m = maxx;                        \
 	if (h > m || m > s.cap) panicIndex(); \
 	s.len = h;                            \
 	s.cap = m;                            \
@@ -93,44 +93,44 @@ typedef struct {
 
 #define ASLICEL(arx, lowx) ({        \
 	typeof(arx) a = arx;             \
-	uintptr l = lowx;                \
-	uintptr newl = _ALEN(a) - l;     \
+	uint l = lowx;                   \
+	uint newl = _ALEN(a) - l;        \
 	(slice){a->arr + l, newl, newl}; \
 })
 
 #define ASLICELC(arx, lowx) ({       \
 	typeof(arx) a = arx;             \
-	uintptr l = lowx;                \
+	uint l = lowx;                   \
 	if (l > _ALEN(a)) panicIndex();  \
-	uintptr newl = _ALEN(a) - l;     \
+	uint newl = _ALEN(a) - l;        \
 	(slice){a->arr + l, newl, newl}; \
 })
 
 #define ASLICELH(arx, lowx, highx) ({               \
 	typeof(arx) a = arx;                            \
-	uintptr l = lowx;                               \
+	uint l = lowx;                                  \
 	(slice){a->arr + l, (highx) - l, _ALEN(a) - l}; \
 })
 
 #define ASLICELHC(arx, lowx, highx) ({         \
 	typeof(arx) a = arx;                       \
-	uintptr l = lowx;                          \
-	uintptr h = highx;                         \
+	uint l = lowx;                             \
+	uint h = highx;                            \
 	if (l > h || h > _ALEN(a)) panicIndex();   \
 	(slice){a->arr + l, h - l, _ALEN(a) - l};  \
 })
 
 #define ASLICELHM(arx, lowx, highx, maxx) ({      \
 	typeof(arx) a = arx;                          \
-	uintptr l = lowx;                             \
+	uint l = lowx;                                \
 	(slice){a->arr + l, (highx) - l, (maxx) - l}; \
 })
 	
 #define ASLICELHMC(arx, lowx, highx, maxx) ({         \
 	typeof(arx) a = arx;                              \
-	uintptr l = lowx;                                 \
-	uintptr h = highx;                                \
-	uintptr m = maxx;                                 \
+	uint l = lowx;                                    \
+	uint h = highx;                                   \
+	uint m = maxx;                                    \
 	if (l > h || h > m || m > _ALEN(a)) panicIndex(); \
 	(slice){a->arr + l, h - l, m - l};                \
 })
@@ -149,7 +149,7 @@ typedef struct {
 
 #define ASLICEHC(arx, highx) ({     \
 	typeof(arx) a = arx;            \
-	uintptr h = highx;              \
+	uint h = highx;                 \
 	if (h > _ALEN(a)) panicIndex(); \
 	(slice){a->arr, h, _ALEN(a)};   \
 })
@@ -158,8 +158,8 @@ typedef struct {
 
 #define ASLICEHMC(arx, highx, maxx) ({       \
 	typeof(arx) a = arx;                     \
-	uintptr h = highx;                       \
-	uintptr m = maxx;                        \
+	uint h = highx;                          \
+	uint m = maxx;                           \
 	if (h > m || m > _ALEN(a)) panicIndex(); \
 	(slice){a->arr, h, m};                   \
 })
@@ -178,7 +178,7 @@ typedef struct {
 
 #define SLIDXC(typ, slx, idx)  ({ \
 	slice s = slx;                \
-	uintptr i = idx;              \
+	uint i = idx;                 \
 	if (i >= s.len) panicIndex(); \
 	(typ)s.arr + i;               \
 })[0]
@@ -187,7 +187,7 @@ typedef struct {
 
 #define AIDXC(arx, idx) ({           \
 	typeof(arx) a = arx;             \
-	uintptr i = idx;                 \
+	uint i = idx;                    \
 	if (i >= _ALEN(a)) panicIndex(); \
 	a->arr + i;                      \
 })[0]
