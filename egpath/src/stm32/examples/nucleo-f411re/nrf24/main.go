@@ -153,15 +153,21 @@ func main() {
 	fmt.Println()
 
 	var buf [32]byte
-
+	n := 10000
 	for {
-		nrf.WriteTx(buf[:])
-		fmt.Println(nrf.Err, nrf.Status)
-		nrf.Clear(nrf24.TxDS)
-		nrfdci.SetCE(2)
-		nrfdci.Wait(0)
-		nrf.NOP()
-		fmt.Println(nrf.Err, nrf.Status)
+		start := rtos.Nanosec()
+		for i := 0; i < n; i++ {
+			nrf.WriteTx(buf[:])
+			nrf.Clear(nrf24.TxDS)
+			nrfdci.SetCE(2)
+			nrfdci.Wait(0)
+		}
+		dt := float32(rtos.Nanosec() - start)
+		fmt.Printf(
+			"%.0f pkt/s (%.0f kb/s)\n",
+			float32(n)*1e9/dt,
+			float32(n*len(buf)*8)*1e6/dt,
+		)
 	}
 }
 

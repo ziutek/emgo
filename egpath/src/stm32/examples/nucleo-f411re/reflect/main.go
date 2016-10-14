@@ -67,7 +67,6 @@ var ivals = [...]interface{}{
 	uintptr(3),
 	rtos.Debug(4),
 	T{5, 6, S{"foo"}},
-	&T{7, 8, S{"bar"}},
 	nil,
 }
 
