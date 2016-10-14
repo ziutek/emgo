@@ -110,5 +110,5 @@ slice foo$b;
 // def
 __typeof__(foo$b) foo$b;
 // init
-	foo$b = BYTES(EGSTR("blaaa"));
+	foo$b = BYTES(EGSTL("blaaa"));
 // end

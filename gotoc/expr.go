@@ -80,7 +80,11 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev constant.Value, t types.Type) {
 		writeFloat(w, im, k)
 		w.WriteString("i)")
 	case k == types.String || k == types.UntypedString:
-		w.WriteString("EGSTR(")
+		if cdd.constInit {
+			w.WriteString("EGSTR(")
+		} else {
+			w.WriteString("EGSTL(")
+		}
 		str := ev.ExactString()
 		// Handle problem with infinite hexadecimal escapes in C.
 		for {
@@ -166,13 +170,13 @@ func (cdd *CDD) NameStr(o types.Object, direct bool) string {
 	return buf.String()
 }
 
-func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun, recvt types.Type, recvs string) {
+func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr, permitaa bool) (fun, recvt types.Type, recvs string) {
 	sel := cdd.gtc.ti.Selections[e]
 	if sel == nil {
 		cdd.Name(w, cdd.object(e.Sel), true)
 		return
 	}
-	s := cdd.ExprStr(e.X, nil)
+	s := cdd.ExprStr(e.X, nil, permitaa)
 	index := sel.Index()
 	rt := sel.Recv()
 	for _, id := range index[:len(index)-1] {
@@ -239,9 +243,9 @@ func (cdd *CDD) SelectorExpr(w *bytes.Buffer, e *ast.SelectorExpr) (fun, recvt t
 	return
 }
 
-func (cdd *CDD) SelectorExprStr(e *ast.SelectorExpr) (s string, fun, recvt types.Type, recvs string) {
+func (cdd *CDD) SelectorExprStr(e *ast.SelectorExpr, permitaa bool) (s string, fun, recvt types.Type, recvs string) {
 	buf := new(bytes.Buffer)
-	fun, recvt, recvs = cdd.SelectorExpr(buf, e)
+	fun, recvt, recvs = cdd.SelectorExpr(buf, e, permitaa)
 	s = buf.String()
 	return
 }
@@ -344,7 +348,7 @@ func (cdd *CDD) funStr(fe ast.Expr, args []ast.Expr) (fs string, ft types.Type, 
 	switch f := fe.(type) {
 	case *ast.SelectorExpr:
 		buf := new(bytes.Buffer)
-		ft, rt, rs = cdd.SelectorExpr(buf, f)
+		ft, rt, rs = cdd.SelectorExpr(buf, f, false)
 		fs = buf.String()
 		return
 
@@ -359,12 +363,12 @@ func (cdd *CDD) funStr(fe ast.Expr, args []ast.Expr) (fs string, ft types.Type, 
 		}
 		return
 	}
-	fs = cdd.ExprStr(fe, nil)
+	fs = cdd.ExprStr(fe, nil, false)
 	ft = cdd.exprType(fe)
 	return
 }
 
-func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
+func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr, permitaa bool) {
 	switch t := cdd.exprType(e.Fun).(type) {
 	case *types.Signature:
 		c := cdd.call(e, t, false)
@@ -430,24 +434,24 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 			switch at.Underlying().(type) {
 			case *types.Basic: // string
 				w.WriteString("BYTES(")
-				cdd.Expr(w, arg, typ)
+				cdd.Expr(w, arg, typ, true)
 				w.WriteByte(')')
 				cdd.Complexity += 1e3 // BUG: Workaround because alloca in BYTES.
 			default: // slice
 				w.WriteByte('(')
-				cdd.Expr(w, arg, typ)
+				cdd.Expr(w, arg, typ, permitaa)
 				w.WriteByte(')')
 			}
 
 		case *types.Interface:
-			cdd.interfaceExpr(w, arg, t)
+			cdd.interfaceExpr(w, arg, t, permitaa)
 
 		default:
 			if b, ok := typ.(*types.Basic); ok && b.Kind() == types.String {
 				if _, ok := at.(*types.Slice); ok {
 					// string(bytes)
 					w.WriteString("NEWSTR(")
-					cdd.Expr(w, arg, typ)
+					cdd.Expr(w, arg, typ, true)
 					w.WriteByte(')')
 					break
 				}
@@ -474,13 +478,13 @@ func (cdd *CDD) CallExpr(w *bytes.Buffer, e *ast.CallExpr) {
 			dim := cdd.Type(w, t)
 			w.WriteString(dimFuncPtr("", dim))
 			w.WriteString(")(")
-			cdd.Expr(w, arg, t)
+			cdd.Expr(w, arg, t, permitaa)
 			w.WriteString("))")
 		}
 	}
 }
 
-func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
+func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type, permitaa bool) {
 	if t := cdd.gtc.ti.Types[expr]; t.Value != nil {
 		// Constant expression
 		cdd.Value(w, t.Value, t.Type)
@@ -495,8 +499,8 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		ltyp := cdd.exprType(e.X)
 		rtyp := cdd.exprType(e.Y)
 
-		lhs := cdd.ExprStr(e.X, ltyp)
-		rhs := cdd.ExprStr(e.Y, rtyp)
+		lhs := cdd.ExprStr(e.X, ltyp, permitaa)
+		rhs := cdd.ExprStr(e.Y, rtyp, permitaa)
 
 		if t, ok := ltyp.Underlying().(*types.Basic); ok && t.Kind() == types.String {
 			w.WriteString("(cmpstr(" + lhs + ", " + rhs + ") " + op + " 0)")
@@ -517,14 +521,14 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			if tup, ok := cdd.exprType(e).(*types.Tuple); ok {
 				tn, _ := cdd.tupleName(tup)
 				w.WriteString("RECVOK(" + tn + ", ")
-				cdd.Expr(w, e.X, nil)
+				cdd.Expr(w, e.X, nil, true)
 				w.WriteByte(')')
 			} else {
 				w.WriteString("RECV(")
 				dim := cdd.Type(w, t)
 				w.WriteString(dimFuncPtr("", dim))
 				w.WriteString(", ")
-				cdd.Expr(w, e.X, nil)
+				cdd.Expr(w, e.X, nil, true)
 				w.WriteString(", ")
 				zeroVal(w, t)
 				w.WriteByte(')')
@@ -533,7 +537,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		}
 		if e.Op == token.AND {
 			cdd.Complexity--
-			cdd.ptrExpr(w, e.X)
+			cdd.ptrExpr(w, e.X, permitaa)
 			break
 		}
 		op := e.Op.String()
@@ -541,10 +545,10 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			op = "~"
 		}
 		w.WriteString(op)
-		cdd.Expr(w, e.X, nil)
+		cdd.Expr(w, e.X, nil, permitaa)
 
 	case *ast.CallExpr:
-		cdd.CallExpr(w, e)
+		cdd.CallExpr(w, e, permitaa)
 
 	case *ast.Ident:
 		cdd.Complexity--
@@ -565,7 +569,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		}
 
 	case *ast.IndexExpr:
-		cdd.indexExpr(w, cdd.exprType(e.X), cdd.ExprStr(e.X, nil), e.Index, "")
+		cdd.indexExpr(w, cdd.exprType(e.X), cdd.ExprStr(e.X, nil, false), e.Index, "")
 
 	case *ast.KeyValueExpr:
 		kt := cdd.exprType(e.Key)
@@ -575,16 +579,16 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 			w.WriteString(i.Name)
 		} else {
 			w.WriteByte('[')
-			cdd.Expr(w, e.Key, kt)
+			cdd.Expr(w, e.Key, kt, true)
 			w.WriteByte(']')
 		}
 		w.WriteString(" = ")
-		cdd.interfaceExpr(w, e.Value, nilT)
+		cdd.interfaceExpr(w, e.Value, nilT, permitaa)
 
 	case *ast.ParenExpr:
 		cdd.Complexity--
 		w.WriteByte('(')
-		cdd.Expr(w, e.X, nilT)
+		cdd.Expr(w, e.X, nilT, permitaa)
 		w.WriteByte(')')
 
 	case *ast.SelectorExpr:
@@ -593,7 +597,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 				w.WriteByte('&')
 			}
 		}
-		s, fun, recvt, recvs := cdd.SelectorExprStr(e)
+		s, fun, recvt, recvs := cdd.SelectorExprStr(e, permitaa)
 		if recvt == nil {
 			w.WriteString(s)
 			cdd.Complexity--
@@ -618,14 +622,14 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 
 	case *ast.StarExpr:
 		w.WriteByte('*')
-		cdd.Expr(w, e.X, nil)
+		cdd.Expr(w, e.X, nil, permitaa)
 
 	case *ast.TypeAssertExpr:
 		w.WriteString("({\n")
 		cdd.il++
 		ityp := cdd.exprType(e.X)
 		cdd.indent(w)
-		cdd.varDecl(w, ityp, "_i", e.X, "", false)
+		cdd.varDecl(w, ityp, "_i", e.X, "", false, permitaa)
 		w.WriteByte('\n')
 		cdd.indent(w)
 		iempty := (cdd.gtc.methodSet(ityp).Len() == 0)
@@ -652,14 +656,14 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 				w.WriteString(";\n")
 				cdd.indent(w)
 				w.WriteString("if (_ret._1) _ret._0 = ")
-				cdd.interfaceES(w, "_i", e.Pos(), ityp, typ)
+				cdd.interfaceES(w, nil, "_i", e.Pos(), ityp, typ, permitaa)
 				w.WriteString(";\n")
 				cdd.indent(w)
 				w.WriteString("_ret;\n")
 			} else {
 				w.WriteString(") panicIC();\n")
 				cdd.indent(w)
-				cdd.interfaceES(w, "_i", e.Pos(), ityp, typ)
+				cdd.interfaceES(w, nil, "_i", e.Pos(), ityp, typ, permitaa)
 				w.WriteString(";\n")
 			}
 		} else {
@@ -697,7 +701,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 		w.WriteString("})")
 
 	case *ast.CompositeLit:
-		cdd.compositeLit(w, e, nilT)
+		cdd.compositeLit(w, e, nilT, permitaa)
 
 	case *ast.FuncLit:
 		fname := "func"
@@ -735,7 +739,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type) {
 	return
 }
 
-func (cdd *CDD) newVar(name string, typ types.Type, global bool, val ast.Expr) {
+func (cdd *CDD) newVar(name string, typ types.Type, global bool, val ast.Expr, permitaa bool) {
 	var pos token.Pos
 	if val != nil {
 		pos = val.Pos()
@@ -746,27 +750,27 @@ func (cdd *CDD) newVar(name string, typ types.Type, global bool, val ast.Expr) {
 	}
 	acd := cdd.gtc.newCDD(o, VarDecl, 0)
 	cdd.acds = append(cdd.acds, acd)
-	acd.varDecl(new(bytes.Buffer), typ, name, val, "", false)
+	acd.varDecl(new(bytes.Buffer), typ, name, val, "", false, permitaa)
 }
 
-func (cdd *CDD) ptrExpr(w *bytes.Buffer, e ast.Expr) {
-	cl, ok := e.(*ast.CompositeLit)
-	if !ok {
-		w.WriteByte('&')
-		cdd.Expr(w, e, nil)
+func (cdd *CDD) ptrExpr(w *bytes.Buffer, e ast.Expr, permitaa bool) {
+	_, iscl := e.(*ast.CompositeLit)
+	if iscl && !permitaa {
+		cdd.exit(
+			e.Pos(), "can not use pointer to composite literal in this context",
+		)
+	}
+	w.WriteByte('&')
+	if !iscl || cdd.Typ != VarDecl || !cdd.gtc.isGlobal(cdd.Origin) {
+		cdd.Expr(w, e, nil, permitaa)
 		return
 	}
-	if cdd.Typ != VarDecl || !cdd.gtc.isGlobal(cdd.Origin) {
-		cdd.exit(
-			e.Pos(),
-			"pointer to composite literal only supported in declaration of global variables")
-	}
 	name := "_cl" + cdd.gtc.uniqueId()
-	cdd.newVar(name, cdd.exprType(cl), true, cl)
-	w.WriteString("&" + name)
+	cdd.newVar(name, cdd.exprType(e), true, e, true)
+	w.WriteString(name)
 }
 
-func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Type) {
+func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Type, permitaa bool) {
 	typ := cdd.exprType(e)
 
 	switch t := typ.Underlying().(type) {
@@ -778,33 +782,36 @@ func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Ty
 			w.WriteByte(')')
 		}
 		w.WriteString("{{")
-		cdd.elts(w, e.Elts, t.Elem(), nil)
+		cdd.elts(w, e.Elts, t.Elem(), nil, permitaa)
 		w.WriteString("}}")
 		if !cdd.constInit {
 			w.WriteByte(')')
 		}
 
 	case *types.Slice:
+		if !permitaa {
+			cdd.exit(e.Pos(), "can not use slice literal in this context")
+		}
 		alen := cdd.clArrayLen(e.Elts)
 		slen := strconv.FormatInt(alen, 10)
-		if !cdd.constInit {
-			w.WriteString("CSLICE(" + slen + ", ((")
-			dim := cdd.Type(w, t.Elem())
-			dim = append([]string{"[]"}, dim...)
-			w.WriteString(dimFuncPtr("", dim))
-			w.WriteString("){")
-			cdd.elts(w, e.Elts, t.Elem(), nil)
-			w.WriteString("}))")
-			break
-		}
-		aname := "_cl" + cdd.gtc.uniqueId()
-		w.WriteString("{&" + aname + ", " + slen + ", " + slen + "}")
+		w.WriteString("CSLICE(" + slen + ", ((")
+		dim := cdd.Type(w, t.Elem())
+		dim = append([]string{"[]"}, dim...)
+		w.WriteString(dimFuncPtr("", dim))
+		w.WriteString("){")
+		cdd.elts(w, e.Elts, t.Elem(), nil, permitaa)
+		w.WriteString("}))")
 
-		typ := types.NewArray(t.Elem(), alen)
-		tv := cdd.gtc.ti.Types[e]
-		tv.Type = typ
-		cdd.gtc.ti.Types[e] = tv
-		cdd.newVar(aname, typ, true, e)
+		/*
+			aname := "_cl" + cdd.gtc.uniqueId()
+			w.WriteString("{&" + aname + ", " + slen + ", " + slen + "}")
+
+			typ := types.NewArray(t.Elem(), alen)
+			tv := cdd.gtc.ti.Types[e]
+			tv.Type = typ
+			cdd.gtc.ti.Types[e] = tv
+			cdd.newVar(aname, typ, true, e)
+		*/
 
 	case *types.Struct:
 		if !cdd.constInit {
@@ -813,11 +820,12 @@ func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Ty
 			w.WriteByte(')')
 		}
 		w.WriteByte('{')
-		cdd.elts(w, e.Elts, nil, t)
+		cdd.elts(w, e.Elts, nil, t, permitaa)
 		w.WriteByte('}')
 		if !cdd.constInit {
 			w.WriteByte(')')
 		}
+
 	default:
 		cdd.notImplemented(e, t)
 	}
@@ -840,7 +848,7 @@ func (cdd *CDD) clArrayLen(elems []ast.Expr) int64 {
 	return n
 }
 
-func (cdd *CDD) elts(w *bytes.Buffer, elts []ast.Expr, nilT types.Type, st *types.Struct) {
+func (cdd *CDD) elts(w *bytes.Buffer, elts []ast.Expr, nilT types.Type, st *types.Struct, permitaa bool) {
 	if len(elts) == 0 {
 		return
 	}
@@ -849,7 +857,7 @@ func (cdd *CDD) elts(w *bytes.Buffer, elts []ast.Expr, nilT types.Type, st *type
 			if i > 0 {
 				w.WriteString(", ")
 			}
-			cdd.interfaceExpr(w, el, nilT)
+			cdd.interfaceExpr(w, el, nilT, permitaa)
 		}
 		return
 	}
@@ -859,7 +867,7 @@ func (cdd *CDD) elts(w *bytes.Buffer, elts []ast.Expr, nilT types.Type, st *type
 			if i > 0 {
 				w.WriteString(", ")
 			}
-			cdd.interfaceExpr(w, el, st.Field(i).Type())
+			cdd.interfaceExpr(w, el, st.Field(i).Type(), permitaa)
 		}
 		return
 	}
@@ -871,7 +879,7 @@ func (cdd *CDD) elts(w *bytes.Buffer, elts []ast.Expr, nilT types.Type, st *type
 		for k := 0; k < st.NumFields(); k++ {
 			f := st.Field(k)
 			if st.Field(k).Name() == key {
-				cdd.interfaceExpr(w, el, f.Type())
+				cdd.interfaceExpr(w, el, f.Type(), permitaa)
 				break
 			}
 		}
@@ -922,7 +930,7 @@ func (cdd *CDD) indexExpr(w *bytes.Buffer, typ types.Type, xs string, idx ast.Ex
 	w.WriteString(xs)
 	w.WriteString(", ")
 	if idx != nil {
-		cdd.Expr(w, idx, indT)
+		cdd.Expr(w, idx, indT, true)
 	} else {
 		w.WriteString(ids)
 	}
@@ -937,7 +945,7 @@ func (cdd *CDD) indexExprStr(typ types.Type, xs string, idx ast.Expr, ids string
 }
 
 func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
-	sx := cdd.ExprStr(e.X, nil)
+	sx := cdd.ExprStr(e.X, nil, false)
 
 	typ := cdd.exprType(e.X)
 	pt, isPtr := typ.(*types.Pointer)
@@ -994,7 +1002,7 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 			w.WriteString(dimFuncPtr("", dim))
 		}
 		w.WriteString(", ")
-		cdd.Expr(w, e.Low, nil)
+		cdd.Expr(w, e.Low, nil, true)
 	} else {
 		switch {
 		case e.High != nil && e.Max == nil:
@@ -1013,18 +1021,18 @@ func (cdd *CDD) SliceExpr(w *bytes.Buffer, e *ast.SliceExpr) {
 	}
 	if e.High != nil {
 		w.WriteString(", ")
-		cdd.Expr(w, e.High, nil)
+		cdd.Expr(w, e.High, nil, true)
 	}
 	if e.Max != nil {
 		w.WriteString(", ")
-		cdd.Expr(w, e.Max, nil)
+		cdd.Expr(w, e.Max, nil, true)
 	}
 	w.WriteByte(')')
 }
 
-func (cdd *CDD) ExprStr(expr ast.Expr, nilT types.Type) string {
+func (cdd *CDD) ExprStr(expr ast.Expr, nilT types.Type, permitaa bool) string {
 	buf := new(bytes.Buffer)
-	cdd.Expr(buf, expr, nilT)
+	cdd.Expr(buf, expr, nilT, permitaa)
 	return buf.String()
 }
 
@@ -1134,24 +1142,32 @@ func (cdd *CDD) eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) 
 	w.WriteString("(" + lhs + " " + op + " " + rhs + ")")
 }
 
-func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, ityp types.Type) {
-	if ityp == nil || etyp == nil || types.Identical(ityp, etyp) {
-		w.WriteString(es)
-		return
+func (cdd *CDD) interfaceES(w *bytes.Buffer, ex ast.Expr, es string, epos token.Pos, etyp, ityp types.Type, permitaa bool) {
+	simple := ityp == nil || etyp == nil || types.Identical(ityp, etyp)
+	if !simple {
+		_, ok := ityp.Underlying().(*types.Interface)
+		simple = !ok
 	}
-	if _, ok := ityp.Underlying().(*types.Interface); !ok {
-		// Result isn't an interface.
-		w.WriteString(es)
-		return
+	if !simple {
+		b, ok := (etyp).(*types.Basic)
+		simple = ok && b.Kind() == types.UntypedNil
 	}
-	if b, ok := (etyp).(*types.Basic); ok && b.Kind() == types.UntypedNil {
-		// Expr. result is nil interface.
-		w.WriteString(es)
+	if simple {
+		if ex != nil {
+			cdd.Expr(w, ex, ityp, permitaa)
+		} else {
+			w.WriteString(es)
+		}
 		return
 	}
 	iempty := (cdd.gtc.methodSet(ityp).Len() == 0)
 	if _, ok := ityp.(*types.Interface); ok && !iempty {
-		cdd.exit(epos, "not supported assignment to non-empty unnamed interface")
+		cdd.exit(
+			epos, "not supported assignment to non-empty unnamed interface",
+		)
+	}
+	if ex != nil {
+		es = cdd.ExprStr(ex, ityp, false)
 	}
 	if _, ok := etyp.Underlying().(*types.Interface); ok {
 		eempty := (cdd.gtc.methodSet(etyp).Len() == 0)
@@ -1182,21 +1198,20 @@ func (cdd *CDD) interfaceES(w *bytes.Buffer, es string, epos token.Pos, etyp, it
 	}
 }
 
-func (cdd *CDD) interfaceESstr(es string, epos token.Pos, etyp, ityp types.Type) string {
+func (cdd *CDD) interfaceESstr(ex ast.Expr, es string, epos token.Pos, etyp, ityp types.Type, permitaa bool) string {
 	buf := new(bytes.Buffer)
-	cdd.interfaceES(buf, es, epos, etyp, ityp)
+	cdd.interfaceES(buf, ex, es, epos, etyp, ityp, permitaa)
 	return buf.String()
 }
 
-func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type) {
-	es := cdd.ExprStr(expr, ityp)
+func (cdd *CDD) interfaceExpr(w *bytes.Buffer, expr ast.Expr, ityp types.Type, permitaa bool) {
 	etyp := cdd.exprType(expr)
 	epos := expr.Pos()
-	cdd.interfaceES(w, es, epos, etyp, ityp)
+	cdd.interfaceES(w, expr, "", epos, etyp, ityp, permitaa)
 }
 
-func (cdd *CDD) interfaceExprStr(expr ast.Expr, ityp types.Type) string {
+func (cdd *CDD) interfaceExprStr(expr ast.Expr, ityp types.Type, permitaa bool) string {
 	buf := new(bytes.Buffer)
-	cdd.interfaceExpr(buf, expr, ityp)
+	cdd.interfaceExpr(buf, expr, ityp, permitaa)
 	return buf.String()
 }

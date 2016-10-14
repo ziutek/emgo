@@ -11,69 +11,27 @@ __typeof__(foo$A) foo$A = 3;
 var A = []int{1, 2, 3}
 // C code:
 // decl
-struct $3_$int__struct;
-typedef struct $3_$int__struct $3_$int_;
-// def
-#ifndef $3_$int_$
-#define $3_$int_$
-struct $3_$int__struct {
-	int_ arr[3];
-};
-#endif
-// decl
-$3_$int_ _cl0;
-// def
-__typeof__(_cl0) _cl0 = {{1, 2, 3}};
-// decl
 slice foo$A;
 // def
-__typeof__(foo$A) foo$A = {&_cl0, 3, 3};
+__typeof__(foo$A) foo$A = CSLICE(3, ((int_[]){1, 2, 3}));
 // end
 
 // Go code:
 var A = []int{10: 1, 20: 2, 30: 3}
 // C code:
 // decl
-struct $31_$int__struct;
-typedef struct $31_$int__struct $31_$int_;
-// def
-#ifndef $31_$int_$
-#define $31_$int_$
-struct $31_$int__struct {
-	int_ arr[31];
-};
-#endif
-// decl
-$31_$int_ _cl0;
-// def
-__typeof__(_cl0) _cl0 = {{[10] = 1, [20] = 2, [30] = 3}};
-// decl
 slice foo$A;
 // def
-__typeof__(foo$A) foo$A = {&_cl0, 31, 31};
+__typeof__(foo$A) foo$A = CSLICE(31, ((int_[]){[10] = 1, [20] = 2, [30] = 3}));
 // end
 
 // Go code:
 var A = []int{1, 2, 30: 3, 4}
 // C code:
 // decl
-struct $32_$int__struct;
-typedef struct $32_$int__struct $32_$int_;
-// def
-#ifndef $32_$int_$
-#define $32_$int_$
-struct $32_$int__struct {
-	int_ arr[32];
-};
-#endif
-// decl
-$32_$int_ _cl0;
-// def
-__typeof__(_cl0) _cl0 = {{1, 2, [30] = 3, 4}};
-// decl
 slice foo$A;
 // def
-__typeof__(foo$A) foo$A = {&_cl0, 32, 32};
+__typeof__(foo$A) foo$A = CSLICE(32, ((int_[]){1, 2, [30] = 3, 4}));
 // end
 
 // Go code:

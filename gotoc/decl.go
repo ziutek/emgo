@@ -200,7 +200,7 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				} else {
 					indent = true
 				}
-				cdd.varDecl(w, v.Type(), name, val, cattr, pconst)
+				cdd.varDecl(w, v.Type(), name, val, cattr, pconst, true)
 				w.Reset()
 				cdds = append(cdds, cdd)
 			}
@@ -282,7 +282,7 @@ func zeroVal(w *bytes.Buffer, typ types.Type) {
 	}
 }
 
-func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Expr, cattrs string, pconst bool) {
+func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Expr, cattrs string, pconst, permitaa bool) {
 	global := (cdd.Typ == VarDecl) && cdd.gtc.isGlobal(cdd.Origin)
 	if cattrs != "" {
 		w.WriteString(cattrs)
@@ -315,7 +315,7 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Ex
 	}
 	w.WriteString(" = ")
 	if val != nil {
-		cdd.interfaceExpr(w, val, typ)
+		cdd.interfaceExpr(w, val, typ, permitaa)
 	} else {
 		zeroVal(w, typ)
 	}
@@ -334,7 +334,10 @@ func (cdd *CDD) varDecl(w *bytes.Buffer, typ types.Type, name string, val ast.Ex
 
 // isConstExpr returns true if val can be represented as C constant expr.
 // typ is destination type.
-func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) (cex bool) {
+func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) bool {
+	if val == nil {
+		return true
+	}
 	if _, ok := typ.Underlying().(*types.Interface); ok {
 		if !types.Identical(typ, cdd.exprType(val)) {
 			return false
@@ -350,10 +353,33 @@ func (cdd *CDD) isConstExpr(val ast.Expr, typ types.Type) (cex bool) {
 		}
 		return v.Name == "nil"
 	case *ast.UnaryExpr:
-		return v.Op == token.AND
+		if v.Op == token.AND {
+			if ident, ok := v.X.(*ast.Ident); ok {
+				o := cdd.object(ident)
+				if o.Parent() == cdd.gtc.pkg.Scope() || cdd.gtc.isImported(o) {
+					return true
+				}
+			}
+		}
+		return cdd.isConstExpr(v.X, cdd.exprType(v.X))
 	case *ast.CompositeLit:
 		switch t := typ.Underlying().(type) {
 		case *types.Slice:
+			if len(v.Elts) == 0 {
+				return true
+			}
+			elemt := t.Elem()
+			for _, e := range v.Elts {
+				if kv, ok := e.(*ast.KeyValueExpr); ok {
+					if !cdd.isConstExpr(kv.Value, elemt) {
+						return false
+					}
+				} else {
+					if !cdd.isConstExpr(e, elemt) {
+						return false
+					}
+				}
+			}
 			return true
 		case *types.Array:
 			if len(v.Elts) == 0 {

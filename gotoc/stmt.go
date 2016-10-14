@@ -30,7 +30,7 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 				tn, fields := cdd.tupleName(eTyp.(*types.Tuple))
 				tmp := "_tmp" + cdd.gtc.uniqueId()
 				w.WriteString(tn + " " + tmp + " = ")
-				cdd.Expr(w, s.Results[0], eTyp)
+				cdd.Expr(w, s.Results[0], eTyp, false)
 				w.WriteString(";\n")
 				cdd.indent(w)
 				w.WriteString("(" + resultT + "){")
@@ -40,7 +40,8 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 					}
 					tmpf := tmp + "." + v.Name()
 					cdd.interfaceES(
-						w, tmpf, s.Pos(), v.Type(), tup.At(i).Type(),
+						w, nil, tmpf, s.Pos(), v.Type(), tup.At(i).Type(),
+						false,
 					)
 				}
 				w.WriteString("};\n")
@@ -48,11 +49,11 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 				cdd.indent(w)
 				w.WriteString("})")
 			} else {
-				cdd.Expr(w, s.Results[0], retTyp)
+				cdd.Expr(w, s.Results[0], retTyp, false)
 			}
 		} else {
 			retTyp := tup.At(0).Type()
-			cdd.interfaceExpr(w, s.Results[0], retTyp)
+			cdd.interfaceExpr(w, s.Results[0], retTyp, false)
 		}
 		w.WriteString(";\n")
 
@@ -62,7 +63,7 @@ func (cdd *CDD) ReturnStmt(w *bytes.Buffer, s *ast.ReturnStmt, resultT string, t
 			if i > 0 {
 				w.WriteString(", ")
 			}
-			cdd.interfaceExpr(w, expr, tup.At(i).Type())
+			cdd.interfaceExpr(w, expr, tup.At(i).Type(), false)
 		}
 		w.WriteString("};\n")
 	}
@@ -119,7 +120,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		if rhsIsTuple {
 			tup := cdd.exprType(s.Rhs[0]).(*types.Tuple)
 			tupName := "_tmp" + cdd.gtc.uniqueId()
-			cdd.varDecl(w, tup, tupName, s.Rhs[0], "", false)
+			cdd.varDecl(w, tup, tupName, s.Rhs[0], "", false, true)
 			w.WriteByte('\n')
 			cdd.indent(w)
 			for i, n := 0, tup.Len(); i < n; i++ {
@@ -131,8 +132,8 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				}
 			}
 		} else {
-			for i, e := range s.Rhs {
-				if s.Tok == token.DEFINE {
+			if s.Tok == token.DEFINE {
+				for i, e := range s.Rhs {
 					var t types.Type
 					if o := cdd.gtc.ti.Defs[s.Lhs[i].(*ast.Ident)]; o != nil {
 						t = o.Type()
@@ -141,12 +142,18 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 						// Lhs[i] was defined before.
 						t = cdd.exprType(s.Lhs[i])
 					}
-					rhs[i] = cdd.ExprStr(e, t)
-					continue
+					if t == nil {
+						// Why this is possible?!
+						t = cdd.exprType(s.Rhs[i])
+					}
+					rhs[i] = cdd.ExprStr(e, t, true)
 				}
-				t := cdd.exprType(s.Lhs[i])
-				rhs[i] = cdd.interfaceExprStr(e, t)
-				typ[i] = t
+			} else {
+				for i, e := range s.Rhs {
+					t := cdd.exprType(s.Lhs[i])
+					rhs[i] = cdd.interfaceExprStr(e, t, true)
+					typ[i] = t
+				}
 			}
 		}
 
@@ -167,7 +174,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			}
 		} else {
 			for i, e := range s.Lhs {
-				lhs[i] = cdd.ExprStr(e, nil)
+				lhs[i] = cdd.ExprStr(e, nil, true)
 			}
 		}
 
@@ -227,7 +234,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 
 	case *ast.ExprStmt:
-		cdd.Expr(w, s.X, nil)
+		cdd.Expr(w, s.X, nil, true)
 		w.WriteString(";\n")
 
 	case *ast.IfStmt:
@@ -240,7 +247,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 
 		w.WriteString("if (")
-		cdd.Expr(w, s.Cond, nil)
+		cdd.Expr(w, s.Cond, nil, true)
 		w.WriteString(") ")
 		updateEnd(cdd.BlockStmt(w, s.Body, resultT, tup))
 		if s.Else == nil {
@@ -259,7 +266,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 	case *ast.IncDecStmt:
 		w.WriteString(s.Tok.String())
 		w.WriteByte('(')
-		cdd.Expr(w, s.X, nil)
+		cdd.Expr(w, s.X, nil, true)
 		w.WriteString(");\n")
 
 	case *ast.LabeledStmt:
@@ -289,7 +296,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		}
 		w.WriteString("for (;")
 		if s.Cond != nil {
-			cdd.Expr(w, s.Cond, nil)
+			cdd.Expr(w, s.Cond, nil, true)
 		}
 		w.WriteByte(';')
 		if s.Post != nil {
@@ -353,7 +360,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		default:
 			if s.Value != nil || !array {
 				cdd.indent(w)
-				cdd.varDecl(w, xt, xs, e, "", false)
+				cdd.varDecl(w, xt, xs, e, "", false, true)
 				w.WriteByte('\n')
 			}
 		}
@@ -391,7 +398,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				if s.Tok == token.DEFINE {
 					w.WriteString("int_ ")
 				}
-				cdd.Expr(w, s.Key, nil)
+				cdd.Expr(w, s.Key, nil, true)
 				w.WriteString(" = _i;\n")
 			}
 			if hasval {
@@ -410,7 +417,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				if s.Tok == token.DEFINE {
 					w.WriteString("int_ ")
 				}
-				cdd.Expr(w, s.Key, nil)
+				cdd.Expr(w, s.Key, nil, true)
 				w.WriteString(" = _i;\n")
 			}
 			cdd.indent(w)
@@ -455,9 +462,9 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					w.WriteString("rune")
 				}
 				w.WriteByte(' ')
-				w.WriteString(dimFuncPtr(cdd.ExprStr(s.Value, nil), dim))
+				w.WriteString(dimFuncPtr(cdd.ExprStr(s.Value, nil, true), dim))
 			} else {
-				cdd.Expr(w, s.Value, nil)
+				cdd.Expr(w, s.Value, nil, true)
 			}
 			w.WriteString(" = " + vs + ";\n")
 		}
@@ -499,7 +506,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 		var typ types.Type
 		if s.Tag != nil {
 			typ = cdd.exprType(s.Tag)
-			cdd.varDecl(w, typ, "_tag", s.Tag, "", false)
+			cdd.varDecl(w, typ, "_tag", s.Tag, "", false, true)
 			w.WriteByte('\n')
 		} else {
 			typ = types.Typ[types.Bool]
@@ -517,7 +524,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					if i != 0 {
 						w.WriteString(" || ")
 					}
-					cdd.eq(w, "_tag", "==", cdd.ExprStr(e, typ), typ, typ)
+					cdd.eq(w, "_tag", "==", cdd.ExprStr(e, typ, true), typ, typ)
 				}
 				w.WriteString(") ")
 			}
@@ -577,14 +584,14 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			x = a.X.(*ast.TypeAssertExpr).X
 		case *ast.AssignStmt:
 			x = a.Rhs[0].(*ast.TypeAssertExpr).X
-			lhs = cdd.ExprStr(a.Lhs[0], nil)
+			lhs = cdd.ExprStr(a.Lhs[0], nil, true)
 		default:
 			panic(a)
 		}
 		ityp := cdd.exprType(x)
 		iempty := (cdd.gtc.methodSet(ityp).Len() == 0)
 		cdd.indent(w)
-		cdd.varDecl(w, cdd.exprType(x), "_tag", x, "", false)
+		cdd.varDecl(w, cdd.exprType(x), "_tag", x, "", false, true)
 		w.WriteByte('\n')
 		for _, stmt := range s.Body.List {
 			cdd.Complexity++
@@ -639,7 +646,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				w.WriteString(typ + " " + dimFuncPtr(lhs, dim))
 				w.WriteString(" = ")
 				if _, ok := caseTyp.Underlying().(*types.Interface); ok {
-					cdd.interfaceES(w, "_tag", cs.Case, ityp, caseTyp)
+					cdd.interfaceES(w, nil, "_tag", cs.Case, ityp, caseTyp, true)
 				} else {
 					w.WriteString("IVAL(_tag, " + typ + dimFuncPtr("", dim) + ")")
 				}
@@ -693,7 +700,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 	case *ast.SendStmt:
 		et := cdd.exprType(s.Chan).(*types.Chan).Elem()
-		val := cdd.interfaceExprStr(s.Value, et)
+		val := cdd.interfaceExprStr(s.Value, et, true)
 		/*
 			if _, ok := s.Value.(*ast.Ident); !ok {
 				tmp := "_tmp" + cdd.gtc.uniqueId()
@@ -704,7 +711,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			}
 		*/
 		w.WriteString("SEND(")
-		cdd.Expr(w, s.Chan, nil)
+		cdd.Expr(w, s.Chan, nil, true)
 		w.WriteString(", ")
 		dim := cdd.Type(w, et)
 		w.WriteString(dimFuncPtr("", dim) + ", " + val + ");\n")
@@ -736,13 +743,13 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 			case *ast.SendStmt:
 				cdd.indent(w)
 				w.WriteString("SENDINIT(" + strconv.Itoa(i) + ", ")
-				cdd.Expr(w, s.Chan, nil)
+				cdd.Expr(w, s.Chan, nil, true)
 				w.WriteString(", ")
 				et := cdd.exprType(s.Chan).(*types.Chan).Elem()
 				dim := cdd.Type(w, et)
 				dimFuncPtr("", dim)
 				w.WriteString(", ")
-				cdd.interfaceExpr(w, s.Value, et)
+				cdd.interfaceExpr(w, s.Value, et, true)
 				w.WriteString(");\n")
 
 			default:
@@ -757,7 +764,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 				default:
 					cdd.notImplemented(s)
 				}
-				cdd.Expr(w, c, nil)
+				cdd.Expr(w, c, nil, true)
 				w.WriteString(", ")
 				et := cdd.exprType(c).(*types.Chan).Elem()
 				dim := cdd.Type(w, et)
@@ -820,7 +827,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 
 			case *ast.AssignStmt:
 				cdd.indent(w)
-				name := cdd.ExprStr(s.Lhs[0], nil)
+				name := cdd.ExprStr(s.Lhs[0], nil, true)
 				if len(s.Lhs) == 1 {
 					if name != "_$" {
 						if s.Tok == token.DEFINE {
@@ -833,7 +840,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 					}
 					w.WriteString("SELRECV(" + strconv.Itoa(i) + ");\n")
 				} else {
-					ok := cdd.ExprStr(s.Lhs[1], nil)
+					ok := cdd.ExprStr(s.Lhs[1], nil, true)
 					tmp := ""
 					var tup *types.Tuple
 					if name != "_$" || ok != "_$" {
@@ -971,12 +978,12 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 		if atup, _ := cdd.exprType(a0).(*types.Tuple); atup != nil {
 			c.tup.t = atup
 			c.tup.l = "_tup"
-			c.tup.r = cdd.ExprStr(a0, c.tup.t)
+			c.tup.r = cdd.ExprStr(a0, c.tup.t, true)
 			for i := 0; i < alen; i++ {
 				it := tup.At(i).Type()
 				et := atup.At(i).Type()
 				ai := "_tup._" + strconv.Itoa(i)
-				s := cdd.interfaceESstr(ai, a0.Pos(), et, it)
+				s := cdd.interfaceESstr(nil, ai, a0.Pos(), et, it, true)
 				if eval || c.arr.t != nil {
 					c.args[n] = arg{it, "_" + strconv.Itoa(i), s}
 				} else {
@@ -1002,7 +1009,7 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 			if c.arr.r != "" {
 				c.arr.r += ", "
 			}
-			c.arr.r += cdd.interfaceExprStr(a, c.arr.t)
+			c.arr.r += cdd.interfaceExprStr(a, c.arr.t, true)
 			continue
 		}
 		var at types.Type
@@ -1012,7 +1019,7 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 			// Builtin functions may not spefify type of all parameters.
 			at = cdd.exprType(a)
 		}
-		s := cdd.interfaceExprStr(a, at)
+		s := cdd.interfaceExprStr(a, at, true)
 		if eval || c.arr.t != nil {
 			c.args[n] = arg{at, "_" + strconv.Itoa(i), s}
 		} else {
