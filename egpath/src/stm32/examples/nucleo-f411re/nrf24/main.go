@@ -109,38 +109,49 @@ func checkErr(err error) {
 }
 
 func printRegs(nrf *nrf24.Radio) {
-	fmt.Printf("CONFIG:      %v\n", nrf.Config())
-	fmt.Printf("EN_AA:       %v\n", nrf.AA())
-	fmt.Printf("EN_RXADDR:   %v\n", nrf.RxAEn())
-	fmt.Printf("SETUP_AW:    %d\n", nrf.AW())
-	arc, ard := nrf.Retr()
+	cfg, _ := nrf.Config()
+	fmt.Printf("CONFIG:      %v\n", cfg)
+	aa, _ := nrf.AA()
+	fmt.Printf("EN_AA:       %v\n", aa)
+	rxae, _ := nrf.RxAEn()
+	fmt.Printf("EN_RXADDR:   %v\n", rxae)
+	aw, _ := nrf.AW()
+	fmt.Printf("SETUP_AW:    %d\n", aw)
+	arc, ard, _ := nrf.Retr()
 	fmt.Printf("SETUP_RETR:  %d, %dus\n", arc, ard)
-	ch := nrf.Ch()
+	ch, _ := nrf.Ch()
 	fmt.Printf("RF_CH:       %d (%d MHz)\n", ch, 2400+ch)
-	fmt.Printf("RF_SETUP:    %v\n", nrf.RF())
-	plos, arc := nrf.ObserveTx()
+	rf, _ := nrf.RF()
+	fmt.Printf("RF_SETUP:    %v\n", rf)
+	plos, arc, _ := nrf.ObserveTx()
 	fmt.Printf("OBSERVE_TX:  %d lost, %d retr\n", plos, arc)
-	fmt.Printf("RPD:         %t\n", nrf.RPD())
+	rpd, _ := nrf.RPD()
+	fmt.Printf("RPD:         %t\n", rpd)
 	var addr [5]byte
 	for i := 0; i < 6; i++ {
-		n := 5
-		if i > 1 {
-			n = 1
+		fmt.Printf("RX_ADDR_P%d:  ", i)
+		if i < 2 {
+			nrf.RxAddr(i, addr[:])
+			fmt.Printf("%x\n", addr[:])
+		} else {
+			lsb, _ := nrf.RxAddrLSB(i)
+			fmt.Printf("%x\n", lsb)
 		}
-		nrf.RxAddr(i, addr[:n])
-		fmt.Printf("RX_ADDR_P%d:  %x\n", i, addr[:n])
 	}
 	nrf.TxAddr(addr[:])
 	fmt.Printf("Tx_ADDR:     %x\n", addr[:])
 	for i := 0; i < 6; i++ {
-		fmt.Printf("RX_PW_P%d:    %d\n", i, nrf.RxPW(i))
+		rxpw, _ := nrf.RxPW(i)
+		fmt.Printf("RX_PW_P%d:    %d\n", i, rxpw)
 	}
-	fmt.Printf("FIFO_STATUS: %v\n", nrf.FIFO())
-	fmt.Printf("DYNPD:       %v\n", nrf.DPL())
-	fmt.Printf("FEATURE:     %v\n", nrf.Feature())
-
-	checkErr(nrf.Err)
-	fmt.Printf("STATUS:      %v\n", nrf.Status)
+	fifo, _ := nrf.FIFO()
+	fmt.Printf("FIFO_STATUS: %v\n", fifo)
+	dpl, _ := nrf.DPL()
+	fmt.Printf("DYNPD:       %v\n", dpl)
+	feurure, status := nrf.Feature()
+	fmt.Printf("FEATURE:     %v\n", feurure)
+	checkErr(nrf.Err())
+	fmt.Printf("STATUS:      %v\n", status)
 }
 
 func main() {
@@ -163,6 +174,7 @@ func main() {
 			nrfdci.Wait(0)
 		}
 		dt := float32(rtos.Nanosec() - start)
+		checkErr(nrf.Err())
 		fmt.Printf(
 			"%.0f pkt/s (%.0f kb/s)\n",
 			float32(n)*1e9/dt,

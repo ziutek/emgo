@@ -30,10 +30,10 @@ func fflags(fs fmt.State, format string, mask, b byte) {
 	}
 }
 
-func (d *Radio) byteReg(addr byte) byte {
+func (r *Radio) byteReg(addr byte) (byte, Status) {
 	var buf [1]byte
-	d.Reg(addr, buf[:])
-	return buf[0]
+	s := r.Reg(addr, buf[:])
+	return buf[0], s
 }
 
 type Status byte
@@ -80,13 +80,14 @@ func (c Config) Format(fs fmt.State, _ rune) {
 }
 
 // Config returns the value of the CONFIG register.
-func (d *Radio) Config() Config {
-	return Config(d.byteReg(0))
+func (d *Radio) Config() (Config, Status) {
+	b, s := d.byteReg(0)
+	return Config(b), s
 }
 
 // SetConfig sets the value of the CONFIG register.
-func (d *Radio) SetConfig(c Config) {
-	d.SetReg(0, byte(c))
+func (r *Radio) SetConfig(c Config) Status {
+	return r.SetReg(0, byte(c))
 }
 
 // Pipes is a bitfield that represents the nRF24L01+ Rx data pipes.
@@ -108,73 +109,77 @@ func (p Pipes) Format(fs fmt.State, _ rune) {
 
 // AA returns the value of the EN_AA (Enable ‘Auto Acknowledgment’ Function)
 // register.
-func (d *Radio) AA() Pipes {
-	return Pipes(d.byteReg(1))
+func (r *Radio) AA() (Pipes, Status) {
+	b, s := r.byteReg(1)
+	return Pipes(b), s
 }
 
 // SetAA sets the value of the EN_AA (Enable ‘Auto Acknowledgment’ Function)
 // register.
-func (d *Radio) SetAA(p Pipes) {
-	d.SetReg(1, byte(p))
+func (r *Radio) SetAA(p Pipes) Status {
+	return r.SetReg(1, byte(p))
 }
 
 // RxAEn returns the value of the EN_RXADDR (Enabled RX Addresses) register.
-func (d *Radio) RxAEn() Pipes {
-	return Pipes(d.byteReg(2))
+func (r *Radio) RxAEn() (Pipes, Status) {
+	b, s := r.byteReg(2)
+	return Pipes(b), s
 }
 
 // SetRxAEn sets the value of the EN_RXADDR (Enabled RX Addresses) register.
-func (d *Radio) SetRxAEn(p Pipes) {
-	d.SetReg(2, byte(p))
+func (r *Radio) SetRxAEn(p Pipes) Status {
+	return r.SetReg(2, byte(p))
 }
 
 // AW returns the value of the SETUP_AW (Setup of Address Widths) register
-// increased by two, that is the address length in bytes.
-func (d *Radio) AW() int {
-	return int(d.byteReg(3)) + 2
+// increased by two, that is it returns the address length in bytes.
+func (r *Radio) AW() (int, Status) {
+	b, s := r.byteReg(3)
+	return int(b) + 2, s
 }
 
 // SetAW sets the value of the SETUP_AW (Setup of Address Widths) register to
 // (alen-2), that is it sets the address length to alen bytes.
-func (d *Radio) SetAW(alen int) {
+func (r *Radio) SetAW(alen int) Status {
 	if alen < 3 || alen > 5 {
 		panic("alen<3 || alen>5")
 	}
-	d.SetReg(3, byte(alen-2))
+	return r.SetReg(3, byte(alen-2))
 }
 
 // Retr returns the value of the SETUP_RETR (Setup of Automatic Retransmission)
 // register converted to number of retries and delay betwee retries.
-func (d *Radio) Retr() (cnt, dlyus int) {
-	b := d.byteReg(4)
+func (r *Radio) Retr() (cnt, dlyus int, s Status) {
+	b, s := r.byteReg(4)
 	cnt = int(b & 0xf)
 	dlyus = (int(b>>4) + 1) * 250
-	return cnt, dlyus
+	return cnt, dlyus, s
 }
 
 // SetRetr sets the value of the SETUP_RETR (Setup of Automatic Retransmission)
 // register using cnt as number of retries and dlyus as delay between retries.
-func (d *Radio) SetRetr(cnt, dlyus int) {
+func (r *Radio) SetRetr(cnt, dlyus int) Status {
 	if uint(cnt) > 15 {
 		panic("cnt<0 || cnt>15")
 	}
 	if dlyus < 250 || dlyus > 4000 {
 		panic("dlyus<250 || dlyus>4000")
 	}
-	d.SetReg(4, byte(((dlyus+125)/250-1)<<4|cnt))
+	return r.SetReg(4, byte(((dlyus+125)/250-1)<<4|cnt))
 }
 
 // Ch returns the value of the RF_CH (RF Channel) register.
-func (d *Radio) Ch() int {
-	return int(d.byteReg(5))
+func (r *Radio) Ch() (int, Status) {
+	b, s := r.byteReg(5)
+	return int(b), s
 }
 
 // SetCh sets value of RF_CH (RF Channel) register.
-func (d *Radio) SetCh(ch int) {
+func (r *Radio) SetCh(ch int) Status {
 	if uint(ch) > 127 {
 		panic("ch<0 || ch>127")
 	}
-	d.SetReg(5, byte(ch))
+	return r.SetReg(5, byte(ch))
 }
 
 type RF byte
@@ -209,34 +214,36 @@ func (rf RF) Format(fs fmt.State, _ rune) {
 }
 
 // RF returns the value of the RF_SETUP register.
-func (d *Radio) RF() RF {
-	return RF(d.byteReg(6))
+func (r *Radio) RF() (RF, Status) {
+	b, s := r.byteReg(6)
+	return RF(b), s
 }
 
 // RF sets the value of the RF_SETUP register.
-func (d *Radio) SetRF(rf RF) {
-	d.SetReg(6, byte(rf))
+func (r *Radio) SetRF(rf RF) Status {
+	return r.SetReg(6, byte(rf))
 }
 
 // Clear clears the specified bits in the STATUS register.
-func (d *Radio) Clear(stat Status) {
-	d.SetReg(7, byte(stat))
+func (r *Radio) Clear(s Status) Status {
+	return r.SetReg(7, byte(s))
 }
 
 // ObserveTx returns the values of PLOS and ARC counters from the OBSERVE_TX
 // register.
-func (d *Radio) ObserveTx() (plos, arc int) {
-	b := d.byteReg(8)
+func (r *Radio) ObserveTx() (plos, arc int, s Status) {
+	b, s := r.byteReg(8)
 	arc = int(b & 0xf)
 	plos = int(b >> 4)
-	return
+	return plos, arc, s
 }
 
 // RPD returns the value of the RPD (Received Power Detector) register
 // (true if RP > -64dBm, false otherwise).
 // In case of nRF24L01 it returns the value of the CD (Carrier Detect) register.
-func (d *Radio) RPD() bool {
-	return d.byteReg(9)&1 != 0
+func (r *Radio) RPD() (bool, Status) {
+	b, s := r.byteReg(9)
+	return b&1 != 0, s
 }
 
 func checkPayNum(pn int) {
@@ -260,48 +267,49 @@ func checkPayNumAddr(pn int, addr []byte) {
 }
 
 // RxAddr reads address assigned to Rx pipe pn into addr.
-func (d *Radio) RxAddr(pn int, addr []byte) {
+func (r *Radio) RxAddr(pn int, addr []byte) Status {
 	checkPayNumAddr(pn, addr)
-	d.Reg(byte(0xa+pn), addr)
+	return r.Reg(byte(0xa+pn), addr)
 }
 
-// RxAddr0 returns least significant byte of address assigned to Rx pipe pn.
-func (d *Radio) RxAddr0(pn int) byte {
+// RxAddrLSB returns least significant byte of address assigned to Rx pipe pn.
+func (r *Radio) RxAddrLSB(pn int) (byte, Status) {
 	checkPayNum(pn)
-	return d.byteReg(byte(0xa + pn))
+	return r.byteReg(byte(0xa + pn))
 }
 
 // SetRxAddr sets address assigned to Rx pipe pn to addr.
-func (d *Radio) SetRxAddr(pn int, addr ...byte) {
+func (r *Radio) SetRxAddr(pn int, addr ...byte) Status {
 	checkPayNumAddr(pn, addr)
-	d.SetReg(byte(0xa+pn), addr...)
+	return r.SetReg(byte(0xa+pn), addr...)
 }
 
 // TxAddr reads value of TX_ADDR (Transmit address) into addr.
-func (d *Radio) TxAddr(addr []byte) {
+func (r *Radio) TxAddr(addr []byte) Status {
 	checkAddr(addr)
-	d.Reg(0x10, addr)
+	return r.Reg(0x10, addr)
 }
 
 // SetTxAddr sets value of TX_ADDR (Transmit address).
-func (d *Radio) SetTxAddr(addr ...byte) {
+func (r *Radio) SetTxAddr(addr ...byte) Status {
 	checkAddr(addr)
-	d.SetReg(0x10, addr...)
+	return r.SetReg(0x10, addr...)
 }
 
 // RxPW returns Rx payload width set for pipe pn.
-func (d *Radio) RxPW(pn int) int {
+func (r *Radio) RxPW(pn int) (int, Status) {
 	checkPayNum(pn)
-	return int(d.byteReg(byte(0x11+pn))) & 0x3f
+	b, s := r.byteReg(byte(0x11 + pn))
+	return int(b) & 0x3f, s
 }
 
 // SetRxPW sets Rx payload width for pipe pn.
-func (d *Radio) SetRxPW(pn, pw int) {
+func (r *Radio) SetRxPW(pn, pw int) Status {
 	checkPayNum(pn)
 	if uint(pw) > 32 {
 		panic("pw<0 || pw>32")
 	}
-	d.SetReg(byte(0x11+pn), byte(pw))
+	return r.SetReg(byte(0x11+pn), byte(pw))
 }
 
 type FIFO byte
@@ -319,18 +327,20 @@ func (f FIFO) Format(fs fmt.State, _ rune) {
 }
 
 // FIFO returns value of FIFO_STATUS register.
-func (d *Radio) FIFO() FIFO {
-	return FIFO(d.byteReg(0x17))
+func (r *Radio) FIFO() (FIFO, Status) {
+	b, s := r.byteReg(0x17)
+	return FIFO(b), s
 }
 
 // DPL returns value of DYNPD (Enable dynamic payload length) register.
-func (d *Radio) DPL() Pipes {
-	return Pipes(d.byteReg(0x1c))
+func (r *Radio) DPL() (Pipes, Status) {
+	b, s := r.byteReg(0x1c)
+	return Pipes(b), s
 }
 
 // SetDPL sets value of DYNPD (Enable dynamic payload length) register.
-func (d *Radio) SetDPL(p Pipes) {
-	d.SetReg(0x1c, byte(p))
+func (r *Radio) SetDPL(p Pipes) Status {
+	return r.SetReg(0x1c, byte(p))
 }
 
 type Feature byte
@@ -346,11 +356,12 @@ func (f Feature) Format(fs fmt.State, _ rune) {
 }
 
 // Feature returns value of FEATURE register.
-func (d *Radio) Feature() Feature {
-	return Feature(d.byteReg(0x1d))
+func (r *Radio) Feature() (Feature, Status) {
+	b, s := r.byteReg(0x1d)
+	return Feature(b), s
 }
 
 // SetFeature sets value of FEATURE register.
-func (d *Radio) SetFeature(f Feature) {
-	d.SetReg(0x1d, byte(f))
+func (r *Radio) SetFeature(f Feature) Status {
+	return r.SetReg(0x1d, byte(f))
 }
