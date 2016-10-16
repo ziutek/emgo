@@ -1,29 +1,33 @@
-package main
+// Package nrfdci allows to configure set of STM32 peripherals to control
+// nRF24L01(+) Data and Control Interface.
+package nrfdci
 
 import (
 	"mmio"
 	"rtos"
 
-	"arch/cortexm/bitband"
-
 	"stm32/hal/exti"
+	"stm32/hal/gpio"
 	"stm32/hal/spi"
 	"stm32/hal/system"
 
 	"stm32/hal/raw/tim"
 )
 
-type NRFDCI struct {
-	spi  *spi.Driver
-	csn  bitband.Bit
-	cet  *tim.TIM_Periph
-	ocmn uint
-	irq  exti.Lines
-	flag rtos.EventFlag
+// DCI implements nrf24.DCI interface. Additionally, it allows to control CE
+// signal and wait for interrupt.
+type DCI struct {
+	spi     *spi.Driver
+	cet     *tim.TIM_Periph
+	flag    rtos.EventFlag
+	irq     exti.Lines
+	csnport *gpio.Port
+	csnpin  gpio.Pins // uint16
+	ocmn    uint16
 }
 
-func NewNRFDCI(spidrv *spi.Driver, csn bitband.Bit, pclk uint, cet *tim.TIM_Periph, ch int, irqline exti.Lines) *NRFDCI {
-	dci := new(NRFDCI)
+func NewDCI(spidrv *spi.Driver, csnport *gpio.Port, csnpin gpio.Pins, pclk uint, cet *tim.TIM_Periph, ch int, irqline exti.Lines) *DCI {
+	dci := new(DCI)
 	dci.spi = spidrv
 	spidrv.P.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
@@ -32,8 +36,9 @@ func NewNRFDCI(spidrv *spi.Driver, csn bitband.Bit, pclk uint, cet *tim.TIM_Peri
 	)
 	spidrv.P.Enable()
 
-	dci.csn = csn
-	csn.Set()
+	dci.csnport = csnport
+	dci.csnpin = csnpin
+	csnport.SetPins(csnpin)
 
 	dci.cet = cet
 	if pclk != system.AHB.Clock() {
@@ -81,16 +86,20 @@ func NewNRFDCI(spidrv *spi.Driver, csn bitband.Bit, pclk uint, cet *tim.TIM_Peri
 	return dci
 }
 
-func (dci *NRFDCI) WriteRead(oi ...[]byte) (n int, err error) {
-	dci.csn.Clear()
+func (dci *DCI) SPI() *spi.Driver {
+	return dci.spi
+}
+
+func (dci *DCI) WriteRead(oi ...[]byte) (n int, err error) {
+	dci.csnport.ClearPins(dci.csnpin)
 	dci.spi.WriteReadMany(oi...)
-	dci.csn.Set()
+	dci.csnport.SetPins(dci.csnpin)
 	return n, dci.spi.Err()
 }
 
 // SetCE allows to control CE line.. v==0 sets CE low, v==1 sets CE high, v==2
 // pulses CE high for 10 µs and leaves it low.
-func (dci *NRFDCI) SetCE(v int) error {
+func (dci *DCI) SetCE(v int) error {
 	switch v {
 	case 0:
 		dci.cet.CCMR2.Store(4 << dci.ocmn)
@@ -103,19 +112,19 @@ func (dci *NRFDCI) SetCE(v int) error {
 	return nil
 }
 
-func (dci *NRFDCI) IRQ() exti.Lines {
+func (dci *DCI) IRQ() exti.Lines {
 	return dci.irq
 }
 
-func (dci *NRFDCI) ISR() {
+func (dci *DCI) ISR() {
 	dci.flag.Set()
 }
 
-func (dci *NRFDCI) Baudrate() uint {
+func (dci *DCI) Baudrate() uint {
 	return dci.spi.P.Baudrate(dci.spi.P.Conf())
 }
 
-func (dci *NRFDCI) Wait(deadline int64) bool {
+func (dci *DCI) Wait(deadline int64) bool {
 	if dci.flag.Wait(deadline) {
 		dci.flag.Clear()
 		return true

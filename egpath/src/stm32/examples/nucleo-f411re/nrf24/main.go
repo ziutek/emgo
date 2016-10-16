@@ -6,9 +6,9 @@ import (
 	"rtos"
 	"text/linewriter"
 
-	"arch/cortexm/debug/itm"
-
 	"nrf24"
+
+	"stm32/nrfdci"
 
 	"stm32/hal/dma"
 	"stm32/hal/exti"
@@ -23,12 +23,10 @@ import (
 	"stm32/hal/raw/tim"
 )
 
-const dbg = itm.Port(0)
-
 var (
 	tts      *usart.Driver
 	dmarxbuf [88]byte
-	nrfdci   *NRFDCI
+	dci      *nrfdci.DCI
 )
 
 func init() {
@@ -44,7 +42,6 @@ func init() {
 
 	gpio.B.EnableClock(true)
 	ctrport, csn, irqn, ce := gpio.B, gpio.Pin6, gpio.Pin8, gpio.Pin9
-	csnbb := ctrport.OutPins().Bit(6)
 
 	// UART
 
@@ -69,7 +66,7 @@ func init() {
 		linewriter.CRLF,
 	)
 
-	// nRF24 SPI
+	// nRF24 SPI.
 
 	spiport.Setup(sck|mosi, gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	spiport.Setup(miso, gpio.Config{Mode: gpio.AltIn})
@@ -82,7 +79,7 @@ func init() {
 	rtos.IRQ(irq.DMA2_Stream2).Enable()
 	rtos.IRQ(irq.DMA2_Stream3).Enable()
 
-	// nRF24 control lines
+	// nRF24 control lines.
 
 	ctrport.Setup(csn, gpio.Config{Mode: gpio.Out, Speed: gpio.High})
 	ctrport.Setup(ce, gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
@@ -93,7 +90,7 @@ func init() {
 	irqline.Connect(ctrport)
 	rtos.IRQ(irq.EXTI9_5).Enable()
 
-	nrfdci = NewNRFDCI(spid, csnbb, system.APB1.Clock(), tim.TIM4, 4, irqline)
+	dci = nrfdci.NewDCI(spid, ctrport, csn, system.APB1.Clock(), tim.TIM4, 4, irqline)
 
 	// nRF24 requires wait at least 100 ms from start before use it.
 	rtos.SleepUntil(start + 100e6)
@@ -155,13 +152,16 @@ func printRegs(nrf *nrf24.Radio) {
 }
 
 func main() {
-	fmt.Printf("\nSPI speed: %d hz\n\n", nrfdci.Baudrate())
-	nrf := nrf24.NewRadio(nrfdci)
+	fmt.Printf("\nSPI speed: %d hz\n\n", dci.Baudrate())
+	nrf := nrf24.NewRadio(dci)
 	nrf.SetAA(0)
 	nrf.SetConfig(nrf24.PwrUp)
+	pwrstart := rtos.Nanosec()
 
 	printRegs(nrf)
 	fmt.Println()
+
+	rtos.SleepUntil(pwrstart + 4.5e6) // Wait for PowerDown -> StandbyI.
 
 	var buf [32]byte
 	n := 10000
@@ -170,8 +170,8 @@ func main() {
 		for i := 0; i < n; i++ {
 			nrf.WriteTx(buf[:])
 			nrf.Clear(nrf24.TxDS)
-			nrfdci.SetCE(2)
-			nrfdci.Wait(0)
+			dci.SetCE(2)
+			dci.Wait(0)
 		}
 		dt := float32(rtos.Nanosec() - start)
 		checkErr(nrf.Err())
@@ -186,8 +186,8 @@ func main() {
 func exti9_5ISR() {
 	p := exti.Pending() & (exti.L9 | exti.L8 | exti.L7 | exti.L6 | exti.L5)
 	p.ClearPending()
-	if p&nrfdci.IRQ() != 0 {
-		nrfdci.ISR()
+	if p&dci.IRQ() != 0 {
+		dci.ISR()
 	}
 }
 
@@ -204,15 +204,15 @@ func ttsTxDMAISR() {
 }
 
 func nrfSPIISR() {
-	nrfdci.spi.ISR()
+	dci.SPI().ISR()
 }
 
 func nrfRxDMAISR() {
-	nrfdci.spi.DMAISR(nrfdci.spi.RxDMA)
+	dci.SPI().DMAISR(dci.SPI().RxDMA)
 }
 
 func nrfTxDMAISR() {
-	nrfdci.spi.DMAISR(nrfdci.spi.TxDMA)
+	dci.SPI().DMAISR(dci.SPI().TxDMA)
 }
 
 //emgo:const
