@@ -67,10 +67,10 @@ func (p *Port) Setup(pins Pins, cfg Config) {
 // Lock locks configuration of n-th pin. Locked configuration can not be
 // modified until reset.
 func (p *Port) Lock(pins Pins) {
-	pins1 := pins | 0x10000
-	p.lckr.Store(uint32(pins1))
+	pins1 := uint32(pins) | 0x10000
+	p.lckr.Store(pins1)
 	p.lckr.Store(uint32(pins))
-	p.lckr.Store(uint32(pins1))
+	p.lckr.Store(pins1)
 	p.lckr.Load()
 	p.lckr.Load()
 }

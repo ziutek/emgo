@@ -4,8 +4,8 @@ import (
 	"arch/cortexm/bitband"
 )
 
-// Pins is bitmask which lower 16 bis represents pins of GPIO port.
-type Pins uint32
+// Pins is a bitmask which represents the pins of GPIO port.
+type Pins uint16
 
 const (
 	Pin0 Pins = 1 << iota
@@ -37,29 +37,27 @@ func (p *Port) PinsOut(pins Pins) Pins {
 	return Pins(p.odr.Bits(uint16(pins)))
 }
 
-// Set sets output value of pins to 1.
+// Set sets output value of pins to 1 in one atomic operation.
 func (p *Port) SetPins(pins Pins) {
 	p.bsrr.Store(uint32(pins))
 }
 
-// Clear sets output value of pins to 0.
+// Clear sets output value of pins to 0 in one atomic operation.
 func (p *Port) ClearPins(pins Pins) {
 	p.bsrr.Store(uint32(pins) << 16)
 }
 
-// ClearAndSet clears and sets output value of all pins on positions specified
-// by cspins. Upper half of cspins specifies which pins should be 0. Lower half
-// of cspins specifies which pins should be 1. Setting bits in cspins has
-// priority above clearing bits.
-func (p *Port) ClearAndSet(cspins Pins) {
-	p.bsrr.Store(uint32(cspins))
+// ClearAndSet clears and sets output value of all pins in one atomic operation.
+// Setting pins has priority above clearing bits.
+func (p *Port) ClearAndSet(clear, set Pins) {
+	p.bsrr.Store(uint32(clear)<<16 | uint32(set))
 }
 
-// StorePins sets pins specified by pins to val.
+// StorePins sets pins specified by pins to val in one atomic operation.
 func (p *Port) StorePins(pins, val Pins) {
-	pins |= pins << 16
-	val |= ^val << 16
-	p.bsrr.Store(uint32(pins & val))
+	m := uint32(pins)<<16 | uint32(pins)
+	v := ^uint32(val)<<16 | uint32(val)
+	p.bsrr.Store(m & v)
 }
 
 // Load returns input value of all pins.
