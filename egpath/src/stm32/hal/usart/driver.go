@@ -52,11 +52,6 @@ func NewDriver(p *Periph, rxdma, txdma *dma.Channel, rxbuf []byte) *Driver {
 	return d
 }
 
-func disableDMA(ch *dma.Channel) {
-	ch.Disable()
-	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
-}
-
 func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode) {
 	ch.Setup(mode)
 	ch.SetWordSize(1, 1)
@@ -88,7 +83,8 @@ func (d *Driver) EnableRx() {
 func (d *Driver) DisableRx() {
 	p := &d.P.raw
 	ch := d.RxDMA
-	disableDMA(ch)
+	ch.Disable()
+	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 	p.RE().Clear()
 	p.DMAR().Clear()
 	d.rxN = 0
@@ -233,8 +229,10 @@ func (d *Driver) WriteString(s string) (int, error) {
 		d.P.raw.SR.Store(0) // Clear TC.
 		startDMA(ch, unsafe.Pointer(sh.Data+uintptr(n)), m)
 		n += m
-		if !d.txdone.Wait(d.deadlineTx) {
-			disableDMA(ch)
+		done := d.txdone.Wait(d.deadlineTx)
+		ch.Disable() // To be compatible with STM32F1.
+		if !done {
+			ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 			return n - ch.Len(), ErrTimeout
 		}
 		_, e := ch.Status()

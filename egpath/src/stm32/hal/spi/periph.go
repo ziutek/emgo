@@ -78,8 +78,11 @@ const (
 func (p *Periph) BR(baudrate int) Conf {
 	pclk := p.Bus().Clock()
 	div := pclk / uint(baudrate)
-	if div < 2 {
+	switch {
+	case div < 2:
 		div = 2
+	case div > 256:
+		div = 256
 	}
 	br := 31 - bits.LeadingZeros32(uint32(div-1))
 	return Conf(br << spi.BRn)

@@ -61,8 +61,9 @@ func dmaPoolTRCE(ch *dma.Channel, deadline int64) Error {
 }
 
 func dmaWait(ch *dma.Channel, evflag *rtos.EventFlag, deadline int64) Error {
-	if !evflag.Wait(deadline) {
-		ch.Disable()
+	done := evflag.Wait(deadline)
+	ch.Disable() // To be compatible with STM32F1.
+	if !done {
 		ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 		return SoftTimeout
 	}

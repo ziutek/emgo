@@ -97,15 +97,16 @@ func (d *Driver) WriteReadByte(b byte) byte {
 func (d *Driver) waitDoneDMA() bool {
 	done := d.done.Wait(d.deadline)
 	d.P.DisableDMA(RxNotEmpty | TxEmpty)
+	// Disable DMA channels (required by STM32F1 to allow setup next transfer).
+	d.TxDMA.Disable()
+	d.RxDMA.Disable()
 	if !done {
-		d.TxDMA.Disable()
-		d.RxDMA.Disable()
+		d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
+		d.RxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)	
 		d.err = uint(ErrTimeout) << 16
 		return false
 	}
 	if _, e := d.P.Status(); e != 0 {
-		d.TxDMA.Disable()
-		d.RxDMA.Disable()
 		d.err = uint(e) << 8
 		return false
 	}
