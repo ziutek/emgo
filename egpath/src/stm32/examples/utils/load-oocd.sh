@@ -19,8 +19,10 @@ if [ -n "$TRACECLKIN" ]; then
 	itm='itm ports on'
 fi
 
+echo CFG: $cfg
+
 echo "Loading at $addr..." >/dev/stderr
-openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg \
+openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg $cfg \
 	-c 'init' \
 	-c 'reset init' \
 	-c "$load" \

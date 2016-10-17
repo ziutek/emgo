@@ -90,7 +90,9 @@ func init() {
 	irqline.Connect(ctrport)
 	rtos.IRQ(irq.EXTI9_5).Enable()
 
-	dci = nrfdci.NewDCI(spid, ctrport, csn, system.APB1.Clock(), tim.TIM4, 4, irqline)
+	dci = nrfdci.NewDCI(
+		spid, ctrport, csn, system.APB1.Clock(), tim.TIM4, 4, irqline,
+	)
 
 	// nRF24 requires wait at least 100 ms from start before use it.
 	rtos.SleepUntil(start + 100e6)
@@ -152,8 +154,11 @@ func printRegs(nrf *nrf24.Radio) {
 }
 
 func main() {
-	fmt.Printf("\nSPI speed: %d hz\n\n", dci.Baudrate())
+	fmt.Printf("\nSPI speed: %d Hz\n\n", dci.Baudrate())
 	nrf := nrf24.NewRadio(dci)
+	//nrf.SetRF(nrf24.DRHigh)
+	nrf.SetRF(0)
+	//nrf.SetRF(nrf24.DRLow)
 	nrf.SetAA(0)
 	nrf.SetConfig(nrf24.PwrUp)
 	pwrstart := rtos.Nanosec()
@@ -164,8 +169,8 @@ func main() {
 	rtos.SleepUntil(pwrstart + 4.5e6) // Wait for PowerDown -> StandbyI.
 
 	var buf [32]byte
-	n := 10000
-	for {
+	n := 5000
+	for i := 0; ; i++ {
 		start := rtos.Nanosec()
 		for i := 0; i < n; i++ {
 			nrf.WriteTx(buf[:])
@@ -176,7 +181,8 @@ func main() {
 		dt := float32(rtos.Nanosec() - start)
 		checkErr(nrf.Err())
 		fmt.Printf(
-			"%.0f pkt/s (%.0f kb/s)\n",
+			"%d: %.0f pkt/s (%.0f kb/s)\n",
+			i,
 			float32(n)*1e9/dt,
 			float32(n*len(buf)*8)*1e6/dt,
 		)

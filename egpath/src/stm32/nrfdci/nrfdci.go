@@ -3,7 +3,6 @@
 package nrfdci
 
 import (
-	"mmio"
 	"rtos"
 
 	"stm32/hal/exti"
@@ -49,35 +48,32 @@ func NewDCI(spidrv *spi.Driver, csnport *gpio.Port, csnpin gpio.Pins, pclk uint,
 	cet.PSC.U16.Store(1)
 
 	// ARR=(pclk+1e5-1)/1e5 corresponds to the shortest posible pulse but
-	// not less than 10 us. CE will be asserted after 1/pclk for ARR/pclk.
-	cet.ARR.U32.Store(uint32(pclk+1e5-1) / 1e5)
+	// not less than 10 us. CE will be asserted after 1/pclk (CCRn=1) for
+	// ARR/pclk seconds.
+	cet.ARR.Store(tim.ARR_Bits(uint32(pclk+1e5-1) / 1e5))
 
 	// Reset CNT and transfer PSC, ARR to the corresponding shadow registers.
 	cet.EGR.Store(tim.UG)
 
-	var (
-		ccr *mmio.U32
-		cce tim.CCER_Bits
-	)
+	var cce tim.CCER_Bits
 	switch ch {
 	case 1:
-		ccr = &cet.CCR1.U32
+		cet.CCR1.Store(1)
 		cce = tim.CC1E
 		dci.ocmn = tim.OC1Mn
 	case 2:
-		ccr = &cet.CCR2.U32
+		cet.CCR2.Store(1)
 		cce = tim.CC2E
 		dci.ocmn = tim.OC2Mn
 	case 3:
-		ccr = &cet.CCR3.U32
+		cet.CCR3.Store(1)
 		cce = tim.CC3E
 		dci.ocmn = tim.OC3Mn
 	case 4:
-		ccr = &cet.CCR4.U32
+		cet.CCR4.Store(1)
 		cce = tim.CC4E
 		dci.ocmn = tim.OC4Mn
 	}
-	ccr.Store(200)
 	cet.CCER.Store(cce)
 
 	dci.irq = irqline

@@ -20,7 +20,8 @@ func init() {
 	gpio.C.EnableClock(true)
 	leds = gpio.C
 
-	leds.Setup(Blue, gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
+	cfg := gpio.Config{Mode: gpio.Out, Driver: gpio.OpenDrain, Speed: gpio.Low}
+	leds.Setup(Blue, cfg)
 }
 
 func main() {

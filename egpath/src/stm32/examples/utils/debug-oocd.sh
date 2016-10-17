@@ -7,7 +7,7 @@ if [ -z "$arch" ]; then
 	arch=$EGARCH
 fi
 
-oocd_cmd="openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg -c 'gdb_port pipe' -c 'log_output /dev/null'"
+oocd_cmd="openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg $cfg -c 'gdb_port pipe' -c 'log_output /dev/null'"
 
 arm-none-eabi-gdb --tui \
 	-ex "target extended-remote | $oocd_cmd" \

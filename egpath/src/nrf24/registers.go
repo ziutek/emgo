@@ -226,7 +226,8 @@ func (r *Radio) SetRF(rf RF) Status {
 
 // Clear clears the specified bits in the STATUS register.
 func (r *Radio) Clear(s Status) Status {
-	return r.SetReg(7, byte(s))
+	mask := RxDR | TxDS | MaxRT
+	return r.SetReg(7, byte(s&mask))
 }
 
 // ObserveTx returns the values of PLOS and ARC counters from the OBSERVE_TX
