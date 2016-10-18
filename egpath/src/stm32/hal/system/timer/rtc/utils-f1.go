@@ -9,6 +9,14 @@ import (
 	"stm32/hal/raw/rtc"
 )
 
+func setCNF(RTC *rtc.RTC_Periph) {
+	RTC.CRL.Store(rtc.CNF | rtc.RSF | rtc.OWF | rtc.ALRF | rtc.SECF)
+}
+
+func clearCNF(RTC *rtc.RTC_Periph) {
+	RTC.CRL.Store(rtc.RSF | rtc.OWF | rtc.ALRF | rtc.SECF)
+}
+
 func waitForSync(RTC *rtc.RTC_Periph) {
 	RTC.RSF().Clear()
 	for RTC.RSF().Load() == 0 {

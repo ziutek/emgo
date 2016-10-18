@@ -82,9 +82,9 @@ func setup(freqHz uint) {
 		// Configure RTC prescaler.
 		waitForSync(RTC)
 		waitForWrite(RTC)
-		RTC.CNF().Set() // Begin PRL configuration
+		setCNF(RTC) // Begin PRL configuration
 		RTC.PRLL.Store(prescaler - 1)
-		RTC.CNF().Clear() // Copy from APB to BKP domain.
+		clearCNF(RTC) // Copy from APB to BKP domain.
 
 		g.status.Bit(flagOK).Set()
 
@@ -229,10 +229,10 @@ func setWakeup(ns int64) {
 
 	RTC := rtc.RTC
 	waitForWrite(RTC)
-	RTC.CNF().Set()
+	setCNF(RTC)
 	RTC.ALRH.Store(rtc.ALRH_Bits(alr >> 16))
 	RTC.ALRL.Store(rtc.ALRL_Bits(alr))
-	RTC.CNF().Clear()
+	clearCNF(RTC)
 
 	if loadTicks()>>preLog2 >= wkup {
 		// There is a chance that the alarm interrupt was not triggered.
