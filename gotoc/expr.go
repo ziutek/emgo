@@ -1103,7 +1103,10 @@ func (cdd *CDD) eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) 
 		w.WriteString("({\n")
 		cdd.il++
 		cdd.indent(w)
-		w.WriteString("_l = " + lhs + "; _r = " + rhs + ";\n")
+		cdd.Type(w, ltyp)
+		w.WriteString(" _l = " + lhs + "; ")
+		cdd.Type(w, rtyp)
+		w.WriteString(" _r = " + rhs + ";\n")
 		n := t.NumFields()
 		for i := 0; i < n; {
 			f := t.Field(i)
@@ -1115,7 +1118,7 @@ func (cdd *CDD) eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) 
 			if i != n {
 				w.WriteString(lo)
 			} else {
-				w.WriteByte('\n')
+				w.WriteString(";\n")
 			}
 		}
 		cdd.il--
