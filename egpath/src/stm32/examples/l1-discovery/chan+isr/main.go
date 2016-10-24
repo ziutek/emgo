@@ -45,7 +45,7 @@ func init() {
 	line := exti.Lines(Button)
 	line.Connect(bport)
 	line.EnableRiseTrig()
-	line.EnableInt()
+	line.EnableIRQ()
 
 	rtos.IRQ(irq.EXTI0).Enable()
 }

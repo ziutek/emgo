@@ -194,7 +194,7 @@ func main() {
 		dt := float32(rtos.Nanosec() - start)
 		checkErr(nrf.Err())
 		fmt.Printf(
-			"%d: %d %.0f pkt/s (%.0f kb/s)\n",
+			"%d: %d ms %.0f pkt/s (%.0f kb/s)\n",
 			i, uint(dt/1e6),
 			float32(n)*1e9/dt,
 			float32(n*len(buf)*8)*1e6/dt,

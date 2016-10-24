@@ -32,7 +32,7 @@ func init() {
 	line.Connect(dcfport)
 	line.EnableRiseTrig()
 	line.EnableFallTrig()
-	line.EnableInt()
+	line.EnableIRQ()
 
 	rtos.IRQ(irq.EXTI1).Enable()
 }

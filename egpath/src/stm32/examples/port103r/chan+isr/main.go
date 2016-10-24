@@ -46,7 +46,7 @@ func init() {
 	line := exti.Lines(Key3)
 	line.Connect(keys)
 	line.EnableFallTrig()
-	line.EnableInt()
+	line.EnableIRQ()
 
 	rtos.IRQ(irq.EXTI15_10).Enable()
 }

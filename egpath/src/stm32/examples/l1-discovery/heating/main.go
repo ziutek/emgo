@@ -65,7 +65,7 @@ func init() {
 	line := exti.Lines(btnpin)
 	line.Connect(btnport)
 	line.EnableRiseTrig()
-	line.EnableInt()
+	line.EnableIRQ()
 	irqen(irq.EXTI0, 1)
 
 	slowOutCfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
