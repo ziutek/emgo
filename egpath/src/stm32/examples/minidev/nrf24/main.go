@@ -151,9 +151,8 @@ func main() {
 	nrf.Set_EN_AA(0)
 	nrf.Set_EN_RXADDR(nrf24.P0)
 	nrf.Set_SETUP_AW(3)
-	config := nrf24.PWR_UP | nrf24.EN_CRC | nrf24.CRCO | nrf24.PRIM_RX&0
+	config := nrf24.PWR_UP | nrf24.EN_CRC | nrf24.CRCO | nrf24.PRIM_RX
 	if config&nrf24.PRIM_RX != 0 {
-		nrf.FLUSH_RX()
 		nrf.Set_RX_PW(0, len(buf))
 	} else {
 		nrf.FLUSH_TX()
@@ -165,13 +164,14 @@ func main() {
 	printRegs(nrf)
 	fmt.Println()
 
-	// Wait for transition form Power Down to Standby I.
+	// Wait for transition from Power Down to Standby I.
 	rtos.SleepUntil(pwrstart + 4.5e6)
 
 	n := 5000
 	for i := 0; ; i++ {
 		start := rtos.Nanosec()
 		if config&nrf24.PRIM_RX != 0 {
+			nrf.FLUSH_RX()
 			dci.SetCE(1)
 			for i := 0; i < n; i++ {
 				nrf.ClearIRQ(nrf24.RX_DR)

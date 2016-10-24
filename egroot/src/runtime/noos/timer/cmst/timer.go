@@ -5,6 +5,7 @@ package cmst
 import (
 	"math"
 	"nbl"
+	"sync/atomic"
 	"syscall"
 
 	"arch/cortexm"
@@ -16,14 +17,22 @@ import (
 // nanoseconds requires only ordinary 64-bit multiply and divide but is
 // accurate only in some special cases.
 
-var (
+type globals struct {
+	counter     nbl.Int64
+	wkupTicks   int64
 	freqHz      uint
 	periodTicks uint32
-	counter     nbl.Int64
-)
+	alarm       uint32
+}
+
+var g globals
 
 func tons(tick int64) int64 {
-	return int64(math.Muldiv(uint64(tick), 1e9, uint64(freqHz)))
+	return int64(math.Muldiv(uint64(tick), 1e9, uint64(g.freqHz)))
+}
+
+func totick(ns int64) int64 {
+	return int64(math.Muldiv(uint64(ns), uint64(g.freqHz), 1e9))
 }
 
 // Setup setups SysTick to work as sytem timer.
@@ -32,19 +41,18 @@ func tons(tick int64) int64 {
 //  external - false: SysTick uses CPU clock; true: SysTick uses external clock.
 // Setup must be run in privileged mode.
 func Setup(periodns, hz uint, external bool) {
-	freqHz = hz
+	g.freqHz = hz
 	st := systick.SYSTICK
 	if hz == 0 {
 		st.CSR.ClearBits(systick.ENABLE | systick.TICKINT)
 		return
 	}
-	periodTicks = uint32((uint64(periodns)*uint64(hz) + 5e8) / 1e9)
-	st.RELOAD().Store(systick.RVR_Bits(periodTicks - 1))
+	g.periodTicks = uint32((uint64(periodns)*uint64(hz) + 5e8) / 1e9)
+	st.RELOAD().Store(systick.RVR_Bits(g.periodTicks - 1))
 	st.CURRENT().Store(0)
-	if external {
-		st.CLKSOURCE().Clear()
-	} else {
-		st.CLKSOURCE().Set()
+	var clksrc systick.CSR_Bits
+	if !external {
+		clksrc = systick.CLKSOURCE
 	}
 	// Set priority for SysTick exception higher SVCall proprity, to ensure
 	// that any user of rtos.Nanosec observes both SYSTICK.CURRENT reset and
@@ -52,32 +60,43 @@ func Setup(periodns, hz uint, external bool) {
 	spnum := cortexm.PrioStep * cortexm.PrioNum
 	prio := cortexm.PrioLowest + spnum*3/4
 	scb.SCB.PRI_SysTick().Store(scb.PRI_SysTick.J(prio))
-	st.CSR.SetBits(systick.ENABLE | systick.TICKINT)
+	st.CSR.Store(systick.ENABLE | systick.TICKINT | clksrc)
 }
 
-// SetWakeup: see syscall.SetSysClock.
-func SetWakeup(t int64) {
+// SetWakeup: see syscall.SetSysTimer.
+func SetWakeup(ns int64, alarm bool) {
+	if alarm {
+		wkupticks := totick(ns)
+		atomic.StoreUint32(&g.alarm, 0)
+		g.wkupTicks = wkupticks
+		atomic.StoreUint32(&g.alarm, 1)
+	}
 }
 
 // Nanosec: see syscall.SetSysClock.
 func Nanosec() int64 {
-	if freqHz == 0 {
+	if g.freqHz == 0 {
 		return 0
 	}
-	aba := counter.ABA()
+	aba := g.counter.ABA()
 	for {
-		cnt := counter.TryLoad(aba)
-		add := periodTicks - uint32(systick.SYSTICK.CURRENT().Load())
+		cnt := g.counter.TryLoad(aba)
+		add := g.periodTicks - uint32(systick.SYSTICK.CURRENT().Load())
 		var ok bool
-		if aba, ok = counter.CheckABA(aba); ok {
+		if aba, ok = g.counter.CheckABA(aba); ok {
 			return tons(cnt + int64(add))
 		}
 	}
 }
 
 func sysTickHandler() {
-	counter.WriterAdd(int64(periodTicks))
-	syscall.SchedNext()
+	g.counter.WriterAdd(int64(g.periodTicks))
+	if g.alarm != 0 && g.counter.WriterLoad() >= g.wkupTicks {
+		g.alarm = 0
+		syscall.Alarm.Send()
+	} else {
+		syscall.SchedNext()
+	}
 }
 
 //emgo:const

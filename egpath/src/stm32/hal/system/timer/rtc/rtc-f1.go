@@ -3,6 +3,7 @@
 package rtc
 
 import (
+	"bits"
 	"math"
 	"rtos"
 	"sync/atomic"
@@ -29,7 +30,7 @@ const (
 	preLog2   = 5
 	prescaler = 1 << preLog2
 
-	maxSleepCnt  = 1 << 22 // Do not sleep to long to not affect max down time.
+	maxSleepCnt = 1 << 22 // Do not sleep to long to not affect max down time.
 
 	flagOK  = 0
 	flagSet = 1
@@ -41,7 +42,7 @@ type globals struct {
 	cntExt  int32  // 16 bit RTC VCNT excension.
 	lastISR uint32 // Last ISR time using uint32(loadVCNT() >> preLog2).
 	status  bitband.Bits16
-	alarm   bool
+	alarm   uint32
 }
 
 var g globals
@@ -112,10 +113,10 @@ func setup(freqHz uint) {
 	rtos.IRQ(irq.RTCAlarm).SetPrio(rtos.IRQPrioLowest + spnum*3/4)
 	rtos.IRQ(irq.RTCAlarm).Enable()
 
-	// Force RTCISR to early handle possible overflow.
-	exti.RTCALR.Trigger()
-
 	syscall.SetSysTimer(nanosec, setWakeup)
+	
+	// Force RTCISR to initialise or early handle possible overflow.
+	exti.RTCALR.Trigger()
 }
 
 // loadVCNT returns value of virtual counter that counts number of ticks of
@@ -194,7 +195,8 @@ func isr() {
 		}
 		g.lastISR = vcnt32 // Can be non-atomic because read when IRQ disabled.
 	}
-	if g.alarm {
+	if g.alarm != 0 {
+		g.alarm = 0
 		syscall.Alarm.Send()
 	} else {
 		syscall.SchedNext()
@@ -222,7 +224,8 @@ func nanosec() int64 {
 }
 
 // setWakeup: see syscall.SetSysTimer.
-func setWakeup(ns int64, alarm bool) {
+func setWakeup(ns int64, alr bool) {
+	alarm := uint32(bits.One(alr))
 	if g.wakens == ns && g.alarm == alarm {
 		return
 	}

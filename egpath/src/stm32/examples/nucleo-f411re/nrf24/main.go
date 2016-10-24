@@ -108,81 +108,108 @@ func checkErr(err error) {
 }
 
 func printRegs(nrf *nrf24.Radio) {
-	cfg, _ := nrf.Config()
-	fmt.Printf("CONFIG:      %v\n", cfg)
-	aa, _ := nrf.AA()
-	fmt.Printf("EN_AA:       %v\n", aa)
-	rxae, _ := nrf.RxAEn()
-	fmt.Printf("EN_RXADDR:   %v\n", rxae)
-	aw, _ := nrf.AW()
-	fmt.Printf("SETUP_AW:    %d\n", aw)
-	arc, ard, _ := nrf.Retr()
+	config, _ := nrf.CONFIG()
+	fmt.Printf("CONFIG:      %v\n", config)
+	enaa, _ := nrf.EN_AA()
+	fmt.Printf("EN_AA:       %v\n", enaa)
+	enrxaddr, _ := nrf.EN_RXADDR()
+	fmt.Printf("EN_RXADDR:   %v\n", enrxaddr)
+	setupaw, _ := nrf.SETUP_AW()
+	fmt.Printf("SETUP_AW:    %d\n", setupaw)
+	arc, ard, _ := nrf.SETUP_RETR()
 	fmt.Printf("SETUP_RETR:  %d, %dus\n", arc, ard)
-	ch, _ := nrf.Ch()
-	fmt.Printf("RF_CH:       %d (%d MHz)\n", ch, 2400+ch)
-	rf, _ := nrf.RF()
-	fmt.Printf("RF_SETUP:    %v\n", rf)
-	plos, arc, _ := nrf.ObserveTx()
+	rfch, _ := nrf.RF_CH()
+	fmt.Printf("RF_CH:       %d (%d MHz)\n", rfch, 2400+rfch)
+	rfsetup, _ := nrf.RF_SETUP()
+	fmt.Printf("RF_SETUP:    %v\n", rfsetup)
+	plos, arc, _ := nrf.OBSERVE_TX()
 	fmt.Printf("OBSERVE_TX:  %d lost, %d retr\n", plos, arc)
 	rpd, _ := nrf.RPD()
 	fmt.Printf("RPD:         %t\n", rpd)
 	var addr [5]byte
 	for i := 0; i < 6; i++ {
-		fmt.Printf("RX_ADDR_P%d:  ", i)
-		if i < 2 {
-			nrf.RxAddr(i, addr[:])
-			fmt.Printf("%x\n", addr[:])
-		} else {
-			lsb, _ := nrf.RxAddrLSB(i)
-			fmt.Printf("%x\n", lsb)
+		n := setupaw
+		if i > 1 {
+			n = 1
 		}
+		nrf.Read_RX_ADDR(i, addr[:n])
+		fmt.Printf("RX_ADDR_P%d:  %x\n", i, addr[:n])
 	}
-	nrf.TxAddr(addr[:])
-	fmt.Printf("Tx_ADDR:     %x\n", addr[:])
+	nrf.Read_TX_ADDR(addr[:setupaw])
+	fmt.Printf("TX_ADDR:     %x\n", addr[:setupaw])
 	for i := 0; i < 6; i++ {
-		rxpw, _ := nrf.RxPW(i)
+		rxpw, _ := nrf.RX_PW(i)
 		fmt.Printf("RX_PW_P%d:    %d\n", i, rxpw)
 	}
-	fifo, _ := nrf.FIFO()
-	fmt.Printf("FIFO_STATUS: %v\n", fifo)
-	dpl, _ := nrf.DPL()
-	fmt.Printf("DYNPD:       %v\n", dpl)
-	feurure, status := nrf.Feature()
+	fifostatus, _ := nrf.FIFO_STATUS()
+	fmt.Printf("FIFO_STATUS: %v\n", fifostatus)
+	dynpd, _ := nrf.DYNPD()
+	fmt.Printf("DYNPD:       %v\n", dynpd)
+	feurure, status := nrf.FEATURE()
 	fmt.Printf("FEATURE:     %v\n", feurure)
 	checkErr(nrf.Err())
 	fmt.Printf("STATUS:      %v\n", status)
 }
 
 func main() {
-	fmt.Printf("\nSPI speed: %d Hz\n\n", dci.Baudrate())
+	var buf [32]byte
+
+	spibus := dci.SPI().P.Bus()
+	fmt.Printf(
+		"\nSPI on %s (%d MHz). SPI speed: %d Hz.\n\n",
+		spibus, spibus.Clock()/1e6, dci.Baudrate(),
+	)
 	nrf := nrf24.NewRadio(dci)
-	//nrf.SetRF(nrf24.DRHigh)
-	nrf.SetRF(0)
-	//nrf.SetRF(nrf24.DRLow)
-	nrf.SetAA(0)
-	nrf.SetConfig(nrf24.PwrUp)
+
+	nrf.Set_RF_SETUP(nrf24.RF_DR_HIGH)
+	nrf.Set_EN_AA(0)
+	nrf.Set_EN_RXADDR(nrf24.P0)
+	nrf.Set_SETUP_AW(3)
+	config := nrf24.PWR_UP | nrf24.EN_CRC | nrf24.CRCO | nrf24.PRIM_RX&0
+	if config&nrf24.PRIM_RX != 0 {
+		nrf.Set_RX_PW(0, len(buf))
+	} else {
+		nrf.FLUSH_TX()
+	}
+
+	nrf.Set_CONFIG(config)
 	pwrstart := rtos.Nanosec()
 
 	printRegs(nrf)
 	fmt.Println()
 
-	rtos.SleepUntil(pwrstart + 4.5e6) // Wait for PowerDown -> StandbyI.
+	// Wait for transition from Power Down to Standby I.
+	rtos.SleepUntil(pwrstart + 4.5e6)
 
-	var buf [32]byte
 	n := 5000
 	for i := 0; ; i++ {
 		start := rtos.Nanosec()
-		for i := 0; i < n; i++ {
-			nrf.WriteTx(buf[:])
-			nrf.Clear(nrf24.TxDS)
+		if config&nrf24.PRIM_RX != 0 {
+			nrf.FLUSH_RX()
+			dci.SetCE(1)
+			for i := 0; i < n; i++ {
+				nrf.ClearIRQ(nrf24.RX_DR)
+				dci.Wait(0)
+				nrf.R_RX_PAYLOAD(buf[:])
+			}
+			dci.SetCE(0)
+		} else {
+			nrf.W_TX_PAYLOAD(buf[:])
+			for i := 1; i < n; i++ {
+				nrf.ClearIRQ(nrf24.TX_DS)
+				dci.SetCE(2)
+				nrf.W_TX_PAYLOAD(buf[:])
+				dci.Wait(0)
+			}
+			nrf.ClearIRQ(nrf24.TX_DS)
 			dci.SetCE(2)
 			dci.Wait(0)
 		}
 		dt := float32(rtos.Nanosec() - start)
 		checkErr(nrf.Err())
 		fmt.Printf(
-			"%d: %.0f pkt/s (%.0f kb/s)\n",
-			i,
+			"%d: %d %.0f pkt/s (%.0f kb/s)\n",
+			i, uint(dt/1e6),
 			float32(n)*1e9/dt,
 			float32(n*len(buf)*8)*1e6/dt,
 		)
