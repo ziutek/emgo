@@ -6,6 +6,7 @@ import (
 	"math"
 	"rtos"
 	"sync/atomic"
+	"sync/fence"
 	"syscall"
 	"time"
 
@@ -21,25 +22,26 @@ import (
 )
 
 // When 32768 Hz oscilator is used and preLog2 == 5 then:
-// - rtos.Nanosec resolution will be 1/32768 s,
-// - rtos.SleepUntil resoultion will be 1<<5/32768 s = 1/1024 s ≈ 1 ms,
-// - the longest down time (RTC on battery) will be 1<<32/1024 s ≈ 48 days.
+// - rtos.Nanosec resolution is 1/32768 s,
+// - rtos.SleepUntil resoultion is 1<<5/32768 s = 1/1024 s ≈ 1 ms,
+// - the longest down time (RTC on battery) can be 1<<32/1024 s ≈ 48 days.
 const (
 	preLog2   = 5
 	prescaler = 1 << preLog2
 
-	maxSleepCnt  = 1 << 22
-	maxSleepTick = maxSleepCnt << preLog2
+	maxSleepCnt  = 1 << 22 // Do not sleep to long to not affect max down time.
 
 	flagOK  = 0
 	flagSet = 1
 )
 
 type globals struct {
+	wakens  int64
 	freqHz  uint
 	cntExt  int32  // 16 bit RTC VCNT excension.
-	lastISR uint32 // Last ISR  time using uint32(VCNT).
+	lastISR uint32 // Last ISR time using uint32(loadVCNT() >> preLog2).
 	status  bitband.Bits16
+	alarm   bool
 }
 
 var g globals
@@ -105,7 +107,7 @@ func setup(freqHz uint) {
 	waitForSync(RTC)
 
 	exti.RTCALR.EnableRiseTrig()
-	exti.RTCALR.EnableInt()
+	exti.RTCALR.EnableIRQ()
 	spnum := rtos.IRQPrioStep * rtos.IRQPrioNum
 	rtos.IRQ(irq.RTCAlarm).SetPrio(rtos.IRQPrioLowest + spnum*3/4)
 	rtos.IRQ(irq.RTCAlarm).Enable()
@@ -176,30 +178,36 @@ func loadVCNT() int64 {
 
 func isr() {
 	exti.RTCALR.ClearPending()
-
+	g.wakens = 0 // Invalidate g.wakens.
 	vcnt32 := uint32(loadVCNT() >> preLog2)
 	if vcnt32 != g.lastISR {
+		bkp := rtcBackup{bkp.BKP}
 		if vcnt32 < g.lastISR {
 			cntext := g.cntExt + 1
-			bkp := rtcBackup{bkp.BKP}
 			g.status.Bit(flagOK).Clear()
 			bkp.CntExt().Store(uint16(cntext))
 			bkp.LastISR().Store(vcnt32)
 			g.status.Bit(flagOK).Set()
 			atomic.StoreInt32(&g.cntExt, cntext)
 		} else {
-			rtcBackup{bkp.BKP}.LastISR().Store(vcnt32)
+			bkp.LastISR().Store(vcnt32)
 		}
-		atomic.StoreUint32(&g.lastISR, vcnt32)
+		g.lastISR = vcnt32 // Can be non-atomic because read when IRQ disabled.
 	}
-	syscall.SchedNext()
+	if g.alarm {
+		syscall.Alarm.Send()
+	} else {
+		syscall.SchedNext()
+	}
 }
 
 func loadTicks() int64 {
 	irq.RTCAlarm.Disable()
-	lastisr := atomic.LoadUint32(&g.lastISR)
-	cntext := atomic.LoadInt32(&g.cntExt)
+	fence.Memory()
+	lastisr := g.lastISR
+	cntext := g.cntExt
 	vcnt := loadVCNT()
+	fence.Memory()
 	irq.RTCAlarm.Enable()
 
 	if uint32(vcnt>>preLog2) < lastisr {
@@ -213,31 +221,47 @@ func nanosec() int64 {
 	return ticktons(loadTicks())
 }
 
-// setWakeup: see syscall.SetSysClock.
-func setWakeup(ns int64) {
-	wkup := nstotick(ns)
-	now := loadTicks()
-	sleep := wkup - now
-	switch {
-	case sleep > maxSleepTick:
-		wkup = now + maxSleepTick
-	case sleep < 0:
-		wkup = now
+// setWakeup: see syscall.SetSysTimer.
+func setWakeup(ns int64, alarm bool) {
+	if g.wakens == ns && g.alarm == alarm {
+		return
 	}
-	wkup = (wkup + prescaler/2) >> preLog2
-	alr := uint32(wkup) - 1
+	// Use EXTI instead NVIC to not colide with loadTicks.
+	exti.RTCALR.DisableIRQ()
+	fence.Memory()
+	g.wakens = ns
+	g.alarm = alarm
+
+	now := loadTicks() >> preLog2
+	wkup := (nstotick(ns) + prescaler - 1) >> preLog2
+	nowcnt := uint32(now)
+	cntfromisr := nowcnt - g.lastISR
+	alrcnt := nowcnt
+	if cntfromisr < maxSleepCnt {
+		maxwkup := now + int64(maxSleepCnt-cntfromisr)
+		if wkup > maxwkup {
+			wkup = maxwkup
+		}
+		alrcnt = uint32(wkup)
+	}
+	alrcnt-- // See loadVCNT description.
 
 	RTC := rtc.RTC
 	waitForWrite(RTC)
 	setCNF(RTC)
-	RTC.ALRH.Store(rtc.ALRH_Bits(alr >> 16))
-	RTC.ALRL.Store(rtc.ALRL_Bits(alr))
+	RTC.ALRH.Store(rtc.ALRH_Bits(alrcnt >> 16))
+	RTC.ALRL.Store(rtc.ALRL_Bits(alrcnt))
 	clearCNF(RTC)
 
-	if loadTicks()>>preLog2 >= wkup {
+	fence.Memory() // Ensure that g.* fields are stored.
+	exti.RTCALR.EnableIRQ()
+
+	now = loadTicks() >> preLog2
+	if now >= wkup {
 		// There is a chance that the alarm interrupt was not triggered.
 		exti.RTCALR.Trigger()
 	}
+
 	/*print64("*sw* now:", now)
 	print64(" wkup:", wkup)
 	print32(" cnt1:", uint32(now>>rtcPreLog2))
