@@ -4,7 +4,7 @@ syscall$ftou(void (*f) ()) {
 }
 
 uintptr
-syscall$f64tou(void (*f) (int64)) {
+syscall$f64btou(void (*f) (int64, bool)) {
 	return (uintptr)(f);
 }
 

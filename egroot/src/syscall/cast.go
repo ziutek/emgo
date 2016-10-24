@@ -6,7 +6,7 @@ func ftou(func()) uintptr
 
 //emgo:export
 //c:static inline
-func f64tou(func(int64)) uintptr
+func f64btou(func(int64, bool)) uintptr
 
 //emgo:export
 //c:static inline

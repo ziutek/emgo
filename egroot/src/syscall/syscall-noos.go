@@ -58,22 +58,30 @@ func SchedNext() {
 	schedNext()
 }
 
-// SetSysTimer registers two functions that runtime uses to communicate with
-// system timer.
+// SetSysTimer registers two functions that the runtime uses to communicate with
+// the system timer.
 //
 // Nanosec is used to implement Nanosec system call. It should return the
 // monotonic time i nanoseconds (typically the time of system timer run).
 //
-// Wakeup is called by scheduler to ask system timer to wakeup it (using
-// SchedNext function) at time t. Weak (ticking) system timer can ignore t and
-// wakeup the scheduler with fixed period. Good (tickless) timer should wakeup
-// the scheduler as accurately as possible (if t <= nanosec() it should call
-// SchedNext immediately). Wakeup should not generate any exception before
-// return, to do not wakeup runtime too early from WFE. There is guaranteed
-// that wakeup will be called by scheduler immediately after registration.
-func SetSysTimer(nanosec func() int64, wakeup func(t int64)) Errno {
-	_, e := internal.Syscall2(SETSYSTIM, fr64tou(nanosec), f64tou(wakeup))
-	return Errno(e)
+// SetWakeup is called by scheduler to ask system timer to wakeup it (using
+// SchedNext function) at time t. It is always called just before sheduler
+// enters into waiting for event/interrupt state, even if the sheduler do not
+// want to be woken up by system timer (in such case t is set to 1<<63-1).
+//
+// If alarm is true the system timer should check t >= nanosec() condition (or
+// its internal counterpart) just before waking up the scheduler. If such
+// condition occured it should use the Alarm event to wakeup the scheduler and
+// hance all tasks that wait for this event. Otherwise it should wakeup the
+// scheduler using SchedNext function. It is acceptable (although it should be
+// avoided) to send Alarm event when alarm is true but the wakeup condition did
+// not occured.
+//
+// Weak (ticking) system timer can wakeup the scheduler with fixed period. Good
+// (tickless) system timer should wakeup the scheduler as accurately as possible
+// (if t <= nanosec() it should wakeup it immediately).
+func SetSysTimer(nanosec func() int64, setWakeup func(t int64, alarm bool)) {
+	internal.Syscall2(SETSYSTIM, fr64tou(nanosec), f64btou(setWakeup))
 }
 
 // Nanosec: see rtos package.
