@@ -107,18 +107,18 @@ func (lines Lines) Trigger() {
 	exti.EXTI.SWIER.U32.Store(uint32(lines))
 }
 
-// IntEnabled returns lines that have interrupt generation enabled.
-func IntEnabled() Lines {
+// IRQEnabled returns lines that have IRQ generation enabled.
+func IRQEnabled() Lines {
 	return Lines(exti.EXTI.IMR.U32.Load())
 }
 
-// EnableInt enables interrupt generation by lines.
-func (lines Lines) EnableInt() {
+// EnableInt enables IRQ generation by lines.
+func (lines Lines) EnableIRQ() {
 	exti.EXTI.IMR.U32.SetBits(uint32(lines))
 }
 
-// DisableInt disable interrupt generation by lines.
-func (lines Lines) DisableInt() {
+// DisableInt disable IRQ generation by lines.
+func (lines Lines) DisableIRQ() {
 	exti.EXTI.IMR.U32.ClearBits(uint32(lines))
 }
 
