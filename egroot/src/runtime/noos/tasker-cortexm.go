@@ -56,43 +56,45 @@ func (ti *taskInfo) setState(s taskState) {
 //    or from PendSV handler.
 // 2. Describe which method can be called from which handler.
 type taskSched struct {
-	alarm   int64
-	period  uint32
-	nanosec func() int64
-	wakeup  func(int64)
-	tasks   []*taskInfo
-	rng     []rand.XorShift64
-	curTask int
+	alarm      int64
+	lastAlarm  int64
+	checkAlarm uint32
+	period     uint32
+	nanosec    func() int64
+	setWakeup  func(int64, bool)
+	tasks      []*taskInfo
+	rng        []rand.XorShift64
+	curTask    int
 }
 
-func dummyNanosec() int64 { return 0 }
-func dummyWakeup(int64)   {}
+func dummyNanosec() int64                { return 0 }
+func dummySetWakeup(t int64, alarm bool) {}
+
+const noalarm = 1<<63 - 1
 
 var tasker = taskSched{
-	alarm:   1<<63 - 1,
-	period:  2e6, // 2 ms
-	nanosec: dummyNanosec,
-	wakeup:  dummyWakeup,
+	alarm:     noalarm,
+	period:    2e6, // 2 ms
+	nanosec:   dummyNanosec,
+	setWakeup: dummySetWakeup,
 }
 
 func (ts *taskSched) Nanosec() int64 {
 	return ts.nanosec()
 }
 
-func (ts *taskSched) SetNanosec(nanosec func() int64) {
+func (ts *taskSched) SetSysTimer(nanosec func() int64, setWakeup func(int64, bool)) *uint32 {
 	if nanosec == nil {
 		ts.nanosec = dummyNanosec
 	} else {
 		ts.nanosec = nanosec
 	}
-}
-
-func (ts *taskSched) SetWakeup(wakeup func(int64)) {
-	if wakeup == nil {
-		ts.wakeup = dummyWakeup
+	if setWakeup == nil {
+		ts.setWakeup = dummySetWakeup
 	} else {
-		ts.wakeup = wakeup
+		ts.setWakeup = setWakeup
 	}
+	return &ts.checkAlarm
 }
 
 func (ts *taskSched) deliverEvent(e syscall.Event) {

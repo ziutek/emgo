@@ -20,18 +20,17 @@ func pendSVHandler()
 
 // nextTask returns taskInfo.sp for next task or 0.
 // TODO: better scheduler
+
 func nextTask(sp uintptr) uintptr {
 	if softStackGuard {
 		checkStackGuard(tasker.curTask)
 	}
 again:
-	ns := tasker.nanosec()
-	if ns >= tasker.alarm {
-		syscall.Alarm.Send()
-		tasker.alarm = 1<<63 - 1
-	}
 	if ereg := syscall.TakeEventReg(); ereg != 0 {
-		tasker.deliverEvent(syscall.Event(ereg))
+		if ereg&syscall.Alarm != 0 {
+			tasker.alarm = noalarm
+		}
+		tasker.deliverEvent(ereg)
 	}
 	n := tasker.curTask
 	for {
@@ -43,29 +42,26 @@ again:
 		}
 		if n == tasker.curTask {
 			// No task to run.
-			//dbg.WriteString("*nt* 0\n")
-			tasker.wakeup(tasker.alarm)
+			tasker.setWakeup(tasker.alarm, tasker.alarm != noalarm)
 			cortexm.WFE()
-			//dbg.WriteString("*nt* wakeup\n")
 			clearPendSV() // Avoid reentering after return.
 			goto again
 		}
 	}
 	if n == tasker.curTask {
 		// Only one task running.
-		//dbg.WriteString("*nt* 1\n")
-		tasker.wakeup(tasker.alarm)
+		tasker.setWakeup(tasker.alarm, tasker.alarm != noalarm)
 		return 0
 	}
 	tasker.tasks[tasker.curTask].sp = sp
 	tasker.curTask = n
-	if ns += int64(tasker.period); ns > tasker.alarm {
-		ns = tasker.alarm
+	wkup := tasker.nanosec() + int64(tasker.period)
+	if wkup > tasker.alarm {
+		wkup = tasker.alarm
 	}
-	//dbg.WriteString("*nt* N\n")
 	if hasMPU {
 		setMPUStackGuard(n)
 	}
-	tasker.wakeup(ns)
+	tasker.setWakeup(wkup, false)
 	return tasker.tasks[n].sp
 }

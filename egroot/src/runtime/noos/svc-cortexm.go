@@ -72,12 +72,9 @@ func scEventWait(fp *cortexm.StackFrame, lr uintptr) {
 
 func scSetSysTimer(fp *cortexm.StackFrame, lr uintptr) {
 	mustThread(lr)
-	tasker.SetNanosec(utofr64(fp.R[0]))
-	tasker.SetWakeup(utof64(fp.R[1]))
-	// Raise PendSV to cause to call wakeup for the first time. System timer
-	// implementation can rely on the fact, that wakeup is called by PendSV
-	// handler immediately after setup (can be used to initialize/start timer).
-	raisePendSV()
+	checkAlarm := tasker.SetSysTimer(utofr64(fp.R[0]), utof64b(fp.R[1]))
+	fp.R[0] = uintptr(unsafe.Pointer(checkAlarm))
+	fp.R[1] = uintptr(syscall.OK)
 }
 
 func scNanosec(fp *cortexm.StackFrame, lr uintptr) {
