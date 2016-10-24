@@ -78,7 +78,7 @@ func NewDCI(spidrv *spi.Driver, csnport *gpio.Port, csnpin gpio.Pins, pclk uint,
 
 	dci.irq = irqline
 	irqline.EnableFallTrig()
-	irqline.EnableInt()
+	irqline.EnableIRQ()
 	return dci
 }
 

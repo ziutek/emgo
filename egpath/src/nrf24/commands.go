@@ -1,21 +1,19 @@
 package nrf24
 
-func (r *Radio) exec(args ...[]byte) Status {
+func (r *Radio) exec(args ...[]byte) STATUS {
 	if r.err != nil {
 		return 0
 	}
 	_, r.err = r.DCI.WriteRead(args...)
-	return Status(args[1][0])
+	return STATUS(args[1][0])
 }
 
-// Reg invokes R_REGISTER command.
-func (r *Radio) Reg(addr byte, val []byte) Status {
+func (r *Radio) R_REGISTER(addr byte, val []byte) STATUS {
 	cmd := []byte{addr}
 	return r.exec(cmd, cmd, nil, val)
 }
 
-// SetReg invokes W_REGISTER command.
-func (r *Radio) SetReg(addr byte, val ...byte) Status {
+func (r *Radio) W_REGISTER(addr byte, val ...byte) STATUS {
 	cmd := []byte{addr | 0x20}
 	return r.exec(cmd, cmd, val)
 }
@@ -26,68 +24,59 @@ func checkPayLen(pay []byte) {
 	}
 }
 
-// ReadRxP invokes R_RX_PAYLOAD command.
-func (r *Radio) ReadRx(pay []byte) Status {
+func (r *Radio) R_RX_PAYLOAD(pay []byte) STATUS {
 	checkPayLen(pay)
 	cmd := []byte{0x61}
 	return r.exec(cmd, cmd, nil, pay)
 }
 
-// WriteTxP invokes W_TX_PAYLOAD command.
-func (r *Radio) WriteTx(pay []byte) Status {
+func (r *Radio) W_TX_PAYLOAD(pay []byte) STATUS {
 	checkPayLen(pay)
 	cmd := []byte{0xa0}
 	return r.exec(cmd, cmd, pay)
 }
 
-// FlushTx invokes FLUSH_TX command.
-func (r *Radio) FlushTx() Status {
+func (r *Radio) FLUSH_TX() STATUS {
 	cmd := []byte{0xe1}
 	return r.exec(cmd, cmd)
 }
 
-// FlushRx invokes FLUSH_RX command.
-func (r *Radio) FlushRx() Status {
+func (r *Radio) FLUSH_RX() STATUS {
 	cmd := []byte{0xe2}
 	return r.exec(cmd, cmd)
 }
 
-// ReuseTx invokes REUSE_TX_PL command.
-func (r *Radio) ReuseTx() Status {
+func (r *Radio) REUSE_TX_PL() STATUS {
 	cmd := []byte{0xe3}
 	return r.exec(cmd, cmd)
 }
 
-// Activate invokes nRF24L01 ACTIVATE command.
-func (r *Radio) Activate(b byte) Status {
+// ACTIVATE is nRF24L01 specific command.
+func (r *Radio) ACTIVATE(b byte) STATUS {
 	cmd := []byte{0x50}
 	return r.exec(cmd, cmd)
 }
 
-// RxLen invokes R_RX_PL_WID command.
-func (d *Radio) RxLen() (int, Status) {
+func (d *Radio) R_RX_PL_WID() (int, STATUS) {
 	cmd := []byte{0x60, 0xff}
 	s := d.exec(cmd, cmd)
 	return int(cmd[1]), s
 }
 
-// WriteAck invokes W_ACK_PAYLOAD command.
-func (r *Radio) WriteAck(pn int, pay []byte) Status {
+func (r *Radio) W_ACK_PAYLOAD(pn int, pay []byte) STATUS {
 	checkPayNum(pn)
 	checkPayLen(pay)
 	cmd := []byte{byte(0xa8 | pn)}
 	return r.exec(cmd, cmd, pay)
 }
 
-// WriteTxNoAck invokes W_TX_PAYLOAD_NOACK command.
-func (r *Radio) WriteTxNoAck(pay []byte) Status {
+func (r *Radio) W_TX_PAYLOAD_NOACK(pay []byte) STATUS {
 	checkPayLen(pay)
 	cmd := []byte{0xa0}
 	return r.exec(cmd, cmd, pay)
 }
 
-// NOP invokes NOP command.
-func (r *Radio) NOP() Status {
+func (r *Radio) NOP() STATUS {
 	cmd := []byte{0xff}
 	return r.exec(cmd, cmd)
 }
