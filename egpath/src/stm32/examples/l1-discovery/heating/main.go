@@ -28,7 +28,8 @@ var (
 	RoomHeater [3]bitband.Bit // Room heating solid state relays.
 )
 
-// prio16 must be in the range [0;15]. Do not use prio16 <= 4 for realtime ISRs.
+// prio16 must be in the range [0;15]. Do not use prio16 <= 8 (SVCall prio) for
+// realtime ISRs.
 func irqen(irq nvic.IRQ, prio16 rtos.IRQPrio) {
 	e := rtos.IRQ(irq)
 	e.SetPrio(rtos.IRQPrioLowest + prio16*rtos.IRQPrioStep*(rtos.IRQPrioNum/16))
@@ -88,13 +89,13 @@ func init() {
 	whport.Setup(whpins, gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
 	whport.SetAltFunc(whpins, gpio.TIM3)
 	rcc.RCC.TIM3EN().Set()
-	irqen(irq.TIM3, 12) // Prio must be the same as for water flow sensor.
+	irqen(irq.TIM3, 13) // Prio must be the same as for water flow sensor.
 
 	// Water flow sensor.
 	wsport.Setup(wspin, gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	wsport.SetAltFunc(wspin, gpio.TIM9)
 	rcc.RCC.TIM9EN().Set()
-	irqen(irq.TIM9, 12) // Prio must be the same as for PWM IRQ prio.
+	irqen(irq.TIM9, 13) // Prio must be the same as for PWM IRQ prio.
 
 	water.Init(tim.TIM3, tim.TIM9, system.APB1.Clock())
 
@@ -102,18 +103,18 @@ func init() {
 	owport.Setup(owpin, gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
 	owport.SetAltFunc(owpin, gpio.USART3)
 	owd.Start(usart.USART3, dma1.Channel(3, 0), dma1.Channel(2, 0))
-	irqen(irq.USART3, 11)
-	irqen(irq.DMA1_Channel3, 11)
-	irqen(irq.DMA1_Channel2, 11)
+	irqen(irq.USART3, 12)
+	irqen(irq.DMA1_Channel3, 12)
+	irqen(irq.DMA1_Channel2, 12)
 
 	// I2C LCD (PCF8574T + HD44780)
 	lcdport.Setup(lcdpins, gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
 	lcdport.SetAltFunc(lcdpins, gpio.I2C2)
 	initI2C(i2c.I2C2, dma1.Channel(5, 0), dma1.Channel(4, 0))
-	irqen(irq.I2C2_EV, 10)
-	irqen(irq.I2C2_ER, 10)
-	irqen(irq.DMA1_Channel5, 10)
-	irqen(irq.DMA1_Channel4, 10)
+	irqen(irq.I2C2_EV, 11)
+	irqen(irq.I2C2_ER, 11)
+	irqen(irq.DMA1_Channel5, 11)
+	irqen(irq.DMA1_Channel4, 11)
 
 	// Encoder.
 	encport.Setup(encpins, gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
@@ -123,12 +124,12 @@ func init() {
 	line = exti.LineN(ebtnpin)
 	line.Connect(ebtnport)
 	encoder.Init(tim.TIM2, ebtnport.InPins().Bit(ebtnpin), line)
-	irqen(irq.TIM2, 9)
-	irqen(irq.EXTI4, 9)
+	irqen(irq.TIM2, 10)
+	irqen(irq.EXTI4, 10)
 
 	rcc.RCC.TIM6EN().Set()
 	menu.Setup(tim.TIM6, system.APB1.Clock())
-	irqen(irq.TIM6, 5)
+	irqen(irq.TIM6, 9)
 
 	initRTC()
 

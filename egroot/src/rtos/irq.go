@@ -2,14 +2,16 @@ package rtos
 
 import "syscall"
 
-// An IRQ represents interrupt type.
-// Cortex-M: IRQ represents external interrupt.
+// An IRQ represents an interrupt request number.
+// Cortex-M: IRQ represents external interrupt request.
 type IRQ int
 
+// Enable enables handling of irq.
 func (irq IRQ) Enable() error {
 	return mkerror(syscall.SetIRQEna(int(irq), true))
 }
 
+// Disable disables handling of irq.
 func (irq IRQ) Disable() error {
 	return mkerror(syscall.SetIRQEna(int(irq), false))
 }
@@ -31,6 +33,11 @@ const (
 	// many cases number of effective levels is less than IRQPrioNum and adding
 	// one step to priority does not guarantee highest effective level.
 	IRQPrioStep = IRQPrio(syscall.IRQPrioStep)
+
+	// SyscallPrio is the IRQ priority level equal to priority of IRQ/exception
+	// used to implement system calls. Usually, to use system calls in interrupt
+	// handler its IRQ must have priority lower than SyscallPrio.
+	SyscallPrio = IRQPrio(syscall.SyscallPrio)
 )
 
 // Lower resturns true if priority p is lower than o.

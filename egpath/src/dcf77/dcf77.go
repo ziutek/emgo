@@ -15,7 +15,7 @@ const (
 )
 
 //emgo:const
-var strerr = []string{
+var strerr = [...]string{
 	"initializing",
 	"timing error",
 	"bits error",

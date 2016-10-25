@@ -12,4 +12,6 @@ const (
 	IRQPrioHighest = cortexm.PrioHighest
 	IRQPrioStep    = cortexm.PrioStep
 	IRQPrioNum     = cortexm.PrioNum
+
+	SyscallPrio = cortexm.PrioLowest + cortexm.PrioStep*cortexm.PrioNum/2
 )

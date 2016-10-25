@@ -71,7 +71,6 @@ func init() {
 	ctrport.Setup(irqn, gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
 	irqline := exti.Lines(irqn)
 	irqline.Connect(ctrport)
-	rtos.IRQ(irq.EXTI1).SetPrio(rtos.IRQPrioHighest)
 	rtos.IRQ(irq.EXTI1).Enable()
 
 	dci = nrfdci.NewDCI(

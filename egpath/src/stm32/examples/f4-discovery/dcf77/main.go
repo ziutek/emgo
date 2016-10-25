@@ -34,6 +34,8 @@ func init() {
 	line.EnableFallTrig()
 	line.EnableIRQ()
 
+	prio := (rtos.IRQPrioLowest + rtos.SyscallPrio) / 2
+	rtos.IRQ(irq.EXTI1).SetPrio(prio) // To allow use time.Now().
 	rtos.IRQ(irq.EXTI1).Enable()
 }
 
@@ -42,17 +44,13 @@ var d = dcf77.NewDecoder()
 func edgeISR() {
 	t := time.Now()
 	exti.Lines(dcfpin).ClearPending()
-	blink(Blue, -100)
+	blink(Blue, -1e4)
 	d.Edge(t, dcfport.Pins(dcfpin) != 0)
-}
-
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.EXTI1: edgeISR,
 }
 
 func main() {
 	delay.Millisec(100)
+	fmt.Printf("\nDCF77 RECEIVER\n\n")
 	for {
 		p := d.Pulse()
 		now := time.Now().UnixNano()
@@ -65,4 +63,10 @@ func main() {
 			blink(Green, 25)
 		}
 	}
+}
+
+//emgo:const
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.EXTI1: edgeISR,
 }

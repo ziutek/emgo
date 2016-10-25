@@ -146,18 +146,19 @@ func (ts *taskSched) init() {
 	// used).
 	cortexm.SetMSP(unsafe.Pointer(stacksBegin() + isrStackSize()))
 
-	// After reset all exceptions have highest priority. Change this to
-	// achieve folowing assumptions (even in case of Cortex-M0 which has only
-	// four effective priority levels:
+	// Change the default exceptionpriority levels to achieve folowing
+	// assumptions (even in case of Cortex-M0 which has only four effective
+	// priority levels:
 	// 1. PendSV has absolutely lowest priority.
-	// 2. SVC has lowest possible priority that is effectively higher than
-	//    priority of PendSV exception.
-	spnum := cortexm.PrioStep * cortexm.PrioNum
+	// 2. There is an effective priority level between PendSV and SVCall that
+	//    can be used by ISRs that want to use system calls.
+	// 3. There is effective priority level above SVCall for IRQs that need
+	//    preempting system calls (SVCall should not use highest priority).
 	SCB := scb.SCB
-	SCB.PRI_PendSV().Store(scb.PRI_PendSV.J(cortexm.PrioLowest + spnum*0/4))
-	SCB.PRI_SVCall().Store(scb.PRI_SVCall.J(cortexm.PrioLowest + spnum*1/4))
+	SCB.PRI_PendSV().Store(scb.PRI_PendSV.J(cortexm.PrioLowest))
+	SCB.PRI_SVCall().Store(scb.PRI_SVCall.J(syscall.SyscallPrio))
 	for irq := nvic.IRQ(0); irq < 240; irq++ {
-		irq.SetPrio(cortexm.PrioLowest + spnum*2/4)
+		irq.SetPrio(cortexm.PrioHighest)
 	}
 
 	if hasMPU {
