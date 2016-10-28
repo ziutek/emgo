@@ -26,7 +26,7 @@ func init() {
 	gpio.B.EnableClock(false)
 	leds = gpio.B
 
-	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	leds.Setup(Green, cfg)
 }
 

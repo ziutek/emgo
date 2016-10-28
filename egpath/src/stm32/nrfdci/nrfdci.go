@@ -16,9 +16,10 @@ import (
 // DCI implements nrf24.DCI interface. Additionally, it allows to control CE
 // signal and wait for interrupt.
 type DCI struct {
+	rtos.EventFlag
+
 	spi     *spi.Driver
 	cet     *tim.TIM_Periph
-	flag    rtos.EventFlag
 	irq     exti.Lines
 	csnport *gpio.Port
 	csnpin  gpio.Pins // uint16
@@ -113,17 +114,9 @@ func (dci *DCI) IRQ() exti.Lines {
 }
 
 func (dci *DCI) ISR() {
-	dci.flag.Set()
+	dci.EventFlag.Set()
 }
 
 func (dci *DCI) Baudrate() uint {
 	return dci.spi.P.Baudrate(dci.spi.P.Conf())
-}
-
-func (dci *DCI) Wait(deadline int64) bool {
-	if dci.flag.Wait(deadline) {
-		dci.flag.Clear()
-		return true
-	}
-	return false
 }

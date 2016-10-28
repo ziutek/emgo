@@ -27,7 +27,7 @@ func init() {
 	gpio.B.EnableClock(true)
 	port, pins := gpio.B, gpio.Pin8|gpio.Pin9
 
-	cfg := gpio.Config{
+	cfg := &gpio.Config{
 		Mode:   gpio.Alt,
 		Driver: gpio.OpenDrain,
 	}
@@ -46,7 +46,7 @@ func init() {
 func twiConfigure() {
 	fmt.Printf("Reset\n")
 	twi.P.Reset() // Mandatory!
-	twi.P.Setup(i2c.Config{Speed: 5000})
+	twi.P.Setup(&i2c.Config{Speed: 5000})
 	twi.P.Enable()
 }
 

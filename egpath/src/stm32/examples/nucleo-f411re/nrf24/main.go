@@ -45,8 +45,8 @@ func init() {
 
 	// UART
 
-	uartport.Setup(tx, gpio.Config{Mode: gpio.Alt})
-	uartport.Setup(rx, gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	uartport.Setup(tx, &gpio.Config{Mode: gpio.Alt})
+	uartport.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	uartport.SetAltFunc(tx|rx, gpio.USART2)
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
@@ -188,6 +188,7 @@ func main() {
 			nrf.FLUSH_RX()
 			dci.SetCE(1)
 			for i := 0; i < n; i++ {
+				// BUG: Must use FIFO_STATUS.
 				nrf.ClearIRQ(nrf24.RX_DR)
 				dci.Wait(0)
 				nrf.R_RX_PAYLOAD(buf[:])

@@ -40,7 +40,7 @@ func init() {
 	cfg = gpio.Config{Mode: gpio.In, Pull: gpio.PullUp}
 	port = gpio.C
 	port.EnableClock(true)
-	port.SetupPin(10, cfg)
+	port.SetupPin(10, &cfg)
 	key3 = port.InPins().Bit(10)
 
 	rnd.Seed(uint64(rtos.Nanosec()))

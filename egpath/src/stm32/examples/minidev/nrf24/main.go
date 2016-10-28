@@ -46,16 +46,16 @@ func init() {
 
 	ledport.SetupPin(
 		ledpin,
-		gpio.Config{Mode: gpio.Out, Driver: gpio.OpenDrain, Speed: gpio.Low},
+		&gpio.Config{Mode: gpio.Out, Driver: gpio.OpenDrain, Speed: gpio.Low},
 	)
 	led = ledport.OutPins().Bit(ledpin)
 	led.Set()
 
 	// nRF24 SPI
 
-	spiport.Setup(sck|mosi, gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
-	spiport.Setup(miso, gpio.Config{Mode: gpio.AltIn})
-	spiport.Setup(csn, gpio.Config{Mode: gpio.Out, Speed: gpio.High})
+	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
+	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
+	spiport.Setup(csn, &gpio.Config{Mode: gpio.Out, Speed: gpio.High})
 	d := dma.DMA1
 	d.EnableClock(true)
 	spid := spi.NewDriver(spi.SPI1, d.Channel(2, 0), d.Channel(3, 0))
@@ -66,9 +66,9 @@ func init() {
 
 	// nRF24 control lines.
 
-	ctrport.Setup(ce, gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
+	ctrport.Setup(ce, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	rcc.RCC.TIM3EN().Set()
-	ctrport.Setup(irqn, gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
+	ctrport.Setup(irqn, &gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
 	irqline := exti.Lines(irqn)
 	irqline.Connect(ctrport)
 	rtos.IRQ(irq.EXTI1).Enable()
@@ -173,6 +173,7 @@ func main() {
 			nrf.FLUSH_RX()
 			dci.SetCE(1)
 			for i := 0; i < n; i++ {
+				// BUG: Must use FIFO_STATUS.
 				nrf.ClearIRQ(nrf24.RX_DR)
 				dci.Wait(0)
 				nrf.R_RX_PAYLOAD(buf[:])

@@ -23,7 +23,7 @@ func init() {
 	leds = gpio.B
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(Green|Blue, cfg)
+	leds.Setup(Green|Blue, &cfg)
 }
 
 func main() {

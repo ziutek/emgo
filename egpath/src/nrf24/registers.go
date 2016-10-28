@@ -39,7 +39,7 @@ func (r *Radio) byteReg(addr byte) (byte, STATUS) {
 type CONFIG byte
 
 const (
-	PRIM_RX     CONFIG = 1 << 0 // Primary: 1: Receiver (PRX) / 0: Transmitter (PPTX).
+	PRIM_RX     CONFIG = 1 << 0 // 1: Receiver (PRX) / 0: Transmitter (PPTX).
 	PWR_UP      CONFIG = 1 << 1 // Power: 1: up / 0: down.
 	CRCO        CONFIG = 1 << 2 // CRC encoding scheme: 0: one byte / 1: two bytes.
 	EN_CRC      CONFIG = 1 << 3 // Enable CRC. Forced 1 if one of bits in EN_AA is 1.

@@ -56,8 +56,8 @@ func init() {
 
 	// Console
 
-	cprt.Setup(tx, gpio.Config{Mode: gpio.Alt})
-	cprt.Setup(rx, gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	cprt.Setup(tx, &gpio.Config{Mode: gpio.Alt})
+	cprt.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	cprt.SetAltFunc(tx|rx, gpio.USART2)
 	con = usart.NewDriver(
 		usart.USART2, usart2rxdma, usart2txdma, make([]byte, 80),

@@ -28,7 +28,7 @@ func main() {
 	gpio.B.EnableClock(false)
 	leds = gpio.B
 
-	leds.Setup(Green|Blue, gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
+	leds.Setup(Green|Blue, &gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
 
 	cb := make(chan gpio.Pins, 2)
 	cg := make(chan gpio.Pins, 2)

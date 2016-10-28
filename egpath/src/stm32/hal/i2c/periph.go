@@ -93,7 +93,7 @@ type Config struct {
 //
 // To obtain 400 kHz SCL in 16/9 fast mode the PCLK must be configured to
 // multiple of 10 MHz.
-func (p *Periph) Setup(cfg Config) {
+func (p *Periph) Setup(cfg *Config) {
 	pclk := int(p.Bus().Clock()) // Pclk should fit in int.
 	pclkM := pclk / 1e6
 	var ccr, trise int

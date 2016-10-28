@@ -51,12 +51,12 @@ type Config struct {
 }
 
 // SetupPin configures n-th pin.
-func (p *Port) SetupPin(n int, cfg Config) {
+func (p *Port) SetupPin(n int, cfg *Config) {
 	setup(p, n, cfg)
 }
 
 // Setup configures pins.
-func (p *Port) Setup(pins Pins, cfg Config) {
+func (p *Port) Setup(pins Pins, cfg *Config) {
 	for n := 0; n < 16; n++ {
 		if pins&(1<<uint(n)) != 0 {
 			setup(p, n, cfg)

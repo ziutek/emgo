@@ -23,8 +23,8 @@ func init() {
 	gpio.B.EnableClock(true)
 	port, tx, rx := gpio.B, gpio.Pin10, gpio.Pin11
 
-	port.Setup(tx, gpio.Config{Mode: gpio.Alt})
-	port.Setup(rx, gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
+	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	port.SetAltFunc(tx|rx, gpio.USART3)
 
 	tts = usart.USART3

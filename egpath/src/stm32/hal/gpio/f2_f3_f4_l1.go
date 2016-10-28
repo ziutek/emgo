@@ -55,7 +55,7 @@ func reset(p *Port) {
 	bit.Clear()
 }
 
-func setup(p *Port, n int, cfg Config) {
+func setup(p *Port, n int, cfg *Config) {
 	pos := uint(n * 2)
 	p.otyper.StoreBit(n, int(cfg.Driver))
 	p.ospeedr.StoreBits(3<<pos, uint32(int(cfg.Speed)-veryLow)<<pos)

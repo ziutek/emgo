@@ -24,8 +24,10 @@ func init() {
 	gpio.B.EnableClock(true)
 	leds := gpio.B
 
-	cfg := gpio.Config{Mode: gpio.Alt, Speed: gpio.Low}
-	leds.Setup(gpio.Pin7|gpio.Pin6, cfg)
+	leds.Setup(
+		gpio.Pin7|gpio.Pin6, 
+		&gpio.Config{Mode: gpio.Alt, Speed: gpio.Low},
+	)
 	rcc.RCC.TIM4EN().Set()
 	t := tim.TIM4
 	const (
