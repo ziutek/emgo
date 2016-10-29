@@ -5,19 +5,12 @@ import (
 	"unsafe"
 
 	"arch/cortexm/nvic"
-
-	"nrf51/hal/internal"
 )
 
 // EventReg represents peripheral registers that are used to records an
 // occurences of some kind of events.
 type EventReg struct {
 	u32 mmio.U32
-}
-
-// GetEventReg is for internal use.
-func GetEventReg(ph *internal.Pheader, n int) *EventReg {
-	return (*EventReg)(unsafe.Pointer(&ph.Events[n]))
 }
 
 // IsSet reports whether r recorded occurrence of an event.
@@ -30,59 +23,59 @@ func (r *EventReg) Clear() {
 	r.u32.Store(0)
 }
 
-func phmask(r *EventReg) (*internal.Pheader, uint32) {
+func regsMask(r *EventReg) (*Regs, uint32) {
 	ea := r.u32.Addr()
-	pha := ea & 0xfffff000
-	n := (ea-pha)>>2 - 64
-	return (*internal.Pheader)(unsafe.Pointer(pha)), 1 << n
+	ra := ea & 0xfffff000
+	n := (ea-ra)>>2 - 64
+	return (*Regs)(unsafe.Pointer(ra)), 1 << n
 }
 
 // IntEnabled reports whether the occurence of an event will generate IRQ.
 func (r *EventReg) IRQEnabled() bool {
-	ph, mask := phmask(r)
-	return ph.IntEnSet.Load()&mask != 0
+	rr, mask := regsMask(r)
+	return rr.intEnSet.Load()&mask != 0
 }
 
 // EnableIRQ enables generating of IRQ by event recorded by r.
 func (r *EventReg) EnableIRQ() {
-	ph, mask := phmask(r)
-	ph.IntEnSet.Store(mask)
+	rr, mask := regsMask(r)
+	rr.intEnSet.Store(mask)
 }
 
 // DisableIRQ disables generating of IRQ by event recorded by r.
 func (r *EventReg) DisableIRQ() {
-	ph, mask := phmask(r)
-	ph.IntEnClr.Store(mask)
+	rr, mask := regsMask(r)
+	rr.intEnClr.Store(mask)
 }
 
 // IRQ returns IRQ number associated to r.
 func (r *EventReg) IRQ() nvic.IRQ {
-	ph, _ := phmask(r)
-	return ph.IRQ()
+	rr, _ := regsMask(r)
+	return rr.IRQ()
 }
 
-// EventEnabled reports whether the occurrence of an event will be recorded by
+// PPIEnabled reports whether the occurrence of an event will be recorded by
 // r and will be routed to PPI. Only some peripherals (eg. RTC) implements
 // this method.
-func (r *EventReg) EventEnabled() bool {
-	ph, mask := phmask(r)
-	return ph.EvtEnSet.Load()&mask != 0
+func (r *EventReg) PPIEnabled() bool {
+	rr, mask := regsMask(r)
+	return rr.evtEnSet.Load()&mask != 0
 }
 
-// EnableEvent enables recording of events and routing them to PPI. Only some
+// Enable enables recording of events and routing them to PPI. Only some
 // peripherals (eg. RTC) implements this method. Note that if this method is
-// implemented then EnableInt method also enables recording ot events but does
+// implemented then EnableIRQ method also enables recording of events but does
 // not enable routing them to PPI.
-func (r *EventReg) EnableEvent() {
-	ph, mask := phmask(r)
-	ph.EvtEnSet.Store(mask)
+func (r *EventReg) EnablePPI() {
+	rr, mask := regsMask(r)
+	rr.evtEnSet.Store(mask)
 }
 
-// DisableEvent disables recording of events and routing them to PPI. Only some
+// Disable disables recording of events and routing them to PPI. Only some
 // peripherals (eg. RTC) implements this method. Note that if this method is
-// implemented it doesn't affect interrupt generation enabled by EnableInt which
+// implemented it doesn't affect interrupt generation enabled by EnableIRQ which
 // also enables events recording.
-func (r *EventReg) DisableEvent() {
-	ph, mask := phmask(r)
-	ph.EvtEnClr.Store(mask)
+func (r *EventReg) DisablePPI() {
+	rr, mask := regsMask(r)
+	rr.evtEnClr.Store(mask)
 }

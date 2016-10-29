@@ -2,7 +2,6 @@
 package clock
 
 import (
-	"arch/cortexm/nvic"
 	"mmio"
 	"unsafe"
 
@@ -12,7 +11,8 @@ import (
 
 // Periph represents clock management peripheral.
 type Periph struct {
-	ph           internal.Pheader
+	te.Regs
+
 	_            [2]mmio.U32
 	hfclkrun     mmio.U32
 	hfclkstat    mmio.U32
@@ -27,6 +27,9 @@ type Periph struct {
 	_            [5]mmio.U32
 	xtalfreq     mmio.U32
 }
+
+//emgo:const
+var Mgmt = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x00000))
 
 type Task int
 
@@ -49,9 +52,8 @@ const (
 	CTTO         Event = 4 // Calibration timer timeout.
 )
 
-func (p *Periph) IRQ() nvic.IRQ              { return p.ph.IRQ() }
-func (p *Periph) TASK(n Task) *te.TaskReg    { return te.GetTaskReg(&p.ph, int(n)) }
-func (p *Periph) EVENT(n Event) *te.EventReg { return te.GetEventReg(&p.ph, int(n)) }
+func (p *Periph) TASK(n Task) *te.TaskReg    { return p.Regs.TASK(int(n)) }
+func (p *Periph) EVENT(n Event) *te.EventReg { return p.Regs.EVENT(int(n)) }
 
 // HFCLKRUN returns true if HFCLKSTART task was triggered.
 func (p *Periph) HFCLKRUN() bool {
@@ -127,5 +129,3 @@ func (p *Periph) XTALFREQ() XTALFREQ {
 func (p *Periph) SetXTALFREQ(xf XTALFREQ) {
 	p.xtalfreq.Store(uint32(xf))
 }
-
-var Mgmt = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x00000))

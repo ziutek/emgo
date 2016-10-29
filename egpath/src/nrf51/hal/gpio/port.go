@@ -18,6 +18,7 @@ type Port struct {
 	pincnf [32]uint32
 } //c:volatile
 
+//emgo:const
 var P0 = (*Port)(unsafe.Pointer(internal.BaseAHB + 0x504))
 
 type Mode byte

@@ -5,15 +5,14 @@ import (
 	"mmio"
 	"unsafe"
 
-	"arch/cortexm/nvic"
-
 	"nrf51/hal/internal"
 	"nrf51/hal/te"
 )
 
 // Periph represents timer/counter peripheral.
 type Periph struct {
-	ph        internal.Pheader
+	te.Regs
+
 	_         [65]mmio.U32
 	mode      mmio.U32 // Timer mode selection.
 	bitmode   mmio.U32 // Configure the number of bits used by the TIMER.
@@ -22,6 +21,13 @@ type Periph struct {
 	_         [11]mmio.U32
 	cc        [4]mmio.U32 // Capture/Compare registers.
 }
+
+//emgo:const
+var (
+	Timer0 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x08000))
+	Timer1 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x09000))
+	Timer2 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x0a000))
+)
 
 type Task int
 
@@ -58,17 +64,10 @@ const (
 	COMPARE3_STOP  Shorts = 0x100 << 3
 )
 
-type ShortsReg struct{ u32 mmio.U32 }
+func (p *Periph) TASK(n Task) *te.TaskReg    { return p.Regs.TASK(int(n)) }
+func (p *Periph) EVENT(n Event) *te.EventReg { return p.Regs.EVENT(int(n)) }
 
-func (r *ShortsReg) Load() Shorts   { return Shorts(r.u32.Load()) }
-func (r *ShortsReg) Store(s Shorts) { r.u32.Store(uint32(s)) }
-func (r *ShortsReg) Set(s Shorts)   { r.u32.SetBits(uint32(s)) }
-func (r *ShortsReg) Clear(s Shorts) { r.u32.ClearBits(uint32(s)) }
-
-func (p *Periph) IRQ() nvic.IRQ              { return p.ph.IRQ() }
-func (p *Periph) TASK(n Task) *te.TaskReg    { return te.GetTaskReg(&p.ph, int(n)) }
-func (p *Periph) EVENT(n Event) *te.EventReg { return te.GetEventReg(&p.ph, int(n)) }
-func (p *Periph) SHORTS() *ShortsReg         { return (*ShortsReg)(unsafe.Pointer(p.ph.Shorts.Addr())) }
+//func (p *Periph) SHORTS() *ShortsReg { return (*ShortsReg)(unsafe.Pointer(p.ph.Shorts.Addr())) }
 
 type Mode byte
 
@@ -119,9 +118,3 @@ func (p *Periph) CC(n int) uint32 {
 func (p *Periph) SetCC(n int, cc uint32) {
 	p.cc[n].Store(cc)
 }
-
-var (
-	Timer0 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x08000))
-	Timer1 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x09000))
-	Timer2 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x0a000))
-)

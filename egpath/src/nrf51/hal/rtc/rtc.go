@@ -2,7 +2,6 @@
 package rtc
 
 import (
-	"arch/cortexm/nvic"
 	"mmio"
 	"unsafe"
 
@@ -12,7 +11,8 @@ import (
 
 // Periph represents Real Time Counter peripheral.
 type Periph struct {
-	ph        internal.Pheader
+	te.Regs
+
 	_         [65]mmio.U32
 	counter   mmio.U32
 	prescaler mmio.U32
@@ -20,7 +20,14 @@ type Periph struct {
 	cc        [4]mmio.U32
 }
 
-type Task int
+//emgo:const
+var (
+	RTC0 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x0b000))
+	RTC1 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x11000))
+	RTC2 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x24000))
+)
+
+type Task byte
 
 const (
 	START      Task = 0 // Start RTC COUNTER.
@@ -29,7 +36,7 @@ const (
 	TRIGOVRFLW Task = 3 // Set COUNTER to 0xFFFFF0.
 )
 
-type Event int
+type Event byte
 
 const (
 	TICK     Event = 0  // Event on COUNTER increment.
@@ -40,9 +47,8 @@ const (
 	COMPARE3 Event = 19 // Compare event on CC[3] match.
 )
 
-func (p *Periph) IRQ() nvic.IRQ              { return p.ph.IRQ() }
-func (p *Periph) TASK(n Task) *te.TaskReg    { return te.GetTaskReg(&p.ph, int(n)) }
-func (p *Periph) EVENT(n Event) *te.EventReg { return te.GetEventReg(&p.ph, int(n)) }
+func (p *Periph) TASK(n Task) *te.TaskReg    { return p.Regs.TASK(int(n)) }
+func (p *Periph) EVENT(n Event) *te.EventReg { return p.Regs.EVENT(int(n)) }
 
 // COUNTER returns value of counter register.
 func (p *Periph) COUNTER() uint32 {
@@ -74,9 +80,3 @@ func (p *Periph) CC(n int) uint32 {
 func (p *Periph) SetCC(n int, cc uint32) {
 	p.cc[n].Store(cc)
 }
-
-var (
-	RTC0 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x0b000))
-	RTC1 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x11000))
-	RTC2 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x24000))
-)

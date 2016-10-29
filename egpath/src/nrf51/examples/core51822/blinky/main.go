@@ -56,11 +56,11 @@ func blink(led byte, dly int) {
 func timerISR() {
 	if e := t0.EVENT(timer.COMPARE0); e.IsSet() {
 		e.Clear()
-		blink(leds[3], 1e5)
+		blink(leds[3], 1e3)
 	}
 	if e := t0.EVENT(timer.COMPARE1); e.IsSet() {
 		e.Clear()
-		blink(leds[4], 1e4)
+		blink(leds[4], 1e3)
 	}
 }
 
