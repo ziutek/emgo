@@ -8,6 +8,8 @@ import (
 	"mmio"
 	"rtos"
 
+	"arch/cortexm/bitband"
+
 	"nrf24"
 
 	"stm32/nrfdci"
@@ -27,6 +29,7 @@ import (
 var (
 	dci *nrfdci.DCI
 	pwm *mmio.U32
+	led bitband.Bit
 )
 
 func init() {
@@ -37,11 +40,17 @@ func init() {
 	// GPIO
 
 	gpio.A.EnableClock(true)
+	ledport, ledpin := gpio.A, 1
 	spiport, sck, miso, mosi := gpio.A, gpio.Pin5, gpio.Pin6, gpio.Pin7
 	pwmport, pwmpin := gpio.A, gpio.Pin0
 
 	gpio.B.EnableClock(true)
 	ctrport, csn, irqn, ce := gpio.B, gpio.Pin6, gpio.Pin8, gpio.Pin9
+
+	// LED
+
+	ledport.SetupPin(ledpin, &gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
+	led = ledport.OutPins().Bit(ledpin)
 
 	// PWM
 
@@ -137,8 +146,10 @@ func main() {
 	var fs nrf24.FIFO_STATUS
 	for {
 		if fs&nrf24.RX_EMPTY != 0 {
+			led.Clear()
 			dci.Wait(0)
 		}
+		led.Set()
 		nrf.R_RX_PAYLOAD(buf)
 		dci.Clear()
 		nrf.ClearIRQ(nrf24.RX_DR)
