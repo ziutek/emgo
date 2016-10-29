@@ -23,7 +23,7 @@ for p in $list; do
 	fi
 done
 
-list=$(find egpath/src/stm32/examples -type d)
+list=$(find egpath/src/*/examples -type d) 
 
 for p in $list; do
 	if [ -n "$(find $p -maxdepth 1 -type f -name '*.go' |grep -v '/_')" ]; then

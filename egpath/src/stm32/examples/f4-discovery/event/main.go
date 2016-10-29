@@ -29,7 +29,7 @@ func init() {
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	for pin := 12; pin <= 15; pin++ {
-		ledport.SetupPin(pin, cfg)
+		ledport.SetupPin(pin, &cfg)
 	}
 	pins := ledport.OutPins()
 	leds.Green = pins.Bit(12)
@@ -39,10 +39,10 @@ func init() {
 
 	// Button
 
-	btnport.Setup(button, gpio.Config{Mode: gpio.In})
+	btnport.Setup(button, &gpio.Config{Mode: gpio.In})
 	line := exti.Lines(button)
 	line.Connect(btnport)
-	line.EnableRiseTrig()
+	line.EnableRisiTrig()
 	line.EnableIRQ()
 	rtos.IRQ(irq.EXTI0).Enable()
 }

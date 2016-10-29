@@ -68,8 +68,8 @@ func init() {
 
 	// nRF24 SPI.
 
-	spiport.Setup(sck|mosi, gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
-	spiport.Setup(miso, gpio.Config{Mode: gpio.AltIn})
+	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
+	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
 	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
 	d = dma.DMA2
 	d.EnableClock(true)
@@ -81,11 +81,11 @@ func init() {
 
 	// nRF24 control lines.
 
-	ctrport.Setup(csn, gpio.Config{Mode: gpio.Out, Speed: gpio.High})
-	ctrport.Setup(ce, gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
+	ctrport.Setup(csn, &gpio.Config{Mode: gpio.Out, Speed: gpio.High})
+	ctrport.Setup(ce, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	ctrport.SetAltFunc(ce, gpio.TIM4)
 	rcc.RCC.TIM4EN().Set()
-	ctrport.Setup(irqn, gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
+	ctrport.Setup(irqn, &gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
 	irqline := exti.Lines(irqn)
 	irqline.Connect(ctrport)
 	rtos.IRQ(irq.EXTI9_5).Enable()

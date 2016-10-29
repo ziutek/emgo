@@ -52,7 +52,7 @@ func (e *Encoder) Init(t *tim.TIM_Periph, b bitband.Bit, l exti.Lines) {
 	t.CEN().Set()
 
 	l.EnableFallTrig()
-	l.EnableRiseTrig()
+	l.EnableRisiTrig()
 	l.EnableIRQ()
 }
 

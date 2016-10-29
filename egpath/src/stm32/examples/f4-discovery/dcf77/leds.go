@@ -18,7 +18,7 @@ const (
 func initLEDs(port *gpio.Port) {
 	leds = port
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(Green|Orange|Red|Blue, cfg)
+	leds.Setup(Green|Orange|Red|Blue, &cfg)
 }
 
 func blink(pins gpio.Pins, dly int) {

@@ -5,10 +5,10 @@ import (
 	"rtos"
 	"syscall"
 
-	"nrf51/clock"
-	"nrf51/gpio"
-	"nrf51/rtc"
-	"nrf51/setup"
+	"nrf51/hal/clock"
+	"nrf51/hal/gpio"
+	"nrf51/hal/rtc"
+	"nrf51/hal/system"
 )
 
 //emgo:const
@@ -20,7 +20,7 @@ var (
 )
 
 func init() {
-	setup.Clocks(clock.Xtal, clock.Xtal, true)
+	system.Setup(clock.Xtal, clock.Xtal, true)
 
 	for _, led := range leds {
 		p0.SetMode(int(led), gpio.Out)

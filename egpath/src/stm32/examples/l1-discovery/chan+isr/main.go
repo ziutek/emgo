@@ -44,7 +44,7 @@ func init() {
 	bport.Setup(Button, &gpio.Config{Mode: gpio.In})
 	line := exti.Lines(Button)
 	line.Connect(bport)
-	line.EnableRiseTrig()
+	line.EnableRisiTrig()
 	line.EnableIRQ()
 
 	rtos.IRQ(irq.EXTI0).Enable()

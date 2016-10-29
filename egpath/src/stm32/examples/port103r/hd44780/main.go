@@ -48,13 +48,13 @@ func init() {
 		Mode:   gpio.Alt,
 		Driver: gpio.OpenDrain,
 	}
-	port.Setup(pins, cfg)
+	port.Setup(pins, &cfg)
 	d := dma.DMA1
 	d.EnableClock(true)
 	twi.P = i2c.I2C2
 	twi.P.EnableClock(true)
 	twi.P.Reset() // Mandatory!
-	twi.P.Setup(i2c.Config{Speed: 240e3, Duty: i2c.Duty16_9})
+	twi.P.Setup(&i2c.Config{Speed: 240e3, Duty: i2c.Duty16_9})
 	twi.P.Enable()
 	twi.SetIntMode(true, true)
 	twi.RxDMA = d.Channel(5, 0)

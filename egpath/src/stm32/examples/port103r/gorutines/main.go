@@ -16,7 +16,7 @@ type LED struct {
 
 func (led LED) Init() {
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	led.Port.Setup(led.Pin, cfg)
+	led.Port.Setup(led.Pin, &cfg)
 }
 
 func (led LED) On() {

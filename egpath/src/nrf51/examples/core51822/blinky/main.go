@@ -7,12 +7,12 @@ import (
 	"arch/cortexm"
 	"arch/cortexm/scb"
 
-	"nrf51/clock"
-	"nrf51/gpio"
-	"nrf51/irq"
-	"nrf51/rtc"
-	"nrf51/setup"
-	"nrf51/timer"
+	"nrf51/hal/clock"
+	"nrf51/hal/gpio"
+	"nrf51/hal/irq"
+	"nrf51/hal/rtc"
+	"nrf51/hal/system"
+	"nrf51/hal/timer"
 )
 
 //emgo:const
@@ -27,7 +27,7 @@ var (
 const period = 2 * 32768 // 2s
 
 func init() {
-	setup.Clocks(clock.Xtal, clock.Xtal, true)
+	system.Setup(clock.Xtal, clock.Xtal, true)
 
 	for _, led := range leds {
 		p0.SetMode(int(led), gpio.Out)
@@ -56,11 +56,11 @@ func blink(led byte, dly int) {
 func timerISR() {
 	if e := t0.EVENT(timer.COMPARE0); e.IsSet() {
 		e.Clear()
-		blink(leds[3], 1e3)
+		blink(leds[3], 1e5)
 	}
 	if e := t0.EVENT(timer.COMPARE1); e.IsSet() {
 		e.Clear()
-		blink(leds[4], 1e3)
+		blink(leds[4], 1e4)
 	}
 }
 

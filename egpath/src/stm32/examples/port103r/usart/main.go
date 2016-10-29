@@ -43,8 +43,8 @@ func init() {
 
 	// USART
 
-	port.Setup(tx, gpio.Config{Mode: gpio.Alt})
-	port.Setup(rx, gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
+	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in s
 	tts = usart.NewDriver(

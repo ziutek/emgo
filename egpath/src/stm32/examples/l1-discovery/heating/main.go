@@ -62,10 +62,10 @@ func init() {
 	dma1.EnableClock(true)
 
 	// Button.
-	btnport.Setup(btnpin, gpio.Config{Mode: gpio.In})
+	btnport.Setup(btnpin, &gpio.Config{Mode: gpio.In})
 	line := exti.Lines(btnpin)
 	line.Connect(btnport)
-	line.EnableRiseTrig()
+	line.EnableRisiTrig()
 	line.EnableIRQ()
 	irqen(irq.EXTI0, 1)
 

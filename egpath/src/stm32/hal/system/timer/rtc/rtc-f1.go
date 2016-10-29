@@ -107,7 +107,7 @@ func setup(freqHz uint) {
 	// or after configuration (avoid reading bad DIVL).
 	waitForSync(RTC)
 
-	exti.RTCALR.EnableRiseTrig()
+	exti.RTCALR.EnableRisiTrig()
 	exti.RTCALR.EnableIRQ()
 	spnum := rtos.IRQPrioStep * rtos.IRQPrioNum
 	rtos.IRQ(irq.RTCAlarm).SetPrio(rtos.IRQPrioLowest + spnum*3/4)

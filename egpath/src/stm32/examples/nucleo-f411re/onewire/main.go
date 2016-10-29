@@ -52,7 +52,7 @@ func init() {
 	// LEDS
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(Green, cfg)
+	leds.Setup(Green, &cfg)
 
 	// Console
 
@@ -77,7 +77,7 @@ func init() {
 
 	// 1-wire
 
-	oprt.Setup(opin, gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
+	oprt.Setup(opin, &gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
 	oprt.SetAltFunc(opin, gpio.USART6)
 	one = usart.NewDriver(
 		usart.USART6, usart6rxdma, usart6txdma, make([]byte, 16),

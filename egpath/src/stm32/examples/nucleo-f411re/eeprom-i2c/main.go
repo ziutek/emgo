@@ -45,13 +45,13 @@ func init() {
 		Mode:   gpio.Alt,
 		Driver: gpio.OpenDrain,
 	}
-	port.Setup(pins, cfg)
+	port.Setup(pins, &cfg)
 	port.SetAltFunc(pins, gpio.I2C1)
 
 	twi := i2c.I2C1
 	twi.EnableClock(true)
 	twi.Reset() // Mandatory!
-	twi.Setup(i2c.Config{Speed: 480e3, Duty: i2c.Duty16_9})
+	twi.Setup(&i2c.Config{Speed: 480e3, Duty: i2c.Duty16_9})
 	switch driver {
 	case 1: // Driver, no DMA
 		drv = i2c.NewDriver(twi, nil, nil)

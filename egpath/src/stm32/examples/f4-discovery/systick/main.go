@@ -38,7 +38,7 @@ func main() {
 	leds = gpio.D
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(Blue|Red, cfg)
+	leds.Setup(Blue|Red, &cfg)
 
 	st := systick.SYSTICK
 	onesec := systick.RVR_Bits(system.AHB.Clock() / 8)

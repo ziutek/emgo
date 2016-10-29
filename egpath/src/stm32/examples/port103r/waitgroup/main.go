@@ -29,12 +29,12 @@ func init() {
 	port.EnableClock(false)
 	pins := port.OutPins()
 	for n, pin := range []int{7, 6, 5} {
-		port.SetupPin(pin, cfg)
+		port.SetupPin(pin, &cfg)
 		leds[n] = pins.Bit(pin)
 	}
 	port = gpio.D
 	port.EnableClock(false)
-	port.SetupPin(2, cfg)
+	port.SetupPin(2, &cfg)
 	leds[3] = port.OutPins().Bit(2)
 
 	cfg = gpio.Config{Mode: gpio.In, Pull: gpio.PullUp}

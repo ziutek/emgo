@@ -70,18 +70,18 @@ func (lines Lines) Connect(port *gpio.Port) {
 	exticrDis()
 }
 
-// RiseTrigEnabled returns lines that have rising edge detection enabled.
-func RiseTrigEnabled() Lines {
+// RisiTrigEnabled returns lines that have rising edge detection enabled.
+func RisiTrigEnabled() Lines {
 	return Lines(exti.EXTI.RTSR.U32.Load())
 }
 
-// EnableRiseTrig enables rising edge detection for lines.
-func (lines Lines) EnableRiseTrig() {
+// EnableRisiTrig enables rising edge detection for lines.
+func (lines Lines) EnableRisiTrig() {
 	exti.EXTI.RTSR.U32.SetBits(uint32(lines))
 }
 
-// DisableRiseTrig disables rising edge detection for lines.
-func (lines Lines) DisableRiseTrig() {
+// DisableRisiTrig disables rising edge detection for lines.
+func (lines Lines) DisableRisiTrig() {
 	exti.EXTI.RTSR.U32.ClearBits(uint32(lines))
 }
 
@@ -100,7 +100,7 @@ func (lines Lines) DisableFallTrig() {
 	exti.EXTI.FTSR.U32.ClearBits(uint32(lines))
 }
 
-// Trigger allows to generate interrupt/event request by software. Interrupt
+// Trig allows to trigger an interrupt/event request by software. Interrupt
 // pending flag on the line is set only when interrupt generation is enabled
 // for this line.
 func (lines Lines) Trigger() {
