@@ -29,26 +29,26 @@ var (
 	Timer2 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x0a000))
 )
 
-type Task int
+type TASK int
 
 const (
-	START    Task = 0  // Start Timer.
-	STOP     Task = 1  // Stop Timer.
-	COUNT    Task = 2  // Increment Timer (Counter mode only).
-	CLEAR    Task = 3  // Clear timer.
-	CAPTURE0 Task = 16 // Capture Timer value to CC0 register.
-	CAPTURE1 Task = 17 // Capture Timer value to CC1 register.
-	CAPTURE2 Task = 18 // Capture Timer value to CC2 register.
-	CAPTURE3 Task = 19 // Capture Timer value to CC3 register.
+	START    TASK = 0  // Start Timer.
+	STOP     TASK = 1  // Stop Timer.
+	COUNT    TASK = 2  // Increment Timer (Counter mode only).
+	CLEAR    TASK = 3  // Clear timer.
+	CAPTURE0 TASK = 16 // Capture Timer value to CC0 register.
+	CAPTURE1 TASK = 17 // Capture Timer value to CC1 register.
+	CAPTURE2 TASK = 18 // Capture Timer value to CC2 register.
+	CAPTURE3 TASK = 19 // Capture Timer value to CC3 register.
 )
 
-type Event int
+type EVENT int
 
 const (
-	COMPARE0 Event = 16 // Compare event on CC[0] match.
-	COMPARE1 Event = 17 // Compare event on CC[1] match.
-	COMPARE2 Event = 18 // Compare event on CC[2] match.
-	COMPARE3 Event = 19 // Compare event on CC[3] match.
+	COMPARE0 EVENT = 16 // Compare event on CC[0] match.
+	COMPARE1 EVENT = 17 // Compare event on CC[1] match.
+	COMPARE2 EVENT = 18 // Compare event on CC[2] match.
+	COMPARE3 EVENT = 19 // Compare event on CC[3] match.
 )
 
 type Shorts uint32
@@ -64,8 +64,8 @@ const (
 	COMPARE3_STOP  Shorts = 0x100 << 3
 )
 
-func (p *Periph) TASK(n Task) *te.TaskReg    { return p.Regs.TASK(int(n)) }
-func (p *Periph) EVENT(n Event) *te.EventReg { return p.Regs.EVENT(int(n)) }
+func (p *Periph) Task(t TASK) *te.Task    { return p.Regs.Task(int(t)) }
+func (p *Periph) Event(e EVENT) *te.Event { return p.Regs.Event(int(e)) }
 
 //func (p *Periph) SHORTS() *ShortsReg { return (*ShortsReg)(unsafe.Pointer(p.ph.Shorts.Addr())) }
 

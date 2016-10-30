@@ -31,29 +31,29 @@ type Periph struct {
 //emgo:const
 var Mgmt = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x00000))
 
-type Task int
+type TASK byte
 
 const (
-	HFCLKSTART Task = 0 // Start high frequency crystal oscilator.
-	HFCLKSTOP  Task = 1 // Stop high frequency crystal oscilator.
-	LFCLKSTART Task = 2 // Start low frequency source.
-	LFCLKSTOP  Task = 3 // Stop low frequency source.
-	CAL        Task = 4 // Start calibration of low freq. RC oscilator.
-	CTSTART    Task = 5 // Start calibration timer.
-	CTSTOP     Task = 6 // Stop calibration timer.
+	HFCLKSTART TASK = 0 // Start high frequency crystal oscilator.
+	HFCLKSTOP  TASK = 1 // Stop high frequency crystal oscilator.
+	LFCLKSTART TASK = 2 // Start low frequency source.
+	LFCLKSTOP  TASK = 3 // Stop low frequency source.
+	CAL        TASK = 4 // Start calibration of low freq. RC oscilator.
+	CTSTART    TASK = 5 // Start calibration timer.
+	CTSTOP     TASK = 6 // Stop calibration timer.
 )
 
-type Event int
+type EVENT byte
 
 const (
-	HFCLKSTARTED Event = 0 // High frequency crystal oscilator started.
-	LFCLKSTARTED Event = 1 // Low frequency source started.
-	DONE         Event = 3 // Calibration of low freq. RC osc. complete.
-	CTTO         Event = 4 // Calibration timer timeout.
+	HFCLKSTARTED EVENT = 0 // High frequency crystal oscilator started.
+	LFCLKSTARTED EVENT = 1 // Low frequency source started.
+	DONE         EVENT = 3 // Calibration of low freq. RC osc. complete.
+	CTTO         EVENT = 4 // Calibration timer timeout.
 )
 
-func (p *Periph) TASK(n Task) *te.TaskReg    { return p.Regs.TASK(int(n)) }
-func (p *Periph) EVENT(n Event) *te.EventReg { return p.Regs.EVENT(int(n)) }
+func (p *Periph) Task(t TASK) *te.Task    { return p.Regs.Task(int(t)) }
+func (p *Periph) Event(e EVENT) *te.Event { return p.Regs.Event(int(e)) }
 
 // HFCLKRUN returns true if HFCLKSTART task was triggered.
 func (p *Periph) HFCLKRUN() bool {

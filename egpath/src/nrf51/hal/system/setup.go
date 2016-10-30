@@ -9,10 +9,10 @@ func Setup(hfsrc, lfsrc clock.SRC, lfena bool) {
 	clkm := clock.Mgmt
 	clkm.SetLFCLKSRC(lfsrc)
 	if hfsrc == clock.Xtal {
-		clkm.TASK(clock.HFCLKSTART).Trigger()
+		clkm.Task(clock.HFCLKSTART).Trigger()
 	}
 	if lfena {
-		clkm.TASK(clock.LFCLKSTART).Trigger()
+		clkm.Task(clock.LFCLKSTART).Trigger()
 	}
 	for {
 		src, run := clkm.HFCLKSTAT()
