@@ -6,7 +6,6 @@ import (
 	"bits"
 	"math"
 	"rtos"
-	"sync/atomic"
 	"sync/fence"
 	"syscall"
 	"time"
@@ -42,7 +41,7 @@ type globals struct {
 	cntExt  int32  // 16 bit RTC VCNT excension.
 	lastISR uint32 // Last ISR time using uint32(loadVCNT() >> preLog2).
 	status  bitband.Bits16
-	alarm   uint32
+	alarm   bool
 }
 
 var g globals
@@ -109,12 +108,13 @@ func setup(freqHz uint) {
 
 	exti.RTCALR.EnableRisiTrig()
 	exti.RTCALR.EnableIRQ()
+	// BUG: EnableEvent must be used to wakeup from deep-sleep (STM32 stop).
 	spnum := rtos.IRQPrioStep * rtos.IRQPrioNum
 	rtos.IRQ(irq.RTCAlarm).SetPrio(rtos.IRQPrioLowest + spnum*3/4)
 	rtos.IRQ(irq.RTCAlarm).Enable()
 
 	syscall.SetSysTimer(nanosec, setWakeup)
-	
+
 	// Force RTCISR to initialise or early handle possible overflow.
 	exti.RTCALR.Trigger()
 }
@@ -189,14 +189,14 @@ func isr() {
 			bkp.CntExt().Store(uint16(cntext))
 			bkp.LastISR().Store(vcnt32)
 			g.status.Bit(flagOK).Set()
-			atomic.StoreInt32(&g.cntExt, cntext)
+			g.cntExt = cntext // Ordinary store (load only when IRQ disabled).
 		} else {
 			bkp.LastISR().Store(vcnt32)
 		}
-		g.lastISR = vcnt32 // Can be non-atomic because read when IRQ disabled.
+		g.lastISR = vcnt32 // Ordinary store (load only when IRQ disabled).
 	}
-	if g.alarm != 0 {
-		g.alarm = 0
+	if g.alarm {
+		g.alarm = false
 		syscall.Alarm.Send()
 	} else {
 		syscall.SchedNext()
@@ -224,12 +224,12 @@ func nanosec() int64 {
 }
 
 // setWakeup: see syscall.SetSysTimer.
-func setWakeup(ns int64, alr bool) {
-	alarm := uint32(bits.One(alr))
+func setWakeup(ns int64, alarm bool) {
 	if g.wakens == ns && g.alarm == alarm {
 		return
 	}
-	// Use EXTI instead NVIC to not colide with loadTicks.
+	// Use EXTI instead of NVIC to actually disable IRQ source and not colide
+	// with loadTicks.
 	exti.RTCALR.DisableIRQ()
 	fence.Memory()
 	g.wakens = ns

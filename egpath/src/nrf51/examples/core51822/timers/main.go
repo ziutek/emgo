@@ -35,16 +35,16 @@ func init() {
 
 	t0.SetPrescaler(8) // 62500 Hz
 	t0.SetCC(1, 65526/2)
-	t0.EVENT(timer.COMPARE0).EnableIRQ()
-	t0.EVENT(timer.COMPARE1).EnableIRQ()
+	t0.Event(timer.COMPARE0).EnableIRQ()
+	t0.Event(timer.COMPARE1).EnableIRQ()
 	rtos.IRQ(irq.Timer0).Enable()
-	t0.TASK(timer.START).Trigger()
+	t0.Task(timer.START).Trigger()
 
 	rtc0.SetPRESCALER(0) // 32768 Hz
-	rtc0.EVENT(rtc.COMPARE1).EnableIRQ()
+	rtc0.Event(rtc.COMPARE1).EnableIRQ()
 	rtos.IRQ(irq.RTC0).Enable()
 	rtc0.SetCC(1, period)
-	rtc0.TASK(rtc.START).Trigger()
+	rtc0.Task(rtc.START).Trigger()
 }
 
 func blink(led byte, dly int) {
@@ -54,18 +54,18 @@ func blink(led byte, dly int) {
 }
 
 func timerISR() {
-	if e := t0.EVENT(timer.COMPARE0); e.IsSet() {
+	if e := t0.Event(timer.COMPARE0); e.IsSet() {
 		e.Clear()
 		blink(leds[3], 1e3)
 	}
-	if e := t0.EVENT(timer.COMPARE1); e.IsSet() {
+	if e := t0.Event(timer.COMPARE1); e.IsSet() {
 		e.Clear()
 		blink(leds[4], 1e3)
 	}
 }
 
 func rtcISR() {
-	rtc0.EVENT(rtc.COMPARE1).Clear()
+	rtc0.Event(rtc.COMPARE1).Clear()
 	rtc0.SetCC(1, rtc0.CC(1)+period)
 	blink(leds[2], 1e3)
 }

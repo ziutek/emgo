@@ -1,7 +1,7 @@
 package main
 
 import (
-	"rtos"
+	"delay"
 
 	"nrf51/hal/clock"
 	"nrf51/hal/gpio"
@@ -11,31 +11,31 @@ import (
 	"nrf51/hal/system/timer/rtcst"
 )
 
-var (
-	//emgo:const
-	leds = [...]byte{18, 19, 20, 21, 22}
-
-	p0 = gpio.P0
+const (
+	led0 = 18 + iota
+	led1
+	led2
+	led3
+	led4
 )
+
+var p0 = gpio.P0
 
 func init() {
 	system.Setup(clock.Xtal, clock.Xtal, true)
 	rtcst.Setup(rtc.RTC0, 1)
 
-	for _, led := range leds {
-		p0.SetMode(int(led), gpio.Out)
+	for led := led0; led <= led4; led++ {
+		p0.SetMode(led, gpio.Out)
 	}
 }
 
 func main() {
-	led := leds[0]
-	for i := 0; ; i++ {
-		for rtos.Nanosec() < int64(i)*5e8 {
-		}
-		if i&1 != 0 {
-			p0.SetPin(int(led))
-		} else {
-			p0.ClearPin(int(led))
+	for {
+		for led := led0; led <= led4; led++ {
+			p0.ClearPins(1<<led0 | 1<<led1 | 1<<led2 | 1<<led3 | 1<<led4)
+			p0.SetPin(led)
+			delay.Millisec(500)
 		}
 	}
 }
