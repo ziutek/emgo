@@ -1,3 +1,96 @@
+void
+arch$cortexm$SEV() {
+	asm volatile ("sev":::"memory");
+}
+
+void
+arch$cortexm$DMB() {
+	asm volatile ("dmb":::"memory");
+}
+
+void
+arch$cortexm$DSB() {
+	asm volatile ("dsb":::"memory");
+}
+
+void
+arch$cortexm$ISB() {
+	asm volatile ("isb":::"memory");
+}
+
+static inline void
+arch$cortexm$WFE() {
+	asm volatile ("wfe":::"memory");
+}
+
+void
+arch$cortexm$WFI() {
+	asm volatile ("wfi":::"memory");
+}
+
+#define arch$cortexm$SVC(imm) asm volatile ("svc %0" :: "i" (imm):"memory")
+
+#define arch$cortexm$BKPT(imm) asm volatile ("bkpt %0" :: "i" (imm):"memory")
+
+bool
+arch$cortexm$PRIMASK() {
+	bool b;
+	asm volatile ("msr primask, %0":"=r" (b));
+	return b;
+}
+
+void
+arch$cortexm$SetPRIMASK() {
+	asm volatile ("cpsid i":::"memory");
+}
+
+void
+arch$cortexm$ClearPRIMASK() {
+	asm volatile ("cpsie i":::"memory");
+}
+
+bool
+arch$cortexm$FAULTMASK() {
+	bool b;
+	asm volatile ("msr faultmask, %0":"=r" (b));
+	return b;
+}
+
+void
+arch$cortexm$SetFAULTMASK() {
+	asm volatile ("cpsid fi":::"memory");
+}
+
+void
+arch$cortexm$ClearFAULTMASK() {
+	asm volatile ("cpsie f":::"memory");
+}
+
+byte
+arch$cortexm$BASEPRI() {
+	byte p;
+	asm volatile ("msr basepri, %0":"=r" (p));
+	return p;
+}
+
+void
+arch$cortexm$SetBASEPRI(byte p) {
+	asm volatile ("mrs %0, basepri"::"r" (p):"memory");
+}
+
+uint32
+arch$cortexm$PSR() {
+	uint32 r;
+	asm volatile ("mrs %0, psr":"=r" (r));
+	return r;
+}
+
+void
+arch$cortexm$SetPSR(uint32 r) {
+	asm volatile ("msr psr, %0"::"r" (r):"psr");
+}
+
+
 uint32
 arch$cortexm$APSR() {
 	uintptr r;
@@ -7,7 +100,7 @@ arch$cortexm$APSR() {
 
 void
 arch$cortexm$SetAPSR(uint32 r) {
-	asm volatile ("msr apsr, %0"::"r" (r):"apsr");
+	asm volatile ("msr apsr, %0"::"r" (r):"psr");
 }
 
 uint32
@@ -15,11 +108,6 @@ arch$cortexm$IPSR() {
 	uint32 r;
 	asm volatile ("mrs %0, ipsr":"=r" (r));
 	return r;
-}
-
-void
-arch$cortexm$SetIPSR(uint32 r) {
-	asm volatile ("msr ipsr, %0"::"r" (r):"ipsr");
 }
 
 uint32
@@ -43,33 +131,11 @@ arch$cortexm$IAPSR() {
 	return r;
 }
 
-void
-arch$cortexm$SetIAPSR(uint32 r) {
-	asm volatile ("msr iapsr, %0"::"r" (r):"apsr");
-}
-
 uint32
 arch$cortexm$EAPSR() {
 	uint32 r;
 	asm volatile ("mrs %0, eapsr":"=r" (r));
 	return r;
-}
-
-void
-arch$cortexm$SetEAPSR(uint32 r) {
-	asm volatile ("msr eapsr, %0"::"r" (r):"eapsr");
-}
-
-uint32
-arch$cortexm$PSR() {
-	uint32 r;
-	asm volatile ("mrs %0, psr":"=r" (r));
-	return r;
-}
-
-void
-arch$cortexm$SetPSR(uint32 r) {
-	asm volatile ("msr psr, %0"::"r" (r):"psr");
 }
 
 uintptr
@@ -119,83 +185,3 @@ void
 arch$cortexm$SetCONTROL(arch$cortexm$Cflags c) {
 	asm volatile ("msr control, %0"::"r" (c));
 }
-
-void
-arch$cortexm$SEV() {
-	asm volatile ("sev");
-}
-
-void
-arch$cortexm$DMB() {
-	asm volatile ("dmb");
-}
-
-void
-arch$cortexm$DSB() {
-	asm volatile ("dsb");
-}
-
-void
-arch$cortexm$ISB() {
-	asm volatile ("isb");
-}
-
-bool
-arch$cortexm$PRIMASK() {
-	bool b;
-	asm volatile ("msr primask, %0":"=r" (b));
-	return b;
-}
-
-void
-arch$cortexm$SetPRIMASK() {
-	asm volatile ("cpsid i");
-}
-
-void
-arch$cortexm$ClearPRIMASK() {
-	asm volatile ("cpsie i");
-}
-
-bool
-arch$cortexm$FAULTMASK() {
-	bool b;
-	asm volatile ("msr faultmask, %0":"=r" (b));
-	return b;
-}
-
-void
-arch$cortexm$SetFAULTMASK() {
-	asm volatile ("cpsid fi");
-}
-
-void
-arch$cortexm$ClearFAULTMASK() {
-	asm volatile ("cpsie f");
-}
-
-byte
-arch$cortexm$BASEPRI() {
-	byte p;
-	asm volatile ("msr basepri, %0":"=r" (p));
-	return p;
-}
-
-void
-arch$cortexm$SetBASEPRI(byte p) {
-	asm volatile ("mrs %0, basepri"::"r" (p));
-}
-
-static inline void
-arch$cortexm$WFE() {
-	asm volatile ("wfe");
-}
-
-void
-arch$cortexm$WFI() {
-	asm volatile ("wfi");
-}
-
-#define arch$cortexm$SVC(imm) asm volatile ("svc %0" :: "i" (imm))
-
-#define arch$cortexm$BKPT(imm) asm volatile ("bkpt %0" :: "i" (imm))
