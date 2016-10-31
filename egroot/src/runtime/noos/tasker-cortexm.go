@@ -56,15 +56,13 @@ func (ti *taskInfo) setState(s taskState) {
 //    or from PendSV handler.
 // 2. Describe which method can be called from which handler.
 type taskSched struct {
-	alarm      int64
-	lastAlarm  int64
-	checkAlarm uint32
-	period     uint32
-	nanosec    func() int64
-	setWakeup  func(int64, bool)
-	tasks      []*taskInfo
-	rng        []rand.XorShift64
-	curTask    int
+	alarm     int64
+	period    uint32
+	nanosec   func() int64
+	setWakeup func(int64, bool)
+	tasks     []*taskInfo
+	rng       []rand.XorShift64
+	curTask   int
 }
 
 func dummyNanosec() int64                { return 0 }
@@ -83,7 +81,7 @@ func (ts *taskSched) Nanosec() int64 {
 	return ts.nanosec()
 }
 
-func (ts *taskSched) SetSysTimer(nanosec func() int64, setWakeup func(int64, bool)) *uint32 {
+func (ts *taskSched) SetSysTimer(nanosec func() int64, setWakeup func(int64, bool)) {
 	if nanosec == nil {
 		ts.nanosec = dummyNanosec
 	} else {
@@ -94,7 +92,6 @@ func (ts *taskSched) SetSysTimer(nanosec func() int64, setWakeup func(int64, boo
 	} else {
 		ts.setWakeup = setWakeup
 	}
-	return &ts.checkAlarm
 }
 
 func (ts *taskSched) deliverEvent(e syscall.Event) {
@@ -225,8 +222,8 @@ func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err sy
 
 	if lock {
 		ts.tasks[ts.curTask].setState(taskLocked)
-		raisePendSV()
 	}
+	raisePendSV() // Ensure that scheduler knowns that has more than one task.
 	return n + 1, syscall.OK
 }
 
