@@ -3,7 +3,6 @@
 package rtc
 
 import (
-	"bits"
 	"math"
 	"rtos"
 	"sync/fence"
