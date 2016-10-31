@@ -1,7 +1,4 @@
 // Package atomic provides low-level atomic memory primitives.
-//
-// These functions works in sequentially consistent memory model so they
-// provide "happens-before" edges for all load/store operations.
 package atomic
 
 import "unsafe"

@@ -199,51 +199,56 @@ func swapPointer(addr *unsafe.Pointer, new unsafe.Pointer) (old unsafe.Pointer) 
 }
 
 func loadInt32(addr *int32) int32 {
+	ret := *addr
 	fence.Compiler()
-	return *addr
+	return ret
 }
 
 func loadUint32(addr *uint32) uint32 {
+	ret := *addr
 	fence.Compiler()
-	return *addr
+	return ret
 }
 
 func loadInt(addr *int) int {
+	ret := *addr
 	fence.Compiler()
-	return *addr
+	return ret
 }
 
 func loadUintptr(addr *uintptr) uintptr {
+	ret := *addr
 	fence.Compiler()
-	return *addr
+	return ret
 }
 
 func loadPointer(addr *unsafe.Pointer) unsafe.Pointer {
+	ret := *addr
 	fence.Compiler()
-	return *addr
+	return ret
 }
 
 func storeInt32(addr *int32, val int32) {
-	*addr = val
 	fence.Compiler()
+	*addr = val
 }
 
 func storeUint32(addr *uint32, val uint32) {
-	*addr = val
 	fence.Compiler()
+	*addr = val
 }
 
 func storeInt(addr *int, val int) {
-	*addr = val
 	fence.Compiler()
+	*addr = val
 }
 
 func storeUintptr(addr *uintptr, val uintptr) {
-	*addr = val
 	fence.Compiler()
+	*addr = val
 }
 
 func storePointer(addr *unsafe.Pointer, val unsafe.Pointer) {
-	*addr = val
 	fence.Compiler()
+	*addr = val
 }
