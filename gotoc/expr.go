@@ -794,24 +794,23 @@ func (cdd *CDD) compositeLit(w *bytes.Buffer, e *ast.CompositeLit, nilT types.Ty
 		}
 		alen := cdd.clArrayLen(e.Elts)
 		slen := strconv.FormatInt(alen, 10)
-		w.WriteString("CSLICE(" + slen + ", ((")
-		dim := cdd.Type(w, t.Elem())
-		dim = append([]string{"[]"}, dim...)
-		w.WriteString(dimFuncPtr("", dim))
-		w.WriteString("){")
-		cdd.elts(w, e.Elts, t.Elem(), nil, permitaa)
-		w.WriteString("}))")
-
-		/*
-			aname := "_cl" + cdd.gtc.uniqueId()
-			w.WriteString("{&" + aname + ", " + slen + ", " + slen + "}")
-
-			typ := types.NewArray(t.Elem(), alen)
-			tv := cdd.gtc.ti.Types[e]
-			tv.Type = typ
-			cdd.gtc.ti.Types[e] = tv
-			cdd.newVar(aname, typ, true, e)
-		*/
+		if cdd.constInit || (cdd.Typ != VarDecl) || !cdd.gtc.isGlobal(cdd.Origin) {
+			w.WriteString("CSLICE(" + slen + ", ((")
+			dim := cdd.Type(w, t.Elem())
+			dim = append([]string{"[]"}, dim...)
+			w.WriteString(dimFuncPtr("", dim))
+			w.WriteString("){")
+			cdd.elts(w, e.Elts, t.Elem(), nil, true)
+			w.WriteString("}))")
+			break
+		}
+		aname := "_cl" + cdd.gtc.uniqueId()
+		w.WriteString("ASLICE(&" + aname + ")")
+		typ := types.NewArray(t.Elem(), alen)
+		tv := cdd.gtc.ti.Types[e]
+		tv.Type = typ
+		cdd.gtc.ti.Types[e] = tv
+		cdd.newVar(aname, typ, true, e, true)
 
 	case *types.Struct:
 		if !cdd.constInit {
