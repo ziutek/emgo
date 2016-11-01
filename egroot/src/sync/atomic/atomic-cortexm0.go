@@ -3,7 +3,6 @@
 package atomic
 
 import (
-	"sync/fence"
 	"unsafe"
 
 	"arch/cortexm"
@@ -196,59 +195,4 @@ func swapPointer(addr *unsafe.Pointer, new unsafe.Pointer) (old unsafe.Pointer) 
 	*addr = new
 	cortexm.ClearPRIMASK()
 	return
-}
-
-func loadInt32(addr *int32) int32 {
-	ret := *addr
-	fence.Compiler()
-	return ret
-}
-
-func loadUint32(addr *uint32) uint32 {
-	ret := *addr
-	fence.Compiler()
-	return ret
-}
-
-func loadInt(addr *int) int {
-	ret := *addr
-	fence.Compiler()
-	return ret
-}
-
-func loadUintptr(addr *uintptr) uintptr {
-	ret := *addr
-	fence.Compiler()
-	return ret
-}
-
-func loadPointer(addr *unsafe.Pointer) unsafe.Pointer {
-	ret := *addr
-	fence.Compiler()
-	return ret
-}
-
-func storeInt32(addr *int32, val int32) {
-	fence.Compiler()
-	*addr = val
-}
-
-func storeUint32(addr *uint32, val uint32) {
-	fence.Compiler()
-	*addr = val
-}
-
-func storeInt(addr *int, val int) {
-	fence.Compiler()
-	*addr = val
-}
-
-func storeUintptr(addr *uintptr, val uintptr) {
-	fence.Compiler()
-	*addr = val
-}
-
-func storePointer(addr *unsafe.Pointer, val unsafe.Pointer) {
-	fence.Compiler()
-	*addr = val
 }

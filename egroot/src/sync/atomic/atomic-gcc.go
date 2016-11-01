@@ -72,33 +72,3 @@ func swapUintptr(addr *uintptr, new uintptr) (old uintptr)
 
 //c:static inline
 func swapPointer(addr *unsafe.Pointer, new unsafe.Pointer) (old unsafe.Pointer)
-
-//c:static inline
-func loadInt32(addr *int32) int32
-
-//c:static inline
-func loadUint32(addr *uint32) uint32
-
-//c:static inline
-func loadInt(addr *int) int
-
-//c:static inline
-func loadUintptr(addr *uintptr) uintptr
-
-//c:static inline
-func loadPointer(addr *unsafe.Pointer) unsafe.Pointer
-
-//c:static inline
-func storeInt32(addr *int32, val int32)
-
-//c:static inline
-func storeUint32(addr *uint32, val uint32)
-
-//c:static inline
-func storeInt(addr *int, val int)
-
-//c:static inline
-func storeUintptr(addr *uintptr, val uintptr)
-
-//c:static inline
-func storePointer(addr *unsafe.Pointer, val unsafe.Pointer)

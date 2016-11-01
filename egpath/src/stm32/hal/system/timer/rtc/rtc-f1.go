@@ -231,6 +231,7 @@ func setWakeup(ns int64, alarm bool) {
 	// with loadTicks.
 	exti.RTCALR.DisableIRQ()
 	fence.Memory()
+
 	g.wakens = ns
 	g.alarm = alarm
 
@@ -255,7 +256,7 @@ func setWakeup(ns int64, alarm bool) {
 	RTC.ALRL.Store(rtc.ALRL_Bits(alrcnt))
 	clearCNF(RTC)
 
-	fence.Memory() // Ensure that g.* fields are stored.
+	fence.Memory()
 	exti.RTCALR.EnableIRQ()
 
 	now = loadTicks() >> preLog2
