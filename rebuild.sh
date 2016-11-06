@@ -5,8 +5,7 @@ set -e
 #EGC='egc -O g'
 EGC='egc'
 
-rm -rf egroot/pkg/* 
-rm -rf egpath/pkg/*
+./clean.sh
 
 list=$(find egroot/src -type d)
 

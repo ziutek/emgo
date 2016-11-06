@@ -26,13 +26,10 @@ func init() {
 
 func main() {
 	for {
-		for _, d := range []int{100, 100, 400, 400, 400, 400, 100, 100, 100} {
-			leds.ClearPins(Blue)
-			delay.Millisec(20)
-			leds.SetPins(Blue)
-			delay.Millisec(d)
-		}
-		delay.Millisec(1000)
+		leds.ClearPins(Blue)
+		delay.Millisec(100)
+		leds.SetPins(Blue)
+		delay.Millisec(900)
 	}
 }
 

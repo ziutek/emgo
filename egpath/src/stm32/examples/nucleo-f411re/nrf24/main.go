@@ -190,6 +190,7 @@ func main() {
 			for i := 0; i < n; i++ {
 				// BUG: Must use FIFO_STATUS.
 				nrf.ClearIRQ(nrf24.RX_DR)
+				dci.Clear()
 				dci.Wait(0)
 				nrf.R_RX_PAYLOAD(buf[:])
 			}
@@ -198,11 +199,13 @@ func main() {
 			nrf.W_TX_PAYLOAD(buf[:])
 			for i := 1; i < n; i++ {
 				nrf.ClearIRQ(nrf24.TX_DS)
+				dci.Clear()
 				dci.SetCE(2)
 				nrf.W_TX_PAYLOAD(buf[:])
 				dci.Wait(0)
 			}
 			nrf.ClearIRQ(nrf24.TX_DS)
+			dci.Clear()
 			dci.SetCE(2)
 			dci.Wait(0)
 		}
