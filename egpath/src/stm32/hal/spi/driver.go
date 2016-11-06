@@ -94,31 +94,6 @@ func (d *Driver) WriteReadByte(b byte) byte {
 	return b
 }
 
-func (d *Driver) waitDoneDMA() bool {
-	done := d.done.Wait(d.deadline)
-	d.P.DisableDMA(RxNotEmpty | TxEmpty)
-	// Disable DMA channels (required by STM32F1 to allow setup next transfer).
-	d.TxDMA.Disable()
-	d.RxDMA.Disable()
-	if !done {
-		d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
-		d.RxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)	
-		d.err = uint(ErrTimeout) << 16
-		return false
-	}
-	if _, e := d.P.Status(); e != 0 {
-		d.err = uint(e) << 8
-		return false
-	}
-	_, rxe := d.RxDMA.Status()
-	_, txe := d.TxDMA.Status()
-	if e := (rxe | txe) &^ dma.ErrFIFO; e != 0 {
-		d.err = uint(e)
-		return false
-	}
-	return true
-}
-
 func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int) int {
 	txdmacfg := dma.MTP | dma.FIFO_4_4
 	if olen > 1 {
@@ -147,7 +122,27 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int) int {
 		}
 		in += uintptr(m)
 		n += m
-		if !d.waitDoneDMA() {
+
+		done := d.done.Wait(d.deadline)
+
+		d.P.DisableDMA(RxNotEmpty | TxEmpty)
+		// Disable DMA (required by STM32F1 to allow setup next transfer).
+		d.TxDMA.Disable()
+		d.RxDMA.Disable()
+		if !done {
+			d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
+			d.RxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
+			d.err = uint(ErrTimeout) << 16
+			return n - d.RxDMA.Len()
+		}
+		if _, e := d.P.Status(); e != 0 {
+			d.err = uint(e) << 8
+			return n - d.RxDMA.Len()
+		}
+		_, rxe := d.RxDMA.Status()
+		_, txe := d.TxDMA.Status()
+		if e := (rxe | txe) &^ dma.ErrFIFO; e != 0 {
+			d.err = uint(e)
 			return n - d.RxDMA.Len()
 		}
 	}
@@ -171,7 +166,24 @@ func (d *Driver) writeDMA(out uintptr, olen int) {
 		d.done.Clear()
 		startDMA(d.TxDMA, out+uintptr(n), m)
 		n += m
-		if !d.waitDoneDMA() {
+
+		done := d.done.Wait(d.deadline)
+		
+		d.P.DisableDMA(TxEmpty)
+		// Disable DMA (required by STM32F1 to allow setup next transfer).
+		d.TxDMA.Disable()
+		if !done {
+			d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
+			d.err = uint(ErrTimeout) << 16
+			return
+		}
+		if _, e := d.P.Status(); e != 0 {
+			d.err = uint(e) << 8
+			return
+		}
+		_, txe := d.TxDMA.Status()
+		if e := txe &^ dma.ErrFIFO; e != 0 {
+			d.err = uint(e)
 			return
 		}
 	}
