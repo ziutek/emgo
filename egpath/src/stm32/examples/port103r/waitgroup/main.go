@@ -43,7 +43,7 @@ func init() {
 	port.SetupPin(10, &cfg)
 	key3 = port.InPins().Bit(10)
 
-	rnd.Seed(uint64(rtos.Nanosec()))
+	rnd.Seed(rtos.Nanosec())
 }
 
 func waitkey(wg *sync.WaitGroup) {

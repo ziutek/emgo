@@ -9,8 +9,8 @@ type XorShift64 struct {
 }
 
 // Seed initializes XorShift64 state. seed must not be zero.
-func (g *XorShift64) Seed(seed uint64) {
-	g.x = seed
+func (g *XorShift64) Seed(seed int64) {
+	g.x = uint64(seed)
 }
 
 // Uint64 returns pseudorandom uint64 number.

@@ -30,7 +30,7 @@ func init() {
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	leds.Setup(Green|Orange|Red|Blue, &cfg)
 
-	rnd.Seed(uint64(rtos.Nanosec()))
+	rnd.Seed(rtos.Nanosec())
 }
 
 var (

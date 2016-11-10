@@ -194,9 +194,9 @@ func (ts *taskSched) initTask(n int, sp uintptr) {
 	t.init(ts.curTask, sp)
 	ns := ts.nanosec()
 	if ns == 0 {
-		ts.rng[n].Seed(uint64(uintptr(unsafe.Pointer(t))))
+		ts.rng[n].Seed(int64(uintptr(unsafe.Pointer(t))))
 	} else {
-		ts.rng[n].Seed(uint64(ns + 1))
+		ts.rng[n].Seed(ns + 1)
 	}
 }
 
