@@ -13,6 +13,8 @@ $ud STM32L1XX_MD   stm32l1xx.h |stm32xgen stm32/o/l1xx_md
 $ud STM32F10X_MD   stm32f10x.h |stm32xgen stm32/o/f10x_md
 $ud STM32F10X_HD   stm32f10x.h |stm32xgen stm32/o/f10x_hd
 
+stm32xgen stm32/o/f746xx <stm32f7xx/stm32f746xx.h
+
 cd stm32/o
 for target in *; do
 	cd $target

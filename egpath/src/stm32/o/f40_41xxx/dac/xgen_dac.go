@@ -76,6 +76,10 @@ func (p *DAC_Periph) DMAEN1() CR_Mask {
 	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DMAEN1)}}
 }
 
+func (p *DAC_Periph) DMAUDRIE1() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DMAUDRIE1)}}
+}
+
 func (p *DAC_Periph) EN2() CR_Mask {
 	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(EN2)}}
 }
@@ -102,6 +106,10 @@ func (p *DAC_Periph) MAMP2() CR_Mask {
 
 func (p *DAC_Periph) DMAEN2() CR_Mask {
 	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DMAEN2)}}
+}
+
+func (p *DAC_Periph) DMAUDRIE2() CR_Mask {
+	return CR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DMAUDRIE2)}}
 }
 
 type SWTRIGR_Bits uint32

@@ -58,6 +58,7 @@ func memmap(r *scanner) []*MemGroup {
 				addr = addr[n+1:]
 			}
 			addr = strings.TrimSpace(addr)
+			addr = strings.TrimSuffix(addr, "U")
 			group.Bases = append(group.Bases, &MemBase{name, addr, descr})
 			continue
 		}

@@ -4,6 +4,7 @@
 #undef STM32F401xx
 #undef STM32F410xx
 #undef STM32F411xE
+#undef STM32F412xG
 #undef STM32F446xx
 #undef STM32F469_479xx
 #undef STM32F40XX

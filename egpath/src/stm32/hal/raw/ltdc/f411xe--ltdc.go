@@ -68,7 +68,7 @@ const (
 	DBW    GCR_Bits = 0x07 << 4  //+ Dither Blue Width.
 	DGW    GCR_Bits = 0x07 << 8  //+ Dither Green Width.
 	DRW    GCR_Bits = 0x07 << 12 //+ Dither Red Width.
-	DTEN   GCR_Bits = 0x01 << 16 //+ Dither Enable.
+	DEN    GCR_Bits = 0x01 << 16 //+ Dither Enable.
 	PCPOL  GCR_Bits = 0x01 << 28 //+ Pixel Clock Polarity.
 	DEPOL  GCR_Bits = 0x01 << 29 //+ Data Enable Polarity.
 	VSPOL  GCR_Bits = 0x01 << 30 //+ Vertical Synchronization Polarity.
@@ -80,7 +80,7 @@ const (
 	DBWn    = 4
 	DGWn    = 8
 	DRWn    = 12
-	DTENn   = 16
+	DENn    = 16
 	PCPOLn  = 28
 	DEPOLn  = 29
 	VSPOLn  = 30

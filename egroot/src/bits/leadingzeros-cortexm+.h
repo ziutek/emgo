@@ -1,4 +1,4 @@
-// +build cortexm3 cortexm4 cortexm4f
+// +build cortexm3 cortexm4 cortexm4f cortexm7f cortexm7d
 
 uint
 bits$leadingZeros32(uint32 u) {

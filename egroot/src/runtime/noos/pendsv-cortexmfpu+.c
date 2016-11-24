@@ -1,4 +1,4 @@
-// +build cortexm4f
+// +build cortexm4f cortexm7f cortexm7d
 
 __attribute__ ((naked)) static
 void runtime$noos$pendSVHandler() {

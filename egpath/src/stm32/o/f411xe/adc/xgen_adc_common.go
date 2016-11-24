@@ -57,8 +57,8 @@ func (p *ADC_Common_Periph) STRT1() CSR_Mask {
 	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(STRT1)}}
 }
 
-func (p *ADC_Common_Periph) DOVR1() CSR_Mask {
-	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DOVR1)}}
+func (p *ADC_Common_Periph) OVR1() CSR_Mask {
+	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(OVR1)}}
 }
 
 func (p *ADC_Common_Periph) AWD2() CSR_Mask {
@@ -81,8 +81,8 @@ func (p *ADC_Common_Periph) STRT2() CSR_Mask {
 	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(STRT2)}}
 }
 
-func (p *ADC_Common_Periph) DOVR2() CSR_Mask {
-	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DOVR2)}}
+func (p *ADC_Common_Periph) OVR2() CSR_Mask {
+	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(OVR2)}}
 }
 
 func (p *ADC_Common_Periph) AWD3() CSR_Mask {
@@ -105,8 +105,8 @@ func (p *ADC_Common_Periph) STRT3() CSR_Mask {
 	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(STRT3)}}
 }
 
-func (p *ADC_Common_Periph) DOVR3() CSR_Mask {
-	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DOVR3)}}
+func (p *ADC_Common_Periph) OVR3() CSR_Mask {
+	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(OVR3)}}
 }
 
 type CCR_Bits uint32

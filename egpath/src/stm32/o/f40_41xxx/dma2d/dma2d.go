@@ -75,6 +75,24 @@ const (
 )
 
 const (
+	CTEIF  IFCR_Bits = 0x01 << 0 //+ Clears Transfer Error Interrupt Flag.
+	CTCIF  IFCR_Bits = 0x01 << 1 //+ Clears Transfer Complete Interrupt Flag.
+	CTWIF  IFCR_Bits = 0x01 << 2 //+ Clears Transfer Watermark Interrupt Flag.
+	CAECIF IFCR_Bits = 0x01 << 3 //+ Clears CLUT Access Error Interrupt Flag.
+	CCTCIF IFCR_Bits = 0x01 << 4 //+ Clears CLUT Transfer Complete Interrupt Flag.
+	CCEIF  IFCR_Bits = 0x01 << 5 //+ Clears Configuration Error Interrupt Flag.
+)
+
+const (
+	CTEIFn  = 0
+	CTCIFn  = 1
+	CTWIFn  = 2
+	CAECIFn = 3
+	CCTCIFn = 4
+	CCEIFn  = 5
+)
+
+const (
 	MA FGMAR_Bits = 0xFFFFFFFF << 0 //+ Memory Address.
 )
 
@@ -107,12 +125,19 @@ const (
 )
 
 const (
-	CM    FGPFCCR_Bits = 0x0F << 0  //+ Color mode.
+	CM    FGPFCCR_Bits = 0x0F << 0  //+ Input color mode CM[3:0].
+	CM_0  FGPFCCR_Bits = 0x01 << 0  //  Input color mode CM bit 0.
+	CM_1  FGPFCCR_Bits = 0x02 << 0  //  Input color mode CM bit 1.
+	CM_2  FGPFCCR_Bits = 0x04 << 0  //  Input color mode CM bit 2.
+	CM_3  FGPFCCR_Bits = 0x08 << 0  //  Input color mode CM bit 3.
 	CCM   FGPFCCR_Bits = 0x01 << 4  //+ CLUT Color mode.
 	START FGPFCCR_Bits = 0x01 << 5  //+ Start.
 	CS    FGPFCCR_Bits = 0xFF << 8  //+ CLUT size.
-	AM    FGPFCCR_Bits = 0x03 << 16 //+ Alpha mode.
+	AM    FGPFCCR_Bits = 0x03 << 16 //+ Alpha mode AM[1:0].
+	AM_0  FGPFCCR_Bits = 0x01 << 16 //  Alpha mode AM bit 0.
+	AM_1  FGPFCCR_Bits = 0x02 << 16 //  Alpha mode AM bit 1.
 	ALPHA FGPFCCR_Bits = 0xFF << 24 //+ Alpha value.
+	CM_3  FGPFCCR_Bits = 0x08 << 0  //  Input color mode CM bit 3.
 )
 
 const (
@@ -137,11 +162,16 @@ const (
 )
 
 const (
-	CM    BGPFCCR_Bits = 0x0F << 0  //+ Color mode.
+	CM    BGPFCCR_Bits = 0x0F << 0  //+ Input color mode CM[3:0].
+	CM_0  BGPFCCR_Bits = 0x01 << 0  //  Input color mode CM bit 0.
+	CM_1  BGPFCCR_Bits = 0x02 << 0  //  Input color mode CM bit 1.
+	CM_2  BGPFCCR_Bits = 0x04 << 0  //  Input color mode CM bit 2.
 	CCM   BGPFCCR_Bits = 0x01 << 4  //+ CLUT Color mode.
 	START BGPFCCR_Bits = 0x01 << 5  //+ Start.
 	CS    BGPFCCR_Bits = 0xFF << 8  //+ CLUT size.
-	AM    BGPFCCR_Bits = 0x03 << 16 //+ Alpha Mode.
+	AM    BGPFCCR_Bits = 0x03 << 16 //+ Alpha mode AM[1:0].
+	AM_0  BGPFCCR_Bits = 0x01 << 16 //  Alpha mode AM bit 0.
+	AM_1  BGPFCCR_Bits = 0x02 << 16 //  Alpha mode AM bit 1.
 	ALPHA BGPFCCR_Bits = 0xFF << 24 //+ Alpha value.
 )
 
@@ -183,7 +213,10 @@ const (
 )
 
 const (
-	CM OPFCCR_Bits = 0x07 << 0 //+ Color mode.
+	CM   OPFCCR_Bits = 0x07 << 0 //+ Color mode CM[2:0].
+	CM_0 OPFCCR_Bits = 0x01 << 0 //  Color mode CM bit 0.
+	CM_1 OPFCCR_Bits = 0x02 << 0 //  Color mode CM bit 1.
+	CM_2 OPFCCR_Bits = 0x04 << 0 //  Color mode CM bit 2.
 )
 
 const (

@@ -68,24 +68,8 @@ const (
 )
 
 const (
-	FRAME_RIS RISR_Bits = 0x01 << 0 //+
-	OVF_RIS   RISR_Bits = 0x01 << 1 //+
-	ERR_RIS   RISR_Bits = 0x01 << 2 //+
-	VSYNC_RIS RISR_Bits = 0x01 << 3 //+
-	LINE_RIS  RISR_Bits = 0x01 << 4 //+
-)
-
-const (
-	FRAME_RISn = 0
-	OVF_RISn   = 1
-	ERR_RISn   = 2
-	VSYNC_RISn = 3
-	LINE_RISn  = 4
-)
-
-const (
 	FRAME_IE IER_Bits = 0x01 << 0 //+
-	OVF_IE   IER_Bits = 0x01 << 1 //+
+	OVR_IE   IER_Bits = 0x01 << 1 //+
 	ERR_IE   IER_Bits = 0x01 << 2 //+
 	VSYNC_IE IER_Bits = 0x01 << 3 //+
 	LINE_IE  IER_Bits = 0x01 << 4 //+
@@ -93,31 +77,15 @@ const (
 
 const (
 	FRAME_IEn = 0
-	OVF_IEn   = 1
+	OVR_IEn   = 1
 	ERR_IEn   = 2
 	VSYNC_IEn = 3
 	LINE_IEn  = 4
 )
 
 const (
-	FRAME_MIS MISR_Bits = 0x01 << 0 //+
-	OVF_MIS   MISR_Bits = 0x01 << 1 //+
-	ERR_MIS   MISR_Bits = 0x01 << 2 //+
-	VSYNC_MIS MISR_Bits = 0x01 << 3 //+
-	LINE_MIS  MISR_Bits = 0x01 << 4 //+
-)
-
-const (
-	FRAME_MISn = 0
-	OVF_MISn   = 1
-	ERR_MISn   = 2
-	VSYNC_MISn = 3
-	LINE_MISn  = 4
-)
-
-const (
 	FRAME_ISC ICR_Bits = 0x01 << 0 //+
-	OVF_ISC   ICR_Bits = 0x01 << 1 //+
+	OVR_ISC   ICR_Bits = 0x01 << 1 //+
 	ERR_ISC   ICR_Bits = 0x01 << 2 //+
 	VSYNC_ISC ICR_Bits = 0x01 << 3 //+
 	LINE_ISC  ICR_Bits = 0x01 << 4 //+
@@ -125,8 +93,50 @@ const (
 
 const (
 	FRAME_ISCn = 0
-	OVF_ISCn   = 1
+	OVR_ISCn   = 1
 	ERR_ISCn   = 2
 	VSYNC_ISCn = 3
 	LINE_ISCn  = 4
+)
+
+const (
+	FSC ESCR_Bits = 0xFF << 0  //+
+	LSC ESCR_Bits = 0xFF << 8  //+
+	LEC ESCR_Bits = 0xFF << 16 //+
+	FEC ESCR_Bits = 0xFF << 24 //+
+)
+
+const (
+	FSCn = 0
+	LSCn = 8
+	LECn = 16
+	FECn = 24
+)
+
+const (
+	FSU ESUR_Bits = 0xFF << 0  //+
+	LSU ESUR_Bits = 0xFF << 8  //+
+	LEU ESUR_Bits = 0xFF << 16 //+
+	FEU ESUR_Bits = 0xFF << 24 //+
+)
+
+const (
+	FSUn = 0
+	LSUn = 8
+	LEUn = 16
+	FEUn = 24
+)
+
+const (
+	BYTE0 DR_Bits = 0xFF << 0  //+
+	BYTE1 DR_Bits = 0xFF << 8  //+
+	BYTE2 DR_Bits = 0xFF << 16 //+
+	BYTE3 DR_Bits = 0xFF << 24 //+
+)
+
+const (
+	BYTE0n = 0
+	BYTE1n = 8
+	BYTE2n = 16
+	BYTE3n = 24
 )

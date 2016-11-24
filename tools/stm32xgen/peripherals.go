@@ -225,9 +225,13 @@ func peripherals(r *scanner) []*Package {
 		}
 		if strings.HasPrefix(line, "}") {
 			line = strings.TrimSpace(line[1:])
-			n := strings.Index(line, "_TypeDef;")
-			if n < 0 {
-				r.Die("name of type (*_TypeDef) expected after '}'")
+			var n int
+			if n = strings.Index(line, "TypeDef;"); n > 0 {
+				if line[n-1] == '_' {
+					n--
+				}
+			} else {
+				r.Die("name of type (*TypeDef) expected after '}'")
 			}
 			periph := line[:n]
 			pb := periph

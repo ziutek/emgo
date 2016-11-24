@@ -165,6 +165,7 @@ const (
 const (
 	RECALPF ISR_Bits = 0x01 << 16 //+
 	TAMP1F  ISR_Bits = 0x01 << 13 //+
+	TAMP2F  ISR_Bits = 0x01 << 14 //+
 	TSOVF   ISR_Bits = 0x01 << 12 //+
 	TSF     ISR_Bits = 0x01 << 11 //+
 	WUTF    ISR_Bits = 0x01 << 10 //+
@@ -183,6 +184,7 @@ const (
 const (
 	RECALPFn = 16
 	TAMP1Fn  = 13
+	TAMP2Fn  = 14
 	TSOVFn   = 12
 	TSFn     = 11
 	WUTFn    = 10
@@ -428,6 +430,8 @@ const (
 	TAMPFREQ_1   TAFCR_Bits = 0x02 << 8
 	TAMPFREQ_2   TAFCR_Bits = 0x04 << 8
 	TAMPTS       TAFCR_Bits = 0x01 << 7 //+
+	TAMP2TRG     TAFCR_Bits = 0x01 << 4 //+
+	TAMP2E       TAFCR_Bits = 0x01 << 3 //+
 	TAMPIE       TAFCR_Bits = 0x01 << 2 //+
 	TAMP1TRG     TAFCR_Bits = 0x01 << 1 //+
 	TAMP1E       TAFCR_Bits = 0x01 << 0 //+
@@ -442,6 +446,8 @@ const (
 	TAMPFLTn      = 11
 	TAMPFREQn     = 8
 	TAMPTSn       = 7
+	TAMP2TRGn     = 4
+	TAMP2En       = 3
 	TAMPIEn       = 2
 	TAMP1TRGn     = 1
 	TAMP1En       = 0

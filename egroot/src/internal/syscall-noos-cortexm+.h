@@ -1,5 +1,5 @@
 // +build noos
-// +build cortexm0 cortexm3 cortexm4 cortexm4f
+// +build cortexm0 cortexm3 cortexm4 cortexm4f cortexm7f cortexm7d
 
 #define internal$Syscall0(trap) ({ \
 	register uintptr r0 asm("r0"); \

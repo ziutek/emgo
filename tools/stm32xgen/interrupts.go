@@ -16,7 +16,7 @@ func interrupts(r *scanner) []*IRQ {
 	var irqs []*IRQ
 	for r.Scan() {
 		line := strings.TrimSpace(r.Text())
-		if strings.HasPrefix(line, "typedef") && strings.Contains(line, "IRQn") {
+		if strings.HasPrefix(line, "typedef") /*&& strings.Contains(line, "IRQn")*/ {
 			irqs = make([]*IRQ, 0, 248)
 			continue
 		}
@@ -30,7 +30,11 @@ func interrupts(r *scanner) []*IRQ {
 		if n < 0 {
 			continue
 		}
-		name := strings.TrimSuffix(strings.TrimSpace(line[:n]), "_IRQn")
+		name := strings.TrimSpace(line[:n])
+		if !strings.HasSuffix(name, "_IRQn") {
+			continue
+		}
+		name = name[:len(name)-len("_IRQn")]
 		line = strings.TrimSpace(line[n+1:])
 		var descr string
 		if n = strings.Index(line, "/*!<"); n > 0 {

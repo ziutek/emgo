@@ -134,6 +134,14 @@ func (s *scanner) Die(v ...interface{}) {
 	die(v)
 }
 
+func (s *scanner) Warn(v ...interface{}) {
+	v = append(
+		[]interface{}{fmt.Sprintf("%s:%d", s.Name, s.n)},
+		v...,
+	)
+	warn(v)
+}
+
 func upperFirst(s string) string {
 	r, n := utf8.DecodeRuneInString(s)
 	if r == utf8.RuneError || unicode.IsUpper(r) {

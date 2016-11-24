@@ -165,8 +165,8 @@ func (p *LTDC_Periph) DRW() GCR_Mask {
 	return GCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(DRW)}}
 }
 
-func (p *LTDC_Periph) DTEN() GCR_Mask {
-	return GCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(DTEN)}}
+func (p *LTDC_Periph) DEN() GCR_Mask {
+	return GCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(DEN)}}
 }
 
 func (p *LTDC_Periph) PCPOL() GCR_Mask {

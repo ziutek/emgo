@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func writeInt(w *bytes.Buffer, ev constant.Value, k types.BasicKind) {
+func writeInt(w *bytes.Buffer, ev constant.Value, k types.BasicKind, sizInt int64) {
 	if k == types.Uintptr {
 		u, _ := constant.Uint64Val(ev)
 		w.WriteString("0x")
@@ -22,22 +22,22 @@ func writeInt(w *bytes.Buffer, ev constant.Value, k types.BasicKind) {
 	if s[0] == '-' {
 		w.WriteByte('(')
 	}
-	switch k {
-	case types.Int32:
+	switch {
+	case k == types.Int32 || k == types.Int && sizInt == 4:
 		if s == "-2147483648" {
 			w.WriteString("-2147483647L-1L")
 		} else {
 			w.WriteString(s + "L")
 		}
-	case types.Uint32:
+	case k == types.Uint32:
 		w.WriteString(s + "UL")
-	case types.Int64:
+	case k == types.Int64 || k == types.Int && sizInt == 8:
 		if s == "-9223372036854775808" {
 			w.WriteString("-9223372036854775807LL-1LL")
 		} else {
 			w.WriteString(s + "LL")
 		}
-	case types.Uint64:
+	case k == types.Uint64:
 		w.WriteString(s + "ULL")
 	default:
 		w.WriteString(s)
@@ -67,7 +67,7 @@ func (cdd *CDD) Value(w *bytes.Buffer, ev constant.Value, t types.Type) {
 	case k <= types.Bool || k == types.UntypedBool:
 		w.WriteString(ev.String())
 	case k <= types.Uintptr || k == types.UntypedInt || k == types.UntypedRune:
-		writeInt(w, ev, k)
+		writeInt(w, ev, k, cdd.gtc.sizInt)
 	case k <= types.Float64 || k == types.UntypedFloat:
 		writeFloat(w, ev, k)
 	case k <= types.Complex128 || k == types.UntypedComplex:

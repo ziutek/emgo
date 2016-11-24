@@ -2,7 +2,7 @@
 
 #### ISRStack, MainStack, TaskStack (no default value)
 
-Defines the size of the stack for ISRs, main task and other tasks. It is ounding up to a multiple of 32 bytes.
+Defines the size of the stack for ISRs, main task and other tasks. It is rounding up to a multiple of 32 bytes.
 
 #### MaxTasks
 
@@ -18,7 +18,7 @@ MaxTasks == 0 means:
 MaxTasks > 0 means:
 
 - separate stack for any task + separate stack for ISRs,
-- MPU (if avilable) is used to protect the stacks and other areas (not implemented yet),
+- MPU (if avilable) is used to implement stack guards,,
 - all tasks runs in user mode.
 
 #### Remarks

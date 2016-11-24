@@ -17,19 +17,19 @@ const (
 	JEOC1  CSR_Bits = 0x01 << 2  //+ ADC1 Injected channel end of conversion.
 	JSTRT1 CSR_Bits = 0x01 << 3  //+ ADC1 Injected channel Start flag.
 	STRT1  CSR_Bits = 0x01 << 4  //+ ADC1 Regular channel Start flag.
-	DOVR1  CSR_Bits = 0x01 << 5  //+ ADC1 DMA overrun  flag.
+	OVR1   CSR_Bits = 0x01 << 5  //+ ADC1 DMA overrun  flag.
 	AWD2   CSR_Bits = 0x01 << 8  //+ ADC2 Analog watchdog flag.
 	EOC2   CSR_Bits = 0x01 << 9  //+ ADC2 End of conversion.
 	JEOC2  CSR_Bits = 0x01 << 10 //+ ADC2 Injected channel end of conversion.
 	JSTRT2 CSR_Bits = 0x01 << 11 //+ ADC2 Injected channel Start flag.
 	STRT2  CSR_Bits = 0x01 << 12 //+ ADC2 Regular channel Start flag.
-	DOVR2  CSR_Bits = 0x01 << 13 //+ ADC2 DMA overrun  flag.
+	OVR2   CSR_Bits = 0x01 << 13 //+ ADC2 DMA overrun  flag.
 	AWD3   CSR_Bits = 0x01 << 16 //+ ADC3 Analog watchdog flag.
 	EOC3   CSR_Bits = 0x01 << 17 //+ ADC3 End of conversion.
 	JEOC3  CSR_Bits = 0x01 << 18 //+ ADC3 Injected channel end of conversion.
 	JSTRT3 CSR_Bits = 0x01 << 19 //+ ADC3 Injected channel Start flag.
 	STRT3  CSR_Bits = 0x01 << 20 //+ ADC3 Regular channel Start flag.
-	DOVR3  CSR_Bits = 0x01 << 21 //+ ADC3 DMA overrun  flag.
+	OVR3   CSR_Bits = 0x01 << 21 //+ ADC3 DMA overrun  flag.
 )
 
 const (
@@ -38,19 +38,19 @@ const (
 	JEOC1n  = 2
 	JSTRT1n = 3
 	STRT1n  = 4
-	DOVR1n  = 5
+	OVR1n   = 5
 	AWD2n   = 8
 	EOC2n   = 9
 	JEOC2n  = 10
 	JSTRT2n = 11
 	STRT2n  = 12
-	DOVR2n  = 13
+	OVR2n   = 13
 	AWD3n   = 16
 	EOC3n   = 17
 	JEOC3n  = 18
 	JSTRT3n = 19
 	STRT3n  = 20
-	DOVR3n  = 21
+	OVR3n   = 21
 )
 
 const (

@@ -82,6 +82,7 @@ func bits(r *scanner, pkgs []*Package) {
 			if n := strings.IndexByte(mask, ')'); n >= 0 {
 				mask = strings.TrimSpace(mask[n+1:])
 			}
+			mask = strings.TrimSuffix(mask, "U")
 			m, err := strconv.ParseUint(mask, 0, 32)
 			if err != nil {
 				warn("Bad bitmask", mask, ":", err)

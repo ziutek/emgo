@@ -15,10 +15,10 @@ const (
 	BKPSRAM_BASE       uintptr = 0x40024000 // Backup SRAM(4 KB) base address in the alias region
 	CCMDATARAM_BB_BASE uintptr = 0x12000000 // CCM(core coupled memory) data RAM(64 KB) base address in the bit-band region
 	SRAM1_BB_BASE      uintptr = 0x22000000 // SRAM1(112 KB) base address in the bit-band region
-	SRAM2_BB_BASE      uintptr = 0x2201C000 // SRAM2(16 KB) base address in the bit-band region
+	SRAM2_BB_BASE      uintptr = 0x22380000 // SRAM2(16 KB) base address in the bit-band region
 	SRAM3_BB_BASE      uintptr = 0x22400000 // SRAM3(64 KB) base address in the bit-band region
 	PERIPH_BB_BASE     uintptr = 0x42000000 // Peripheral base address in the bit-band region
-	BKPSRAM_BB_BASE    uintptr = 0x42024000 // Backup SRAM(4 KB) base address in the bit-band region
+	BKPSRAM_BB_BASE    uintptr = 0x42480000 // Backup SRAM(4 KB) base address in the bit-band region
 	SRAM_BASE          uintptr = SRAM1_BASE
 	SRAM_BB_BASE       uintptr = SRAM1_BB_BASE
 )

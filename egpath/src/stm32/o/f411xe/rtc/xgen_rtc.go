@@ -249,6 +249,10 @@ func (p *RTC_Periph) TAMP1F() ISR_Mask {
 	return ISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(TAMP1F)}}
 }
 
+func (p *RTC_Periph) TAMP2F() ISR_Mask {
+	return ISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(TAMP2F)}}
+}
+
 func (p *RTC_Periph) TSOVF() ISR_Mask {
 	return ISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(TSOVF)}}
 }
@@ -683,6 +687,14 @@ func (p *RTC_Periph) TAMPFREQ() TAFCR_Mask {
 
 func (p *RTC_Periph) TAMPTS() TAFCR_Mask {
 	return TAFCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMPTS)}}
+}
+
+func (p *RTC_Periph) TAMP2TRG() TAFCR_Mask {
+	return TAFCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMP2TRG)}}
+}
+
+func (p *RTC_Periph) TAMP2E() TAFCR_Mask {
+	return TAFCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 64)), uint32(TAMP2E)}}
 }
 
 func (p *RTC_Periph) TAMPIE() TAFCR_Mask {

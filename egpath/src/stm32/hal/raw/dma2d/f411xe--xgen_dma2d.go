@@ -155,6 +155,30 @@ type IFCR_Mask struct{ mmio.UM32 }
 func (rm IFCR_Mask) Load() IFCR_Bits   { return IFCR_Bits(rm.UM32.Load()) }
 func (rm IFCR_Mask) Store(b IFCR_Bits) { rm.UM32.Store(uint32(b)) }
 
+func (p *DMA2D_Periph) CTEIF() IFCR_Mask {
+	return IFCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(CTEIF)}}
+}
+
+func (p *DMA2D_Periph) CTCIF() IFCR_Mask {
+	return IFCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(CTCIF)}}
+}
+
+func (p *DMA2D_Periph) CTWIF() IFCR_Mask {
+	return IFCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(CTWIF)}}
+}
+
+func (p *DMA2D_Periph) CAECIF() IFCR_Mask {
+	return IFCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(CAECIF)}}
+}
+
+func (p *DMA2D_Periph) CCTCIF() IFCR_Mask {
+	return IFCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(CCTCIF)}}
+}
+
+func (p *DMA2D_Periph) CCEIF() IFCR_Mask {
+	return IFCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(CCEIF)}}
+}
+
 type FGMAR_Bits uint32
 
 type FGMAR struct{ mmio.U32 }

@@ -145,26 +145,6 @@ type RISR_Mask struct{ mmio.UM32 }
 func (rm RISR_Mask) Load() RISR_Bits   { return RISR_Bits(rm.UM32.Load()) }
 func (rm RISR_Mask) Store(b RISR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *DCMI_Periph) FRAME_RIS() RISR_Mask {
-	return RISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(FRAME_RIS)}}
-}
-
-func (p *DCMI_Periph) OVF_RIS() RISR_Mask {
-	return RISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(OVF_RIS)}}
-}
-
-func (p *DCMI_Periph) ERR_RIS() RISR_Mask {
-	return RISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(ERR_RIS)}}
-}
-
-func (p *DCMI_Periph) VSYNC_RIS() RISR_Mask {
-	return RISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(VSYNC_RIS)}}
-}
-
-func (p *DCMI_Periph) LINE_RIS() RISR_Mask {
-	return RISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(LINE_RIS)}}
-}
-
 type IER_Bits uint32
 
 type IER struct{ mmio.U32 }
@@ -185,8 +165,8 @@ func (p *DCMI_Periph) FRAME_IE() IER_Mask {
 	return IER_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(FRAME_IE)}}
 }
 
-func (p *DCMI_Periph) OVF_IE() IER_Mask {
-	return IER_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(OVF_IE)}}
+func (p *DCMI_Periph) OVR_IE() IER_Mask {
+	return IER_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(OVR_IE)}}
 }
 
 func (p *DCMI_Periph) ERR_IE() IER_Mask {
@@ -217,26 +197,6 @@ type MISR_Mask struct{ mmio.UM32 }
 func (rm MISR_Mask) Load() MISR_Bits   { return MISR_Bits(rm.UM32.Load()) }
 func (rm MISR_Mask) Store(b MISR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *DCMI_Periph) FRAME_MIS() MISR_Mask {
-	return MISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint32(FRAME_MIS)}}
-}
-
-func (p *DCMI_Periph) OVF_MIS() MISR_Mask {
-	return MISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint32(OVF_MIS)}}
-}
-
-func (p *DCMI_Periph) ERR_MIS() MISR_Mask {
-	return MISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint32(ERR_MIS)}}
-}
-
-func (p *DCMI_Periph) VSYNC_MIS() MISR_Mask {
-	return MISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint32(VSYNC_MIS)}}
-}
-
-func (p *DCMI_Periph) LINE_MIS() MISR_Mask {
-	return MISR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint32(LINE_MIS)}}
-}
-
 type ICR_Bits uint32
 
 type ICR struct{ mmio.U32 }
@@ -257,8 +217,8 @@ func (p *DCMI_Periph) FRAME_ISC() ICR_Mask {
 	return ICR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(FRAME_ISC)}}
 }
 
-func (p *DCMI_Periph) OVF_ISC() ICR_Mask {
-	return ICR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(OVF_ISC)}}
+func (p *DCMI_Periph) OVR_ISC() ICR_Mask {
+	return ICR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(OVR_ISC)}}
 }
 
 func (p *DCMI_Periph) ERR_ISC() ICR_Mask {
@@ -289,6 +249,22 @@ type ESCR_Mask struct{ mmio.UM32 }
 func (rm ESCR_Mask) Load() ESCR_Bits   { return ESCR_Bits(rm.UM32.Load()) }
 func (rm ESCR_Mask) Store(b ESCR_Bits) { rm.UM32.Store(uint32(b)) }
 
+func (p *DCMI_Periph) FSC() ESCR_Mask {
+	return ESCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(FSC)}}
+}
+
+func (p *DCMI_Periph) LSC() ESCR_Mask {
+	return ESCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(LSC)}}
+}
+
+func (p *DCMI_Periph) LEC() ESCR_Mask {
+	return ESCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(LEC)}}
+}
+
+func (p *DCMI_Periph) FEC() ESCR_Mask {
+	return ESCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(FEC)}}
+}
+
 type ESUR_Bits uint32
 
 type ESUR struct{ mmio.U32 }
@@ -304,6 +280,22 @@ type ESUR_Mask struct{ mmio.UM32 }
 
 func (rm ESUR_Mask) Load() ESUR_Bits   { return ESUR_Bits(rm.UM32.Load()) }
 func (rm ESUR_Mask) Store(b ESUR_Bits) { rm.UM32.Store(uint32(b)) }
+
+func (p *DCMI_Periph) FSU() ESUR_Mask {
+	return ESUR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(FSU)}}
+}
+
+func (p *DCMI_Periph) LSU() ESUR_Mask {
+	return ESUR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(LSU)}}
+}
+
+func (p *DCMI_Periph) LEU() ESUR_Mask {
+	return ESUR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(LEU)}}
+}
+
+func (p *DCMI_Periph) FEU() ESUR_Mask {
+	return ESUR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(FEU)}}
+}
 
 type CWSTRTR_Bits uint32
 
@@ -352,3 +344,19 @@ type DR_Mask struct{ mmio.UM32 }
 
 func (rm DR_Mask) Load() DR_Bits   { return DR_Bits(rm.UM32.Load()) }
 func (rm DR_Mask) Store(b DR_Bits) { rm.UM32.Store(uint32(b)) }
+
+func (p *DCMI_Periph) BYTE0() DR_Mask {
+	return DR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(BYTE0)}}
+}
+
+func (p *DCMI_Periph) BYTE1() DR_Mask {
+	return DR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(BYTE1)}}
+}
+
+func (p *DCMI_Periph) BYTE2() DR_Mask {
+	return DR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(BYTE2)}}
+}
+
+func (p *DCMI_Periph) BYTE3() DR_Mask {
+	return DR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(BYTE3)}}
+}

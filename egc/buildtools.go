@@ -15,7 +15,8 @@ var archMap = map[string]string{
 	"cortexm3":  "-mcpu=cortex-m3 -mthumb -mfloat-abi=soft",
 	"cortexm4":  "-mcpu=cortex-m4 -mthumb -mfloat-abi=soft",
 	"cortexm4f": "-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16",
-
+	"cortexm7f": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16",
+	"cortexm7d": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-dp-d16",
 	"amd64": "",
 }
 
