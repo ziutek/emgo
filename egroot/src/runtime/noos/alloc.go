@@ -4,6 +4,7 @@ import (
 	"internal"
 	"mem"
 	"sync/atomic"
+	"sync/fence"
 	"unsafe"
 )
 
@@ -26,6 +27,7 @@ func allocBottom(n int, size, align uintptr) unsafe.Pointer {
 		p := mem.AlignUp(hb, align)
 		newhb := p + size
 		if atomic.CompareAndSwapUintptr(&aHeapBegin, hb, newhb) {
+			fence.RW_SMP() // Ensure another load(aHeapEnd) after CAS.
 			he := atomic.LoadUintptr(&aHeapEnd)
 			if newhb < heapBegin() || newhb > he {
 				panicMemory()
@@ -44,6 +46,7 @@ func allocTop(n int, size, align uintptr) unsafe.Pointer {
 		}
 		p := mem.AlignDown(he-size, align)
 		if atomic.CompareAndSwapUintptr(&aHeapEnd, he, p) {
+			fence.RW_SMP()  // Ensure another load(aHeapBegin) after CAS.
 			hb := atomic.LoadUintptr(&aHeapBegin)
 			if p > heapEnd() || hb > p {
 				panicMemory()

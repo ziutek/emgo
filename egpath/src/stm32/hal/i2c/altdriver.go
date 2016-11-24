@@ -41,7 +41,7 @@ func (d *AltDriver) SetIntMode(en bool) {
 
 func (d *AltDriver) ISR() {
 	d.P.raw.CR2.ClearBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
-	d.evflag.Set()
+	d.evflag.Signal(1)
 }
 
 // MasterConn returns initialized AltMasterConn struct that can be used to

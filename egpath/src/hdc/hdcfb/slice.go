@@ -16,12 +16,12 @@ var ErrTooLarge = errors.New("hdcfb: too large")
 // blocks transfer of its content to the display (that is FB.Draw() will block).
 // All gorutines that use locked buffer must call Flush to unlock it.
 //
-// Any nonzero byte written to the slice is transfered to the display and
-// replaces the corresponding byte in its DDRAM. Zero byte preserves previous
-// content of corresponding byte in DDRAM.
+// Any nonzero byte written to the slice is transfered to the display by FB.Draw
+// and replaces the corresponding byte in its DDRAM. Zero byte preserves
+// previous content of corresponding byte in DDRAM.
 //
 // Write, WriteString and Flush methods are all lockless so even interrupt
-// handler is permitted to use them.
+// handler is permitted to print to Slice.
 type Slice struct {
 	fb   *FB
 	buf  *buffer
@@ -29,8 +29,8 @@ type Slice struct {
 	p    byte
 }
 
-// Slice returns slice of framebuffer started at byte m and ended just before
-// byte n.
+// Slice returns the slice of framebuffer started at byte m and ended just
+// before byte n.
 func (fb *FB) Slice(m, n int) Slice {
 	if fb.buf0 == nil {
 		panicSingleBuffer()
@@ -51,12 +51,12 @@ func (sl *Slice) start() {
 	}
 	for {
 		sl.buf = sl.fb.buf0
-		if atomic.AddInt32(&sl.buf.used, 1) > 0 {
-			sl.buf.mod.Set()
+		if atomic.AddInt(&sl.buf.used, 1) > 0 {
+			sl.buf.mod.Signal(1)
 			return
 		}
-		if atomic.AddInt32(&sl.buf.used, -1) == minInt32 {
-			sl.fb.e.Send()
+		if atomic.AddInt(&sl.buf.used, -1) == minInt {
+			sl.fb.bufrel.Send()
 		}
 	}
 }
@@ -83,8 +83,8 @@ func (sl *Slice) Remain() int {
 // TODO: Implement Wait method that waits for buffers swap to give such
 // guarantee.
 func (sl *Slice) Flush(p int) {
-	if atomic.AddInt32(&sl.buf.used, -1) == minInt32 {
-		sl.fb.e.Send()
+	if atomic.AddInt(&sl.buf.used, -1) == minInt {
+		sl.fb.bufrel.Send()
 	}
 	sl.buf = nil
 	sl.SetPos(p)

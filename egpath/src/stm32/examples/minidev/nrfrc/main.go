@@ -130,8 +130,9 @@ func main() {
 		}
 		nrf.W_TX_PAYLOAD([]byte{byte(cnt), 0})
 		nrf.ClearIRQ(nrf24.TX_DS)
+		dci.IRQF().Reset(0)
 		dci.SetCE(2)
-		dci.Wait(0)
+		dci.IRQF().Wait(1, 0)
 		delay.Millisec(40)
 	}
 }

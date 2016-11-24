@@ -204,11 +204,11 @@ func isr() {
 
 func loadTicks() int64 {
 	irq.RTCAlarm.Disable()
-	fence.Memory()
+	fence.RW() // Ensure RTCAlarm IRQ is disabled before read counters.
 	lastisr := g.lastISR
 	cntext := g.cntExt
 	vcnt := loadVCNT()
-	fence.Memory()
+	fence.RW() // Ensure all counters loaded before enable IRQ.
 	irq.RTCAlarm.Enable()
 
 	if uint32(vcnt>>preLog2) < lastisr {
@@ -230,7 +230,7 @@ func setWakeup(ns int64, alarm bool) {
 	// Use EXTI instead of NVIC to actually disable IRQ source and not colide
 	// with loadTicks.
 	exti.RTCALR.DisableIRQ()
-	fence.Memory()
+	fence.RW() // Ensure disable IRQ before normal memory access.
 
 	g.wakens = ns
 	g.alarm = alarm
@@ -256,7 +256,7 @@ func setWakeup(ns int64, alarm bool) {
 	RTC.ALRL.Store(rtc.ALRL_Bits(alrcnt))
 	clearCNF(RTC)
 
-	fence.Memory()
+	fence.RW() // Ensure finish all normal memory accesses before enable IRQ..
 	exti.RTCALR.EnableIRQ()
 
 	now = loadTicks() >> preLog2

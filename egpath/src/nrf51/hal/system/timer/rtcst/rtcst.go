@@ -4,6 +4,7 @@ package rtcst
 import (
 	"math"
 	"rtos"
+	"sync/atomic"
 	"sync/fence"
 	"syscall"
 
@@ -47,6 +48,9 @@ func Setup(st *rtc.Periph, ccn int) {
 	ove.DisablePPI()
 	ove.EnableIRQ()
 	irq := rtos.IRQ(st.IRQ())
+	// Priority of rtc.OVRFLW IRQ must be higher than SVCall proprity, to ensure
+	// that any user of rtos.Nanosec observes both COUNTER reset and softcnt
+	// increment as one atomic operation.
 	irq.SetPrio(rtos.IRQPrioLowest + rtos.IRQPrioStep*rtos.IRQPrioNum*3/4)
 	irq.Enable()
 	st.Task(rtc.START).Trigger()
@@ -58,7 +62,7 @@ func ISR() {
 	cce := cce()
 	if ove.IsSet() {
 		ove.Clear()
-		g.softcnt++
+		atomic.StoreUint32(&g.softcnt, g.softcnt+1)
 	}
 	if cce.IsSet() {
 		cce.DisableIRQ()
@@ -81,11 +85,12 @@ func cntstons(ch, cl uint32) int64 {
 }
 
 func counters() (ch, cl uint32) {
-	ch = g.softcnt
+	ch = atomic.LoadUint32(&g.softcnt)
 	for {
+		fence.R() // Ensure IO load after load(g.softcnt).
 		cl = g.st.COUNTER()
-		fence.Compiler()
-		ch1 := g.softcnt
+		fence.R() // Ensure load(g.softcnt) after IO load.
+		ch1 := atomic.LoadUint32(&g.softcnt)
 		if ch1 == ch {
 			return
 		}

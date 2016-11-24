@@ -1,8 +1,6 @@
 package main
 
 import (
-	"sync/atomic"
-
 	"arch/cortexm/bitband"
 
 	"stm32/hal/exti"
@@ -24,21 +22,22 @@ func (es EncoderState) Btn() bool {
 }
 
 type Encoder struct {
-	t       *tim.TIM_Periph
-	b       bitband.Bit
-	base    uint32
+	t     *tim.TIM_Periph
+	btnIn bitband.Bit
+	btnEL exti.Lines
+	//base    uint32
 	lastCnt uint32
 	lastBtn int
 
 	State chan EncoderState
 }
 
-func (e *Encoder) Init(t *tim.TIM_Periph, b bitband.Bit, l exti.Lines) {
+func (e *Encoder) Init(t *tim.TIM_Periph, btnIn bitband.Bit, btnEL exti.Lines) {
 	e.t = t
-	e.b = b
-	e.State = make(chan EncoderState, 3)
+	e.btnIn = btnIn
+	e.btnEL = btnEL
+	e.State = make(chan EncoderState, 1)
 
-	t.CKD().Store(2 << tim.CKDn)
 	t.SMCR.StoreBits(tim.SMS, 1<<tim.SMSn)
 	t.CCMR1.StoreBits(
 		tim.CC1S|tim.CC2S|tim.IC1F|tim.IC2F,
@@ -49,23 +48,35 @@ func (e *Encoder) Init(t *tim.TIM_Periph, b bitband.Bit, l exti.Lines) {
 	t.CCR3.Store(0xffffffff)
 	t.CCR4.Store(1)
 	t.DIER.Store(tim.CC3IE | tim.CC4IE)
-	t.CEN().Set()
+	t.CR1.Store(2<<tim.CKDn | tim.CEN)
 
-	l.EnableFallTrig()
-	l.EnableRisiTrig()
-	l.EnableIRQ()
+	btnEL.EnableFallTrig()
+	btnEL.EnableRisiTrig()
+	btnEL.EnableIRQ()
 }
 
 func (e *Encoder) SetCnt(cnt int) {
-	atomic.StoreUint32(&e.base, e.t.CNT.U32.Load()-uint32(cnt))
+	e.btnEL.DisableIRQ()
+	e.t.CEN().Clear()
+	if e.t.CNT.U32.Load() != uint32(cnt) {
+		e.t.CNT.U32.Store(uint32(cnt))
+		// Remove possible invalid state from channel.
+		select {
+		case <-e.State:
+		default:
+		}
+		e.ISR()
+	}
+	e.t.CEN().Set()
+	e.btnEL.EnableIRQ()
 }
 
 func (e *Encoder) ISR() {
 	for {
-		exti.L4.ClearPending()
+		e.btnEL.ClearPending()
 		e.t.SR.Store(0)
 		cnt := e.t.CNT.U32.Load()
-		btn := e.b.Load()
+		btn := e.btnIn.Load()
 		if cnt == e.lastCnt && btn == e.lastBtn {
 			return
 		}
@@ -75,12 +86,8 @@ func (e *Encoder) ISR() {
 		}
 		e.lastCnt = cnt
 		e.lastBtn = btn
-		cnt -= atomic.LoadUint32(&e.base)
 		select {
 		case e.State <- EncoderState(int(int16(cnt))<<1 + 1 - btn):
-			//ledGreen.Set()
-			//delay.Loop(1e4)
-			//ledGreen.Clear()
 		default:
 		}
 	}

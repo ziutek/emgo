@@ -8,24 +8,33 @@ package fence
 //c:static inline
 func Compiler()
 
-////c:static inline
-//func Memory()
-
-
-// Sync ensures that any instruction after it, in program order, do not execute
-// until all explicit memory accesses before it complete.
+// RW  ensures that any memory access (normal or I/O) after it, in program
+// order, do not execute until all explicit memory accesses before it complete.
 //
 //c:static inline
-func Sync()
+func RW()
 
-// Memory ensures that any memory access after it, in program order, do not
-// execute until all explicit memory accesses before it complete.
+// RW_SMP works like Compiler in uniprocessor system. In multiprocessor system
+// RW_SMP ensures that any normal memory access after it, in program order, do
+// not execute until all explicit normal memory accesses before it complete.
 //
 //c:static inline
-func Memory() 
+func RW_SMP()
 
-// SMP works like Memory in multiprocessor system and like Compiler in
-// uniprocessor system.
-//
 //c:static inline
-func SMP() 
+func R()
+
+//c:static inline
+func R_SMP()
+
+//c:static inline
+func W()
+
+//c:static inline
+func W_SMP()
+
+//c:static inline
+func RD()
+
+//c:static inline
+func RD_SMP()

@@ -2,6 +2,7 @@ package nbl
 
 import (
 	"sync/atomic"
+	"sync/fence"
 )
 
 // Int64 implements int64 value for one writer and multiple readers. It is
@@ -11,19 +12,25 @@ type Int64 struct {
 	aba uintptr
 }
 
-func (u *Int64) ABA() uintptr {
-	return atomic.LoadUintptr(&u.aba)
+func (i *Int64) ABA() uintptr {
+	return atomic.LoadUintptr(&i.aba)
 }
 
 func (i *Int64) TryLoad(aba uintptr) int64 {
+	fence.RD_SMP() // load(i.val[aba&1]) depends on load(i.aba).
 	return i.val[aba&1]
 }
 
 func (i *Int64) CheckABA(aba uintptr) (uintptr, bool) {
+	// load(i.aba) must be observed after load(i.val[aba&1]) and any other load
+	// between TryLoad and CheckABA.
+	fence.R_SMP() 
 	aba1 := atomic.LoadUintptr(&i.aba)
 	return aba1, aba1 == aba
 }
 
+// Load uses ABA, TryLoad and CheckABA to load and return value of i.
+//
 // BUG: On 32bit CPUs Load does not guarantee that it returns valid value. The
 // probability of failure depends on the frequency of updates:
 // 1 kHz: aba wraps onece per 1193 houres,
@@ -53,6 +60,7 @@ func (i *Int64) WriterStore(v int64) {
 	aba := i.aba
 	aba++
 	i.val[aba&1] = v
+	fence.W_SMP() // store(i.val[aba&1]) must be observed before store(i.aba).
 	atomic.StoreUintptr(&i.aba, aba)
 }
 

@@ -8,11 +8,11 @@ type Mutex mutex
 // If the lock is already in use, the calling goroutine
 // blocks until the mutex is available.
 func (m *Mutex) Lock() {
-	lock(m)
+	m.lock()
 }
 
 // Unlock unlocks m.
 // It is a run-time error if m is not locked on entry to Unlock.
 func (m *Mutex) Unlock() {
-	unlock(m)
+	m.unlock()
 }

@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"rtos"
 	"sync/atomic"
+	"sync/fence"
 	"unsafe"
 
 	"stm32/hal/dma"
@@ -62,7 +63,8 @@ func startDMA(ch *dma.Channel, maddr unsafe.Pointer, mlen int) {
 	ch.SetAddrM(maddr)
 	ch.SetLen(mlen)
 	ch.Clear(dma.EvAll, dma.ErrAll)
-	ch.EnableIRQ(dma.Complete, dma.ErrAll&^dma.ErrFIFO) // Ignore FIFO error.
+	ch.EnableIRQ(dma.Complete, dma.ErrAll&^dma.ErrFIFO /* Ignore FIFO error */)
+	fence.W() // This orders writes to normal and I/O memory.
 	ch.Enable()
 }
 
@@ -98,18 +100,20 @@ func (d *Driver) DisableRx() {
 func (d *Driver) RxDMAISR() {
 	ch := d.RxDMA
 	if _, e := ch.Status(); e != 0 {
-		d.rxready.Set()
+		d.rxready.Signal(1)
 		return
 	}
 	ch.Clear(dma.EvAll, dma.ErrAll)
-	atomic.AddUint32(&d.dmaN, 1)
+	atomic.StoreUint32(&d.dmaN, d.dmaN+1)
 }
 
 func (d *Driver) dmaNM() (n, m uint32) {
 	ch := d.RxDMA
 	n = atomic.LoadUint32(&d.dmaN)
 	for {
+		fence.R_SMP()
 		cl := ch.Len()
+		fence.R_SMP()
 		nn := atomic.LoadUint32(&d.dmaN)
 		if n == nn {
 			return n, uint32(len(d.RxBuf) - cl)
@@ -135,7 +139,7 @@ func (d *Driver) disableRxIRQ() {
 
 func (d *Driver) ISR() {
 	d.disableRxIRQ()
-	d.rxready.Set()
+	d.rxready.Signal(1)
 }
 
 func (d *Driver) Read(buf []byte) (int, error) {
@@ -144,7 +148,8 @@ start:
 	switch dmaN - d.rxN {
 	case 0:
 		if dmaM == d.rxM {
-			d.rxready.Clear()
+			d.rxready.Reset(0)
+			fence.W()
 			d.P.EnableIRQ(RxNotEmpty)
 			d.P.EnableErrorIRQ()
 			dmaN, dmaM = d.dmaNM()
@@ -152,7 +157,7 @@ start:
 				d.disableRxIRQ()
 				goto start
 			}
-			if !d.rxready.Wait(d.deadlineRx) {
+			if !d.rxready.Wait(1, d.deadlineRx) {
 				return 0, ErrTimeout
 			}
 			if _, e := d.P.Status(); e != 0 {
@@ -225,11 +230,11 @@ func (d *Driver) WriteString(s string) (int, error) {
 		if m > 0xffff {
 			m = 0xffff
 		}
-		d.txdone.Clear()
+		d.txdone.Reset(0)
 		d.P.raw.SR.Store(0) // Clear TC.
 		startDMA(ch, unsafe.Pointer(sh.Data+uintptr(n)), m)
 		n += m
-		done := d.txdone.Wait(d.deadlineTx)
+		done := d.txdone.Wait(1, d.deadlineTx)
 		ch.Disable() // To be compatible with STM32F1.
 		if !done {
 			ch.DisableIRQ(dma.EvAll, dma.ErrAll)
@@ -254,7 +259,7 @@ func (d *Driver) WriteByte(b byte) error {
 
 func (d *Driver) TxDMAISR() {
 	d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
-	d.txdone.Set()
+	d.txdone.Signal(1)
 }
 
 func (d *Driver) SetReadDeadline(t int64) {
@@ -264,19 +269,3 @@ func (d *Driver) SetReadDeadline(t int64) {
 func (d *Driver) SetWriteDeadline(t int64) {
 	d.deadlineTx = t
 }
-
-/*
-func (d *Driver) NM() (dmaN, dmaM, rxN, rxM uint32) {
-	ch := d.RxDMA
-	n := atomic.LoadUint32(&d.dmaN)
-	for {
-		cl := ch.Len()
-		nn := atomic.LoadUint32(&d.dmaN)
-		if n == nn {
-			return n, uint32(len(d.RxBuf) - cl), d.rxN, d.rxM
-		}
-		n = nn
-	}
-
-}
-*/

@@ -51,12 +51,12 @@ var event rtos.EventFlag
 
 func buttonISR() {
 	exti.Lines(button).ClearPending()
-	event.Set()
+	event.Signal(1)
 }
 
 func wait() {
-	if event.Wait(rtos.Nanosec() + 2e9) {
-		event.Clear()
+	if event.Wait(1, rtos.Nanosec()+2e9) {
+		event.Reset(0)
 	}
 }
 

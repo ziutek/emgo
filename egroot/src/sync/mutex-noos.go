@@ -3,6 +3,7 @@
 package sync
 
 import (
+	"sync/fence"
 	"syscall"
 )
 
@@ -10,7 +11,7 @@ type mutex struct {
 	state syscall.Event
 }
 
-func lock(m *Mutex) {
+func (m *Mutex) lock() {
 	state := syscall.AtomicLoadEvent(&m.state)
 	if state == 0 {
 		state = syscall.AssignEventFlag() | 1
@@ -21,13 +22,15 @@ func lock(m *Mutex) {
 	unlocked, locked := state|1, state&^1
 	for {
 		if syscall.AtomicCompareAndSwapEvent(&m.state, unlocked, locked) {
-			return
+			break
 		}
 		locked.Wait()
 	}
+	fence.RW_SMP() // Lock has ACQUIRE semantic.
 }
 
-func unlock(m *Mutex) {
+func (m *Mutex) unlock() {
+	fence.RW_SMP() // Unlock has RELEASE semantic.
 	state := syscall.AtomicLoadEvent(&m.state)
 	if syscall.AtomicAddEvent(&m.state, 1) != state|1 {
 		panic("sync: unlock of unlocked mutex")

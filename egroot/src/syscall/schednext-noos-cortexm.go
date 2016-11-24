@@ -5,6 +5,7 @@ package syscall
 
 import (
 	"internal"
+	"sync/fence"
 
 	"arch/cortexm"
 	"arch/cortexm/scb"
@@ -22,9 +23,11 @@ func schedNext() {
 		SCB := scb.SCB
 		if SCB.PENDSVACT().Load() != 0 {
 			// Wakeup PendSV handler.
+			fence.W_SMP() // Complete all writes before wake up other CPUs.
 			cortexm.SEV()
 		} else {
 			// Raise PendSV exception.
+			fence.W() // Treat NVIC as external observer of CPU memory write.
 			SCB.ICSR.Store(scb.PENDSVSET)
 		}
 	}

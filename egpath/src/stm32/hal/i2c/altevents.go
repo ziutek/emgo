@@ -2,6 +2,7 @@ package i2c
 
 import (
 	"rtos"
+	"sync/fence"
 
 	"stm32/hal/dma"
 
@@ -30,10 +31,11 @@ func i2cWaitIRQ(p *i2c.I2C_Periph, evflag *rtos.EventFlag, ev i2c.SR1_Bits, dead
 	}
 	for {
 		p.CR2.SetBits(irqen)
-		if !evflag.Wait(deadline) {
+		if !evflag.Wait(1, deadline) {
 			return SoftTimeout
 		}
-		evflag.Clear()
+		evflag.Reset(0)
+		fence.RW() // Evflag must be reset before ioload(SR1).
 		sr1 := p.SR1.Load()
 		if e := getError(sr1); e != 0 {
 			return e
@@ -61,7 +63,7 @@ func dmaPoolTRCE(ch *dma.Channel, deadline int64) Error {
 }
 
 func dmaWait(ch *dma.Channel, evflag *rtos.EventFlag, deadline int64) Error {
-	done := evflag.Wait(deadline)
+	done := evflag.Wait(1, deadline)
 	ch.Disable() // To be compatible with STM32F1.
 	if !done {
 		ch.DisableIRQ(dma.EvAll, dma.ErrAll)

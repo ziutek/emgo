@@ -4,6 +4,7 @@ package nrfdci
 
 import (
 	"rtos"
+	"sync/fence"
 
 	"stm32/hal/exti"
 	"stm32/hal/gpio"
@@ -16,11 +17,10 @@ import (
 // DCI implements nrf24.DCI interface. Additionally, it allows to control CE
 // signal and wait for interrupt.
 type DCI struct {
-	rtos.EventFlag
-
 	spi     *spi.Driver
 	cet     *tim.TIM_Periph
-	irq     exti.Lines
+	irqline exti.Lines
+	irqflag rtos.EventFlag
 	csnport *gpio.Port
 	csnpin  gpio.Pins // uint16
 	ocmn    uint16
@@ -77,7 +77,7 @@ func NewDCI(spidrv *spi.Driver, csnport *gpio.Port, csnpin gpio.Pins, pclk uint,
 	}
 	cet.CCER.Store(cce)
 
-	dci.irq = irqline
+	dci.irqline = irqline
 	irqline.EnableFallTrig()
 	irqline.EnableIRQ()
 	return dci
@@ -97,6 +97,7 @@ func (dci *DCI) WriteRead(oi ...[]byte) (n int, err error) {
 // SetCE allows to control CE line.. v==0 sets CE low, v==1 sets CE high, v==2
 // pulses CE high for 10 µs and leaves it low.
 func (dci *DCI) SetCE(v int) error {
+	fence.W()
 	switch v {
 	case 0:
 		dci.cet.CCMR2.Store(4 << dci.ocmn)
@@ -109,12 +110,16 @@ func (dci *DCI) SetCE(v int) error {
 	return nil
 }
 
-func (dci *DCI) IRQ() exti.Lines {
-	return dci.irq
+func (dci *DCI) IRQL() exti.Lines {
+	return dci.irqline
+}
+
+func (dci *DCI) IRQF() *rtos.EventFlag {
+	return &dci.irqflag
 }
 
 func (dci *DCI) ISR() {
-	dci.EventFlag.Set()
+	dci.irqflag.Signal(1)
 }
 
 func (dci *DCI) Baudrate() uint {

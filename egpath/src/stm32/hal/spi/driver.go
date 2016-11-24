@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"rtos"
 	"sync/atomic"
+	"sync/fence"
 	"unsafe"
 
 	"stm32/hal/dma"
@@ -29,7 +30,7 @@ type Driver struct {
 	RxDMA *dma.Channel
 	TxDMA *dma.Channel
 
-	dmacnt int32
+	dmacnt int
 	done   rtos.EventFlag
 	err    uint
 }
@@ -52,14 +53,14 @@ func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode, wordSize uintptr) {
 func (d *Driver) DMAISR(ch *dma.Channel) {
 	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 	_, e := ch.Status()
-	if e&^dma.ErrFIFO != 0 || atomic.AddInt32(&d.dmacnt, -1) == 0 {
-		d.done.Set()
+	if e&^dma.ErrFIFO != 0 || atomic.AddInt(&d.dmacnt, -1) == 0 {
+		d.done.Signal(1)
 	}
 }
 
 func (d *Driver) ISR() {
 	d.P.DisableIRQ(RxNotEmpty | Err)
-	d.done.Set()
+	d.done.Signal(1)
 }
 
 func startDMA(ch *dma.Channel, addr uintptr, n int) {
@@ -67,6 +68,7 @@ func startDMA(ch *dma.Channel, addr uintptr, n int) {
 	ch.SetLen(n)
 	ch.Clear(dma.EvAll, dma.ErrAll)
 	ch.EnableIRQ(dma.Complete, dma.ErrAll&^dma.ErrFIFO) // Ignore FIFO error.
+	fence.W()                                           // This orders writes to normal and I/O memory.
 	ch.Enable()
 }
 
@@ -80,9 +82,10 @@ func (d *Driver) WriteReadByte(b byte) byte {
 	}
 	d.P.SetDuplex(Full)
 	d.P.EnableIRQ(RxNotEmpty | Err)
-	d.done.Clear()
+	d.done.Reset(0)
+	fence.W() // This orders writes to normal and I/O memory.
 	d.P.StoreByte(b)
-	if !d.done.Wait(d.deadline) {
+	if !d.done.Wait(1, d.deadline) {
 		d.err = uint(ErrTimeout) << 16
 		return 0
 	}
@@ -114,7 +117,7 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int) int {
 			m = 0xffff
 		}
 		d.dmacnt = 2
-		d.done.Clear()
+		d.done.Reset(0)
 		startDMA(d.RxDMA, in, m)
 		startDMA(d.TxDMA, out, m)
 		if olen > 1 {
@@ -123,7 +126,7 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int) int {
 		in += uintptr(m)
 		n += m
 
-		done := d.done.Wait(d.deadline)
+		done := d.done.Wait(1, d.deadline)
 
 		d.P.DisableDMA(RxNotEmpty | TxEmpty)
 		// Disable DMA (required by STM32F1 to allow setup next transfer).
@@ -163,12 +166,12 @@ func (d *Driver) writeDMA(out uintptr, olen int) {
 			m = 0xffff
 		}
 		d.dmacnt = 1
-		d.done.Clear()
+		d.done.Reset(0)
 		startDMA(d.TxDMA, out+uintptr(n), m)
 		n += m
 
-		done := d.done.Wait(d.deadline)
-		
+		done := d.done.Wait(1, d.deadline)
+
 		d.P.DisableDMA(TxEmpty)
 		// Disable DMA (required by STM32F1 to allow setup next transfer).
 		d.TxDMA.Disable()

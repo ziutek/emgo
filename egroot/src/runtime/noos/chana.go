@@ -5,14 +5,15 @@ import (
 	"internal"
 	"mem"
 	"sync/atomic"
+	"sync/fence"
 	"syscall"
 	"unsafe"
 )
 
 // Asynchronous channels - lockless implementation.
 
-func bit(w *uint32, n uintptr) bool {
-	return *w&(1<<n) != 0
+func atomicLoadBit(w *uint32, n uintptr) bool {
+	return atomic.LoadUint32(w)&(1<<n) != 0
 }
 
 func atomicToggleBit(addr *uint32, n uintptr) {
@@ -34,7 +35,7 @@ type chanA struct {
 	step   uintptr
 	buf    unsafe.Pointer
 	rd     *[1 << 28]uint32
-	closed int32
+	closed int
 }
 
 func makeChanA(cap int, size, align uintptr) *chanA {
@@ -56,12 +57,12 @@ func (c *chanA) Close() {
 	if c == nil {
 		panicCloseNil()
 	}
-	atomic.StoreInt32(&c.closed, 1)
+	atomic.StoreInt(&c.closed, 1)
 	c.event.Send()
 }
 
 func (c *chanA) panicIfClosed() {
-	if atomic.LoadInt32(&c.closed) != 0 {
+	if atomic.LoadInt(&c.closed) != 0 {
 		panicClosed()
 	}
 }
@@ -87,12 +88,13 @@ func (c *chanA) TrySend(_, _ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 	for {
 		c.panicIfClosed()
 		tosend := atomic.LoadUintptr(&c.tosend)
+		fence.R_SMP() // To avoid false full channel.
 		if atomic.LoadUintptr(&c.torecv)&c.mask == (tosend^abalsb)&c.mask {
 			// Channel is full.
 			return nil, cagain
 		}
 		n = tosend & nmask
-		if bit(&c.rd[n>>5], n&31) {
+		if atomicLoadBit(&c.rd[n>>5], n&31) {
 			// This element is still being received.
 			return nil, cagain
 		}
@@ -106,6 +108,7 @@ func (c *chanA) TrySend(_, _ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 			break
 		}
 	}
+	fence.RW_SMP() // TrySend has ACQUIRE semantic.
 	return unsafe.Pointer(uintptr(c.buf) + c.step*n), n
 }
 
@@ -119,15 +122,17 @@ func (c *chanA) TryRecv(_, _ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 	abalsb := c.mask &^ nmask
 	for {
 		torecv := atomic.LoadUintptr(&c.torecv)
+		fence.R_SMP() // To avoid false empty channel.
 		if atomic.LoadUintptr(&c.tosend) == torecv {
 			// Channel is empty.
-			if atomic.LoadInt32(&c.closed) != 0 {
+			fence.R_SMP() // To avoid miss closed flag in case of empty channel.
+			if atomic.LoadInt(&c.closed) != 0 {
 				return nil, cclosed
 			}
 			return nil, cagain
 		}
 		n = torecv & nmask
-		if !bit(&c.rd[n>>5], n&31) {
+		if !atomicLoadBit(&c.rd[n>>5], n&31) {
 			// This element is still being sent.
 			return nil, cagain
 		}
@@ -141,6 +146,7 @@ func (c *chanA) TryRecv(_, _ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 			break
 		}
 	}
+	fence.RW_SMP() // TryRecv has ACQUIRE semantic.
 	return unsafe.Pointer(uintptr(c.buf) + c.step*n), n
 }
 
@@ -172,6 +178,7 @@ func (c *chanA) Recv(_ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 // Done must be called after data transfer that sender or reveiver need to
 // perform..
 func (c *chanA) Done(n uintptr) {
+	fence.RW_SMP() // Done has RELEASE semantic.
 	atomicToggleBit(&c.rd[n>>5], n&31)
 	c.event.Send()
 }
@@ -180,6 +187,7 @@ func (c *chanA) Len() int {
 	torecv := atomic.LoadUintptr(&c.torecv)
 	tosend := atomic.LoadUintptr(&c.tosend)
 	for {
+		fence.R_SMP() // Avoid reorder/optimize this loads by compiler and CPU.
 		tr := atomic.LoadUintptr(&c.torecv)
 		ts := atomic.LoadUintptr(&c.tosend)
 		if tr == torecv {

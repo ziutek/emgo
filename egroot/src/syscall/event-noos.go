@@ -5,6 +5,7 @@ package syscall
 import (
 	"internal"
 	"sync/atomic"
+	"sync/fence"
 	"unsafe"
 )
 
@@ -38,11 +39,13 @@ func AssignEventFlag() Event {
 	return Event(2) << (u % (eventBits - 1))
 }
 
-// Send sends event that means it waking up all tasks that wait for e.
-// If some task isn't waiting for any event, e is saved for this task
-// for possible future call of Wait. Compiler doesn't reorder Send with any
-// memory operation that is before it in the program code.
+// Send sends event that means it waking up all tasks that wait for e. If some 
+// task isn't waiting for any event, e is saved for this task for possible
+// future call of Wait. Send do not execute until all memory write operations
+// before it, in program order, will be completed. In very simple implementation
+// Send can do nothing.
 func (e Event) Send() {
+	fence.W_SMP() // Send signals that some shared variable was changed.
 	atomic.OrUintptr((*uintptr)(&eventReg), uintptr(e))
 	schedNext()
 }
@@ -54,11 +57,11 @@ func TakeEventReg() Event {
 	return Event(atomic.SwapUintptr((*uintptr)(&eventReg), 0))
 }
 
-// Wait waits for event.
-// If e == 0 it returns immediately. Wait clears all saved events for current
-// task so the information about sended events, that Wait hasn't waited for,
-// is lost. Compiler doesn't reorder Wait with any memory operation that is
-// before or after it in the program code.
+// Wait waits for event. If e == 0 it returns immediately. Wait clears all saved
+// events for current task so the information about recieved events, that Wait
+// hasn't waited for, is lost. Wait ensures that any memory operation after it,
+// in program order, do not be executed until Wait return. In very simple
+// implementation Wait can do nothing and always return immediatelly.
 func (e Event) Wait() {
 	internal.Syscall1(EVENTWAIT, uintptr(e))
 }

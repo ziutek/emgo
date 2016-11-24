@@ -2,13 +2,14 @@ package noos
 
 import (
 	"sync/atomic"
+	"sync/fence"
 	"syscall"
 	"unsafe"
 )
 
 // Synchronous channels
 
-func loadWaiter(wptr **waiter) *waiter {
+func atomicLoadWaiter(wptr **waiter) *waiter {
 	return (*waiter)(atomic.LoadPointer(
 		(*unsafe.Pointer)(unsafe.Pointer(wptr)),
 	))
@@ -50,7 +51,7 @@ type chanS struct {
 	event syscall.Event // Event must be the first field (see chanSelect).
 	src   *waiter
 	dst   *waiter
-	state int32
+	state uint32
 }
 
 func makeChanS() *chanS {
@@ -63,26 +64,28 @@ func (c *chanS) Close() {
 	if c == nil {
 		panicCloseNil()
 	}
-	atomic.StoreInt32(&c.state, 2)
+	atomic.StoreUint32(&c.state, 2)
 	c.event.Send()
 }
 
-func (c *chanS) isClosed() bool {
-	return atomic.LoadInt32(&c.state) == 2
+func atomicIsClosed(state *uint32) bool {
+	return atomic.LoadUint32(state) == 2
 }
 
-func (c *chanS) lock() bool {
-	for !atomic.CompareAndSwapInt32(&c.state, 0, 1) {
-		if c.isClosed() {
-			return true
+func (c *chanS) lock() (closed bool) {
+	for !atomic.CompareAndSwapUint32(&c.state, 0, 1) {
+		if closed = atomicIsClosed(&c.state); closed {
+			break
 		}
 		c.event.Wait()
 	}
-	return false
+	fence.RW_SMP() // Lock has ACQUIRE semantic.
+	return closed
 }
 
 func (c *chanS) unlock() {
-	atomic.CompareAndSwapInt32(&c.state, 1, 0)
+	fence.RW_SMP() // Unlock has RELEASE semantic.
+	atomic.CompareAndSwapUint32(&c.state, 1, 0)
 	c.event.Send()
 }
 
@@ -96,8 +99,9 @@ func (c *chanS) unlock() {
 func (c *chanS) TrySend(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintptr) {
 	if w == nil {
 		// Fast path.
-		if loadWaiter(&c.dst) == nil {
-			if c.isClosed() {
+		if atomicLoadWaiter(&c.dst) == nil {
+			fence.R_SMP() // Is this fence necessary?
+			if atomicIsClosed(&c.state) {
 				panicClosed()
 			}
 			return nil, cagain
@@ -126,7 +130,7 @@ func (c *chanS) TrySend(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintpt
 		dst := c.dst
 		c.dst = dst.next
 		// Try lock select.
-		if !atomic.CompareAndSwapInt32((*int32)(dst.addr), 0, 1) {
+		if !atomic.CompareAndSwapUintptr((*uintptr)(dst.addr), 0, 1) {
 			continue
 		}
 		// Inform receiver that sender is ready.
@@ -169,8 +173,9 @@ func (c *chanS) TrySend(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintpt
 func (c *chanS) TryRecv(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintptr) {
 	if w == nil {
 		// Fast path.
-		if loadWaiter(&c.src) == nil {
-			if c.isClosed() {
+		if atomicLoadWaiter(&c.src) == nil {
+			fence.R_SMP() // Is this fence necessary?
+			if atomicIsClosed(&c.state) {
 				return nil, cclosed
 			}
 			return nil, cagain
@@ -199,7 +204,7 @@ func (c *chanS) TryRecv(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintpt
 		src := c.src
 		c.src = src.next
 		// Try lock select.
-		if !atomic.CompareAndSwapInt32((*int32)(src.addr), 0, 1) {
+		if !atomic.CompareAndSwapUintptr((*uintptr)(src.addr), 0, 1) {
 			continue
 		}
 		// Inform sender that receiver is ready.
@@ -233,13 +238,14 @@ func (c *chanS) TryRecv(e unsafe.Pointer, w *waiter) (p unsafe.Pointer, d uintpt
 
 // Done must be called after the data transfer was completed.
 func (c *chanS) Done(d uintptr) {
+	fence.RW_SMP() // Done has RELEASE semantic.
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(d)), nil)
 	c.event.Send()
 }
 
 func (c *chanS) cancel(wptr **waiter, w *waiter) {
 	c.lock()
-	if !delWaiter(wptr, w) && atomic.LoadInt32((*int32)(w.addr)) != 2 {
+	if !delWaiter(wptr, w) && atomic.LoadUintptr((*uintptr)(w.addr)) != 2 {
 		atomic.StorePointer(&w.addr, unsafe.Pointer(w.addr))
 		for atomic.LoadPointer(&w.addr) != nil {
 			c.event.Wait()

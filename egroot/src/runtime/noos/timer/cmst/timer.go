@@ -1,11 +1,13 @@
-// Package cmst implements ticking OS timer using Cortex-M SysTick timer.
-// It is not recomended for low power applications.
+// Package cmst implements ticking OS timer using Cortex-M SysTick timer. It can
+// be used only in uniprocessor system and is not recomended for low power
+// applications.
 package cmst
 
 import (
 	"math"
 	"nbl"
 	"sync/atomic"
+	"sync/fence"
 	"syscall"
 
 	"arch/cortexm"
@@ -65,12 +67,14 @@ func Setup(periodns, hz uint, external bool) {
 
 // SetWakeup: see syscall.SetSysTimer.
 func SetWakeup(ns int64, alarm bool) {
-	if alarm {
-		wkupticks := totick(ns)
-		atomic.StoreUint32(&g.alarm, 0)
-		g.wkupTicks = wkupticks
-		atomic.StoreUint32(&g.alarm, 1)
+	if !alarm {
+		return
 	}
+	atomic.StoreUint32(&g.alarm, 0)
+	fence.Compiler() // cmst aassumes uniprocessor system.
+	g.wkupTicks = totick(ns)
+	fence.Compiler() // cmst aassumes uniprocessor system.
+	atomic.StoreUint32(&g.alarm, 1)
 }
 
 // Nanosec: see syscall.SetSysClock.
@@ -90,9 +94,13 @@ func Nanosec() int64 {
 }
 
 func sysTickHandler() {
-	g.counter.WriterAdd(int64(g.periodTicks))
-	if g.alarm != 0 && g.counter.WriterLoad() >= g.wkupTicks {
-		g.alarm = 0
+	// SysTick exception has higher priority than PendSV so sysTickHandler can
+	// preempt SetWakeup but not vice versa. This handler is for uniprocessor
+	// system so atomics are not need (used only for documentation purposes).
+
+	cnt := g.counter.WriterAdd(int64(g.periodTicks))
+	if atomic.LoadUint32(&g.alarm) != 0 && cnt >= g.wkupTicks {
+		atomic.StoreUint32(&g.alarm, 0)
 		syscall.Alarm.Send()
 	} else {
 		syscall.SchedNext()

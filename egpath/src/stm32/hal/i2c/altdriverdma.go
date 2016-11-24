@@ -3,6 +3,7 @@ package i2c
 import (
 	"rtos"
 	"sync"
+	"sync/fence"
 	"unsafe"
 
 	"stm32/hal/dma"
@@ -45,12 +46,12 @@ func (d *AltDriverDMA) SetIntMode(i2cen, dmaen bool) {
 
 func (d *AltDriverDMA) I2CISR() {
 	d.P.raw.CR2.ClearBits(i2c.ITBUFEN | i2c.ITEVTEN | i2c.ITERREN)
-	d.evflag.Set()
+	d.evflag.Signal(1)
 }
 
 func (d *AltDriverDMA) DMAISR(ch *dma.Channel) {
 	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
-	d.evflag.Set()
+	d.evflag.Signal(1)
 }
 
 // MasterConn returns initialized AltMasterConnDMA struct that can be used to
@@ -86,8 +87,9 @@ func (d *AltDriverDMA) performDMA(ch *dma.Channel, addr *byte, n int) (int, Erro
 	deadline := rtos.Nanosec() + timeout
 	var e Error
 	if d.dmaint {
-		d.evflag.Clear()
+		d.evflag.Reset(0)
 		ch.EnableIRQ(dma.Complete, dmaErrMask)
+		fence.W() // This orders writes to normal and I/O memory.
 		ch.Enable()
 		e = dmaWait(ch, &d.evflag, deadline)
 	} else {

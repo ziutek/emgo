@@ -74,7 +74,7 @@ func selectComm(comms []*internal.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Poin
 	// Blocking select.
 	var (
 		e   syscall.Event
-		sel int32
+		sel int
 		w   waiter
 	)
 	for _, comm := range comms {
@@ -99,7 +99,7 @@ func selectComm(comms []*internal.Comm, dflt unsafe.Pointer) (jmp, p unsafe.Poin
 			e.Wait()
 		}
 	}
-	atomic.CompareAndSwapInt32(&sel, 0, 2)
+	atomic.CompareAndSwapInt(&sel, 0, 2)
 	for i, comm := range comms {
 		if i != n && comm.C != nil && comm.Cancel != nil {
 			comm.Cancel(comm.C, unsafe.Pointer(&w))

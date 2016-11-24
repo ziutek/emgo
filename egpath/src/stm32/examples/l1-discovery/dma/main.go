@@ -43,8 +43,8 @@ func main() {
 	ch.SetAddrM(unsafe.Pointer(&M[0]))
 	ch.EnableIRQ(dma.Complete, dma.ErrAll)
 	ch.Enable()
-	tce.Wait(0)
-	
+	tce.Wait(1, 0)
+
 	delay.Millisec(250) // Wait for OpenOCD (press reset if you see nothing).
 
 	if _, err := ch.Status(); err != 0 {
@@ -58,7 +58,7 @@ func dmaISR() {
 	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 	ev, err := ch.Status()
 	if ev&dma.Complete != 0 || err != 0 {
-		tce.Set()
+		tce.Signal(1)
 	}
 }
 

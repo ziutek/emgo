@@ -1,5 +1,9 @@
 package i2c
 
+import (
+	"sync/fence"
+)
+
 type MasterConn struct {
 	d      *Driver
 	addr   int16
@@ -53,6 +57,8 @@ func (c *MasterConn) Write(buf []byte) (int, error) {
 	d.buf = buf
 	d.addr = c.addr
 	d.stop = false
+	d.done.Reset(0)
+	fence.W() // This orders writes to normal and I/O memory.
 	d.I2CISR()
 	if e := d.waitDone(d.TxDMA); e != 0 {
 		c.locked = false // d.Unlock must be used to unlock the driver.
@@ -93,6 +99,8 @@ func (c *MasterConn) Read(buf []byte) (int, error) {
 	if d.state == stateWriteWait {
 		d.state = stateIdle
 	}
+	d.done.Reset(0)
+	fence.W() // This orders writes to normal and I/O memory.
 	d.I2CISR()
 	if e := d.waitDone(d.RxDMA); e != 0 {
 		c.locked = false // d.Unlock must be used to unlock the driver.

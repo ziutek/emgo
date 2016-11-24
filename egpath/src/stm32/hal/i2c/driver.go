@@ -223,7 +223,7 @@ func (d *Driver) readISR(sr1 i2c.SR1_Bits) {
 	if d.n == len(d.buf) {
 		d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
 		d.state = stateReadWait
-		d.done.Set()
+		d.done.Signal(1)
 	}
 }
 
@@ -237,7 +237,7 @@ func (d *Driver) read1ISR(sr1 i2c.SR1_Bits) {
 	d.buf[n] = byte(d.P.raw.DR.Load())
 	d.n = n + 1
 	d.state = stateIdle
-	d.done.Set()
+	d.done.Signal(1)
 }
 
 func (d *Driver) read2ISR(sr1 i2c.SR1_Bits) {
@@ -256,7 +256,7 @@ func (d *Driver) read2ISR(sr1 i2c.SR1_Bits) {
 	d.buf[1] = byte(p.DR.Load())
 	d.n = 2
 	d.state = stateIdle
-	d.done.Set()
+	d.done.Signal(1)
 }
 
 func (d *Driver) readNISR(sr1 i2c.SR1_Bits) {
@@ -270,7 +270,7 @@ func (d *Driver) readNISR(sr1 i2c.SR1_Bits) {
 	if m < 3 {
 		d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
 		d.state = stateBelatedStop
-		d.done.Set()
+		d.done.Signal(1)
 		return
 	}
 	var dr i2c.DR_Bits
@@ -320,7 +320,7 @@ func (d *Driver) writeISR(sr1 i2c.SR1_Bits) {
 	if n == len(d.buf) {
 		d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
 		d.state = stateWriteWait
-		d.done.Set()
+		d.done.Signal(1)
 		return
 	}
 	d.P.raw.DR.Store(i2c.DR_Bits(d.buf[n]))
@@ -402,7 +402,7 @@ func (d *Driver) handleErrors() {
 	if d.state < stateError {
 		d.state = stateError
 	}
-	d.done.Set()
+	d.done.Signal(1)
 }
 
 func (d *Driver) badEvent(sr1 i2c.SR1_Bits) {
@@ -437,14 +437,12 @@ func (d *Driver) DMAISR(ch *dma.Channel) {
 	} else {
 		d.state = stateReadWait
 	}
-	d.done.Set()
+	d.done.Signal(1)
 }
 
 func (d *Driver) waitDone(ch *dma.Channel) (e Error) {
 	timeout := byteTimeout + 2*9e9*int64(len(d.buf)+1)/int64(d.P.Speed())
-	if d.done.Wait(rtos.Nanosec() + timeout) {
-		d.done.Clear()
-	} else {
+	if !d.done.Wait(1, rtos.Nanosec() + timeout) {
 		e = SoftTimeout
 		d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
 		if ch != nil {

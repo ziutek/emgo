@@ -139,7 +139,7 @@ func main() {
 	delay.Millisec(5)
 
 	nrf.FLUSH_RX()
-	dci.Clear()
+	dci.IRQF().Reset(0)
 	nrf.ClearIRQ(nrf24.RX_DR)
 	dci.SetCE(1)
 
@@ -147,11 +147,11 @@ func main() {
 	for {
 		if fs&nrf24.RX_EMPTY != 0 {
 			led.Clear()
-			dci.Wait(0)
+			dci.IRQF().Wait(1, 0)
 		}
 		led.Set()
 		nrf.R_RX_PAYLOAD(buf)
-		dci.Clear()
+		dci.IRQF().Reset(0)
 		nrf.ClearIRQ(nrf24.RX_DR)
 
 		x, y := int(int8(buf[0])), int(int8(buf[1]))
@@ -170,7 +170,7 @@ func main() {
 func exti9_5ISR() {
 	p := exti.Pending() & (exti.L9 | exti.L8 | exti.L7 | exti.L6 | exti.L5)
 	p.ClearPending()
-	if p&dci.IRQ() != 0 {
+	if p&dci.IRQL() != 0 {
 		dci.ISR()
 	}
 }

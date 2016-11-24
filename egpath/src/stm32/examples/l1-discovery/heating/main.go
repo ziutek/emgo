@@ -36,6 +36,8 @@ func irqen(irq nvic.IRQ, prio16 rtos.IRQPrio) {
 	e.Enable()
 }
 
+// Promienniki TIM4: (PB6,7,8,9)
+
 func init() {
 	system.Setup32(0)
 	systick.Setup()

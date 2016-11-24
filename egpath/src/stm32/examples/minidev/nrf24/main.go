@@ -33,10 +33,9 @@ func init() {
 	rtc.Setup(32768)
 	start := rtos.Nanosec()
 
-	gpio.A.EnableClock(true)
-	spiport, csn, sck, miso, mosi := gpio.A, gpio.Pin4, gpio.Pin5, gpio.Pin6, gpio.Pin7
-
 	gpio.B.EnableClock(true)
+	spiport, csn, sck, miso, mosi := gpio.B,
+		gpio.Pin12, gpio.Pin13, gpio.Pin14, gpio.Pin15
 	ctrport, ce, irqn := gpio.B, gpio.Pin0, gpio.Pin1
 
 	gpio.C.EnableClock(false)
@@ -58,11 +57,11 @@ func init() {
 	spiport.Setup(csn, &gpio.Config{Mode: gpio.Out, Speed: gpio.High})
 	d := dma.DMA1
 	d.EnableClock(true)
-	spid := spi.NewDriver(spi.SPI1, d.Channel(2, 0), d.Channel(3, 0))
+	spid := spi.NewDriver(spi.SPI2, d.Channel(4, 0), d.Channel(5, 0))
 	spid.P.EnableClock(true)
-	rtos.IRQ(irq.SPI1).Enable()
-	rtos.IRQ(irq.DMA1_Channel2).Enable()
-	rtos.IRQ(irq.DMA1_Channel3).Enable()
+	rtos.IRQ(irq.SPI2).Enable()
+	rtos.IRQ(irq.DMA1_Channel4).Enable()
+	rtos.IRQ(irq.DMA1_Channel5).Enable()
 
 	// nRF24 control lines.
 
@@ -150,7 +149,7 @@ func main() {
 	nrf.Set_EN_AA(0)
 	nrf.Set_EN_RXADDR(nrf24.P0)
 	nrf.Set_SETUP_AW(3)
-	config := nrf24.PWR_UP | nrf24.EN_CRC | nrf24.CRCO | nrf24.PRIM_RX
+	config := nrf24.PWR_UP | nrf24.EN_CRC | nrf24.CRCO | nrf24.PRIM_RX&0
 	if config&nrf24.PRIM_RX != 0 {
 		nrf.Set_RX_PW(0, len(buf))
 	} else {
@@ -175,8 +174,8 @@ func main() {
 			for i := 0; i < n; i++ {
 				// BUG: Must use FIFO_STATUS.
 				nrf.ClearIRQ(nrf24.RX_DR)
-				dci.Clear()
-				dci.Wait(0)
+				dci.IRQF().Reset(0)
+				dci.IRQF().Wait(1, 0)
 				nrf.R_RX_PAYLOAD(buf[:])
 			}
 			dci.SetCE(0)
@@ -184,15 +183,15 @@ func main() {
 			nrf.W_TX_PAYLOAD(buf[:])
 			for i := 1; i < n; i++ {
 				nrf.ClearIRQ(nrf24.TX_DS)
-				dci.Clear()
+				dci.IRQF().Reset(0)
 				dci.SetCE(2)
 				nrf.W_TX_PAYLOAD(buf[:])
-				dci.Wait(0)
+				dci.IRQF().Wait(1, 0)
 			}
 			nrf.ClearIRQ(nrf24.TX_DS)
-			dci.Clear()
+			dci.IRQF().Reset(0)
 			dci.SetCE(2)
-			dci.Wait(0)
+			dci.IRQF().Wait(1, 0)
 		}
 		dt := float32(rtos.Nanosec() - start)
 		checkErr(nrf.Err())
@@ -228,7 +227,7 @@ var ISRs = [...]func(){
 	irq.RTCAlarm: rtc.ISR,
 
 	irq.EXTI1:         exti1ISR,
-	irq.SPI1:          nrfSPIISR,
-	irq.DMA1_Channel2: nrfRxDMAISR,
-	irq.DMA1_Channel3: nrfTxDMAISR,
+	irq.SPI2:          nrfSPIISR,
+	irq.DMA1_Channel4: nrfRxDMAISR,
+	irq.DMA1_Channel5: nrfTxDMAISR,
 }

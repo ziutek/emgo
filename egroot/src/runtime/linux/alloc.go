@@ -3,6 +3,7 @@ package linux
 import (
 	"mem"
 	"sync/atomic"
+	"sync/fence"
 	"syscall"
 	"unsafe"
 )

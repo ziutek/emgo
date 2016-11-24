@@ -150,7 +150,7 @@ func (p *Periph) SetBaudRate(baudrate int) {
 	usartdiv := (pclk + br/2) / br
 	if uint(br) > pclk/16 {
 		// Oversampling = 8
-		p.raw.OVER8().Set()
+		p.raw.OVER8().Set() // BUG: Not supported by F1xx.
 		usartdiv = usartdiv&^7<<1 | usartdiv&7
 	} else {
 		// Oversampling = 16

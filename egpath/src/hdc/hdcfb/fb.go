@@ -10,26 +10,26 @@ import (
 
 type buffer struct {
 	data []byte
-	used int32
+	used int
 	mod  rtos.EventFlag
 }
 
 // FB represents double buffered text framebuffer. It contains two internal
 // buffers. At any time one bufer is in active state and one in sync state.
 type FB struct {
-	d    *hdc.Display
-	e    syscall.Event
-	buf0 *buffer
-	buf1 *buffer
+	d      *hdc.Display
+	bufrel syscall.Event
+	buf0   *buffer
+	buf1   *buffer
 }
 
-// NewFB creates new framebuffer. If dblbuf is false only SyncSlices can be used
-// to draw to
-func NewFB(d *hdc.Display, dblbuf bool) *FB {
+// NewFB creates new framebuffer. If double is false only SyncSlices can be used
+// to draw to it.
+func NewFB(d *hdc.Display, double bool) *FB {
 	fb := new(FB)
 	fb.d = d
-	if dblbuf {
-		fb.e = syscall.AssignEvent()
+	if double {
+		fb.bufrel = syscall.AssignEvent()
 		fb.buf0 = new(buffer)
 		fb.buf0.data = make([]byte, d.Cols*d.Rows)
 	}
@@ -42,14 +42,14 @@ func (fb *FB) Display() *hdc.Display {
 	return fb.d
 }
 
-const minInt32 = -2147483648
+const minInt = ^int(^uint(0) >> 1)
 
 func panicSingleBuffer() {
 	panic("hdcfb: single buffer only")
 }
 
-// Swap swaps internal buffers. It reports whather active buffer was modified
-// and need to be drawed.
+// Swap check whather the active internal buffer was modified. If yes then it
+// swaps internal buffers and returns true. Otherwise it returns false.
 func (fb *FB) Swap() bool {
 	if fb.buf0 == nil {
 		panicSingleBuffer()
@@ -57,14 +57,12 @@ func (fb *FB) Swap() bool {
 	if fb.buf1.used < 0 {
 		panic("hcdfb: Draw not called")
 	}
-	fb.buf0, fb.buf1 = fb.buf1, fb.buf0
-	buf1 := fb.buf1
-	atomic.AddInt32(&buf1.used, minInt32)
-	mod := buf1.mod.Val() != 0
-	if !mod {
-		buf1.used = 0
+	if fb.buf0.mod.Value() == 0 {
+		return false
 	}
-	return mod
+	fb.buf0, fb.buf1 = fb.buf1, fb.buf0
+	atomic.AddInt(&fb.buf1.used, minInt) // Prevent use of buf1 by new writes.
+	return true
 }
 
 // WaitAndSwap waits until any write to the active buffer or deadline occurs.
@@ -73,7 +71,7 @@ func (fb *FB) WaitAndSwap(deadline int64) bool {
 	if fb.buf0 == nil {
 		panicSingleBuffer()
 	}
-	fb.buf0.mod.Wait(deadline)
+	fb.buf0.mod.Wait(1, deadline)
 	return fb.Swap()
 }
 
@@ -96,12 +94,12 @@ func (fb *FB) draw(data []byte) (err error) {
 // It blocks until all writes to swapped buffer were finished.
 func (fb *FB) Draw() error {
 	buf1 := fb.buf1
-	if fb.buf0 != nil && buf1.mod.Val() != 0 {
-		for atomic.LoadInt32(&buf1.used) != minInt32 {
-			fb.e.Wait()
+	if fb.buf0 != nil && buf1.mod.Value() != 0 {
+		for atomic.LoadInt(&buf1.used) != minInt {
+			fb.bufrel.Wait()
 		}
 		buf1.used = 0
-		buf1.mod.Clear()
+		buf1.mod.Reset(0)
 	}
 	data := buf1.data
 	if fb.d.Rows != 4 {
