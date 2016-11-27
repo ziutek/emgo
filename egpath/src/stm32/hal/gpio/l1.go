@@ -64,6 +64,6 @@ var (
 	G = (*Port)(unsafe.Pointer(mmap.GPIOG_BASE))
 )
 
-func enreg() *mmio.U32   { return &rcc.RCC.AHBENR.U32 }
-func lpenreg() *mmio.U32 { return &rcc.RCC.AHBLPENR.U32 }
-func rstreg() *mmio.U32  { return &rcc.RCC.AHBRSTR.U32 }
+func enreg() *rcc.AHBENR     { return &rcc.RCC.AHBENR }
+func lpenreg() *rcc.AHBLPENR { return &rcc.RCC.AHBLPENR }
+func rstreg() *rcc.AHBRSTR   { return &rcc.RCC.AHBRSTR }

@@ -1,9 +1,8 @@
-// +build f40_41xxx f411xe l1xx_md l1xx_mdp l1xx_hd l1xx_xl
+// +build f40_41xxx f411xe f746xx l1xx_md l1xx_mdp l1xx_hd l1xx_xl
 
 package gpio
 
 import (
-	"bits"
 	"mmio"
 
 	"stm32/hal/raw/rcc"
@@ -39,20 +38,25 @@ const (
 )
 
 func enableClock(p *Port, lp bool) {
-	enbit := bit(p, enreg(), rcc.GPIOAENn)
-	enbit.Set()
-	bit(p, lpenreg(), rcc.GPIOALPENn).Store(bits.One(lp))
-	enbit.Load() // RCC delay (workaround for silicon bugs).
+	pnum := uint(portnum(p))
+	enreg().SetBits(rcc.GPIOAEN << pnum)
+	if lp {
+		lpenreg().SetBits(rcc.GPIOALPEN << pnum)
+	} else {
+		lpenreg().ClearBits(rcc.GPIOALPEN << pnum)
+	}
+	enreg().Load() // RCC delay (workaround for silicon bugs).
 }
 
 func disableClock(p *Port) {
-	bit(p, enreg(), rcc.GPIOAENn).Clear()
+	pnum := uint(portnum(p))
+	enreg().ClearBits(rcc.GPIOAEN << pnum)
 }
 
 func reset(p *Port) {
-	bit := bit(p, rstreg(), rcc.GPIOARSTn)
-	bit.Set()
-	bit.Clear()
+	pnum := uint(portnum(p))
+	rstreg().SetBits(rcc.GPIOARST << pnum)
+	rstreg().ClearBits(rcc.GPIOARST << pnum)
 }
 
 func setup(p *Port, n int, cfg *Config) {

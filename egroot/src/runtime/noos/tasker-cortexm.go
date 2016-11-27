@@ -163,7 +163,7 @@ func (ts *taskSched) init() {
 		// regionStackGuard is used to setup stack guard area at the bottom of
 		// the stack of active task. Below there is configuration that more or
 		// less corresponds to default behavior without MPU enabled. Stack guard
-		//  region for active task is configured by setStackGuard function.
+		// region for active task is configured by setStackGuard function.
 		mpu.SetRegion(mpu.BaseAttr{
 			0x00000000 + mpu.VALID + regionFlash,
 			mpu.ENA | mpu.SIZE(29) | mpu.C | mpu.Ar_r_,

@@ -1,8 +1,8 @@
-// +build f40_41xxx f411xe f2xxx-TODO
+// +build f2xxx-TODO f40_41xxx f411xe f746xx
 
 // Clock setup
 //
-// Goal is to provide 48 MHz for USB. So PLLCK must satisfy the equation:
+// Goal is to provide 48 MHz for USB FS. So PLLCK must satisfy the equation:
 //
 //  PLLCK = 48 MHz * Q
 //
@@ -23,7 +23,7 @@
 //
 //  N = 50..216
 //
-// There is much smaller choice of N values that satisfy USB requirements:
+// There is much smaller choice of N values that satisfy USB FS requirements:
 //
 //  N = 72, 96, 120, 144, 168, 192, 216.
 //
@@ -51,7 +51,7 @@ import (
 // of 2, from 4 to 26. Use 0 to select internal HSI oscilator as system clock
 // source.
 //
-// mul is PLL multipler. Allowed values are from 50 to 216 but if USB will be
+// mul is PLL multipler. Allowed values are from 50 to 216 but if USB FS will be
 // used, mul can be only:
 //
 //  mul(USB) = 72, 96, 120, 144, 168, 192, 216
@@ -146,7 +146,9 @@ func Setup(osc, mul, sdiv int) {
 	// Setup Flash.
 	FLASH := flash.FLASH
 	latency := flash.ACR_Bits((sysclk-1)/30e6) * flash.LATENCY_1WS
-	FLASH.ACR.SetBits(flash.DCEN | flash.ICEN | flash.PRFTEN | latency)
+	const dcen = 1 << 10 // F7 has no DCEN.
+	const icen = 1 << 9  // ICEN in F4, ARTEN in F7.
+	FLASH.ACR.SetBits(dcen | icen | flash.PRFTEN | latency)
 
 	// Setup PLL.
 	var (
@@ -192,4 +194,10 @@ func Setup96(osc int) {
 // See Performance for description of osc.
 func Setup168(osc int) {
 	Setup(osc, 168, 2)
+}
+
+// Setup192 setups MCU to work with 216 MHz clock.
+// See Performance for description of osc.
+func Setup192(osc int) {
+	Setup(osc, 192, 2)
 }

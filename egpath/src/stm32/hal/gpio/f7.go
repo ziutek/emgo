@@ -1,9 +1,8 @@
-// +build f40_41xxx f411xe
+// +build f746xx
 
 package gpio
 
 import (
-	"mmio"
 	"unsafe"
 
 	"stm32/hal/raw/mmap"
@@ -18,53 +17,67 @@ const (
 	TIM4 = AF2
 	TIM5 = AF2
 
-	TIM8  = AF3
-	TIM9  = AF3
-	TIM10 = AF3
-	TIM11 = AF3
+	TIM8    = AF3
+	TIM9    = AF3
+	TIM10   = AF3
+	TIM11   = AF3
+	LPTIM1  = AF3
+	CEC_AF3 = AF3
 
-	I2C1 = AF4
-	I2C2 = AF4
-	I2C3 = AF4
+	I2C1    = AF4
+	I2C2    = AF4
+	I2C3    = AF4
+	I2C4    = AF4
+	CEC_AF4 = AF4
 
-	SPI1 = AF5
-	SPI2 = AF5
-	SPI4 = AF5
-	SPI5 = AF5
-	SPI6 = AF5
+	SPI1     = AF5
+	SPI2_AF5 = AF5
+	SPI4     = AF5
+	SPI5     = AF5
+	SPI6     = AF5
 
-	SPI3 = AF6
-	SAI1 = AF6
+	SPI3_AF6 = AF6
+	SAI1     = AF6
 
-	USART1 = AF7
-	USART2 = AF7
-	USART3 = AF7
+	SPI2_AF7    = AF7
+	SPI3_AF7    = AF7
+	USART1      = AF7
+	USART2      = AF7
+	USART3      = AF7
+	UART5_AF7   = AF7
+	SPDIFRX_AF7 = AF7
 
-	UART4  = AF8
-	UART5  = AF8
-	USART6 = AF8
-	UART7  = AF8
-	UART8  = AF8
+	SAI2_AF8    = AF8
+	USART6      = AF8
+	UART4       = AF8
+	UART55_AF8  = AF8
+	UART7       = AF8
+	UART8       = AF8
+	SPDIFRX_AF8 = AF8
 
-	CAN1  = AF9
-	CAN2  = AF9
-	TIM12 = AF9
-	TIM13 = AF9
-	TIM14 = AF9
+	CAN1        = AF9
+	CAN2        = AF9
+	TIM12       = AF9
+	TIM13       = AF9
+	TIM14       = AF9
+	QUADSPI_AF9 = AF9
+	LCD_AF9     = AF9
 
-	OTGFS = AF10
-	OTGHS = AF10
+	SAI2_AF10    = AF10
+	QUADSPI_AF10 = AF10
+	OTG2HS       = AF10
+	OTG1FS_AF10  = AF10
 
 	ETH = AF11
+	OTG1FS_AF11
 
-	FSMC    = AF12
-	FMC     = AF12
-	SDIO    = AF12
-	OTGHSFS = AF12
+	FMC    = AF12
+	SDMMS1 = AF12
+	OTG2FS = AF12
 
 	DCMI = AF13
 
-	LTDC = AF14
+	LCD_AF14 = AF14
 )
 
 const (

@@ -3,7 +3,7 @@
 package noos
 
 const (
-	hasMPU = true
+	hasMPU         = true
 	softStackGuard = false
-	hasFPU = true
+	hasFPU         = true
 )
