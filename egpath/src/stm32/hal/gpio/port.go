@@ -19,7 +19,7 @@ func (p *Port) Bus() system.Bus {
 
 // Num returns port number: A.Num() == 0, B.Num() = 1, ...
 func (p *Port) Num() int {
-	return portnum(p)
+	return int(portnum(p))
 }
 
 // EnableClock enables clock for port p.

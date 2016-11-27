@@ -3,7 +3,6 @@
 package gpio
 
 import (
-	"mmio"
 	"unsafe"
 
 	"stm32/hal/raw/mmap"

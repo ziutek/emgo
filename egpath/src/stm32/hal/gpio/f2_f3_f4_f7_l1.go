@@ -38,7 +38,7 @@ const (
 )
 
 func enableClock(p *Port, lp bool) {
-	pnum := uint(portnum(p))
+	pnum := portnum(p)
 	enreg().SetBits(rcc.GPIOAEN << pnum)
 	if lp {
 		lpenreg().SetBits(rcc.GPIOALPEN << pnum)
@@ -49,12 +49,11 @@ func enableClock(p *Port, lp bool) {
 }
 
 func disableClock(p *Port) {
-	pnum := uint(portnum(p))
-	enreg().ClearBits(rcc.GPIOAEN << pnum)
+	enreg().ClearBits(rcc.GPIOAEN << portnum(p))
 }
 
 func reset(p *Port) {
-	pnum := uint(portnum(p))
+	pnum := portnum(p)
 	rstreg().SetBits(rcc.GPIOARST << pnum)
 	rstreg().ClearBits(rcc.GPIOARST << pnum)
 }
