@@ -20,22 +20,25 @@ func initCPU() {
 	SCB.SHCSR.SetBits(scb.MEMFAULTENA | scb.BUSFAULTENA | scb.USGFAULTENA)
 	// Division by zero will cause the UsageFault.
 	SCB.DIV_0_TRP().Set()
-	if hasFPU {
-		// Enable FPU.
+	if useFPU {
 		FPU.CP10().Store(fpu.CPACFULL << fpu.CP10n)
 		FPU.FPCCR.Store(fpu.ASPEN | fpu.LSPEN)
 	}
-	// Move exception vectors to ITCM RAM if available.
-	if vtor := SCB.VTOR.Load(); vtor != 0 {
-		cr := ACC.ITCMCR.Load()
-		if cr&acc.ITCMSZ != 0 {
-			if cr&acc.ITCMEN == 0 {
-				ACC.ITCMCR.Store(cr | acc.ITCMEN)
+	if useITCM {
+		// Move exception vectors to ITCM RAM if available.
+		if vtor := SCB.VTOR.Load(); vtor != 0 {
+			cr := ACC.ITCMCR.Load()
+			if cr&acc.ITCMSZ != 0 {
+				if cr&acc.ITCMEN == 0 {
+					ACC.ITCMCR.Store(cr | acc.ITCMEN)
+					cortexm.DSB()
+				}
+				dst := unsafe.Pointer(uintptr(0))
+				src := unsafe.Pointer(uintptr(vtor))
+				internal.Memmove(dst, src, vectorsSize())
+				SCB.VTOR.Store(0)
 				cortexm.DSB()
 			}
-			internal.Memmove(nil, unsafe.Pointer(uintptr(vtor)), vectorsSize())
-			SCB.VTOR.Store(0)
-			cortexm.DSB()
 		}
 	}
 }

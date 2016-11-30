@@ -59,7 +59,7 @@ again:
 	if wkup > tasker.alarm {
 		wkup = tasker.alarm
 	}
-	if hasMPU {
+	if useMPU {
 		setMPUStackGuard(n)
 	}
 	tasker.setWakeup(wkup, false)

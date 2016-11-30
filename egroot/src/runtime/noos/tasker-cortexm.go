@@ -158,7 +158,7 @@ func (ts *taskSched) init() {
 		irq.SetPrio(cortexm.PrioHighest)
 	}
 
-	if hasMPU {
+	if useMPU {
 		// Setup MPU. MPU is used mainly to detect stack overflows:
 		// regionStackGuard is used to setup stack guard area at the bottom of
 		// the stack of active task. Below there is configuration that more or
@@ -181,7 +181,7 @@ func (ts *taskSched) init() {
 
 	// Set taskInfo for initial (current) task.
 	ts.initTask(0, 0)
-	if hasMPU {
+	if useMPU {
 		setMPUStackGuard(0)
 	}
 
