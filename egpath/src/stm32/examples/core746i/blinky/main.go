@@ -1,3 +1,13 @@
+// This example blinks two LEDs that need to be connected to PH3, PH5 pins. It
+// does not use LEDs on the mother board (i have no one). If you want to use
+// LEDs on the mother board change line:
+//
+//	leds, led1, led2 = gpio.H, gpio.Pin3, gpio.Pin5
+//
+// to
+//
+//  leds, led1, led2 = gpio.B, gpio.Pin6, gpio.Pin7
+//
 package main
 
 import (

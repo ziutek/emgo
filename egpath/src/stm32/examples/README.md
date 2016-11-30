@@ -1,5 +1,9 @@
 This directory contains examples for the following STM32 development boards:
 
+core746i: [WaveShare Core746I](http://www.waveshare.com/wiki/Core746I)
+
+![WaveShare Core746I](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/core746i/board.jpg)
+
 f4-discovery: [STM32F4-Discovery](http://www.st.com/web/catalog/tools/FM116/SC959/SS1532/PF252419)
 
 ![STM32F4-Discovery](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/f4-discovery/board.jpg)

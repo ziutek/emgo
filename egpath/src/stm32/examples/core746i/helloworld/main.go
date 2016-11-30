@@ -6,11 +6,11 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 )
 
 func main() {
 	for {
-		//fmt.Println("Hello from DTCM RAM!")
+		fmt.Println("Hello world!")
 	}
 }

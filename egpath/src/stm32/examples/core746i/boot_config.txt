@@ -1,0 +1,78 @@
+Core746I BOOT CONFIG switch is connected to STM32F746I BOOT pin. It determines which BOOT_ADDx register is used to obtain the boot addres:
+
+- switch set to FLASH  (BOOT pin low):  BOOT_ADD0 (0x1FFF 0010),
+- switch set to SYSTEM (BOOT pin high): BOOT_ADD1 (0x1FFF 0018).
+
+Boot addres is equal to (BOOT_ADDx & 0xFFFF) << 14. Example values:
+
+- 0x0000: ITCM RAM      (0x0000 0000), required by stm32/loaditcmram,
+- 0x0040: Bootloader    (0x0010 0000),
+- 0x0080: Flash on ITCM (0x0020 0000), required by stm32/loaditcmflash,
+- 0x2000: Flash on AXIM (0x0800 0000), required by stm32/loadflash,
+- 0x8000: DTCM RAM      (0x2000 0000), required by stm32/loadram,
+- 0x8004: SRAM          (0x2001 0000).
+
+Boot addresses can be changed by modify FLASH_OPTCR1 control register. Use oppenocd command:
+
+	stm32f2x options_write 0 ...
+	
+or gdb (see below).
+
+
+BE CAREFUL!
+Manipulating FLASH_OPTCR in the wrong way can PERMANENTLY BRICK your device.
+
+
+Using GDB to change FLASH_OPTCR and/or FLASH_OPTCR1:
+
+Print FLASH_OPTCR. OPTLOCK bit is 1.
+
+(gdb) x 0x40023C00+0x14
+0x40023c14:     0xc0fffffd
+
+Unlock FLASH_OPTCR
+
+(gdb) set *(uint32*)(0x40023C00+0x8) = 0x08192A3B
+(gdb) set *(uint32*)(0x40023C00+0x8) = 0x4C5D6E7F
+
+Print FLASH_OPTCR. OPTLOCK bit is 0.
+
+(gdb) x 0x40023C00+0x14
+0x40023c14:     0xc0fffffc
+
+If you want to change BOOT_ADD1 (0x0000), BOOT_ADD0 (0x0080) do it now:
+
+(gdb) set *(uint32*)(0x40023C00+0x18) = 0x00000080
+
+Ensure that FLASH_SR.BSY bit is 0. 
+
+(gdb) x 0x40023C00+0x0c
+0x40023c0c:     0x00000000
+
+Write new FLASH_OPTCR value with OPTLOCK bit cleared (0xC0FFAAFC is default from RM).
+
+BE CAREFUL!
+If you write wrong value you can PERMANENTLY BRICK your device.
+
+(gdb) set *(uint32*)(0x40023C00+0x14) = 0xC0FFAAFC
+
+Write default reset value 0xC0FFAAFC with OPTSTRT bit set.
+
+BE CAREFUL!
+If you write wrong value you can PERMANENTLY BRICK your device.
+
+(gdb) set *(uint32*)(0x40023C00+0x14) = 0xC0FFAAFE
+
+Wait until FLASH_SR.BSY will be 0.
+
+(gdb) x 0x40023C00+0x0c
+0x40023c0c:     0x00010000
+(gdb) x 0x40023C00+0x0c
+0x40023c0c:     0x00000000
+
+Print new FLASH_OPTCR.
+
+(gdb) x 0x40023C00+0x14
+0x40023c14:     0xc0ffaafc
+
+Done.
