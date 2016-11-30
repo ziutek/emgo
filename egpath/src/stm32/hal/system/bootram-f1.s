@@ -10,9 +10,9 @@
 
 .thumb_func
 bootRAM:
-	ldr  r0, =VectorsStart  // Load address of vector table.
+	ldr  r0, =VectorsBegin  // Load address of vector table.
 	ldr  r1, =0xE000ED08    // Load address of NVIC VTOR register.
-	str  r0, [r1]           // Set VTOR to VectorsStart.
+	str  r0, [r1]           // Set VTOR to VectorsBegin.
 	dsb
 	ldr  sp, [r0]           // Load SP from exception vector 0 (initial SP)
 	ldr  pc, [r0, 4]        // Jump to exception vector 1 (reset code).
