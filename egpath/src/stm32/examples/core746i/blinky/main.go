@@ -8,11 +8,9 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var leds *gpio.Port
-
-const (
-	led1 = gpio.Pin3
-	led2 = gpio.Pin5
+var (
+	leds       *gpio.Port
+	led1, led2 gpio.Pins
 )
 
 func init() {
@@ -20,7 +18,7 @@ func init() {
 	systick.Setup()
 
 	gpio.H.EnableClock(false)
-	leds = gpio.H
+	leds, led1, led2 = gpio.H, gpio.Pin3, gpio.Pin5
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	leds.Setup(led1|led2, &cfg)

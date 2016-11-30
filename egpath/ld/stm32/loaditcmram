@@ -1,0 +1,2 @@
+REGION_ALIAS("loadTo",  ITCMRAM);
+REGION_ALIAS("runFrom", ITCMRAM);

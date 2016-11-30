@@ -4,7 +4,7 @@ TaskStack = 0;
 MaxTasks = 1;
 
 INCLUDE stm32/f7x6xg
-INCLUDE stm32/loaditcram
+INCLUDE stm32/loaditcmflash
 INCLUDE noos-cortexm
 
 /*

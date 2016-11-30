@@ -4,9 +4,9 @@
 set -e
 
 
-reset=''
-if [ $# -eq 1 -a "$1" = 'reset' ]; then
-	reset='monitor connect_srst enable'
+reset='monitor connect_srst enable'
+if [ $# -eq 1 -a "$1" = 'noreset' ]; then
+	reset=''
 fi
 
 
@@ -23,4 +23,7 @@ arm-none-eabi-gdb --tui \
 	-ex 'set mem inaccessible-by-default off' \
 	-ex 'set remote hardware-breakpoint-limit 8' \
 	-ex 'set remote hardware-watchpoint-limit 4' \
+	-ex 'set history save on' \
+	-ex 'set history filename ~/.gdb-history-emgo' \
+	-ex 'set history size 1000' \
 	$arch.elf

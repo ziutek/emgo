@@ -1,1 +1,2 @@
-REGION_ALIAS("loadTo", Flash);
+REGION_ALIAS("loadTo",  Flash);
+REGION_ALIAS("runFrom", Flash);

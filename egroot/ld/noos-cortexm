@@ -3,7 +3,7 @@ SECTIONS {
 		__exidx_start = .;
 		
 		/* Vector table. */
-		VectorsStart = .;
+		VectorsBegin = .;
 		
 		LONG(StacksEnd)
 		KEEP(*(.Reset))
@@ -22,19 +22,21 @@ SECTIONS {
 		KEEP(*(.PendSV))		
 		KEEP(*(.SysTick))
 				
-		ASSERT(. - VectorsStart <= 16*4, "Too many system exception vectors");
-		. = VectorsStart + 16*4;
+		ASSERT(. - VectorsBegin <= 16*4, "Too many system exception vectors");
+		. = VectorsBegin + 16*4;
 		
 		KEEP(*(.ISRs))
 		
-		ASSERT(. - VectorsStart <= 256*4, "To many external interrupt vectors");			
+		VectorsEnd = .;
+		
+		ASSERT(VectorsEnd - VectorsBegin <= 256*4, "To many external interrupt vectors");			
 		/* Special boot code. */
 		. = DEFINED(bootOffset) ? bootOffset : .;
 		*(.text.bootcode)
 
 		/* Code. */ 
 		*(.text .text.*)       
-	} >loadTo
+	} >runFrom AT>loadTo
 	
 	.rodata : {
 		. = ALIGN(4);
@@ -45,7 +47,7 @@ SECTIONS {
 		
 		. = ALIGN(4);
 		__exidx_end = .;
-	} >loadTo
+	} >runFrom AT>loadTo
 	
 	.stacks : {} >RAM
 	

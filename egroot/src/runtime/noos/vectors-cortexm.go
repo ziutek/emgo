@@ -24,3 +24,5 @@ var (
 	ev14 = pendSVHandler  //c:__attribute__((section(".PendSV")))
 	//15: SysTick vector should be provided by user code.
 )
+
+func vectorsSize() uintptr
