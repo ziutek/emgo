@@ -20,13 +20,8 @@ import (
 	"stm32/hal/raw/tim"
 )
 
-var (
-	// Onboard LEDs.
-	ledBlue  bitband.Bit
-	ledGreen bitband.Bit
-
-	RoomHeater [3]bitband.Bit // Room heating solid state relays.
-)
+// Onboard LED (green is diconected to use PB7 for room heater).
+var ledBlue bitband.Bit
 
 // prio16 must be in the range [0;15]. Do not use prio16 <= 8 (SVCall prio) for
 // realtime ISRs.
@@ -35,8 +30,6 @@ func irqen(irq nvic.IRQ, prio16 rtos.IRQPrio) {
 	e.SetPrio(rtos.IRQPrioLowest + prio16*rtos.IRQPrioStep*(rtos.IRQPrioNum/16))
 	e.Enable()
 }
-
-// Promienniki TIM4: (PB6,7,8,9)
 
 func init() {
 	system.Setup32(0)
@@ -50,12 +43,12 @@ func init() {
 	ebtnport, ebtnpin := gpio.A, 4
 
 	gpio.B.EnableClock(true)
-	ledport, bluepin, greenpin := gpio.B, 6, 7
+	ledport, bluepin := gpio.B, 6
+	rhport, rhpins := gpio.B, gpio.Pin7|gpio.Pin8|gpio.Pin9
 	lcdport, lcdpins := gpio.B, gpio.Pin10|gpio.Pin11
 	wsport, wspin := gpio.B, gpio.Pin13
 
 	gpio.C.EnableClock(true)
-	rhport, rhpins := gpio.C, []int{0, 1, 2}
 	whport, whpins := gpio.C, gpio.Pin6|gpio.Pin7|gpio.Pin8
 	owport, owpin := gpio.C, gpio.Pin10
 
@@ -73,21 +66,17 @@ func init() {
 
 	slowOutCfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 
-	// LEDs.
+	// LED.
 	ledport.SetupPin(bluepin, &slowOutCfg)
-	ledport.SetupPin(greenpin, &slowOutCfg)
 	bb := ledport.OutPins()
 	ledBlue = bb.Bit(bluepin)
-	ledGreen = bb.Bit(greenpin)
 
-	// Room heating.
-	bb = rhport.OutPins()
-	for i, pin := range rhpins {
-		rhport.SetupPin(pin, &slowOutCfg)
-		RoomHeater[i] = bb.Bit(pin)
-	}
+	// Room heating PWM.
+	rhport.Setup(rhpins, &gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
+	rhport.SetAltFunc(rhpins, gpio.TIM4)
+	rcc.RCC.TIM4EN().Set()
 
-	// Water PWM.
+	// Water heating PWM.
 	whport.Setup(whpins, &gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
 	whport.SetAltFunc(whpins, gpio.TIM3)
 	rcc.RCC.TIM3EN().Set()
@@ -135,6 +124,9 @@ func init() {
 
 	initRTC()
 
+	// startRoomHeating must be after owd.Start.
+	startRoomHeating(tim.TIM4, system.APB1.Clock())
+	
 	// startLCD must be last to allow work without LCD.
 	startLCD(i2cdrv.NewMasterConn(0x27, i2c.ASRD))
 }

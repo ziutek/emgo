@@ -71,7 +71,7 @@ func (w *waterHeaterControl) Init(timPWM, timCnt *tim.TIM_Periph, pclk uint) {
 	w.pwm.Init(timPWM)
 	w.cnt.Init(timCnt)
 	w.tempResp = make(chan int, 1)
-	w.SetDesiredTemp(40) // °C
+	w.SetDesiredTemp(41) // °C
 	w.scale = w.pwm.Max() / 1200
 }
 
@@ -102,9 +102,9 @@ func waterPWMISR() {
 			}
 			delta16 += desiredTemp16 - temp16
 		default:
-			ledGreen.Set()
+			ledBlue.Set()
 			delay.Loop(5e4)
-			ledGreen.Clear()
+			ledBlue.Clear()
 		}
 	}
 	if delta16 < 0 {
@@ -115,9 +115,9 @@ func waterPWMISR() {
 	pwm16 := delta16 * cnt * water.scale
 	if pwm16 < 0 {
 		pwm16 = 0
-		ledGreen.Set()
+		ledBlue.Set()
 		delay.Loop(5e4)
-		ledGreen.Clear()
+		ledBlue.Clear()
 	}
 	pwm := pwm16 / 16
 	water.pwm.Set(pwm)

@@ -7,9 +7,14 @@ import (
 )
 
 // setupPulsePWM setups the timer t to perform pulse PWM on all 4 channels.
+// Pulse PWM uses timer in one pulse mode to generate one period of PWM.
+// Software is responsible to set desired duty cycle and start pulse. Then
+// timer is responsible to generate one period of PWM. Pulse PWM is intended for
+// applications were there is important to leave PWM in known (disabled) state
+// in case of software crasch or lookup (eg. water heating).
 //
 // pclk is peripheral clock (use system.APBx.Clock() to obtain correct value,
-// check out doc to find out to which bus the timer t is connected), periodms
+// check out doc to find out to which bus the timer t is connected to), periodms
 // is PWM period in millisecond, maxCCR is CCR value that should correspond to
 // 100% duty cycle (PWM full on). The PWM resolution is equal to maxCCR+1.
 // Because pclk is usually multiple of 10^6 Hz and it is multipled by period and
@@ -28,19 +33,13 @@ import (
 func setupPulsePWM(t *tim.TIM_Periph, pclk uint, periodms, maxCCR int) {
 	t.PSC.U16.Store(uint16(int(pclk/1000)*periodms/(maxCCR+1) - 1))
 	t.ARR.U32.Store(uint32(maxCCR))
-	t.CCMR1.StoreBits(
-		tim.OC1M|tim.OC2M|tim.OC1PE|tim.OC2PE,
-		6<<tim.OC1Mn|6<<tim.OC2Mn|1<<tim.OC1PEn|1<<tim.OC2PEn,
-	)
-	t.CCMR2.StoreBits(
-		tim.OC3M|tim.OC4M|tim.OC3PE|tim.OC4PE,
-		6<<tim.OC3Mn|6<<tim.OC4Mn|1<<tim.OC3PEn|1<<tim.OC4PEn,
-	)
+	t.CCMR1.Store(6<<tim.OC1Mn | 6<<tim.OC2Mn | tim.OC1PE | tim.OC2PE)
+	t.CCMR2.Store(6<<tim.OC3Mn | 6<<tim.OC4Mn | tim.OC3PE | tim.OC4PE)
+	t.CCR1.Store(0)
+	t.CCR2.Store(0)
+	t.CCR3.Store(0)
 	t.CCER.SetBits(tim.CC1E | tim.CC2E | tim.CC3E)
-	t.CR1.StoreBits(
-		tim.OPM|tim.CMS|tim.URS,
-		1<<tim.OPMn|1<<tim.CMSn|1<<tim.URSn,
-	)
+	t.CR1.Store(tim.OPM | tim.CMS | tim.URS)
 	t.DIER.Store(tim.UIE)
 }
 
