@@ -14,19 +14,19 @@ import (
 
 func initCPU() {
 	SCB := scb.SCB
-	FPU := fpu.FPU
-	ACC := acc.ACC
 	// Enable fault handlers.
 	SCB.SHCSR.SetBits(scb.MEMFAULTENA | scb.BUSFAULTENA | scb.USGFAULTENA)
 	// Division by zero will cause the UsageFault.
 	SCB.DIV_0_TRP().Set()
 	if useFPU {
+		FPU := fpu.FPU
 		FPU.CP10().Store(fpu.CPACFULL << fpu.CP10n)
 		FPU.FPCCR.Store(fpu.ASPEN | fpu.LSPEN)
 	}
 	if useITCM {
 		// Move exception vectors to ITCM RAM if available.
 		if vtor := SCB.VTOR.Load(); vtor != 0 {
+			ACC := acc.ACC
 			cr := ACC.ITCMCR.Load()
 			if cr&acc.ITCMSZ != 0 {
 				if cr&acc.ITCMEN == 0 {

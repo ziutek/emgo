@@ -16,6 +16,6 @@ arm-none-eabi-gdb \
 	-ex 'monitor swdp_scan' \
 	-ex 'attach 1' \
 	-ex 'load' \
-	-ex 'run' \
+	-ex 'kill' \
 	-ex 'quit' \
 	$arch.elf
