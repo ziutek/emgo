@@ -4,8 +4,7 @@ import (
 	"sync/atomic"
 
 	"delay"
-	"onewire"
-
+	
 	"stm32/hal/raw/tim"
 )
 
@@ -49,8 +48,11 @@ type waterHeaterControl struct {
 	scale         int
 	desiredTemp16 int // °C/16
 	lastPWM       int
+	tempSensor    Sensor
+}
 
-	TempSensor onewire.Dev
+func (w *waterHeaterControl) TempSensor() *Sensor {
+	return &w.tempSensor
 }
 
 func (w *waterHeaterControl) DesiredTemp() int {
@@ -90,7 +92,7 @@ func waterPWMISR() {
 	desiredTemp16 := atomic.LoadInt(&water.desiredTemp16)
 	delta16 := desiredTemp16 - coldWaterTemp16
 
-	if dev := water.TempSensor; dev.Type() != 0 {
+	if dev := water.tempSensor.Load(); dev.Type() != 0 {
 		select {
 		case owd.Cmd <- TempCmd{Dev: dev, Resp: water.tempResp}:
 		default:

@@ -107,6 +107,10 @@ func readRTC() DateTime {
 	}
 }
 
+func (t DateTime) IsValid() bool {
+	return t.dr&0xff0000 != 0 // Year 0 means: RTC is not set.
+}
+
 func (t DateTime) Year() int {
 	return int(t.dr>>20&0xf*10 + t.dr>>16&0xf)
 }

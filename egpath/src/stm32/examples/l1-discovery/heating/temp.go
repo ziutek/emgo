@@ -72,6 +72,9 @@ func (d *OneWireDaemon) loop() {
 			log1wireErr(s.Err())
 		case ConfigureCmd:
 			{
+				if c.Dev.Type() == 0 {
+					goto abortConfigureCmd
+				}
 				if log1wireErr(d.m.MatchROM(c.Dev)) {
 					goto abortConfigureCmd
 				}
@@ -91,6 +94,9 @@ func (d *OneWireDaemon) loop() {
 			c.Resp <- onewire.Dev{}
 		case TempCmd:
 			{
+				if c.Dev.Type() == 0 {
+					goto abortTempCmd
+				}
 				if log1wireErr(d.m.MatchROM(c.Dev)) {
 					goto abortTempCmd
 				}

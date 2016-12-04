@@ -25,39 +25,51 @@ func startRoomHeating(t *tim.TIM_Periph, pclk uint) {
 	go roomHeatingLoop(t)
 }
 
-var desiredEnvTemp int = 22 * 16
+var (
+	desiredEnvTemp int = 21 * 16 // °C/16
+	envTempSensor      = new(Sensor)
+)
 
 func roomHeatingLoop(t *tim.TIM_Periph) {
 	og := &t.CCR2.U32
 	la := &t.CCR3.U32
 	st := &t.CCR4.U32
-	//tempResp := make(chan int, 1)
+	tempResp := make(chan int, 1)
 	for {
 		p := 0
 		dt := readRTC()
 		hm := dt.Hour()*60 + dt.Minute()
-		if (dt != DateTime{}) && water.LastPower() < 4 && 
-			(hm < 5*60+45 || hm > 21*60+50 || hm > 12*60+50 && hm < 14*60+45) {
-			/*
-				owd.Cmd <- TempCmd{Dev: envTempSensor, Resp: tempResp}
-				t := <-menu.tempResp
-				if t == InvalidTemp {
-					delay.Millisec(5e3)
-					continue
+		dev := envTempSensor.Load()
+		// Heat only if tempSensor set and cheap energy time: 22-6 and 13-15.
+		const offset = -12 // My electric meter is 12 minutes late.
+		const margin = 5
+		if dt.IsValid() && dev.Type() != 0 &&
+			(hm < 6*60-margin+offset || hm > 22*60+margin+offset ||
+				hm > 13*60+margin+offset && hm < 15*60-margin+offset) {
+
+			owd.Cmd <- TempCmd{Dev: dev, Resp: tempResp}
+			t := <-tempResp
+			if t != InvalidTemp {
+				p = (desiredEnvTemp - t) * rhMax / (2 * 16) // 1°C : maxP/2
+				// Disable room heater if water heater exceeds 8 kW.
+				maxP := (8 - water.LastPower()) * rhMax
+				switch {
+				case maxP < 0:
+					maxP = 0
+				case maxP > rhMax:
+					maxP = rhMax
 				}
-			*/
-			t := 20 * 16
-			p = (desiredEnvTemp - t) * 3333 / 16 // 1°C corresponds to maxP/3
-			switch {
-			case p < 0:
-				p = 0
-			case p > rhMax:
-				p = rhMax
+				switch {
+				case p < 0:
+					p = 0
+				case p > maxP:
+					p = maxP
+				}
 			}
 		}
-		og.Store(uint32(p) / 3)
-		la.Store(rhMax - uint32(p))
-		st.Store(uint32(p) / 2)
+		og.Store(uint32(p) / 3)     // Small room, PWM mode 6.
+		la.Store(rhMax - uint32(p)) // PWM mode 7 (use tail of PWM period first).
+		st.Store(uint32(p) * 2 / 3) // Medium room, PWM mode 6.
 		delay.Millisec(5e3)
 	}
 }

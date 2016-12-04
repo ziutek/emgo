@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"rtos"
 	"strconv"
+	"sync/fence"
 
 	"hdc/hdcfb"
 	"onewire"
@@ -36,10 +37,21 @@ type Menu struct {
 	displOffTimeout int
 }
 
-var (
-	menu          Menu
-	envTempSensor onewire.Dev
-)
+type Sensor struct {
+	dev onewire.Dev
+}
+
+func (s *Sensor) Load() onewire.Dev {
+	fence.Compiler()
+	return s.dev
+}
+
+func (s *Sensor) Store(dev onewire.Dev) {
+	fence.Compiler()
+	s.dev = dev
+}
+
+var menu Menu
 
 func (m *Menu) Setup(t *tim.TIM_Periph, pclk uint) {
 	m.timeout = make(chan struct{}, 1)
@@ -154,12 +166,13 @@ func menuISR() {
 	}
 }
 
-func printTemp(fbs *hdcfb.SyncSlice, d onewire.Dev) {
-	if d.Type() == 0 {
+func printTemp(fbs *hdcfb.SyncSlice, sensor *Sensor) {
+	dev := sensor.Load()
+	if dev.Type() == 0 {
 		fbs.WriteString(" ---- ")
 		return
 	}
-	owd.Cmd <- TempCmd{Dev: d, Resp: menu.tempResp}
+	owd.Cmd <- TempCmd{Dev: dev, Resp: menu.tempResp}
 	t := <-menu.tempResp
 	if t == InvalidTemp {
 		fbs.WriteString(" blad ")
@@ -177,37 +190,38 @@ func showStatus(fbs *hdcfb.SyncSlice) {
 		dt.Hour(), dt.Minute(), dt.Second(),
 	)
 	fmt.Fprintf(fbs, " Woda: (%2dkW) ", water.LastPower())
-	printTemp(fbs, water.TempSensor)
+	printTemp(fbs, water.TempSensor())
 	fbs.WriteString(" Otoczenie:   ")
 	printTemp(fbs, envTempSensor)
 	fbs.Fill(fbs.Remain(), ' ')
 	lcdDraw()
 }
 
-func showTempSensor(fbs *hdcfb.SyncSlice, name string, d *onewire.Dev) {
+func showTempSensor(fbs *hdcfb.SyncSlice, name string, sensor *Sensor) {
 	tempsensor := "Czujnik temp. "
 	fbs.SetPos(0)
 	fbs.WriteString(tempsensor)
 	fbs.WriteString(name)
 	fbs.Fill(41-len(tempsensor)-len(name), ' ')
-	if d.Type() == 0 {
+	dev := sensor.Load()
+	if dev.Type() == 0 {
 		fbs.WriteString("   nie  wybrano")
 	} else {
-		fmt.Fprint(fbs, *d)
+		fmt.Fprint(fbs, dev)
 	}
 	fbs.Fill(fbs.Remain(), ' ')
 	lcdDraw()
 }
 
 func showWaterTempSensor(fbs *hdcfb.SyncSlice) {
-	showTempSensor(fbs, "wody", &water.TempSensor)
+	showTempSensor(fbs, "wody", water.TempSensor())
 }
 
 func showEnvTempSensor(fbs *hdcfb.SyncSlice) {
-	showTempSensor(fbs, "otocz.", &envTempSensor)
+	showTempSensor(fbs, "otocz.", envTempSensor)
 }
 
-func setTempSensor(fbs *hdcfb.SyncSlice, d *onewire.Dev) {
+func setTempSensor(fbs *hdcfb.SyncSlice, sensor *Sensor) {
 	owd.Cmd <- SearchCmd{Typ: onewire.DS18B20, Resp: menu.devResp}
 	var (
 		devs [4]onewire.Dev
@@ -235,11 +249,12 @@ func setTempSensor(fbs *hdcfb.SyncSlice, d *onewire.Dev) {
 	}
 	encoder.SetCnt(0)
 	sel := -1
+	d := sensor.Load()
 	for {
 		fbs.SetPos(0)
 		for i := 0; i < n; i++ {
 			dev := devs[i]
-			if sel == -1 && dev == *d {
+			if sel == -1 && dev == d {
 				sel = i
 				encoder.SetCnt(i)
 			}
@@ -258,21 +273,21 @@ func setTempSensor(fbs *hdcfb.SyncSlice, d *onewire.Dev) {
 				break
 			}
 			dev := devs[sel]
-			if *d == dev {
+			if d == dev {
 				break
 			}
 
 			// BUG: Not atomic operation. Works, because reading from 1-wire
 			// sensor is generally unrealiable so code that uses it muse be
 			// fault-tolerant.
-			*d = dev
+			sensor.Store(dev)
 
 			owd.Cmd <- ConfigureCmd{
 				Dev: dev, Cfg: onewire.T10bit, Resp: menu.devResp,
 			}
 			dev = <-menu.devResp
 			if dev.Type() == 0 {
-				*d = onewire.Dev{}
+				sensor.Store(onewire.Dev{})
 				sel = -1
 			}
 			break
@@ -282,11 +297,11 @@ func setTempSensor(fbs *hdcfb.SyncSlice, d *onewire.Dev) {
 }
 
 func setWaterTempSensor(fbs *hdcfb.SyncSlice) {
-	setTempSensor(fbs, &water.TempSensor)
+	setTempSensor(fbs, water.TempSensor())
 }
 
 func setEnvTempSensor(fbs *hdcfb.SyncSlice) {
-	setTempSensor(fbs, &envTempSensor)
+	setTempSensor(fbs, envTempSensor)
 }
 
 func showDesiredWaterTemp(fbs *hdcfb.SyncSlice) {
