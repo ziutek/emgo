@@ -124,9 +124,9 @@ func init() {
 
 	initRTC()
 
-	// startRoomHeating must be after owd.Start.
-	startRoomHeating(tim.TIM4, system.APB1.Clock())
-	
+	// room.Start must be after owd.Start.
+	room.Start(tim.TIM4, system.APB1.Clock())
+
 	// startLCD must be last to allow work without LCD.
 	startLCD(i2cdrv.NewMasterConn(0x27, i2c.ASRD))
 }

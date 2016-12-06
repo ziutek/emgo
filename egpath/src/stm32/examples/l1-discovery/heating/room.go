@@ -2,6 +2,7 @@ package main
 
 import (
 	"delay"
+	"sync/atomic"
 
 	"stm32/hal/raw/tim"
 )
@@ -20,17 +21,24 @@ func setupPWM(t *tim.TIM_Periph, pclk uint, periodms, arr int) {
 	t.CR1.Store(tim.URS | tim.CEN)
 }
 
-func startRoomHeating(t *tim.TIM_Periph, pclk uint) {
-	setupPWM(t, pclk, 500, rhMax-1)
-	go roomHeatingLoop(t)
+type roomHeaterControl struct {
+	desiredTemp16 int // °C/16
+	tempSensor    Sensor
 }
 
-var (
-	desiredEnvTemp int = 21 * 16 // °C/16
-	envTempSensor      = new(Sensor)
-)
+func (r *roomHeaterControl) TempSensor() *Sensor {
+	return &r.tempSensor
+}
 
-func roomHeatingLoop(t *tim.TIM_Periph) {
+func (r *roomHeaterControl) DesiredTemp() int {
+	return atomic.LoadInt(&r.desiredTemp16) / 16
+}
+
+func (r *roomHeaterControl) SetDesiredTemp(temp int) {
+	atomic.StoreInt(&r.desiredTemp16, temp*16)
+}
+
+func (r *roomHeaterControl) loop(t *tim.TIM_Periph) {
 	og := &t.CCR2.U32
 	la := &t.CCR3.U32
 	st := &t.CCR4.U32
@@ -39,7 +47,7 @@ func roomHeatingLoop(t *tim.TIM_Periph) {
 		p := 0
 		dt := readRTC()
 		hm := dt.Hour()*60 + dt.Minute()
-		dev := envTempSensor.Load()
+		dev := r.tempSensor.Load()
 		// Heat only if tempSensor set and cheap energy time: 22-6 and 13-15.
 		const offset = -12 // My electric meter is 12 minutes late.
 		const margin = 5
@@ -50,9 +58,10 @@ func roomHeatingLoop(t *tim.TIM_Periph) {
 			owd.Cmd <- TempCmd{Dev: dev, Resp: tempResp}
 			t := <-tempResp
 			if t != InvalidTemp {
-				p = (desiredEnvTemp - t) * rhMax / (2 * 16) // 1°C : maxP/2
-				// Disable room heater if water heater exceeds 8 kW.
-				maxP := (8 - water.LastPower()) * rhMax
+				desiredTemp16 := atomic.LoadInt(&r.desiredTemp16)
+				p = (desiredTemp16 - t) * rhMax / (2 * 16) // 1°C : maxP/2
+				// Disable room heater if water heater exceeds 9 kW.
+				maxP := (9 - water.LastPower()) * rhMax
 				switch {
 				case maxP < 0:
 					maxP = 0
@@ -73,3 +82,11 @@ func roomHeatingLoop(t *tim.TIM_Periph) {
 		delay.Millisec(5e3)
 	}
 }
+
+func (r *roomHeaterControl) Start(t *tim.TIM_Periph, pclk uint) {
+	setupPWM(t, pclk, 500, rhMax-1)
+	r.SetDesiredTemp(20)
+	go r.loop(t)
+}
+
+var room roomHeaterControl

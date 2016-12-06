@@ -22,8 +22,9 @@ type MenuItem struct {
 var menuItems = [...]MenuItem{
 	{Status: showStatus, Period: 1000},
 	{Status: showWaterTempSensor, Action: setWaterTempSensor},
-	{Status: showEnvTempSensor, Action: setEnvTempSensor},
+	{Status: showRoomTempSensor, Action: setEnvTempSensor},
 	{Status: showDesiredWaterTemp, Action: setDesiredWaterTemp},
+	{Status: showDesiredRoomTemp, Action: setDesiredRoomTemp},
 	{Status: showDateTime, Period: 1000, Action: setDateTime},
 	{Status: showDisplOffTimeout, Action: setDisplOffTimeout},
 }
@@ -192,7 +193,7 @@ func showStatus(fbs *hdcfb.SyncSlice) {
 	fmt.Fprintf(fbs, " Woda: (%2dkW) ", water.LastPower())
 	printTemp(fbs, water.TempSensor())
 	fbs.WriteString(" Otoczenie:   ")
-	printTemp(fbs, envTempSensor)
+	printTemp(fbs, room.TempSensor())
 	fbs.Fill(fbs.Remain(), ' ')
 	lcdDraw()
 }
@@ -217,8 +218,8 @@ func showWaterTempSensor(fbs *hdcfb.SyncSlice) {
 	showTempSensor(fbs, "wody", water.TempSensor())
 }
 
-func showEnvTempSensor(fbs *hdcfb.SyncSlice) {
-	showTempSensor(fbs, "otocz.", envTempSensor)
+func showRoomTempSensor(fbs *hdcfb.SyncSlice) {
+	showTempSensor(fbs, "otocz.", room.TempSensor())
 }
 
 func setTempSensor(fbs *hdcfb.SyncSlice, sensor *Sensor) {
@@ -301,24 +302,29 @@ func setWaterTempSensor(fbs *hdcfb.SyncSlice) {
 }
 
 func setEnvTempSensor(fbs *hdcfb.SyncSlice) {
-	setTempSensor(fbs, envTempSensor)
+	setTempSensor(fbs, room.TempSensor())
 }
 
-func showDesiredWaterTemp(fbs *hdcfb.SyncSlice) {
+func showDesiredTemp(fbs *hdcfb.SyncSlice, s string, desiredTemp int) {
 	fbs.SetPos(0)
-	fbs.WriteString("Zadana temp. wody")
-	fbs.Fill(30, ' ')
-	fmt.Fprintf(fbs, "%2d\xdfC", water.DesiredTemp())
+	fbs.WriteString("Zadana temp. ")
+	fbs.WriteString(s)
+	fbs.Fill(35-len(s), ' ')
+	fmt.Fprintf(fbs, "%2d\xdfC", desiredTemp)
 	fbs.Fill(fbs.Remain(), ' ')
 	lcdDraw()
 }
 
-func setDesiredWaterTemp(fbs *hdcfb.SyncSlice) {
-	const (
-		min = 30 // °C
-		max = 60 // °C
-	)
-	encoder.SetCnt(water.DesiredTemp())
+func showDesiredWaterTemp(fbs *hdcfb.SyncSlice) {
+	showDesiredTemp(fbs, "wody", water.DesiredTemp())
+}
+
+func showDesiredRoomTemp(fbs *hdcfb.SyncSlice) {
+	showDesiredTemp(fbs, "otocz.", room.DesiredTemp())
+}
+
+func setDesiredTemp(fbs *hdcfb.SyncSlice, set func(int), show func(*hdcfb.SyncSlice), cur, min, max int) {
+	encoder.SetCnt(cur)
 	for es := range encoder.State {
 		if btnPreRel(es) {
 			break
@@ -331,9 +337,23 @@ func setDesiredWaterTemp(fbs *hdcfb.SyncSlice) {
 			temp = max
 			encoder.SetCnt(max)
 		}
-		water.SetDesiredTemp(temp)
-		showDesiredWaterTemp(fbs)
+		set(temp)
+		show(fbs)
 	}
+}
+
+func setDesiredWaterTemp(fbs *hdcfb.SyncSlice) {
+	setDesiredTemp(
+		fbs, water.SetDesiredTemp, showDesiredWaterTemp,
+		water.DesiredTemp(), 30, 60,
+	)
+}
+
+func setDesiredRoomTemp(fbs *hdcfb.SyncSlice) {
+	setDesiredTemp(
+		fbs, room.SetDesiredTemp, showDesiredRoomTemp,
+		room.DesiredTemp(), 10, 26,
+	)
 }
 
 func printDateTime(fbs *hdcfb.SyncSlice, dt DateTime) {
