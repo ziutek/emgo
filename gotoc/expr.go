@@ -592,11 +592,16 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type, permitaa b
 		w.WriteByte(')')
 
 	case *ast.SelectorExpr:
-		if o := cdd.object(e.Sel); o != nil {
-			if _, ok := o.(*types.Func); ok {
-				w.WriteByte('&')
+		/*
+				Added by commit bc72e116df48bb89f97284a6d7203850287465fa but don't
+				remember why!?
+
+				if o := cdd.object(e.Sel); o != nil {
+				if _, ok := o.(*types.Func); ok {
+					w.WriteByte('&')
+				}
 			}
-		}
+		*/
 		s, fun, recvt, recvs := cdd.SelectorExprStr(e, permitaa)
 		if recvt == nil {
 			w.WriteString(s)
