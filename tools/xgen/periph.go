@@ -100,7 +100,7 @@ import (
 )
 {{$p := .Periph}}
 type {{$p}} struct {
-	{{range .Regs}}{{if .Name}} {{.Name}} {{if .Len}}[{{.Len}}]{{end}}{{.Name}} {{else}} _ {{if .Len}}[{{.Len}}]{{end}}uint{{.Size}} {{end}}
+	{{range .Regs}}{{if .Name}} {{.Name}} {{if .Len}}[{{.Len}}]{{end}}{{.Name}} {{else}} _ {{if .Len}}[{{.Len}}]{{end}}uint{{.BitSiz}} {{end}}
 {{end}}}
 
 func (p *{{$p}}) BaseAddr() uintptr {
@@ -111,19 +111,32 @@ func (p *{{$p}}) BaseAddr() uintptr {
 var {{.Name}} = (*{{$p}})(unsafe.Pointer(uintptr({{.Addr}})))
 {{end}}
 
-{{range .Regs}}{{if .Name}}
+{{range .Regs}}
 
+{{$subr := .SubRegs}}
+{{$rr := .Name}}
+
+{{if $subr}}
+type {{$rr}} struct {
+{{range $subr}}{{.Name}} {{.Name}}
+{{end}}
+}
+{{end}}
+
+{{range .BitRegs}}{{if .Name}}
+
+{{$r    := .Name}}
 {{$len  := .Len}}
-{{$uint := print "uint" .Size}}
-{{$u    := print "U" .Size}}
+{{$uint := print "uint" .BitSiz}}
+{{$u    := print "U" .BitSiz}}
 {{$mu   := print "mmio." $u}}
 {{$ru   := print "r." $u}}
-{{$um   := print "UM" .Size }}
+{{$um   := print "UM" .BitSiz }}
 {{$mum  := print "mmio." $um}}
 {{$rmum := print "rm." $um}}
 {{$po   := print "unsafe.Pointer(uintptr(unsafe.Pointer(p))+" .Offset ")"}}
-{{$bits := print .Name "_Bits" }}
-{{$rm   := print .Name "_Mask" }}
+{{$bits := print $r "_Bits" }}
+{{$rm   := print $r "_Mask" }}
 
 type {{$bits}} {{$uint}}
 
@@ -134,22 +147,55 @@ func (mask {{$bits}}) J(v int) {{$bits}} {
 	return {{$bits}}(bits.Make32(v, uint32(mask)))
 }
 
-type {{.Name}} struct { {{$mu}} }
+type {{$r}} struct { {{$mu}} }
 
-func (r *{{.Name}}) Bits(mask {{$bits}}) {{$bits}} {return {{$bits}}({{$ru}}.Bits({{$uint}}(mask))) }
-func (r *{{.Name}}) StoreBits(mask, b {{$bits}})   { {{$ru}}.StoreBits({{$uint}}(mask), {{$uint}}(b)) }
-func (r *{{.Name}}) SetBits(mask {{$bits}})        { {{$ru}}.SetBits({{$uint}}(mask)) }
-func (r *{{.Name}}) ClearBits(mask {{$bits}})      { {{$ru}}.ClearBits({{$uint}}(mask)) }
-func (r *{{.Name}}) Load() {{$bits}}               { return {{$bits}}({{$ru}}.Load()) }
-func (r *{{.Name}}) Store(b {{$bits}})             { {{$ru}}.Store({{$uint}}(b)) }
+func (r *{{$r}}) Bits(mask {{$bits}}) {{$bits}} {return {{$bits}}({{$ru}}.Bits({{$uint}}(mask))) }
+func (r *{{$r}}) StoreBits(mask, b {{$bits}})   { {{$ru}}.StoreBits({{$uint}}(mask), {{$uint}}(b)) }
+func (r *{{$r}}) SetBits(mask {{$bits}})        { {{$ru}}.SetBits({{$uint}}(mask)) }
+func (r *{{$r}}) ClearBits(mask {{$bits}})      { {{$ru}}.ClearBits({{$uint}}(mask)) }
+func (r *{{$r}}) Load() {{$bits}}               { return {{$bits}}({{$ru}}.Load()) }
+func (r *{{$r}}) Store(b {{$bits}})             { {{$ru}}.Store({{$uint}}(b)) }
 
 type {{$rm}} struct { {{$mum}} }
 
 func (rm {{$rm}}) Load() {{$bits}}   { return {{$bits}}({{$rmum}}.Load()) }
 func (rm {{$rm}}) Store(b {{$bits}}) { {{$rmum}}.Store({{$uint}}(b)) }
 
-{{range .Bits}}
-{{if $len}}
+{{if $subr}}
+
+{{range .Bits}}{{if $len}}
+func (p *{{$p}}) {{.}}(n int) {{$rm}} {
+	return {{print $rm "{" $mum "{&p." $rr "[n]." $r "." $u "," $uint "(" . ")}}"}}
+}
+{{else}}
+func (p *{{$p}}) {{.}}() {{$rm}} {
+	return {{print $rm "{" $mum "{&p." $rr "." $r "." $u "," $uint "(" . ")}}"}}
+}
+{{end}}{{end}}
+
+{{else}}
+
+{{range .Bits}}{{if $len}}
+func (p *{{$p}}) {{.}}(n int) {{$rm}} {
+	return {{print $rm "{" $mum "{&p." $r "[n]." $u "," $uint "(" . ")}}"}}
+}
+{{else}}
+func (p *{{$p}}) {{.}}() {{$rm}} {
+	return {{print $rm "{" $mum "{&p." $r "." $u "," $uint "(" . ")}}"}}
+}
+{{end}}{{end}}
+
+{{end}}
+
+{{end}}{{end}}
+
+{{end}}
+`
+
+var multiTmpl = template.Must(template.New("multi").Parse(multiText))
+
+/*
+{{range .Bits}}{{if $len}}
 func (p *{{$p}}) {{.}}(n int) {{$rm}} {
 	return {{print $rm "{" $mum "{&(*[" $len "]" $mu ")(" $po ")[n]," $uint "(" . ")}}"}}
 }
@@ -157,10 +203,5 @@ func (p *{{$p}}) {{.}}(n int) {{$rm}} {
 func (p *{{$p}}) {{.}}() {{$rm}} {
 	return {{print $rm "{" $mum "{(*" $mu ")(" $po ")," $uint "(" . ")}}"}}
 }
-{{end}}
-{{end}}
-
 {{end}}{{end}}
-`
-
-var multiTmpl = template.Must(template.New("multi").Parse(multiText))
+*/

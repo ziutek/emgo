@@ -18,13 +18,29 @@ func addtoreg(pkgs []*Package, bits *Bits) bool {
 				pack = pkg
 				periph = p
 				m = len(p.Name)
+				name = strings.TrimPrefix(name, periph.Name+"_")
 			}
 		}
 	}
 	if periph == nil {
-		return false
+		for _, pkg := range pkgs {
+			for _, p := range pkg.Periphs {
+				i := strings.LastIndexByte(p.Name, '_')
+				if i == -1 {
+					continue
+				}
+				if strings.HasPrefix(name, p.Name[:i+1]) && i > m {
+					pack = pkg
+					periph = p
+					m = i
+					name = name[i+1:]
+				}
+			}
+		}
+		if periph == nil {
+			return false
+		}
 	}
-	name = strings.TrimPrefix(name, periph.Name+"_")
 	var reg *Register
 	m = 0
 	for _, r := range periph.Regs {

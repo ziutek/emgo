@@ -45,19 +45,19 @@ func (rm CSR_Mask) Load() CSR_Bits   { return CSR_Bits(rm.UM32.Load()) }
 func (rm CSR_Mask) Store(b CSR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SYSTICK_Periph) ENABLE() CSR_Mask {
-	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(ENABLE)}}
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ENABLE)}}
 }
 
 func (p *SYSTICK_Periph) TICKINT() CSR_Mask {
-	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(TICKINT)}}
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(TICKINT)}}
 }
 
 func (p *SYSTICK_Periph) CLKSOURCE() CSR_Mask {
-	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(CLKSOURCE)}}
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(CLKSOURCE)}}
 }
 
 func (p *SYSTICK_Periph) COUNTFLAG() CSR_Mask {
-	return CSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(COUNTFLAG)}}
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COUNTFLAG)}}
 }
 
 type RVR_Bits uint32
@@ -84,7 +84,7 @@ func (rm RVR_Mask) Load() RVR_Bits   { return RVR_Bits(rm.UM32.Load()) }
 func (rm RVR_Mask) Store(b RVR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SYSTICK_Periph) RELOAD() RVR_Mask {
-	return RVR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(RELOAD)}}
+	return RVR_Mask{mmio.UM32{&p.RVR.U32, uint32(RELOAD)}}
 }
 
 type CVR_Bits uint32
@@ -111,7 +111,7 @@ func (rm CVR_Mask) Load() CVR_Bits   { return CVR_Bits(rm.UM32.Load()) }
 func (rm CVR_Mask) Store(b CVR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SYSTICK_Periph) CURRENT() CVR_Mask {
-	return CVR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(CURRENT)}}
+	return CVR_Mask{mmio.UM32{&p.CVR.U32, uint32(CURRENT)}}
 }
 
 type CALIB_Bits uint32
@@ -138,13 +138,13 @@ func (rm CALIB_Mask) Load() CALIB_Bits   { return CALIB_Bits(rm.UM32.Load()) }
 func (rm CALIB_Mask) Store(b CALIB_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SYSTICK_Periph) TENMS() CALIB_Mask {
-	return CALIB_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(TENMS)}}
+	return CALIB_Mask{mmio.UM32{&p.CALIB.U32, uint32(TENMS)}}
 }
 
 func (p *SYSTICK_Periph) SKEW() CALIB_Mask {
-	return CALIB_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(SKEW)}}
+	return CALIB_Mask{mmio.UM32{&p.CALIB.U32, uint32(SKEW)}}
 }
 
 func (p *SYSTICK_Periph) NOREF() CALIB_Mask {
-	return CALIB_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(NOREF)}}
+	return CALIB_Mask{mmio.UM32{&p.CALIB.U32, uint32(NOREF)}}
 }

@@ -43,7 +43,7 @@ func main() {
 	saveIRQs(irqs)
 	saveMmap(mmap)
 	for _, pkg := range pkgs {
-		tweaks(pkg)
+		lastTweaks(pkg)
 		pkg.Save(pkgpath)
 	}
 

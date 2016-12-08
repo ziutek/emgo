@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
-func tweaks(pkg *Package) {
+func lastTweaks(pkg *Package) {
 	for _, p := range pkg.Periphs {
 		for _, r := range p.Regs {
 			fixbits(r)
@@ -23,6 +22,12 @@ func tweaks(pkg *Package) {
 			i2c(p)
 		case "TIM":
 			tim(p)
+		case "FSMC_Bank1", "FMC_Bank1":
+			fsmcBank1_(p)
+		case "FSMC_Bank1E", "FMC_Bank1E":
+			fsmcBank1e(p)
+		case "FMC_Bank5_6":
+			fsmcBank5_6(p)
 		}
 	}
 }
@@ -178,7 +183,6 @@ func i2c(p *Periph) {
 
 func tim(p *Periph) {
 	for _, r := range p.Regs {
-		fmt.Println(r.Name)
 		switch r.Name {
 		case "CCMR1":
 			for _, b := range r.Bits {
@@ -187,7 +191,6 @@ func tim(p *Periph) {
 				}
 				switch b.Name {
 				case "IC1PSC", "IC1F", "IC2PSC", "IC2F":
-					fmt.Println("\t", b.Name)
 					b.Val = false
 				}
 			}
@@ -198,9 +201,45 @@ func tim(p *Periph) {
 				}
 				switch b.Name {
 				case "IC3PSC", "IC3F", "IC4PSC", "IC4F":
-					fmt.Println("\t", b.Name)
 					b.Val = false
 				}
+			}
+		}
+	}
+}
+
+func fsmcBank1_(p *Periph) {
+	var btcr *Register
+	for i, r := range p.Regs {
+		switch r.Name {
+		case "BTCR":
+			r.Len /= 2
+			btcr = r
+		case "BCR1":
+			r.Name = "BCR"
+			btcr.SubRegs = append(btcr.SubRegs, r)
+			p.Regs[i] = nil
+		case "BTR1":
+			r.Name = "BTR"
+			btcr.SubRegs = append(btcr.SubRegs, r)
+			p.Regs[i] = nil
+		}
+	}
+}
+
+func fsmcBank1e(p *Periph) {
+	for _, r := range p.Regs {
+		for _, bit := range r.Bits {
+			bit.Name = "E" + bit.Name // Temporary workaround.
+		}
+	}
+}
+
+func fsmcBank5_6(p *Periph) {
+	for _, r := range p.Regs {
+		for _, bit := range r.Bits {
+			if strings.HasPrefix(bit.Name, "MWID") {
+				bit.Name = "SD" + bit.Name
 			}
 		}
 	}

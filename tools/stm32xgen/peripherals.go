@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -17,12 +18,13 @@ type Bits struct {
 }
 
 type Register struct {
-	Offset int
-	Size   string
-	Name   string
-	Len    int
-	Descr  string
-	Bits   []*Bits
+	Offset  int
+	BitSiz  int
+	Name    string
+	Len     int
+	Descr   string
+	Bits    []*Bits
+	SubRegs []*Register
 }
 
 type Instance struct {
@@ -56,11 +58,22 @@ func (p *Periph) Save(base, pkgname string) {
 	tw.Flush()
 	fmt.Fprintln(w, "// Registers:")
 	for _, r := range p.Regs {
-		fmt.Fprintf(tw, "//  0x%02X\t%s\t ", r.Offset, r.Size)
+		if r == nil {
+			continue
+		}
+		fmt.Fprintf(tw, "//  0x%02X\t%2d\t ", r.Offset, r.BitSiz)
+		name := r.Name
+		if len(r.SubRegs) > 0 {
+			subregs := r.SubRegs[0].Name
+			for _, sr := range r.SubRegs[1:] {
+				subregs += "," + sr.Name
+			}
+			name += "{" + subregs + "}"
+		}
 		if r.Len == 0 {
-			fmt.Fprintf(tw, "%s\t", r.Name)
+			fmt.Fprintf(tw, "%s\t", name)
 		} else {
-			fmt.Fprintf(tw, "%s[%d]\t", r.Name, r.Len)
+			fmt.Fprintf(tw, "%s[%d]\t", name, r.Len)
 		}
 		if r.Descr != "" {
 			fmt.Fprintf(tw, "%s.\n", r.Descr)
@@ -74,7 +87,18 @@ func (p *Periph) Save(base, pkgname string) {
 
 	fmt.Fprintln(w, "package", pkgname)
 	w.donotedit()
-	for _, r := range p.Regs {
+	saveBits(w, p.Regs)
+}
+
+func saveBits(w io.Writer, regs []*Register) {
+	for _, r := range regs {
+		if r == nil {
+			continue
+		}
+		if len(r.SubRegs) > 0 {
+			saveBits(w, r.SubRegs)
+			continue
+		}
 		if len(r.Bits) == 0 {
 			continue
 		}
@@ -164,16 +188,16 @@ func peripherals(r *scanner) []*Package {
 			}
 			line = line[n+1:]
 			typ, reg := tr[0], tr[1]
-			var size int
+			var size, bitsiz int
 			switch typ {
 			case "uint32_t":
-				typ = "32"
+				bitsiz = 32
 				size = 4
 			case "uint16_t":
-				typ = "16"
+				bitsiz = 16
 				size = 2
 			case "uint8_t":
-				typ = " 8"
+				bitsiz = 8
 				size = 1
 			default:
 				r.Die("unknown type:", typ)
@@ -215,7 +239,7 @@ func peripherals(r *scanner) []*Package {
 				regs,
 				&Register{
 					Offset: offset,
-					Size:   typ,
+					BitSiz: bitsiz,
 					Name:   reg,
 					Len:    length,
 					Descr:  descr},
@@ -255,10 +279,9 @@ func peripherals(r *scanner) []*Package {
 					}
 				}
 			}
-			pkg.Periphs = append(
-				pkg.Periphs,
-				&Periph{Name: periph, Descr: brief, Regs: regs},
-			)
+			p := &Periph{Name: periph, Descr: brief, Regs: regs}
+			tweakPeriph(p)
+			pkg.Periphs = append(pkg.Periphs, p)
 			regs = nil
 			offset = 0
 			continue
@@ -269,4 +292,32 @@ func peripherals(r *scanner) []*Package {
 	}
 	checkErr(r.Err())
 	return pkgs
+}
+
+func tweakPeriph(p *Periph) {
+	switch p.Name {
+	case "FSMC_Bank1", "FMC_Bank1":
+		fsmcBank1(p)
+	}
+}
+
+func fsmcBank1(p *Periph) {
+	for _, r := range p.Regs {
+		if r.Name == "BTCR" {
+			bcr := &Register{
+				Offset: r.Offset,
+				BitSiz: r.BitSiz,
+				Name:   "BCR1",
+				Descr:  "NOR/PSRAM chip-select control register",
+			}
+			btr := &Register{
+				Offset: r.Offset,
+				BitSiz: r.BitSiz,
+				Name:   "BTR1",
+				Descr:  "NOR/PSRAM chip-select timing register",
+			}
+			p.Regs = append(p.Regs, bcr, btr)
+			return
+		}
+	}
 }

@@ -42,21 +42,21 @@ func (rm ACTLR_Mask) Load() ACTLR_Bits   { return ACTLR_Bits(rm.UM32.Load()) }
 func (rm ACTLR_Mask) Store(b ACTLR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *AUX_Periph) DISMCYCINT() ACTLR_Mask {
-	return ACTLR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DISMCYCINT)}}
+	return ACTLR_Mask{mmio.UM32{&p.ACTLR.U32, uint32(DISMCYCINT)}}
 }
 
 func (p *AUX_Periph) DISDEFWBUF() ACTLR_Mask {
-	return ACTLR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DISDEFWBUF)}}
+	return ACTLR_Mask{mmio.UM32{&p.ACTLR.U32, uint32(DISDEFWBUF)}}
 }
 
 func (p *AUX_Periph) DISFOLD() ACTLR_Mask {
-	return ACTLR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DISFOLD)}}
+	return ACTLR_Mask{mmio.UM32{&p.ACTLR.U32, uint32(DISFOLD)}}
 }
 
 func (p *AUX_Periph) DISFPCA() ACTLR_Mask {
-	return ACTLR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DISFPCA)}}
+	return ACTLR_Mask{mmio.UM32{&p.ACTLR.U32, uint32(DISFPCA)}}
 }
 
 func (p *AUX_Periph) DISOOFP() ACTLR_Mask {
-	return ACTLR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(DISOOFP)}}
+	return ACTLR_Mask{mmio.UM32{&p.ACTLR.U32, uint32(DISOOFP)}}
 }

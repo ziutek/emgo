@@ -57,23 +57,23 @@ func (rm CPUID_Mask) Load() CPUID_Bits   { return CPUID_Bits(rm.UM32.Load()) }
 func (rm CPUID_Mask) Store(b CPUID_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) Revision() CPUID_Mask {
-	return CPUID_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(Revision)}}
+	return CPUID_Mask{mmio.UM32{&p.CPUID.U32, uint32(Revision)}}
 }
 
 func (p *SCB_Periph) PartNo() CPUID_Mask {
-	return CPUID_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(PartNo)}}
+	return CPUID_Mask{mmio.UM32{&p.CPUID.U32, uint32(PartNo)}}
 }
 
 func (p *SCB_Periph) Constant() CPUID_Mask {
-	return CPUID_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(Constant)}}
+	return CPUID_Mask{mmio.UM32{&p.CPUID.U32, uint32(Constant)}}
 }
 
 func (p *SCB_Periph) Variant() CPUID_Mask {
-	return CPUID_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(Variant)}}
+	return CPUID_Mask{mmio.UM32{&p.CPUID.U32, uint32(Variant)}}
 }
 
 func (p *SCB_Periph) Implementer() CPUID_Mask {
-	return CPUID_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 0)), uint32(Implementer)}}
+	return CPUID_Mask{mmio.UM32{&p.CPUID.U32, uint32(Implementer)}}
 }
 
 type ICSR_Bits uint32
@@ -100,39 +100,39 @@ func (rm ICSR_Mask) Load() ICSR_Bits   { return ICSR_Bits(rm.UM32.Load()) }
 func (rm ICSR_Mask) Store(b ICSR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) VECTACTIVE() ICSR_Mask {
-	return ICSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(VECTACTIVE)}}
+	return ICSR_Mask{mmio.UM32{&p.ICSR.U32, uint32(VECTACTIVE)}}
 }
 
 func (p *SCB_Periph) RETTOBASE() ICSR_Mask {
-	return ICSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(RETTOBASE)}}
+	return ICSR_Mask{mmio.UM32{&p.ICSR.U32, uint32(RETTOBASE)}}
 }
 
 func (p *SCB_Periph) VECTPENDING() ICSR_Mask {
-	return ICSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(VECTPENDING)}}
+	return ICSR_Mask{mmio.UM32{&p.ICSR.U32, uint32(VECTPENDING)}}
 }
 
 func (p *SCB_Periph) ISRPENDING() ICSR_Mask {
-	return ICSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(ISRPENDING)}}
+	return ICSR_Mask{mmio.UM32{&p.ICSR.U32, uint32(ISRPENDING)}}
 }
 
 func (p *SCB_Periph) PENDSTCLR() ICSR_Mask {
-	return ICSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(PENDSTCLR)}}
+	return ICSR_Mask{mmio.UM32{&p.ICSR.U32, uint32(PENDSTCLR)}}
 }
 
 func (p *SCB_Periph) PENDSTSET() ICSR_Mask {
-	return ICSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(PENDSTSET)}}
+	return ICSR_Mask{mmio.UM32{&p.ICSR.U32, uint32(PENDSTSET)}}
 }
 
 func (p *SCB_Periph) PENDSVCLR() ICSR_Mask {
-	return ICSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(PENDSVCLR)}}
+	return ICSR_Mask{mmio.UM32{&p.ICSR.U32, uint32(PENDSVCLR)}}
 }
 
 func (p *SCB_Periph) PENDSVSET() ICSR_Mask {
-	return ICSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(PENDSVSET)}}
+	return ICSR_Mask{mmio.UM32{&p.ICSR.U32, uint32(PENDSVSET)}}
 }
 
 func (p *SCB_Periph) NMIPENDSET() ICSR_Mask {
-	return ICSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 4)), uint32(NMIPENDSET)}}
+	return ICSR_Mask{mmio.UM32{&p.ICSR.U32, uint32(NMIPENDSET)}}
 }
 
 type VTOR_Bits uint32
@@ -159,7 +159,7 @@ func (rm VTOR_Mask) Load() VTOR_Bits   { return VTOR_Bits(rm.UM32.Load()) }
 func (rm VTOR_Mask) Store(b VTOR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) TBLOFF() VTOR_Mask {
-	return VTOR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 8)), uint32(TBLOFF)}}
+	return VTOR_Mask{mmio.UM32{&p.VTOR.U32, uint32(TBLOFF)}}
 }
 
 type AIRCR_Bits uint32
@@ -186,27 +186,27 @@ func (rm AIRCR_Mask) Load() AIRCR_Bits   { return AIRCR_Bits(rm.UM32.Load()) }
 func (rm AIRCR_Mask) Store(b AIRCR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) VECTRESET() AIRCR_Mask {
-	return AIRCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(VECTRESET)}}
+	return AIRCR_Mask{mmio.UM32{&p.AIRCR.U32, uint32(VECTRESET)}}
 }
 
 func (p *SCB_Periph) VECTCLRACTIVE() AIRCR_Mask {
-	return AIRCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(VECTCLRACTIVE)}}
+	return AIRCR_Mask{mmio.UM32{&p.AIRCR.U32, uint32(VECTCLRACTIVE)}}
 }
 
 func (p *SCB_Periph) SYSRESETREQ() AIRCR_Mask {
-	return AIRCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(SYSRESETREQ)}}
+	return AIRCR_Mask{mmio.UM32{&p.AIRCR.U32, uint32(SYSRESETREQ)}}
 }
 
 func (p *SCB_Periph) PRIGROUP() AIRCR_Mask {
-	return AIRCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(PRIGROUP)}}
+	return AIRCR_Mask{mmio.UM32{&p.AIRCR.U32, uint32(PRIGROUP)}}
 }
 
 func (p *SCB_Periph) ENDIANNESS() AIRCR_Mask {
-	return AIRCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(ENDIANNESS)}}
+	return AIRCR_Mask{mmio.UM32{&p.AIRCR.U32, uint32(ENDIANNESS)}}
 }
 
 func (p *SCB_Periph) VECTKEY() AIRCR_Mask {
-	return AIRCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 12)), uint32(VECTKEY)}}
+	return AIRCR_Mask{mmio.UM32{&p.AIRCR.U32, uint32(VECTKEY)}}
 }
 
 type SCR_Bits uint32
@@ -233,15 +233,15 @@ func (rm SCR_Mask) Load() SCR_Bits   { return SCR_Bits(rm.UM32.Load()) }
 func (rm SCR_Mask) Store(b SCR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) SLEEPONEXIT() SCR_Mask {
-	return SCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint32(SLEEPONEXIT)}}
+	return SCR_Mask{mmio.UM32{&p.SCR.U32, uint32(SLEEPONEXIT)}}
 }
 
 func (p *SCB_Periph) SLEEPDEEP() SCR_Mask {
-	return SCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint32(SLEEPDEEP)}}
+	return SCR_Mask{mmio.UM32{&p.SCR.U32, uint32(SLEEPDEEP)}}
 }
 
 func (p *SCB_Periph) SEVONPEND() SCR_Mask {
-	return SCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 16)), uint32(SEVONPEND)}}
+	return SCR_Mask{mmio.UM32{&p.SCR.U32, uint32(SEVONPEND)}}
 }
 
 type CCR_Bits uint32
@@ -268,27 +268,27 @@ func (rm CCR_Mask) Load() CCR_Bits   { return CCR_Bits(rm.UM32.Load()) }
 func (rm CCR_Mask) Store(b CCR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) NONBASETHRDENA() CCR_Mask {
-	return CCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(NONBASETHRDENA)}}
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(NONBASETHRDENA)}}
 }
 
 func (p *SCB_Periph) USERSETMPEND() CCR_Mask {
-	return CCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(USERSETMPEND)}}
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(USERSETMPEND)}}
 }
 
 func (p *SCB_Periph) UNALIGN_TRP() CCR_Mask {
-	return CCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(UNALIGN_TRP)}}
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(UNALIGN_TRP)}}
 }
 
 func (p *SCB_Periph) DIV_0_TRP() CCR_Mask {
-	return CCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(DIV_0_TRP)}}
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(DIV_0_TRP)}}
 }
 
 func (p *SCB_Periph) BFHFNMIGN() CCR_Mask {
-	return CCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(BFHFNMIGN)}}
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(BFHFNMIGN)}}
 }
 
 func (p *SCB_Periph) STKALIGN() CCR_Mask {
-	return CCR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 20)), uint32(STKALIGN)}}
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(STKALIGN)}}
 }
 
 type SHPR1_Bits uint32
@@ -315,15 +315,15 @@ func (rm SHPR1_Mask) Load() SHPR1_Bits   { return SHPR1_Bits(rm.UM32.Load()) }
 func (rm SHPR1_Mask) Store(b SHPR1_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) PRI_MemManage() SHPR1_Mask {
-	return SHPR1_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(PRI_MemManage)}}
+	return SHPR1_Mask{mmio.UM32{&p.SHPR1.U32, uint32(PRI_MemManage)}}
 }
 
 func (p *SCB_Periph) PRI_BusFault() SHPR1_Mask {
-	return SHPR1_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(PRI_BusFault)}}
+	return SHPR1_Mask{mmio.UM32{&p.SHPR1.U32, uint32(PRI_BusFault)}}
 }
 
 func (p *SCB_Periph) PRI_UsageFault() SHPR1_Mask {
-	return SHPR1_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 24)), uint32(PRI_UsageFault)}}
+	return SHPR1_Mask{mmio.UM32{&p.SHPR1.U32, uint32(PRI_UsageFault)}}
 }
 
 type SHPR2_Bits uint32
@@ -350,7 +350,7 @@ func (rm SHPR2_Mask) Load() SHPR2_Bits   { return SHPR2_Bits(rm.UM32.Load()) }
 func (rm SHPR2_Mask) Store(b SHPR2_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) PRI_SVCall() SHPR2_Mask {
-	return SHPR2_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 28)), uint32(PRI_SVCall)}}
+	return SHPR2_Mask{mmio.UM32{&p.SHPR2.U32, uint32(PRI_SVCall)}}
 }
 
 type SHPR3_Bits uint32
@@ -377,11 +377,11 @@ func (rm SHPR3_Mask) Load() SHPR3_Bits   { return SHPR3_Bits(rm.UM32.Load()) }
 func (rm SHPR3_Mask) Store(b SHPR3_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) PRI_PendSV() SHPR3_Mask {
-	return SHPR3_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(PRI_PendSV)}}
+	return SHPR3_Mask{mmio.UM32{&p.SHPR3.U32, uint32(PRI_PendSV)}}
 }
 
 func (p *SCB_Periph) PRI_SysTick() SHPR3_Mask {
-	return SHPR3_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 32)), uint32(PRI_SysTick)}}
+	return SHPR3_Mask{mmio.UM32{&p.SHPR3.U32, uint32(PRI_SysTick)}}
 }
 
 type SHCSR_Bits uint32
@@ -408,59 +408,59 @@ func (rm SHCSR_Mask) Load() SHCSR_Bits   { return SHCSR_Bits(rm.UM32.Load()) }
 func (rm SHCSR_Mask) Store(b SHCSR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) MEMFAULTACT() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(MEMFAULTACT)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(MEMFAULTACT)}}
 }
 
 func (p *SCB_Periph) BUSFAULTACT() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(BUSFAULTACT)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(BUSFAULTACT)}}
 }
 
 func (p *SCB_Periph) USGFAULTACT() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(USGFAULTACT)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(USGFAULTACT)}}
 }
 
 func (p *SCB_Periph) SVCALLACT() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(SVCALLACT)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(SVCALLACT)}}
 }
 
 func (p *SCB_Periph) MONITORACT() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(MONITORACT)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(MONITORACT)}}
 }
 
 func (p *SCB_Periph) PENDSVACT() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(PENDSVACT)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(PENDSVACT)}}
 }
 
 func (p *SCB_Periph) SYSTICKACT() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(SYSTICKACT)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(SYSTICKACT)}}
 }
 
 func (p *SCB_Periph) USGFAULTPENDED() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(USGFAULTPENDED)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(USGFAULTPENDED)}}
 }
 
 func (p *SCB_Periph) MEMFAULTPENDED() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(MEMFAULTPENDED)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(MEMFAULTPENDED)}}
 }
 
 func (p *SCB_Periph) BUSFAULTPENDED() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(BUSFAULTPENDED)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(BUSFAULTPENDED)}}
 }
 
 func (p *SCB_Periph) SVCALLPENDED() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(SVCALLPENDED)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(SVCALLPENDED)}}
 }
 
 func (p *SCB_Periph) MEMFAULTENA() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(MEMFAULTENA)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(MEMFAULTENA)}}
 }
 
 func (p *SCB_Periph) BUSFAULTENA() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(BUSFAULTENA)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(BUSFAULTENA)}}
 }
 
 func (p *SCB_Periph) USGFAULTENA() SHCSR_Mask {
-	return SHCSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 36)), uint32(USGFAULTENA)}}
+	return SHCSR_Mask{mmio.UM32{&p.SHCSR.U32, uint32(USGFAULTENA)}}
 }
 
 type CFSR_Bits uint32
@@ -487,79 +487,79 @@ func (rm CFSR_Mask) Load() CFSR_Bits   { return CFSR_Bits(rm.UM32.Load()) }
 func (rm CFSR_Mask) Store(b CFSR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) IACCVIOL() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(IACCVIOL)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(IACCVIOL)}}
 }
 
 func (p *SCB_Periph) DACCVIOL() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(DACCVIOL)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(DACCVIOL)}}
 }
 
 func (p *SCB_Periph) MUNSTKERR() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(MUNSTKERR)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(MUNSTKERR)}}
 }
 
 func (p *SCB_Periph) MSTKERR() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(MSTKERR)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(MSTKERR)}}
 }
 
 func (p *SCB_Periph) MLSPERR() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(MLSPERR)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(MLSPERR)}}
 }
 
 func (p *SCB_Periph) MMARVALID() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(MMARVALID)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(MMARVALID)}}
 }
 
 func (p *SCB_Periph) IBUSERR() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(IBUSERR)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(IBUSERR)}}
 }
 
 func (p *SCB_Periph) PRECISERR() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(PRECISERR)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(PRECISERR)}}
 }
 
 func (p *SCB_Periph) IMPRECISERR() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(IMPRECISERR)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(IMPRECISERR)}}
 }
 
 func (p *SCB_Periph) UNSTKERR() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(UNSTKERR)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(UNSTKERR)}}
 }
 
 func (p *SCB_Periph) STKERR() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(STKERR)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(STKERR)}}
 }
 
 func (p *SCB_Periph) LSPERR() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(LSPERR)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(LSPERR)}}
 }
 
 func (p *SCB_Periph) BFARVALID() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(BFARVALID)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(BFARVALID)}}
 }
 
 func (p *SCB_Periph) UNDEFINSTR() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(UNDEFINSTR)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(UNDEFINSTR)}}
 }
 
 func (p *SCB_Periph) INVSTATE() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(INVSTATE)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(INVSTATE)}}
 }
 
 func (p *SCB_Periph) INVPC() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(INVPC)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(INVPC)}}
 }
 
 func (p *SCB_Periph) NOCP() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(NOCP)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(NOCP)}}
 }
 
 func (p *SCB_Periph) UNALIGNED() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(UNALIGNED)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(UNALIGNED)}}
 }
 
 func (p *SCB_Periph) DIVBYZERO() CFSR_Mask {
-	return CFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 40)), uint32(DIVBYZERO)}}
+	return CFSR_Mask{mmio.UM32{&p.CFSR.U32, uint32(DIVBYZERO)}}
 }
 
 type HFSR_Bits uint32
@@ -586,15 +586,15 @@ func (rm HFSR_Mask) Load() HFSR_Bits   { return HFSR_Bits(rm.UM32.Load()) }
 func (rm HFSR_Mask) Store(b HFSR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *SCB_Periph) VECTTBL() HFSR_Mask {
-	return HFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 44)), uint32(VECTTBL)}}
+	return HFSR_Mask{mmio.UM32{&p.HFSR.U32, uint32(VECTTBL)}}
 }
 
 func (p *SCB_Periph) FORCED() HFSR_Mask {
-	return HFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 44)), uint32(FORCED)}}
+	return HFSR_Mask{mmio.UM32{&p.HFSR.U32, uint32(FORCED)}}
 }
 
 func (p *SCB_Periph) DEBUGEVT() HFSR_Mask {
-	return HFSR_Mask{mmio.UM32{(*mmio.U32)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 44)), uint32(DEBUGEVT)}}
+	return HFSR_Mask{mmio.UM32{&p.HFSR.U32, uint32(DEBUGEVT)}}
 }
 
 type MMFR_Bits uint32
