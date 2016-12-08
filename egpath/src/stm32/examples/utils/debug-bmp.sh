@@ -4,9 +4,9 @@
 set -e
 
 
-reset=''
-if [ $# -eq 1 -a "$1" = 'reset' ]; then
-	reset='monitor connect_srst enable'
+reset='monitor connect_srst enable'
+if [ $# -eq 1 -a "$1" = 'noreset' ]; then
+	reset=''
 fi
 
 
@@ -15,12 +15,20 @@ if [ -z "$arch" ]; then
 	arch=$EGARCH
 fi
 
+brkpnt=6
+if echo $arch |grep -q '^cortexm7'; then
+	brkpnt=8
+fi
+
 arm-none-eabi-gdb --tui \
 	-ex 'target extended-remote /dev/ttyACM0' \
 	-ex "$reset" \
 	-ex 'monitor swdp_scan' \
 	-ex 'attach 1' \
 	-ex 'set mem inaccessible-by-default off' \
-	-ex 'set remote hardware-breakpoint-limit 6' \
+	-ex "set remote hardware-breakpoint-limit $brkpnt" \
 	-ex 'set remote hardware-watchpoint-limit 4' \
+	-ex 'set history save on' \
+	-ex 'set history filename ~/.gdb-history-emgo' \
+	-ex 'set history size 1000' \
 	$arch.elf
