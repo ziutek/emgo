@@ -1,6 +1,9 @@
 package main
 
 import (
+	"delay"
+	"unsafe"
+
 	"stm32/hal/gpio"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
@@ -81,10 +84,92 @@ func init() {
 
 	rcc.RCC.FMCEN().Set()
 
-	sdcr := fmc.FMC_Bank5_6.SDCR[1]
-	_ = sdcr
+	sdcr1 := &fmc.FMC_Bank5_6.SDCR[0]
+	sdcr2 := &fmc.FMC_Bank5_6.SDCR[1]
 
+	// SDCLK period = 2 x HCLK period, burst read, one clock delay.
+	sdcr1.Store(2<<fmc.SDCLKn | fmc.RBURST&0 | 1<<fmc.RPIPEn)
+
+	// Col/row addr: 8/12 bit, 16bit data bus, 4 banks, CAS latency 3.
+	sdcr2.Store(0<<fmc.NCn | 1<<fmc.NRn | 1<<fmc.SDMWIDn | fmc.NB | 3<<fmc.CASn)
+
+	sdtr1 := &fmc.FMC_Bank5_6.SDTR[0]
+	sdtr2 := &fmc.FMC_Bank5_6.SDTR[1]
+
+	const (
+		rowCycleDly     = 6
+		rowPrechDly     = 2
+		loadToActDly    = 2
+		exitSelfRefrDly = 7
+		selfRefrTime    = 4
+		recoveryDly     = 2
+		rowToColDly     = 2
+	)
+	sdtr1.Store((rowCycleDly-1)<<fmc.TRCn | (rowPrechDly-1)<<fmc.TRPn)
+	sdtr2.Store(
+		(loadToActDly-1)<<fmc.TMRDn | (exitSelfRefrDly-1)<<fmc.TXSRn |
+			(selfRefrTime-1)<<fmc.TRASn | (recoveryDly-1)<<fmc.TWRn |
+			(rowToColDly-1)<<fmc.TRCDn,
+	)
+
+	// SDRAM
+
+	sdcmr := &fmc.FMC_Bank5_6.SDCMR
+	sdsr := &fmc.FMC_Bank5_6.SDSR
+	sdrtr := &fmc.FMC_Bank5_6.SDRTR
+
+	const (
+		cmdTarget    = fmc.CTB2
+		clkConfEna   = 1 << fmc.MODEn
+		prechargeAll = 2 << fmc.MODEn
+		autoRefresh  = 3 << fmc.MODEn
+		loadMode     = 4 << fmc.MODEn
+	)
+
+	sdcmr.Store(cmdTarget | clkConfEna)
+	for sdsr.Bits(fmc.BUSY) != 0 {
+	}
+	delay.Millisec(1)
+	sdcmr.Store(cmdTarget | prechargeAll)
+	for sdsr.Bits(fmc.BUSY) != 0 {
+	}
+	sdcmr.Store(cmdTarget | autoRefresh | (8-1)<<fmc.NRFSn)
+	for sdsr.Bits(fmc.BUSY) != 0 {
+	}
+	const (
+		burstLength1     = 0
+		burstSequential  = 0
+		casLatency3      = 0x30
+		modeStandard     = 0
+		writeBurstSingle = 0x200
+
+		ldm = burstLength1 | burstSequential | casLatency3 | modeStandard |
+			writeBurstSingle
+	)
+	sdcmr.Store(cmdTarget | loadMode | ldm<<fmc.MRDn)
+	for sdsr.Bits(fmc.BUSY) != 0 {
+	}
+	sdrtr.Store(0x603 << 1)
 }
 
 func main() {
+	sdram := (*[8 * 1024 * 1024 / 4]uint32)(unsafe.Pointer(uintptr(0xD0000000)))
+
+	for i := range sdram {
+		sdram[i] = uint32(i)
+	}
 }
+
+/*
+#define SDRAM_MODEREG_BURST_LENGTH_1             ((uint16_t)0x0000)
+#define SDRAM_MODEREG_BURST_LENGTH_2             ((uint16_t)0x0001)
+#define SDRAM_MODEREG_BURST_LENGTH_4             ((uint16_t)0x0002)
+#define SDRAM_MODEREG_BURST_LENGTH_8             ((uint16_t)0x0004)
+#define SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL      ((uint16_t)0x0000)
+#define SDRAM_MODEREG_BURST_TYPE_INTERLEAVED     ((uint16_t)0x0008)
+#define SDRAM_MODEREG_CAS_LATENCY_2              ((uint16_t)0x0020)
+#define SDRAM_MODEREG_CAS_LATENCY_3              ((uint16_t)0x0030)
+#define SDRAM_MODEREG_OPERATING_MODE_STANDARD    ((uint16_t)0x0000)
+#define SDRAM_MODEREG_WRITEBURST_MODE_PROGRAMMED ((uint16_t)0x0000)
+#define SDRAM_MODEREG_WRITEBURST_MODE_SINGLE     ((uint16_t)0x0200)
+*/
