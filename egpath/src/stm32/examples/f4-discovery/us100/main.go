@@ -1,4 +1,5 @@
-// Connct US-100 Rx and Tx pins respectively to Discovery's PA2, PA3 pins.
+// Connct US-100 Tx and Rx pins respectively to Discovery's PA2 (USART2_TX),
+// PA3 (USART2_RX) pins (Tx-Tx, Rx-Rx).
 package main
 
 import (
