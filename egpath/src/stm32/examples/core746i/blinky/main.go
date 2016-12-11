@@ -2,7 +2,7 @@
 // does not use LEDs on the mother board (i have no one). If you want to use
 // LEDs on the mother board change line:
 //
-//	leds, led1, led2 = gpio.H, gpio.Pin3, gpio.Pin5
+//	leds, led1, led2 = gpio.H, gpio.Pin3, gpio.Pin4
 //
 // to
 //
@@ -28,7 +28,7 @@ func init() {
 	systick.Setup()
 
 	gpio.H.EnableClock(false)
-	leds, led1, led2 = gpio.H, gpio.Pin3, gpio.Pin5
+	leds, led1, led2 = gpio.H, gpio.Pin3, gpio.Pin4
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	leds.Setup(led1|led2, &cfg)

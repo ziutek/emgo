@@ -10,6 +10,12 @@ import (
 
 	"stm32/hal/raw/fmc"
 	"stm32/hal/raw/rcc"
+	"stm32/hal/raw/syscfg"
+)
+
+var (
+	leds       *gpio.Port
+	led1, led2 gpio.Pins
 )
 
 func init() {
@@ -64,10 +70,17 @@ func init() {
 	fmcG := a10 | a11 | ba0 | ba1 | sdclk | sdncas
 
 	gpio.H.EnableClock(false)
+	leds, led1, led2 = gpio.H, gpio.Pin3, gpio.Pin4
 	sdnwe := gpio.Pin5
 	sdne1 := gpio.Pin6
 	sdcke1 := gpio.Pin7
 	fmcH := sdnwe | sdne1 | sdcke1
+
+	RCC := rcc.RCC
+
+	// LEDs
+
+	leds.Setup(led1|led2, &gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
 
 	// FMC
 
@@ -82,13 +95,18 @@ func init() {
 	gpio.H.Setup(fmcH, &gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh})
 	gpio.H.SetAltFunc(fmcH, gpio.FMC)
 
-	rcc.RCC.FMCEN().Set()
+	// Remap SDRAM to External RAM region (bank1:0x60000000, bank2:0x70000000).
+	RCC.SYSCFGEN().Set()
+	syscfg.SYSCFG.SWP_FMC().Store(1 << syscfg.SWP_FMCn)
+	RCC.SYSCFGEN().Clear()
+
+	RCC.FMCEN().Set()
 
 	sdcr1 := &fmc.FMC_Bank5_6.SDCR[0]
 	sdcr2 := &fmc.FMC_Bank5_6.SDCR[1]
 
 	// SDCLK period = 2 x HCLK period, burst read, one clock delay.
-	sdcr1.Store(2<<fmc.SDCLKn | fmc.RBURST&0 | 1<<fmc.RPIPEn)
+	sdcr1.Store(2<<fmc.SDCLKn | fmc.RBURST | 1<<fmc.RPIPEn)
 
 	// Col/row addr: 8/12 bit, 16bit data bus, 4 banks, CAS latency 3.
 	sdcr2.Store(0<<fmc.NCn | 1<<fmc.NRn | 1<<fmc.SDMWIDn | fmc.NB | 3<<fmc.CASn)
@@ -153,10 +171,23 @@ func init() {
 }
 
 func main() {
-	sdram := (*[8 * 1024 * 1024 / 4]uint32)(unsafe.Pointer(uintptr(0xD0000000)))
+	sdram := (*[8 << 20 / 4]uint32)(unsafe.Pointer(uintptr(0x70000000)))
 
-	for i := range sdram {
-		sdram[i] = uint32(i)
+	for n := 0; ; n++ {
+		for i := 0; i < len(sdram); i += 2 {
+			sdram[i] = uint32(n ^ i)
+			sdram[i+1] = uint32(n ^ i + 1)
+		}
+		leds.SetPins(led1)
+		for i := 0; i < len(sdram); i += 2 {
+			a := sdram[i]
+			b := sdram[i+1]
+			if a != uint32(n^i) || b != uint32(n^i+1) {
+				leds.SetPins(led2)
+				return
+			}
+		}
+		leds.ClearPins(led1)
 	}
 }
 
