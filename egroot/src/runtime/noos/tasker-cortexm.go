@@ -111,10 +111,12 @@ func (ts *taskSched) deliverEvent(e syscall.Event) {
 }
 
 const (
-	regionFlash = iota
-	regionSRAM
-	regionPeriph
-	regionStackGuard
+	mpuFlash = iota
+	mpuSRAM
+	mpuPeriph
+	mpuExtRAM
+	mpuExtDev
+	mpuStackGuard
 )
 
 func (ts *taskSched) init() {
@@ -159,24 +161,43 @@ func (ts *taskSched) init() {
 	}
 
 	if useMPU {
-		// Setup MPU. MPU is used mainly to detect stack overflows:
-		// regionStackGuard is used to setup stack guard area at the bottom of
-		// the stack of active task. Below there is configuration that more or
-		// less corresponds to default behavior without MPU enabled. Stack guard
-		// region for active task is configured by setStackGuard function.
+		// MPU is used mainly to detect stack overflows: mpuStackGuard region is
+		// used to setup the stack guard area at the bottom of the stack of
+		// active task (setStackGuard function is used).
+		//
+		// Below there is the MPU configuration that more or less corresponds to
+		// the default behavior, without MPU enabled, but all RAM and peripheral
+		// regions are declared as shareable (usually shared with DMA). In case
+		// of Cortex-M7, shareable regions are not cacheable (set acc.SIWT bit
+		// to allow use cache but only in WT mode or reconfigure MPU).
+		var (
+			maPeriph = mpu.B | mpu.Arwrw | mpu.XN
+			maFlash  = mpu.C | mpu.Ar_r_
+			maRAM    = mpu.TEX(1) | mpu.C | mpu.B | mpu.S | mpu.Arwrw
+		)
 		mpu.SetRegion(mpu.BaseAttr{
-			0x00000000 + mpu.VALID + regionFlash,
-			mpu.ENA | mpu.SIZE(29) | mpu.C | mpu.Ar_r_,
+			0x00000000 | mpu.VALID | mpuFlash,
+			mpu.ENA | mpu.SIZE(29) | maFlash,
 		})
 		mpu.SetRegion(mpu.BaseAttr{
-			0x20000000 + mpu.VALID + regionSRAM,
-			mpu.ENA | mpu.SIZE(29) | mpu.C | mpu.S | mpu.Arwrw,
+			0x20000000 | mpu.VALID | mpuSRAM,
+			mpu.ENA | mpu.SIZE(29) | maRAM,
 		})
 		mpu.SetRegion(mpu.BaseAttr{
-			0x40000000 + mpu.VALID + regionPeriph,
-			mpu.ENA | mpu.SIZE(29) | mpu.B | mpu.S | mpu.Arwrw | mpu.XN,
+			0x40000000 | mpu.VALID | mpuPeriph,
+			mpu.ENA | mpu.SIZE(29) | maPeriph,
+		})
+		mpu.SetRegion(mpu.BaseAttr{
+			0x60000000 | mpu.VALID | mpuExtRAM,
+			mpu.ENA | mpu.SIZE(30) | maRAM,
+		})
+		mpu.SetRegion(mpu.BaseAttr{
+			0xA0000000 | mpu.VALID | mpuExtDev,
+			mpu.ENA | mpu.SIZE(29) | maPeriph,
 		})
 		mpu.Set(mpu.ENABLE | mpu.PRIVDEFENA)
+		cortexm.DSB()
+		cortexm.ISB()
 	}
 
 	// Set taskInfo for initial (current) task.

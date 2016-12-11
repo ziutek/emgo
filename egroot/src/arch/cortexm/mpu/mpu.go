@@ -6,12 +6,11 @@ import (
 	"unsafe"
 )
 
-//c:volatile
 type regs struct {
 	typ  mmio.U32
 	ctrl mmio.U32
 	rnr  mmio.U32
-	bas  [4]BaseAttr
+	bas  [4]BaseAttr //c:volatile
 }
 
 //emgo:const

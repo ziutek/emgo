@@ -34,13 +34,14 @@ func stackGuardBegin(n int) uintptr {
 // setMPUStackGuard uses MPU to setup 32 byte (8 words) stack guard area at the
 // bottom of the stack of n-th task.
 //
-// Since taskInfo's was placed in stack guard slots, the less restricted
+// Since taskInfos was placed in stack guard slots, the less restricted
 // mpu.Arw__ was used. TODO: Check is there a cheap way to return to mpu.A____.
 func setMPUStackGuard(n int) {
 	mpu.SetRegion(mpu.BaseAttr{
-		stackGuardBegin(n) + mpu.VALID + regionStackGuard,
+		stackGuardBegin(n) + mpu.VALID + mpuStackGuard,
 		mpu.ENA | mpu.SIZE(5) | mpu.C | mpu.S | mpu.Arw__ | mpu.XN,
 	})
+	// Return from exception works like DSB, ISB so can ommit them here..
 }
 
 func stackGuardArray(n int) *[8]uint32 {
