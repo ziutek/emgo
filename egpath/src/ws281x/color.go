@@ -20,7 +20,7 @@ func (c Color) Blue() int {
 	return int(c) & 0xff
 }
 
-func Gamma(c Color) Color {
+func (c Color) Gamma() Color {
 	r := Color(gamma[c.Red()])
 	g := Color(gamma[c.Green()])
 	b := Color(gamma[c.Blue()])

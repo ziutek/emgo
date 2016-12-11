@@ -52,7 +52,7 @@ func main() {
 	for {
 		c := ws281x.Color(rnd.Uint32())
 		fmt.Printf("%3d %3d %3d\n", c.Red(), c.Green(), c.Blue())
-		pixel.EncodeRGB(ws281x.Gamma(c))
+		pixel.EncodeRGB(c.Gamma())
 		for i := 0; i < ledram.Len(); i++ {
 			ledram.Clear()
 			ledram.At(i).Write(pixel)
