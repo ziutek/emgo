@@ -4,7 +4,7 @@ import (
 	"sync/atomic"
 
 	"delay"
-	
+
 	"stm32/hal/raw/tim"
 )
 
@@ -55,12 +55,12 @@ func (w *waterHeaterControl) TempSensor() *Sensor {
 	return &w.tempSensor
 }
 
-func (w *waterHeaterControl) DesiredTemp() int {
-	return atomic.LoadInt(&w.desiredTemp16) / 16
+func (w *waterHeaterControl) DesiredTemp16() int {
+	return atomic.LoadInt(&w.desiredTemp16)
 }
 
-func (w *waterHeaterControl) SetDesiredTemp(temp int) {
-	atomic.StoreInt(&w.desiredTemp16, temp*16)
+func (w *waterHeaterControl) SetDesiredTemp16(temp16 int) {
+	atomic.StoreInt(&w.desiredTemp16, temp16)
 }
 
 func (w *waterHeaterControl) LastPower() int {
@@ -73,7 +73,7 @@ func (w *waterHeaterControl) Init(timPWM, timCnt *tim.TIM_Periph, pclk uint) {
 	w.pwm.Init(timPWM)
 	w.cnt.Init(timCnt)
 	w.tempResp = make(chan int, 1)
-	w.SetDesiredTemp(41) // °C
+	w.SetDesiredTemp16(41 * 16) // °C/16
 	w.scale = w.pwm.Max() / 1200
 }
 

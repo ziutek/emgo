@@ -30,12 +30,12 @@ func (r *roomHeaterControl) TempSensor() *Sensor {
 	return &r.tempSensor
 }
 
-func (r *roomHeaterControl) DesiredTemp() int {
-	return atomic.LoadInt(&r.desiredTemp16) / 16
+func (r *roomHeaterControl) DesiredTemp16() int {
+	return atomic.LoadInt(&r.desiredTemp16)
 }
 
-func (r *roomHeaterControl) SetDesiredTemp(temp int) {
-	atomic.StoreInt(&r.desiredTemp16, temp*16)
+func (r *roomHeaterControl) SetDesiredTemp16(temp16 int) {
+	atomic.StoreInt(&r.desiredTemp16, temp16)
 }
 
 func (r *roomHeaterControl) loop(t *tim.TIM_Periph) {
@@ -85,7 +85,7 @@ func (r *roomHeaterControl) loop(t *tim.TIM_Periph) {
 
 func (r *roomHeaterControl) Start(t *tim.TIM_Periph, pclk uint) {
 	setupPWM(t, pclk, 500, rhMax-1)
-	r.SetDesiredTemp(20)
+	r.SetDesiredTemp16(20 * 16) // °C/16
 	go r.loop(t)
 }
 

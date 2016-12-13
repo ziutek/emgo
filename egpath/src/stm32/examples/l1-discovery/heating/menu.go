@@ -305,54 +305,55 @@ func setEnvTempSensor(fbs *hdcfb.SyncSlice) {
 	setTempSensor(fbs, room.TempSensor())
 }
 
-func showDesiredTemp(fbs *hdcfb.SyncSlice, s string, desiredTemp int) {
+func showDesiredTemp(fbs *hdcfb.SyncSlice, s string, desiredTemp16 int) {
 	fbs.SetPos(0)
 	fbs.WriteString("Zadana temp. ")
 	fbs.WriteString(s)
 	fbs.Fill(35-len(s), ' ')
-	fmt.Fprintf(fbs, "%2d\xdfC", desiredTemp)
+	fmt.Fprintf(fbs, "%2.1f\xdfC", float32(desiredTemp16)/16)
 	fbs.Fill(fbs.Remain(), ' ')
 	lcdDraw()
 }
 
 func showDesiredWaterTemp(fbs *hdcfb.SyncSlice) {
-	showDesiredTemp(fbs, "wody", water.DesiredTemp())
+	showDesiredTemp(fbs, "wody", water.DesiredTemp16())
 }
 
 func showDesiredRoomTemp(fbs *hdcfb.SyncSlice) {
-	showDesiredTemp(fbs, "otocz.", room.DesiredTemp())
+	showDesiredTemp(fbs, "otocz.", room.DesiredTemp16())
 }
 
-func setDesiredTemp(fbs *hdcfb.SyncSlice, set func(int), show func(*hdcfb.SyncSlice), cur, min, max int) {
-	encoder.SetCnt(cur)
+func setDesiredTemp(fbs *hdcfb.SyncSlice, set func(int), show func(*hdcfb.SyncSlice), cur16, min16, max16 int) {
+	cur2, min2, max2 := cur16/8, min16/8, max16/8 // °C/2
+	encoder.SetCnt(cur2)
 	for es := range encoder.State {
 		if btnPreRel(es) {
 			break
 		}
-		temp := es.Cnt()
-		if temp < min {
-			temp = min
-			encoder.SetCnt(min)
-		} else if temp > max {
-			temp = max
-			encoder.SetCnt(max)
+		temp2 := es.Cnt()
+		if temp2 < min2 {
+			temp2 = min2
+			encoder.SetCnt(min2)
+		} else if temp2 > max2 {
+			temp2 = max2
+			encoder.SetCnt(max2)
 		}
-		set(temp)
+		set(temp2 * 8)
 		show(fbs)
 	}
 }
 
 func setDesiredWaterTemp(fbs *hdcfb.SyncSlice) {
 	setDesiredTemp(
-		fbs, water.SetDesiredTemp, showDesiredWaterTemp,
-		water.DesiredTemp(), 30, 60,
+		fbs, water.SetDesiredTemp16, showDesiredWaterTemp,
+		water.DesiredTemp16(), 30*16, 60*16,
 	)
 }
 
 func setDesiredRoomTemp(fbs *hdcfb.SyncSlice) {
 	setDesiredTemp(
-		fbs, room.SetDesiredTemp, showDesiredRoomTemp,
-		room.DesiredTemp(), 10, 26,
+		fbs, room.SetDesiredTemp16, showDesiredRoomTemp,
+		room.DesiredTemp16(), 10*16, 26*16,
 	)
 }
 
