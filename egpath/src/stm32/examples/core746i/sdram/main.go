@@ -2,8 +2,12 @@ package main
 
 import (
 	"delay"
+	"fmt"
+	"rtos"
+	"sync/atomic"
 	"unsafe"
 
+	"stm32/hal/fmc/sdram"
 	"stm32/hal/gpio"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
@@ -102,33 +106,55 @@ func init() {
 
 	RCC.FMCEN().Set()
 
-	sdcr1 := &fmc.FMC_Bank5_6.SDCR[0]
-	sdcr2 := &fmc.FMC_Bank5_6.SDCR[1]
+	/*
+		sdcr1 := &fmc.FMC_Bank5_6.SDCR[0]
+		sdcr2 := &fmc.FMC_Bank5_6.SDCR[1]
 
-	// SDCLK period = 2 x HCLK period, burst read, one clock delay.
-	sdcr1.Store(2<<fmc.SDCLKn | fmc.RBURST | 1<<fmc.RPIPEn)
+		// SDCLK period = 2 x HCLK period, burst read, zero clock delay.
+		sdcr1.Store(2<<fmc.SDCLKn | fmc.RBURST | 0<<fmc.RPIPEn)
 
-	// Col/row addr: 8/12 bit, 16bit data bus, 4 banks, CAS latency 3.
-	sdcr2.Store(0<<fmc.NCn | 1<<fmc.NRn | 1<<fmc.SDMWIDn | fmc.NB | 3<<fmc.CASn)
+		// Col/row addr: 8/12 bit, 16bit data bus, 4 banks, CAS latency 2.
+		sdcr2.Store(0<<fmc.NCn | 1<<fmc.NRn | 1<<fmc.SDMWIDn | fmc.NB | 2<<fmc.CASn)
 
-	sdtr1 := &fmc.FMC_Bank5_6.SDTR[0]
-	sdtr2 := &fmc.FMC_Bank5_6.SDTR[1]
+		sdtr1 := &fmc.FMC_Bank5_6.SDTR[0]
+		sdtr2 := &fmc.FMC_Bank5_6.SDTR[1]
 
-	const (
-		rowCycleDly     = 6
-		rowPrechDly     = 2
-		loadToActDly    = 2
-		exitSelfRefrDly = 7
-		selfRefrTime    = 4
-		recoveryDly     = 2
-		rowToColDly     = 2
-	)
-	sdtr1.Store((rowCycleDly-1)<<fmc.TRCn | (rowPrechDly-1)<<fmc.TRPn)
-	sdtr2.Store(
-		(loadToActDly-1)<<fmc.TMRDn | (exitSelfRefrDly-1)<<fmc.TXSRn |
-			(selfRefrTime-1)<<fmc.TRASn | (recoveryDly-1)<<fmc.TWRn |
-			(rowToColDly-1)<<fmc.TRCDn,
-	)
+		const (
+			rowCycleDly     = 6
+			rowPrechDly     = 2
+			loadToActDly    = 2
+			exitSelfRefrDly = 7
+			selfRefrTime    = 4
+			recoveryDly     = 2
+			rowToColDly     = 2
+		)
+		sdtr1.Store((rowCycleDly-1)<<fmc.TRCn | (rowPrechDly-1)<<fmc.TRPn)
+		sdtr2.Store(
+			(loadToActDly-1)<<fmc.TMRDn | (exitSelfRefrDly-1)<<fmc.TXSRn |
+				(selfRefrTime-1)<<fmc.TRASn | (recoveryDly-1)<<fmc.TWRn |
+				(rowToColDly-1)<<fmc.TRCDn,
+		)
+	*/
+
+	sdram.SetConf(&sdram.Conf{
+		ClkDiv: 2, // 192 MHz / 2 = 96 MHz (period ≥ 10 ns)
+		TRP:    2, // 20 ns > 15 ns ISSI
+		TRC:    6, // 60 ns > 55 ns ISSI
+		Banks: [2]sdram.BankConf{
+			1: {
+				BankNum: 4,
+				RowAddr: 12,
+				ColAddr: 8,
+				Bits:    16,
+				CAS:     2, // 96 MHz < 133 MHz ISSI
+				TRCD:    2, // 20 ns > 15 ns ISSI
+				TWR:     2, // 2CLK = 2CLK ISSI (TWR ≥ TRAS-TRCD and TWR ≥ TRC-TRCD-TRP)
+				TRAS:    4, // 40 ns = 40 ns ISSI
+				TXSR:    6, // 60 ns = 60 ns ISSI
+				TMRD:    2, // 2CLK = 2CLK ISSI
+			},
+		},
+	})
 
 	// SDRAM
 
@@ -157,11 +183,11 @@ func init() {
 	const (
 		burstLength1     = 0
 		burstSequential  = 0
-		casLatency3      = 0x30
+		casLatency2      = 0x20
 		modeStandard     = 0
 		writeBurstSingle = 0x200
 
-		ldm = burstLength1 | burstSequential | casLatency3 | modeStandard |
+		ldm = burstLength1 | burstSequential | casLatency2 | modeStandard |
 			writeBurstSingle
 	)
 	sdcmr.Store(cmdTarget | loadMode | ldm<<fmc.MRDn)
@@ -188,6 +214,51 @@ func main() {
 			}
 		}
 		leds.ClearPins(led1)
+
+		t := rtos.Nanosec()
+		for i := 0; i < len(sdram); i += 4 {
+			atomic.StoreUint32(&sdram[i], uint32(i))
+			atomic.StoreUint32(&sdram[i+1], uint32(i))
+			atomic.StoreUint32(&sdram[i+2], uint32(i))
+			atomic.StoreUint32(&sdram[i+3], uint32(i))
+		}
+		wt1 := (rtos.Nanosec() - t + 0.5e6) / 1e6
+		t = rtos.Nanosec()
+		for i := 0; i < len(sdram); i += 4 {
+			atomic.LoadUint32(&sdram[i])
+			atomic.LoadUint32(&sdram[i+1])
+			atomic.LoadUint32(&sdram[i+2])
+			atomic.LoadUint32(&sdram[i+3])
+		}
+		rt1 := (rtos.Nanosec() - t + 0.5e6) / 1e6
+		t = rtos.Nanosec()
+		for i := len(sdram) - 4; i > 0; i -= 4 {
+			atomic.StoreUint32(&sdram[i-3], uint32(i))
+			atomic.StoreUint32(&sdram[i-2], uint32(i))
+			atomic.StoreUint32(&sdram[i-1], uint32(i))
+			atomic.StoreUint32(&sdram[i], uint32(i))
+		}
+		wt2 := (rtos.Nanosec() - t + 0.5e6) / 1e6
+		t = rtos.Nanosec()
+		for i := len(sdram) - 4; i > 0; i -= 4 {
+			atomic.LoadUint32(&sdram[i-3])
+			atomic.LoadUint32(&sdram[i-2])
+			atomic.LoadUint32(&sdram[i-1])
+			atomic.LoadUint32(&sdram[i])
+		}
+		rt2 := (rtos.Nanosec() - t + 0.5e6) / 1e6
+		t = rtos.Nanosec()
+		for i := 0; i < len(sdram); i += 4 {
+			v := atomic.LoadUint32(&sdram[i])
+			atomic.StoreUint32(&sdram[i+1], v)
+			v = atomic.LoadUint32(&sdram[i+2])
+			atomic.StoreUint32(&sdram[i+3], v)
+		}
+		rw := (rtos.Nanosec() - t + 0.5e6) / 1e6
+		fmt.Printf(
+			"wr+: %d ms, rd+: %d ms, wr-: %d ms, rd-: %d ms, rw: %d ms\n",
+			wt1, rt1, wt2, rt2, rw,
+		)
 	}
 }
 
