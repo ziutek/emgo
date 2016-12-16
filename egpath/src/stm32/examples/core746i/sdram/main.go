@@ -106,52 +106,24 @@ func init() {
 
 	RCC.FMCEN().Set()
 
-	/*
-		sdcr1 := &fmc.FMC_Bank5_6.SDCR[0]
-		sdcr2 := &fmc.FMC_Bank5_6.SDCR[1]
-
-		// SDCLK period = 2 x HCLK period, burst read, zero clock delay.
-		sdcr1.Store(2<<fmc.SDCLKn | fmc.RBURST | 0<<fmc.RPIPEn)
-
-		// Col/row addr: 8/12 bit, 16bit data bus, 4 banks, CAS latency 2.
-		sdcr2.Store(0<<fmc.NCn | 1<<fmc.NRn | 1<<fmc.SDMWIDn | fmc.NB | 2<<fmc.CASn)
-
-		sdtr1 := &fmc.FMC_Bank5_6.SDTR[0]
-		sdtr2 := &fmc.FMC_Bank5_6.SDTR[1]
-
-		const (
-			rowCycleDly     = 6
-			rowPrechDly     = 2
-			loadToActDly    = 2
-			exitSelfRefrDly = 7
-			selfRefrTime    = 4
-			recoveryDly     = 2
-			rowToColDly     = 2
-		)
-		sdtr1.Store((rowCycleDly-1)<<fmc.TRCn | (rowPrechDly-1)<<fmc.TRPn)
-		sdtr2.Store(
-			(loadToActDly-1)<<fmc.TMRDn | (exitSelfRefrDly-1)<<fmc.TXSRn |
-				(selfRefrTime-1)<<fmc.TRASn | (recoveryDly-1)<<fmc.TWRn |
-				(rowToColDly-1)<<fmc.TRCDn,
-		)
-	*/
-
-	sdram.SetConf(&sdram.Conf{
-		ClkDiv: 2, // 192 MHz / 2 = 96 MHz (period ≥ 10 ns)
-		TRP:    2, // 20 ns > 15 ns ISSI
-		TRC:    6, // 60 ns > 55 ns ISSI
+	// Parameters for IS42S16400J-7.
+	sdram.SetController(&sdram.Conf{
+		ClkDiv: 2, // SDRAMclk = AHBclk / 2
+		TRPns:  15,
+		TRCns:  70,
+		TREFms: 64,
 		Banks: [2]sdram.BankConf{
 			1: {
 				BankNum: 4,
 				RowAddr: 12,
 				ColAddr: 8,
 				Bits:    16,
-				CAS:     2, // 96 MHz < 133 MHz ISSI
-				TRCD:    2, // 20 ns > 15 ns ISSI
-				TWR:     2, // 2CLK = 2CLK ISSI (TWR ≥ TRAS-TRCD and TWR ≥ TRC-TRCD-TRP)
-				TRAS:    4, // 40 ns = 40 ns ISSI
-				TXSR:    6, // 60 ns = 60 ns ISSI
-				TMRD:    2, // 2CLK = 2CLK ISSI
+				CAS:     2, // SDRAMclk < 133 MHz
+				TRCDns:  15,
+				TWR:     2,
+				TRASns:  42,
+				TXSRns:  70,
+				TMRD:    2,
 			},
 		},
 	})
@@ -160,7 +132,7 @@ func init() {
 
 	sdcmr := &fmc.FMC_Bank5_6.SDCMR
 	sdsr := &fmc.FMC_Bank5_6.SDSR
-	sdrtr := &fmc.FMC_Bank5_6.SDRTR
+	//sdrtr := &fmc.FMC_Bank5_6.SDRTR
 
 	const (
 		cmdTarget    = fmc.CTB2
@@ -193,7 +165,6 @@ func init() {
 	sdcmr.Store(cmdTarget | loadMode | ldm<<fmc.MRDn)
 	for sdsr.Bits(fmc.BUSY) != 0 {
 	}
-	sdrtr.Store(0x603 << 1)
 }
 
 func main() {
@@ -215,46 +186,47 @@ func main() {
 		}
 		leds.ClearPins(led1)
 
-		t := rtos.Nanosec()
+		t1 := rtos.Nanosec()
 		for i := 0; i < len(sdram); i += 4 {
 			atomic.StoreUint32(&sdram[i], uint32(i))
 			atomic.StoreUint32(&sdram[i+1], uint32(i))
 			atomic.StoreUint32(&sdram[i+2], uint32(i))
 			atomic.StoreUint32(&sdram[i+3], uint32(i))
 		}
-		wt1 := (rtos.Nanosec() - t + 0.5e6) / 1e6
-		t = rtos.Nanosec()
+		t2 := rtos.Nanosec()
 		for i := 0; i < len(sdram); i += 4 {
 			atomic.LoadUint32(&sdram[i])
 			atomic.LoadUint32(&sdram[i+1])
 			atomic.LoadUint32(&sdram[i+2])
 			atomic.LoadUint32(&sdram[i+3])
 		}
-		rt1 := (rtos.Nanosec() - t + 0.5e6) / 1e6
-		t = rtos.Nanosec()
-		for i := len(sdram) - 4; i > 0; i -= 4 {
-			atomic.StoreUint32(&sdram[i-3], uint32(i))
-			atomic.StoreUint32(&sdram[i-2], uint32(i))
-			atomic.StoreUint32(&sdram[i-1], uint32(i))
+		t3 := rtos.Nanosec()
+		for i := len(sdram) - 1; i > 0; i -= 4 {
 			atomic.StoreUint32(&sdram[i], uint32(i))
+			atomic.StoreUint32(&sdram[i-1], uint32(i))
+			atomic.StoreUint32(&sdram[i-2], uint32(i))
+			atomic.StoreUint32(&sdram[i-3], uint32(i))
 		}
-		wt2 := (rtos.Nanosec() - t + 0.5e6) / 1e6
-		t = rtos.Nanosec()
-		for i := len(sdram) - 4; i > 0; i -= 4 {
-			atomic.LoadUint32(&sdram[i-3])
-			atomic.LoadUint32(&sdram[i-2])
-			atomic.LoadUint32(&sdram[i-1])
+		t4 := rtos.Nanosec()
+		for i := len(sdram) - 1; i > 0; i -= 4 {
 			atomic.LoadUint32(&sdram[i])
+			atomic.LoadUint32(&sdram[i-1])
+			atomic.LoadUint32(&sdram[i-2])
+			atomic.LoadUint32(&sdram[i-3])
 		}
-		rt2 := (rtos.Nanosec() - t + 0.5e6) / 1e6
-		t = rtos.Nanosec()
+		t5 := rtos.Nanosec()
 		for i := 0; i < len(sdram); i += 4 {
 			v := atomic.LoadUint32(&sdram[i])
 			atomic.StoreUint32(&sdram[i+1], v)
 			v = atomic.LoadUint32(&sdram[i+2])
 			atomic.StoreUint32(&sdram[i+3], v)
 		}
-		rw := (rtos.Nanosec() - t + 0.5e6) / 1e6
+		t6 := rtos.Nanosec()
+		wt1 := (t2 - t1 + 0.5e6) / 1e6
+		rt1 := (t3 - t2 + 0.5e6) / 1e6
+		wt2 := (t4 - t3 + 0.5e6) / 1e6
+		rt2 := (t5 - t4 + 0.5e6) / 1e6
+		rw := (t6 - t5 + 0.5e6) / 1e6
 		fmt.Printf(
 			"wr+: %d ms, rd+: %d ms, wr-: %d ms, rd-: %d ms, rw: %d ms\n",
 			wt1, rt1, wt2, rt2, rw,
