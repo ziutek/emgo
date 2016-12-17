@@ -24,8 +24,8 @@ type BankConf struct {
 	// Bits sets the data bus width / cell capacity (bits).
 	Bits int8
 
-	// CAS sets CAS latency (SDRAM clock cycles, 1 to 3).
-	CAS int8
+	// CASL sets CAS latency (SDRAM clock cycles, 1 to 3).
+	CASL int8
 
 	// TRCDns sets row to column delay (nanoseconds).
 	TRCDns int8
@@ -70,9 +70,8 @@ func nsclk(ns int8, kHz uint) fmc.SDTR_Bits {
 	return fmc.SDTR_Bits(uint(ns)*kHz+999424) / 1e6
 }
 
-//emgo:noinline
-func nsSDTR(ns int8, kHz uint) fmc.SDTR_Bits {
-	return (nsclk(ns, kHz) - 1) & 15
+func nsSDTR(ns int8, kHz uint, shift uint) fmc.SDTR_Bits {
+	return (nsclk(ns, kHz) - 1) & 15 << shift
 }
 
 func SetController(c *Conf) {
@@ -87,7 +86,7 @@ func SetController(c *Conf) {
 	if c.ReadPipe >= 0 {
 		sdcr[0] |= fmc.RBURST | fmc.SDCR_Bits(c.ReadPipe)&3<<fmc.RPIPEn
 	}
-	sdtr[0] = nsSDTR(c.TRPns, kHz)<<fmc.TRPn | nsSDTR(c.TRCns, kHz)<<fmc.TRCn
+	sdtr[0] = nsSDTR(c.TRPns, kHz, fmc.TRPn) | nsSDTR(c.TRCns, kHz, fmc.TRCn)
 
 	for i := 0; i < 2; i++ {
 		b := &c.Banks[i]
@@ -96,12 +95,12 @@ func SetController(c *Conf) {
 		sdcr[i] |= fmc.SDCR_Bits(b.RowAddr-11) & 3 << fmc.NRn
 		sdcr[i] |= fmc.SDCR_Bits(b.ColAddr-8) & 3 << fmc.NCn
 		sdcr[i] |= fmc.SDCR_Bits(b.Bits/16) & 3 << fmc.MWIDn
-		sdcr[i] |= fmc.SDCR_Bits(b.CAS) & 3 << fmc.CASn
+		sdcr[i] |= fmc.SDCR_Bits(b.CASL) & 3 << fmc.CASn
 
-		sdtr[i] |= nsSDTR(b.TRCDns, kHz) << fmc.TRCDn
+		sdtr[i] |= nsSDTR(b.TRCDns, kHz, fmc.TRCDn)
 		sdtr[i] |= (fmc.SDTR_Bits(b.TWR) + nsclk(b.TWRns, kHz) - 1) & 15 << fmc.TWRn
-		sdtr[i] |= nsSDTR(b.TRASns, kHz) << fmc.TRASn
-		sdtr[i] |= nsSDTR(b.TXSRns, kHz) << fmc.TXSRn
+		sdtr[i] |= nsSDTR(b.TRASns, kHz, fmc.TRASn)
+		sdtr[i] |= nsSDTR(b.TXSRns, kHz, fmc.TXSRn)
 		sdtr[i] |= fmc.SDTR_Bits(b.TMRD-1) & 15 << fmc.TMRDn
 
 		fmc.FMC_Bank5_6.SDCR[i].Store(sdcr[i])
@@ -113,4 +112,80 @@ func SetController(c *Conf) {
 	}
 	refclk := uint(c.TREFms)*kHz/1e3>>maxra - 20
 	fmc.FMC_Bank5_6.SDRTR.Store(fmc.SDRTR_Bits(refclk-1) & 8191 << fmc.COUNTn)
+}
+
+type Banks byte
+
+const (
+	Bank0 = Banks(fmc.CTB1)
+	Bank1 = Banks(fmc.CTB2)
+)
+
+type Mode byte
+
+const (
+	Normal      Mode = 0
+	SelfRefresh Mode = 1
+	PowerDown   Mode = 2
+)
+
+func SetMode(banks Banks, mode Mode) {
+	var m uint32
+	if mode != 0 {
+		m = 4 + uint32(mode)
+	}
+	fmc.FMC_Bank5_6.SDCMR.U32.Store(m | uint32(banks))
+}
+
+func ClockConfEna(banks Banks) {
+	fmc.FMC_Bank5_6.SDCMR.U32.Store(1 | uint32(banks))
+}
+
+func PrechargeAll(banks Banks) {
+	fmc.FMC_Bank5_6.SDCMR.U32.Store(2 | uint32(banks))
+}
+
+func AutoRefresh(banks Banks, n int) {
+	fmc.FMC_Bank5_6.SDCMR.U32.Store(3 | uint32(banks) | uint32(n-1)&15<<5)
+}
+
+type ModeReg uint16
+
+const (
+	Burst1   ModeReg = 0 << 0
+	Burst2   ModeReg = 1 << 0
+	Burst4   ModeReg = 2 << 0
+	Burst8   ModeReg = 3 << 0
+	BurstRow ModeReg = 7 << 0
+
+	Interleaved ModeReg = 1 << 3
+
+	CASL2 ModeReg = 2 << 4
+	CASL3 ModeReg = 3 << 4
+
+	SingleWrite ModeReg = 1 << 9
+)
+
+func LoadModeReg(banks Banks, mr ModeReg) {
+	fmc.FMC_Bank5_6.SDCMR.U32.Store(4 | uint32(banks) | uint32(mr)<<9)
+}
+
+type ModeState struct {
+	r fmc.SDSR_Bits
+}
+
+func (ms ModeState) Mode(bank int) Mode {
+	return Mode(ms.r >> uint(fmc.MODES1n+2*bank) & 3)
+}
+
+func (ms ModeState) Busy() bool {
+	return ms.r&fmc.BUSY != 0
+}
+
+func (ms ModeState) RefrErr() bool {
+	return ms.r&fmc.RE != 0
+}
+
+func Status() ModeState {
+	return ModeState{fmc.FMC_Bank5_6.SDSR.Load()}
 }

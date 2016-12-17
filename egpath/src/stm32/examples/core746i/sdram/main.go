@@ -7,12 +7,12 @@ import (
 	"sync/atomic"
 	"unsafe"
 
+	"stm32/hal/fmc"
 	"stm32/hal/fmc/sdram"
 	"stm32/hal/gpio"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
 
-	"stm32/hal/raw/fmc"
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/syscfg"
 )
@@ -99,14 +99,14 @@ func init() {
 	gpio.H.Setup(fmcH, &gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh})
 	gpio.H.SetAltFunc(fmcH, gpio.FMC)
 
-	// Remap SDRAM to External RAM region (bank1:0x60000000, bank2:0x70000000).
+	// Remap SDRAM to External RAM region (bank0:0x60000000, bank1:0x70000000).
 	RCC.SYSCFGEN().Set()
 	syscfg.SYSCFG.SWP_FMC().Store(1 << syscfg.SWP_FMCn)
 	RCC.SYSCFGEN().Clear()
 
-	RCC.FMCEN().Set()
+	fmc.EnableClock(true)
 
-	// Parameters for IS42S16400J-7.
+	// Parameters for IS42S16400J-7 SDRAM chip..
 	sdram.SetController(&sdram.Conf{
 		ClkDiv: 2, // SDRAMclk = AHBclk / 2
 		TRPns:  15,
@@ -118,7 +118,7 @@ func init() {
 				RowAddr: 12,
 				ColAddr: 8,
 				Bits:    16,
-				CAS:     2, // SDRAMclk < 133 MHz
+				CASL:    2, // SDRAMclk < 133 MHz
 				TRCDns:  15,
 				TWR:     2,
 				TRASns:  42,
@@ -130,40 +130,18 @@ func init() {
 
 	// SDRAM
 
-	sdcmr := &fmc.FMC_Bank5_6.SDCMR
-	sdsr := &fmc.FMC_Bank5_6.SDSR
-	//sdrtr := &fmc.FMC_Bank5_6.SDRTR
-
-	const (
-		cmdTarget    = fmc.CTB2
-		clkConfEna   = 1 << fmc.MODEn
-		prechargeAll = 2 << fmc.MODEn
-		autoRefresh  = 3 << fmc.MODEn
-		loadMode     = 4 << fmc.MODEn
-	)
-
-	sdcmr.Store(cmdTarget | clkConfEna)
-	for sdsr.Bits(fmc.BUSY) != 0 {
+	sdram.ClockConfEna(sdram.Bank1)
+	for sdram.Status().Busy() {
 	}
 	delay.Millisec(1)
-	sdcmr.Store(cmdTarget | prechargeAll)
-	for sdsr.Bits(fmc.BUSY) != 0 {
+	sdram.PrechargeAll(sdram.Bank1)
+	for sdram.Status().Busy() {
 	}
-	sdcmr.Store(cmdTarget | autoRefresh | (8-1)<<fmc.NRFSn)
-	for sdsr.Bits(fmc.BUSY) != 0 {
+	sdram.AutoRefresh(sdram.Bank1, 8)
+	for sdram.Status().Busy() {
 	}
-	const (
-		burstLength1     = 0
-		burstSequential  = 0
-		casLatency2      = 0x20
-		modeStandard     = 0
-		writeBurstSingle = 0x200
-
-		ldm = burstLength1 | burstSequential | casLatency2 | modeStandard |
-			writeBurstSingle
-	)
-	sdcmr.Store(cmdTarget | loadMode | ldm<<fmc.MRDn)
-	for sdsr.Bits(fmc.BUSY) != 0 {
+	sdram.LoadModeReg(sdram.Bank1, sdram.CASL2)
+	for sdram.Status().Busy() {
 	}
 }
 
@@ -233,17 +211,3 @@ func main() {
 		)
 	}
 }
-
-/*
-#define SDRAM_MODEREG_BURST_LENGTH_1             ((uint16_t)0x0000)
-#define SDRAM_MODEREG_BURST_LENGTH_2             ((uint16_t)0x0001)
-#define SDRAM_MODEREG_BURST_LENGTH_4             ((uint16_t)0x0002)
-#define SDRAM_MODEREG_BURST_LENGTH_8             ((uint16_t)0x0004)
-#define SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL      ((uint16_t)0x0000)
-#define SDRAM_MODEREG_BURST_TYPE_INTERLEAVED     ((uint16_t)0x0008)
-#define SDRAM_MODEREG_CAS_LATENCY_2              ((uint16_t)0x0020)
-#define SDRAM_MODEREG_CAS_LATENCY_3              ((uint16_t)0x0030)
-#define SDRAM_MODEREG_OPERATING_MODE_STANDARD    ((uint16_t)0x0000)
-#define SDRAM_MODEREG_WRITEBURST_MODE_PROGRAMMED ((uint16_t)0x0000)
-#define SDRAM_MODEREG_WRITEBURST_MODE_SINGLE     ((uint16_t)0x0200)
-*/
