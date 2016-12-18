@@ -14,6 +14,9 @@ import (
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
 	"stm32/hal/usart"
+
+	"stm32/hal/raw/rcc"
+	"stm32/hal/raw/tim"
 )
 
 var leds, us100 *usart.Driver
@@ -25,6 +28,7 @@ func init() {
 	// GPIO
 
 	gpio.A.EnableClock(true)
+	audioport, audiopin := gpio.A, gpio.Pin0
 	ledport, ledpin := gpio.A, gpio.Pin2
 
 	gpio.B.EnableClock(true)
@@ -41,7 +45,7 @@ func init() {
 	leds.P.SetConf(usart.Stop0b5) // F103 has no 7-bit mode: save 0.5 bit only.
 	leds.P.Enable()
 	leds.EnableTx()
-	rtos.IRQ(irq.USART1).Enable()
+	rtos.IRQ(irq.USART2).Enable()
 	rtos.IRQ(irq.DMA1_Channel7).Enable()
 
 	// US-100 USART
@@ -61,6 +65,15 @@ func init() {
 	rtos.IRQ(irq.USART3).Enable()
 	rtos.IRQ(irq.DMA1_Channel2).Enable()
 	rtos.IRQ(irq.DMA1_Channel3).Enable()
+
+	// Audio PWM
+
+	audioport.Setup(audiopin, &gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
+	rcc.RCC.TIM2EN().Set()
+	t := tim.TIM2
+	audio = Audio{Timer: t, SR: 32000}
+	setupPWM(t, system.APB1.Clock(), audio.SR, 255)
+	rtos.IRQ(irq.TIM2).Enable()
 }
 
 func checkErr(err error) {
@@ -70,6 +83,75 @@ func checkErr(err error) {
 }
 
 func main() {
+	for {
+		audio.Play(C1, 100)
+		audio.Play(D1, 100)
+		audio.Play(E1, 100)
+		audio.Play(F1, 100)
+		audio.Play(G1, 100)
+		audio.Play(A1, 100)
+		audio.Play(H1, 100)
+		audio.Play(C2, 100)
+		audio.Play(C2, 100)
+		audio.Play(H1, 100)
+		audio.Play(A1, 100)
+		audio.Play(G1, 100)
+		audio.Play(F1, 100)
+		audio.Play(E1, 100)
+		audio.Play(D1, 100)
+		audio.Play(C1, 800)
+
+		audio.Play(H1, 100)
+		audio.Play(G1, 100)
+		audio.Play(A1, 100)
+		audio.Play(A1, 100)
+
+		audio.Play(G1, 100)
+		audio.Play(G1, 100)
+		audio.Play(A1, 400)
+
+		audio.Play(G1, 100)
+		audio.Play(G1, 100)
+		audio.Play(A1, 100)
+		audio.Play(A1, 100)
+
+		audio.Play(H1, 100)
+		audio.Play(G1, 100)
+		audio.Play(A1, 400)
+
+		audio.Play(G1, 100)
+		audio.Play(G1, 100)
+		audio.Play(A1, 100)
+		audio.Play(A1, 100)
+
+		audio.Play(H1, 100)
+		audio.Play(G1, 100)
+		audio.Play(A1, 100)
+		audio.Play(A1, 100)
+
+		audio.Play(G1, 100)
+		audio.Play(G1, 100)
+		audio.Play(A1, 100)
+		audio.Play(A1, 100)
+
+		audio.Play(H1, 100)
+		audio.Play(G1, 100)
+		audio.Play(A1, 100)
+		audio.Play(A1, 100)
+
+		audio.Play(G1, 100)
+		audio.Play(G1, 100)
+		audio.Play(A1, 100)
+		audio.Play(A1, 100)
+		audio.Play(G1, 800)
+
+		audio.Play(G1, 100)
+		audio.Play(G1, 100)
+		audio.Play(A1, 100)
+		audio.Play(A1, 100)
+		audio.Play(G1, 800)
+	}
+
 	buf := make([]byte, 2)
 	ledram := ws281x.MakeS3(50)
 	pixel := ws281x.MakeS3(1)
@@ -122,6 +204,10 @@ func us100TxDMAISR() {
 	us100.TxDMAISR()
 }
 
+func audioISR() {
+	audio.ISR()
+}
+
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
@@ -131,4 +217,6 @@ var ISRs = [...]func(){
 	irq.USART3:        us100ISR,
 	irq.DMA1_Channel2: us100TxDMAISR,
 	irq.DMA1_Channel3: us100RxDMAISR,
+
+	irq.TIM2: audioISR,
 }

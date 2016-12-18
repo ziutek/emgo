@@ -6,4 +6,4 @@ TRACECLKIN=72000000
 
 cfg='-c reset_config none separate'
 
-. ../../utils/load-oocd.sh
+. ../load-oocd-oversized.sh
