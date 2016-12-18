@@ -71,8 +71,8 @@ func init() {
 	audioport.Setup(audiopin, &gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
 	rcc.RCC.TIM2EN().Set()
 	t := tim.TIM2
-	audio = Audio{Timer: t, SR: 32000}
-	setupPWM(t, system.APB1.Clock(), audio.SR, 255)
+	audio.Timer = t
+	setupAudioPWM(t, system.APB1.Clock(), 14700, 255)
 	rtos.IRQ(irq.TIM2).Enable()
 }
 
@@ -84,72 +84,10 @@ func checkErr(err error) {
 
 func main() {
 	for {
-		audio.Play(C1, 100)
-		audio.Play(D1, 100)
-		audio.Play(E1, 100)
-		audio.Play(F1, 100)
-		audio.Play(G1, 100)
-		audio.Play(A1, 100)
-		audio.Play(H1, 100)
-		audio.Play(C2, 100)
-		audio.Play(C2, 100)
-		audio.Play(H1, 100)
-		audio.Play(A1, 100)
-		audio.Play(G1, 100)
-		audio.Play(F1, 100)
-		audio.Play(E1, 100)
-		audio.Play(D1, 100)
-		audio.Play(C1, 800)
-
-		audio.Play(H1, 100)
-		audio.Play(G1, 100)
-		audio.Play(A1, 100)
-		audio.Play(A1, 100)
-
-		audio.Play(G1, 100)
-		audio.Play(G1, 100)
-		audio.Play(A1, 400)
-
-		audio.Play(G1, 100)
-		audio.Play(G1, 100)
-		audio.Play(A1, 100)
-		audio.Play(A1, 100)
-
-		audio.Play(H1, 100)
-		audio.Play(G1, 100)
-		audio.Play(A1, 400)
-
-		audio.Play(G1, 100)
-		audio.Play(G1, 100)
-		audio.Play(A1, 100)
-		audio.Play(A1, 100)
-
-		audio.Play(H1, 100)
-		audio.Play(G1, 100)
-		audio.Play(A1, 100)
-		audio.Play(A1, 100)
-
-		audio.Play(G1, 100)
-		audio.Play(G1, 100)
-		audio.Play(A1, 100)
-		audio.Play(A1, 100)
-
-		audio.Play(H1, 100)
-		audio.Play(G1, 100)
-		audio.Play(A1, 100)
-		audio.Play(A1, 100)
-
-		audio.Play(G1, 100)
-		audio.Play(G1, 100)
-		audio.Play(A1, 100)
-		audio.Play(A1, 100)
-		audio.Play(G1, 800)
-
-		audio.Play(G1, 100)
-		audio.Play(G1, 100)
-		audio.Play(A1, 100)
-		audio.Play(A1, 100)
-		audio.Play(G1, 800)
+		for _, note := range melody {
+			audio.Play(note.Sample[:])
+			delay.Millisec(note.Delay)
+		}
 	}
 
 	buf := make([]byte, 2)
