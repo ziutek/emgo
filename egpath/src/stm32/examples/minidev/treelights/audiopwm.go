@@ -25,37 +25,38 @@ func setupAudioPWM(t *tim.TIM_Periph, pclk uint, sr, max int) {
 type Audio struct {
 	Timer *tim.TIM_Periph
 
-	sample []byte
-	end    rtos.EventFlag
-	k      int
-	prev   int
+	snd  []byte
+	end  rtos.EventFlag
+	n    int
+	prev int
 }
 
 func (a *Audio) ISR() {
 	t := a.Timer
-	s := a.sample
+	snd := a.snd
 	t.SR.Store(0)
-	if a.k == len(s)*2 {
+	if a.n>>1 == len(snd) {
 		t.DIER.Store(0)
 		a.end.Signal(1)
 	} else {
 		// Linear interpolation.
-		v := int(s[a.k/2])
-		if a.k&1 == 0 {
-			v = a.prev + v
+		var v int
+		if a.n&1 == 0 {
+			s := int(snd[a.n>>1])
+			v = a.prev + s
+			a.prev = s
 		} else {
-			v *= 2
-			a.prev = v
+			v = 2 * a.prev
 		}
 		t.CCR1.Store(tim.CCR1_Bits(v))
-		a.k++
+		a.n++
 	}
 }
 
-func (a *Audio) Play(sample []byte) {
-	a.sample = sample
-	a.prev = int(sample[0])
-	a.k = 0
+func (a *Audio) Play(snd []byte) {
+	a.snd = snd
+	a.prev = int(snd[0])
+	a.n = 0
 	a.end.Reset(0)
 	fence.RW()
 	a.Timer.DIER.Store(tim.UIE)
