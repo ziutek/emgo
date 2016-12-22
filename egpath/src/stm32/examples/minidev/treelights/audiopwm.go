@@ -4,163 +4,142 @@ import (
 	"rtos"
 	"sync/fence"
 
-	"sound/samples/8b14k7/piano"
+	"stm32/hal/system"
+
+	"sound/samples/22050s8/piano"
 
 	"stm32/hal/raw/tim"
 )
 
-func setupAudioPWM(t *tim.TIM_Periph, pclk uint, sr, max int) {
+type Audio struct {
+	t    *tim.TIM_Periph
+	snd  []byte
+	end  rtos.EventFlag
+	n    int
+	zero int
+}
+
+// Setup setups audio PWM using t for sr symbol rate (Bd/s) and signed samples
+// in range [-max, max].
+func (a *Audio) Setup(t *tim.TIM_Periph, pclk uint, sr, max int) {
+	if pclk != system.AHB.Clock() {
+		pclk *= 2
+	}
+	a.t = t
+	a.zero = max
+	max *= 2 // [-max, max]
 	sr *= 2  // Perform 2 x oversampling.
-	max *= 2 // Avoid rounding during linear interpolation.
 	div := uint(sr * max)
 	t.PSC.Store(tim.PSC_Bits((pclk+div/2)/div - 1))
-	t.ARR.Store(tim.ARR_Bits(max - 1))
-	t.CCMR1.Store(6<<tim.OC1Mn | tim.OC1PE)
-	t.CCR1.Store(0)
-	t.CCER.Store(tim.CC1E)
+	t.ARR.Store(tim.ARR_Bits(max - 1)) // CCR=0: PWM=0%, CCR=max: PWM=100%.
+	t.CCMR2.Store(6<<tim.OC3Mn | tim.OC3PE | 6<<tim.OC4Mn | tim.OC4PE)
+	t.CCR3.Store(0)
+	t.CCR4.Store(0)
+	t.CCER.Store(tim.CC3E | tim.CC4E)
 	t.DIER.Store(tim.UIE)
 	t.CR1.Store(tim.ARPE | tim.URS | tim.CEN)
 }
 
-type Audio struct {
-	Timer *tim.TIM_Periph
-
-	snd  []byte
-	end  rtos.EventFlag
-	n    int
-	prev int
-}
-
 func (a *Audio) ISR() {
-	t := a.Timer
+	a.t.SR.Store(0)
 	snd := a.snd
-	t.SR.Store(0)
-	if a.n>>1 == len(snd) {
-		t.DIER.Store(0)
+	n := a.n >> 1
+	if n == len(snd) {
+		a.t.DIER.Store(0)
 		a.end.Signal(1)
-	} else {
-		// Linear interpolation.
-		var v int
-		if a.n&1 == 0 {
-			s := int(snd[a.n>>1])
-			v = a.prev + s
-			a.prev = s
-		} else {
-			v = 2 * a.prev
-		}
-		t.CCR1.Store(tim.CCR1_Bits(v))
-		a.n++
+		return
 	}
+	// Oversampling, 15-tap low-pass FIR filter: http://t-filter.engineerjs.com/
+	var v int
+	if a.n&1 == 0 {
+		v = 1549 * (int(int8(snd[n])) + int(int8(snd[n-7])))
+		v += 6936 * (int(int8(snd[n-1])) + int(int8(snd[n-6])))
+		v += -7428 * (int(int8(snd[n-2])) + int(int8(snd[n-5])))
+		v += 20929 * (int(int8(snd[n-3])) + int(int8(snd[n-4])))
+	} else {
+		v = 6227 * (int(int8(snd[n])) + int(int8(snd[n-6])))
+		v += -299 * (int(int8(snd[n-1])) + int(int8(snd[n-5])))
+		v += 386 * (int(int8(snd[n-2])) + int(int8(snd[n-4])))
+		v += 32338 * int(int8(snd[n-3]))
+	}
+	v >>= 15
+	// Differential output.
+	a.t.CCR3.Store(tim.CCR3_Bits(a.zero + v))
+	a.t.CCR4.Store(tim.CCR4_Bits(a.zero - v))
+	a.n++
 }
 
+// Play plays snd. Snd should contain signed (int8) values.
 func (a *Audio) Play(snd []byte) {
 	a.snd = snd
-	a.prev = int(snd[0])
-	a.n = 0
+	a.n = 7 << 1 // Skip fierst 7 samples to speed up FIR algorithm.
 	a.end.Reset(0)
 	fence.RW()
-	a.Timer.DIER.Store(tim.UIE)
+	a.t.DIER.Store(tim.UIE)
 	a.end.Wait(1, 0)
 }
 
 var audio Audio
 
 var (
-	c2  = (*[8192]byte)(&piano.C2)
-	c2s = (*[8192]byte)(&piano.C2s)
-	d2  = (*[8192]byte)(&piano.D2)
-	d2s = (*[8192]byte)(&piano.D2s)
-	e2  = (*[8192]byte)(&piano.E2)
-	f2  = (*[8192]byte)(&piano.F2)
-	f2s = (*[8192]byte)(&piano.F2s)
-	g2  = (*[8192]byte)(&piano.G2)
-	g2s = (*[8192]byte)(&piano.G2s)
-	a2  = (*[8192]byte)(&piano.A2)
-	a2s = (*[8192]byte)(&piano.A2s)
-	h2  = (*[8192]byte)(&piano.H2)
-	c3  = (*[8192]byte)(&piano.C3)
-	c3s = (*[8192]byte)(&piano.C3s)
-	d3  = (*[8192]byte)(&piano.D3)
-	d3s = (*[8192]byte)(&piano.D3s)
-	e3  = (*[8192]byte)(&piano.E3)
-	f3  = (*[8192]byte)(&piano.F3)
-	f3s = (*[8192]byte)(&piano.F3s)
-	g3  = (*[8192]byte)(&piano.G3)
-	g3s = (*[8192]byte)(&piano.G3s)
-	a3  = (*[8192]byte)(&piano.A3)
-	a3s = (*[8192]byte)(&piano.A3s)
-	h3  = (*[8192]byte)(&piano.H3)
-	c4  = (*[8192]byte)(&piano.C4)
+	g = (*[16538]byte)(&piano.G3)
+	a = (*[16538]byte)(&piano.A3)
+	h = (*[16538]byte)(&piano.H3)
 )
 
 type Note struct {
-	Sample *[8192]byte
+	Sample *[16538]byte
 	Delay  int
 }
 
 var melody = [...]Note{
-	{c2, 100},
-	{c2s, 100},
-	{d2, 100},
-	{d2s, 100},
-	{e2, 100},
-	{f2, 100},
-	{f2s, 100},
-	{g2, 100},
-	{g2s, 100},
-	{a2, 100},
-	{a2s, 100},
-	{h2, 100},
-	{c3, 100},
-	{c3s, 400},
+	{h, 0},
+	{g, 0},
+	{a, 0},
+	{a, 0},
 
-	{h2, 100},
-	{g2, 100},
-	{a2, 100},
-	{a2, 100},
+	{g, 0},
+	{g, 0},
+	{a, 400},
 
-	{g2, 100},
-	{g2, 100},
-	{a2, 400},
+	{g, 0},
+	{g, 0},
+	{a, 0},
+	{a, 0},
 
-	{g2, 100},
-	{g2, 100},
-	{a2, 100},
-	{a2, 100},
+	{h, 0},
+	{g, 0},
+	{a, 400},
 
-	{h2, 100},
-	{g2, 100},
-	{a2, 400},
+	{g, 0},
+	{g, 0},
+	{a, 0},
+	{a, 0},
 
-	{g2, 100},
-	{g2, 100},
-	{a2, 100},
-	{a2, 100},
+	{h, 0},
+	{g, 0},
+	{a, 0},
+	{a, 0},
 
-	{h2, 100},
-	{g2, 100},
-	{a2, 100},
-	{a2, 100},
+	{g, 0},
+	{g, 0},
+	{a, 0},
+	{a, 0},
 
-	{g2, 100},
-	{g2, 100},
-	{a2, 100},
-	{a2, 100},
+	{h, 0},
+	{g, 0},
+	{a, 0},
+	{a, 0},
 
-	{h2, 100},
-	{g2, 100},
-	{a2, 100},
-	{a2, 100},
+	{g, 0},
+	{g, 0},
+	{a, 0},
+	{a, 0},
+	{g, 800},
 
-	{g2, 100},
-	{g2, 100},
-	{a2, 100},
-	{a2, 100},
-	{g2, 800},
-
-	{g2, 100},
-	{g2, 100},
-	{a2, 100},
-	{a2, 100},
-	{g2, 800},
+	{g, 0},
+	{g, 0},
+	{a, 0},
+	{a, 0},
+	{g, 800},
 }

@@ -21,6 +21,9 @@ import (
 
 var leds, us100 *usart.Driver
 
+var audioport *gpio.Port
+var audiopins gpio.Pins
+
 func init() {
 	system.Setup(8, 72/8, false)
 	systick.Setup()
@@ -28,10 +31,11 @@ func init() {
 	// GPIO
 
 	gpio.A.EnableClock(true)
-	audioport, audiopin := gpio.A, gpio.Pin0
+	auxport, auxpin := gpio.A, 0
 	ledport, ledpin := gpio.A, gpio.Pin2
 
 	gpio.B.EnableClock(true)
+	audioport, audiopins = gpio.B, gpio.Pin8|gpio.Pin9
 	usport, ustx, usrx := gpio.B, gpio.Pin10, gpio.Pin11
 
 	// LED USART
@@ -68,12 +72,15 @@ func init() {
 
 	// Audio PWM
 
-	audioport.Setup(audiopin, &gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
-	rcc.RCC.TIM2EN().Set()
-	t := tim.TIM2
-	audio.Timer = t
-	setupAudioPWM(t, system.APB1.Clock(), 14700, 255)
-	rtos.IRQ(irq.TIM2).Enable()
+	audioport.Setup(audiopins, &gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
+	rcc.RCC.TIM4EN().Set()
+	// For TIMclk=72Mhz and sr=22050, max=136 gives PSC=6-1 and actual SR=22059.
+	audio.Setup(tim.TIM4, system.APB1.Clock(), 22050, 136*6)
+	rtos.IRQ(irq.TIM4).Enable()
+
+	// AUX output
+
+	auxport.SetupPin(auxpin, &gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
 }
 
 func checkErr(err error) {
@@ -156,5 +163,5 @@ var ISRs = [...]func(){
 	irq.DMA1_Channel2: us100TxDMAISR,
 	irq.DMA1_Channel3: us100RxDMAISR,
 
-	irq.TIM2: audioISR,
+	irq.TIM4: audioISR,
 }
