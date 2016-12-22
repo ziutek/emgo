@@ -76,12 +76,15 @@ const (
 )
 
 const (
-	NONBASETHRDENA CCR_Bits = 1 << 0 //+
-	USERSETMPEND   CCR_Bits = 1 << 1 //+
-	UNALIGN_TRP    CCR_Bits = 1 << 3 //+
-	DIV_0_TRP      CCR_Bits = 1 << 4 //+
-	BFHFNMIGN      CCR_Bits = 1 << 8 //+
-	STKALIGN       CCR_Bits = 1 << 9 //+
+	NONBASETHRDENA CCR_Bits = 1 << 0  //+
+	USERSETMPEND   CCR_Bits = 1 << 1  //+
+	UNALIGN_TRP    CCR_Bits = 1 << 3  //+
+	DIV_0_TRP      CCR_Bits = 1 << 4  //+
+	BFHFNMIGN      CCR_Bits = 1 << 8  //+
+	STKALIGN       CCR_Bits = 1 << 9  //+
+	DC             CCR_Bits = 1 << 16 //+
+	IC             CCR_Bits = 1 << 17 //+
+	BP             CCR_Bits = 1 << 18 //+
 )
 
 const (

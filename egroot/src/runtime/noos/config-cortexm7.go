@@ -7,4 +7,5 @@ const (
 	softStackGuard = false
 	useFPU         = true
 	useITCM        = true
+	useL1Cache     = true
 )

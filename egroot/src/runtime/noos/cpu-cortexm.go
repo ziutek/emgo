@@ -41,4 +41,7 @@ func initCPU() {
 			}
 		}
 	}
+	if useL1Cache {
+	
+	}
 }
