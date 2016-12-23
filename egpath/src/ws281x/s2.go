@@ -37,7 +37,7 @@ func (s S2) At(n int) S2 {
 
 // Head returns slice of p that contains n pixels starting from 0.
 func (s S2) Head(n int) S2 {
-	return S2{s.data[n*12:]}
+	return S2{s.data[:n*12]}
 }
 
 const zero2 = 0x88
@@ -62,11 +62,6 @@ func (s S2) EncodeGRB(c Color) {
 	}
 }
 
-// Clear clears whole p to black color.
-func (s S2) Clear() {
-	bytes.Fill(s.data[:len(s.data)-1], zero2)
-}
-
 // Bytes returns p's internal storage.
 func (s S2) Bytes() []byte {
 	return s.data
@@ -75,4 +70,17 @@ func (s S2) Bytes() []byte {
 // Write writes src to beginning of p.
 func (s S2) Write(src S2) {
 	copy(s.Bytes(), src.Bytes())
+}
+
+// Fill fills whole s using pattern p.
+func (s S2) Fill(p S2) {
+	sb := s.Bytes()
+	pb := p.Bytes()
+	for i := 0; i < len(sb); i += copy(sb[i:], pb) {
+	}
+}
+
+// Clear clears whole s to black color.
+func (s S2) Clear() {
+	bytes.Fill(s.data[:len(s.data)-1], zero2)
 }
