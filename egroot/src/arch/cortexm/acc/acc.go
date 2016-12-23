@@ -54,9 +54,9 @@ const (
 )
 
 const (
-	SIWT    CACR_Bits = 1 << 0 //+
-	ECCDIS  CACR_Bits = 1 << 1 //+
-	FORCEWT CACR_Bits = 1 << 2 //+
+	SIWT    CACR_Bits = 1 << 0 //+ Shared cacheable-is-WT for data cache.
+	ECCDIS  CACR_Bits = 1 << 1 //+ ECC in the instruction and data cache.
+	FORCEWT CACR_Bits = 1 << 2 //+ Force Write-Through in the data cache.
 )
 
 const (
