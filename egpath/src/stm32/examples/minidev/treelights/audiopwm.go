@@ -6,8 +6,6 @@ import (
 
 	"stm32/hal/system"
 
-	"sound/samples/22050s8/piano"
-
 	"stm32/hal/raw/tim"
 )
 
@@ -80,66 +78,3 @@ func (a *Audio) Play(snd []byte) {
 }
 
 var audio Audio
-
-var (
-	g = (*[16538]byte)(&piano.G3)
-	a = (*[16538]byte)(&piano.A3)
-	h = (*[16538]byte)(&piano.H3)
-)
-
-type Note struct {
-	Sample *[16538]byte
-	Delay  int
-}
-
-var melody = [...]Note{
-	{h, 0},
-	{g, 0},
-	{a, 0},
-	{a, 0},
-
-	{g, 0},
-	{g, 0},
-	{a, 400},
-
-	{g, 0},
-	{g, 0},
-	{a, 0},
-	{a, 0},
-
-	{h, 0},
-	{g, 0},
-	{a, 400},
-
-	{g, 0},
-	{g, 0},
-	{a, 0},
-	{a, 0},
-
-	{h, 0},
-	{g, 0},
-	{a, 0},
-	{a, 0},
-
-	{g, 0},
-	{g, 0},
-	{a, 0},
-	{a, 0},
-
-	{h, 0},
-	{g, 0},
-	{a, 0},
-	{a, 0},
-
-	{g, 0},
-	{g, 0},
-	{a, 0},
-	{a, 0},
-	{g, 800},
-
-	{g, 0},
-	{g, 0},
-	{a, 0},
-	{a, 0},
-	{g, 800},
-}

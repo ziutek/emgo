@@ -4,6 +4,7 @@ import (
 	"delay"
 	"fmt"
 	"io"
+	"math/rand"
 	"rtos"
 
 	"ws281x"
@@ -19,10 +20,10 @@ import (
 	"stm32/hal/raw/tim"
 )
 
-var leds, us100 *usart.Driver
-
-var audioport *gpio.Port
-var audiopins gpio.Pins
+var (
+	leds, us100 *usart.Driver
+	rnd         rand.XorShift64
+)
 
 func init() {
 	system.Setup(8, 72/8, false)
@@ -35,7 +36,7 @@ func init() {
 	ledport, ledpin := gpio.A, gpio.Pin2
 
 	gpio.B.EnableClock(true)
-	audioport, audiopins = gpio.B, gpio.Pin8|gpio.Pin9
+	audioport, audiopins := gpio.B, gpio.Pin8|gpio.Pin9
 	usport, ustx, usrx := gpio.B, gpio.Pin10, gpio.Pin11
 
 	// LED USART
@@ -74,13 +75,15 @@ func init() {
 
 	audioport.Setup(audiopins, &gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
 	rcc.RCC.TIM4EN().Set()
-	// For TIMclk=72Mhz and sr=22050, max=136 gives PSC=6-1 and actual SR=22059.
-	audio.Setup(tim.TIM4, system.APB1.Clock(), 22050, 136*6)
+	// For TIMclk=72Mhz and sr=14700, max=136 gives PSC=9-1 and actual SR=14706.
+	audio.Setup(tim.TIM4, system.APB1.Clock(), 14700, 136*3)
 	rtos.IRQ(irq.TIM4).Enable()
 
 	// AUX output
 
 	auxport.SetupPin(auxpin, &gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
+
+	rnd.Seed(rtos.Nanosec())
 }
 
 func checkErr(err error) {
@@ -89,43 +92,97 @@ func checkErr(err error) {
 	}
 }
 
-func main() {
-	for {
-		for _, note := range melody {
-			audio.Play(note.Sample[:])
-			delay.Millisec(note.Delay)
-		}
-	}
+func rndColor() ws281x.Color {
+	x := int(rnd.Uint32())
+	r := x & 0xff * 3 / 4
+	g := (x >> 8) & 0xff * 3 / 4
+	b := (x >> 16) & 0xff * 3 / 4
+	return ws281x.RGB(r, g, b)
+}
 
+func main() {
 	buf := make([]byte, 2)
 	ledram := ws281x.MakeS3(50)
 	pixel := ws281x.MakeS3(1)
+	white := ws281x.MakeS3(1)
+	white.EncodeRGB(ws281x.Color(0xffffff))
 
-	pixel.EncodeRGB(ws281x.Color(0x888888).Gamma())
 	delay.Millisec(200) // Wait for US-100 startup.
 
-	var x int
+	var color ws281x.Color
+	color1 := rndColor()
+	color2 := rndColor()
+	x := 14000
+	k := 0
 	for {
 		checkErr(us100.WriteByte(0x55))
 		_, err := io.ReadFull(us100, buf)
 		checkErr(err)
-		x = (x*3 + int(buf[0])<<8 + int(buf[1]) + 2) / 4
-		fmt.Println(x)
+		x = (x + int(buf[0])<<8 + int(buf[1])) / 2
 
-		max := ledram.Len()
-		n := max - (x-50)/32
 		switch {
-		case n < 0:
-			n = 0
-		case n > max:
-			n = max
+		case x < 1500:
+			x = 14000
+			r, g, b := color.RGB()
+			for n := 256; n >= 0; n-- {
+				pixel.EncodeRGB(ws281x.RGB(r*n/256, g*n/256, b*n/256).Gamma())
+				ledram.Fill(pixel)
+				leds.Write(ledram.Bytes())
+				delay.Millisec(10)
+			}
+			delay.Millisec(500)
+			pixel.EncodeRGB(ws281x.Color(0xff0000))
+			ledram.Fill(pixel)
+			leds.Write(ledram.Bytes())
+			melody := melody1[:]
+			if k&1 != 0 {
+				melody = melody2[:]
+			}
+			for _, note := range melody {
+				d := note.Duration
+				snd := note.Sample[:]
+				dly := 0
+				if d < 4 {
+					snd = snd[:(len(snd)*d+2)/4]
+				} else {
+					dly = (650*d+2)/4 - 650
+				}
+				audio.Play(snd)
+				delay.Millisec(dly)
+			}
+			for n := 0; n < 25; n++ {
+				ledram.At(24 - n).Head(2 * (n + 1)).Clear()
+				leds.Write(ledram.Bytes())
+				delay.Millisec(20)
+			}
+			delay.Millisec(500)
+
+		default:
+			const N = 64
+			r := (color1.Red()*(N-k) + color2.Red()*k) / N
+			g := (color1.Green()*(N-k) + color2.Green()*k) / N
+			b := (color1.Blue()*(N-k) + color2.Blue()*k) / N
+			color = ws281x.RGB(r, g, b)
+			if k++; k > N {
+				k = 0
+				color1 = color2
+				color2 = rndColor()
+			}
+			pixel.EncodeRGB(color.Gamma())
+			ledram.Fill(pixel)
+			leds.Write(ledram.Bytes())
+			for n := 0; n < 10; n++ {
+				if r := int(rnd.Uint32() & 0x1ff); r < ledram.Len() {
+					ledram.At(r).Write(white)
+					leds.Write(ledram.Bytes())
+					delay.Millisec(20)
+					ledram.At(r).Write(pixel)
+					leds.Write(ledram.Bytes())
+				} else {
+					delay.Millisec(60)
+				}
+			}
 		}
-		for i := 0; i < n; i++ {
-			ledram.At(i).Write(pixel)
-		}
-		ledram.At(n).Clear()
-		leds.Write(ledram.Bytes())
-		delay.Millisec(25)
 	}
 }
 
