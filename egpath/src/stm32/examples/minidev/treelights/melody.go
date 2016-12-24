@@ -18,11 +18,11 @@ var (
 
 type Note struct {
 	Sample   *[9555]byte
-	Duration int // Percent of semibreve.
+	Duration int // 16 for whole note, 4 for quarter note.
 }
 
 // Lulajże Jezuniu.
-var melody1 = [...]Note{
+var melody1 = []Note{
 	{e1, 4}, {e1, 4}, {e1, 4},
 	{g1, 4}, {f1, 2}, {e1, 2}, {f1, 4},
 	{d1, 4}, {d1, 4}, {f1, 4},
@@ -55,7 +55,7 @@ var melody1 = [...]Note{
 }
 
 // Jezus malusieńki.
-var melody2 = [...]Note{
+var melody2 = []Note{
 	{c2, 2}, {h1, 2}, {a1, 4}, {g1s, 2}, {a1, 2},
 	{h1, 4}, {e1, 8},
 	{c2, 2}, {h1, 2}, {a1, 4}, {g1s, 2}, {a1, 2},
@@ -69,5 +69,5 @@ var melody2 = [...]Note{
 	{d1, 2}, {e1, 2}, {f1, 4}, {f1, 4},
 	{e1, 2}, {f1, 2}, {g1, 4}, {g1, 4},
 	{a1, 2}, {g1, 2}, {f1, 4}, {e1, 2}, {d1, 2},
-	{d1, 4}, {c1, 4},
+	{d1, 4}, {c1, 8},
 }

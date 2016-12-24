@@ -100,12 +100,31 @@ func rndColor() ws281x.Color {
 	return ws281x.RGB(r, g, b)
 }
 
+func play(melody []Note, n int) {
+	for i := 0; i < n; i++ {
+		for _, note := range melody {
+			d := note.Duration
+			snd := note.Sample[:]
+			dly := 0
+			if d < 4 {
+				snd = snd[:(len(snd)*d+2)/4]
+			} else {
+				dly = (650*d+2)/4 - 650
+			}
+			audio.Play(snd)
+			delay.Millisec(dly)
+		}
+	}
+}
+
 func main() {
 	buf := make([]byte, 2)
 	ledram := ws281x.MakeS3(50)
 	pixel := ws281x.MakeS3(1)
 	white := ws281x.MakeS3(1)
+	red := ws281x.MakeS3(1)
 	white.EncodeRGB(ws281x.Color(0xffffff))
+	red.EncodeRGB(ws281x.Color(0xff0000))
 
 	delay.Millisec(200) // Wait for US-100 startup.
 
@@ -128,34 +147,24 @@ func main() {
 				pixel.EncodeRGB(ws281x.RGB(r*n/256, g*n/256, b*n/256).Gamma())
 				ledram.Fill(pixel)
 				leds.Write(ledram.Bytes())
-				delay.Millisec(10)
+				delay.Millisec(6)
 			}
 			delay.Millisec(500)
-			pixel.EncodeRGB(ws281x.Color(0xff0000))
-			ledram.Fill(pixel)
+
+			ledram.Fill(red)
 			leds.Write(ledram.Bytes())
-			melody := melody1[:]
-			if k&1 != 0 {
-				melody = melody2[:]
-			}
-			for _, note := range melody {
-				d := note.Duration
-				snd := note.Sample[:]
-				dly := 0
-				if d < 4 {
-					snd = snd[:(len(snd)*d+2)/4]
-				} else {
-					dly = (650*d+2)/4 - 650
-				}
-				audio.Play(snd)
-				delay.Millisec(dly)
+			if k&1 == 0 {
+				play(melody1, 1)
+			} else {
+				play(melody2, 3)
 			}
 			for n := 0; n < 25; n++ {
-				ledram.At(24 - n).Head(2 * (n + 1)).Clear()
+				ledram.At(n).Head(1).Clear()
+				ledram.At(49-n).Head(1).Clear()
 				leds.Write(ledram.Bytes())
-				delay.Millisec(20)
+				delay.Millisec(10)
 			}
-			delay.Millisec(500)
+			delay.Millisec(400)
 
 		default:
 			const N = 64
