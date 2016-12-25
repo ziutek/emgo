@@ -81,9 +81,3 @@ func initCPU() {
 	}
 }
 
-/*lsiz := 4 << uint(ccsidr.Field(pft.LineSize))
-nways := ccsidr.Field(pft.Associativity) - 1
-nsets := ccsidr.Field(pft.NumSets) - 1
-_ = lsiz
-_ = nways
-_ = nsets*/
