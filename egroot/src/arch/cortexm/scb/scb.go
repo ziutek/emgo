@@ -81,10 +81,10 @@ const (
 	UNALIGN_TRP    CCR_Bits = 1 << 3  //+
 	DIV_0_TRP      CCR_Bits = 1 << 4  //+
 	BFHFNMIGN      CCR_Bits = 1 << 8  //+
-	STKALIGN       CCR_Bits = 1 << 9  //+
-	DC             CCR_Bits = 1 << 16 //+
-	IC             CCR_Bits = 1 << 17 //+
-	BP             CCR_Bits = 1 << 18 //+
+	STKALIGN       CCR_Bits = 1 << 9  //+ Stack 8 B aligned on exception entry.
+	DC             CCR_Bits = 1 << 16 //+ Enable data cache.
+	IC             CCR_Bits = 1 << 17 //+ Enable instruction cache.
+	BP             CCR_Bits = 1 << 18 //+ Branch prediction is enabled.
 )
 
 const (
