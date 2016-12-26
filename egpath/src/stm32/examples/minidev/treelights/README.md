@@ -1,8 +1,10 @@
 ### Christmas Tree Lights ###
 
-![US-100 ultrasonic distance sensor](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/controller.jpg)
+![Controller](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/controller.jpg)
 
-![US-100 ultrasonic distance sensor](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/picture1.jpg)
+![Picture 1](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/picture1.jpg)
+
+![Picture 2](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/picture2.jpg)
 
 
 #### Components ####
@@ -27,7 +29,7 @@
 
 #### Schematic ####
 
-![WS2811 based string of 50 LEDs](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/schematic.png)
+![Schematic](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/schematic.png)
 
 ####  Description #####
 
@@ -35,19 +37,17 @@
 
 This project uses STM32 UART peripheral to send data to WS2811 controllers. One byte transmitted by UART represents three WS2811 bits (8 bytes per 24 bit RGB pixel).
 
-Raw STM32 UART Tx signal can not be used to form valid WS2811 bitstream, because:
+The raw STM32 UART Tx signal can not be used to form valid WS2811 bitstream, because:
 
 - the generated start and stop bits have bad polarity,
-- STM32 MCUs are 3.3 V devices but WS281x requires at least 3.5 V for logical high signal when powered from 5 V source.
+- MCUs is powered by 3.3 V linear regulator but WS281x requires at least 3.5 V for logical high signal when powered from 5 V source.
 
 Some way is required to invert UART signal and convert it to 5 V logic. This project uses SN74HCT04N chip (hex inverters in one case). As HCT device it accepts TTL logic at input, and when powered form 5 V, generates inverted signal with correct logic levels at output.
 
 ##### Audio #####
 
-STM32103C8T6 has no internal DAC peripheral. Instead of external DAC the internal general purpose timer in PWM mode is used to generate sound. To avoid big output capacitor and increase power, the speaker is driven by symetrical output. The software controls two channels of STM32 timer in the way shown in the figure below: 
+STM32103C8T6 has no internal DAC peripheral. Instead of use external DAC the internal general purpose timer in PWM mode is used to generate sound. To avoid big output capacitor and increase power, the speaker is driven by symetrical output. The software controls two channels of STM32 timer in the way shown in the figure below: 
 
-![US-100 ultrasonic distance sensor](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/pwm.png)
+![PWM](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/pwm.png)
 
 According to the datasheet and the Flash Size Register the STM32F103R8T6 MCU has 64 KB of Flash. Audio code heavily exploits the "property" that 128 KB of Flash seems to be available on any STM32F103R8T6 chip.
-
-![US-100 ultrasonic distance sensor](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/picture2.jpg)
