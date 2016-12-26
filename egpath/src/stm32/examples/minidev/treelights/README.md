@@ -1,11 +1,10 @@
 ### Christmas Tree Lights ###
 
 ![Controller](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/controller.jpg)
-
 ![Picture 1](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/picture1.jpg)
-
 ![Picture 2](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/picture2.jpg)
 
+[Video](https://youtu.be/7qUz77a7IhU)
 
 #### Components ####
 
