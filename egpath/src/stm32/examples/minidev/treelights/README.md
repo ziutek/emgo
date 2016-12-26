@@ -1,5 +1,6 @@
 ### Christmas Tree Lights ###
 
+[![Alt text for your video](http://img.youtube.com/vi/7qUz77a7IhU/0.jpg)](http://www.youtube.com/watch?v=7qUz77a7IhU)
 ![Controller](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/controller.jpg)
 ![Picture 1](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/picture1.jpg)
 ![Picture 2](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/picture2.jpg)
