@@ -77,7 +77,7 @@ const (
 // properly before use this function.
 func (p *Periph) BR(baudrate int) Conf {
 	pclk := p.Bus().Clock()
-	div := pclk / uint(baudrate)
+	div := (pclk + uint(baudrate) - 1) / uint(baudrate)
 	switch {
 	case div < 2:
 		div = 2
