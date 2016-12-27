@@ -12,8 +12,8 @@
   *          is using in the C source code, usually in main.c. This file contains:
   *           - Configuration section that allows to select:
   *              - The device used in the target application
-  *              - To use or not the peripheral’s drivers in application code(i.e. 
-  *                code will be based on direct access to peripheral’s registers 
+  *              - To use or not the peripheralï¿½s drivers in application code(i.e. 
+  *                code will be based on direct access to peripheralï¿½s registers 
   *                rather than drivers API), this option is controlled by 
   *                "#define USE_STDPERIPH_DRIVER"
   *              - To change few application-specific parameters such as the HSE 
@@ -1124,7 +1124,7 @@ typedef struct
   uint16_t      RESERVED12;  /*!< Reserved, 0x4A                                            */
   __IO uint16_t DMAR;        /*!< TIM DMA address for full transfer,   Address offset: 0x4C */
   uint16_t      RESERVED13;  /*!< Reserved, 0x4E                                            */
-  __IO uint16_t OR;          /*!< TIM option register,                 Address offset: 0x50 */
+  __IO uint32_t OR;          /*!< TIM option register,                 Address offset: 0x50 */
   __IO uint32_t CCMR3;       /*!< TIM capture/compare mode register 3, Address offset: 0x54 */
   __IO uint32_t CCR5;        /*!< TIM capture/compare register5,      Address offset: 0x58 */
   __IO uint32_t CCR6;        /*!< TIM capture/compare register 4,      Address offset: 0x5C */
