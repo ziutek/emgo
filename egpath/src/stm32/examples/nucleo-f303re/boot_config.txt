@@ -1,0 +1,31 @@
+BE CAREFUL!
+Manipulating option bytes in the wrong way can PERMANENTLY BRICK your device.
+
+Using GDB to change FLASH_OBR:
+
+Print FLASH_CR. LOCK is 1, OPTWRE is 0.
+
+(gdb) x 0x40022000+0x10
+0x40022010:     0x00000080
+
+Unlock FPEC:
+
+(gdb) set *(uint32*)(0x40022000+0x04) = 0x45670123
+(gdb) set *(uint32*)(0x40022000+0x04) = 0xCDEF89AB
+
+Print FLASH_CR. LOCK is 0, OPTWRE is 0.
+
+(gdb) x 0x40022000+0x10
+0x40022010:     0x00000000
+
+Unlock FLASH_OBR
+
+(gdb) set *(uint32*)(0x40022000+0x08) = 0x45670123
+(gdb) set *(uint32*)(0x40022000+0x08) = 0xCDEF89AB
+
+Print FLASH_CR. LOCK is 0, OPTWRE is 1.
+
+(gdb) x 0x40022000+0x10
+0x40022010:     0x00000200
+
+To be continued...
