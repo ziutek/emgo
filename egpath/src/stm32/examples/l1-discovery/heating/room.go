@@ -76,7 +76,7 @@ func (r *roomHeaterControl) loop(t *tim.TIM_Periph) {
 				}
 			}
 		}
-		og.Store(uint32(p) / 3)     // Small room, PWM mode 6.
+		og.Store(uint32(p) * 2 / 3) // Small room, PWM mode 6.
 		la.Store(rhMax - uint32(p)) // PWM mode 7 (use tail of PWM period first).
 		st.Store(uint32(p) * 2 / 3) // Medium room, PWM mode 6.
 		delay.Millisec(5e3)
