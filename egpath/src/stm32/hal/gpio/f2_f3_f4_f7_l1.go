@@ -1,4 +1,4 @@
-// +build f40_41xxx f411xe f746xx l1xx_md l1xx_mdp l1xx_hd l1xx_xl
+// +build f40_41xxx f411xe f746xx l1xx_md l1xx_mdp l1xx_hd l1xx_xl f303xe
 
 package gpio
 
@@ -41,9 +41,9 @@ func enableClock(p *Port, lp bool) {
 	pnum := portnum(p)
 	enreg().SetBits(rcc.GPIOAEN << pnum)
 	if lp {
-		lpenreg().SetBits(rcc.GPIOALPEN << pnum)
+		lpenaclk(pnum)
 	} else {
-		lpenreg().ClearBits(rcc.GPIOALPEN << pnum)
+		lpdisclk(pnum)
 	}
 	enreg().Load() // RCC delay (workaround for silicon bugs).
 }

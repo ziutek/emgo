@@ -166,7 +166,7 @@ func Setup(osc, mul, sdiv int) {
 		}
 	} else {
 		src = rcc.PLLSRC_HSI
-		M = 16 / 2 * rcc.PLLM_0
+		M = HSIClk / 2 * rcc.PLLM_0
 	}
 	RCC.PLLCFGR.Store(Q | src | P | N | M)
 	RCC.PLLON().Set()

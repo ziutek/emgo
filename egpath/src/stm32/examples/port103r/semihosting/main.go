@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	system.Setup(8, 72/8, false)
+	system.Setup(8, 1, 72/8)
 	rtc.Setup(32768)
 }
 

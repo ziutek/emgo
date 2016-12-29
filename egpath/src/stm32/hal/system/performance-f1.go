@@ -14,18 +14,20 @@ import (
 //
 // sdiv is system clock divider.
 //
-// div2 and mul determine the system clock frequency according to the formula:
+// div and mul determine the system clock frequency according to the formula:
 //
-//  SysClk = osc / (div2 ? 2 : 1) * mul * 1e6 [Hz]
+//  SysClk = osc / div2 * mul * 1e6 [Hz]
 //
 // when osc != 0 or:
 //
 //  SysClk = 4e6 * mul [Hz]
 //
-// when osc == 0. mul can be 2..16.
+// when osc == 0.
+//
+// div can be 1..16 (some models support only 1..2). mul can be 2..16.
 //
 // USB requires HSE and SysClk set to 48e6 or 72e6 Hz.
-func Setup(osc, mul int, div2 bool) {
+func Setup(osc, div, mul int) {
 	RCC := rcc.RCC
 
 	// Reset RCC clock configuration.
@@ -47,30 +49,26 @@ func Setup(osc, mul int, div2 bool) {
 	if mul < 2 || mul > 16 {
 		panic("bad PLL multipler")
 	}
-	sysclk := 4e6 * uint(mul) // Hz
+	sysclk := HSIClk / 2 * uint(mul) // Hz
 	if osc != 0 {
 		// HSE needs milliseconds to stabilize, so enable it now.
 		RCC.HSEON().Set()
-		sysclk = uint(osc) * uint(mul) * 1e6 // Hz
-		if div2 {
-			sysclk /= 2
-		}
+		sysclk = uint(osc) / uint(div) * uint(mul) * 1e6 // Hz
 	}
 	ahbclk := sysclk
 	cfgr := rcc.CFGR_Bits(mul-2) * rcc.PLLMULL_0
-	const maxAPB1clk = 36e6 // Hz
 	var apb1clk uint
 	switch {
-	case ahbclk <= 1*maxAPB1clk:
+	case ahbclk <= 1*maxAPB1Clk:
 		cfgr |= rcc.PPRE1_DIV1
 		apb1clk = ahbclk / 1
-	case ahbclk <= 2*maxAPB1clk:
+	case ahbclk <= 2*maxAPB1Clk:
 		cfgr |= rcc.PPRE1_DIV2
 		apb1clk = ahbclk / 2
-	case ahbclk <= 4*maxAPB1clk:
+	case ahbclk <= 4*maxAPB1Clk:
 		cfgr |= rcc.PPRE1_DIV4
 		apb1clk = ahbclk / 4
-	case ahbclk <= 8*maxAPB1clk:
+	case ahbclk <= 8*maxAPB1Clk:
 		cfgr |= rcc.PPRE1_DIV8
 		apb1clk = ahbclk / 8
 	default:
@@ -90,18 +88,18 @@ func Setup(osc, mul int, div2 bool) {
 	FLASH.ACR.SetBits(flash.PRFTBE | latency)
 
 	// Setup PLL.
+	div -= 1
 	if osc == 0 {
 		cfgr |= rcc.PLLSRC_HSI_Div2
 	} else {
 		cfgr |= rcc.PLLSRC_HSE
-		if div2 {
-			cfgr |= rcc.PLLXTPRE_HSE_Div2
-		}
+		cfgr |= rcc.CFGR_Bits(div&1) << rcc.PLLXTPRE_HSE
 		for RCC.HSERDY().Load() == 0 {
 			// Wait for HSE...
 		}
 	}
 	RCC.CFGR.Store(cfgr)
+	//RCC.CFGR2.PREDIV1().Store(div)
 	RCC.PLLON().Set()
 	for RCC.PLLRDY().Load() == 0 {
 		// Wait for PLL...

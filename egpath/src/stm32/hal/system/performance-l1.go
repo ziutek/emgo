@@ -85,7 +85,7 @@ func Setup(osc, sdiv int) {
 	sysclk := 96e6 / uint(sdiv) // Hz
 	ahbclk := sysclk
 	var apb1clk, apb2clk uint
-	if ahbclk <= 32e6 {
+	if ahbclk <= maxAPBClk {
 		cfgr |= rcc.PPRE1_DIV1 | rcc.PPRE2_DIV1
 		apb1clk = ahbclk / 1
 		apb2clk = ahbclk / 1

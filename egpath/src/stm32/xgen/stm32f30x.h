@@ -7614,10 +7614,7 @@ typedef struct
 #define  RCC_CFGR3_UART5SW                   ((uint32_t)0x00C00000)        /*!< UART5SW[1:0] bits */
 #define  RCC_CFGR3_UART5SW_0                 ((uint32_t)0x00400000)        /*!< Bit 0 */
 #define  RCC_CFGR3_UART5SW_1                 ((uint32_t)0x00800000)        /*!< Bit 1 */
-
-#define  RCC_CFGR3_TIM2SW                    ((uint32_t)0x01000000)        /*!< TIM3SW bits */
-#define  RCC_CFGR3_TIM3SW                    ((uint32_t)0x02000000)        /*!< TIM2SW bits */
-
+
 /******************************************************************************/
 /*                                                                            */
 /*                           Real-Time Clock (RTC)                            */

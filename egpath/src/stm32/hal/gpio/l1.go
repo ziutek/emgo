@@ -63,6 +63,8 @@ var (
 	G = (*Port)(unsafe.Pointer(mmap.GPIOG_BASE))
 )
 
-func enreg() *rcc.AHBENR     { return &rcc.RCC.AHBENR }
-func lpenreg() *rcc.AHBLPENR { return &rcc.RCC.AHBLPENR }
-func rstreg() *rcc.AHBRSTR   { return &rcc.RCC.AHBRSTR }
+func enreg() *rcc.AHBENR   { return &rcc.RCC.AHBENR }
+func rstreg() *rcc.AHBRSTR { return &rcc.RCC.AHBRSTR }
+
+func lpenaclk(pnum uint) { rcc.RCC.AHBLPENR.SetBits(rcc.GPIOALPEN << pnum) }
+func lpdisclk(pnum uint) { rcc.RCC.AHBLPENR.ClearBits(rcc.GPIOALPEN << pnum) }
