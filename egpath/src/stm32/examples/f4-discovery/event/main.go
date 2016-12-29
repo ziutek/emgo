@@ -3,8 +3,6 @@ package main
 import (
 	"rtos"
 
-	"arch/cortexm/bitband"
-
 	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
@@ -14,7 +12,7 @@ import (
 
 const button = gpio.Pin0
 
-var leds struct{ Red, Green, Blue, Orange bitband.Bit }
+var leds struct{ Red, Green, Blue, Orange gpio.Pin }
 
 func init() {
 	system.Setup168(8)
@@ -23,19 +21,18 @@ func init() {
 	gpio.A.EnableClock(true)
 	btnport := gpio.A
 	gpio.D.EnableClock(false)
-	ledport := gpio.D
+	leds.Green = gpio.D.Pin(12)
+	leds.Orange = gpio.D.Pin(13)
+	leds.Red = gpio.D.Pin(14)
+	leds.Blue = gpio.D.Pin(15)
 
 	// LEDs
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	for pin := 12; pin <= 15; pin++ {
-		ledport.SetupPin(pin, &cfg)
+	pins := []gpio.Pin{leds.Green, leds.Orange, leds.Red, leds.Blue}
+	for _, pin := range pins {
+		pin.Port().SetupPin(pin.Index(), &cfg)
 	}
-	pins := ledport.OutPins()
-	leds.Green = pins.Bit(12)
-	leds.Orange = pins.Bit(13)
-	leds.Red = pins.Bit(14)
-	leds.Blue = pins.Bit(15)
 
 	// Button
 

@@ -8,24 +8,24 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var leds *gpio.Port
-
-const (
-	Green  = gpio.Pin12
-	Orange = gpio.Pin13
-	Red    = gpio.Pin14
-	Blue   = gpio.Pin15
-)
+var green, orange, red, blue gpio.Pin
 
 func init() {
 	system.Setup168(8)
 	systick.Setup()
 
 	gpio.D.EnableClock(false)
-	leds = gpio.D
+	green = gpio.D.Pin(12)
+	orange = gpio.D.Pin(13)
+	red = gpio.D.Pin(14)
+	blue = gpio.D.Pin(15)
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(Green|Orange|Red|Blue, &cfg)
+
+	green.Port().SetupPin(green.Index(), &cfg)
+	orange.Port().SetupPin(orange.Index(), &cfg)
+	red.Port().SetupPin(red.Index(), &cfg)
+	blue.Port().SetupPin(blue.Index(), &cfg)
 }
 
 func wait() {
@@ -35,20 +35,20 @@ func wait() {
 
 func main() {
 	for {
-		leds.ClearPins(Green)
-		leds.SetPins(Orange)
+		green.Clear()
+		orange.Set()
 		wait()
 
-		leds.ClearPins(Orange)
-		leds.SetPins(Red)
+		orange.Clear()
+		red.Set()
 		wait()
 
-		leds.ClearPins(Red)
-		leds.SetPins(Blue)
+		red.Clear()
+		blue.Set()
 		wait()
 
-		leds.ClearPins(Blue)
-		leds.SetPins(Green)
+		blue.Clear()
+		green.Set()
 		wait()
 	}
 }

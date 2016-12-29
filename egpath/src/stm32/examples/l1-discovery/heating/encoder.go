@@ -1,9 +1,8 @@
 package main
 
 import (
-	"arch/cortexm/bitband"
-
 	"stm32/hal/exti"
+	"stm32/hal/gpio"
 	"stm32/hal/raw/tim"
 )
 
@@ -23,19 +22,18 @@ func (es EncoderState) Btn() bool {
 
 type Encoder struct {
 	t     *tim.TIM_Periph
-	btnIn bitband.Bit
+	btnIn gpio.Pin
 	btnEL exti.Lines
-	//base    uint32
 	lastCnt uint32
 	lastBtn int
 
 	State chan EncoderState
 }
 
-func (e *Encoder) Init(t *tim.TIM_Periph, btnIn bitband.Bit, btnEL exti.Lines) {
+func (e *Encoder) Init(t *tim.TIM_Periph, btn gpio.Pin) {
 	e.t = t
-	e.btnIn = btnIn
-	e.btnEL = btnEL
+	e.btnIn = btn
+	e.btnEL = exti.LineIndex(btn.Index())
 	e.State = make(chan EncoderState, 1)
 
 	t.SMCR.StoreBits(tim.SMS, 1<<tim.SMSn)
@@ -50,9 +48,10 @@ func (e *Encoder) Init(t *tim.TIM_Periph, btnIn bitband.Bit, btnEL exti.Lines) {
 	t.DIER.Store(tim.CC3IE | tim.CC4IE)
 	t.CR1.Store(2<<tim.CKDn | tim.CEN)
 
-	btnEL.EnableFallTrig()
-	btnEL.EnableRisiTrig()
-	btnEL.EnableIRQ()
+	e.btnEL.Connect(btn.Port())
+	e.btnEL.EnableFallTrig()
+	e.btnEL.EnableRisiTrig()
+	e.btnEL.EnableIRQ()
 }
 
 func (e *Encoder) SetCnt(cnt int) {

@@ -41,7 +41,8 @@ func init() {
 	spiport, sck, miso, mosi := gpio.A, gpio.Pin5, gpio.Pin6, gpio.Pin7
 
 	gpio.B.EnableClock(true)
-	ctrport, csn, irqn, ce := gpio.B, gpio.Pin6, gpio.Pin8, gpio.Pin9
+	csn := gpio.B.Pin(6)
+	ctrport, irqn, ce := gpio.B, gpio.Pin8, gpio.Pin9
 
 	// UART
 
@@ -81,7 +82,9 @@ func init() {
 
 	// nRF24 control lines.
 
-	ctrport.Setup(csn, &gpio.Config{Mode: gpio.Out, Speed: gpio.High})
+	csn.Port().SetupPin(
+		csn.Index(), &gpio.Config{Mode: gpio.Out, Speed: gpio.High},
+	)
 	ctrport.Setup(ce, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	ctrport.SetAltFunc(ce, gpio.TIM4)
 	rcc.RCC.TIM4EN().Set()
@@ -91,7 +94,7 @@ func init() {
 	rtos.IRQ(irq.EXTI9_5).Enable()
 
 	dci = nrfdci.NewDCI(
-		spid, ctrport, csn, system.APB1.Clock(), tim.TIM4, 4, irqline,
+		spid, csn, system.APB1.Clock(), tim.TIM4, 4, irqline,
 	)
 
 	// nRF24 requires wait at least 100 ms from start before use it.

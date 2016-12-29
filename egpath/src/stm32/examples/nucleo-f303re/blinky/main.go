@@ -8,30 +8,29 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var (
-	ledport *gpio.Port
-	ledpin  gpio.Pins
-)
+var led gpio.Pin
 
 func init() {
 	system.Setup(8, 1, 72/8)
 	systick.Setup()
 
 	gpio.A.EnableClock(false)
-	ledport, ledpin = gpio.A, gpio.Pin5
+	led = gpio.A.Pin(5)
 
-	ledport.Setup(ledpin, &gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
+	led.Port().SetupPin(
+		led.Index(), &gpio.Config{Mode: gpio.Out, Speed: gpio.Low},
+	)
 }
 
 func wait() {
-	delay.Millisec(500)
+	delay.Millisec(250)
 }
 
 func main() {
 	for {
-		ledport.SetPins(ledpin)
+		led.Set()
 		wait()
-		ledport.ClearPins(ledpin)
+		led.Clear()
 		wait()
 	}
 }

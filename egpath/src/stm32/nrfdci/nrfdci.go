@@ -21,12 +21,11 @@ type DCI struct {
 	cet     *tim.TIM_Periph
 	irqline exti.Lines
 	irqflag rtos.EventFlag
-	csnport *gpio.Port
-	csnpin  gpio.Pins // uint16
+	csn     gpio.Pin
 	ocmn    uint16
 }
 
-func NewDCI(spidrv *spi.Driver, csnport *gpio.Port, csnpin gpio.Pins, pclk uint, cet *tim.TIM_Periph, ch int, irqline exti.Lines) *DCI {
+func NewDCI(spidrv *spi.Driver, csn gpio.Pin, pclk uint, cet *tim.TIM_Periph, ch int, irqline exti.Lines) *DCI {
 	dci := new(DCI)
 	dci.spi = spidrv
 	spidrv.P.SetConf(
@@ -36,9 +35,8 @@ func NewDCI(spidrv *spi.Driver, csnport *gpio.Port, csnpin gpio.Pins, pclk uint,
 	)
 	spidrv.P.Enable()
 
-	dci.csnport = csnport
-	dci.csnpin = csnpin
-	csnport.SetPins(csnpin)
+	dci.csn = csn
+	csn.Set()
 
 	dci.cet = cet
 	if pclk != system.AHB.Clock() {
@@ -88,9 +86,9 @@ func (dci *DCI) SPI() *spi.Driver {
 }
 
 func (dci *DCI) WriteRead(oi ...[]byte) (n int, err error) {
-	dci.csnport.ClearPins(dci.csnpin)
+	dci.csn.Clear()
 	dci.spi.WriteReadMany(oi...)
-	dci.csnport.SetPins(dci.csnpin)
+	dci.csn.Set()
 	return n, dci.spi.Err()
 }
 

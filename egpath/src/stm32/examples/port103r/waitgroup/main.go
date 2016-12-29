@@ -6,8 +6,6 @@ import (
 	"rtos"
 	"sync"
 
-	"arch/cortexm/bitband"
-
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/system"
@@ -15,8 +13,8 @@ import (
 )
 
 var (
-	leds [4]bitband.Bit
-	key3 bitband.Bit
+	leds [4]gpio.Pin
+	key3 gpio.Pin
 	rnd  rand.XorShift64
 )
 
@@ -24,24 +22,30 @@ func init() {
 	system.Setup(8, 1, 72/8)
 	rtc.Setup(32768)
 
+	// GPIO
+
+	gpio.B.EnableClock(false)
+	leds[2] = gpio.B.Pin(5)
+	leds[1] = gpio.B.Pin(6)
+	leds[0] = gpio.B.Pin(7)
+
+	gpio.C.EnableClock(true)
+	key3 = gpio.C.Pin(10)
+
+	gpio.D.EnableClock(false)
+	leds[3] = gpio.D.Pin(2)
+
+	// LEDs
+
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	port := gpio.B
-	port.EnableClock(false)
-	pins := port.OutPins()
-	for n, pin := range []int{7, 6, 5} {
-		port.SetupPin(pin, &cfg)
-		leds[n] = pins.Bit(pin)
+	for _, pin := range leds {
+		pin.Port().SetupPin(pin.Index(), &cfg)
 	}
-	port = gpio.D
-	port.EnableClock(false)
-	port.SetupPin(2, &cfg)
-	leds[3] = port.OutPins().Bit(2)
+
+	// Key
 
 	cfg = gpio.Config{Mode: gpio.In, Pull: gpio.PullUp}
-	port = gpio.C
-	port.EnableClock(true)
-	port.SetupPin(10, &cfg)
-	key3 = port.InPins().Bit(10)
+	key3.Port().SetupPin(key3.Index(), &cfg)
 
 	rnd.Seed(rtos.Nanosec())
 }
@@ -53,7 +57,7 @@ func waitkey(wg *sync.WaitGroup) {
 	wg.Add(-1)
 }
 
-func setled(wg *sync.WaitGroup, led bitband.Bit, v int) {
+func setled(wg *sync.WaitGroup, led gpio.Pin, v int) {
 	// rnd.Uint32 isn't thread safe but don't care.
 	delay.Millisec(100 + int(rnd.Uint32()&0x3ff))
 	led.Store(v)

@@ -8,8 +8,6 @@ import (
 	"mmio"
 	"rtos"
 
-	"arch/cortexm/bitband"
-
 	"nrf24"
 
 	"stm32/nrfdci"
@@ -29,7 +27,7 @@ import (
 var (
 	dci *nrfdci.DCI
 	pwm *mmio.U32
-	led bitband.Bit
+	led gpio.Pin
 )
 
 func init() {
@@ -40,17 +38,19 @@ func init() {
 	// GPIO
 
 	gpio.A.EnableClock(true)
-	ledport, ledpin := gpio.A, 1
+	led = gpio.A.Pin(1)
 	spiport, sck, miso, mosi := gpio.A, gpio.Pin5, gpio.Pin6, gpio.Pin7
 	pwmport, pwmpin := gpio.A, gpio.Pin0
 
 	gpio.B.EnableClock(true)
-	ctrport, csn, irqn, ce := gpio.B, gpio.Pin6, gpio.Pin8, gpio.Pin9
+	csn := gpio.B.Pin(6)
+	ctrport, irqn, ce := gpio.B, gpio.Pin8, gpio.Pin9
 
 	// LED
 
-	ledport.SetupPin(ledpin, &gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
-	led = ledport.OutPins().Bit(ledpin)
+	led.Port().SetupPin(
+		led.Index(), &gpio.Config{Mode: gpio.Out, Speed: gpio.Low},
+	)
 
 	// PWM
 
@@ -90,7 +90,9 @@ func init() {
 
 	// nRF24 control lines.
 
-	ctrport.Setup(csn, &gpio.Config{Mode: gpio.Out, Speed: gpio.High})
+	csn.Port().SetupPin(
+		csn.Index(), &gpio.Config{Mode: gpio.Out, Speed: gpio.High},
+	)
 	ctrport.Setup(ce, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	ctrport.SetAltFunc(ce, gpio.TIM4)
 	rcc.RCC.TIM4EN().Set()
@@ -100,7 +102,7 @@ func init() {
 	rtos.IRQ(irq.EXTI9_5).Enable()
 
 	dci = nrfdci.NewDCI(
-		spid, ctrport, csn, system.APB1.Clock(), tim.TIM4, 4, irqline,
+		spid, csn, system.APB1.Clock(), tim.TIM4, 4, irqline,
 	)
 
 	// nRF24 requires wait at least 100 ms from start before use it.

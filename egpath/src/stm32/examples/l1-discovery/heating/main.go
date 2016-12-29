@@ -4,7 +4,6 @@ package main
 import (
 	"rtos"
 
-	"arch/cortexm/bitband"
 	"arch/cortexm/nvic"
 
 	"stm32/hal/dma"
@@ -21,7 +20,7 @@ import (
 )
 
 // Onboard LED (green is diconected to use PB7 for room heater).
-var ledBlue bitband.Bit
+var ledBlue gpio.Pin
 
 // prio16 must be in the range [0;15]. Do not use prio16 <= 8 (SVCall prio) for
 // realtime ISRs.
@@ -38,12 +37,12 @@ func init() {
 	// GPIO.
 
 	gpio.A.EnableClock(true)
-	btnport, btnpin := gpio.A, gpio.Pin0
+	btn := gpio.A.Pin(0)
 	encport, encpins := gpio.A, gpio.Pin1|gpio.Pin5
-	ebtnport, ebtnpin := gpio.A, 4
+	encbtn := gpio.A.Pin(4)
 
 	gpio.B.EnableClock(true)
-	ledport, bluepin := gpio.B, 6
+	ledBlue = gpio.B.Pin(6)
 	rhport, rhpins := gpio.B, gpio.Pin7|gpio.Pin8|gpio.Pin9
 	lcdport, lcdpins := gpio.B, gpio.Pin10|gpio.Pin11
 	wsport, wspin := gpio.B, gpio.Pin13
@@ -57,9 +56,9 @@ func init() {
 	dma1.EnableClock(true)
 
 	// Button.
-	btnport.Setup(btnpin, &gpio.Config{Mode: gpio.In})
-	line := exti.Lines(btnpin)
-	line.Connect(btnport)
+	btn.Port().SetupPin(btn.Index(), &gpio.Config{Mode: gpio.In})
+	line := exti.LineIndex(btn.Index())
+	line.Connect(btn.Port())
 	line.EnableRisiTrig()
 	line.EnableIRQ()
 	irqen(irq.EXTI0, 1)
@@ -67,9 +66,7 @@ func init() {
 	slowOutCfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 
 	// LED.
-	ledport.SetupPin(bluepin, &slowOutCfg)
-	bb := ledport.OutPins()
-	ledBlue = bb.Bit(bluepin)
+	ledBlue.Port().SetupPin(ledBlue.Index(), &slowOutCfg)
 
 	// Room heating PWM.
 	rhport.Setup(rhpins, &gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
@@ -111,10 +108,10 @@ func init() {
 	encport.Setup(encpins, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	encport.SetAltFunc(encpins, gpio.TIM2)
 	rcc.RCC.TIM2EN().Set()
-	ebtnport.SetupPin(ebtnpin, &gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
-	line = exti.LineN(ebtnpin)
-	line.Connect(ebtnport)
-	encoder.Init(tim.TIM2, ebtnport.InPins().Bit(ebtnpin), line)
+	encbtn.Port().SetupPin(
+		encbtn.Index(), &gpio.Config{Mode: gpio.In, Pull: gpio.PullUp},
+	)
+	encoder.Init(tim.TIM2, encbtn)
 	irqen(irq.TIM2, 10)
 	irqen(irq.EXTI4, 10)
 

@@ -8,8 +8,6 @@ import (
 	"mmio"
 	"rtos"
 
-	"arch/cortexm/bitband"
-
 	"nrf24"
 
 	"stm32/nrfdci"
@@ -27,7 +25,7 @@ import (
 )
 
 var (
-	led bitband.Bit
+	led gpio.Pin
 	dci *nrfdci.DCI
 	enc *mmio.U16
 )
@@ -38,22 +36,22 @@ func init() {
 	start := rtos.Nanosec()
 
 	gpio.A.EnableClock(true)
-	spiport, csn, sck, miso, mosi := gpio.A, gpio.Pin4, gpio.Pin5, gpio.Pin6, gpio.Pin7
+	csn := gpio.A.Pin(4)
+	spiport, sck, miso, mosi := gpio.A, gpio.Pin5, gpio.Pin6, gpio.Pin7
 
 	gpio.B.EnableClock(true)
 	ctrport, ce, irqn := gpio.B, gpio.Pin0, gpio.Pin1
 	encport, encpins := gpio.B, gpio.Pin6|gpio.Pin7
 
 	gpio.C.EnableClock(false)
-	ledport, ledpin := gpio.C, 13
+	led = gpio.C.Pin(13)
 
 	// LED
 
-	ledport.SetupPin(
-		ledpin,
+	led.Port().SetupPin(
+		led.Index(),
 		&gpio.Config{Mode: gpio.Out, Driver: gpio.OpenDrain, Speed: gpio.Low},
 	)
-	led = ledport.OutPins().Bit(ledpin)
 	led.Set()
 
 	// Encoder
@@ -71,7 +69,9 @@ func init() {
 
 	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
-	spiport.Setup(csn, &gpio.Config{Mode: gpio.Out, Speed: gpio.High})
+	csn.Port().SetupPin(
+		csn.Index(), &gpio.Config{Mode: gpio.Out, Speed: gpio.High},
+	)
 	d := dma.DMA1
 	d.EnableClock(true)
 	spid := spi.NewDriver(spi.SPI1, d.Channel(2, 0), d.Channel(3, 0))
@@ -89,9 +89,7 @@ func init() {
 	irqline.Connect(ctrport)
 	rtos.IRQ(irq.EXTI1).Enable()
 
-	dci = nrfdci.NewDCI(
-		spid, spiport, csn, system.APB1.Clock(), tim.TIM3, 3, irqline,
-	)
+	dci = nrfdci.NewDCI(spid, csn, system.APB1.Clock(), tim.TIM3, 3, irqline)
 	// nRF24 requires wait at least 100 ms from start before use it.
 	rtos.SleepUntil(start + 100e6)
 

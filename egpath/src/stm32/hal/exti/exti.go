@@ -31,9 +31,9 @@ const (
 	RTCALR Lines = 1 << 17 // Real Time Clock Alarm event.
 )
 
-// LineN returns bitmask for n-th EXTI line.
-func LineN(n int) Lines {
-	return Lines(1 << uint(n))
+// LineIndex returns bitmask for id EXTI line.
+func LineIndex(id int) Lines {
+	return Lines(1 << uint(id))
 }
 
 // Connect connects lines to corresponding pins of GPIO port. After reset lines

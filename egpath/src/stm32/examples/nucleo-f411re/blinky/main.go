@@ -3,26 +3,22 @@ package main
 import (
 	"delay"
 
-	"arch/cortexm/bitband"
-
 	"stm32/hal/gpio"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
 )
 
-var led bitband.Bit
+var led gpio.Pin
 
 func init() {
 	system.Setup96(8)
 	systick.Setup()
 
-	port, pin := gpio.A, 5
-	led = port.OutPins().Bit(pin)
-
-	port.EnableClock(false)
+	gpio.A.EnableClock(false)
+	led = gpio.A.Pin(5)
 
 	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	port.SetupPin(pin, cfg)
+	led.Port().SetupPin(led.Index(), cfg)
 }
 
 func wait() {
