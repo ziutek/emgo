@@ -23,3 +23,8 @@
 #undef STM32F10X_HD_VL
 #undef STM32F10X_XL
 #undef STM32F10X_CL
+
+#undef STM32F303xC
+#undef STM32F334x8
+#undef STM32F302x8
+#undef STM32F303xE

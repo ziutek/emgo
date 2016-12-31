@@ -67,8 +67,8 @@ const (
 	ISSLow  = Conf(0)       // Set NSS internally to low (requires SoftSS).
 	ISSHigh = Conf(spi.SSI) // Set NSS internally to high (requires SoftSS).
 
-	Frame8  = Conf(0)       // 8-bit frame (must disable Periph before change).
-	Frame16 = Conf(spi.DFF) // 16-bit frame (must disable Periph before change).
+	//Frame8  = Conf(0)       // 8-bit frame (must disable Periph before change).
+	//Frame16 = Conf(spi.DFF) // 16-bit frame (must disable Periph before change).
 )
 
 // BR calculates baud rate bits of configuration. BR guarantees that returned
@@ -105,6 +105,7 @@ func (p *Periph) Conf() Conf {
 // SetConf configures p and enables or disables it.
 func (p *Periph) SetConf(cfg Conf) {
 	p.raw.CR1.U16.StoreBits(cfgMask, uint16(cfg))
+	//p.raw.FRXTH().Set()
 }
 
 // Event is a bitfield that encodes possible peripheral events.
@@ -125,12 +126,11 @@ const (
 type Error byte
 
 const (
-	ErrUnderrun = Error(spi.UDR >> 3)
-	ErrCRC      = Error(spi.CRCERR >> 3)
-	ErrMode     = Error(spi.MODF >> 3)
-	ErrOverrun  = Error(spi.OVR >> 3)
+	ErrCRC     = Error(spi.CRCERR >> 3)
+	ErrMode    = Error(spi.MODF >> 3)
+	ErrOverrun = Error(spi.OVR >> 3)
 
-	errorMask = ErrUnderrun | ErrCRC | ErrMode | ErrOverrun
+	errorMask = ErrCRC | ErrMode | ErrOverrun
 )
 
 func (e Error) Error() string {
@@ -139,9 +139,6 @@ func (e Error) Error() string {
 		d Error
 	)
 	switch {
-	case e&ErrUnderrun != 0:
-		d = ErrUnderrun
-		s = "SPI underrun+"
 	case e&ErrCRC != 0:
 		d = ErrCRC
 		s = "SPI CRC error+"

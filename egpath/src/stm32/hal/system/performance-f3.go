@@ -9,14 +9,14 @@ import (
 
 // Setup setups MCU for best performance.
 //
-// osc is freqency of external resonator in MHz. Allowed values: 4 to 16 MHz.
+// osc is freqency of external resonator in MHz. Allowed values: 4 to 32 MHz.
 // Use 0 to select internal HSI oscilator (8 MHz / 2) as system clock source.
 //
 // sdiv is system clock divider.
 //
 // div and mul determine the system clock frequency according to the formula:
 //
-//  SysClk = osc / div2 * mul * 1e6 [Hz]
+//  SysClk = osc / div * mul * 1e6 [Hz]
 //
 // when osc != 0 or:
 //
@@ -43,7 +43,7 @@ func Setup(osc, div, mul int) {
 	RCC.CIR.Store(0) // Disable clock interrupts.
 
 	// Calculate system clock.
-	if osc != 0 && (osc < 4 || osc > 16) {
+	if osc != 0 && (osc < 4 || osc > 32) {
 		panic("bad HSE osc freq")
 	}
 	if mul < 2 || mul > 16 {
@@ -53,7 +53,7 @@ func Setup(osc, div, mul int) {
 	if osc != 0 {
 		// HSE needs milliseconds to stabilize, so enable it now.
 		RCC.HSEON().Set()
-		sysclk = uint(osc) / uint(div) * uint(mul) * 1e6 // Hz
+		sysclk = uint(osc) * 1e6 / uint(div) * uint(mul) // Hz
 	}
 	ahbclk := sysclk
 	cfgr := rcc.CFGR_Bits(mul-2) * rcc.PLLMULL_0
