@@ -2,7 +2,6 @@ package main
 
 import (
 	"delay"
-	"fmt"
 	"io"
 	"math/rand"
 	"rtos"
@@ -88,7 +87,9 @@ func init() {
 
 func checkErr(err error) {
 	if err != nil {
-		fmt.Printf("\nError: %v\n", err)
+		dbg := rtos.Debug(0)
+		dbg.WriteString(err.Error())
+		dbg.WriteString("\n")
 	}
 }
 
@@ -163,11 +164,11 @@ func main() {
 			leds.Write(ledram.Bytes())
 			switch iter % 3 {
 			case 0:
-				play(melody1, 2)
+				play(melody0, 2)
 			case 1:
+				play(melody1, 2)
+			case 2:
 				play(melody2, 3)
-			default:
-				play(melody3, 1)
 			}
 
 			// Turn off LEDs in sequence (starting from both ends).
