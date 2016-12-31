@@ -56,7 +56,7 @@ func init() {
 	dma1.EnableClock(true)
 
 	// Button.
-	btn.Port().SetupPin(btn.Index(), &gpio.Config{Mode: gpio.In})
+	btn.Setup(&gpio.Config{Mode: gpio.In})
 	line := exti.LineIndex(btn.Index())
 	line.Connect(btn.Port())
 	line.EnableRisiTrig()
@@ -66,7 +66,7 @@ func init() {
 	slowOutCfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 
 	// LED.
-	ledBlue.Port().SetupPin(ledBlue.Index(), &slowOutCfg)
+	ledBlue.Setup(&slowOutCfg)
 
 	// Room heating PWM.
 	rhport.Setup(rhpins, &gpio.Config{Mode: gpio.Alt, Speed: gpio.Low})
@@ -108,9 +108,7 @@ func init() {
 	encport.Setup(encpins, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	encport.SetAltFunc(encpins, gpio.TIM2)
 	rcc.RCC.TIM2EN().Set()
-	encbtn.Port().SetupPin(
-		encbtn.Index(), &gpio.Config{Mode: gpio.In, Pull: gpio.PullUp},
-	)
+	encbtn.Setup(&gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
 	encoder.Init(tim.TIM2, encbtn)
 	irqen(irq.TIM2, 10)
 	irqen(irq.EXTI4, 10)

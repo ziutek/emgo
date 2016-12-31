@@ -39,13 +39,12 @@ func init() {
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	for _, pin := range leds {
-		pin.Port().SetupPin(pin.Index(), &cfg)
+		pin.Setup(&cfg)
 	}
 
 	// Key
 
-	cfg = gpio.Config{Mode: gpio.In, Pull: gpio.PullUp}
-	key3.Port().SetupPin(key3.Index(), &cfg)
+	key3.Setup(&gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
 
 	rnd.Seed(rtos.Nanosec())
 }

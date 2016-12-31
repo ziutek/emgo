@@ -22,10 +22,10 @@ func init() {
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 
-	green.Port().SetupPin(green.Index(), &cfg)
-	orange.Port().SetupPin(orange.Index(), &cfg)
-	red.Port().SetupPin(red.Index(), &cfg)
-	blue.Port().SetupPin(blue.Index(), &cfg)
+	green.Setup(&cfg)
+	orange.Setup(&cfg)
+	red.Setup(&cfg)
+	blue.Setup(&cfg)
 }
 
 func wait() {

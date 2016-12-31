@@ -1,5 +1,9 @@
 package gpio
 
+import (
+	"unsafe"
+)
+
 // Mode specifies operation mode.
 type Mode byte
 
@@ -50,9 +54,9 @@ type Config struct {
 	Pull   Pull   // Pull-up/pull-down resistors.
 }
 
-// SetupPin configures n-th pin.
-func (p *Port) SetupPin(n int, cfg *Config) {
-	setup(p, n, cfg)
+// SetupPin configures one pin.
+func (p *Port) SetupPin(index int, cfg *Config) {
+	setup(p, index, cfg)
 }
 
 // Setup configures pins.
@@ -64,7 +68,7 @@ func (p *Port) Setup(pins Pins, cfg *Config) {
 	}
 }
 
-// Lock locks configuration of n-th pin. Locked configuration can not be
+// Lock locks configuration of specified pins. Locked configuration can not be
 // modified until reset.
 func (p *Port) Lock(pins Pins) {
 	pins1 := uint32(pins) | 0x10000
@@ -73,4 +77,9 @@ func (p *Port) Lock(pins Pins) {
 	p.lckr.Store(pins1)
 	p.lckr.Load()
 	p.lckr.Load()
+}
+
+func (p *Port) Pin(id int) Pin {
+	ptr := uintptr(unsafe.Pointer(p))
+	return Pin{ptr | uintptr(id&0xf)}
 }

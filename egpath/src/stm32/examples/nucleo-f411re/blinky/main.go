@@ -17,8 +17,8 @@ func init() {
 	gpio.A.EnableClock(false)
 	led = gpio.A.Pin(5)
 
-	cfg := &gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	led.Port().SetupPin(led.Index(), cfg)
+	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
+	led.Setup(&cfg)
 }
 
 func wait() {

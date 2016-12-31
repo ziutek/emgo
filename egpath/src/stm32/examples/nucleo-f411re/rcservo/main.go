@@ -48,9 +48,7 @@ func init() {
 
 	// LED
 
-	led.Port().SetupPin(
-		led.Index(), &gpio.Config{Mode: gpio.Out, Speed: gpio.Low},
-	)
+	led.Setup(&gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
 
 	// PWM
 
@@ -90,9 +88,7 @@ func init() {
 
 	// nRF24 control lines.
 
-	csn.Port().SetupPin(
-		csn.Index(), &gpio.Config{Mode: gpio.Out, Speed: gpio.High},
-	)
+	csn.Setup(&gpio.Config{Mode: gpio.Out, Speed: gpio.High})
 	ctrport.Setup(ce, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	ctrport.SetAltFunc(ce, gpio.TIM4)
 	rcc.RCC.TIM4EN().Set()

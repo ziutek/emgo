@@ -72,7 +72,7 @@ func (a *Audio) Play(snd []byte) {
 	a.snd = snd
 	a.n = 7 << 1 // Skip fierst 7 samples to speed up FIR algorithm.
 	a.end.Reset(0)
-	fence.RW()
+	fence.W()
 	a.t.DIER.Store(tim.UIE)
 	a.end.Wait(1, 0)
 }

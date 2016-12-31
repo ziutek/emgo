@@ -29,9 +29,8 @@ func init() {
 	// LEDs
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	pins := []gpio.Pin{leds.Green, leds.Orange, leds.Red, leds.Blue}
-	for _, pin := range pins {
-		pin.Port().SetupPin(pin.Index(), &cfg)
+	for _, pin := range []gpio.Pin{leds.Green, leds.Orange, leds.Red, leds.Blue} {
+		pin.Setup(&cfg)
 	}
 
 	// Button

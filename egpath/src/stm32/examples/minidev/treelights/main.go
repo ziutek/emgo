@@ -32,8 +32,8 @@ func init() {
 	// GPIO
 
 	gpio.A.EnableClock(true)
-	auxport, auxpin := gpio.A, 0
-	ledport, ledpin := gpio.A, gpio.Pin2
+	auxpin := gpio.A.Pin(0)
+	ledspin := gpio.A.Pin(2)
 
 	gpio.B.EnableClock(true)
 	audioport, audiopins := gpio.B, gpio.Pin8|gpio.Pin9
@@ -41,7 +41,7 @@ func init() {
 
 	// LED USART
 
-	ledport.Setup(ledpin, &gpio.Config{Mode: gpio.Alt})
+	ledspin.Setup(&gpio.Config{Mode: gpio.Alt})
 	d := dma.DMA1
 	d.EnableClock(true)
 	leds = usart.NewDriver(usart.USART2, nil, d.Channel(7, 0), nil)
@@ -81,7 +81,7 @@ func init() {
 
 	// AUX output
 
-	auxport.SetupPin(auxpin, &gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
+	auxpin.Setup(&gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
 
 	rnd.Seed(rtos.Nanosec())
 }
@@ -161,10 +161,13 @@ func main() {
 			// Light the red color and play music.
 			ledram.Fill(red)
 			leds.Write(ledram.Bytes())
-			if iter&1 == 0 {
+			switch iter % 3 {
+			case 0:
 				play(melody1, 2)
-			} else {
+			case 1:
 				play(melody2, 3)
+			default:
+				play(melody3, 1)
 			}
 
 			// Turn off LEDs in sequence (starting from both ends).

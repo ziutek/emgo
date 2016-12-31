@@ -48,10 +48,7 @@ func init() {
 
 	// LED
 
-	led.Port().SetupPin(
-		led.Index(),
-		&gpio.Config{Mode: gpio.Out, Driver: gpio.OpenDrain, Speed: gpio.Low},
-	)
+	led.Setup(&gpio.Config{Mode: gpio.Out, Driver: gpio.OpenDrain, Speed: gpio.Low})
 	led.Set()
 
 	// Encoder
@@ -69,9 +66,7 @@ func init() {
 
 	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
-	csn.Port().SetupPin(
-		csn.Index(), &gpio.Config{Mode: gpio.Out, Speed: gpio.High},
-	)
+	csn.Setup(&gpio.Config{Mode: gpio.Out, Speed: gpio.High})
 	d := dma.DMA1
 	d.EnableClock(true)
 	spid := spi.NewDriver(spi.SPI1, d.Channel(2, 0), d.Channel(3, 0))

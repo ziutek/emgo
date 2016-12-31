@@ -23,7 +23,7 @@ func init() {
 	led = gpio.A.Pin(5)
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	led.Port().SetupPin(led.Index(), &cfg)
+	led.Setup(&cfg)
 }
 
 func wait() {
