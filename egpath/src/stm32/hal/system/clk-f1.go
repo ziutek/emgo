@@ -5,5 +5,5 @@ package system
 const HSIClk = 8e6 // Hz
 
 const (
-	maxAPB1Clk = 32e6 // Hz
+	maxAPB1Clk = 36e6 // Hz
 )
