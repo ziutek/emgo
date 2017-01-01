@@ -97,13 +97,34 @@ func (d *Driver) WriteReadByte(b byte) byte {
 	return b
 }
 
-func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int) int {
+func (d *Driver) WriteReadWord16(w16 uint16) uint16 {
+	if d.err != 0 {
+		return 0
+	}
+	d.P.SetDuplex(Full)
+	d.P.EnableIRQ(RxNotEmpty | Err)
+	d.done.Reset(0)
+	fence.W() // This orders writes to normal and I/O memory.
+	d.P.StoreWord16(w16)
+	if !d.done.Wait(1, d.deadline) {
+		d.err = uint(ErrTimeout) << 16
+		return 0
+	}
+	w16 = d.P.LoadWord16()
+	if _, e := d.P.Status(); e != 0 {
+		d.err = uint(e) << 8
+		return 0
+	}
+	return w16
+}
+
+func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int, wsize uintptr) int {
 	txdmacfg := dma.MTP | dma.FIFO_4_4
 	if olen > 1 {
 		txdmacfg |= dma.IncM
 	}
 	d.setupDMA(d.TxDMA, txdmacfg, 1)
-	d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4, 1)
+	d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4, wsize)
 	d.P.SetDuplex(Full)
 	d.P.EnableDMA(RxNotEmpty | TxEmpty)
 	d.P.EnableIRQ(Err)
@@ -151,8 +172,8 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int) int {
 	}
 }
 
-func (d *Driver) writeDMA(out uintptr, olen int) {
-	d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4, 1)
+func (d *Driver) writeDMA(out uintptr, olen int, wsize uintptr) {
+	d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4, wsize)
 	d.P.SetDuplex(HalfOut) // Avoid ErrOverflow.
 	d.P.EnableDMA(TxEmpty)
 	d.P.EnableIRQ(Err)
@@ -213,7 +234,38 @@ func (d *Driver) Err() error {
 	return dma.Error(e)
 }
 
-var ffff uint16 = 0xffff
+func (d *Driver) writeRead(oaddr, iaddr uintptr, olen, ilen int, wsize uintptr) int {
+	if olen > ilen {
+		var n int
+		if ilen > 0 {
+			n = d.writeReadDMA(oaddr, iaddr, ilen, ilen, wsize)
+			if d.err != 0 {
+				return n
+			}
+			olen -= ilen
+			oaddr += uintptr(ilen)
+		}
+		d.writeDMA(oaddr, olen, wsize)
+		return n
+	}
+	if ilen > olen {
+		var n int
+		ffff := uint16(0xffff)
+		if olen > 0 {
+			n = d.writeReadDMA(oaddr, iaddr, olen, olen, wsize)
+			if d.err != 0 {
+				return n
+			}
+			ilen -= olen
+			iaddr += uintptr(olen)
+			oaddr += uintptr(olen - 1)
+		} else {
+			oaddr = uintptr(unsafe.Pointer(&ffff))
+		}
+		return n + d.writeReadDMA(oaddr, iaddr, 1, ilen, wsize)
+	}
+	return d.writeReadDMA(oaddr, iaddr, ilen, ilen, wsize)
+}
 
 func (d *Driver) WriteStringRead(out string, in []byte) int {
 	olen := len(out)
@@ -236,35 +288,7 @@ func (d *Driver) WriteStringRead(out string, in []byte) int {
 	}
 	oaddr := (*reflect.StringHeader)(unsafe.Pointer(&out)).Data
 	iaddr := (*reflect.SliceHeader)(unsafe.Pointer(&in)).Data
-	if olen > ilen {
-		var n int
-		if ilen > 0 {
-			n = d.writeReadDMA(oaddr, iaddr, ilen, ilen)
-			if d.err != 0 {
-				return n
-			}
-			olen -= ilen
-			oaddr += uintptr(ilen)
-		}
-		d.writeDMA(oaddr, olen)
-		return n
-	}
-	if ilen > olen {
-		var n int
-		if olen > 0 {
-			n = d.writeReadDMA(oaddr, iaddr, olen, olen)
-			if d.err != 0 {
-				return n
-			}
-			ilen -= olen
-			iaddr += uintptr(olen)
-			oaddr += uintptr(olen - 1)
-		} else {
-			oaddr = uintptr(unsafe.Pointer(&ffff))
-		}
-		return n + d.writeReadDMA(oaddr, iaddr, 1, ilen)
-	}
-	return d.writeReadDMA(oaddr, iaddr, ilen, ilen)
+	return d.writeRead(oaddr, iaddr, olen, ilen, 1)
 }
 
 func (d *Driver) WriteRead(out, in []byte) int {
@@ -280,6 +304,43 @@ func (d *Driver) WriteReadMany(oi ...[]byte) int {
 		}
 		out := oi[k]
 		n += d.WriteRead(out, in)
+	}
+	return n
+}
+
+func (d *Driver) WriteRead16(out, in []uint16) int {
+	olen := len(out)
+	ilen := len(in)
+	if d.err != 0 || olen == 0 && ilen == 0 {
+		return 0
+	}
+	if olen <= 1 && ilen <= 1 {
+		// Avoid DMA for one word transfers.
+		w := uint16(0xffff)
+		if olen != 0 {
+			w = out[0]
+		}
+		w = d.WriteReadWord16(w)
+		if ilen != 0 {
+			in[0] = w
+			return 1
+		}
+		return 0
+	}
+	oaddr := (*reflect.SliceHeader)(unsafe.Pointer(&out)).Data
+	iaddr := (*reflect.SliceHeader)(unsafe.Pointer(&in)).Data
+	return d.writeRead(oaddr, iaddr, olen, ilen, 2)
+}
+
+func (d *Driver) WriteReadMany16(oi ...[]uint16) int {
+	var n int
+	for k := 0; k < len(oi); k += 2 {
+		var in []uint16
+		if k+1 < len(oi) {
+			in = oi[k+1]
+		}
+		out := oi[k]
+		n += d.WriteRead16(out, in)
 	}
 	return n
 }

@@ -84,6 +84,7 @@ func init() {
 			ili.SPI.P.BR(18e6) | // 18 MHz max.
 			spi.SoftSS | spi.ISSHigh,
 	)
+	ili.SPI.P.SetWordSize(8)
 	ili.SPI.P.Enable()
 	rtos.IRQ(irq.SPI3).Enable()
 	rtos.IRQ(irq.DMA2_Channel1).Enable()
@@ -129,18 +130,14 @@ func main() {
 
 	ili.Cmd(ILI9341_RAMWR)
 
-	line := make([]byte, 240*2)
+	ili.SPI.P.SetWordSize(16)
+
+	line := [240]uint16{100: 0xffff, 140: 0xffff}
+	t := rtos.Nanosec()
 	for i := 0; i < 320; i++ {
-		for k := range line {
-			x := i
-			if k == x || k == x+1 {
-				line[k] = 0xff
-			} else {
-				line[k] = 0
-			}
-		}
-		ili.Write(line)
+		ili.SPI.WriteRead16(line[:], nil)
 	}
+	fmt.Printf("%d ms\n", (rtos.Nanosec()-t+0.5e6)/1e6)
 }
 
 func iliSPIISR() {

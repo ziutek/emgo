@@ -66,9 +66,6 @@ const (
 
 	ISSLow  = Conf(0)       // Set NSS internally to low (requires SoftSS).
 	ISSHigh = Conf(spi.SSI) // Set NSS internally to high (requires SoftSS).
-
-	//Frame8  = Conf(0)       // 8-bit frame (must disable Periph before change).
-	//Frame16 = Conf(spi.DFF) // 16-bit frame (must disable Periph before change).
 )
 
 // BR calculates baud rate bits of configuration. BR guarantees that returned
@@ -95,17 +92,25 @@ func (p *Periph) Baudrate(cfg Conf) uint {
 	return p.Bus().Clock() >> (cfg&BR256>>spi.BRn + 1)
 }
 
-const cfgMask = ^uint16(spi.SPE | spi.BIDIMODE | spi.BIDIOE)
-
 // Conf returns the current configuration.
 func (p *Periph) Conf() Conf {
-	return Conf(p.raw.CR1.U16.Bits(cfgMask))
+	return Conf(p.raw.CR1.Bits(cr1Mask))
 }
 
-// SetConf configures p and enables or disables it.
+// SetConf configures p.
 func (p *Periph) SetConf(cfg Conf) {
-	p.raw.CR1.U16.StoreBits(cfgMask, uint16(cfg))
-	//p.raw.FRXTH().Set()
+	p.raw.CR1.StoreBits(cr1Mask, spi.CR1_Bits(cfg))
+}
+
+// SetWordSize sets size of data word. All families support 8 and 16-bit word, some
+// 4 to 16-bit.
+func (p *Periph) SetWordSize(size int) {
+	p.setWordSize(size)
+}
+
+// WordSize return currently used word size.
+func (p *Periph) WordSize() int {
+	return p.wordSize()
 }
 
 // Event is a bitfield that encodes possible peripheral events.
@@ -228,15 +233,15 @@ func (p *Periph) SetDuplex(duplex Duplex) {
 	}
 }
 
-// StoreU16 stores a halfword to the data register. Use it only when 16-bit
-// frame is configured.
-func (p *Periph) StoreU16(v uint16) {
+// StoreWord16 stores a 16-bit word to the data register. Use it only when 16-bit
+// frame or data packing is configured.
+func (p *Periph) StoreWord16(v uint16) {
 	p.raw.DR.U16.Store(v)
 }
 
-// LoadU16 loads a halfword from the data register. Use it only when 16-bit
-// frame is configured.
-func (p *Periph) LoadU16() uint16 {
+// LoadWord16 loads a halfword from the data register. Use it only when 16-bit
+// frame or data packing is configured.
+func (p *Periph) LoadWord16() uint16 {
 	return p.raw.DR.U16.Load()
 }
 
