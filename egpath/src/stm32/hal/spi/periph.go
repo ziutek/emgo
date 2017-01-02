@@ -103,7 +103,7 @@ func (p *Periph) SetConf(cfg Conf) {
 }
 
 // SetWordSize sets size of data word. All families support 8 and 16-bit word, some
-// 4 to 16-bit.
+// 4 to 16-bit. Some families require disable peripheral before use this function.
 func (p *Periph) SetWordSize(size int) {
 	p.setWordSize(size)
 }

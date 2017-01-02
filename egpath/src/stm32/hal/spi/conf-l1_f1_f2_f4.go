@@ -2,6 +2,10 @@
 
 package spi
 
+import (
+	"stm32/hal/raw/spi"
+)
+
 const cr1Mask = ^spi.CR1_Bits(spi.DFF | spi.SPE | spi.BIDIMODE | spi.BIDIOE)
 
 func (p *Periph) setWordSize(size int) {
