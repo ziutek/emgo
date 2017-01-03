@@ -113,8 +113,8 @@ func startDMA(ch *dma.Channel, addr uintptr, n int) {
 	ch.SetAddrM(unsafe.Pointer(addr))
 	ch.SetLen(n)
 	ch.Clear(dma.EvAll, dma.ErrAll)
-	ch.EnableIRQ(dma.Complete, dma.ErrAll&^dma.ErrFIFO) // Ignore FIFO error.
-	fence.W()                                           // This orders writes to normal and I/O memory.
+	ch.EnableIRQ(dma.Complete, dma.ErrAll&^dma.ErrFIFO)
+	fence.W() // This orders writes to normal and I/O memory.
 	ch.Enable()
 }
 
@@ -145,12 +145,9 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int, wsize uintptr) (n
 		}
 		in += uintptr(m)
 		n += m
-
 		done := d.done.Wait(1, d.deadline)
-
-		// Disable DMA (required by STM32F1 to allow setup next transfer).
-		d.TxDMA.Disable()
-		d.RxDMA.Disable()
+		d.TxDMA.Disable() // Required by STM32F1 to allow setup next transfer.
+		d.RxDMA.Disable() // Required by STM32F1 to allow setup next transfer.
 		if !done {
 			d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
 			d.RxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
@@ -176,56 +173,8 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int, wsize uintptr) (n
 	return
 }
 
-func (d *Driver) waitDoneTxDMA() bool {
-	done := d.done.Wait(1, d.deadline)
-
-	// Disable DMA (required by STM32F1 to allow setup next transfer).
-	d.TxDMA.Disable()
-	if !done {
-		d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
-		d.err = uint(ErrTimeout) << 16
-		return false
-	}
-	if _, e := d.P.Status(); e != 0 {
-		d.err = uint(e) << 8
-		return false
-	}
-	_, txe := d.TxDMA.Status()
-	if e := txe &^ dma.ErrFIFO; e != 0 {
-		d.err = uint(e)
-		return false
-	}
-	return true
-}
-
-func (d *Driver) writeDMA(out uintptr, olen int, wsize uintptr) {
-	d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4, wsize)
-	d.P.SetDuplex(HalfOut) // Avoid ErrOverflow.
-	d.P.EnableDMA(TxEmpty)
-	d.P.EnableIRQ(Err)
-	var n int
-	for {
-		m := olen - n
-		if m == 0 {
-			return
-		}
-		if m > 0xffff {
-			m = 0xffff
-		}
-		d.dmacnt = 1
-		d.done.Reset(0)
-		startDMA(d.TxDMA, out+uintptr(n), m)
-		n += m
-		if !d.waitDoneTxDMA() {
-			break
-		}
-	}
-	d.P.DisableDMA(TxEmpty)
-	d.P.DisableIRQ(Err)
-}
-
-func (d *Driver) repeatDMA(out uintptr, n int, wsize uintptr) {
-	d.setupDMA(d.TxDMA, dma.MTP|dma.FIFO_4_4, wsize)
+func (d *Driver) writeDMA(out uintptr, n int, wsize uintptr, incm dma.Mode) {
+	d.setupDMA(d.TxDMA, dma.MTP|incm|dma.FIFO_4_4, wsize)
 	d.P.SetDuplex(HalfOut) // Avoid ErrOverflow.
 	d.P.EnableDMA(TxEmpty)
 	d.P.EnableIRQ(Err)
@@ -234,11 +183,27 @@ func (d *Driver) repeatDMA(out uintptr, n int, wsize uintptr) {
 		if m > 0xffff {
 			m = 0xffff
 		}
-		n -= m
 		d.dmacnt = 1
 		d.done.Reset(0)
 		startDMA(d.TxDMA, out, m)
-		if !d.waitDoneTxDMA() {
+		n -= m
+		if incm != 0 {
+			out += uintptr(m)
+		}
+		done := d.done.Wait(1, d.deadline)
+		d.TxDMA.Disable() // Required by STM32F1 to allow setup next transfer
+		if !done {
+			d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
+			d.err = uint(ErrTimeout) << 16
+			break
+		}
+		if _, e := d.P.Status(); e != 0 {
+			d.err = uint(e) << 8
+			break
+		}
+		_, txe := d.TxDMA.Status()
+		if e := txe &^ dma.ErrFIFO; e != 0 {
+			d.err = uint(e)
 			break
 		}
 	}
@@ -278,7 +243,7 @@ func (d *Driver) writeRead(oaddr, iaddr uintptr, olen, ilen int, wsize uintptr) 
 			olen -= ilen
 			oaddr += uintptr(ilen)
 		}
-		d.writeDMA(oaddr, olen, wsize)
+		d.writeDMA(oaddr, olen, wsize, dma.IncM)
 		return n
 	}
 	if ilen > olen {
@@ -342,9 +307,12 @@ func (d *Driver) WriteReadMany(oi ...[]byte) int {
 }
 
 func (d *Driver) RepeatByte(b byte, n int) {
+	if d.err != 0 {
+		return
+	}
 	switch {
 	case n > 1:
-		d.repeatDMA(uintptr(unsafe.Pointer(&b)), n, 1)
+		d.writeDMA(uintptr(unsafe.Pointer(&b)), n, 1, 0)
 	case n == 1:
 		// Avoid DMA for one byte transfers.
 		d.WriteReadByte(b)
@@ -389,9 +357,12 @@ func (d *Driver) WriteReadMany16(oi ...[]uint16) int {
 }
 
 func (d *Driver) RepeatWord16(w uint16, n int) {
+	if d.err != 0 {
+		return
+	}
 	switch {
 	case n > 1:
-		d.repeatDMA(uintptr(unsafe.Pointer(&w)), n, 2)
+		d.writeDMA(uintptr(unsafe.Pointer(&w)), n, 2, 0)
 	case n == 1:
 		// Avoid DMA for one word transfers.
 		d.WriteReadWord16(w)
