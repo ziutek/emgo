@@ -116,7 +116,13 @@ func main() {
 	ili.Word(240 - 1)
 
 	ili.Cmd16(ILI9341_RAMWR)
-	ili.Fill(0, 320*240)
+	const N = 8
+	start := rtos.Nanosec()
+	for i := 0; i < N; i++ {
+		ili.Fill(0xffff, 320*240)
+		ili.Fill(0, 320*240)
+	}
+	fmt.Printf("Fill speed: %.1f FPS\n\n", N*2*1e9/float32(rtos.Nanosec()-start))
 
 	var rnd rand.XorShift64
 	rnd.Seed(rtos.Nanosec())
