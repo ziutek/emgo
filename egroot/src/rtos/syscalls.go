@@ -31,3 +31,8 @@ func SetPrivLevel(n int) (int, error) {
 func MaxTasks() int {
 	return syscall.MaxTasks()
 }
+
+// SchedYield causes the calling task to relinquish the CPU.
+func SchedYield() {
+	syscall.SchedYield()
+}

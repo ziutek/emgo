@@ -52,6 +52,11 @@ func MaxTasks() int {
 	return int(n)
 }
 
+// SchedYield causes the calling task to relinquish the CPU.
+func SchedYield() {
+	internal.Syscall0(SCHEDNEXT)
+}
+
 // SchedNext informs tasker that it need to schedule next ready to run task.
 // It is safe to call SchedNext from interrupt handler.
 func SchedNext() {
