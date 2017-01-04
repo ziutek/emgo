@@ -61,6 +61,7 @@ func (d *Driver) SetDeadline(deadline int64) {
 	d.deadline = deadline
 }
 
+// WriteReadByte writes and reads byte.
 func (d *Driver) WriteReadByte(b byte) byte {
 	if d.err != 0 {
 		return 0
@@ -82,7 +83,8 @@ func (d *Driver) WriteReadByte(b byte) byte {
 	return b
 }
 
-func (d *Driver) WriteReadWord16(w16 uint16) uint16 {
+// WriteReadWord16 writes and reads 16-bit word.
+func (d *Driver) WriteReadWord16(w uint16) uint16 {
 	if d.err != 0 {
 		return 0
 	}
@@ -90,17 +92,17 @@ func (d *Driver) WriteReadWord16(w16 uint16) uint16 {
 	d.P.EnableIRQ(RxNotEmpty | Err)
 	d.done.Reset(0)
 	fence.W() // This orders writes to normal and I/O memory.
-	d.P.StoreWord16(w16)
+	d.P.StoreWord16(w)
 	if !d.done.Wait(1, d.deadline) {
 		d.err = uint(ErrTimeout) << 16
 		return 0
 	}
-	w16 = d.P.LoadWord16()
+	w = d.P.LoadWord16()
 	if _, e := d.P.Status(); e != 0 {
 		d.err = uint(e) << 8
 		return 0
 	}
-	return w16
+	return w
 }
 
 func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode, wordSize uintptr) {

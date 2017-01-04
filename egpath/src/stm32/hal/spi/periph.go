@@ -234,13 +234,13 @@ func (p *Periph) SetDuplex(duplex Duplex) {
 }
 
 // StoreWord16 stores a 16-bit word to the data register. Use it only when 16-bit
-// frame or data packing is configured.
+// word or data packing is configured.
 func (p *Periph) StoreWord16(v uint16) {
 	p.raw.DR.U16.Store(v)
 }
 
-// LoadWord16 loads a halfword from the data register. Use it only when 16-bit
-// frame or data packing is configured.
+// LoadWord16 loads a 16-bit word from the data register. Use it only when 16-bit
+// word or data packing is configured.
 func (p *Periph) LoadWord16() uint16 {
 	return p.raw.DR.U16.Load()
 }
