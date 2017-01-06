@@ -196,7 +196,7 @@ byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
-			slice _x = ASLICEL(&a$, 1);
+			slice _x = ASLICEL(&a$, 1L);
 			int_ _i = 0;
 			for (; _i < len(_x); ++_i) {
 				int_ k$ = _i;
@@ -237,7 +237,7 @@ byte foo$F($4_$byte a$) {
 	byte r$ = 0;
 	{
 		{
-			slice _x = ASLICEL(&a$, 1);
+			slice _x = ASLICEL(&a$, 1L);
 			int_ _i = 0;
 			for (; _i < len(_x); ++_i) {
 				int_ k$ = _i;
@@ -283,7 +283,7 @@ byte foo$F($4_$byte a$) {
 	{
 	loop$:;
 		{
-			slice _x = ASLICEL(&a$, 1);
+			slice _x = ASLICEL(&a$, 1L);
 			int_ _i = 0;
 			for (; _i < len(_x); ++_i) {
 				int_ k$ = _i;
@@ -335,7 +335,7 @@ byte foo$F($4_$byte a$) {
 	{
 	loop$:;
 		{
-			slice _x = ASLICEL(&a$, 1);
+			slice _x = ASLICEL(&a$, 1L);
 			int_ _i = 0;
 			for (; _i < len(_x); ++_i) {
 				byte v$ = SLIDX(byte*, _x, _i);
@@ -374,7 +374,7 @@ byte foo$F(slice a$) {
 	{
 	loop$:;
 		{
-			slice _x = SLICEL(a$, byte*, 1);
+			slice _x = SLICEL(a$, byte*, 1L);
 			int_ _i = 0;
 			for (; _i < len(_x); ++_i) {
 				{

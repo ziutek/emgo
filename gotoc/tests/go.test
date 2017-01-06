@@ -25,7 +25,7 @@ void foo$F(int_ i$) {
 			goready();
 			foo$F(_0);
 		}
-		int_ _0 = (2*i$);
+		int_ _0 = (2L*i$);
 		GO(wrap(_0), true);
 	}
 }
@@ -135,6 +135,6 @@ int_$$int_ foo$F(interface a$, interface b$) {
 		interface _1 = INTERFACE(_tup._1, &int_$$);
 		GO(wrap(_0, _1), true);
 	}
-	return (int_$$int_){0, 0};
+	return (int_$$int_){0L, 0L};
 }
 // end

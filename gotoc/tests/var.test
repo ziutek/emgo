@@ -4,7 +4,7 @@ var A = 3
 // decl
 int_ foo$A;
 // def
-__typeof__(foo$A) foo$A = 3;
+__typeof__(foo$A) foo$A = 3L;
 // end
 
 // Go code:
@@ -13,7 +13,7 @@ var A = []int{1, 2, 3}
 // decl
 slice foo$A;
 // def
-__typeof__(foo$A) foo$A = CSLICE(3, ((int_[]){1, 2, 3}));
+__typeof__(foo$A) foo$A = CSLICE(3, ((int_[]){1L, 2L, 3L}));
 // end
 
 // Go code:
@@ -22,7 +22,7 @@ var A = []int{10: 1, 20: 2, 30: 3}
 // decl
 slice foo$A;
 // def
-__typeof__(foo$A) foo$A = CSLICE(31, ((int_[]){[10] = 1, [20] = 2, [30] = 3}));
+__typeof__(foo$A) foo$A = CSLICE(31, ((int_[]){[10L] = 1L, [20L] = 2L, [30L] = 3L}));
 // end
 
 // Go code:
@@ -31,7 +31,7 @@ var A = []int{1, 2, 30: 3, 4}
 // decl
 slice foo$A;
 // def
-__typeof__(foo$A) foo$A = CSLICE(32, ((int_[]){1, 2, [30] = 3, 4}));
+__typeof__(foo$A) foo$A = CSLICE(32, ((int_[]){1L, 2L, [30L] = 3L, 4L}));
 // end
 
 // Go code:
@@ -73,7 +73,7 @@ struct foo$S_struct {
 // decl
 foo$S _cl0;
 // def
-__typeof__(_cl0) _cl0 = {.a = 1};
+__typeof__(_cl0) _cl0 = {.a = 1L};
 // decl
 foo$S *foo$p;
 // def

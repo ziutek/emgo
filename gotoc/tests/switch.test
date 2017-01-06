@@ -15,7 +15,7 @@ int_ foo$Switch(int_ i$);
 int_ foo$Switch(int_ i$) {
 	switch(0){case 0:{
 		bool _tag = true;
-		if ((_tag == ((i$+1)<2))) {
+		if ((_tag == ((i$+1L)<2L))) {
 			++(i$);
 			break;
 		}
@@ -47,12 +47,12 @@ int_ foo$Switch(int_ i$);
 int_ foo$Switch(int_ i$) {
 	switch(0){case 0:{
 		int_ _tag = i$;
-		if ((_tag == 1)) {
-			return 10;
+		if ((_tag == 1L)) {
+			return 10L;
 			break;
 		}
-		if ((_tag == 2)) {
-			return 20;
+		if ((_tag == 2L)) {
+			return 20L;
 			break;
 		}
 		{
@@ -60,7 +60,7 @@ int_ foo$Switch(int_ i$) {
 			break;
 		}
 	}}
-	return 0;
+	return 0L;
 }
 // end
 
@@ -90,20 +90,20 @@ func Switch(i int) int {
 int_ foo$Switch(int_ i$);
 // def
 int_ foo$Switch(int_ i$) {
-	for (;(i$<10);) {
+	for (;(i$<10L);) {
 		switch(0){case 0:{
 			int_ _tag = i$;
-			if ((_tag == 1)) {
-				i$ += 1;
+			if ((_tag == 1L)) {
+				i$ += 1L;
 				goto _fallthr0;
 			}
-			if ((_tag == 2)) {
+			if ((_tag == 2L)) {
 			_fallthr0:
-				i$ += 2;
+				i$ += 2L;
 				continue;
 				break;
 			}
-			if ((_tag == 3)) {
+			if ((_tag == 3L)) {
 				return i$;
 				break;
 			}
@@ -192,7 +192,7 @@ bool foo$Switch(interface *i$) {
 		if (_tag.itab$ == &int_$$) {
 			int_ v$ = IVAL(_tag, int_);
 			{
-				return (v$ == 1);
+				return (v$ == 1L);
 			}
 			break;
 		}

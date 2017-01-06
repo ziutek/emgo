@@ -97,7 +97,7 @@ struct $2_$int__struct {
 int_$$int_ foo$F($2_$int_ a$);
 // def
 int_$$int_ foo$F($2_$int_ a$) {
-	return (int_$$int_){AIDX(&a$, 0), AIDX(&a$, 1)};
+	return (int_$$int_){AIDX(&a$, 0L), AIDX(&a$, 1L)};
 }
 // end
 
@@ -175,18 +175,18 @@ func F(n int, a ...int) {
 void foo$F(int_ n$, slice a$);
 // def
 void foo$F(int_ n$, slice a$) {
-	foo$F(10, NILSLICE);
+	foo$F(10L, NILSLICE);
 	({
-		int_ _0 = 20;
-		int_ _a[] = {1};
+		int_ _0 = 20L;
+		int_ _a[] = {1L};
 		foo$F(_0, CSLICE(1, _a));
 	});
 	({
-		int_ _0 = 30;
-		int_ _a[] = {1, 2};
+		int_ _0 = 30L;
+		int_ _a[] = {1L, 2L};
 		foo$F(_0, CSLICE(2, _a));
 	});
-	foo$F(40, a$);
+	foo$F(40L, a$);
 }
 // end
 

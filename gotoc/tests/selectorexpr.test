@@ -148,7 +148,7 @@ void foo$T$Add(foo$T *t$, foo$T a$) {
 void (*foo$T$F(foo$T *t$))(foo$T);
 // def
 void (*foo$T$F(foo$T *t$))(foo$T) {
-	return &({void func(foo$T _1) { return foo$T$Add(t$, _1); } func;});
+	return ({void func(foo$T _1) { return foo$T$Add(t$, _1); } func;});
 }
 // end
 
@@ -210,7 +210,7 @@ void foo$T$Add(foo$T *t$, foo$T a$) {
 void (*foo$F())(foo$T*, foo$T);
 // def
 void (*foo$F())(foo$T*, foo$T) {
-	return &foo$T$Add;
+	return foo$T$Add;
 }
 // end
 

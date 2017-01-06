@@ -20,7 +20,7 @@ func S(s string) string {
 string foo$S(string s$);
 // def
 string foo$S(string s$) {
-	return SSLICEL(s$, 0);
+	return SSLICEL(s$, 0L);
 }
 // end
 
@@ -46,7 +46,7 @@ func S(s string) string {
 string foo$S(string s$);
 // def
 string foo$S(string s$) {
-	return SSLICELH(s$, 0, len(s$));
+	return SSLICELH(s$, 0L, len(s$));
 }
 // end
 

@@ -214,16 +214,16 @@ bool foo$f() {
 	foo$S s1$ = {};
 	foo$S s2$ = {};
 	bool eq$ = ({
-		foo$S _l = s1$; foo$S _r = s2$;
-		(_l.a == _r.a) &&
-		(_l.b == _r.b) &&
-		EQUALA(_l.c, _r.c);
+		foo$S _l0 = s1$; foo$S _r0 = s2$;
+		(_l0.a == _r0.a) &&
+		(_l0.b == _r0.b) &&
+		EQUALA(_l0.c, _r0.c);
 	});
 	bool neq$ = ({
-		foo$S _l = s1$; foo$S _r = s2$;
-		(_l.a != _r.a) ||
-		(_l.b != _r.b) ||
-		!EQUALA(_l.c, _r.c);
+		foo$S _l1 = s1$; foo$S _r1 = s2$;
+		(_l1.a != _r1.a) ||
+		(_l1.b != _r1.b) ||
+		!EQUALA(_l1.c, _r1.c);
 	});
 	return (eq$&&neq$);
 }

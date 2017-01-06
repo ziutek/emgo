@@ -72,14 +72,14 @@ bool (*foo$F(bool b$))(int_) {
 	if (b$) {
 		g$ = ({
 			bool func$(int_ a$) {
-				return (a$>0);
+				return (a$>0L);
 			}
 			func$;
 		});
 	} else {
 		g$ = ({
 			bool func$(int_ a$) {
-				return (a$<0);
+				return (a$<0L);
 			}
 			func$;
 		});

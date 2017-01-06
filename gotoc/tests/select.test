@@ -48,8 +48,8 @@ int_ foo$S(chan c1$, chan c2$) {
 			RECVINIT(2, c1$, int_);
 			RECVINIT(3, c2$, int_);
 			RECVINIT(4, c2$, int_);
-			SENDINIT(5, c1$, int_, 1);
-			SENDINIT(6, c2$, int_, 2);
+			SENDINIT(5, c1$, int_, 1L);
+			SENDINIT(6, c2$, int_, 2L);
 			NBSELECT(
 				RECVCOMM(0),
 				RECVCOMM(1),
@@ -71,7 +71,7 @@ int_ foo$S(chan c1$, chan c2$) {
 			}
 			case2:{
 				SELRECV(2);
-				return (-7);
+				return (-7L);
 				break;
 			}
 			case3:{
@@ -92,12 +92,12 @@ int_ foo$S(chan c1$, chan c2$) {
 			}
 			case5:{
 				SELSEND(5);
-				return (-1);
+				return (-1L);
 				break;
 			}
 			case6:{
 				SELSEND(6);
-				return (-2);
+				return (-2L);
 				break;
 			}
 			dflt:{
@@ -161,7 +161,7 @@ int_ foo$S(chan c1$, chan c2$) {
 						int_$$bool _tmp0 = SELRECVOK(0);
 						int_ i$ = _tmp0._0;
 						bool ok$ = _tmp0._1;
-						if (((i$ == 0)||!ok$)) {
+						if (((i$ == 0L)||!ok$)) {
 							goto loop$_break;
 						}
 						return i$;
@@ -177,7 +177,7 @@ int_ foo$S(chan c1$, chan c2$) {
 		loop$_continue:;
 		}
 	loop$_break:;
-		return 0;
+		return 0L;
 	}
 }
 // end

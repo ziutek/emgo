@@ -19,8 +19,8 @@ struct $2_$int__struct {
 int_ foo$CompositeLitSlice();
 // def
 int_ foo$CompositeLitSlice() {
-	slice a$ = CSLICE(3, (($2_$int_[]){(($2_$int_){{1, 2}}), (($2_$int_){{3, 4}}), (($2_$int_){{4, 5}})}));
-	slice b$ = CSLICE(3, (($2_$int_*[]){&SLIDX($2_$int_*, a$, 0), &SLIDX($2_$int_*, a$, 1), &SLIDX($2_$int_*, a$, 2)}));
+	slice a$ = CSLICE(3, (($2_$int_[]){(($2_$int_){{1L, 2L}}), (($2_$int_){{3L, 4L}}), (($2_$int_){{4L, 5L}})}));
+	slice b$ = CSLICE(3, (($2_$int_*[]){&SLIDX($2_$int_*, a$, 0L), &SLIDX($2_$int_*, a$, 1L), &SLIDX($2_$int_*, a$, 2L)}));
 	return len(b$);
 }
 // end
@@ -69,8 +69,8 @@ int_ foo$CompositeLitStruct() {
 		int_ a;
 		int_ b;
 	};
-	S$ s$ = ((S$){1, 2});
-	s$ = ((S$){.a = 2, .b = 3});
+	S$ s$ = ((S$){1L, 2L});
+	s$ = ((S$){.a = 2L, .b = 3L});
 	return (s$.a+s$.b);
 }
 // end
@@ -115,11 +115,11 @@ func F() int {
 int_ foo$F();
 // def
 int_ foo$F() {
-	int_ a$ = 1;
+	int_ a$ = 1L;
 	(void)((foo$F()+foo$F()));
-	(void)((3*foo$F()));
-	int_ _tmp0 = 2;
-	(void)((3*foo$F()));
+	(void)((3L*foo$F()));
+	int_ _tmp0 = 2L;
+	(void)((3L*foo$F()));
 	a$ = _tmp0;
 	return a$;
 }

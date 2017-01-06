@@ -1108,16 +1108,19 @@ func (cdd *CDD) eq(w *bytes.Buffer, lhs, op, rhs string, ltyp, rtyp types.Type) 
 		cdd.il++
 		cdd.indent(w)
 		cdd.Type(w, ltyp)
-		w.WriteString(" _l = " + lhs + "; ")
+		id := cdd.gtc.uniqueId()
+		lv := "_l" + id
+		rv := "_r" + id
+		w.WriteString(" " + lv + " = " + lhs + "; ")
 		cdd.Type(w, rtyp)
-		w.WriteString(" _r = " + rhs + ";\n")
+		w.WriteString(" " + rv + " = " + rhs + ";\n")
 		n := t.NumFields()
 		for i := 0; i < n; {
 			f := t.Field(i)
 			ft := f.Type()
 			fn := f.Name()
 			cdd.indent(w)
-			cdd.eq(w, "_l."+fn, op, "_r."+fn, ft, ft)
+			cdd.eq(w, lv+"."+fn, op, rv+"."+fn, ft, ft)
 			i++
 			if i != n {
 				w.WriteString(lo)

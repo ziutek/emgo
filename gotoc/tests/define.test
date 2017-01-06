@@ -9,9 +9,9 @@ func F() int {
 int_ foo$F();
 // def
 int_ foo$F() {
-	int_ a$ = 1;
-	a$ = 2;
-	int_ b$ = 3;
+	int_ a$ = 1L;
+	a$ = 2L;
+	int_ b$ = 3L;
 	return (a$+b$);
 }
 // end
@@ -38,7 +38,7 @@ struct int_$$int__struct {
 int_$$int_ foo$F();
 // def
 int_$$int_ foo$F() {
-	int_ a$ = 1;
+	int_ a$ = 1L;
 	int_$$int_ _tmp0 = foo$F();
 	a$ = _tmp0._0;
 	int_ b$ = _tmp0._1;
