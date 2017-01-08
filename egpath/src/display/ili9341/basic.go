@@ -2,40 +2,9 @@ package ili9341
 
 import (
 	"image"
-	"image/color"
 )
 
-type Display struct {
-	dci   DCI
-	color color.RGB16
-}
-
-func MakeDisplay(dci DCI) Display {
-	return Display{dci: dci}
-}
-
-func NewDisplay(dci DCI) *Display {
-	d := new(Display)
-	d.dci = dci
-	return d
-}
-
-func (d *Display) DCI() DCI {
-	return d.dci
-}
-
-func (d *Display) Err() error {
-	return d.dci.Err()
-}
-
-func (d *Display) Bounds() image.Rectangle {
-	return image.Rect(0, 0, 320, 240)
-}
-
-func (d *Display) SetColor(c color.RGB16) {
-	d.color = c
-}
-
+// Point draws a point (one pixel). 16-bit command.
 func (d *Display) Point(p image.Point) {
 	if !p.In(d.Bounds()) {
 		return
@@ -64,6 +33,7 @@ func (d *Display) rawRect(x0, y0, x1, y1, wxh int) {
 	dci.Fill(uint16(d.color), wxh)
 }
 
+// Rect draws a rectangle. 16-bit command.
 func (d *Display) Rect(r image.Rectangle) {
 	r = r.Canon().Intersect(d.Bounds())
 	if !r.Empty() {
@@ -110,6 +80,7 @@ func abs(x int) int {
 	return x
 }
 
+// Line draws a line from p0 to p1 (including both points). 16-bit command.
 func (d *Display) Line(p0, p1 image.Point) {
 	dp := p1.Sub(p0)
 	if dp.Y == 0 {
@@ -159,6 +130,39 @@ func (d *Display) Line(p0, p1 image.Point) {
 			d.vline(p0.Y, p0.X, p1.X)
 		} else {
 			d.hline(p0.X, p0.Y, p1.X)
+		}
+	}
+}
+
+// Line1 draws a line from p0 to p1 (including both points). 16-bit command.
+// Line1 uses less memory for code than Line but is generally slower (can be
+// faster for very short lines: 1-3 pixels). Use Line1 if you are short of Flash
+// space and do not care about speed or to draw very short lines.
+func (d *Display) Line1(p0, p1 image.Point) {
+	dp := p1.Sub(p0)
+	sx, sy := 1, 1
+	if dp.X < 0 {
+		sx = -sx
+	}
+	if dp.Y < 0 {
+		sy = -sy
+	}
+	dp.X = abs(dp.X)
+	dp.Y = abs(dp.Y)
+	e := dp.X - dp.Y
+	for {
+		d.Point(p0)
+		if p0 == p1 {
+			return
+		}
+		e2 := 2 * e
+		if e2 > -dp.Y {
+			e -= dp.Y
+			p0.X += sx
+		}
+		if e2 < dp.X {
+			e += dp.X
+			p0.Y += sy
 		}
 	}
 }

@@ -20,7 +20,10 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var dci *ilidci.DCI
+var (
+	lcdspi *spi.Driver
+	lcd    *ili9341.Display
+)
 
 func init() {
 	system.Setup(8, 1, 72/8)
@@ -43,24 +46,18 @@ func init() {
 
 	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
-	//spiport.SetAltFunc(sck|miso|mosi, gpio.SPI3_AF6) // PC10-12
-	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1) // PA5-7
-	//d := dma.DMA2
+	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
 	d := dma.DMA1
 	d.EnableClock(true)
-	//ilispi := spi.NewDriver(spi.SPI3, d.Channel(1, 0), d.Channel(2, 0))
-	ilispi := spi.NewDriver(spi.SPI1, d.Channel(2, 0), d.Channel(3, 0))
-	ilispi.P.EnableClock(true)
-	ilispi.P.SetConf(
+	lcdspi = spi.NewDriver(spi.SPI1, d.Channel(2, 0), d.Channel(3, 0))
+	lcdspi.P.EnableClock(true)
+	lcdspi.P.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			ilispi.P.BR(36e6) | // 36 MHz max.
+			lcdspi.P.BR(36e6) | // 36 MHz max.
 			spi.SoftSS | spi.ISSHigh,
 	)
-	ilispi.P.SetWordSize(8)
-	ilispi.P.Enable()
-	//rtos.IRQ(irq.SPI3).Enable()
-	//rtos.IRQ(irq.DMA2_Channel1).Enable()
-	//rtos.IRQ(irq.DMA2_Channel2).Enable()
+	lcdspi.P.SetWordSize(8)
+	lcdspi.P.Enable()
 	rtos.IRQ(irq.SPI1).Enable()
 	rtos.IRQ(irq.DMA1_Channel2).Enable()
 	rtos.IRQ(irq.DMA1_Channel3).Enable()
@@ -78,13 +75,13 @@ func init() {
 	delay.Millisec(5) // Wait for reset.
 	ilics.Clear()
 
-	dci = ilidci.NewDCI(ilispi, ilidc)
+	lcd = ili9341.NewDisplay(ilidci.NewDCI(lcdspi, ilidc))
 }
 
 func main() {
 	delay.Millisec(100)
-	spibus := dci.SPI().P.Bus()
-	baudrate := dci.SPI().P.Baudrate(dci.SPI().P.Conf())
+	spibus := lcdspi.P.Bus()
+	baudrate := lcdspi.P.Baudrate(lcdspi.P.Conf())
 	fmt.Printf(
 		"\nSPI on %s (%d MHz). SPI speed: %d bps.\n\n",
 		spibus, spibus.Clock()/1e6, baudrate,
@@ -101,15 +98,15 @@ func main() {
 		ILI9341_PASET   = 0x2B
 	)
 
-	ili := ili9341.NewDisplay(dci)
-
-	width := ili.Bounds().Dx()
-	height := ili.Bounds().Dy()
+	width := lcd.Bounds().Dx()
+	height := lcd.Bounds().Dy()
 	wxh := width * height
 
-	dci.Cmd(ILI9341_SLPOUT)
+	lcd.SlpOut()
 	delay.Millisec(120)
-	dci.Cmd(ILI9341_DISPON)
+	lcd.DispOn()
+
+	dci := lcd.DCI()
 
 	dci.Cmd(ILI9341_PIXFMT)
 	dci.Byte(0x55) // 16 bit 565 format.
@@ -117,7 +114,7 @@ func main() {
 	dci.Cmd(ILI9341_MADCTL)
 	dci.Byte(0xe8) // Screen orientation.
 
-	dci.SetWordSize(16)
+	lcd.SetWordSize(16)
 
 	dci.Cmd16(ILI9341_CASET)
 	dci.Word(0)
@@ -136,68 +133,96 @@ func main() {
 	}
 	fps := N * 2 * 1e9 / float32(rtos.Nanosec()-start)
 	fmt.Printf(
-		"dci.Fill speed: %.1f FPS (%.0f bps).\n", fps, fps*float32(wxh*16),
+		"dci.Fill  speed: %4.1f fps (%.0f bps).\n", fps, fps*float32(wxh*16),
 	)
 
 	start = rtos.Nanosec()
 	for i := 0; i < N; i++ {
-		ili.SetColor(0xffff)
-		ili.Rect(ili.Bounds())
-		ili.SetColor(0)
-		ili.Rect(ili.Bounds())
+		lcd.SetColor(0xffff)
+		lcd.Rect(lcd.Bounds())
+		lcd.SetColor(0)
+		lcd.Rect(lcd.Bounds())
 	}
 	fps = N * 2 * 1e9 / float32(rtos.Nanosec()-start)
 	fmt.Printf(
-		"ili.Rect speed: %.1f FPS (%.0f bps).\n", fps, fps*float32(wxh*16),
+		"lcd.Rect  speed: %4.1f fps (%.0f bps).\n", fps, fps*float32(wxh*16),
 	)
+
+	start = rtos.Nanosec()
+	for i := 0; i < N; i++ {
+		lcd.SetColor(0xffff)
+		lcd.Line(image.Pt(0, 0), image.Pt(319, 239))
+		lcd.Line(image.Pt(0, 239), image.Pt(319, 0))
+		lcd.Line(image.Pt(-10, 120), image.Pt(350, 120))
+		lcd.Line(image.Pt(160, -10), image.Pt(160, 250))
+		lcd.SetColor(0)
+		lcd.Line(image.Pt(0, 0), image.Pt(319, 239))
+		lcd.Line(image.Pt(0, 239), image.Pt(319, 0))
+		lcd.Line(image.Pt(-10, 120), image.Pt(350, 120))
+		lcd.Line(image.Pt(160, -10), image.Pt(160, 250))
+	}
+	lps := N * 8 * 1e9 / float32(rtos.Nanosec()-start)
+	fmt.Printf("lcd.Line  speed: %4.0f lps.\n", lps)
+
+	start = rtos.Nanosec()
+	for i := 0; i < N; i++ {
+		lcd.SetColor(0xffff)
+		lcd.Line1(image.Pt(0, 0), image.Pt(319, 239))
+		lcd.Line1(image.Pt(0, 239), image.Pt(319, 0))
+		lcd.Line1(image.Pt(-10, 120), image.Pt(350, 120))
+		lcd.Line1(image.Pt(160, -10), image.Pt(160, 250))
+		lcd.SetColor(0)
+		lcd.Line1(image.Pt(0, 0), image.Pt(319, 239))
+		lcd.Line1(image.Pt(0, 239), image.Pt(319, 0))
+		lcd.Line1(image.Pt(-10, 120), image.Pt(350, 120))
+		lcd.Line1(image.Pt(160, -10), image.Pt(160, 250))
+	}
+	lps = N * 8 * 1e9 / float32(rtos.Nanosec()-start)
+	fmt.Printf("lcd.Line1 speed: %4.0f lps.\n", lps)
+
+	p0 := image.Pt(40, 40)
+	p1 := image.Pt(200, 100)
+	p2 := image.Pt(60, 150)
+
+	start = rtos.Nanosec()
+	for i := 0; i < N; i++ {
+		lcd.SetColor(0xffff)
+		lcd.Line(p0, p1)
+		lcd.Line(p1, p2)
+		lcd.Line(p2, p0)
+		lcd.SetColor(0)
+		lcd.Line(p0, p1)
+		lcd.Line(p1, p2)
+		lcd.Line(p2, p0)
+	}
+	lps = N * 6 * 1e9 / float32(rtos.Nanosec()-start)
+	fmt.Printf("lcd.Line  speed: %4.0f lps.\n", lps)
+
+	start = rtos.Nanosec()
+	for i := 0; i < N; i++ {
+		lcd.SetColor(0xffff)
+		lcd.Line1(p0, p1)
+		lcd.Line1(p1, p2)
+		lcd.Line1(p2, p0)
+		lcd.SetColor(0)
+		lcd.Line1(p0, p1)
+		lcd.Line1(p1, p2)
+		lcd.Line1(p2, p0)
+	}
+	lps = N * 6 * 1e9 / float32(rtos.Nanosec()-start)
+	fmt.Printf("lcd.Line1 speed: %4.0f lps.\n", lps)
+
+	delay.Millisec(1e3)
 
 	var rnd rand.XorShift64
 	rnd.Seed(rtos.Nanosec())
-
-	p0 := image.Pt(-20, 10)
-	p1 := image.Pt(350, 100)
-	p2 := image.Pt(-20, 150)
-
-	ili.SetColor(0xff00)
-	ili.Point(p0)
-	ili.Point(p1)
-	ili.Point(p2)
-
-	delay.Millisec(1000)
-
-	ili.SetColor(0x00ff)
-	ili.Line(p0, p1)
-	ili.Line(p1, p2)
-	ili.Line(p2, p0)
-
-	p0 = image.Pt(100, -20)
-	p1 = image.Pt(150, 250)
-	p2 = image.Pt(180, -20)
-
-	ili.SetColor(0xff00)
-	ili.Point(p0)
-	ili.Point(p1)
-	ili.Point(p2)
-
-	delay.Millisec(1000)
-
-	ili.SetColor(0x00ff)
-	ili.Line(p0, p1)
-	ili.Line(p1, p2)
-	ili.Line(p2, p0)
-
-	ili.SetColor(0xf00f)
-	ili.Line(image.Pt(-10, 120), image.Pt(350, 120))
-	ili.Line(image.Pt(160, -10), image.Pt(160, 250))
-
-	delay.Millisec(2000)
 
 	for {
 		v := rnd.Uint64()
 		vh := uint32(v >> 32)
 		vl := uint32(v)
 
-		ili.SetColor(color.RGB16(vl))
+		lcd.SetColor(color.RGB16(vl))
 
 		var r image.Rectangle
 
@@ -210,53 +235,26 @@ func main() {
 		vh >>= 9
 		r.Max.X = int(vh&0x1ff) - (512-width)/2
 
-		ili.Rect(r)
-		//ili.Point(r.Min)
-		//ili.Point(r.Max)
+		lcd.Rect(r)
 	}
 }
 
-func move(p image.Point) image.Point {
-	switch {
-	case p.Y == 40:
-		if p.X += 5; p.X == 260 {
-			p.Y += 5
-		}
-	case p.Y == 200:
-		if p.X -= 5; p.X == 60 {
-			p.Y -= 5
-		}
-	case p.X == 60:
-		if p.Y -= 5; p.Y == 40 {
-			p.X += 5
-		}
-	case p.X == 260:
-		if p.Y += 5; p.Y == 200 {
-			p.X -= 5
-		}
-	}
-	return p
+func lcdSPIISR() {
+	lcdspi.ISR()
 }
 
-func iliSPIISR() {
-	dci.SPI().ISR()
+func lcdRxDMAISR() {
+	lcdspi.DMAISR(lcdspi.RxDMA)
 }
 
-func iliRxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().RxDMA)
-}
-
-func iliTxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().TxDMA)
+func lcdTxDMAISR() {
+	lcdspi.DMAISR(lcdspi.TxDMA)
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	//irq.SPI3: iliSPIISR,
-	//irq.DMA2_Channel1: iliRxDMAISR,
-	//irq.DMA2_Channel2: iliTxDMAISR,
-	irq.SPI1:          iliSPIISR,
-	irq.DMA1_Channel2: iliRxDMAISR,
-	irq.DMA1_Channel3: iliTxDMAISR,
+	irq.SPI1:          lcdSPIISR,
+	irq.DMA1_Channel2: lcdRxDMAISR,
+	irq.DMA1_Channel3: lcdTxDMAISR,
 }
