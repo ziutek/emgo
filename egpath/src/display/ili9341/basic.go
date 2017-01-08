@@ -136,8 +136,8 @@ func (d *Display) Line(p0, p1 image.Point) {
 
 // Line1 draws a line from p0 to p1 (including both points). 16-bit command.
 // Line1 uses less memory for code than Line but is generally slower (can be
-// faster for very short lines: 1-3 pixels). Use Line1 if you are short of Flash
-// space and do not care about speed or to draw very short lines.
+// faster for very short lines: 1-3 pixels). Use Line1 if you are very short of
+// Flash space and do not care about speed or to draw very short lines.
 func (d *Display) Line1(p0, p1 image.Point) {
 	dp := p1.Sub(p0)
 	sx, sy := 1, 1

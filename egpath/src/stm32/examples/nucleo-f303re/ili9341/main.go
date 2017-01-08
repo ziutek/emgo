@@ -87,17 +87,6 @@ func main() {
 		spibus, spibus.Clock()/1e6, baudrate,
 	)
 
-	const (
-		ILI9341_SLPOUT  = 0x11
-		ILI9341_DISPOFF = 0x28
-		ILI9341_DISPON  = 0x29
-		ILI9341_RAMWR   = 0x2C
-		ILI9341_MADCTL  = 0x36
-		ILI9341_PIXFMT  = 0x3A
-		ILI9341_CASET   = 0x2A
-		ILI9341_PASET   = 0x2B
-	)
-
 	width := lcd.Bounds().Dx()
 	height := lcd.Bounds().Dy()
 	wxh := width * height
@@ -105,27 +94,20 @@ func main() {
 	lcd.SlpOut()
 	delay.Millisec(120)
 	lcd.DispOn()
-
-	dci := lcd.DCI()
-
-	dci.Cmd(ILI9341_PIXFMT)
-	dci.Byte(0x55) // 16 bit 565 format.
-
-	dci.Cmd(ILI9341_MADCTL)
-	dci.Byte(0xe8) // Screen orientation.
-
+	lcd.PixSet(ili9341.PF16) // 16-bit pixel format.
+	lcd.MADCtl(ili9341.MY | ili9341.MX | ili9341.MV | ili9341.BGR)
 	lcd.SetWordSize(16)
 
-	dci.Cmd16(ILI9341_CASET)
+	dci := lcd.DCI()
+	dci.Cmd16(ili9341.CASET)
 	dci.Word(0)
 	dci.Word(uint16(width - 1))
-	dci.Cmd16(ILI9341_PASET)
+	dci.Cmd16(ili9341.PASET)
 	dci.Word(0)
 	dci.Word(uint16(height - 1))
+	dci.Cmd16(ili9341.RAMWR)
 
-	dci.Cmd16(ILI9341_RAMWR)
-
-	const N = 8
+	const N = 10
 	start := rtos.Nanosec()
 	for i := 0; i < N; i++ {
 		dci.Fill(0xffff, wxh)
