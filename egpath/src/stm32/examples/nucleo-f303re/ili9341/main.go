@@ -3,8 +3,14 @@ package main
 import (
 	"delay"
 	"fmt"
+	"image"
+	"image/color"
 	"math/rand"
 	"rtos"
+
+	"display/ili9341"
+
+	"stm32/ilidci"
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
@@ -12,10 +18,9 @@ import (
 	"stm32/hal/spi"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
-	"stm32/ilidci"
 )
 
-var ili *ilidci.DCI
+var dci *ilidci.DCI
 
 func init() {
 	system.Setup(8, 1, 72/8)
@@ -68,21 +73,21 @@ func init() {
 	ilidc.Setup(&cfg)
 	cfg.Speed = gpio.Low
 	ilireset.Setup(&cfg)
-	ilireset.Clear()
 	delay.Millisec(1) // Reset pulse.
 	ilireset.Set()
 	delay.Millisec(5) // Wait for reset.
 	ilics.Clear()
 
-	ili = ilidci.NewDCI(ilispi, ilidc)
+	dci = ilidci.NewDCI(ilispi, ilidc)
 }
 
 func main() {
 	delay.Millisec(100)
-	spibus := ili.SPI().P.Bus()
+	spibus := dci.SPI().P.Bus()
+	baudrate := dci.SPI().P.Baudrate(dci.SPI().P.Conf())
 	fmt.Printf(
-		"\nSPI on %s (%d MHz). SPI speed: %d Hz.\n\n",
-		spibus, spibus.Clock()/1e6, ili.SPI().P.Baudrate(ili.SPI().P.Conf()),
+		"\nSPI on %s (%d MHz). SPI speed: %d bps.\n\n",
+		spibus, spibus.Clock()/1e6, baudrate,
 	)
 
 	const (
@@ -96,79 +101,153 @@ func main() {
 		ILI9341_PASET   = 0x2B
 	)
 
-	ili.Cmd(ILI9341_SLPOUT)
+	ili := ili9341.NewDisplay(dci)
+
+	width := ili.Bounds().Dx()
+	height := ili.Bounds().Dy()
+	wxh := width * height
+
+	dci.Cmd(ILI9341_SLPOUT)
 	delay.Millisec(120)
-	ili.Cmd(ILI9341_DISPON)
+	dci.Cmd(ILI9341_DISPON)
 
-	ili.Cmd(ILI9341_PIXFMT)
-	ili.Byte(0x55) // 16 bit 565 format.
+	dci.Cmd(ILI9341_PIXFMT)
+	dci.Byte(0x55) // 16 bit 565 format.
 
-	ili.Cmd(ILI9341_MADCTL)
-	ili.Byte(0xe8) // Screen orientation.
+	dci.Cmd(ILI9341_MADCTL)
+	dci.Byte(0xe8) // Screen orientation.
 
-	ili.SetWordSize(16)
+	dci.SetWordSize(16)
 
-	ili.Cmd16(ILI9341_CASET)
-	ili.Word(0)
-	ili.Word(320 - 1)
-	ili.Cmd16(ILI9341_PASET)
-	ili.Word(0)
-	ili.Word(240 - 1)
+	dci.Cmd16(ILI9341_CASET)
+	dci.Word(0)
+	dci.Word(uint16(width - 1))
+	dci.Cmd16(ILI9341_PASET)
+	dci.Word(0)
+	dci.Word(uint16(height - 1))
 
-	ili.Cmd16(ILI9341_RAMWR)
+	dci.Cmd16(ILI9341_RAMWR)
+
 	const N = 8
 	start := rtos.Nanosec()
 	for i := 0; i < N; i++ {
-		ili.Fill(0xffff, 320*240)
-		ili.Fill(0, 320*240)
+		dci.Fill(0xffff, wxh)
+		dci.Fill(0, wxh)
 	}
-	fmt.Printf("Fill speed: %.1f FPS\n\n", N*2*1e9/float32(rtos.Nanosec()-start))
+	fps := N * 2 * 1e9 / float32(rtos.Nanosec()-start)
+	fmt.Printf(
+		"dci.Fill speed: %.1f FPS (%.0f bps).\n", fps, fps*float32(wxh*16),
+	)
+
+	start = rtos.Nanosec()
+	for i := 0; i < N; i++ {
+		ili.SetColor(0xffff)
+		ili.Rect(ili.Bounds())
+		ili.SetColor(0)
+		ili.Rect(ili.Bounds())
+	}
+	fps = N * 2 * 1e9 / float32(rtos.Nanosec()-start)
+	fmt.Printf(
+		"ili.Rect speed: %.1f FPS (%.0f bps).\n", fps, fps*float32(wxh*16),
+	)
 
 	var rnd rand.XorShift64
 	rnd.Seed(rtos.Nanosec())
+
+	p0 := image.Pt(-20, 10)
+	p1 := image.Pt(350, 100)
+	p2 := image.Pt(-20, 150)
+
+	ili.SetColor(0xff00)
+	ili.Point(p0)
+	ili.Point(p1)
+	ili.Point(p2)
+
+	delay.Millisec(1000)
+
+	ili.SetColor(0x00ff)
+	ili.Line(p0, p1)
+	ili.Line(p1, p2)
+	ili.Line(p2, p0)
+
+	p0 = image.Pt(100, -20)
+	p1 = image.Pt(150, 250)
+	p2 = image.Pt(180, -20)
+
+	ili.SetColor(0xff00)
+	ili.Point(p0)
+	ili.Point(p1)
+	ili.Point(p2)
+
+	delay.Millisec(1000)
+
+	ili.SetColor(0x00ff)
+	ili.Line(p0, p1)
+	ili.Line(p1, p2)
+	ili.Line(p2, p0)
+
+	ili.SetColor(0xf00f)
+	ili.Line(image.Pt(-10, 120), image.Pt(350, 120))
+	ili.Line(image.Pt(160, -10), image.Pt(160, 250))
+
+	delay.Millisec(2000)
 
 	for {
 		v := rnd.Uint64()
 		vh := uint32(v >> 32)
 		vl := uint32(v)
-		c := uint16(vl)
+
+		ili.SetColor(color.RGB16(vl))
+
+		var r image.Rectangle
+
 		vl >>= 16
-		x := vl & 0xff
+		r.Min.Y = int(vl&0xff) - (256-height)/2
 		vl >>= 8
-		y := vl & 0x7f
-		w := vh&0x7f + 32
-		vh >>= 8
-		h := vh&0x3f + 64
-		if x+w > 320 {
-			w = 320 - x
-		}
-		if y+h > 240 {
-			h = 240 - y
-		}
+		r.Max.Y = int(vl&0xff) - (256-height)/2
 
-		ili.Cmd16(ILI9341_CASET)
-		ili.Word(uint16(x))
-		ili.Word(uint16(x + w - 1))
+		r.Min.X = int(vh&0x1ff) - (512-width)/2
+		vh >>= 9
+		r.Max.X = int(vh&0x1ff) - (512-width)/2
 
-		ili.Cmd16(ILI9341_PASET)
-		ili.Word(uint16(y))
-		ili.Word(uint16(y + h - 1))
-
-		ili.Cmd16(ILI9341_RAMWR)
-		ili.Fill(c, int(w*h))
+		ili.Rect(r)
+		//ili.Point(r.Min)
+		//ili.Point(r.Max)
 	}
 }
 
+func move(p image.Point) image.Point {
+	switch {
+	case p.Y == 40:
+		if p.X += 5; p.X == 260 {
+			p.Y += 5
+		}
+	case p.Y == 200:
+		if p.X -= 5; p.X == 60 {
+			p.Y -= 5
+		}
+	case p.X == 60:
+		if p.Y -= 5; p.Y == 40 {
+			p.X += 5
+		}
+	case p.X == 260:
+		if p.Y += 5; p.Y == 200 {
+			p.X -= 5
+		}
+	}
+	return p
+}
+
 func iliSPIISR() {
-	ili.SPI().ISR()
+	dci.SPI().ISR()
 }
 
 func iliRxDMAISR() {
-	ili.SPI().DMAISR(ili.SPI().RxDMA)
+	dci.SPI().DMAISR(dci.SPI().RxDMA)
 }
 
 func iliTxDMAISR() {
-	ili.SPI().DMAISR(ili.SPI().TxDMA)
+	dci.SPI().DMAISR(dci.SPI().TxDMA)
 }
 
 //emgo:const

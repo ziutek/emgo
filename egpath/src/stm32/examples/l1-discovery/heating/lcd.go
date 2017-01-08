@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"hdc"
-	"hdc/hdcfb"
+	"display/hdc"
+	"display/hdc/hdcfb"
 
 	"stm32/hal/i2c"
 )

@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"rtos"
 
-	"hdc"
+	"display/hdc"
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"

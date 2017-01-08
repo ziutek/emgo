@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 	"syscall"
 
-	"hdc"
+	"display/hdc"
 )
 
 type buffer struct {

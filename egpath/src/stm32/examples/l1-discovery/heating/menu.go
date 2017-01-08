@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"sync/fence"
 
-	"hdc/hdcfb"
+	"display/hdc/hdcfb"
 	"onewire"
 
 	"stm32/hal/raw/tim"
