@@ -327,6 +327,6 @@ func (m Dense) wrongValue(t *testing.T, i, k int) {
 
 func (m Dense) checkEqual(t *testing.T, a Dense) {
 	if !m.Equal(a) {
-		t.Fatalf("matrices not equal\n%s\n\n%s", m, a)
+		t.Fatalf("matrices not equal\n%v\n\n%v", m, a)
 	}
 }
