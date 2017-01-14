@@ -4,15 +4,14 @@ package matrix32
 func (d Dense) ScaleBy(s float32) {
 	for i := 0; i < d.numrow; i++ {
 		dr := d.v[i*d.stride:]
-		k := d.numcol
-		for k >= 2 {
-			k--
-			dr[k] *= s
-			k--
-			dr[k] *= s
+		k, n := 0, d.numcol-1
+		for k < n {
+			dr[k+0] *= s
+			dr[k+1] *= s
+			k += 2
 		}
-		if k != 0 {
-			dr[0] *= s
+		if k == n {
+			dr[k] *= s
 		}
 	}
 }

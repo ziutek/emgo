@@ -8,45 +8,42 @@ func (d Dense) AddTo(a Dense, s float32) {
 		for i := 0; i < d.numrow; i++ {
 			dr := d.v[i*d.stride:]
 			ar := a.v[i*a.stride:]
-			k := d.numcol - 1
-			for k > 0 {
-				dr[k] += ar[k]
-				k--
-				dr[k] += ar[k]
-				k--
+			k, n := 0, d.numcol-1
+			for k < n {
+				dr[k+0] += ar[k+0]
+				dr[k+1] += ar[k+1]
+				k += 2
 			}
-			if k == 0 {
-				dr[0] += ar[0]
+			if k == n {
+				dr[k] += ar[k]
 			}
 		}
 	case -1:
 		for i := 0; i < d.numrow; i++ {
 			dr := d.v[i*d.stride:]
 			ar := a.v[i*a.stride:]
-			k := d.numcol - 1
-			for k > 0 {
-				dr[k] -= ar[k]
-				k--
-				dr[k] -= ar[k]
-				k--
+			k, n := 0, d.numcol-1
+			for k < n {
+				dr[k+0] -= ar[k+0]
+				dr[k+1] -= ar[k+1]
+				k += 2
 			}
-			if k == 0 {
-				dr[0] -= ar[0]
+			if k == n {
+				dr[k] -= ar[k]
 			}
 		}
 	default:
 		for i := 0; i < d.numrow; i++ {
 			dr := d.v[i*d.stride:]
 			ar := a.v[i*a.stride:]
-			k := d.numcol - 1
-			for k > 0 {
-				dr[k] += ar[k] * s
-				k--
-				dr[k] += ar[k] * s
-				k--
+			k, n := 0, d.numcol-1
+			for k < n {
+				dr[k+0] += ar[k+0] * s
+				dr[k+1] += ar[k+1] * s
+				k += 2
 			}
-			if k == 0 {
-				dr[0] += ar[0] * s
+			if k == n {
+				dr[k] += ar[k] * s
 			}
 		}
 	}

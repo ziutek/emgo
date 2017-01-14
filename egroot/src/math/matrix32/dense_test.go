@@ -1,7 +1,6 @@
 package matrix32
 
 import (
-	"fmt"
 	"math/rand"
 	"testing"
 )
@@ -100,13 +99,13 @@ func TestDenseEqual(t *testing.T) {
 	}
 }
 
-func TestDenseMulBy(t *testing.T) {
+func TestDenseArrMulBy(t *testing.T) {
 	m := MakeDense(6, 5)
 	m.SetAll(2)
 	start, stop := 1, 4
 	m.Rows(start, stop).SetAll(3)
 	s := m.Cols(start, stop)
-	s.MulBy(s)
+	s.ArrMulBy(s)
 	for i := 0; i < m.NumRow(); i++ {
 		for k := 0; k < m.NumCol(); k++ {
 			v := m.Get(i, k)
@@ -130,7 +129,7 @@ func TestDenseMulBy(t *testing.T) {
 	}
 }
 
-func TestDenseMul(t *testing.T) {
+func TestDenseArrMul(t *testing.T) {
 	a := MakeDense(7, 6)
 	a.setRandom(-1, 1)
 	b := MakeDense(7, 6)
@@ -139,8 +138,8 @@ func TestDenseMul(t *testing.T) {
 	d := MakeDense(7, 6)
 
 	c.Copy(a)
-	c.MulBy(b)
-	d.Mul(a, b)
+	c.ArrMulBy(b)
+	d.ArrMul(a, b)
 	d.checkEqual(t, c)
 }
 
@@ -306,8 +305,50 @@ func TestDenseSub(t *testing.T) {
 	c.AddTo(y, -2)
 	d.Sub(x, y, 2)
 	d.checkEqual(t, c)
+}
 
-	fmt.Println(d)
+func TestDenseMul(t *testing.T) {
+	a := MakeDense(3, 4,
+		1, 2, 3, 4,
+		5, 6, 7, 8,
+		9, 1, 2, 3,
+	)
+	b := MakeDense(4, 3,
+		-1, 12, -3,
+		14, 51, 16,
+		-7, 81, -9,
+		-1, -2, -3,
+	)
+	c := MakeDense(a.NumRow(), b.NumCol())
+	c.Mul(a, b)
+	d := MakeDense(3, 3,
+		2, 349, -10,
+		22, 917, -6,
+		-12, 315, -38,
+	)
+	d.checkEqual(t, c)
+}
+
+func BenchmarkDenseAdd(t *testing.B) {
+	a := MakeDense(12, 17)
+	a.setRandom(-1, 1)
+	b := MakeDense(a.NumRow(), a.NumCol())
+	b.setRandom(-1, 1)
+	c := MakeDense(a.NumRow(), a.NumCol())
+	for i := 0; i < t.N; i++ {
+		c.Add(a, b, 3)
+	}
+}
+
+func BenchmarkDenseMul(t *testing.B) {
+	a := MakeDense(12, 17)
+	a.setRandom(-1, 1)
+	b := MakeDense(17, 11)
+	b.setRandom(-1, 1)
+	c := MakeDense(a.NumRow(), b.NumCol())
+	for i := 0; i < t.N; i++ {
+		c.Mul(a, b)
+	}
 }
 
 // Utils

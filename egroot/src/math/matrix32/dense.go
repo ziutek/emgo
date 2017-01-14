@@ -1,5 +1,9 @@
 package matrix32
 
+import (
+	"fmt"
+)
+
 type Dense struct {
 	v      []float32 // [row, row, ..., row]
 	numrow int
@@ -143,6 +147,24 @@ func (d Dense) Equal(a Dense) bool {
 		}
 	}
 	return true
+}
+
+func (d Dense) Format(f fmt.State, _ rune) {
+	numrow, numcol := d.Size()
+	f.Write([]byte{'['})
+	var o string
+	for i := 0; i < numrow; i++ {
+		if i != 0 {
+			f.Write([]byte{' ', ';'})
+		}
+		for k := 0; k < numcol; k++ {
+			fmt.Fprintf(f, "%s%-g", o, d.Get(i, k))
+			if k == 0 {
+				o = " "
+			}
+		}
+	}
+	f.Write([]byte{']'})
 }
 
 // Utils

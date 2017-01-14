@@ -10,15 +10,14 @@ func (d Dense) Sub(a, b Dense, s float32) {
 			dr := d.v[i*d.stride:]
 			ar := a.v[i*a.stride:]
 			br := b.v[i*b.stride:]
-			k := d.numcol
-			for k >= 2 {
-				k--
-				dr[k] = ar[k] - br[k]
-				k--
-				dr[k] = ar[k] - br[k]
+			k, n := 0, d.numcol-1
+			for k < n {
+				dr[k+0] = ar[k+0] - br[k+0]
+				dr[k+1] = ar[k+1] - br[k+1]
+				k += 2
 			}
-			if k != 0 {
-				dr[0] = ar[0] - br[0]
+			if k == n {
+				dr[k] = ar[k] - br[k]
 			}
 		}
 	default:
@@ -26,15 +25,14 @@ func (d Dense) Sub(a, b Dense, s float32) {
 			dr := d.v[i*d.stride:]
 			ar := a.v[i*a.stride:]
 			br := b.v[i*b.stride:]
-			k := d.numcol
-			for k >= 2 {
-				k--
-				dr[k] = (ar[k] - br[k]) * s
-				k--
-				dr[k] = (ar[k] - br[k]) * s
+			k, n := 0, d.numcol-1
+			for k < n {
+				dr[k+0] = (ar[k+0] - br[k+0]) * s
+				dr[k+1] = (ar[k+1] - br[k+1]) * s
+				k += 2
 			}
-			if k != 0 {
-				dr[0] = (ar[0] - br[0]) * s
+			if k == n {
+				dr[k] = (ar[k] - br[k]) * s
 			}
 		}
 	}
