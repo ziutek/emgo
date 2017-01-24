@@ -22,7 +22,7 @@ fi
 echo CFG: $cfg
 
 echo "Loading at $addr..." >/dev/stderr
-openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg $cfg \
+openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg -c "$cfg" \
 	-c 'init' \
 	-c 'reset init' \
 	-c "$load" \

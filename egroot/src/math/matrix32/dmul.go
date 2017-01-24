@@ -3,7 +3,7 @@ package matrix32
 // Mul performs: d = a × b
 func (d Dense) Mul(a, b Dense) {
 	if d.numrow != a.numrow || d.numcol != b.numcol || a.numcol != b.numrow {
-		panic("matrix32: MP: bad dimensions")
+		panic("matrix32: Mul: bad dimensions")
 	}
 	for i := 0; i < d.numrow; i++ {
 		dr := d.v[i*d.stride:]

@@ -8,15 +8,16 @@ type Dense struct {
 	v      []float32 // [row, row, ..., row]
 	numrow int
 	numcol int
-	stride int // distance between vertically adjacent elements
+	stride int // The distance between vertically adjacent elements.
 }
 
 // AsDense makes new dense matrix that refers to v
 func AsDense(numrow, numcol int, v []float32) Dense {
-	if numrow*numcol > len(v) {
-		panic("matrix32: numrow * stride > len(v)")
+	n := numrow * numcol
+	if n > len(v) {
+		panic("matrix32: AsDense: numrow*numcol > len(v)")
 	}
-	return Dense{v: v, numrow: numrow, numcol: numcol, stride: numcol}
+	return Dense{v: v[:n], numrow: numrow, numcol: numcol, stride: numcol}
 }
 
 // MakeDense allocates new dense matrix and initializes its first elements to
@@ -27,7 +28,7 @@ func MakeDense(numrow, numcol int, iv ...float32) Dense {
 	return AsDense(numrow, numcol, v)
 }
 
-// SetAll sets all elements to a.
+// SetAll sets all elements of d to a.
 func (d Dense) SetAll(a float32) {
 	for i := 0; i < d.numrow; i++ {
 		row := d.v[i*d.stride:]
@@ -43,7 +44,7 @@ func (d Dense) SetAll(a float32) {
 	}
 }
 
-// SetI sets d to identity matrix (panics if d isn't a square matrix).
+// SetI sets elements of d to create identity matrix (panics if d is not square).
 func (d Dense) SetIdentity() {
 	if d.numrow != d.numcol {
 		panic("matrix32: SetI on non square matrix")
@@ -74,7 +75,8 @@ func (d Dense) Stride() int {
 	return d.stride
 }
 
-// Elems returns internal buffer of elements.
+// Elems returns internal buffer of elements. Be careful when use returned slice.
+// For example you can not assume that its length corresponds to dimensions of d.
 func (d Dense) Elems() []float32 {
 	return d.v
 }
