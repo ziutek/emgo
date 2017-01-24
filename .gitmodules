@@ -1,0 +1,3 @@
+[submodule "egroot/src/math/matrix"]
+	path = egroot/src/math/matrix
+	url = https://github.com/ziutek/matrix
