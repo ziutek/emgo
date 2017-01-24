@@ -144,7 +144,7 @@ typedef struct {
 
 #define ASLICEH(arx, highx) ({         \
 	typeof(arx) a = arx;               \
-	((slice){a->arr, highx, _ALEN(a)}; \
+	(slice){a->arr, highx, _ALEN(a)}; \
 })
 
 #define ASLICEHC(arx, highx) ({     \
