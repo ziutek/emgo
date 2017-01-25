@@ -74,7 +74,7 @@ func nsSDTR(ns int8, kHz uint, shift uint) fmc.SDTR_Bits {
 	return (nsclk(ns, kHz) - 1) & 15 << shift
 }
 
-func SetController(c *Conf) {
+func Setup(c *Conf) {
 	var (
 		sdcr [2]fmc.SDCR_Bits
 		sdtr [2]fmc.SDTR_Bits

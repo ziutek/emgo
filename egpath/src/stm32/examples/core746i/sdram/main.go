@@ -107,7 +107,7 @@ func init() {
 	fmc.EnableClock(true)
 
 	// Parameters for IS42S16400J-7 SDRAM chip..
-	sdram.SetController(&sdram.Conf{
+	sdram.Setup(&sdram.Conf{
 		ClkDiv: 2, // SDRAMclk = AHBclk / 2
 		TRPns:  15,
 		TRCns:  70,
