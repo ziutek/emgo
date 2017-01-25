@@ -83,6 +83,9 @@ func bits(r *scanner, pkgs []*Package) {
 		line := strings.TrimSpace(r.Text())
 		if def := doxy(line, "#define"); def != "" {
 			name, mask := split(def)
+			if strings.HasPrefix(name, "ADC12") {
+				name = "ADC" + name[5:]
+			}
 			var descr string
 			n := strings.Index(mask, "/*")
 			if n > 0 {

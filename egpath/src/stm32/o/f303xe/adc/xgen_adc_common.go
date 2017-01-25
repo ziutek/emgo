@@ -48,6 +48,94 @@ type CSR_Mask struct{ mmio.UM32 }
 func (rm CSR_Mask) Load() CSR_Bits   { return CSR_Bits(rm.UM32.Load()) }
 func (rm CSR_Mask) Store(b CSR_Bits) { rm.UM32.Store(uint32(b)) }
 
+func (p *ADC_Common_Periph) ADRDY_MST() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_MST)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_EOSMP_MST() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_EOSMP_MST)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_EOC_MST() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_EOC_MST)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_EOS_MST() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_EOS_MST)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_OVR_MST() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_OVR_MST)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_JEOC_MST() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_JEOC_MST)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_JEOS_MST() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_JEOS_MST)}}
+}
+
+func (p *ADC_Common_Periph) AWD1_MST() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(AWD1_MST)}}
+}
+
+func (p *ADC_Common_Periph) AWD2_MST() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(AWD2_MST)}}
+}
+
+func (p *ADC_Common_Periph) AWD3_MST() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(AWD3_MST)}}
+}
+
+func (p *ADC_Common_Periph) JQOVF_MST() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(JQOVF_MST)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_SLV() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_SLV)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_EOSMP_SLV() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_EOSMP_SLV)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_EOC_SLV() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_EOC_SLV)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_EOS_SLV() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_EOS_SLV)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_OVR_SLV() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_OVR_SLV)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_JEOC_SLV() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_JEOC_SLV)}}
+}
+
+func (p *ADC_Common_Periph) ADRDY_JEOS_SLV() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(ADRDY_JEOS_SLV)}}
+}
+
+func (p *ADC_Common_Periph) AWD1_SLV() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(AWD1_SLV)}}
+}
+
+func (p *ADC_Common_Periph) AWD2_SLV() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(AWD2_SLV)}}
+}
+
+func (p *ADC_Common_Periph) AWD3_SLV() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(AWD3_SLV)}}
+}
+
+func (p *ADC_Common_Periph) JQOVF_SLV() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(JQOVF_SLV)}}
+}
+
 type CCR_Bits uint32
 
 func (b CCR_Bits) Field(mask CCR_Bits) int {
@@ -71,6 +159,38 @@ type CCR_Mask struct{ mmio.UM32 }
 func (rm CCR_Mask) Load() CCR_Bits   { return CCR_Bits(rm.UM32.Load()) }
 func (rm CCR_Mask) Store(b CCR_Bits) { rm.UM32.Store(uint32(b)) }
 
+func (p *ADC_Common_Periph) MULTI() CCR_Mask {
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(MULTI)}}
+}
+
+func (p *ADC_Common_Periph) DELAY() CCR_Mask {
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(DELAY)}}
+}
+
+func (p *ADC_Common_Periph) DMACFG() CCR_Mask {
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(DMACFG)}}
+}
+
+func (p *ADC_Common_Periph) MDMA() CCR_Mask {
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(MDMA)}}
+}
+
+func (p *ADC_Common_Periph) CKMODE() CCR_Mask {
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(CKMODE)}}
+}
+
+func (p *ADC_Common_Periph) VREFEN() CCR_Mask {
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(VREFEN)}}
+}
+
+func (p *ADC_Common_Periph) TSEN() CCR_Mask {
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(TSEN)}}
+}
+
+func (p *ADC_Common_Periph) VBATEN() CCR_Mask {
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(VBATEN)}}
+}
+
 type CDR_Bits uint32
 
 func (b CDR_Bits) Field(mask CDR_Bits) int {
@@ -93,3 +213,11 @@ type CDR_Mask struct{ mmio.UM32 }
 
 func (rm CDR_Mask) Load() CDR_Bits   { return CDR_Bits(rm.UM32.Load()) }
 func (rm CDR_Mask) Store(b CDR_Bits) { rm.UM32.Store(uint32(b)) }
+
+func (p *ADC_Common_Periph) RDATA_MST() CDR_Mask {
+	return CDR_Mask{mmio.UM32{&p.CDR.U32, uint32(RDATA_MST)}}
+}
+
+func (p *ADC_Common_Periph) RDATA_SLV() CDR_Mask {
+	return CDR_Mask{mmio.UM32{&p.CDR.U32, uint32(RDATA_SLV)}}
+}

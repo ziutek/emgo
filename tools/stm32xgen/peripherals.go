@@ -321,3 +321,4 @@ func fsmcBank1(p *Periph) {
 		}
 	}
 }
+
