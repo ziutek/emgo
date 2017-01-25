@@ -37,7 +37,6 @@ const (
 	AWD2_SLV        CSR_Bits = 0x01 << 24 //+ Analog watchdog 2 flag of the slave ADC.
 	AWD3_SLV        CSR_Bits = 0x01 << 25 //+ Analog watchdog 3 flag of the slave ADC.
 	JQOVF_SLV       CSR_Bits = 0x01 << 26 //+ Injected context queue overflow flag of the slave ADC.
-	ADRDY_OVR_SLV   CSR_Bits = 0x01 << 20 //  Overrun flag of the slave ADC.
 )
 
 const (
@@ -77,7 +76,7 @@ const (
 	DELAY_1  CCR_Bits = 0x02 << 8  //  DELAY bit 1.
 	DELAY_2  CCR_Bits = 0x04 << 8  //  DELAY bit 2.
 	DELAY_3  CCR_Bits = 0x08 << 8  //  DELAY bit 3.
-	DMACFG   CCR_Bits = 0x01 << 13 //+ DMA configuration for multi-ADC mode.
+	MDMACFG  CCR_Bits = 0x01 << 13 //+ DMA configuration for multi-ADC mode.
 	MDMA     CCR_Bits = 0x03 << 14 //+ DMA mode for multi-ADC mode.
 	MDMA_0   CCR_Bits = 0x01 << 14 //  MDMA bit 0.
 	MDMA_1   CCR_Bits = 0x02 << 14 //  MDMA bit 1.
@@ -90,14 +89,14 @@ const (
 )
 
 const (
-	MULTIn  = 0
-	DELAYn  = 8
-	DMACFGn = 13
-	MDMAn   = 14
-	CKMODEn = 16
-	VREFENn = 22
-	TSENn   = 23
-	VBATENn = 24
+	MULTIn   = 0
+	DELAYn   = 8
+	MDMACFGn = 13
+	MDMAn    = 14
+	CKMODEn  = 16
+	VREFENn  = 22
+	TSENn    = 23
+	VBATENn  = 24
 )
 
 const (

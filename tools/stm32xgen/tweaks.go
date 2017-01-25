@@ -28,6 +28,10 @@ func lastTweaks(pkg *Package) {
 			fsmcBank1e(p)
 		case "FMC_Bank5_6":
 			fsmcBank5_6(p)
+		case "ADC":
+			adc(p)
+		case "ADC_Common":
+			adcCommon(p)
 		}
 	}
 }
@@ -58,7 +62,7 @@ func fixbits(r *Register) {
 }
 
 func rtc(p *Periph) {
-	regs := make([]*Register, 0, 20)
+	regs := make([]*Register, 0, len(p.Regs))
 	var bkpr *Register
 	for _, r := range p.Regs {
 		switch {
@@ -102,7 +106,7 @@ func rtc(p *Periph) {
 }
 
 func flash(p *Periph) {
-	regs := make([]*Register, 0, 20)
+	regs := make([]*Register, 0, len(p.Regs))
 	var optcr *Register
 	for _, r := range p.Regs {
 		switch {
@@ -240,6 +244,60 @@ func fsmcBank5_6(p *Periph) {
 		for _, bit := range r.Bits {
 			if strings.HasPrefix(bit.Name, "MWID") {
 				bit.Name = "SD" + bit.Name
+			}
+		}
+	}
+}
+
+func adc(p *Periph) {
+	regs := make([]*Register, 0, len(p.Regs))
+	var ofr, jdr *Register
+	for _, r := range p.Regs {
+		switch {
+		case r.Name == "ISR":
+			for _, bit := range r.Bits {
+				if bit.Name == "ADRD" {
+					bit.Name = "RDY"
+					break
+				}
+			}
+		case r.Name == "IER":
+			for _, bit := range r.Bits {
+				bit.Name += "IE"
+			}
+		case r.Name == "OFR1":
+			ofr = r
+			ofr.Name = "OFR"
+			ofr.Len = 1
+			ofr.Descr = "Offset registers"
+		case strings.HasPrefix(r.Name, "OFR"):
+			ofr.Len++
+			continue
+		case r.Name == "JDR1":
+			jdr = r
+			jdr.Name = "JDR"
+			jdr.Len = 1
+			jdr.Descr = "Injected data registers"
+		case strings.HasPrefix(r.Name, "JDR"):
+			jdr.Len++
+			continue
+		case r.Name == "DIFSEL":
+			r.Bits = nil
+		}
+		regs = append(regs, r)
+	}
+	p.Regs = regs
+}
+
+func adcCommon(p *Periph) {
+	for _, r := range p.Regs {
+		switch r.Name {
+		case "CCR":
+			for _, bit := range r.Bits {
+				if bit.Name == "DMACFG" {
+					bit.Name = "MDMACFG"
+					break
+				}
 			}
 		}
 	}

@@ -167,8 +167,8 @@ func (p *ADC_Common_Periph) DELAY() CCR_Mask {
 	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(DELAY)}}
 }
 
-func (p *ADC_Common_Periph) DMACFG() CCR_Mask {
-	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(DMACFG)}}
+func (p *ADC_Common_Periph) MDMACFG() CCR_Mask {
+	return CCR_Mask{mmio.UM32{&p.CCR.U32, uint32(MDMACFG)}}
 }
 
 func (p *ADC_Common_Periph) MDMA() CCR_Mask {

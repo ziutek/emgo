@@ -19,10 +19,7 @@
 //  0x30 32  SQR2
 //  0x34 32  SQR3
 //  0x38 32  JSQR
-//  0x3C 32  JDR1
-//  0x40 32  JDR2
-//  0x44 32  JDR3
-//  0x48 32  JDR4
+//  0x3C 32  JDR[4] Injected data registers.
 //  0x4C 32  DR
 // Import:
 //  stm32/o/f10x_md/mmap
@@ -453,31 +450,7 @@ const (
 )
 
 const (
-	JDATA JDR1_Bits = 0xFFFF << 0 //+ Injected data.
-)
-
-const (
-	JDATAn = 0
-)
-
-const (
-	JDATA JDR2_Bits = 0xFFFF << 0 //+ Injected data.
-)
-
-const (
-	JDATAn = 0
-)
-
-const (
-	JDATA JDR3_Bits = 0xFFFF << 0 //+ Injected data.
-)
-
-const (
-	JDATAn = 0
-)
-
-const (
-	JDATA JDR4_Bits = 0xFFFF << 0 //+ Injected data.
+	JDATA JDR_Bits = 0xFFFF << 0 //+ Injected data.
 )
 
 const (

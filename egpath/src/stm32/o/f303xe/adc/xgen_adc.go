@@ -31,15 +31,9 @@ type ADC_Periph struct {
 	_       [2]uint32
 	JSQR    JSQR
 	_       [4]uint32
-	OFR1    OFR1
-	OFR2    OFR2
-	OFR3    OFR3
-	OFR4    OFR4
+	OFR     [4]OFR
 	_       [4]uint32
-	JDR1    JDR1
-	JDR2    JDR2
-	JDR3    JDR3
-	JDR4    JDR4
+	JDR     [4]JDR
 	_       [4]uint32
 	AWD2CR  AWD2CR
 	AWD3CR  AWD3CR
@@ -83,8 +77,8 @@ type ISR_Mask struct{ mmio.UM32 }
 func (rm ISR_Mask) Load() ISR_Bits   { return ISR_Bits(rm.UM32.Load()) }
 func (rm ISR_Mask) Store(b ISR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *ADC_Periph) ADRD() ISR_Mask {
-	return ISR_Mask{mmio.UM32{&p.ISR.U32, uint32(ADRD)}}
+func (p *ADC_Periph) RDY() ISR_Mask {
+	return ISR_Mask{mmio.UM32{&p.ISR.U32, uint32(RDY)}}
 }
 
 func (p *ADC_Periph) EOSMP() ISR_Mask {
@@ -150,48 +144,48 @@ type IER_Mask struct{ mmio.UM32 }
 func (rm IER_Mask) Load() IER_Bits   { return IER_Bits(rm.UM32.Load()) }
 func (rm IER_Mask) Store(b IER_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *ADC_Periph) RDY() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(RDY)}}
+func (p *ADC_Periph) RDYIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(RDYIE)}}
 }
 
-func (p *ADC_Periph) EOSMP() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOSMP)}}
+func (p *ADC_Periph) EOSMPIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOSMPIE)}}
 }
 
-func (p *ADC_Periph) EOC() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOC)}}
+func (p *ADC_Periph) EOCIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOCIE)}}
 }
 
-func (p *ADC_Periph) EOS() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOS)}}
+func (p *ADC_Periph) EOSIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOSIE)}}
 }
 
-func (p *ADC_Periph) OVR() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(OVR)}}
+func (p *ADC_Periph) OVRIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(OVRIE)}}
 }
 
-func (p *ADC_Periph) JEOC() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JEOC)}}
+func (p *ADC_Periph) JEOCIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JEOCIE)}}
 }
 
-func (p *ADC_Periph) JEOS() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JEOS)}}
+func (p *ADC_Periph) JEOSIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JEOSIE)}}
 }
 
-func (p *ADC_Periph) AWD1() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD1)}}
+func (p *ADC_Periph) AWD1IE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD1IE)}}
 }
 
-func (p *ADC_Periph) AWD2() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD2)}}
+func (p *ADC_Periph) AWD2IE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD2IE)}}
 }
 
-func (p *ADC_Periph) AWD3() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD3)}}
+func (p *ADC_Periph) AWD3IE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD3IE)}}
 }
 
-func (p *ADC_Periph) JQOVF() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JQOVF)}}
+func (p *ADC_Periph) JQOVFIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JQOVFIE)}}
 }
 
 type CR_Bits uint32
@@ -801,252 +795,66 @@ func (p *ADC_Periph) JSQ4() JSQR_Mask {
 	return JSQR_Mask{mmio.UM32{&p.JSQR.U32, uint32(JSQ4)}}
 }
 
-type OFR1_Bits uint32
+type OFR_Bits uint32
 
-func (b OFR1_Bits) Field(mask OFR1_Bits) int {
+func (b OFR_Bits) Field(mask OFR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask OFR1_Bits) J(v int) OFR1_Bits {
-	return OFR1_Bits(bits.Make32(v, uint32(mask)))
+func (mask OFR_Bits) J(v int) OFR_Bits {
+	return OFR_Bits(bits.Make32(v, uint32(mask)))
 }
 
-type OFR1 struct{ mmio.U32 }
+type OFR struct{ mmio.U32 }
 
-func (r *OFR1) Bits(mask OFR1_Bits) OFR1_Bits { return OFR1_Bits(r.U32.Bits(uint32(mask))) }
-func (r *OFR1) StoreBits(mask, b OFR1_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *OFR1) SetBits(mask OFR1_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *OFR1) ClearBits(mask OFR1_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *OFR1) Load() OFR1_Bits               { return OFR1_Bits(r.U32.Load()) }
-func (r *OFR1) Store(b OFR1_Bits)             { r.U32.Store(uint32(b)) }
+func (r *OFR) Bits(mask OFR_Bits) OFR_Bits { return OFR_Bits(r.U32.Bits(uint32(mask))) }
+func (r *OFR) StoreBits(mask, b OFR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *OFR) SetBits(mask OFR_Bits)       { r.U32.SetBits(uint32(mask)) }
+func (r *OFR) ClearBits(mask OFR_Bits)     { r.U32.ClearBits(uint32(mask)) }
+func (r *OFR) Load() OFR_Bits              { return OFR_Bits(r.U32.Load()) }
+func (r *OFR) Store(b OFR_Bits)            { r.U32.Store(uint32(b)) }
 
-type OFR1_Mask struct{ mmio.UM32 }
+type OFR_Mask struct{ mmio.UM32 }
 
-func (rm OFR1_Mask) Load() OFR1_Bits   { return OFR1_Bits(rm.UM32.Load()) }
-func (rm OFR1_Mask) Store(b OFR1_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm OFR_Mask) Load() OFR_Bits   { return OFR_Bits(rm.UM32.Load()) }
+func (rm OFR_Mask) Store(b OFR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *ADC_Periph) OFFSET1() OFR1_Mask {
-	return OFR1_Mask{mmio.UM32{&p.OFR1.U32, uint32(OFFSET1)}}
+func (p *ADC_Periph) OFFSET1(n int) OFR_Mask {
+	return OFR_Mask{mmio.UM32{&p.OFR[n].U32, uint32(OFFSET1)}}
 }
 
-func (p *ADC_Periph) OFFSET1_CH() OFR1_Mask {
-	return OFR1_Mask{mmio.UM32{&p.OFR1.U32, uint32(OFFSET1_CH)}}
+func (p *ADC_Periph) OFFSET1_CH(n int) OFR_Mask {
+	return OFR_Mask{mmio.UM32{&p.OFR[n].U32, uint32(OFFSET1_CH)}}
 }
 
-func (p *ADC_Periph) OFFSET1_EN() OFR1_Mask {
-	return OFR1_Mask{mmio.UM32{&p.OFR1.U32, uint32(OFFSET1_EN)}}
+func (p *ADC_Periph) OFFSET1_EN(n int) OFR_Mask {
+	return OFR_Mask{mmio.UM32{&p.OFR[n].U32, uint32(OFFSET1_EN)}}
 }
 
-type OFR2_Bits uint32
+type JDR_Bits uint32
 
-func (b OFR2_Bits) Field(mask OFR2_Bits) int {
+func (b JDR_Bits) Field(mask JDR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask OFR2_Bits) J(v int) OFR2_Bits {
-	return OFR2_Bits(bits.Make32(v, uint32(mask)))
+func (mask JDR_Bits) J(v int) JDR_Bits {
+	return JDR_Bits(bits.Make32(v, uint32(mask)))
 }
 
-type OFR2 struct{ mmio.U32 }
+type JDR struct{ mmio.U32 }
 
-func (r *OFR2) Bits(mask OFR2_Bits) OFR2_Bits { return OFR2_Bits(r.U32.Bits(uint32(mask))) }
-func (r *OFR2) StoreBits(mask, b OFR2_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *OFR2) SetBits(mask OFR2_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *OFR2) ClearBits(mask OFR2_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *OFR2) Load() OFR2_Bits               { return OFR2_Bits(r.U32.Load()) }
-func (r *OFR2) Store(b OFR2_Bits)             { r.U32.Store(uint32(b)) }
+func (r *JDR) Bits(mask JDR_Bits) JDR_Bits { return JDR_Bits(r.U32.Bits(uint32(mask))) }
+func (r *JDR) StoreBits(mask, b JDR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *JDR) SetBits(mask JDR_Bits)       { r.U32.SetBits(uint32(mask)) }
+func (r *JDR) ClearBits(mask JDR_Bits)     { r.U32.ClearBits(uint32(mask)) }
+func (r *JDR) Load() JDR_Bits              { return JDR_Bits(r.U32.Load()) }
+func (r *JDR) Store(b JDR_Bits)            { r.U32.Store(uint32(b)) }
 
-type OFR2_Mask struct{ mmio.UM32 }
+type JDR_Mask struct{ mmio.UM32 }
 
-func (rm OFR2_Mask) Load() OFR2_Bits   { return OFR2_Bits(rm.UM32.Load()) }
-func (rm OFR2_Mask) Store(b OFR2_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm JDR_Mask) Load() JDR_Bits   { return JDR_Bits(rm.UM32.Load()) }
+func (rm JDR_Mask) Store(b JDR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *ADC_Periph) OFFSET2() OFR2_Mask {
-	return OFR2_Mask{mmio.UM32{&p.OFR2.U32, uint32(OFFSET2)}}
-}
-
-func (p *ADC_Periph) OFFSET2_CH() OFR2_Mask {
-	return OFR2_Mask{mmio.UM32{&p.OFR2.U32, uint32(OFFSET2_CH)}}
-}
-
-func (p *ADC_Periph) OFFSET2_EN() OFR2_Mask {
-	return OFR2_Mask{mmio.UM32{&p.OFR2.U32, uint32(OFFSET2_EN)}}
-}
-
-type OFR3_Bits uint32
-
-func (b OFR3_Bits) Field(mask OFR3_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask OFR3_Bits) J(v int) OFR3_Bits {
-	return OFR3_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type OFR3 struct{ mmio.U32 }
-
-func (r *OFR3) Bits(mask OFR3_Bits) OFR3_Bits { return OFR3_Bits(r.U32.Bits(uint32(mask))) }
-func (r *OFR3) StoreBits(mask, b OFR3_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *OFR3) SetBits(mask OFR3_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *OFR3) ClearBits(mask OFR3_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *OFR3) Load() OFR3_Bits               { return OFR3_Bits(r.U32.Load()) }
-func (r *OFR3) Store(b OFR3_Bits)             { r.U32.Store(uint32(b)) }
-
-type OFR3_Mask struct{ mmio.UM32 }
-
-func (rm OFR3_Mask) Load() OFR3_Bits   { return OFR3_Bits(rm.UM32.Load()) }
-func (rm OFR3_Mask) Store(b OFR3_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *ADC_Periph) OFFSET3() OFR3_Mask {
-	return OFR3_Mask{mmio.UM32{&p.OFR3.U32, uint32(OFFSET3)}}
-}
-
-func (p *ADC_Periph) OFFSET3_CH() OFR3_Mask {
-	return OFR3_Mask{mmio.UM32{&p.OFR3.U32, uint32(OFFSET3_CH)}}
-}
-
-func (p *ADC_Periph) OFFSET3_EN() OFR3_Mask {
-	return OFR3_Mask{mmio.UM32{&p.OFR3.U32, uint32(OFFSET3_EN)}}
-}
-
-type OFR4_Bits uint32
-
-func (b OFR4_Bits) Field(mask OFR4_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask OFR4_Bits) J(v int) OFR4_Bits {
-	return OFR4_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type OFR4 struct{ mmio.U32 }
-
-func (r *OFR4) Bits(mask OFR4_Bits) OFR4_Bits { return OFR4_Bits(r.U32.Bits(uint32(mask))) }
-func (r *OFR4) StoreBits(mask, b OFR4_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *OFR4) SetBits(mask OFR4_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *OFR4) ClearBits(mask OFR4_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *OFR4) Load() OFR4_Bits               { return OFR4_Bits(r.U32.Load()) }
-func (r *OFR4) Store(b OFR4_Bits)             { r.U32.Store(uint32(b)) }
-
-type OFR4_Mask struct{ mmio.UM32 }
-
-func (rm OFR4_Mask) Load() OFR4_Bits   { return OFR4_Bits(rm.UM32.Load()) }
-func (rm OFR4_Mask) Store(b OFR4_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *ADC_Periph) OFFSET4() OFR4_Mask {
-	return OFR4_Mask{mmio.UM32{&p.OFR4.U32, uint32(OFFSET4)}}
-}
-
-func (p *ADC_Periph) OFFSET4_CH() OFR4_Mask {
-	return OFR4_Mask{mmio.UM32{&p.OFR4.U32, uint32(OFFSET4_CH)}}
-}
-
-func (p *ADC_Periph) OFFSET4_EN() OFR4_Mask {
-	return OFR4_Mask{mmio.UM32{&p.OFR4.U32, uint32(OFFSET4_EN)}}
-}
-
-type JDR1_Bits uint32
-
-func (b JDR1_Bits) Field(mask JDR1_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask JDR1_Bits) J(v int) JDR1_Bits {
-	return JDR1_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type JDR1 struct{ mmio.U32 }
-
-func (r *JDR1) Bits(mask JDR1_Bits) JDR1_Bits { return JDR1_Bits(r.U32.Bits(uint32(mask))) }
-func (r *JDR1) StoreBits(mask, b JDR1_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *JDR1) SetBits(mask JDR1_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *JDR1) ClearBits(mask JDR1_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *JDR1) Load() JDR1_Bits               { return JDR1_Bits(r.U32.Load()) }
-func (r *JDR1) Store(b JDR1_Bits)             { r.U32.Store(uint32(b)) }
-
-type JDR1_Mask struct{ mmio.UM32 }
-
-func (rm JDR1_Mask) Load() JDR1_Bits   { return JDR1_Bits(rm.UM32.Load()) }
-func (rm JDR1_Mask) Store(b JDR1_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *ADC_Periph) JDATA() JDR1_Mask {
-	return JDR1_Mask{mmio.UM32{&p.JDR1.U32, uint32(JDATA)}}
-}
-
-type JDR2_Bits uint32
-
-func (b JDR2_Bits) Field(mask JDR2_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask JDR2_Bits) J(v int) JDR2_Bits {
-	return JDR2_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type JDR2 struct{ mmio.U32 }
-
-func (r *JDR2) Bits(mask JDR2_Bits) JDR2_Bits { return JDR2_Bits(r.U32.Bits(uint32(mask))) }
-func (r *JDR2) StoreBits(mask, b JDR2_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *JDR2) SetBits(mask JDR2_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *JDR2) ClearBits(mask JDR2_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *JDR2) Load() JDR2_Bits               { return JDR2_Bits(r.U32.Load()) }
-func (r *JDR2) Store(b JDR2_Bits)             { r.U32.Store(uint32(b)) }
-
-type JDR2_Mask struct{ mmio.UM32 }
-
-func (rm JDR2_Mask) Load() JDR2_Bits   { return JDR2_Bits(rm.UM32.Load()) }
-func (rm JDR2_Mask) Store(b JDR2_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *ADC_Periph) JDATA() JDR2_Mask {
-	return JDR2_Mask{mmio.UM32{&p.JDR2.U32, uint32(JDATA)}}
-}
-
-type JDR3_Bits uint32
-
-func (b JDR3_Bits) Field(mask JDR3_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask JDR3_Bits) J(v int) JDR3_Bits {
-	return JDR3_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type JDR3 struct{ mmio.U32 }
-
-func (r *JDR3) Bits(mask JDR3_Bits) JDR3_Bits { return JDR3_Bits(r.U32.Bits(uint32(mask))) }
-func (r *JDR3) StoreBits(mask, b JDR3_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *JDR3) SetBits(mask JDR3_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *JDR3) ClearBits(mask JDR3_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *JDR3) Load() JDR3_Bits               { return JDR3_Bits(r.U32.Load()) }
-func (r *JDR3) Store(b JDR3_Bits)             { r.U32.Store(uint32(b)) }
-
-type JDR3_Mask struct{ mmio.UM32 }
-
-func (rm JDR3_Mask) Load() JDR3_Bits   { return JDR3_Bits(rm.UM32.Load()) }
-func (rm JDR3_Mask) Store(b JDR3_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *ADC_Periph) JDATA() JDR3_Mask {
-	return JDR3_Mask{mmio.UM32{&p.JDR3.U32, uint32(JDATA)}}
-}
-
-type JDR4_Bits uint32
-
-func (b JDR4_Bits) Field(mask JDR4_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask JDR4_Bits) J(v int) JDR4_Bits {
-	return JDR4_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type JDR4 struct{ mmio.U32 }
-
-func (r *JDR4) Bits(mask JDR4_Bits) JDR4_Bits { return JDR4_Bits(r.U32.Bits(uint32(mask))) }
-func (r *JDR4) StoreBits(mask, b JDR4_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *JDR4) SetBits(mask JDR4_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *JDR4) ClearBits(mask JDR4_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *JDR4) Load() JDR4_Bits               { return JDR4_Bits(r.U32.Load()) }
-func (r *JDR4) Store(b JDR4_Bits)             { r.U32.Store(uint32(b)) }
-
-type JDR4_Mask struct{ mmio.UM32 }
-
-func (rm JDR4_Mask) Load() JDR4_Bits   { return JDR4_Bits(rm.UM32.Load()) }
-func (rm JDR4_Mask) Store(b JDR4_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *ADC_Periph) JDATA() JDR4_Mask {
-	return JDR4_Mask{mmio.UM32{&p.JDR4.U32, uint32(JDATA)}}
+func (p *ADC_Periph) JDATA(n int) JDR_Mask {
+	return JDR_Mask{mmio.UM32{&p.JDR[n].U32, uint32(JDATA)}}
 }
 
 type AWD2CR_Bits uint32
@@ -1125,10 +933,6 @@ type DIFSEL_Mask struct{ mmio.UM32 }
 
 func (rm DIFSEL_Mask) Load() DIFSEL_Bits   { return DIFSEL_Bits(rm.UM32.Load()) }
 func (rm DIFSEL_Mask) Store(b DIFSEL_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *ADC_Periph) DIFSEL() DIFSEL_Mask {
-	return DIFSEL_Mask{mmio.UM32{&p.DIFSEL.U32, uint32(DIFSEL)}}
-}
 
 type CALFACT_Bits uint32
 

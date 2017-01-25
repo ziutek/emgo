@@ -6,26 +6,23 @@
 //  ADC2  mmap.ADC2_BASE
 //  ADC3  mmap.ADC3_BASE
 // Registers:
-//  0x00 32  SR    Status register.
-//  0x04 32  CR1   Control register 1.
-//  0x08 32  CR2   Control register 2.
-//  0x0C 32  SMPR1 Sample time register 1.
-//  0x10 32  SMPR2 Sample time register 2.
-//  0x14 32  JOFR1 Injected channel data offset register 1.
-//  0x18 32  JOFR2 Injected channel data offset register 2.
-//  0x1C 32  JOFR3 Injected channel data offset register 3.
-//  0x20 32  JOFR4 Injected channel data offset register 4.
-//  0x24 32  HTR   Watchdog higher threshold register.
-//  0x28 32  LTR   Watchdog lower threshold register.
-//  0x2C 32  SQR1  Regular sequence register 1.
-//  0x30 32  SQR2  Regular sequence register 2.
-//  0x34 32  SQR3  Regular sequence register 3.
-//  0x38 32  JSQR  Injected sequence register.
-//  0x3C 32  JDR1  Injected data register 1.
-//  0x40 32  JDR2  Injected data register 2.
-//  0x44 32  JDR3  Injected data register 3.
-//  0x48 32  JDR4  Injected data register 4.
-//  0x4C 32  DR    Regular data register.
+//  0x00 32  SR     Status register.
+//  0x04 32  CR1    Control register 1.
+//  0x08 32  CR2    Control register 2.
+//  0x0C 32  SMPR1  Sample time register 1.
+//  0x10 32  SMPR2  Sample time register 2.
+//  0x14 32  JOFR1  Injected channel data offset register 1.
+//  0x18 32  JOFR2  Injected channel data offset register 2.
+//  0x1C 32  JOFR3  Injected channel data offset register 3.
+//  0x20 32  JOFR4  Injected channel data offset register 4.
+//  0x24 32  HTR    Watchdog higher threshold register.
+//  0x28 32  LTR    Watchdog lower threshold register.
+//  0x2C 32  SQR1   Regular sequence register 1.
+//  0x30 32  SQR2   Regular sequence register 2.
+//  0x34 32  SQR3   Regular sequence register 3.
+//  0x38 32  JSQR   Injected sequence register.
+//  0x3C 32  JDR[4] Injected data registers.
+//  0x4C 32  DR     Regular data register.
 // Import:
 //  stm32/o/f411xe/mmap
 package adc
@@ -466,31 +463,7 @@ const (
 )
 
 const (
-	JDATA JDR1_Bits = 0xFFFF << 0 //+ Injected data.
-)
-
-const (
-	JDATAn = 0
-)
-
-const (
-	JDATA JDR2_Bits = 0xFFFF << 0 //+ Injected data.
-)
-
-const (
-	JDATAn = 0
-)
-
-const (
-	JDATA JDR3_Bits = 0xFFFF << 0 //+ Injected data.
-)
-
-const (
-	JDATAn = 0
-)
-
-const (
-	JDATA JDR4_Bits = 0xFFFF << 0 //+ Injected data.
+	JDATA JDR_Bits = 0xFFFF << 0 //+ Injected data.
 )
 
 const (
