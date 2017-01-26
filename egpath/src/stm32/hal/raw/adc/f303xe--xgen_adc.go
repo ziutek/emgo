@@ -79,8 +79,8 @@ type ISR_Mask struct{ mmio.UM32 }
 func (rm ISR_Mask) Load() ISR_Bits   { return ISR_Bits(rm.UM32.Load()) }
 func (rm ISR_Mask) Store(b ISR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *ADC_Periph) RDY() ISR_Mask {
-	return ISR_Mask{mmio.UM32{&p.ISR.U32, uint32(RDY)}}
+func (p *ADC_Periph) ADRDY() ISR_Mask {
+	return ISR_Mask{mmio.UM32{&p.ISR.U32, uint32(ADRDY)}}
 }
 
 func (p *ADC_Periph) EOSMP() ISR_Mask {
@@ -146,8 +146,8 @@ type IER_Mask struct{ mmio.UM32 }
 func (rm IER_Mask) Load() IER_Bits   { return IER_Bits(rm.UM32.Load()) }
 func (rm IER_Mask) Store(b IER_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *ADC_Periph) RDYIE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(RDYIE)}}
+func (p *ADC_Periph) ADRDYIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(ADRDYIE)}}
 }
 
 func (p *ADC_Periph) EOSMPIE() IER_Mask {

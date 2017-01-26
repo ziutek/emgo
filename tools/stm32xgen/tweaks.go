@@ -257,12 +257,15 @@ func adc(p *Periph) {
 		case r.Name == "ISR":
 			for _, bit := range r.Bits {
 				if bit.Name == "ADRD" {
-					bit.Name = "RDY"
+					bit.Name = "ADRDY"
 					break
 				}
 			}
 		case r.Name == "IER":
 			for _, bit := range r.Bits {
+				if bit.Name == "RDY" {
+					bit.Name = "ADRDY"
+				}
 				bit.Name += "IE"
 			}
 		case r.Name == "OFR1":
