@@ -86,7 +86,7 @@ func init() {
 	ain.Setup(&gpio.Config{Mode: gpio.Ana})
 	rcc.RCC.ADC12EN().Set()
 	// Select AHBclk/div as ADC12 clock source.
-	const log2div = 1 // Max. 2.
+	const log2div = 0 // Max. 2.
 	adc.ADC1_2.CKMODE().Store((log2div + 1) << adc.CKMODEn)
 	inp1 = adc.ADC1
 	// Enable voltage regulator.
@@ -106,6 +106,13 @@ func init() {
 	inp1.SQR1.Store(1<<adc.SQ1n | (1-1)<<adc.Ln)
 }
 
+func load(inp *adc.ADC_Periph) int {
+	inp.CR.Store(adc.ADSTART | advregen)
+	for inp.EOC().Load() == 0 {
+	}
+	return int(inp1.DR.Load())
+}
+
 func main() {
 	lcd.SlpOut()
 	delay.Millisec(120)
@@ -120,14 +127,23 @@ func main() {
 	// Wait for ADC.
 	for inp1.ADRDY().Load() == 0 {
 	}
+
 	wh := lcd.Bounds().Max
 	buf := make([]byte, wh.X)
+	trig := 128
 	for {
-		for x := 0; x < wh.X; x++ {
-			inp1.CR.Store(adc.ADSTART | advregen)
-			for inp1.EOC().Load() == 0 {
+		for load(inp1) >= trig {
+		}
+		var first int
+		for {
+			first = load(inp1)
+			if first > trig {
+				break
 			}
-			buf[x] = byte(inp1.DR.Load())
+		}
+		buf[0] = byte(first)
+		for x := 1; x < wh.X; x++ {
+			buf[x] = byte(load(inp1))
 		}
 		lcd.SetColor(0)
 		lcd.Rect(image.Rect(0, 0, 1, wh.Y))
