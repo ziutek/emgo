@@ -8660,7 +8660,7 @@ typedef struct
 #define  TIM_CCR4_CCR4                       ((uint16_t)0xFFFF)            /*!<Capture/Compare 4 Value */
 
 /*******************  Bit definition for TIM_CCR5 register  *******************/
-#define  TIM_CCR5_CCR5                       ((uint32_t)0xFFFFFFFF)        /*!<Capture/Compare 5 Value */
+#define  TIM_CCR5_CCR5                       ((uint32_t)0x0000FFFF)        /*!<Capture/Compare 5 Value */
 #define  TIM_CCR5_GC5C1                      ((uint32_t)0x20000000)        /*!<Group Channel 5 and Channel 1 */
 #define  TIM_CCR5_GC5C2                      ((uint32_t)0x40000000)        /*!<Group Channel 5 and Channel 2 */
 #define  TIM_CCR5_GC5C3                      ((uint32_t)0x80000000)        /*!<Group Channel 5 and Channel 3 */
