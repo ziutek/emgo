@@ -780,10 +780,6 @@ type CNT_Mask struct{ mmio.UM32 }
 func (rm CNT_Mask) Load() CNT_Bits   { return CNT_Bits(rm.UM32.Load()) }
 func (rm CNT_Mask) Store(b CNT_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *TIM_Periph) CNT() CNT_Mask {
-	return CNT_Mask{mmio.UM32{&p.CNT.U32, uint32(CNT)}}
-}
-
 type PSC_Bits uint16
 
 func (b PSC_Bits) Field(mask PSC_Bits) int {
@@ -1187,8 +1183,20 @@ type CCR5_Mask struct{ mmio.UM32 }
 func (rm CCR5_Mask) Load() CCR5_Bits   { return CCR5_Bits(rm.UM32.Load()) }
 func (rm CCR5_Mask) Store(b CCR5_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *TIM_Periph) CCR5() CCR5_Mask {
-	return CCR5_Mask{mmio.UM32{&p.CCR5.U32, uint32(CCR5)}}
+func (p *TIM_Periph) CCR5V() CCR5_Mask {
+	return CCR5_Mask{mmio.UM32{&p.CCR5.U32, uint32(CCR5V)}}
+}
+
+func (p *TIM_Periph) GC5C1() CCR5_Mask {
+	return CCR5_Mask{mmio.UM32{&p.CCR5.U32, uint32(GC5C1)}}
+}
+
+func (p *TIM_Periph) GC5C2() CCR5_Mask {
+	return CCR5_Mask{mmio.UM32{&p.CCR5.U32, uint32(GC5C2)}}
+}
+
+func (p *TIM_Periph) GC5C3() CCR5_Mask {
+	return CCR5_Mask{mmio.UM32{&p.CCR5.U32, uint32(GC5C3)}}
 }
 
 type CCR6_Bits uint32

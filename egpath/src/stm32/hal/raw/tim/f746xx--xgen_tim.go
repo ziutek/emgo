@@ -1168,8 +1168,8 @@ type CCR5_Mask struct{ mmio.UM32 }
 func (rm CCR5_Mask) Load() CCR5_Bits   { return CCR5_Bits(rm.UM32.Load()) }
 func (rm CCR5_Mask) Store(b CCR5_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *TIM_Periph) CCR5() CCR5_Mask {
-	return CCR5_Mask{mmio.UM32{&p.CCR5.U32, uint32(CCR5)}}
+func (p *TIM_Periph) CCR5V() CCR5_Mask {
+	return CCR5_Mask{mmio.UM32{&p.CCR5.U32, uint32(CCR5V)}}
 }
 
 type CCR6_Bits uint32

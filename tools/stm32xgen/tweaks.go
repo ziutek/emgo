@@ -208,6 +208,18 @@ func tim(p *Periph) {
 					b.Val = false
 				}
 			}
+		case "CNT":
+			r.Bits = nil
+		case "CCR5":
+			for _, b := range r.Bits {
+				if b == nil {
+					continue
+				}
+				if b.Name == "CCR5" {
+					b.Name = "CCR5V"
+					break
+				}
+			}
 		}
 	}
 }

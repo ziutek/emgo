@@ -526,12 +526,12 @@ const (
 )
 
 const (
-	CCR5  CCR5_Bits = 0xFFFFFFFF << 0 //+ Capture/Compare 5 Value.
+	CCR5V CCR5_Bits = 0xFFFFFFFF << 0 //+ Capture/Compare 5 Value.
 	GC5C1 CCR5_Bits = 0x20000000 << 0 //  Group Channel 5 and Channel 1.
 	GC5C2 CCR5_Bits = 0x40000000 << 0 //  Group Channel 5 and Channel 2.
 	GC5C3 CCR5_Bits = 0x80000000 << 0 //  Group Channel 5 and Channel 3.
 )
 
 const (
-	CCR5n = 0
+	CCR5Vn = 0
 )

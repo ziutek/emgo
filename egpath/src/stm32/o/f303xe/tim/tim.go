@@ -407,15 +407,6 @@ const (
 )
 
 const (
-	CNT    CNT_Bits = 0xFFFFFFFF << 0 //+ Counter Value.
-	UIFCPY CNT_Bits = 0x80000000 << 0 //  Update interrupt flag copy.
-)
-
-const (
-	CNTn = 0
-)
-
-const (
 	REP RCR_Bits = 0xFF << 0 //+ Repetition Counter Value.
 )
 
@@ -524,12 +515,15 @@ const (
 )
 
 const (
-	CCR5  CCR5_Bits = 0xFFFFFFFF << 0 //+ Capture/Compare 5 Value.
-	GC5C1 CCR5_Bits = 0x20000000 << 0 //  Group Channel 5 and Channel 1.
-	GC5C2 CCR5_Bits = 0x40000000 << 0 //  Group Channel 5 and Channel 2.
-	GC5C3 CCR5_Bits = 0x80000000 << 0 //  Group Channel 5 and Channel 3.
+	CCR5V CCR5_Bits = 0xFFFF << 0 //+ Capture/Compare 5 Value.
+	GC5C1 CCR5_Bits = 0x01 << 29  //+ Group Channel 5 and Channel 1.
+	GC5C2 CCR5_Bits = 0x01 << 30  //+ Group Channel 5 and Channel 2.
+	GC5C3 CCR5_Bits = 0x01 << 31  //+ Group Channel 5 and Channel 3.
 )
 
 const (
-	CCR5n = 0
+	CCR5Vn = 0
+	GC5C1n = 29
+	GC5C2n = 30
+	GC5C3n = 31
 )
