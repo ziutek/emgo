@@ -157,6 +157,15 @@ func (p Port) Write(b []byte) (int, error) {
 }
 
 func (p Port) WriteByte(b byte) error {
+	if p < 0 {
+		return nil
+	}
+	for !p.Ready() {
+		if !p.Enabled() || Ctrl()&ITMEna == 0 {
+			// Silently discard data.
+			return nil
+		}
+	}
 	p.Store8(b)
 	return nil
 }
