@@ -8,18 +8,19 @@ import (
 type Display struct {
 	dci   DCI
 	color color.RGB16
+	w, h  uint16
 }
 
 // MakeDisplay returns initialised Display value.
 func MakeDisplay(dci DCI) Display {
-	return Display{dci: dci}
+	return Display{dci: dci, w: 240, h: 320}
 }
 
 // NewDisplay works like MakeDisplay but returns a pointer to heap allocated
 // variable.
 func NewDisplay(dci DCI) *Display {
 	d := new(Display)
-	d.dci = dci
+	*d = MakeDisplay(dci)
 	return d
 }
 
@@ -35,7 +36,7 @@ func (d *Display) Err() error {
 
 // Bounds current display bounds.
 func (d *Display) Bounds() image.Rectangle {
-	return image.Rect(0, 0, 320, 240)
+	return image.Rectangle{Max: image.Pt(int(d.w), int(d.h))}
 }
 
 // SetWordSize changes the data word size.

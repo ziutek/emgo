@@ -4,8 +4,8 @@ import (
 	"image"
 )
 
-// Point draws a point (one pixel). 16-bit command.
-func (d *Display) Point(p image.Point) {
+// DrawPoint draws a point (one pixel). 16-bit command.
+func (d *Display) DrawPoint(p image.Point) {
 	if !p.In(d.Bounds()) {
 		return
 	}
@@ -20,8 +20,9 @@ func (d *Display) Point(p image.Point) {
 	dci.Word(uint16(d.color))
 }
 
-// rawRect is to reduce code size (dci is interface: indirect method calls).
-func (d *Display) rawRect(x0, y0, x1, y1, wxh int) {
+// rawFillRect is to reduce code size (dci is an interface, that causes
+// indirect method calls).
+func (d *Display) rawFillRect(x0, y0, x1, y1, wxh int) {
 	dci := d.dci // Reduces code size.
 	dci.Cmd16(CASET)
 	dci.Word(uint16(x0))
@@ -34,10 +35,10 @@ func (d *Display) rawRect(x0, y0, x1, y1, wxh int) {
 }
 
 // Rect draws a rectangle. 16-bit command.
-func (d *Display) Rect(r image.Rectangle) {
+func (d *Display) FillRect(r image.Rectangle) {
 	r = r.Canon().Intersect(d.Bounds())
 	if !r.Empty() {
-		d.rawRect(r.Min.X, r.Min.Y, r.Max.X-1, r.Max.Y-1, r.Dx()*r.Dy())
+		d.rawFillRect(r.Min.X, r.Min.Y, r.Max.X-1, r.Max.Y-1, r.Dx()*r.Dy())
 	}
 }
 
@@ -53,7 +54,7 @@ func (d *Display) hline(x0, y0, x1 int) {
 		x1 = r.Max.X - 1
 	}
 	if x0 <= x1 {
-		d.rawRect(x0, y0, x1, y0, x1-x0+1)
+		d.rawFillRect(x0, y0, x1, y0, x1-x0+1)
 	}
 }
 
@@ -69,7 +70,7 @@ func (d *Display) vline(x0, y0, y1 int) {
 		y1 = r.Max.Y - 1
 	}
 	if y0 <= y1 {
-		d.rawRect(x0, y0, x0, y1, y1-y0+1)
+		d.rawFillRect(x0, y0, x0, y1, y1-y0+1)
 	}
 }
 
@@ -80,8 +81,8 @@ func abs(x int) int {
 	return x
 }
 
-// Line draws a line from p0 to p1 (including both points). 16-bit command.
-func (d *Display) Line(p0, p1 image.Point) {
+// DrawLine draws a line from p0 to p1 (including both points). 16-bit command.
+func (d *Display) DrawLine(p0, p1 image.Point) {
 	dp := p1.Sub(p0)
 	if dp.Y == 0 {
 		if dp.X < 0 {
@@ -134,11 +135,12 @@ func (d *Display) Line(p0, p1 image.Point) {
 	}
 }
 
-// Line1 draws a line from p0 to p1 (including both points). 16-bit command.
-// Line1 uses less memory for code than Line but is generally slower (can be
-// faster for very short lines: 1-3 pixels). Use Line1 if you are very short of
-// Flash space and do not care about speed or to draw very short lines.
-func (d *Display) Line1(p0, p1 image.Point) {
+// DrawLine_ draws a line from p0 to p1 (including both points). 16-bit
+// command. DrawLine_ uses less memory for code than DrawLine but is generally
+// slower (can be faster for very short lines: 1-3 pixels). Use DrawLine_ if
+// you are very short of Flash space and do not care about speed or to draw
+// very short lines.
+func (d *Display) DrawLine_(p0, p1 image.Point) {
 	dp := p1.Sub(p0)
 	sx, sy := 1, 1
 	if dp.X < 0 {
@@ -151,7 +153,7 @@ func (d *Display) Line1(p0, p1 image.Point) {
 	dp.Y = abs(dp.Y)
 	e := dp.X - dp.Y
 	for {
-		d.Point(p0)
+		d.DrawPoint(p0)
 		if p0 == p1 {
 			return
 		}
@@ -163,6 +165,60 @@ func (d *Display) Line1(p0, p1 image.Point) {
 		if e2 < dp.X {
 			e += dp.X
 			p0.Y += sy
+		}
+	}
+}
+
+func (d *Display) DrawCircle(p0 image.Point, r int) {
+	var y, e int
+	x := r
+	for x >= y {
+		d.DrawPoint(p0.Add(image.Pt(-x, y)))
+		d.DrawPoint(p0.Add(image.Pt(x, y)))
+		d.DrawPoint(p0.Add(image.Pt(-x, -y)))
+		d.DrawPoint(p0.Add(image.Pt(x, -y)))
+		d.DrawPoint(p0.Add(image.Pt(-y, x)))
+		d.DrawPoint(p0.Add(image.Pt(y, x)))
+		d.DrawPoint(p0.Add(image.Pt(-y, -x)))
+		d.DrawPoint(p0.Add(image.Pt(y, -x)))
+		if e <= 0 {
+			y++
+			e += 2*y + 1
+		}
+		if e > 0 {
+			x--
+			e -= 2*x + 1
+		}
+	}
+}
+
+func (d *Display) FillCircle(p0 image.Point, r int) {
+	var y, e int
+	x := r
+	for x >= y {
+		d.FillRect(image.Rectangle{
+			p0.Add(image.Pt(-x, y)),
+			p0.Add(image.Pt(1+x, 1+y)),
+		})
+		d.FillRect(image.Rectangle{
+			p0.Add(image.Pt(-x, -y)),
+			p0.Add(image.Pt(1+x, 1-y)),
+		})
+		if e <= 0 {
+			y++
+			e += 2*y + 1
+		}
+		if e > 0 {
+			x--
+			e -= 2*x + 1
+			d.FillRect(image.Rectangle{
+				p0.Add(image.Pt(-y, x)),
+				p0.Add(image.Pt(1+y, 1+x)),
+			})
+			d.FillRect(image.Rectangle{
+				p0.Add(image.Pt(-y, -x)),
+				p0.Add(image.Pt(1+y, 1-x)),
+			})
 		}
 	}
 }

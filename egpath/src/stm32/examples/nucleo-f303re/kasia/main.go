@@ -93,29 +93,33 @@ func main() {
 	lcd.SetWordSize(16)
 
 	lcd.SetColor(0xde7b)
-	lcd.Rect(image.Rect(0, 0, 320, 240))
+	lcd.FillRect(lcd.Bounds())
 
 	// Ludzik
 
 	lcd.SetColor(0xa800)
 
-	lcd.Rect(image.Rect(147, 117, 162, 130)) // głowa
+	lcd.FillRect(image.Rect(147, 117, 162, 130)) // głowa
 
-	lcd.Rect(image.Rect(140, 130, 170, 160)) // tułów
+	lcd.FillRect(image.Rect(140, 130, 170, 160)) // tułów
 
-	lcd.Line(image.Pt(140, 140), image.Pt(110, 140))
-	lcd.Line(image.Pt(169, 140), image.Pt(195, 140))
+	lcd.DrawLine(image.Pt(140, 140), image.Pt(110, 140))
+	lcd.DrawLine(image.Pt(169, 140), image.Pt(190, 120))
 
-	lcd.Line(image.Pt(140, 160), image.Pt(140, 180))
-	lcd.Line(image.Pt(169, 160), image.Pt(169, 180))
+	lcd.DrawLine(image.Pt(140, 160), image.Pt(140, 180))
+	lcd.DrawLine(image.Pt(169, 160), image.Pt(169, 180))
 
 	lcd.SetColor(0x0000)
 
-	lcd.Rect(image.Rect(150, 120, 153, 123)) // oko
-	lcd.Rect(image.Rect(156, 120, 159, 123)) // oko
-	
-	lcd.Rect(image.Rect(152, 126, 157, 127)) // usta
+	lcd.FillRect(image.Rect(150, 120, 153, 123)) // oko
+	lcd.FillRect(image.Rect(156, 120, 159, 123)) // oko
 
+	lcd.FillRect(image.Rect(152, 126, 157, 127)) // usta
+
+	lcd.SetColor(0xffff)
+
+	lcd.DrawCircle(image.Pt(155, 145), 50)
+	lcd.FillCircle(image.Pt(200, 50), 60)
 }
 
 func lcdSPIISR() {
