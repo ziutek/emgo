@@ -16,7 +16,7 @@ func MakeDisplay(dci DCI) Display {
 	return Display{dci: dci, w: 240, h: 320}
 }
 
-// NewDisplay works like MakeDisplay but returns a pointer to heap allocated
+// NewDisplay works like MakeDisplay but returns a pointer to the heap allocated
 // variable.
 func NewDisplay(dci DCI) *Display {
 	d := new(Display)

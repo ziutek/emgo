@@ -95,8 +95,6 @@ func main() {
 	lcd.SetColor(0xde7b)
 	lcd.FillRect(lcd.Bounds())
 
-	// Ludzik
-
 	lcd.SetColor(0xa800)
 
 	lcd.FillRect(image.Rect(147, 117, 162, 130)) // głowa
@@ -118,8 +116,8 @@ func main() {
 
 	lcd.SetColor(0xffff)
 
-	lcd.DrawCircle(image.Pt(155, 145), 50)
-	lcd.FillCircle(image.Pt(200, 50), 60)
+	lcd.DrawCircle(image.Pt(210, 55), 52)
+	lcd.FillCircle(image.Pt(210, 55), 50)
 }
 
 func lcdSPIISR() {

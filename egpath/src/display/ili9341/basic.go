@@ -170,8 +170,7 @@ func (d *Display) DrawLine_(p0, p1 image.Point) {
 }
 
 func (d *Display) DrawCircle(p0 image.Point, r int) {
-	var y, e int
-	x := r
+	x, y, e := r, 0, 1-r
 	for x >= y {
 		d.DrawPoint(p0.Add(image.Pt(-x, y)))
 		d.DrawPoint(p0.Add(image.Pt(x, y)))
@@ -181,20 +180,17 @@ func (d *Display) DrawCircle(p0 image.Point, r int) {
 		d.DrawPoint(p0.Add(image.Pt(y, x)))
 		d.DrawPoint(p0.Add(image.Pt(-y, -x)))
 		d.DrawPoint(p0.Add(image.Pt(y, -x)))
-		if e <= 0 {
-			y++
-			e += 2*y + 1
-		}
+		y++
+		e += 2*y + 1
 		if e > 0 {
 			x--
-			e -= 2*x + 1
+			e -= 2 * x
 		}
 	}
 }
 
 func (d *Display) FillCircle(p0 image.Point, r int) {
-	var y, e int
-	x := r
+	x, y, e := r, 0, 1-r
 	for x >= y {
 		d.FillRect(image.Rectangle{
 			p0.Add(image.Pt(-x, y)),
@@ -204,21 +200,19 @@ func (d *Display) FillCircle(p0 image.Point, r int) {
 			p0.Add(image.Pt(-x, -y)),
 			p0.Add(image.Pt(1+x, 1-y)),
 		})
-		if e <= 0 {
-			y++
-			e += 2*y + 1
-		}
+		y++
+		e += 2*y + 1
 		if e > 0 {
+			d.FillRect(image.Rectangle{
+				p0.Add(image.Pt(1-y, x)),
+				p0.Add(image.Pt(y, 1+x)),
+			})
+			d.FillRect(image.Rectangle{
+				p0.Add(image.Pt(1-y, -x)),
+				p0.Add(image.Pt(y, 1-x)),
+			})
 			x--
-			e -= 2*x + 1
-			d.FillRect(image.Rectangle{
-				p0.Add(image.Pt(-y, x)),
-				p0.Add(image.Pt(1+y, 1+x)),
-			})
-			d.FillRect(image.Rectangle{
-				p0.Add(image.Pt(-y, -x)),
-				p0.Add(image.Pt(1+y, 1-x)),
-			})
+			e -= 2 * x
 		}
 	}
 }
