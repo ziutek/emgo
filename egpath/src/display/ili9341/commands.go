@@ -53,13 +53,8 @@ const (
 func (d *Display) MADCtl(mad MAD) {
 	d.dci.Cmd(MADCTL)
 	d.dci.Byte(byte(mad))
-	if mad&MV != 0 {
-		d.w = 320
-		d.h = 240
-	} else {
-		d.w = 240
-		d.h = 320
-	}
+	d.swapWH = mad&MV != 0
+
 }
 
 // PixFmt describes pixel format.

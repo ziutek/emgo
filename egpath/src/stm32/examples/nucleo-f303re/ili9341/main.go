@@ -119,49 +119,51 @@ func main() {
 		fps, fps*float32(wxh*16),
 	)
 
+	scr := lcd.Area(lcd.Bounds())
+
 	start = rtos.Nanosec()
 	for i := 0; i < N; i++ {
-		lcd.SetColor(0xffff)
-		lcd.FillRect(lcd.Bounds())
-		lcd.SetColor(0)
-		lcd.FillRect(lcd.Bounds())
+		scr.SetColor(0xffff)
+		scr.FillRect(scr.Bounds())
+		scr.SetColor(0)
+		scr.FillRect(scr.Bounds())
 	}
 	fps = N * 2 * 1e9 / float32(rtos.Nanosec()-start)
 	fmt.Printf(
-		"lcd.FillRect  speed: %4.1f fps (%.0f bps).\n", fps, fps*float32(wxh*16),
+		"scr.FillRect  speed: %4.1f fps (%.0f bps).\n", fps, fps*float32(wxh*16),
 	)
 
 	start = rtos.Nanosec()
 	for i := 0; i < N; i++ {
-		lcd.SetColor(0xffff)
-		lcd.DrawLine(image.Pt(0, 0), image.Pt(319, 239))
-		lcd.DrawLine(image.Pt(0, 239), image.Pt(319, 0))
-		lcd.DrawLine(image.Pt(-10, 120), image.Pt(350, 120))
-		lcd.DrawLine(image.Pt(160, -10), image.Pt(160, 250))
-		lcd.SetColor(0)
-		lcd.DrawLine(image.Pt(0, 0), image.Pt(319, 239))
-		lcd.DrawLine(image.Pt(0, 239), image.Pt(319, 0))
-		lcd.DrawLine(image.Pt(-10, 120), image.Pt(350, 120))
-		lcd.DrawLine(image.Pt(160, -10), image.Pt(160, 250))
+		scr.SetColor(0xffff)
+		scr.DrawLine(image.Pt(0, 0), image.Pt(319, 239))
+		scr.DrawLine(image.Pt(0, 239), image.Pt(319, 0))
+		scr.DrawLine(image.Pt(-10, 120), image.Pt(350, 120))
+		scr.DrawLine(image.Pt(160, -10), image.Pt(160, 250))
+		scr.SetColor(0)
+		scr.DrawLine(image.Pt(0, 0), image.Pt(319, 239))
+		scr.DrawLine(image.Pt(0, 239), image.Pt(319, 0))
+		scr.DrawLine(image.Pt(-10, 120), image.Pt(350, 120))
+		scr.DrawLine(image.Pt(160, -10), image.Pt(160, 250))
 	}
 	lps := N * 8 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("lcd.DrawLine  speed: %4.0f lps.\n", lps)
+	fmt.Printf("scr.DrawLine  speed: %4.0f lps.\n", lps)
 
 	start = rtos.Nanosec()
 	for i := 0; i < N; i++ {
-		lcd.SetColor(0xffff)
-		lcd.DrawLine_(image.Pt(0, 0), image.Pt(319, 239))
-		lcd.DrawLine_(image.Pt(0, 239), image.Pt(319, 0))
-		lcd.DrawLine_(image.Pt(-10, 120), image.Pt(350, 120))
-		lcd.DrawLine_(image.Pt(160, -10), image.Pt(160, 250))
-		lcd.SetColor(0)
-		lcd.DrawLine_(image.Pt(0, 0), image.Pt(319, 239))
-		lcd.DrawLine_(image.Pt(0, 239), image.Pt(319, 0))
-		lcd.DrawLine_(image.Pt(-10, 120), image.Pt(350, 120))
-		lcd.DrawLine_(image.Pt(160, -10), image.Pt(160, 250))
+		scr.SetColor(0xffff)
+		scr.DrawLine_(image.Pt(0, 0), image.Pt(319, 239))
+		scr.DrawLine_(image.Pt(0, 239), image.Pt(319, 0))
+		scr.DrawLine_(image.Pt(-10, 120), image.Pt(350, 120))
+		scr.DrawLine_(image.Pt(160, -10), image.Pt(160, 250))
+		scr.SetColor(0)
+		scr.DrawLine_(image.Pt(0, 0), image.Pt(319, 239))
+		scr.DrawLine_(image.Pt(0, 239), image.Pt(319, 0))
+		scr.DrawLine_(image.Pt(-10, 120), image.Pt(350, 120))
+		scr.DrawLine_(image.Pt(160, -10), image.Pt(160, 250))
 	}
 	lps = N * 8 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("lcd.DrawLine_ speed: %4.0f lps.\n", lps)
+	fmt.Printf("scr.DrawLine_ speed: %4.0f lps.\n", lps)
 
 	p0 := image.Pt(40, 40)
 	p1 := image.Pt(200, 100)
@@ -169,33 +171,31 @@ func main() {
 
 	start = rtos.Nanosec()
 	for i := 0; i < N; i++ {
-		lcd.SetColor(0xffff)
-		lcd.DrawLine(p0, p1)
-		lcd.DrawLine(p1, p2)
-		lcd.DrawLine(p2, p0)
-		lcd.SetColor(0)
-		lcd.DrawLine(p0, p1)
-		lcd.DrawLine(p1, p2)
-		lcd.DrawLine(p2, p0)
+		scr.SetColor(0xffff)
+		scr.DrawLine(p0, p1)
+		scr.DrawLine(p1, p2)
+		scr.DrawLine(p2, p0)
+		scr.SetColor(0)
+		scr.DrawLine(p0, p1)
+		scr.DrawLine(p1, p2)
+		scr.DrawLine(p2, p0)
 	}
 	lps = N * 6 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("lcd.DrawLine  speed: %4.0f lps.\n", lps)
+	fmt.Printf("scr.DrawLine  speed: %4.0f lps.\n", lps)
 
 	start = rtos.Nanosec()
 	for i := 0; i < N; i++ {
-		lcd.SetColor(0xffff)
-		lcd.DrawLine_(p0, p1)
-		lcd.DrawLine_(p1, p2)
-		lcd.DrawLine_(p2, p0)
-		lcd.SetColor(0)
-		lcd.DrawLine_(p0, p1)
-		lcd.DrawLine_(p1, p2)
-		lcd.DrawLine_(p2, p0)
+		scr.SetColor(0xffff)
+		scr.DrawLine_(p0, p1)
+		scr.DrawLine_(p1, p2)
+		scr.DrawLine_(p2, p0)
+		scr.SetColor(0)
+		scr.DrawLine_(p0, p1)
+		scr.DrawLine_(p1, p2)
+		scr.DrawLine_(p2, p0)
 	}
 	lps = N * 6 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("lcd.DrawLine_ speed: %4.0f lps.\n", lps)
-
-	delay.Millisec(1e3)
+	fmt.Printf("scr.DrawLine_ speed: %4.0f lps.\n", lps)
 
 	var rnd rand.XorShift64
 	rnd.Seed(rtos.Nanosec())
@@ -205,17 +205,17 @@ func main() {
 		vl := uint32(v)
 		vh := uint32(v >> 32)
 
-		r := lcd.Bounds()
+		r := scr.Bounds()
 		r.Min.Y += int(vh & 0xff)
 		r.Max.Y -= int(vh >> 8 & 0xff)
 		r.Min.X += int(vh >> 16 & 0xff)
 		r.Max.X -= int(vh >> 24 & 0xff)
 
-		lcd.SetColor(color.RGB16(vl))
+		scr.SetColor(color.RGB16(vl))
 		if vl>>16&3 != 0 {
-			lcd.FillRect(r)
+			scr.FillRect(r)
 		} else {
-			lcd.FillCircle(r.Min, r.Max.X/4)
+			scr.FillCircle(r.Min, r.Max.X/4)
 		}
 	}
 }

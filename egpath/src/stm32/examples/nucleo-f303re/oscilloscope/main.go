@@ -112,11 +112,13 @@ func main() {
 	lcd.PixSet(ili9341.PF16) // 16-bit pixel format.
 	lcd.MADCtl(ili9341.MY | ili9341.MX | ili9341.MV | ili9341.BGR)
 	lcd.SetWordSize(16)
+	
+	scr := lcd.Area(lcd.Bounds())
 
-	lcd.SetColor(0)
-	lcd.FillRect(lcd.Bounds())
+	scr.SetColor(0)
+	scr.FillRect(scr.Bounds())
 
-	wh := lcd.Bounds().Max
+	wh := scr.Bounds().Max
 	scale := func(y byte) int { return wh.Y - 8 - int(y)*7/8 }
 	buf := make([]byte, wh.X*3)
 	const trig = 128
@@ -135,16 +137,16 @@ func main() {
 			offset = 0
 		}
 		for x := 0; x < wh.X; x++ {
-			lcd.SetColor(0)
-			lcd.FillRect(image.Rect(x, 0, x+1, wh.Y))
-			lcd.SetColor(0xffff)
+			scr.SetColor(0)
+			scr.FillRect(image.Rect(x, 0, x+1, wh.Y))
+			scr.SetColor(0xffff)
 			y0 := scale(buf[offset+x])
 			y1 := scale(buf[offset+x+1])
 			if y0 > y1 {
 				y0, y1 = y1, y0
 			}
 			y1++
-			lcd.FillRect(image.Rectangle{image.Pt(x, y0), image.Pt(x+1, y1)})
+			scr.FillRect(image.Rectangle{image.Pt(x, y0), image.Pt(x+1, y1)})
 		}
 	}
 }

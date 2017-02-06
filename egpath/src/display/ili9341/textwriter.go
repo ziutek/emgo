@@ -10,14 +10,14 @@ type Font struct {
 
 // TextWriter allows to write a text on the display.
 type TextWriter struct {
-	d     *Display
+	area  *Area
 	font  *Font
 	color color.RGB16
 	pos   image.Point
 }
 
-func (d *Display) TextWriter(f *Font) TextWriter {
-	return TextWriter{d: d, font: f}
+func (a *Area) TextWriter(f *Font) TextWriter {
+	return TextWriter{area: a, font: f}
 }
 
 func (w *TextWriter) SetPos(p image.Point) {

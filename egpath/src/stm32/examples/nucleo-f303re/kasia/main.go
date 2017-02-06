@@ -91,33 +91,35 @@ func main() {
 	lcd.PixSet(ili9341.PF16) // 16-bit pixel format.
 	lcd.MADCtl(ili9341.MY | ili9341.MX | ili9341.MV | ili9341.BGR)
 	lcd.SetWordSize(16)
+	
+	scr := lcd.Area(lcd.Bounds())
 
-	lcd.SetColor(0xde7b)
-	lcd.FillRect(lcd.Bounds())
+	scr.SetColor(0xde7b)
+	scr.FillRect(scr.Bounds())
 
-	lcd.SetColor(0xa800)
+	scr.SetColor(0xa800)
 
-	lcd.FillRect(image.Rect(147, 117, 162, 130)) // głowa
+	scr.FillRect(image.Rect(147, 117, 162, 130)) // głowa
 
-	lcd.FillRect(image.Rect(140, 130, 170, 160)) // tułów
+	scr.FillRect(image.Rect(140, 130, 170, 160)) // tułów
 
-	lcd.DrawLine(image.Pt(140, 140), image.Pt(110, 140))
-	lcd.DrawLine(image.Pt(169, 140), image.Pt(190, 120))
+	scr.DrawLine(image.Pt(140, 140), image.Pt(110, 140))
+	scr.DrawLine(image.Pt(169, 140), image.Pt(190, 120))
 
-	lcd.DrawLine(image.Pt(140, 160), image.Pt(140, 180))
-	lcd.DrawLine(image.Pt(169, 160), image.Pt(169, 180))
+	scr.DrawLine(image.Pt(140, 160), image.Pt(140, 180))
+	scr.DrawLine(image.Pt(169, 160), image.Pt(169, 180))
 
-	lcd.SetColor(0x0000)
+	scr.SetColor(0x0000)
 
-	lcd.FillRect(image.Rect(150, 120, 153, 123)) // oko
-	lcd.FillRect(image.Rect(156, 120, 159, 123)) // oko
+	scr.FillRect(image.Rect(150, 120, 153, 123)) // oko
+	scr.FillRect(image.Rect(156, 120, 159, 123)) // oko
 
-	lcd.FillRect(image.Rect(152, 126, 157, 127)) // usta
+	scr.FillRect(image.Rect(152, 126, 157, 127)) // usta
 
-	lcd.SetColor(0xffff)
+	scr.SetColor(0xffff)
 
-	lcd.DrawCircle(image.Pt(210, 55), 52)
-	lcd.FillCircle(image.Pt(210, 55), 50)
+	scr.DrawCircle(image.Pt(220, 60), 60)
+	scr.FillCircle(image.Pt(220, 60), 58)
 }
 
 func lcdSPIISR() {
