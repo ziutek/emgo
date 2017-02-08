@@ -11,6 +11,7 @@ import (
 
 	"stm32/ilidci"
 
+	"stm32/hal/adc"
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
@@ -18,7 +19,7 @@ import (
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
 
-	"stm32/hal/raw/adc"
+	rawadc "stm32/hal/raw/adc"
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/tim"
 )
@@ -88,17 +89,24 @@ func init() {
 
 	ain.Setup(&gpio.Config{Mode: gpio.Ana})
 
-	rcc.RCC.ADC12EN().Set()
 	rcc.RCC.TIM6EN().Set()
+	adc1 := adc.ADC1
+	adc1.EnableClock(true)
+	adc1.EnableVoltage()
+	delay.Millisec(1)
+	adc1.SetClockMode(adc.HCLK1)
+	adc1.Callibrate()
+	delay.Loop(5 << (adc.HCLK1 - 1))
+	adc1.Enable()
+	for adc1.Event()&adc.ADRDY == 0 {
+		rtos.SchedYield()
+	}
+	adc1.SetResolution(adc.Res8)
+	adc1.SetRegularSeq(1)
+	adc1.SetExtTrigSrc(adc.ADC12_TIM6_TRGO)
+	adc1.SetExtTrigEdge(adc.EdgeRising)
 
-	adcdrv = NewADCDriver(adc.ADC1, dma1.Channel(1, 0), tim.TIM6)
-	adcdrv.EnableVReg()
-	adcdrv.Callibrate(0)
-	adcdrv.Enable()
-	adcdrv.SetResolution(Res8)
-	adcdrv.SetRegularSeq(1)
-	adcdrv.SetExtTrigSrc(ADC12_TIM6_TRGO)
-	adcdrv.SetExtTrigEdge(EdgeRising)
+	adcdrv = NewADCDriver(rawadc.ADC1, dma1.Channel(1, 0), tim.TIM6)
 	adcdrv.SetTimer(2, 5) // 72 MHz / (2 * 5) = 7.2 MHz (max. for 8 bit res.)
 	adcdrv.StartADC()
 
@@ -112,7 +120,7 @@ func main() {
 	lcd.PixSet(ili9341.PF16) // 16-bit pixel format.
 	lcd.MADCtl(ili9341.MY | ili9341.MX | ili9341.MV | ili9341.BGR)
 	lcd.SetWordSize(16)
-	
+
 	scr := lcd.Area(lcd.Bounds())
 
 	scr.SetColor(0)
