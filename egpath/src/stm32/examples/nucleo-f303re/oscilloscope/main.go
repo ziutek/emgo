@@ -5,8 +5,6 @@ import (
 	"image"
 	"rtos"
 
-	//"arch/cortexm/debug/itm"
-
 	"display/ili9341"
 
 	"stm32/ilidci"
@@ -27,8 +25,18 @@ import (
 var (
 	lcdspi *spi.Driver
 	lcd    *ili9341.Display
+	adcd   *adc.Driver
 	adcdrv *ADCDriver
 )
+
+func checkErr(err error) {
+	if err == nil {
+		return
+	}
+	rtos.Debug(0).WriteString(err.Error())
+	for {
+	}
+}
 
 func init() {
 	system.Setup(8, 1, 72/8)
@@ -90,21 +98,14 @@ func init() {
 	ain.Setup(&gpio.Config{Mode: gpio.Ana})
 
 	rcc.RCC.TIM6EN().Set()
-	adc1 := adc.ADC1
-	adc1.EnableClock(true)
-	adc1.EnableVoltage()
+	adcd = adc.NewDriver(adc.ADC1, dma1.Channel(1, 0))
+	adcd.P.EnableClock(true)
+	adcd.P.EnableVoltage()
 	delay.Millisec(1)
-	adc1.SetClockMode(adc.HCLK1)
-	adc1.Callibrate()
-	delay.Loop(5 << (adc.HCLK1 - 1))
-	adc1.Enable()
-	for adc1.Event()&adc.ADRDY == 0 {
-		rtos.SchedYield()
-	}
-	adc1.SetResolution(adc.Res8)
-	adc1.SetRegularSeq(1)
-	adc1.SetExtTrigSrc(adc.ADC12_TIM6_TRGO)
-	adc1.SetExtTrigEdge(adc.EdgeRising)
+	adcd.P.SetClockMode(adc.HCLK1)
+	adcd.P.Callibrate()
+	// delay.Loop(5 << (adc.HCLK1 - 1)) // Need before adcd.Enable()
+	rtos.IRQ(irq.ADC1_2).Enable()
 
 	adcdrv = NewADCDriver(rawadc.ADC1, dma1.Channel(1, 0), tim.TIM6)
 	adcdrv.SetTimer(2, 5) // 72 MHz / (2 * 5) = 7.2 MHz (max. for 8 bit res.)
@@ -125,6 +126,12 @@ func main() {
 
 	scr.SetColor(0)
 	scr.FillRect(scr.Bounds())
+
+	adcd.P.SetResolution(adc.Res8)
+	adcd.P.SetRegularSeq(1)
+	adcd.P.SetExtTrigSrc(adc.ADC12_TIM6_TRGO)
+	adcd.P.SetExtTrigEdge(adc.EdgeRising)
+	checkErr(adcd.Enable())
 
 	wh := scr.Bounds().Max
 	scale := func(y byte) int { return wh.Y - 8 - int(y)*7/8 }
@@ -171,6 +178,10 @@ func lcdTxDMAISR() {
 	lcdspi.DMAISR(lcdspi.TxDMA)
 }
 
+func adcISR() {
+	adcd.ISR()
+}
+
 func adcDMAISR() {
 	adcdrv.DMAISR()
 }
@@ -182,5 +193,6 @@ var ISRs = [...]func(){
 	irq.DMA1_Channel2: lcdRxDMAISR,
 	irq.DMA1_Channel3: lcdTxDMAISR,
 
+	irq.ADC1_2:        adcISR,
 	irq.DMA1_Channel1: adcDMAISR,
 }

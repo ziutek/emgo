@@ -67,8 +67,8 @@ func (d *Driver) WriteReadByte(b byte) byte {
 		return 0
 	}
 	d.P.SetDuplex(Full)
-	d.P.EnableIRQ(RxNotEmpty | Err)
 	d.done.Reset(0)
+	d.P.EnableIRQ(RxNotEmpty | Err)
 	fence.W() // This orders writes to normal and I/O memory.
 	d.P.StoreByte(b)
 	if !d.done.Wait(1, d.deadline) {
@@ -89,8 +89,8 @@ func (d *Driver) WriteReadWord16(w uint16) uint16 {
 		return 0
 	}
 	d.P.SetDuplex(Full)
-	d.P.EnableIRQ(RxNotEmpty | Err)
 	d.done.Reset(0)
+	d.P.EnableIRQ(RxNotEmpty | Err)
 	fence.W() // This orders writes to normal and I/O memory.
 	d.P.StoreWord16(w)
 	if !d.done.Wait(1, d.deadline) {

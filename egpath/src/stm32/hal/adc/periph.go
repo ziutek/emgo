@@ -193,31 +193,38 @@ func (p *Periph) SetExtTrigEdge(edge ExtTrigEdge) {
 type Event uint16
 
 const (
-	ADRDY = Event(adc.ADRDY)
-	EOSMP = Event(adc.EOSMP)
-	EOC   = Event(adc.EOC)
-	EOS   = Event(adc.EOS)
-	OVR   = Event(adc.OVR)
-	JEOC  = Event(adc.JEOC)
-	JEOS  = Event(adc.JEOS)
-	AWD1  = Event(adc.AWD1)
-	AWD2  = Event(adc.AWD2)
-	AWD3  = Event(adc.AWD3)
-	JQOVF = Event(adc.JQOVF)
+	Ready       = Event(adc.ADRDY) // ADC ready to accept conversion requests.
+	SmplEnd     = Event(adc.EOSMP) // End of sampling phase reached.
+	ConvEnd     = Event(adc.EOC)   // Regular channel conversion complete.
+	SeqEnd      = Event(adc.EOS)   // Regular conversions sequence complete.
+	Overrun     = Event(adc.OVR)   // Overrun occurred.
+	InjConvEnd  = Event(adc.JEOC)  // Injected channel conversion complete.
+	InjSeqEnd   = Event(adc.JEOS)  // Injected conversions sequence complete.
+	Watchdog1   = Event(adc.AWD1)  // Analog watchdog 1 event occurred.
+	Watchdog2   = Event(adc.AWD2)  // Analog watchdog 2 event occurred.
+	Watchdog3   = Event(adc.AWD3)  // Analog watchdog 3 event occurred.
+	InjOverflow = Event(adc.JQOVF) // Inj. context queue overflow occurred.
+
+	EvAll = Ready | SmplEnd | ConvEnd | SeqEnd | Overrun | InjConvEnd |
+		InjSeqEnd | Watchdog1 | Watchdog2 | Watchdog3 | InjOverflow
 )
 
 func (p *Periph) Event() Event {
 	return Event(p.raw.ISR.Load())
 }
 
-func (p *Periph) Clear(e Event) {
-	p.raw.ISR.Store(adc.ISR_Bits(e))
+func (p *Periph) Clear(events Event) {
+	p.raw.ISR.Store(adc.ISR_Bits(events))
 }
 
-func (p *Periph) EnableIRQ(e Event) {
-	p.raw.IER.SetBits(adc.IER_Bits(e))
+func (p *Periph) EnableIRQ(events Event) {
+	p.raw.IER.SetBits(adc.IER_Bits(events))
 }
 
-func (p *Periph) DisableIRQ(e Event) {
-	p.raw.IER.ClearBits(adc.IER_Bits(e))
+func (p *Periph) DisableIRQ(events Event) {
+	if events == EvAll {
+		p.raw.IER.Store(0)
+	} else {
+		p.raw.IER.ClearBits(adc.IER_Bits(events))
+	}
 }
