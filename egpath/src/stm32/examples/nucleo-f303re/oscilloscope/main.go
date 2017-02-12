@@ -17,6 +17,7 @@ import (
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
 
+	"stm32/hal/raw/opamp"
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/tim"
 )
@@ -44,7 +45,8 @@ func init() {
 
 	gpio.A.EnableClock(true)
 	spiport, sck, miso, mosi := gpio.A, gpio.Pin5, gpio.Pin6, gpio.Pin7
-	ain := gpio.A.Pin(0)
+	adcin := gpio.A.Pin(0)   // ADC1 input.
+	opampin := gpio.A.Pin(1) // OPAMP1 input.
 	ilics := gpio.A.Pin(15)
 
 	gpio.B.EnableClock(true)
@@ -93,7 +95,7 @@ func init() {
 
 	// ADC
 
-	ain.Setup(&gpio.Config{Mode: gpio.Ana})
+	adcin.Setup(&gpio.Config{Mode: gpio.Ana})
 
 	rcc.RCC.TIM6EN().Set()
 	adcd = adc.NewDriver(adc.ADC1, dma1.Channel(1, 0))
@@ -103,10 +105,24 @@ func init() {
 	adcd.P.SetClockMode(adc.HCLK1)
 	adcd.P.Callibrate()
 	// delay.Loop(5 << (adc.HCLK1 - 1)) // Need before adcd.Enable()
+
 	rtos.IRQ(irq.ADC1_2).Enable()
 	rtos.IRQ(irq.DMA1_Channel1).Enable()
 
-	div1, div2 := 2, 5
+	// ADC operational amplifier
+
+	opampin.Setup(&gpio.Config{Mode: gpio.Ana})
+
+	rcc.RCC.SYSCFGEN().Set()
+	opamp.OPAMP1.CSR.Store(opamp.OPAMPxEN |
+		3<<opamp.VPSELn | // Positive input connected to PA1.
+		3<<opamp.VMSELn | // 2: PGA mode, 3: follower mode.
+		0<<opamp.PGGAINn, // Gain: 0:2, 1:4, 2:8, 3:16.
+	)
+
+	// ADC timer.
+
+	div1, div2 := 2, 5 // ADC SR = 72 MHz / div1 / div2
 	t := tim.TIM6
 	t.CR2.Store(2 << tim.MMSn)
 	t.ARR.Store(tim.ARR_Bits(div2 - 1))
@@ -128,7 +144,8 @@ func main() {
 	scr.FillRect(scr.Bounds())
 
 	adcd.P.SetResolution(adc.Res8)
-	adcd.P.SetRegularSeq(1)
+	//adcd.P.SetRegularSeq(1) // PA0
+	adcd.P.SetRegularSeq(3) // PA2 (OPAMP1)
 	adcd.P.SetExtTrigSrc(adc.ADC12_TIM6_TRGO)
 	adcd.P.SetExtTrigEdge(adc.EdgeRising)
 	checkErr(adcd.Enable())
