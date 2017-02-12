@@ -66,17 +66,18 @@ func (d *Driver) WriteReadByte(b byte) byte {
 	if d.err != 0 {
 		return 0
 	}
-	d.P.SetDuplex(Full)
+	p := d.P
+	p.SetDuplex(Full)
 	d.done.Reset(0)
-	d.P.EnableIRQ(RxNotEmpty | Err)
+	p.EnableIRQ(RxNotEmpty | Err)
 	fence.W() // This orders writes to normal and I/O memory.
-	d.P.StoreByte(b)
+	p.StoreByte(b)
 	if !d.done.Wait(1, d.deadline) {
 		d.err = uint(ErrTimeout) << 16
 		return 0
 	}
-	b = d.P.LoadByte()
-	if _, e := d.P.Status(); e != 0 {
+	b = p.LoadByte()
+	if _, e := p.Status(); e != 0 {
 		d.err = uint(e) << 8
 		return 0
 	}
@@ -88,17 +89,18 @@ func (d *Driver) WriteReadWord16(w uint16) uint16 {
 	if d.err != 0 {
 		return 0
 	}
-	d.P.SetDuplex(Full)
+	p := d.P
+	p.SetDuplex(Full)
 	d.done.Reset(0)
-	d.P.EnableIRQ(RxNotEmpty | Err)
+	p.EnableIRQ(RxNotEmpty | Err)
 	fence.W() // This orders writes to normal and I/O memory.
-	d.P.StoreWord16(w)
+	p.StoreWord16(w)
 	if !d.done.Wait(1, d.deadline) {
 		d.err = uint(ErrTimeout) << 16
 		return 0
 	}
-	w = d.P.LoadWord16()
-	if _, e := d.P.Status(); e != 0 {
+	w = p.LoadWord16()
+	if _, e := p.Status(); e != 0 {
 		d.err = uint(e) << 8
 		return 0
 	}
@@ -127,9 +129,10 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int, wsize uintptr) (n
 	}
 	d.setupDMA(d.TxDMA, txdmacfg, 1)
 	d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4, wsize)
-	d.P.SetDuplex(Full)
-	d.P.EnableDMA(RxNotEmpty | TxEmpty)
-	d.P.EnableIRQ(Err)
+	p := d.P
+	p.SetDuplex(Full)
+	p.EnableDMA(RxNotEmpty | TxEmpty)
+	p.EnableIRQ(Err)
 	for {
 		m := ilen - n
 		if m == 0 {
@@ -157,7 +160,9 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int, wsize uintptr) (n
 			n -= d.RxDMA.Len()
 			break
 		}
-		if _, e := d.P.Status(); e != 0 {
+		if _, e := p.Status(); e != 0 {
+			d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
+			d.RxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
 			d.err = uint(e) << 8
 			n -= d.RxDMA.Len()
 			break
@@ -170,16 +175,17 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int, wsize uintptr) (n
 			break
 		}
 	}
-	d.P.DisableDMA(RxNotEmpty | TxEmpty)
-	d.P.DisableIRQ(Err)
+	p.DisableDMA(RxNotEmpty | TxEmpty)
+	p.DisableIRQ(Err)
 	return
 }
 
 func (d *Driver) writeDMA(out uintptr, n int, wsize uintptr, incm dma.Mode) {
 	d.setupDMA(d.TxDMA, dma.MTP|incm|dma.FIFO_4_4, wsize)
-	d.P.SetDuplex(HalfOut) // Avoid ErrOverflow.
-	d.P.EnableDMA(TxEmpty)
-	d.P.EnableIRQ(Err)
+	p := d.P
+	p.SetDuplex(HalfOut) // Avoid ErrOverflow.
+	p.EnableDMA(TxEmpty)
+	p.EnableIRQ(Err)
 	for n > 0 {
 		m := n
 		if m > 0xffff {
@@ -199,7 +205,8 @@ func (d *Driver) writeDMA(out uintptr, n int, wsize uintptr, incm dma.Mode) {
 			d.err = uint(ErrTimeout) << 16
 			break
 		}
-		if _, e := d.P.Status(); e != 0 {
+		if _, e := p.Status(); e != 0 {
+			d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
 			d.err = uint(e) << 8
 			break
 		}
@@ -209,8 +216,8 @@ func (d *Driver) writeDMA(out uintptr, n int, wsize uintptr, incm dma.Mode) {
 			break
 		}
 	}
-	d.P.DisableDMA(TxEmpty)
-	d.P.DisableIRQ(Err)
+	p.DisableDMA(TxEmpty)
+	p.DisableIRQ(Err)
 }
 
 // Err returns the first error that was encountered by the Driver. It also
