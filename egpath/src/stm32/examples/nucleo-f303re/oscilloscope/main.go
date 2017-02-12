@@ -17,7 +17,6 @@ import (
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
 
-	rawadc "stm32/hal/raw/adc"
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/tim"
 )
@@ -26,7 +25,6 @@ var (
 	lcdspi *spi.Driver
 	lcd    *ili9341.Display
 	adcd   *adc.Driver
-	adcdrv *ADCDriver
 )
 
 func checkErr(err error) {
@@ -106,12 +104,14 @@ func init() {
 	adcd.P.Callibrate()
 	// delay.Loop(5 << (adc.HCLK1 - 1)) // Need before adcd.Enable()
 	rtos.IRQ(irq.ADC1_2).Enable()
-
-	adcdrv = NewADCDriver(rawadc.ADC1, dma1.Channel(1, 0), tim.TIM6)
-	adcdrv.SetTimer(2, 5) // 72 MHz / (2 * 5) = 7.2 MHz (max. for 8 bit res.)
-	adcdrv.StartADC()
-
 	rtos.IRQ(irq.DMA1_Channel1).Enable()
+
+	div1, div2 := 2, 5
+	t := tim.TIM6
+	t.CR2.Store(2 << tim.MMSn)
+	t.ARR.Store(tim.ARR_Bits(div2 - 1))
+	t.PSC.Store(tim.PSC_Bits(div1 - 1))
+	t.CR1.Store(tim.ARPE | tim.CEN)
 }
 
 func main() {
@@ -138,7 +138,8 @@ func main() {
 	buf := make([]byte, wh.X*3)
 	const trig = 128
 	for {
-		adcdrv.Read(buf)
+		_, err := adcd.Read(buf)
+		checkErr(err)
 		offset := -1
 		for i, b := range buf[:wh.X*2] {
 			if b < trig {
@@ -183,7 +184,7 @@ func adcISR() {
 }
 
 func adcDMAISR() {
-	adcdrv.DMAISR()
+	adcd.DMAISR()
 }
 
 //emgo:const

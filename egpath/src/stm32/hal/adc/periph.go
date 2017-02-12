@@ -1,6 +1,7 @@
 package adc
 
 import (
+	"bits"
 	"rtos"
 	"unsafe"
 
@@ -227,4 +228,19 @@ func (p *Periph) DisableIRQ(events Event) {
 	} else {
 		p.raw.IER.ClearBits(adc.IER_Bits(events))
 	}
+}
+
+func (p *Periph) EnableDMA(circural bool) {
+	p.raw.CFGR.StoreBits(
+		adc.DMAEN|adc.DMACFG,
+		adc.DMAEN|adc.CFGR_Bits(bits.One(circural)<<adc.DMACFGn),
+	)
+}
+
+func (p *Periph) DisableDMA() {
+	p.raw.DMAEN().Clear()
+}
+
+func (p *Periph) Start() {
+	p.raw.CR.Store(adc.ADSTART | advregen)
 }
