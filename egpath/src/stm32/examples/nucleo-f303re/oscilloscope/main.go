@@ -26,6 +26,7 @@ var (
 	lcdspi *spi.Driver
 	lcd    *ili9341.Display
 	adcd   *adc.Driver
+	adct   *tim.TIM_Periph
 )
 
 func checkErr(err error) {
@@ -122,12 +123,9 @@ func init() {
 
 	// ADC timer.
 
-	div1, div2 := 2, 5 // ADC SR = 72 MHz / div1 / div2
-	t := tim.TIM6
-	t.CR2.Store(2 << tim.MMSn)
-	t.ARR.Store(tim.ARR_Bits(div2 - 1))
-	t.PSC.Store(tim.PSC_Bits(div1 - 1))
-	t.CR1.Store(tim.ARPE | tim.CEN)
+	adct = tim.TIM6
+	adct.CR2.Store(2 << tim.MMSn)
+	adct.CR1.Store(tim.CEN)
 }
 
 func main() {
@@ -144,11 +142,17 @@ func main() {
 	scr.FillRect(scr.Bounds())
 
 	adcd.P.SetResolution(adc.Res8)
-	//adcd.P.SetRegularSeq(1) // PA0
-	adcd.P.SetRegularSeq(3) // PA2 (OPAMP1)
-	adcd.P.SetExtTrigSrc(adc.ADC12_TIM6_TRGO)
-	adcd.P.SetExtTrigEdge(adc.EdgeRising)
+	adcd.P.SetSmplTime(1, adc.MaxSmplTime(1.5*2))
+	adcd.P.SetRegularSeq(1) // PA0
+	//adcd.P.SetRegularSeq(3) // PA2 (OPAMP1)
+	adcd.P.SetTrigSrc(adc.ADC12_TIM6_TRGO)
+	adcd.P.SetTrigEdge(adc.EdgeRising)
 	checkErr(adcd.Enable())
+
+	div1, div2 := 2, 5 // ADC SR = 72 MHz / (div1 * div2)
+	adct.PSC.Store(tim.PSC_Bits(div1 - 1))
+	adct.ARR.Store(tim.ARR_Bits(div2 - 1))
+	adct.EGR.Store(tim.UG)
 
 	wh := scr.Bounds().Max
 	scale := func(y byte) int { return wh.Y - 8 - int(y)*7/8 }
@@ -157,6 +161,7 @@ func main() {
 	for {
 		_, err := adcd.Read(buf)
 		checkErr(err)
+
 		offset := -1
 		for i, b := range buf[:wh.X*2] {
 			if b < trig {
