@@ -18,7 +18,7 @@ import (
 	"stm32/hal/irq"
 	"stm32/hal/spi"
 	"stm32/hal/system"
-	"stm32/hal/system/timer/rtc"
+	"stm32/hal/system/timer/rtcst"
 
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/tim"
@@ -32,7 +32,7 @@ var (
 
 func init() {
 	system.Setup(8, 1, 72/8)
-	rtc.Setup(32768)
+	rtcst.Setup(32768)
 	start := rtos.Nanosec()
 
 	gpio.A.EnableClock(true)
@@ -150,7 +150,7 @@ func nrfTxDMAISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
+	irq.RTCAlarm: rtcst.ISR,
 
 	irq.EXTI1:         exti1ISR,
 	irq.SPI1:          nrfSPIISR,

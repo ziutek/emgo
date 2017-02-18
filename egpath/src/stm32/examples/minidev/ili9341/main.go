@@ -17,7 +17,7 @@ import (
 	"stm32/hal/irq"
 	"stm32/hal/spi"
 	"stm32/hal/system"
-	"stm32/hal/system/timer/rtc"
+	"stm32/hal/system/timer/rtcst"
 )
 
 var (
@@ -27,7 +27,7 @@ var (
 
 func init() {
 	system.Setup(8, 1, 72/8)
-	rtc.Setup(32768)
+	rtcst.Setup(32768)
 
 	// GPIO
 
@@ -111,7 +111,7 @@ func main() {
 	}
 	fps := N * 2 * 1e9 / float32(rtos.Nanosec()-start)
 	fmt.Printf(
-		"dci.Fill      speed: %4.1f fps (%.0f bps).\n",
+		"dci.Fill       speed: %4.1f fps (%.0f bps).\n",
 		fps, fps*float32(wxh*16),
 	)
 
@@ -126,7 +126,8 @@ func main() {
 	}
 	fps = N * 2 * 1e9 / float32(rtos.Nanosec()-start)
 	fmt.Printf(
-		"scr.FillRect  speed: %4.1f fps (%.0f bps).\n", fps, fps*float32(wxh*16),
+		"scr.FillRect   speed: %4.1f fps (%.0f bps).\n",
+		fps, fps*float32(wxh*16),
 	)
 
 	start = rtos.Nanosec()
@@ -143,7 +144,7 @@ func main() {
 		scr.DrawLine(image.Pt(160, -10), image.Pt(160, 250))
 	}
 	lps := N * 8 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("scr.DrawLine  speed: %4.0f lps.\n", lps)
+	fmt.Printf("scr.DrawLine   speed: %4.0f lps.\n", lps)
 
 	start = rtos.Nanosec()
 	for i := 0; i < N; i++ {
@@ -159,7 +160,7 @@ func main() {
 		scr.DrawLine_(image.Pt(160, -10), image.Pt(160, 250))
 	}
 	lps = N * 8 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("scr.DrawLine_ speed: %4.0f lps.\n", lps)
+	fmt.Printf("scr.DrawLine_  speed: %4.0f lps.\n", lps)
 
 	p0 := image.Pt(40, 40)
 	p1 := image.Pt(200, 100)
@@ -177,7 +178,7 @@ func main() {
 		scr.DrawLine(p2, p0)
 	}
 	lps = N * 6 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("scr.DrawLine  speed: %4.0f lps.\n", lps)
+	fmt.Printf("scr.DrawLine   speed: %4.0f lps.\n", lps)
 
 	start = rtos.Nanosec()
 	for i := 0; i < N; i++ {
@@ -191,7 +192,33 @@ func main() {
 		scr.DrawLine_(p2, p0)
 	}
 	lps = N * 6 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("scr.DrawLine_ speed: %4.0f lps.\n", lps)
+	fmt.Printf("scr.DrawLine_  speed: %4.0f lps.\n", lps)
+
+	p0 = scr.Bounds().Max.Div(2)
+	r := p0.X
+	if r > p0.Y {
+		r = p0.Y
+	}
+	r--
+	start = rtos.Nanosec()
+	for i := 0; i < N; i++ {
+		scr.SetColor(0xffff)
+		scr.FillCircle(p0, r)
+		scr.SetColor(0)
+		scr.FillCircle(p0, r)
+	}
+	cps := N * 2 * 1e9 / float32(rtos.Nanosec()-start)
+	fmt.Printf("scr.FillCircle speed: %4.0f cps.\n", cps)
+
+	start = rtos.Nanosec()
+	for i := 0; i < N; i++ {
+		scr.SetColor(0xffff)
+		scr.DrawCircle(p0, r)
+		scr.SetColor(0)
+		scr.DrawCircle(p0, r)
+	}
+	cps = N * 2 * 1e9 / float32(rtos.Nanosec()-start)
+	fmt.Printf("scr.DrawCircle speed: %4.0f cps.\n", cps)
 
 	var rnd rand.XorShift64
 	rnd.Seed(rtos.Nanosec())
@@ -231,7 +258,7 @@ func lcdTxDMAISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
+	irq.RTCAlarm: rtcst.ISR,
 
 	irq.SPI1:          lcdSPIISR,
 	irq.DMA1_Channel2: lcdRxDMAISR,

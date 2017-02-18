@@ -1,16 +1,16 @@
-// Package rtc implements tickless system timer using real time clock/counter.
+// Package rtcst implements tickless system timer using real time clock/counter.
 // RTC system timer uses up to 20 bytes from first backup registers to preserve
 // its state. 8 bytes are used to implement rtos.Nanosec. If SetTime function
-// is used to set current calendar time, a further 12 bytes  are used to
-// preserve RTC start time.
-package rtc
+// is used to set current calendar time, a further 12 bytes are used to preserve
+// RTC start time.
+package rtcst
 
 import (
 	"rtos"
 	"time"
 )
 
-// Stetup setups RTC as system timer using LSE as clock source. freqHz should
+// Stetup setups RTC as system timer using LSE as clock source. FreqHz should
 // be set to LSE frequency.
 func Setup(freqHz uint) {
 	setup(freqHz)
