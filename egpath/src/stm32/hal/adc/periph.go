@@ -33,21 +33,8 @@ func (p *Periph) DisableClock() {
 	p.disableClock()
 }
 
-type ClockMode byte
-
-const (
-	CKADC ClockMode = 0 // Asynchronous clock
-	HCLK1 ClockMode = 1 // AHB clock / 1.
-	HCLK2 ClockMode = 2 // AHB clock / 2.
-	HCLK4 ClockMode = 3 // AHB clock / 4.
-)
-
-func (p *Periph) SetClockMode(ckmode ClockMode) {
-	p.common().CKMODE().Store(adc.CCR_Bits(ckmode) << adc.CKMODEn)
-}
-
 // Calibrate calibrates p.
-func (p *Periph) Callibrate() {
+func (p *Periph) Calibrate() {
 	p.calibrate()
 }
 
@@ -66,12 +53,12 @@ func (p *Periph) Disable() {
 	p.disable()
 }
 
-type SmplTime int8
+type SamplTime int8
 
-// MaxSmplTime returns largest possible value of sampling time that takes no
-// more than ht half clock cycles. If ht is too small MaxSmplTime returns
+// MaxSamplTime returns the largest possible value of sampling time that takes
+// no more than hc half clock cycles. If ht is too small MaxSamplTime returns
 // negative value.
-func MaxSmplTime(hc int) SmplTime {
+func MaxSamplTime(hc int) SamplTime {
 	var i int
 	for i < len(halfCycles) {
 		if int(halfCycles[i]) > hc {
@@ -79,19 +66,22 @@ func MaxSmplTime(hc int) SmplTime {
 		}
 		i++
 	}
-	return SmplTime(i - 1)
+	return SamplTime(i - 1)
 }
 
-func (st SmplTime) HalfCycles() int {
+// HalfCycles returns number of half clock cycles that st corresponds to.
+func (st SamplTime) HalfCycles() int {
 	return int(halfCycles[st])
 }
 
-func (p *Periph) SetSmplTime(ch int, st SmplTime) {
-	p.setSmplTime(ch, st)
+// SetSamplTime sets sampling time for channel ch.
+func (p *Periph) SetSamplTime(ch int, st SamplTime) {
+	p.setSamplTime(ch, st)
 }
 
-func (p *Periph) SetRegularSeq(ch ...int) {
-	p.setRegularSeq(ch)
+// SetSequence sets regular sequence of channels.
+func (p *Periph) SetSequence(ch ...int) {
+	p.setSequence(ch)
 }
 
 type TrigSrc byte
@@ -104,33 +94,40 @@ func (p *Periph) SetTrigSrc(src TrigSrc) {
 type TrigEdge byte
 
 const (
-	EdgeNone    TrigEdge = 0
-	EdgeRising  TrigEdge = 1
-	EdgeFalling TrigEdge = 2
+	EdgeNone   TrigEdge = 0
+	EdgeRising TrigEdge = 1
 )
 
 func (p *Periph) SetTrigEdge(edge TrigEdge) {
-	p.raw.EXTEN().Store(adc.CFGR_Bits(edge) << adc.EXTENn)
+	p.setTrigEdge(edge)
 }
 
 type Event uint16
 
-const EvAll = evAll
+const EvAll Event = evAll
 
-func (p *Periph) Event() Event {
-	return p.event()
+type Error uint16
+
+func (e Error) Error() string {
+	return e.error()
 }
 
-func (p *Periph) Clear(events Event) {
-	p.clear(events)
+const ErrAll Error = errAll
+
+func (p *Periph) Status() (Event, Error) {
+	return p.status()
 }
 
-func (p *Periph) EnableIRQ(events Event) {
-	p.enableIRQ(events)
+func (p *Periph) Clear(ev Event, err Error) {
+	p.clear(ev, err)
 }
 
-func (p *Periph) DisableIRQ(events Event) {
-	p.disableIRQ(events)
+func (p *Periph) EnableIRQ(ev Event, err Error) {
+	p.enableIRQ(ev, err)
+}
+
+func (p *Periph) DisableIRQ(ev Event, err Error) {
+	p.disableIRQ(ev, err)
 }
 
 func (p *Periph) EnableDMA(circural bool) {
@@ -143,8 +140,4 @@ func (p *Periph) DisableDMA() {
 
 func (p *Periph) Start() {
 	p.start()
-}
-
-func panicCN() {
-	panic("adc: bad channel number")
 }

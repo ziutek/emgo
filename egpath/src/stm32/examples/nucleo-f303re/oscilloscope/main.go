@@ -98,14 +98,11 @@ func init() {
 
 	adcin.Setup(&gpio.Config{Mode: gpio.Ana})
 
-	rcc.RCC.TIM6EN().Set()
 	adcd = adc.NewDriver(adc.ADC1, dma1.Channel(1, 0))
 	adcd.P.EnableClock(true)
 	adcd.P.EnableVoltage()
 	delay.Millisec(1)
 	adcd.P.SetClockMode(adc.HCLK1)
-	adcd.P.Callibrate()
-	// delay.Loop(5 << (adc.HCLK1 - 1)) // Need before adcd.Enable()
 
 	rtos.IRQ(irq.ADC1_2).Enable()
 	rtos.IRQ(irq.DMA1_Channel1).Enable()
@@ -123,6 +120,7 @@ func init() {
 
 	// ADC timer.
 
+	rcc.RCC.TIM6EN().Set()
 	adct = tim.TIM6
 	adct.CR2.Store(2 << tim.MMSn)
 	adct.CR1.Store(tim.CEN)
@@ -142,12 +140,13 @@ func main() {
 	scr.FillRect(scr.Bounds())
 
 	adcd.P.SetResolution(adc.Res8)
-	adcd.P.SetSmplTime(1, adc.MaxSmplTime(1.5*2))
-	adcd.P.SetRegularSeq(1) // PA0
+	adcd.P.SetSamplTime(1, adc.MaxSamplTime(1.5*2))
+	adcd.P.SetSequence(1) // PA0
 	//adcd.P.SetRegularSeq(3) // PA2 (OPAMP1)
 	adcd.P.SetTrigSrc(adc.ADC12_TIM6_TRGO)
 	adcd.P.SetTrigEdge(adc.EdgeRising)
-	checkErr(adcd.Enable())
+
+	checkErr(adcd.Enable(true))
 
 	div1, div2 := 2, 5 // ADC SR = 72 MHz / (div1 * div2)
 	adct.PSC.Store(tim.PSC_Bits(div1 - 1))

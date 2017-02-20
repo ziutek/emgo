@@ -21,6 +21,88 @@ var (
 	ADC4 = (*Periph)(unsafe.Pointer(mmap.ADC4_BASE))
 )
 
+// External trigger sources for ADC1 and ADC2 regular channels.
+const (
+	ADC12_TIM1_CC1    TrigSrc = 0
+	ADC12_TIM1_CC2    TrigSrc = 1
+	ADC12_TIM1_CC3    TrigSrc = 2
+	ADC12_TIM20_TRGO  TrigSrc = 2
+	ADC12_TIM2_CC2    TrigSrc = 3
+	ADC12_TIM20_TRGO2 TrigSrc = 3
+	ADC12_TIM3_TRGO   TrigSrc = 4
+	ADC12_TIM4_CC4    TrigSrc = 5
+	ADC12_TIM20_CC1   TrigSrc = 5
+	ADC12_EXTI11      TrigSrc = 6
+	ADC12_TIM8_TRGO   TrigSrc = 7
+	ADC12_TIM8_TRGO2  TrigSrc = 8
+	ADC12_TIM1_TRGO   TrigSrc = 9
+	ADC12_TIM1_TRGO2  TrigSrc = 10
+	ADC12_TIM2_TRGO   TrigSrc = 11
+	ADC12_TIM4_TRGO   TrigSrc = 12
+	ADC12_TIM6_TRGO   TrigSrc = 13
+	ADC12_TIM20_CC2   TrigSrc = 13
+	ADC12_TIM15_TRGO  TrigSrc = 14
+	ADC12_TIM3_CC4    TrigSrc = 15
+	ADC12_TIM20_CC3   TrigSrc = 15
+)
+
+// External trigger sources for ADC3 and ADC4 regular channels.
+const (
+	ADC34_TIM3_CC1    TrigSrc = 0
+	ADC34_TIM2_CC3    TrigSrc = 1
+	ADC34_TIM1_CC3    TrigSrc = 2
+	ADC34_TIM8_CC1    TrigSrc = 3
+	ADC34_TIM8_TRGO   TrigSrc = 4
+	ADC34_EXTI2       TrigSrc = 5
+	ADC34_TIM20_TRGO  TrigSrc = 5
+	ADC34_TIM4_CC1    TrigSrc = 6
+	ADC34_TIM20_TRGO2 TrigSrc = 6
+	ADC34_TIM2_TRGO   TrigSrc = 7
+	ADC34_TIM8_TRGO2  TrigSrc = 8
+	ADC34_TIM1_TRGO   TrigSrc = 9
+	ADC34_TIM1_TRGO2  TrigSrc = 10
+	ADC34_TIM3_TRGO   TrigSrc = 11
+	ADC34_TIM4_TRGO   TrigSrc = 12
+	ADC34_TIM7_TRGO   TrigSrc = 13
+	ADC34_TIM15_TRGO  TrigSrc = 14
+	ADC34_TIM2_CC1    TrigSrc = 15
+	ADC34_TIM20_CC1   TrigSrc = 15
+)
+
+const EdgeFalling TrigEdge = 2
+
+const (
+	Ready      = Event(adc.ADRDY) // ADC ready to accept conversion requests.
+	SamplEnd   = Event(adc.EOSMP) // End of sampling phase reached.
+	ConvEnd    = Event(adc.EOC)   // Regular channel conversion complete.
+	SeqEnd     = Event(adc.EOS)   // Regular conversions sequence complete.
+	InjConvEnd = Event(adc.JEOC)  // Injected channel conversion complete.
+	InjSeqEnd  = Event(adc.JEOS)  // Injected conversions sequence complete.
+	Watchdog1  = Event(adc.AWD1)  // Analog watchdog 1 event occurred.
+	Watchdog2  = Event(adc.AWD2)  // Analog watchdog 2 event occurred.
+	Watchdog3  = Event(adc.AWD3)  // Analog watchdog 3 event occurred.
+
+	evAll = Ready | SamplEnd | ConvEnd | SeqEnd | InjConvEnd | InjSeqEnd |
+		Watchdog1 | Watchdog2 | Watchdog3
+)
+
+const (
+	ErrOverrun     = Error(adc.OVR)   // Overrun occurred.
+	ErrInjOverflow = Error(adc.JQOVF) // Inj. context queue overflow occurred.
+
+	errAll = ErrOverrun | ErrInjOverflow
+)
+
+func (e Error) error() string {
+	switch e {
+	case ErrOverrun:
+		return "overrun"
+	case ErrInjOverflow:
+		return "inj. overflow"
+	}
+	return ""
+}
+
 func (p *Periph) common() *adc.ADC_Common_Periph {
 	addr := uintptr(unsafe.Pointer(p))&^0x100 + 0x300
 	return (*adc.ADC_Common_Periph)(unsafe.Pointer(addr))
@@ -42,6 +124,23 @@ func (p *Periph) disableClock() {
 	case adc.ADC3_4:
 		rcc.RCC.ADC34EN().Clear()
 	}
+}
+
+type ClockMode byte
+
+const (
+	CKADC ClockMode = 0 // Asynchronous clock
+	HCLK1 ClockMode = 1 // AHB clock / 1.
+	HCLK2 ClockMode = 2 // AHB clock / 2.
+	HCLK4 ClockMode = 3 // AHB clock / 4.
+)
+
+func (p *Periph) SetClockMode(ckmode ClockMode) {
+	p.common().CKMODE().Store(adc.CCR_Bits(ckmode) << adc.CKMODEn)
+}
+
+func (p *Periph) ClockMode() ClockMode {
+	return ClockMode(p.common().CKMODE().Load() >> adc.CKMODEn)
 }
 
 const advregen = 1 << adc.ADVREGENn
@@ -112,7 +211,7 @@ func checkCh(ch int) {
 	}
 }
 
-func (p *Periph) setSmplTime(ch int, st SmplTime) {
+func (p *Periph) setSamplTime(ch int, st SamplTime) {
 	checkCh(ch)
 	if ch < 10 {
 		n := uint(ch) * 3
@@ -123,7 +222,11 @@ func (p *Periph) setSmplTime(ch int, st SmplTime) {
 	}
 }
 
-func (p *Periph) setRegularSeq(ch []int) {
+func (p *Periph) setSequence(ch []int) {
+	if len(ch) > 17 {
+		panicSeq()
+	}
+	raw := &p.raw
 	sqr1 := adc.SQR1_Bits(len(ch)-1) << adc.Ln
 	sq := ch
 	ch = nil
@@ -135,7 +238,6 @@ func (p *Periph) setRegularSeq(ch []int) {
 		checkCh(c)
 		sqr1 |= adc.SQR1_Bits(c) << (uint(i+1) * 6)
 	}
-	raw := &p.raw
 	raw.SQR1.Store(sqr1)
 	sq = ch
 	ch = nil
@@ -161,9 +263,6 @@ func (p *Periph) setRegularSeq(ch []int) {
 		sqr3 |= adc.SQR3_Bits(c) << (uint(i) * 6)
 	}
 	raw.SQR3.Store(sqr3)
-	if len(ch) > 2 {
-		ch = ch[:2]
-	}
 	var sqr4 adc.SQR4_Bits
 	for i, c := range ch {
 		checkCh(c)
@@ -172,92 +271,33 @@ func (p *Periph) setRegularSeq(ch []int) {
 	raw.SQR4.Store(sqr4)
 }
 
-// External trigger for ADC1 and ADC2 regular channels.
-const (
-	ADC12_TIM1_CC1    TrigSrc = 0
-	ADC12_TIM1_CC2    TrigSrc = 1
-	ADC12_TIM1_CC3    TrigSrc = 2
-	ADC12_TIM20_TRGO  TrigSrc = 2
-	ADC12_TIM2_CC2    TrigSrc = 3
-	ADC12_TIM20_TRGO2 TrigSrc = 3
-	ADC12_TIM3_TRGO   TrigSrc = 4
-	ADC12_TIM4_CC4    TrigSrc = 5
-	ADC12_TIM20_CC1   TrigSrc = 5
-	ADC12_EXTI11      TrigSrc = 6
-	ADC12_TIM8_TRGO   TrigSrc = 7
-	ADC12_TIM8_TRGO2  TrigSrc = 8
-	ADC12_TIM1_TRGO   TrigSrc = 9
-	ADC12_TIM1_TRGO2  TrigSrc = 10
-	ADC12_TIM2_TRGO   TrigSrc = 11
-	ADC12_TIM4_TRGO   TrigSrc = 12
-	ADC12_TIM6_TRGO   TrigSrc = 13
-	ADC12_TIM20_CC2   TrigSrc = 13
-	ADC12_TIM15_TRGO  TrigSrc = 14
-	ADC12_TIM3_CC4    TrigSrc = 15
-	ADC12_TIM20_CC3   TrigSrc = 15
-)
-
-// External trigger for ADC2 and ADC3 regular channels.
-const (
-	ADC23_TIM3_CC1    TrigSrc = 0
-	ADC23_TIM2_CC3    TrigSrc = 1
-	ADC23_TIM1_CC3    TrigSrc = 2
-	ADC23_TIM8_CC1    TrigSrc = 3
-	ADC23_TIM8_TRGO   TrigSrc = 4
-	ADC23_EXTI2       TrigSrc = 5
-	ADC23_TIM20_TRGO  TrigSrc = 5
-	ADC23_TIM4_CC1    TrigSrc = 6
-	ADC23_TIM20_TRGO2 TrigSrc = 6
-	ADC23_TIM2_TRGO   TrigSrc = 7
-	ADC23_TIM8_TRGO2  TrigSrc = 8
-	ADC23_TIM1_TRGO   TrigSrc = 9
-	ADC23_TIM1_TRGO2  TrigSrc = 10
-	ADC23_TIM3_TRGO   TrigSrc = 11
-	ADC23_TIM4_TRGO   TrigSrc = 12
-	ADC23_TIM7_TRGO   TrigSrc = 13
-	ADC23_TIM15_TRGO  TrigSrc = 14
-	ADC23_TIM2_CC1    TrigSrc = 15
-	ADC23_TIM20_CC1   TrigSrc = 15
-)
-
 func (p *Periph) setTrigSrc(src TrigSrc) {
 	p.raw.EXTSEL().Store(adc.CFGR_Bits(src) << adc.EXTSELn)
 }
 
-const (
-	Ready       = Event(adc.ADRDY) // ADC ready to accept conversion requests.
-	SmplEnd     = Event(adc.EOSMP) // End of sampling phase reached.
-	ConvEnd     = Event(adc.EOC)   // Regular channel conversion complete.
-	SeqEnd      = Event(adc.EOS)   // Regular conversions sequence complete.
-	Overrun     = Event(adc.OVR)   // Overrun occurred.
-	InjConvEnd  = Event(adc.JEOC)  // Injected channel conversion complete.
-	InjSeqEnd   = Event(adc.JEOS)  // Injected conversions sequence complete.
-	Watchdog1   = Event(adc.AWD1)  // Analog watchdog 1 event occurred.
-	Watchdog2   = Event(adc.AWD2)  // Analog watchdog 2 event occurred.
-	Watchdog3   = Event(adc.AWD3)  // Analog watchdog 3 event occurred.
-	InjOverflow = Event(adc.JQOVF) // Inj. context queue overflow occurred.
-
-	evAll = Ready | SmplEnd | ConvEnd | SeqEnd | Overrun | InjConvEnd |
-		InjSeqEnd | Watchdog1 | Watchdog2 | Watchdog3 | InjOverflow
-)
-
-func (p *Periph) event() Event {
-	return Event(p.raw.ISR.Load())
+func (p *Periph) setTrigEdge(edge TrigEdge) {
+	p.raw.EXTEN().Store(adc.CFGR_Bits(edge) << adc.EXTENn)
 }
 
-func (p *Periph) clear(events Event) {
-	p.raw.ISR.Store(adc.ISR_Bits(events))
+func (p *Periph) status() (Event, Error) {
+	v := p.raw.ISR.Load()
+	return Event(v) & EvAll, Error(v) & ErrAll
 }
 
-func (p *Periph) enableIRQ(events Event) {
-	p.raw.IER.SetBits(adc.IER_Bits(events))
+func (p *Periph) clear(ev Event, err Error) {
+	p.raw.ISR.Store(adc.ISR_Bits(ev) | adc.ISR_Bits(err))
 }
 
-func (p *Periph) disableIRQ(events Event) {
-	if events == EvAll {
+func (p *Periph) enableIRQ(ev Event, err Error) {
+	p.raw.IER.SetBits(adc.IER_Bits(ev) | adc.IER_Bits(err))
+}
+
+func (p *Periph) disableIRQ(ev Event, err Error) {
+	v := int(ev) | int(err)
+	if v == int(EvAll)|int(ErrAll) {
 		p.raw.IER.Store(0)
 	} else {
-		p.raw.IER.ClearBits(adc.IER_Bits(events))
+		p.raw.IER.ClearBits(adc.IER_Bits(v))
 	}
 }
 

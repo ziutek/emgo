@@ -3,6 +3,8 @@
 package adc
 
 import (
+	"unsafe"
+
 	"stm32/hal/internal"
 )
 

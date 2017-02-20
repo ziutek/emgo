@@ -10,20 +10,14 @@ import (
 
 type DriverError byte
 
-const (
-	ErrTimeout DriverError = iota
-	ErrOverrun
-)
+const ErrTimeout DriverError = 1
 
 func (e DriverError) Error() string {
 	switch e {
 	case ErrTimeout:
 		return "timeout"
-	case ErrOverrun:
-		return "overrun"
-	default:
-		return ""
 	}
+	return ""
 }
 
 type Driver struct {
@@ -33,7 +27,7 @@ type Driver struct {
 	DMA *dma.Channel
 
 	done  rtos.EventFlag
-	watch Event
+	watch uint32
 }
 
 // NewDriver provides convenient way to create heap allocated Driver.
@@ -45,53 +39,56 @@ func NewDriver(p *Periph, ch *dma.Channel) *Driver {
 }
 
 func (d *Driver) ISR() {
-	if p := d.P; p.Event()&d.watch != 0 {
-		p.DisableIRQ(EvAll)
-		d.watch = 0
-		d.done.Signal(1)
+	if d.watch == 0 {
+		// Other peripheral (shared IRQ).
+		return
 	}
+	p := d.P
+	if ev, err := p.Status(); (uint32(err)<<16|uint32(ev))&d.watch == 0 {
+		// Other peripheral (shared IRQ).
+		return
+	}
+	p.DisableIRQ(EvAll, ErrAll)
+	d.watch = 0
+	d.done.Signal(1)
 }
 
 func (d *Driver) SetDeadline(deadline int64) {
 	d.deadline = deadline
 }
 
-// WatchEvent combined with Wait can be used to wait for any from events. See
+// Watch combined with Wait can be used to wait for any from events/errors. See
 // Wait for more information. It is low level function, intended to help to use
 // d.P directly.
-func (d *Driver) WatchEvent(events Event) {
+func (d *Driver) Watch(ev Event, err Error) {
 	d.done.Reset(0)
-	d.watch = events
+	d.watch = uint32(err)<<16 | uint32(ev)
 	p := d.P
-	p.Clear(events)
-	p.EnableIRQ(events)
+	p.Clear(ev, err)
+	p.EnableIRQ(ev, err)
 	fence.W() // To order writes to normal and I/O memory.
 }
 
-// WaitEvent waits for any from events setup by WatchEvent or DMA event. It
-// returns true if event occured or false in case of timeout. It is low level
-// function, intended to help to use d.P directly:
-//	d.WatchEvent(events)
+// Wait waits for any from events/error setup by Watch or for DMA events/errors.
+// It returns true if event/error occured or false in case of timeout. It is
+// low level function, intended to help to use d.P directly:
+//	d.Watch(events, errors)
 //	startSomething(d.P)
-//	if !d.WaitEvent() {
+//	if !d.Wait() {
 //		// Timeout
 //	}
-func (d *Driver) WaitEvent() bool {
+func (d *Driver) Wait() bool {
 	return d.done.Wait(1, d.deadline)
 }
 
-func (d *Driver) EventHappened() bool {
+// Happened returns true if an event/error set by Watch occured.
+func (d *Driver) Happened() bool {
 	return d.watch == 0
 }
 
-// Enable enables ADC and waits for Ready event.
-func (d *Driver) Enable() error {
-	d.WatchEvent(Ready)
-	d.P.Enable()
-	if !d.WaitEvent() {
-		return ErrTimeout
-	}
-	return nil
+// Enable enables ADC.
+func (d *Driver) Enable(calibrate bool) error {
+	return d.enable(calibrate)
 }
 
 func (d *Driver) DMAISR() {
@@ -122,22 +119,22 @@ func (d *Driver) readDMA(addr uintptr, n int, wsize uintptr) (int, error) {
 	setupDMA(ch, p.raw.DR.U32.Addr(), wsize)
 	startDMA(ch, addr, n)
 	p.EnableDMA(false)
-	d.WatchEvent(Overrun)
+	d.Watch(0, ErrAll)
 	p.Start()
-	timeout := !d.WaitEvent()
+	timeout := !d.Wait()
 	ch.Disable() // Required by STM32F1 to allow setup next transfer.
 	p.DisableDMA()
 	var err error
 	switch {
 	case timeout:
 		ch.DisableIRQ(dma.EvAll, dma.ErrAll)
-		p.DisableIRQ(Overrun)
+		p.DisableIRQ(EvAll, ErrAll)
 		err = ErrTimeout
-	case d.EventHappened():
+	case d.Happened():
 		ch.DisableIRQ(dma.EvAll, dma.ErrAll)
-		err = ErrOverrun
+		_, err = p.Status()
 	default:
-		p.DisableIRQ(Overrun)
+		p.DisableIRQ(EvAll, ErrAll)
 		if _, e := ch.Status(); e&^dma.ErrFIFO != 0 {
 			err = e
 		}
