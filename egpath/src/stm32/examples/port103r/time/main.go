@@ -8,7 +8,7 @@ import (
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/system"
-	"stm32/hal/system/timer/rtc"
+	"stm32/hal/system/timer/rtcst"
 )
 
 var leds *gpio.Port
@@ -20,7 +20,7 @@ const (
 
 func init() {
 	system.Setup(8, 1, 72/8)
-	rtc.Setup(32768)
+	rtcst.Setup(32768)
 
 	gpio.B.EnableClock(true)
 	leds = gpio.B
@@ -48,8 +48,8 @@ func printDate(led gpio.Pins, dly int) {
 }
 
 func main() {
-	if ok, set := rtc.Status(); ok && !set {
-		rtc.SetTime(time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC))
+	if ok, set := rtcst.Status(); ok && !set {
+		rtcst.SetTime(time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC))
 	}
 	printDate(LED2, 500)
 }
@@ -57,5 +57,5 @@ func main() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
+	irq.RTCAlarm: rtcst.ISR,
 }

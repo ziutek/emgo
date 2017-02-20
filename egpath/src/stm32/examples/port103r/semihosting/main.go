@@ -5,12 +5,12 @@ import (
 
 	"stm32/hal/irq"
 	"stm32/hal/system"
-	"stm32/hal/system/timer/rtc"
+	"stm32/hal/system/timer/rtcst"
 )
 
 func init() {
 	system.Setup(8, 1, 72/8)
-	rtc.Setup(32768)
+	rtcst.Setup(32768)
 }
 
 func HostIO(cmd int, p unsafe.Pointer) int
@@ -47,5 +47,5 @@ func main() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm: rtc.ISR,
+	irq.RTCAlarm: rtcst.ISR,
 }
