@@ -15,3 +15,6 @@ func (d *Driver) enable(calibrate bool) error {
 	}
 	return nil
 }
+
+func acceptTrig(_ *Periph) {
+}

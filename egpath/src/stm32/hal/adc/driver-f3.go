@@ -23,3 +23,7 @@ func (d *Driver) enable(calibrate bool) error {
 	}
 	return nil
 }
+
+func acceptTrig(p *Periph) {
+	p.Start()
+}

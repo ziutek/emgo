@@ -1,6 +1,7 @@
 package adc
 
 import (
+	"bits"
 	"rtos"
 	"sync/fence"
 	"unsafe"
@@ -26,8 +27,9 @@ type Driver struct {
 	P   *Periph
 	DMA *dma.Channel
 
-	done  rtos.EventFlag
-	watch uint32
+	done       rtos.EventFlag
+	watch      uint32
+	byteOffset byte
 }
 
 // NewDriver provides convenient way to create heap allocated Driver.
@@ -62,7 +64,7 @@ func (d *Driver) SetDeadline(deadline int64) {
 // d.P directly.
 func (d *Driver) Watch(ev Event, err Error) {
 	d.done.Reset(0)
-	d.watch = uint32(err)<<16 | uint32(ev)
+	d.watch = uint32(err)<<16 | uint32(ev) | 1<<15 // Assumes unused 15 bit.
 	p := d.P
 	p.Clear(ev, err)
 	p.EnableIRQ(ev, err)
@@ -116,11 +118,15 @@ func (d *Driver) readDMA(addr uintptr, n int, wsize uintptr) (int, error) {
 		n = 0xffff
 	}
 	p, ch := d.P, d.DMA
-	setupDMA(ch, p.raw.DR.U32.Addr(), wsize)
+	paddr := p.raw.DR.U32.Addr()
+	if wsize == 1 {
+		paddr += uintptr(d.byteOffset)
+	}
+	setupDMA(ch, paddr, wsize)
 	startDMA(ch, addr, n)
 	p.EnableDMA(false)
 	d.Watch(0, ErrAll)
-	p.Start()
+	acceptTrig(p)
 	timeout := !d.Wait()
 	ch.Disable() // Required by STM32F1 to allow setup next transfer.
 	p.DisableDMA()
@@ -142,10 +148,24 @@ func (d *Driver) readDMA(addr uintptr, n int, wsize uintptr) (int, error) {
 	return n - ch.Len(), err
 }
 
+// SetReadMSB sets most significant byte of 16-bit ADC data register to be read
+// by Read and ReadByte methods.
+func (d *Driver) SetReadMSB(rdmsb bool) {
+	d.byteOffset = byte(bits.One(rdmsb))
+}
+
 // Read uses DMA in one shot mode so can not read more than 65535 samples.
 func (d *Driver) Read(buf []byte) (int, error) {
 	if len(buf) == 0 {
 		return 0, nil
 	}
 	return d.readDMA(uintptr(unsafe.Pointer(&buf[0])), len(buf), 1)
+}
+
+// Read16 uses DMA in one shot mode so can not read more than 65535 samples.
+func (d *Driver) Read16(buf []uint16) (int, error) {
+	if len(buf) == 0 {
+		return 0, nil
+	}
+	return d.readDMA(uintptr(unsafe.Pointer(&buf[0])), len(buf), 2)
 }

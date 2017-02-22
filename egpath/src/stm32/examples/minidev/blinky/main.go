@@ -15,7 +15,7 @@ const Blue = gpio.Pin13
 
 func init() {
 	system.Setup(8, 1, 72/8)
-	rtc.Setup(32768)
+	rtcst.Setup(32768)
 
 	gpio.C.EnableClock(true)
 	leds = gpio.C

@@ -2,8 +2,7 @@ package main
 
 import (
 	"delay"
-	//"image"
-	//"image/color"
+	"image"
 	"rtos"
 
 	"display/ili9341"
@@ -17,12 +16,25 @@ import (
 	"stm32/hal/spi"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/rtcst"
+
+	"stm32/hal/raw/rcc"
+	"stm32/hal/raw/tim"
 )
+
+func checkErr(err error) {
+	if err == nil {
+		return
+	}
+	rtos.Debug(0).WriteString(err.Error())
+	for {
+	}
+}
 
 var (
 	lcdspi *spi.Driver
 	lcd    *ili9341.Display
 	adcd   *adc.Driver
+	adct   *tim.TIM_Periph
 )
 
 func init() {
@@ -80,6 +92,18 @@ func init() {
 
 	adcin.Setup(&gpio.Config{Mode: gpio.Ana})
 	adcd = adc.NewDriver(adc.ADC1, dma1.Channel(1, 0))
+	adcd.P.EnableClock(true)
+	rcc.RCC.ADCPRE().Store(2 << rcc.ADCPREn) // ADCclk = APB2clk / 6 = 12 MHz
+
+	rtos.IRQ(irq.ADC1_2).Enable()
+	rtos.IRQ(irq.DMA1_Channel1).Enable()
+
+	// ADC timer.
+
+	rcc.RCC.TIM3EN().Set()
+	adct = tim.TIM3
+	adct.CR2.Store(2 << tim.MMSn) // Update event as TRGO.
+	adct.CR1.Store(tim.CEN)
 }
 
 func main() {
@@ -95,6 +119,64 @@ func main() {
 	scr.SetColor(0)
 	scr.FillRect(scr.Bounds())
 
+	adcd.P.SetSamplTime(1, adc.MaxSamplTime(1.5*2)) // 1.5 + 12.5 = 14
+	adcd.P.SetSequence(0)                           // PA0
+	adcd.P.SetTrigSrc(adc.ADC12_TIM3_TRGO)
+	adcd.P.SetTrigEdge(adc.EdgeRising)
+	adcd.P.SetAlignLeft(true)
+	adcd.SetReadMSB(true)
+
+	checkErr(adcd.Enable(true))
+
+	// Max. SR = 72 MHz / 6 / 14 ≈ 857143 Hz
+
+	div1, div2 := 6, 16 // ADC SR = 72 MHz / (div1 * div2)
+	adct.PSC.Store(tim.PSC_Bits(div1 - 1))
+	adct.ARR.Store(tim.ARR_Bits(div2 - 1))
+	adct.EGR.Store(tim.UG)
+
+	wh := scr.Bounds().Max
+	scale := func(y byte) int { return wh.Y - 8 - int(y)*7/8 }
+	buf := make([]byte, wh.X*3)
+	const trig = 128
+	for {
+
+		_, err := adcd.Read(buf)
+		checkErr(err)
+
+		/*p := adcd.P.Raw()
+		for i := range buf {
+			for p.EOC().Load() == 0 {
+			}
+			//p.SR.Store(0)
+			buf[i] = byte(p.DR.Load() >> 4)
+		}*/
+
+		offset := -1
+		for i, b := range buf[:wh.X*2] {
+			if b < trig {
+				if buf[i+1] >= trig {
+					offset = i
+					break
+				}
+			}
+		}
+		if offset < 0 {
+			offset = 0
+		}
+		for x := 0; x < wh.X; x++ {
+			scr.SetColor(0)
+			scr.FillRect(image.Rect(x, 0, x+1, wh.Y))
+			scr.SetColor(0xffff)
+			y0 := scale(buf[offset+x])
+			y1 := scale(buf[offset+x+1])
+			if y0 > y1 {
+				y0, y1 = y1, y0
+			}
+			y1++
+			scr.FillRect(image.Rectangle{image.Pt(x, y0), image.Pt(x+1, y1)})
+		}
+	}
 }
 
 func lcdSPIISR() {
@@ -109,6 +191,14 @@ func lcdTxDMAISR() {
 	lcdspi.DMAISR(lcdspi.TxDMA)
 }
 
+func adcISR() {
+	adcd.ISR()
+}
+
+func adcDMAISR() {
+	adcd.DMAISR()
+}
+
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
@@ -117,4 +207,7 @@ var ISRs = [...]func(){
 	irq.SPI1:          lcdSPIISR,
 	irq.DMA1_Channel2: lcdRxDMAISR,
 	irq.DMA1_Channel3: lcdTxDMAISR,
+
+	irq.ADC1_2:        adcISR,
+	irq.DMA1_Channel1: adcDMAISR,
 }

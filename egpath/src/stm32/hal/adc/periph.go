@@ -13,6 +13,10 @@ type Periph struct {
 	raw adc.ADC_Periph
 }
 
+func (p *Periph) Raw() *adc.ADC_Periph {
+	return &p.raw
+}
+
 // Bus returns a bus to which p is connected to.
 func (p *Periph) Bus() system.Bus {
 	return internal.Bus(unsafe.Pointer(p))
@@ -100,6 +104,14 @@ const (
 
 func (p *Periph) SetTrigEdge(edge TrigEdge) {
 	p.setTrigEdge(edge)
+}
+
+func (p *Periph) SetAlignLeft(alignLeft bool) {
+	if alignLeft {
+		p.raw.ALIGN().Set()
+	} else {
+		p.raw.ALIGN().Clear()
+	}
 }
 
 type Event uint16
