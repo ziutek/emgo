@@ -79,6 +79,10 @@ func addtoreg(pkgs []*Package, bits *Bits) bool {
 }
 
 func bits(r *scanner, pkgs []*Package) {
+	maskPos := make(map[string]struct {
+		mask uint32
+		pos  uint
+	})
 	for r.Scan() {
 		line := strings.TrimSpace(r.Text())
 		if def := doxy(line, "#define"); def != "" {
@@ -101,15 +105,40 @@ func bits(r *scanner, pkgs []*Package) {
 			if n := strings.IndexByte(mask, ')'); n >= 0 {
 				mask = strings.TrimSpace(mask[n+1:])
 			}
-			mask = strings.TrimSuffix(mask, "U")
-			m, err := strconv.ParseUint(mask, 0, 32)
-			if err != nil {
-				warn("Bad bitmask", mask, ":", err)
-				continue
+			var bits *Bits
+			if mp, ok := maskPos[name]; ok {
+				bits = &Bits{Name: name, Mask: mp.mask, LSL: mp.pos, Descr: descr}
+			} else {
+				msk := strings.HasSuffix(name, "_Msk")
+				if msk {
+					if n := strings.Index(mask, "<<"); n > 0 {
+						mask = strings.TrimSpace(mask[:n])
+					}
+				}
+				mask = strings.TrimSuffix(mask, "U")
+				m, err := strconv.ParseUint(mask, 0, 32)
+				if err != nil {
+					warn("Bad bitmask", mask, ":", err)
+					continue
+				}
+				switch {
+				case msk:
+					key := name[:len(name)-4]
+					mp := maskPos[key]
+					mp.mask = uint32(m)
+					maskPos[key] = mp
+					continue
+				case strings.HasSuffix(name, "_Pos"):
+					key := name[:len(name)-4]
+					mp := maskPos[key]
+					mp.pos = uint(m)
+					maskPos[key] = mp
+					continue
+				}
+				m32 := uint32(m)
+				tz := trailingZeros32(m32)
+				bits = &Bits{Name: name, Mask: m32 >> tz, LSL: tz, Descr: descr}
 			}
-			m32 := uint32(m)
-			tz := trailingZeros32(m32)
-			bits := &Bits{Name: name, Mask: m32 >> tz, LSL: tz, Descr: descr}
 			if !addtoreg(pkgs, bits) {
 				warn("Can not assign", name, "to any register.")
 			}
