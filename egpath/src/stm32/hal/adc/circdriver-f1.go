@@ -6,14 +6,11 @@ import (
 	"delay"
 )
 
-func (d *Driver) enable(calibrate bool) {
-	p := d.P
+func (d *CircDriver) enable(calibrate bool) {
+	p := d.p
 	p.Enable()
 	delay.Millisec(1) // TODO: Reduce this to Tstab (1 µs).
 	if calibrate {
 		p.Calibrate()
 	}
-}
-
-func acceptTrig(_ *Periph) {
 }

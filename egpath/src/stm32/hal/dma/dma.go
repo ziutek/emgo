@@ -139,11 +139,6 @@ const (
 	IncP Mode = incP // Peripheral increment mode.
 	IncM Mode = incM // Memory increment mode.
 
-	PrioL Mode = 0     // Stream priority level: Low.
-	PrioM Mode = prioM // Stream priority level: Medium.
-	PrioH Mode = prioH // Stream priority level: High.
-	PrioV Mode = prioV // Stream priority level: Very high.
-
 	Direct   Mode = 0        // Direct mode.
 	FIFO_1_4 Mode = fifo_1_4 // FIFO mode, threshold 1/4.
 	FIFO_2_4 Mode = fifo_2_4 // FIFO mode, threshold 2/4.
@@ -154,6 +149,23 @@ const (
 // Setup configures channel.
 func (ch *Channel) Setup(m Mode) {
 	ch.setup(m)
+}
+
+type Prio byte
+
+const (
+	Low      Prio = 0     // Stream priority level: Low.
+	Medium   Prio = prioM // Stream priority level: Medium.
+	High     Prio = prioH // Stream priority level: High.
+	VeryHigh Prio = prioV // Stream priority level: Very high.
+)
+
+func (ch *Channel) SetPrio(prio Prio) {
+	ch.setPrio(prio)
+}
+
+func (ch *Channel) Prio() Prio {
+	return ch.prio()
 }
 
 // WordSize returns the current word size (in bytes) for peripheral and memory

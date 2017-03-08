@@ -146,7 +146,7 @@ func main() {
 	adcd.P.SetTrigSrc(adc.ADC12_TIM6_TRGO)
 	adcd.P.SetTrigEdge(adc.EdgeRising)
 
-	checkErr(adcd.Enable(true))
+	adcd.Enable(true)
 
 	div1, div2 := 2, 5 // ADC SR = 72 MHz / (div1 * div2)
 	adct.PSC.Store(tim.PSC_Bits(div1 - 1))
@@ -155,14 +155,14 @@ func main() {
 
 	wh := scr.Bounds().Max
 	scale := func(y byte) int { return wh.Y - 8 - int(y)*7/8 }
-	buf := make([]byte, wh.X*3)
+	buf := make([]byte, wh.X*4)
 	const trig = 128
 	for {
 		_, err := adcd.Read(buf)
 		checkErr(err)
 
 		offset := -1
-		for i, b := range buf[:wh.X*2] {
+		for i, b := range buf[:wh.X*3] {
 			if b < trig {
 				if buf[i+1] >= trig {
 					offset = i

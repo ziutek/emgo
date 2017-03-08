@@ -6,8 +6,8 @@ import (
 	"delay"
 )
 
-func (d *Driver) enable(calibrate bool) {
-	p := d.P
+func (d *CircDriver) enable(calibrate bool) {
+	p := d.p
 	if calibrate {
 		p.Calibrate()
 		if clkmode := p.ClockMode(); clkmode != 0 {
@@ -16,11 +16,7 @@ func (d *Driver) enable(calibrate bool) {
 			delay.Millisec(1) // TODO: Be more accurate (shorter delay).
 		}
 	}
-	d.watch(Ready, 0)
+	d.watch(Ready)
 	p.Enable()
-	d.done.Wait(1, 0)
-}
-
-func acceptTrig(p *Periph) {
-	p.Start()
+	<-d.hc
 }

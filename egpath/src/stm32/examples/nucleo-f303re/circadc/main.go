@@ -2,6 +2,7 @@ package main
 
 import (
 	"delay"
+	"fmt"
 	"image"
 	"rtos"
 
@@ -15,8 +16,9 @@ import (
 	"stm32/hal/irq"
 	"stm32/hal/spi"
 	"stm32/hal/system"
-	"stm32/hal/system/timer/rtcst"
+	"stm32/hal/system/timer/systick"
 
+	"stm32/hal/raw/opamp"
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/tim"
 )
@@ -33,24 +35,28 @@ func checkErr(err error) {
 var (
 	lcdspi *spi.Driver
 	lcd    *ili9341.Display
-	adcd   *adc.Driver
+	adcd   *adc.CircDriver
 	adct   *tim.TIM_Periph
 )
 
 func init() {
 	system.Setup(8, 1, 72/8)
-	rtcst.Setup(32768)
+	systick.Setup()
 
 	// GPIO
 
 	gpio.A.EnableClock(true)
-	adcin := gpio.A.Pin(0)
 	spiport, sck, miso, mosi := gpio.A, gpio.Pin5, gpio.Pin6, gpio.Pin7
+	adcin := gpio.A.Pin(0)   // ADC1 input.
+	opampin := gpio.A.Pin(1) // OPAMP1 input.
+	ilics := gpio.A.Pin(15)
 
 	gpio.B.EnableClock(true)
-	ilidc := gpio.B.Pin(0)
-	ilireset := gpio.B.Pin(1)
-	ilics := gpio.B.Pin(10)
+	ilidc := gpio.B.Pin(7)
+
+	gpio.C.EnableClock(true)
+	//spiport, sck, miso, mosi := gpio.C, gpio.Pin10, gpio.Pin11, gpio.Pin12
+	ilireset := gpio.C.Pin(13) // Max output: 2 MHz, 3 mA.
 
 	// DMA
 	dma1 := dma.DMA1
@@ -60,6 +66,7 @@ func init() {
 
 	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
+	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
 	lcdspi = spi.NewDriver(spi.SPI1, dma1.Channel(2, 0), dma1.Channel(3, 0))
 	lcdspi.P.EnableClock(true)
 	lcdspi.P.SetConf(
@@ -73,7 +80,7 @@ func init() {
 	rtos.IRQ(irq.DMA1_Channel2).Enable()
 	rtos.IRQ(irq.DMA1_Channel3).Enable()
 
-	// ILI controll
+	// ILI Controll
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.High}
 	ilics.Setup(&cfg)
@@ -91,17 +98,32 @@ func init() {
 	// ADC
 
 	adcin.Setup(&gpio.Config{Mode: gpio.Ana})
-	adcd = adc.NewDriver(adc.ADC1, dma1.Channel(1, 0))
-	adcd.P.EnableClock(true)
-	rcc.RCC.ADCPRE().Store(2 << rcc.ADCPREn) // ADCclk = APB2clk / 6 = 12 MHz
+
+	adcd = adc.NewCircDriver(adc.ADC1, dma1.Channel(1, 0), 320*2)
+	adcd.DMA().SetPrio(dma.High)
+	adcd.P().EnableClock(true)
+	adcd.P().EnableVoltage()
+	delay.Millisec(1)
+	adcd.P().SetClockMode(adc.HCLK1) // ADCclk = AHBclk = 72 Mhz
 
 	rtos.IRQ(irq.ADC1_2).Enable()
 	rtos.IRQ(irq.DMA1_Channel1).Enable()
 
+	// ADC operational amplifier
+
+	opampin.Setup(&gpio.Config{Mode: gpio.Ana})
+
+	rcc.RCC.SYSCFGEN().Set()
+	opamp.OPAMP1.CSR.Store(opamp.OPAMPxEN |
+		3<<opamp.VPSELn | // Positive input connected to PA1.
+		3<<opamp.VMSELn | // 2: PGA mode, 3: follower mode.
+		0<<opamp.PGGAINn, // Gain: 0:2, 1:4, 2:8, 3:16.
+	)
+
 	// ADC timer.
 
-	rcc.RCC.TIM3EN().Set()
-	adct = tim.TIM3
+	rcc.RCC.TIM6EN().Set()
+	adct = tim.TIM6
 	adct.CR2.Store(2 << tim.MMSn) // Update event as TRGO.
 	adct.CR1.Store(tim.CEN)
 }
@@ -119,41 +141,36 @@ func main() {
 	scr.SetColor(0)
 	scr.FillRect(scr.Bounds())
 
-	adcd.P.SetSamplTime(1, adc.MaxSamplTime(1.5*2)) // 1.5 + 12.5 = 14
-	adcd.P.SetSequence(0)                           // PA0
-	adcd.P.SetTrigSrc(adc.ADC12_TIM3_TRGO)
-	adcd.P.SetTrigEdge(adc.EdgeRising)
-	adcd.P.SetAlignLeft(true)
-	adcd.SetReadMSB(true)
+	adcd.P().SetResolution(adc.Res8)
+	adcd.P().SetSamplTime(1, adc.MaxSamplTime(1.5*2)) // 1.5 + 8.5 = 10 (8 bit)
+	adcd.P().SetSequence(1)                           // PA0
+	//adcd.P().SetSequence(3) // PA2 (OPAMP1)
+	adcd.P().SetTrigSrc(adc.ADC12_TIM6_TRGO)
+	adcd.P().SetTrigEdge(adc.EdgeRising)
 
 	adcd.Enable(true)
 
-	// Max. SR = 72 MHz / 6 / 14 ≈ 857143 Hz
-
-	div1, div2 := 6, 16 // ADC SR = 72 MHz / (div1 * div2)
+	div1, div2 := 2, 5 // ADC SR = 72 MHz / (div1 * div2)
 	adct.PSC.Store(tim.PSC_Bits(div1 - 1))
 	adct.ARR.Store(tim.ARR_Bits(div2 - 1))
 	adct.EGR.Store(tim.UG)
 
+	adcd.Start(1, 0)
 	wh := scr.Bounds().Max
 	scale := func(y byte) int { return wh.Y - 8 - int(y)*7/8 }
-	buf := make([]byte, wh.X*3)
 	const trig = 128
-	for {
-
-		_, err := adcd.Read(buf)
-		checkErr(err)
-
-		/*p := adcd.P.Raw()
-		for i := range buf {
-			for p.EOC().Load() == 0 {
-			}
-			//p.SR.Store(0)
-			buf[i] = byte(p.DR.Load() >> 4)
-		}*/
-
+	for i := 1; ; i++ {
+		bh := <-adcd.HandleChan()
+		if err := adcd.Err(); err != nil {
+			// Display DMA causes ADC overrun error in case of 7.2 MHz.
+			fmt.Println(i, err)
+		}
+		if bh < 0 {
+			continue
+		}
+		buf := adcd.Bytes(bh)
 		offset := -1
-		for i, b := range buf[:wh.X*2] {
+		for i, b := range buf[:wh.X*3] {
 			if b < trig {
 				if buf[i+1] >= trig {
 					offset = i
@@ -202,8 +219,6 @@ func adcDMAISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm: rtcst.ISR,
-
 	irq.SPI1:          lcdSPIISR,
 	irq.DMA1_Channel2: lcdRxDMAISR,
 	irq.DMA1_Channel3: lcdTxDMAISR,

@@ -138,6 +138,12 @@ func (p *Periph) EnableIRQ(ev Event, err Error) {
 	p.enableIRQ(ev, err)
 }
 
+/*
+func (p *Periph) IRQEnabled() (Event, Error) {
+	return p.irqEnabled()
+}
+*/
+
 func (p *Periph) DisableIRQ(ev Event, err Error) {
 	p.disableIRQ(ev, err)
 }

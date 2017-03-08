@@ -108,10 +108,6 @@ const (
 	incP = 1 << dma.PINCn
 	incM = 1 << dma.MINCn
 
-	prioM = 1 << dma.PLn
-	prioH = 2 << dma.PLn
-	prioV = 3 << dma.PLn
-
 	fifo_1_4 = 0
 	fifo_2_4 = 0
 	fifo_3_4 = 0
@@ -121,6 +117,20 @@ const (
 func (ch *Channel) setup(m Mode) {
 	mask := dma.DIR | dma.MEM2MEM | dma.CIRC | dma.PINC | dma.MINC | dma.PL
 	ch.raw.CCR.StoreBits(mask, dma.CCR_Bits(m))
+}
+
+const (
+	prioM = 1
+	prioH = 2
+	prioV = 3
+)
+
+func (ch *Channel) setPrio(prio Prio) {
+	ch.raw.PL().Store(dma.CCR_Bits(prio) << dma.PLn)
+}
+
+func (ch *Channel) prio() Prio {
+	return Prio(ch.raw.PL().Load() >> dma.PLn)
 }
 
 func (ch *Channel) wordSize() (p, m uintptr) {

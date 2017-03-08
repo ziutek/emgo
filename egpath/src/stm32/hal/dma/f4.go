@@ -157,10 +157,6 @@ const (
 	circ = 1 << 8
 	incP = 1 << 9
 	incM = 1 << 10
-
-	prioM = 1 << 16
-	prioH = 2 << 16
-	prioV = 3 << 16
 )
 
 func (ch *Channel) setup(m Mode) {
@@ -169,6 +165,20 @@ func (ch *Channel) setup(m Mode) {
 	st := sraw(ch)
 	st.CR.StoreBits(mask, cr)
 	st.FCR.StoreBits(dma.DMDIS|dma.FTH, dma.FCR_Bits(m))
+}
+
+const (
+	prioM = 1
+	prioH = 2
+	prioV = 3
+)
+
+func (ch *Channel) setPrio(prio Prio) {
+	sraw(ch).PL().Store(dma.CR_Bits(prio) << dma.PLn)
+}
+
+func (ch *Channel) prio() Prio {
+	return Prio(sraw(ch).PL().Load() >> dma.PLn)
 }
 
 func (ch *Channel) wordSize() (p, m uintptr) {

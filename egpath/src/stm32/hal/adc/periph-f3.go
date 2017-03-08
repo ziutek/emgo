@@ -292,6 +292,11 @@ func (p *Periph) enableIRQ(ev Event, err Error) {
 	p.raw.IER.SetBits(adc.IER_Bits(ev) | adc.IER_Bits(err))
 }
 
+func (p *Periph) irqEnabled() (ev Event, err Error) {
+	ier := p.raw.IER.Load()
+	return Event(ier) & EvAll, Error(ier) & ErrAll
+}
+
 func (p *Periph) disableIRQ(ev Event, err Error) {
 	v := int(ev) | int(err)
 	if v == int(EvAll)|int(ErrAll) {
