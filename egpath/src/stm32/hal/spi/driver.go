@@ -32,7 +32,7 @@ type Driver struct {
 
 	dmacnt int
 	done   rtos.EventFlag
-	err    uint
+	err    uint32
 }
 
 // NewDriver provides convenient way to create heap allocated Driver struct.
@@ -73,12 +73,12 @@ func (d *Driver) WriteReadByte(b byte) byte {
 	fence.W() // This orders writes to normal and I/O memory.
 	p.StoreByte(b)
 	if !d.done.Wait(1, d.deadline) {
-		d.err = uint(ErrTimeout) << 16
+		d.err = uint32(ErrTimeout) << 16
 		return 0
 	}
 	b = p.LoadByte()
 	if _, e := p.Status(); e != 0 {
-		d.err = uint(e) << 8
+		d.err = uint32(e) << 8
 		return 0
 	}
 	return b
@@ -96,12 +96,12 @@ func (d *Driver) WriteReadWord16(w uint16) uint16 {
 	fence.W() // This orders writes to normal and I/O memory.
 	p.StoreWord16(w)
 	if !d.done.Wait(1, d.deadline) {
-		d.err = uint(ErrTimeout) << 16
+		d.err = uint32(ErrTimeout) << 16
 		return 0
 	}
 	w = p.LoadWord16()
 	if _, e := p.Status(); e != 0 {
-		d.err = uint(e) << 8
+		d.err = uint32(e) << 8
 		return 0
 	}
 	return w
@@ -156,21 +156,21 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int, wsize uintptr) (n
 		if !done {
 			d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
 			d.RxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
-			d.err = uint(ErrTimeout) << 16
+			d.err = uint32(ErrTimeout) << 16
 			n -= d.RxDMA.Len()
 			break
 		}
 		if _, e := p.Status(); e != 0 {
 			d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
 			d.RxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
-			d.err = uint(e) << 8
+			d.err = uint32(e) << 8
 			n -= d.RxDMA.Len()
 			break
 		}
 		_, rxe := d.RxDMA.Status()
 		_, txe := d.TxDMA.Status()
 		if e := (rxe | txe) &^ dma.ErrFIFO; e != 0 {
-			d.err = uint(e)
+			d.err = uint32(e)
 			n -= d.RxDMA.Len()
 			break
 		}
@@ -202,17 +202,17 @@ func (d *Driver) writeDMA(out uintptr, n int, wsize uintptr, incm dma.Mode) {
 		d.TxDMA.Disable() // Required by STM32F1 to allow setup next transfer
 		if !done {
 			d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
-			d.err = uint(ErrTimeout) << 16
+			d.err = uint32(ErrTimeout) << 16
 			break
 		}
 		if _, e := p.Status(); e != 0 {
 			d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
-			d.err = uint(e) << 8
+			d.err = uint32(e) << 8
 			break
 		}
 		_, txe := d.TxDMA.Status()
 		if e := txe &^ dma.ErrFIFO; e != 0 {
-			d.err = uint(e)
+			d.err = uint32(e)
 			break
 		}
 	}
