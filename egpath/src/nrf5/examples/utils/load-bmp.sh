@@ -1,0 +1,1 @@
+../../../stm32/examples/utils/load-bmp.sh
