@@ -16,9 +16,17 @@ if [ -z "$arch" ]; then
 fi
 
 brkpnt=6
-if echo $arch |grep -q '^cortexm7'; then
+wchpnt=4
+
+case "$arch" in
+cortexm0)
+	brkpnt=4
+	wchpnt=2
+	;;
+cortexm7)
 	brkpnt=8
-fi
+	;;
+esac
 
 arm-none-eabi-gdb --tui \
 	-ex 'target extended-remote /dev/ttyACM0' \
@@ -27,7 +35,7 @@ arm-none-eabi-gdb --tui \
 	-ex 'attach 1' \
 	-ex 'set mem inaccessible-by-default off' \
 	-ex "set remote hardware-breakpoint-limit $brkpnt" \
-	-ex 'set remote hardware-watchpoint-limit 4' \
+	-ex "set remote hardware-watchpoint-limit $wchpnt" \
 	-ex 'set history save on' \
 	-ex 'set history filename ~/.gdb-history-emgo' \
 	-ex 'set history size 1000' \
