@@ -32,12 +32,12 @@ func (p *Port) PinsOut(pins Pins) Pins {
 	return Pins(p.odr.Bits(uint16(pins)))
 }
 
-// Set sets output value of pins to 1 in one atomic operation.
+// SetPins sets output value of pins to 1 in one atomic operation.
 func (p *Port) SetPins(pins Pins) {
 	p.bsrr.Store(uint32(pins))
 }
 
-// Clear sets output value of pins to 0 in one atomic operation.
+// ClearPins sets output value of pins to 0 in one atomic operation.
 func (p *Port) ClearPins(pins Pins) {
 	p.bsrr.Store(uint32(pins) << 16)
 }
