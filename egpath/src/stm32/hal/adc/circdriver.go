@@ -137,6 +137,15 @@ func (d *CircDriver) Start(wordSize, byteOffset uintptr) {
 	acceptTrig(p)
 }
 
+func (d *CircDriver) Stop() {
+	d.stopADC()
+	d.p.DisableDMA()
+	ch := d.ch
+	ch.Disable()
+	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
+	ch.Clear(dma.EvAll, dma.ErrAll)
+}
+
 // HandleChan returns the channel that can be used to obtain buffer handles.
 func (d *CircDriver) HandleChan() <-chan int32 {
 	return d.hc

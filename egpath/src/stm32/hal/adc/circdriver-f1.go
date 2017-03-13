@@ -14,3 +14,5 @@ func (d *CircDriver) enable(calibrate bool) {
 		p.Calibrate()
 	}
 }
+
+func (_ *CircDriver) stopADC() {}

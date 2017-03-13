@@ -320,3 +320,11 @@ func (p *Periph) disableDMA() {
 func (p *Periph) start() {
 	p.raw.CR.Store(adc.ADSTART | advregen)
 }
+
+func (p *Periph) Started() bool {
+	return p.raw.ADSTART().Load() != 0
+}
+
+func (p *Periph) Stop() {
+	p.raw.CR.Store(adc.ADSTP | advregen)
+}

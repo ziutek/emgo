@@ -20,3 +20,10 @@ func (d *CircDriver) enable(calibrate bool) {
 	p.Enable()
 	<-d.hc
 }
+
+func (d *CircDriver) stopADC() {
+	p := d.p
+	if p.Started() {
+		p.Stop()
+	}
+}
