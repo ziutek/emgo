@@ -1,9 +1,5 @@
 package gpio
 
-import (
-	"unsafe"
-)
-
 // Mode specifies operation mode.
 type Mode byte
 
@@ -77,9 +73,4 @@ func (p *Port) Lock(pins Pins) {
 	p.lckr.Store(pins1)
 	p.lckr.Load()
 	p.lckr.Load()
-}
-
-func (p *Port) Pin(id int) Pin {
-	ptr := uintptr(unsafe.Pointer(p))
-	return Pin{ptr | uintptr(id&0xf)}
 }

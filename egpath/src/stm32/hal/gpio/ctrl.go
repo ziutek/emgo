@@ -1,27 +1,5 @@
 package gpio
 
-// Pins is a bitmask which represents the pins of GPIO port.
-type Pins uint16
-
-const (
-	Pin0 Pins = 1 << iota
-	Pin1
-	Pin2
-	Pin3
-	Pin4
-	Pin5
-	Pin6
-	Pin7
-	Pin8
-	Pin9
-	Pin10
-	Pin11
-	Pin12
-	Pin13
-	Pin14
-	Pin15
-)
-
 // Pins returns input value of pins.
 func (p *Port) Pins(pins Pins) Pins {
 	return Pins(p.idr.Bits(uint16(pins)))
