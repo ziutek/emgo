@@ -37,11 +37,21 @@ func main() {
 
 	s1 := "babaa"
 	s2 := "abbaa"
-	fmt.Printf("s1='%s' s2='%s\n", s1, s2)
+	fmt.Printf("s1='%s' s2='%s'\n", s1, s2)
 	fmt.Printf("s1 < s2:  %t\n", s1 < s2)
 	fmt.Printf("s1 <= s2: %t\n", s1 <= s2)
 	fmt.Printf("s1 == s2: %t\n", s1 == s2)
 	fmt.Printf("s1 != s2: %t\n", s1 != s2)
 	fmt.Printf("s1 >= s2: %t\n", s1 >= s2)
 	fmt.Printf("s1 > s2:  %t\n", s1 > s2)
+	s1 = ""
+	s2 = ""
+	fmt.Printf("s1='%s' s2='%s'\n", s1, s2)
+	fmt.Printf("s1 < s2:  %t\n", s1 < s2)
+	fmt.Printf("s1 <= s2: %t\n", s1 <= s2)
+	fmt.Printf("s1 == s2: %t\n", s1 == s2)
+	fmt.Printf("s1 != s2: %t\n", s1 != s2)
+	fmt.Printf("s1 >= s2: %t\n", s1 >= s2)
+	fmt.Printf("s1 > s2:  %t\n", s1 > s2)
+
 }

@@ -16,7 +16,7 @@ internal$Memcmp:
 	// Calculate the number of bytes to check to make p1 (ip) word aligned.
 	ands  r0, 3
 	beq   5f
-	rsb   r0, 4
+	rsb  r0, 4
 
 	// Perform head check (up to 3 bytes).
 	subs  r2, r0
@@ -80,18 +80,20 @@ internal$Memcmp:
 	ldrb  r0, [ip], 1
 	ldrb  r3, [r1], 1
 	subs  r0, r3
+	bne   7f
 4:
-
+    eors  r0, r0  // Reurn 0 (equal) for empty strings.
 7:
 	bx  lr
 
 8:
 	// Non-equal words. Convert litle-endian words to big-endian.
-	rev   r0, r0
-	rev   r3, r3
+	rev  r0, r0
+	rev  r3, r3
 9:
 	subs  r0, r3
 	bx    lr
+
 
 
 
