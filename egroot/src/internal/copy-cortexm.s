@@ -54,8 +54,8 @@ memcpy:
 
 	// Forward copy
 
-	// Calculate the number of bytes to copy to make dst (ip) word aligned.
-	ands  r3, ip, 3
+	// Calculate the number of bytes to copy to make src (r1) word aligned.
+	ands  r3, r1, 3
 	beq   5f
 	rsb   r3, 4
 
@@ -82,8 +82,8 @@ memcpy:
 	// Copy words.
 	subs   r2, 4
 	ittt   hs
-	ldrhs  r3, [r1], 4
-	strhs  r3, [ip], 4
+	ldrhs  r3, [r1], 4 // Always aligned.
+	strhs  r3, [ip], 4 // Up to 3 writes if unaligned but has time for them.
 	bhs    5b
 
 	// Restore the number of remaining bytes.
@@ -114,8 +114,8 @@ memcpy:
 	add  r1, r2
 	add  ip, r2
 
-	// Calculate the number of bytes to copy to make dst (ip) word aligned.
-	ands  r3, ip, 3
+	// Calculate the number of bytes to copy to make src (r1) word aligned.
+	ands  r3, r1, 3
 	beq   5f
 
 	// Tail copy (up to 3 bytes).
@@ -141,8 +141,8 @@ memcpy:
 	// Copy words.
 	subs   r2, 4
 	ittt   hs
-	ldrhs  r3, [r1, -4]!
-	strhs  r3, [ip, -4]!
+	ldrhs  r3, [r1, -4]! // Always aligned.
+	strhs  r3, [ip, -4]! // Up to 3 writes if unaligned but has time for them.
 	bhs    5b
 
 	// Restore the number of remaining bytes.
@@ -167,6 +167,7 @@ memcpy:
 4:
 
 	bx  lr
+
 
 
 
