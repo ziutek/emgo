@@ -1,6 +1,7 @@
 package radio
 
 import (
+	"bits"
 	"mmio"
 	"unsafe"
 
@@ -202,42 +203,216 @@ func (p *Periph) SetMODE(mode Mode) {
 	p.mode.StoreBits(0xf, uint32(mode))
 }
 
-type Config0 uint32
+type PktConf0 uint32
 
-func MakeConfig0(prLen, s0Len, lenLen, s1Len int, s1AlwaysRAM bool) Config0 {
-	c := uint32(prLen)&16<<20 | uint32(s1Len)&15<<16 | uint32(s0Len)&8<<5 |
-		uint32(lenLen)&15
-	if s1AlwaysRAM {
-		c |= 1 << 20
-	}
-	return Config0(c)
+func MakePktConf0(prNbit, s0Nbit, lenNbit, s1Nbit int, s1AlwaysRAM bool) PktConf0 {
+	c := uint32(prNbit)&16<<20 | uint32(bits.One(s1AlwaysRAM))<<20 |
+		uint32(s1Nbit)&15<<16 | uint32(s0Nbit)&8<<5 | uint32(lenNbit)&15
+	return PktConf0(c)
 }
 
-// PrLen returns number of bits used for preamble.
-func (c Config0) PrLen() int {
+// PrNbit returns number of bits used for preamble.
+func (c PktConf0) PrNbit() int {
 	return int(c >> 20 & 16)
 }
 
-// S0Len returns number of bits used for S0 field.
-func (c Config0) S0Len() int {
+// S0Nbit returns number of bits used for S0 field.
+func (c PktConf0) S0Nbit() int {
 	return int(c >> 5 & 8)
 }
 
-// LenLen returns number of bits used for LENGTH field.
-func (c Config0) LenLen() int {
+// LenNbit returns number of bits used for LENGTH field.
+func (c PktConf0) LenNbit() int {
 	return int(c & 15)
 }
 
-// S1Len returns number of bits used for S1 field.
-func (c Config0) S1Len() int {
+// S1Nbit returns number of bits used for S1 field.
+func (c PktConf0) S1Nbit() int {
 	return int(c >> 16 & 15)
 }
 
 // S1AlwaysRAM reports whether S1 is always included in RAM independent of S1Len
-func (c Config0) S1AlwaysRAM() bool {
+func (c PktConf0) S1AlwaysRAM() bool {
 	return c>>20&1 != 0
 }
 
-func (p *Periph) PCNF0() Config0 {
-	return Config0(p.pcnf0.Load())
+func (p *Periph) PCNF0() PktConf0 {
+	return PktConf0(p.pcnf0.Load())
+}
+
+type PktConf1 uint32
+
+func MakePktConf1(maxLen, statLen, baLen int, msbFirst, whiteEn bool) PktConf1 {
+	c := uint32(bits.One(whiteEn))<<25 | uint32(bits.One(msbFirst))<<24 |
+		uint32(baLen)&7<<16 | uint32(statLen)&0xff<<8 | uint32(maxLen)&0xff
+	return PktConf1(c)
+}
+
+// MaxLen returns maximum length of packet payload in bytes.
+func (c PktConf1) MaxLen() int {
+	return int(c & 0xff)
+}
+
+// StatLen returns static length of payload in bytes.
+func (c PktConf1) StatLen() int {
+	return int(c >> 8 & 0xff)
+}
+
+// BALen returns number of bytes used as base address.
+func (c PktConf1) BALen() int {
+	return int(c >> 16 & 7)
+}
+
+// MSBFirst reports on air bit-order (true:MSBit/false:LSBit first).
+func (c PktConf1) MSBFirst() bool {
+	return c>>24&1 != 0
+}
+
+// WhiteEn reports whether packet whitening is enabled.
+func (c PktConf1) WhiteEn() bool {
+	return c>>25&1 != 0
+}
+
+func (p *Periph) PCNF1() PktConf1 {
+	return PktConf1(p.pcnf1.Load())
+}
+
+// BASE0 returns radio base address 0.
+func (p *Periph) BASE0() uint32 {
+	return p.base0.Load()
+}
+
+// SetBASE0 sets radio base address 0.
+func (p *Periph) SetBASE0(ba uint32) {
+	p.base0.Store(ba)
+}
+
+// BASE1 returns radio base address 1.
+func (p *Periph) BASE1() uint32 {
+	return p.base1.Load()
+}
+
+// SetBASE1 sets radio base address 1.
+func (p *Periph) SetBASE1(ba uint32) {
+	p.base1.Store(ba)
+}
+
+// PREFIX0 returns AP3<<24 | AP2<<16 | AP1<<8 | AP0.
+func (p *Periph) PREFIX0() uint32 {
+	return p.prefix0.Load()
+}
+
+// SetPREFIX0 sets PREFIX0 to prefix = AP3<<24 | AP2<<16 | AP1<<8 | AP0.
+func (p *Periph) SetPREFIX0(prefix uint32) {
+	p.prefix0.Store(prefix)
+}
+
+// PREFIX1 returns AP7<<24 | AP6<<16 | AP5<<8 | AP4.
+func (p *Periph) PREFIX1() uint32 {
+	return p.prefix1.Load()
+}
+
+// SetPREFIX1 sets PREFIX1 to prefix = AP7<<24 | AP6<<16 | AP5<<8 | AP4.
+func (p *Periph) SetPREFIX1(prefix uint32) {
+	p.prefix1.Store(prefix)
+}
+
+// TXADDRESS returns logical address used when transmitting a packet.
+func (p *Periph) TXADDRESS() int {
+	return int(p.txaddress.Bits(7))
+}
+
+// SetTXADDRESS sets logical address to be used when transmitting a packet.
+func (p *Periph) SetTXADDRESS(laddr int) {
+	p.txaddress.StoreBits(7, uint32(laddr))
+}
+
+// RXADERESSES returns bitmask that lists logical addresses enabled for receive.
+func (p *Periph) RXADDERESSES() uint32 {
+	return p.rxaddresses.Load()
+}
+
+// SetRXADDERESSES sets bitmask that lists logical addresses enabled for receive
+func (p *Periph) SetRXADDERESSES(laddr int) {
+	p.rxaddresses.StoreBits(7, uint32(laddr))
+}
+
+// CRCCNF returns number of bytes in CRC field and whether address field is
+// skipped for CRC calculation.
+func (p *Periph) CRCCNF() (length int, skipAddr bool) {
+	crccnf := p.crccnf.Load()
+	return int(crccnf & 3), crccnf>>8&1 != 0
+}
+
+// SetCRCCNF sets number of bytes in CRC field and whether address will be
+// skipped for CRC calculation.
+func (p *Periph) SetCRCCNF(length int, skipAddr bool) {
+	p.crccnf.Store(uint32(bits.One(skipAddr))<<8 | uint32(length)&3)
+}
+
+// CRCPOLY returns CRC polynominal coefficients.
+func (p *Periph) CRCPOLY() uint32 {
+	return p.crcpoly.Load() | 1
+}
+
+//  SetCRCPOLY sets CRC polynominal coefficients.
+func (p *Periph) SetCRCPOLY(crcpoly uint32) {
+	p.crcpoly.Store(crcpoly)
+}
+
+// CRCINIT returns initial value for CRC calculation.
+func (p *Periph) CRCINIT() uint32 {
+	return p.crcinit.Load()
+}
+
+//  SetCRCINIT sets initial value for CRC calculation.
+func (p *Periph) SetCRCINIT(crcinit uint32) {
+	p.crcinit.Store(crcinit)
+}
+
+func (p *Periph) TEST() (constCarrier, pllLock bool) {
+	test := p.test.Load()
+	return test&1 != 0, test&2 != 0
+}
+
+func (p *Periph) SetTEST(constCarrier, pllLock bool) {
+	p.test.Store(uint32(bits.One(pllLock))<<1 | uint32(bits.One(constCarrier)))
+}
+
+// TIFS returns interframe spacing as the number of microseconds from the end of
+// the last bit of the previous packet to the start of the first bit of the
+// subsequent packet.
+func (p *Periph) TIFS() int {
+	return int(p.tifs.Load() & 255)
+}
+
+// SetTIFS sets interframe spacing as the number of microseconds from the end of
+// the last bit of the previous packet to the start of the first bit of the
+// subsequent packet.
+func (p *Periph) SetTIFS(us int) {
+	p.tifs.Store(uint32(us) & 255)
+}
+
+// RSSISAMPLE returns received signal strength [dBm].
+func (p *Periph) RSSISAMPLE() int {
+	return -int(p.rssisample.Load() & 127)
+}
+
+type State byte
+
+const (
+	Disabled  State = 0  // RADIO is in the Disabled state
+	RxRu      State = 1  // RADIO is in the RXRU state
+	RxIdle    State = 2  // RADIO is in the RXIDLE state
+	Rx        State = 3  // RADIO is in the RX state
+	RxDisable State = 4  // ADIO is in the RXDISABLED state
+	TxRu      State = 9  // RADIO is in the TXRU state
+	TxIdle    State = 10 // RADIO is in the TXIDLE state
+	Tx        State = 11 // RADIO is in the TX state
+	TxDisable State = 12 // RADIO is in the TXDISABLED state
+)
+
+// STATE returns current radio state.
+func (p *Periph) STATE() State {
+	return State(p.state.Load() & 0xf)
 }
