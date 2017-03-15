@@ -45,7 +45,9 @@ type Periph struct {
 	dab         [8]mmio.U32
 	dap         [8]mmio.U32
 	dacnf       mmio.U32
-	_           [56]mmio.U32
+	_           [15]mmio.U32
+	modecnf0    mmio.U32
+	_           [40]mmio.U32
 	override    [5]mmio.U32
 	_           [561]mmio.U32
 	power       mmio.U32
@@ -133,9 +135,13 @@ func (p *Periph) SetPACKETPTR(addr uintptr) {
 	p.packetptr.Store(uint32(addr))
 }
 
+// Freq describes frequency and channel map (default or low). It is defined as
+// separate type to allow fast switchng between predefined frequencies.
 type Freq uint16
 
-// MakeFreq returns Freq for given freqMHz and low. nRF51 requires low=false.
+// MakeFreq returns Freq for given freqMHz and channel map: low == false selects
+// default channel map (2400-2500 MHz), low == true selects low channel map
+// (2360-2460 MHz). nRF51 supports only default channel map.
 func MakeFreq(freqMHz int, low bool) Freq {
 	var f Freq
 	if low {
@@ -240,6 +246,10 @@ func (p *Periph) PCNF0() PktConf0 {
 	return PktConf0(p.pcnf0.Load())
 }
 
+func (p *Periph) SetPCNF0(pcnf PktConf0) {
+	p.pcnf0.Store(uint32(pcnf))
+}
+
 type PktConf1 uint32
 
 func MakePktConf1(maxLen, statLen, baLen int, msbFirst, whiteEn bool) PktConf1 {
@@ -275,6 +285,10 @@ func (c PktConf1) WhiteEn() bool {
 
 func (p *Periph) PCNF1() PktConf1 {
 	return PktConf1(p.pcnf1.Load())
+}
+
+func (p *Periph) SetPCNF1(pcnf PktConf1) {
+	p.pcnf1.Store(uint32(pcnf))
 }
 
 // BASE0 returns radio base address 0.
@@ -412,7 +426,113 @@ const (
 	TxDisable State = 12 // RADIO is in the TXDISABLED state
 )
 
+//emgo:const
+var stateStr = [...]string{
+	Disabled:  "Disabled",
+	RxRu:      "RxRu",
+	RxIdle:    "RxIdle",
+	Rx:        "Rx",
+	RxDisable: "RxDisable",
+	TxRu:      "TxRu",
+	TxIdle:    "TxIdle",
+	Tx:        "Tx",
+	TxDisable: "TxDisable",
+}
+
+func (s State) String() string {
+	var name string
+	if int(s) < len(stateStr) {
+		name = stateStr[s]
+	}
+	if len(name) == 0 {
+		name = "unknown"
+	}
+	return name
+}
+
 // STATE returns current radio state.
 func (p *Periph) STATE() State {
-	return State(p.state.Load() & 0xf)
+	return State(p.state.Bits(0xf))
+}
+
+// DATAWHITEIV returns data whitening initial value.
+func (p *Periph) DATAWHITEIV() uint32 {
+	return p.datawhiteiv.Load()
+}
+
+// SetDATAWHITEIV sets data whitening initial value.
+func (p *Periph) SetDATAWHITEIV(initVal uint32) {
+	p.datawhiteiv.Store(initVal)
+}
+
+// BCC returns value of bit counter compare.
+func (p *Periph) BCC() int {
+	return int(p.bcc.Load())
+}
+
+// SetBCC sets value of bit counter compare.
+func (p *Periph) SetBCC(bcc int) {
+	p.bcc.Store(uint32(bcc))
+}
+
+// POWER reports whether radio is powered on.
+func (p *Periph) POWER() bool {
+	return p.power.Bits(1) != 0
+}
+
+// DAB returns n-th device address base segment (32 LSBits of device address).
+func (p *Periph) DAB(n int) uint32 {
+	return p.dab[n].Load()
+}
+
+// SetDAB sets n-th device address base segment (32 LSBits of device address).
+func (p *Periph) SetDAB(n int, dab uint32) {
+	p.dab[n].Store(dab)
+}
+
+// DAP returns n-th device address prefix (16 MSBits of device address).
+func (p *Periph) DAP(n int) uint16 {
+	return uint16(p.dap[n].Load())
+}
+
+// SetDAP sets n-th device address prefix (16 MSBits of device address).
+func (p *Periph) SetDAP(n int, dap uint16) {
+	p.dap[n].Store(uint32(dap))
+}
+
+// DACNF returns bitmask that lists device adressess (DAP-DAB pairs) enabled
+// for matching and TxAdd bits.
+func (p *Periph) DACNF() (match, txadd byte) {
+	dacnf := p.dacnf.Load()
+	return byte(dacnf), byte(dacnf >> 8)
+}
+
+// SetDACNF sets bitmask that lists device adressess (DAP-DAB pairs) enabled
+// for matching and TxAdd bits
+func (p *Periph) SetDACNF(match, txadd byte) {
+	p.dacnf.Store(uint32(txadd)<<8 | uint32(match))
+}
+
+type DefaultTx byte
+
+const (
+	Tx1      DefaultTx = 0
+	Tx0      DefaultTx = 1
+	TxCenter DefaultTx = 2
+)
+
+// MODECNF0 (nRF52 only).
+func (p *Periph) MODECNF0() (dtx DefaultTx, fastRU bool) {
+	mc := p.modecnf0.Load()
+	return DefaultTx(mc >> 8 & 3), mc&1 != 0
+}
+
+// SetMODECNF0 (nRF52 only).
+func (p *Periph) SetMODECNF0(dtx DefaultTx, fastRU bool) {
+	p.modecnf0.Store(uint32(dtx)<<8 | uint32(bits.One(fastRU)))
+}
+
+// SetPOWER can set peripheral power on or off.
+func (p *Periph) SetPOWER(on bool) {
+	p.power.StoreBits(1, uint32(bits.One(on)))
 }
