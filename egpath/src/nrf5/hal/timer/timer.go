@@ -51,6 +51,9 @@ const (
 	COMPARE3 Event = 19 // Compare event on CC[3] match.
 )
 
+func (p *Periph) Task(t Task) *te.Task      { return p.Regs.Task(int(t)) }
+func (p *Periph) Event(e Event) *te.Event   { return p.Regs.Event(int(e)) }
+
 type Shorts uint32
 
 const (
@@ -64,9 +67,8 @@ const (
 	COMPARE3_STOP  Shorts = 1 << 11
 )
 
-func (p *Periph) Task(t Task) *te.Task      { return p.Regs.Task(int(t)) }
-func (p *Periph) Event(e Event) *te.Event   { return p.Regs.Event(int(e)) }
-func (p *Periph) Shorts(s Shorts) mmio.UM32 { return p.Regs.Shorts(uint32(s)) }
+func (p *Periph) SHORTS() Shorts     { return Shorts(p.Regs.SHORTS()) }
+func (p *Periph) SetSHORTS(s Shorts) { p.Regs.SetSHORTS(uint32(s)) }
 
 type Mode byte
 

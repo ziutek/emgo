@@ -84,6 +84,9 @@ const (
 	BCMATCH  Event = 10 // Bit counter reached bit count value specified in BCC.
 )
 
+func (p *Periph) Task(t Task) *te.Task    { return p.Regs.Task(int(t)) }
+func (p *Periph) Event(e Event) *te.Event { return p.Regs.Event(int(e)) }
+
 type Shorts uint32
 
 const (
@@ -97,9 +100,8 @@ const (
 	DISABLED_RSSISTOP Shorts = 1 << 8
 )
 
-func (p *Periph) Task(t Task) *te.Task      { return p.Regs.Task(int(t)) }
-func (p *Periph) Event(e Event) *te.Event   { return p.Regs.Event(int(e)) }
-func (p *Periph) Shorts(s Shorts) mmio.UM32 { return p.Regs.Shorts(uint32(s)) }
+func (p *Periph) SHORTS() Shorts     { return Shorts(p.Regs.SHORTS()) }
+func (p *Periph) SetSHORTS(s Shorts) { p.Regs.SetSHORTS(uint32(s)) }
 
 // CRCSTATUS returns CRC status of packet received.
 func (p *Periph) CRCSTATUS() bool {
@@ -135,43 +137,27 @@ func (p *Periph) SetPACKETPTR(addr uintptr) {
 	p.packetptr.Store(uint32(addr))
 }
 
-// Freq describes frequency and channel map (default or low). It is defined as
-// separate type to allow fast switchng between predefined frequencies.
-type Freq uint16
+type Freq uint32
 
-// MakeFreq returns Freq for given freqMHz and channel map: low == false selects
-// default channel map (2400-2500 MHz), low == true selects low channel map
-// (2360-2460 MHz). nRF51 supports only default channel map.
-func MakeFreq(freqMHz int, low bool) Freq {
-	var f Freq
-	if low {
-		f = 0x100 | Freq(freqMHz-2360)&0x7f
-	} else {
-		f = Freq(freqMHz-2400) & 0x7f
-	}
-	return f
+const (
+	CM2400_2500 Freq = 0      // nRF5x
+	CM2360_2460 Freq = 1 << 8 // nRF52
+)
+
+func Channel(ch int) Freq {
+	return Freq(ch & 0x7f)
 }
 
-func (f Freq) Low() bool {
-	return f&0x100 != 0
+func (f Freq) Channel() int {
+	return int(f & 0x7f)
 }
 
-func (f Freq) MHz() int {
-	mhz := int(f) & 0x7f
-	if f.Low() {
-		mhz += 2360
-	} else {
-		mhz += 2400
-	}
-	return mhz
-}
-
-// FREQUENCY returns radio channel frequency.
+// FREQUENCY returns a bitmap that encodes current radio channel and channelmap.
 func (p *Periph) FREQUENCY() Freq {
 	return Freq(p.frequency.Load())
 }
 
-// SetFREQUENCY sets FREQUENCY. See FREQUENCY for more information.
+// SetFREQUENCY sets radio channel and channel map.
 func (p *Periph) SetFREQUENCY(f Freq) {
 	p.frequency.Store(uint32(f))
 }
@@ -211,35 +197,31 @@ func (p *Periph) SetMODE(mode Mode) {
 
 type PktConf0 uint32
 
-func MakePktConf0(prNbit, s0Nbit, lenNbit, s1Nbit int, s1AlwaysRAM bool) PktConf0 {
-	c := uint32(prNbit)&16<<20 | uint32(bits.One(s1AlwaysRAM))<<20 |
-		uint32(s1Nbit)&15<<16 | uint32(s0Nbit)&8<<5 | uint32(lenNbit)&15
-	return PktConf0(c)
+const (
+	Pre8b     PktConf0 = 0
+	Pre16b    PktConf0 = 1 << 24
+	S0_0b     PktConf0 = 0
+	S0_8b     PktConf0 = 1 << 8
+	S1AutoRAM PktConf0 = 0
+	S1AlwsRAM PktConf0 = 1 << 20
+)
+
+func LenBitN(n int) PktConf0 {
+	return PktConf0(n & 15)
 }
 
-// PrNbit returns number of bits used for preamble.
-func (c PktConf0) PrNbit() int {
-	return int(c >> 20 & 16)
+func S1BitN(n int) PktConf0 {
+	return PktConf0(n & 15 << 16)
 }
 
-// S0Nbit returns number of bits used for S0 field.
-func (c PktConf0) S0Nbit() int {
-	return int(c >> 5 & 8)
-}
-
-// LenNbit returns number of bits used for LENGTH field.
-func (c PktConf0) LenNbit() int {
+// LenBitN returns number of bits used for LENGTH field.
+func (c PktConf0) LenBitN() int {
 	return int(c & 15)
 }
 
-// S1Nbit returns number of bits used for S1 field.
-func (c PktConf0) S1Nbit() int {
+// S1BitN returns number of bits used for S1 field.
+func (c PktConf0) S1BitN() int {
 	return int(c >> 16 & 15)
-}
-
-// S1AlwaysRAM reports whether S1 is always included in RAM independent of S1Len
-func (c PktConf0) S1AlwaysRAM() bool {
-	return c>>20&1 != 0
 }
 
 func (p *Periph) PCNF0() PktConf0 {
@@ -252,10 +234,23 @@ func (p *Periph) SetPCNF0(pcnf PktConf0) {
 
 type PktConf1 uint32
 
-func MakePktConf1(maxLen, statLen, baLen int, msbFirst, whiteEn bool) PktConf1 {
-	c := uint32(bits.One(whiteEn))<<25 | uint32(bits.One(msbFirst))<<24 |
-		uint32(baLen)&7<<16 | uint32(statLen)&0xff<<8 | uint32(maxLen)&0xff
-	return PktConf1(c)
+const (
+	LSBFirst PktConf1 = 0
+	MSBFirst PktConf1 = 1 << 24
+	WhiteDis PktConf1 = 0
+	WhiteEna PktConf1 = 1 << 25
+)
+
+func MaxLen(n int) PktConf1 {
+	return PktConf1(n & 0xff)
+}
+
+func StatLen(n int) PktConf1 {
+	return PktConf1(n & 0xff << 8)
+}
+
+func BALen(n int) PktConf1 {
+	return PktConf1(n & 7 << 16)
 }
 
 // MaxLen returns maximum length of packet payload in bytes.
@@ -271,16 +266,6 @@ func (c PktConf1) StatLen() int {
 // BALen returns number of bytes used as base address.
 func (c PktConf1) BALen() int {
 	return int(c >> 16 & 7)
-}
-
-// MSBFirst reports on air bit-order (true:MSBit/false:LSBit first).
-func (c PktConf1) MSBFirst() bool {
-	return c>>24&1 != 0
-}
-
-// WhiteEn reports whether packet whitening is enabled.
-func (c PktConf1) WhiteEn() bool {
-	return c>>25&1 != 0
 }
 
 func (p *Periph) PCNF1() PktConf1 {
@@ -513,23 +498,28 @@ func (p *Periph) SetDACNF(match, txadd byte) {
 	p.dacnf.Store(uint32(txadd)<<8 | uint32(match))
 }
 
-type DefaultTx byte
+type ModeConf0 uint32
 
 const (
-	Tx1      DefaultTx = 0
-	Tx0      DefaultTx = 1
-	TxCenter DefaultTx = 2
+	FastRU   ModeConf0 = 1 << 0
+	Tx1      ModeConf0 = 0
+	Tx0      ModeConf0 = 1 << 8
+	TxCenter ModeConf0 = 2 << 8
 )
 
 // MODECNF0 (nRF52 only).
-func (p *Periph) MODECNF0() (dtx DefaultTx, fastRU bool) {
-	mc := p.modecnf0.Load()
-	return DefaultTx(mc >> 8 & 3), mc&1 != 0
+func (p *Periph) MODECNF0() ModeConf0 {
+	return ModeConf0(p.modecnf0.Load())
 }
 
 // SetMODECNF0 (nRF52 only).
-func (p *Periph) SetMODECNF0(dtx DefaultTx, fastRU bool) {
-	p.modecnf0.Store(uint32(dtx)<<8 | uint32(bits.One(fastRU)))
+func (p *Periph) SetMODECNF0(c ModeConf0) {
+	p.modecnf0.Store(uint32(c))
+}
+
+// POWER reports whether radio is power on.
+func (p *Periph) SPOWER() bool {
+	return p.power.Bits(1) != 0
 }
 
 // SetPOWER can set peripheral power on or off.

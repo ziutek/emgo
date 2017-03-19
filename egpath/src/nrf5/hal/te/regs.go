@@ -79,6 +79,12 @@ func (r *Regs) DisablePPI(mask EventMask) {
 	r.evtEnClr.Store(uint32(mask))
 }
 
-func (r *Regs) Shorts(s uint32) mmio.UM32 {
-	return mmio.UM32{&r.shorts, s}
+// SHORTS returns currents value of the SHORTS register.
+func (r *Regs) SHORTS() uint32 {
+	return r.shorts.Load()
+}
+
+// SetSHORTS stores s to the SHORTS register.
+func (r *Regs) SetSHORTS(s uint32) {
+	r.shorts.Store(s)
 }
