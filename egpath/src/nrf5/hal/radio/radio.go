@@ -133,8 +133,8 @@ func (p *Periph) PACKETPTR() uintptr {
 }
 
 // SetPACKETPTR sets PACKETPTR. See PACKETPTR for more information.
-func (p *Periph) SetPACKETPTR(addr uintptr) {
-	p.packetptr.Store(uint32(addr))
+func (p *Periph) SetPACKETPTR(addr unsafe.Pointer) {
+	p.packetptr.Store(uint32(uintptr(addr)))
 }
 
 type Freq uint32
@@ -326,12 +326,14 @@ func (p *Periph) SetTXADDRESS(laddr int) {
 	p.txaddress.StoreBits(7, uint32(laddr))
 }
 
-// RXADERESSES returns bitmask that lists logical addresses enabled for receive.
+// RXADERESSES returns bit field where eache of 8 low significant bits enables or
+// disables one logical addresses for receive.
 func (p *Periph) RXADDERESSES() uint32 {
 	return p.rxaddresses.Load()
 }
 
-// SetRXADDERESSES sets bitmask that lists logical addresses enabled for receive
+// SetRXADDERESSES sets bit field where eache of 8 low significant bits enables or
+// disables one logical addresses for receive.
 func (p *Periph) SetRXADDERESSES(laddr int) {
 	p.rxaddresses.StoreBits(7, uint32(laddr))
 }
@@ -485,8 +487,9 @@ func (p *Periph) SetDAP(n int, dap uint16) {
 	p.dap[n].Store(uint32(dap))
 }
 
-// DACNF returns bitmask that lists device adressess (DAP-DAB pairs) enabled
-// for matching and TxAdd bits.
+// DACNF returns a dap and txadd bit fields. Dap is a bit field where eache of 8 low
+// significant bits enables or disables one device adressess (DAP-DAB pairs) for
+// matching.
 func (p *Periph) DACNF() (match, txadd byte) {
 	dacnf := p.dacnf.Load()
 	return byte(dacnf), byte(dacnf >> 8)

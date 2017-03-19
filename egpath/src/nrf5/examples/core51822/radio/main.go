@@ -1,8 +1,10 @@
 package main
 
 import (
-	"debug/semihosting"
-	"fmt"
+	//"debug/semihosting"
+	"delay"
+	"rtos"
+	"sync/fence"
 	"unsafe"
 
 	"nrf5/hal/clock"
@@ -14,7 +16,10 @@ import (
 	"nrf5/hal/system/timer/rtcst"
 )
 
-var leds [5]gpio.Pin
+var (
+	leds       [5]gpio.Pin
+	radioEvent rtos.EventFlag
+)
 
 func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
@@ -26,65 +31,68 @@ func init() {
 		leds[i] = led
 	}
 
-	f, err := semihosting.OpenFile(":tt", semihosting.W)
-	for err != nil {
-	}
-	fmt.DefaultWriter = f
-}
-
-func main() {
-
 	r := radio.RADIO
-
-	r.SetPCNF0(radio.MakePktConf0(8, 0, 0, 0, false))
-	r.SetPCNF1(radio.MakePktConf1(2, 2, 2, true, false))
+	r.SetPCNF0(0)
+	r.SetPCNF1(radio.MaxLen(2) | radio.StatLen(2) | radio.BALen(2) | radio.MSBFirst)
 	r.SetCRCCNF(2, false)
 	r.SetCRCPOLY(1<<16 | 1<<12 | 1<<5 | 1)
 	r.SetCRCINIT(0xFFFF)
-	r.SetBASE0(0xAC0F) // Reversed 0xF035.
-	r.SetPREFIX0(0xEE) // Reversed 0x77.
+	r.SetBASE0(0xE7E70000) // Reversed 0xE7E70000.
+	r.SetPREFIX0(0xE7)     // Reversed 0xE7.
 	r.SetTXADDRESS(0)
 	r.SetMODE(radio.NRF_250K)
-	r.SetFREQUENCY(radio.MakeFreq(2450, false))
+	r.SetFREQUENCY(radio.Channel(50))
+	r.SetSHORTS(radio.READY_START | radio.END_DISABLE)
+	rtos.IRQ(r.IRQ()).Enable()
 
-	payload := uint16(0x1234)
-	r.SetPACKETPTR(uintptr(unsafe.Pointer(&payload)))
+	//f, err := semihosting.OpenFile(":tt", semihosting.W)
+	//for err != nil {
+	//}
+	//fmt.DefaultWriter = f
+}
 
-	fmt.Println(r.STATE())
+func main() {
+	var data [2]int8
+
+	r := radio.RADIO
+	r.SetPACKETPTR(unsafe.Pointer(&data[0]))
 
 	leds[0].Set()
+	dir := 1
+	n := 0
+	for {
+		data[0] = int8(n)
+		data[1] = int8(n)
 
-	r.Event(radio.READY).Clear()
-	r.Task(radio.TXEN).Trigger()
-	for !r.Event(radio.READY).IsSet() {
-		fmt.Println(r.STATE())
+		disev := r.Event(radio.DISABLED)
+		disev.Clear()
+		disev.EnableIRQ()
+		radioEvent.Reset(0)
+		fence.W()
+		r.Task(radio.TXEN).Trigger()
+		radioEvent.Wait(1, 0)
+		switch n {
+		case 64:
+			dir = -1
+			leds[0].Clear()
+		case -64:
+			dir = 1
+			leds[0].Set()
+		}
+		leds[1].Store(n & 1)
+		n += dir
+		delay.Millisec(25)
 	}
-	fmt.Println(r.STATE())
+}
 
-	leds[1].Set()
-
-	r.Event(radio.END).Clear()
-	r.Task(radio.START).Trigger()
-	for !r.Event(radio.END).IsSet() {
-		fmt.Println(r.STATE())
-	}
-	fmt.Println(r.STATE())
-
-	leds[2].Set()
-
-	r.Event(radio.DISABLED).Clear()
-	r.Task(radio.DISABLE).Trigger()
-	for !r.Event(radio.DISABLED).IsSet() {
-		fmt.Println(r.STATE())
-	}
-	fmt.Println(r.STATE())
-
-	leds[3].Set()
-
+func radioISR() {
+	radio.RADIO.DisableIRQ(0xFFFFFFFF)
+	radioEvent.Signal(1)
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTC0: rtcst.ISR,
+	irq.RTC0:  rtcst.ISR,
+	irq.RADIO: radioISR,
 }
