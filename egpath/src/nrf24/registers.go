@@ -290,7 +290,7 @@ func (r *Radio) Read_TX_ADDR(addr []byte) STATUS {
 }
 
 // Write_TX_ADDR sets value of Transmit address.
-func (r *Radio) Set_TX_ADDR(addr ...byte) STATUS {
+func (r *Radio) Write_TX_ADDR(addr ...byte) STATUS {
 	checkAddr(addr)
 	return r.W_REGISTER(0x10, addr...)
 }
