@@ -101,7 +101,7 @@ func checkErr(err error) {
 
 func main() {
 	nrf := nrf24.NewRadio(dci)
-	nrf.Set_RF_CH(108)
+	nrf.Set_RF_CH(50)
 	nrf.Set_RF_SETUP(nrf24.RF_DR_LOW | nrf24.RF_PWR(0))
 	nrf.Set_EN_AA(0)
 	nrf.Set_SETUP_AW(3)

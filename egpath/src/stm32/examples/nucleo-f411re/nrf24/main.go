@@ -162,14 +162,19 @@ func main() {
 	)
 	nrf := nrf24.NewRadio(dci)
 
+	printRegs(nrf)
+	fmt.Println()
+
 	nrf.Set_RF_SETUP(nrf24.RF_DR_HIGH)
 	nrf.Set_EN_AA(0)
 	nrf.Set_EN_RXADDR(nrf24.P0)
 	nrf.Set_SETUP_AW(3)
 	config := nrf24.PWR_UP | nrf24.EN_CRC | nrf24.CRCO | nrf24.PRIM_RX&0
 	if config&nrf24.PRIM_RX != 0 {
+		nrf.Write_RX_ADDR(0, 0x11, 0x22, 0x33)
 		nrf.Set_RX_PW(0, len(buf))
 	} else {
+		nrf.Write_TX_ADDR(0x11, 0x22, 0x33)
 		nrf.FLUSH_TX()
 	}
 
