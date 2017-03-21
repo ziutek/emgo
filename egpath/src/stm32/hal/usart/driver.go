@@ -111,9 +111,9 @@ func (d *Driver) dmaNM() (n, m uint32) {
 	ch := d.RxDMA
 	n = atomic.LoadUint32(&d.dmaN)
 	for {
-		fence.R_SMP()
+		fence.R() // First read of dmaN must be executed before read of ch.Len.
 		cl := ch.Len()
-		fence.R_SMP()
+		fence.R() // Second read of dmaN must be executed after read of ch.Len.
 		nn := atomic.LoadUint32(&d.dmaN)
 		if n == nn {
 			return n, uint32(len(d.RxBuf) - cl)
