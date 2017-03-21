@@ -15,7 +15,7 @@ import (
 type Periph struct {
 	te.Regs
 
-	_        [31]mmio.U32
+	_        [32]mmio.U32
 	errorsrc mmio.U32
 	_        [31]mmio.U32
 	enable   mmio.U32
@@ -45,8 +45,8 @@ const (
 type Event byte
 
 const (
-	CTS    Event = 0  // CTS is activated (set low). Available: nRF51v3+.
-	NCTS   Event = 1  // CTS is deactivated (set high). Available: nRF51v3+.
+	CTS    Event = 0  // CTS is activated (set low). nRF51v3+.
+	NCTS   Event = 1  // CTS is deactivated (set high). nRF51v3+.
 	RXDRDY Event = 2  // Data received in RXD.
 	TXDRDY Event = 3  // Data sent from TXD.
 	ERROR  Event = 11 // Error detected.
@@ -148,6 +148,42 @@ func (p *Periph) SetTXD(b byte) {
 	p.txd.Store(uint32(b))
 }
 
-func (p *Periph) SetBAUDRATE(br uint32) {
-	p.baudrate.Store(br)
+type Baudrate uint32
+
+const (
+	Baud1200   Baudrate = 0x0004F000 // Actual rate: 1205 baud.
+	Baud2400   Baudrate = 0x0009D000 // Actual rate: 2396 baud.
+	Baud4800   Baudrate = 0x0013B000 // Actual rate: 4808 baud.
+	Baud9600   Baudrate = 0x00275000 // Actual rate: 9598 baud.
+	Baud14400  Baudrate = 0x003B0000 // Actual rate: 14414 baud.
+	Baud19200  Baudrate = 0x004EA000 // Actual rate: 19208 baud.
+	Baud28800  Baudrate = 0x0075F000 // Actual rate: 28829 baud.
+	Baud31250  Baudrate = 0x00800000
+	Baud38400  Baudrate = 0x009D5000 // Actual rate: 38462 baud.
+	Baud57600  Baudrate = 0x00EBF000 // Actual rate: 55944 baud.
+	Baud76800  Baudrate = 0x013A9000 // Actual rate: 57602 baud.
+	Baud115200 Baudrate = 0x01D7E000 // Actual rate: 115204 baud.
+	Baud230400 Baudrate = 0x03AFB000 // Actual rate: 230393 baud.
+	Baud250k   Baudrate = 0x04000000
+	Baud460800 Baudrate = 0x075F7000
+	Baud921600 Baudrate = 0x0EBEE000 // Actual rate: 921585 baud.
+	Baud1M     Baudrate = 0x10000000
+)
+
+func BR(baud int) Baudrate {
+	return (Baudrate(uint64(baud)<<32/16e6) + 0x800) & 0xFFFFF000
+}
+
+func (br Baudrate) Baud() int {
+	return int((uint64(br)*16e6 + 1<<31) >> 32)
+}
+
+// BAUDRATE returns configured baudrate.
+func (p *Periph) BAUDRATE() Baudrate {
+	return Baudrate(p.baudrate.Load())
+}
+
+// SetBAUDRATE set baudrate.
+func (p *Periph) SetBAUDRATE(br Baudrate) {
+	p.baudrate.Store(uint32(br))
 }

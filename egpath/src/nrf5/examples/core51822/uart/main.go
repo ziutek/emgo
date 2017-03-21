@@ -26,7 +26,7 @@ func init() {
 	u := uart.UART0
 	u.SetPSEL(uart.SignalRXD, p0.Pin(11))
 	u.SetPSEL(uart.SignalTXD, p0.Pin(9))
-	u.SetBAUDRATE(0x00275000)
+	u.SetBAUDRATE(uart.Baud115200)
 	u.SetENABLE(true)
 }
 
