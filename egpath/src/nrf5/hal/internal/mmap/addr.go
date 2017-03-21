@@ -1,4 +1,4 @@
-package internal
+package mmap
 
 // Base addresses for peripherals:
 const (

@@ -5,7 +5,7 @@ import (
 	"mmio"
 	"unsafe"
 
-	"nrf5/hal/internal"
+	"nrf5/hal/internal/mmap"
 	"nrf5/hal/te"
 )
 
@@ -24,10 +24,8 @@ type Periph struct {
 	mode        mmio.U32
 	pcnf0       mmio.U32
 	pcnf1       mmio.U32
-	base0       mmio.U32
-	base1       mmio.U32
-	prefix0     mmio.U32
-	prefix1     mmio.U32
+	base        [2]mmio.U32
+	prefix      [2]mmio.U32
 	txaddress   mmio.U32
 	rxaddresses mmio.U32
 	crccnf      mmio.U32
@@ -54,7 +52,7 @@ type Periph struct {
 }
 
 //emgo:const
-var RADIO = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x01000))
+var RADIO = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x01000))
 
 type Task byte
 
@@ -276,44 +274,24 @@ func (p *Periph) SetPCNF1(pcnf PktConf1) {
 	p.pcnf1.Store(uint32(pcnf))
 }
 
-// BASE0 returns radio base address 0.
-func (p *Periph) BASE0() uint32 {
-	return p.base0.Load()
+// BASE returns n-th radio base address.
+func (p *Periph) BASE(n int) uint32 {
+	return p.base[n].Load()
 }
 
-// SetBASE0 sets radio base address 0.
-func (p *Periph) SetBASE0(ba uint32) {
-	p.base0.Store(ba)
+// SetBASE sets n-th radio base address 0.
+func (p *Periph) SetBASE(n, ba uint32) {
+	p.base[n].Store(ba)
 }
 
-// BASE1 returns radio base address 1.
-func (p *Periph) BASE1() uint32 {
-	return p.base1.Load()
+// PREFIX returns prefix bytes from n-th PREFIX register.
+func (p *Periph) PREFIX(n int) uint32 {
+	return p.prefix[n].Load()
 }
 
-// SetBASE1 sets radio base address 1.
-func (p *Periph) SetBASE1(ba uint32) {
-	p.base1.Store(ba)
-}
-
-// PREFIX0 returns AP3<<24 | AP2<<16 | AP1<<8 | AP0.
-func (p *Periph) PREFIX0() uint32 {
-	return p.prefix0.Load()
-}
-
-// SetPREFIX0 sets PREFIX0 to prefix = AP3<<24 | AP2<<16 | AP1<<8 | AP0.
-func (p *Periph) SetPREFIX0(prefix uint32) {
-	p.prefix0.Store(prefix)
-}
-
-// PREFIX1 returns AP7<<24 | AP6<<16 | AP5<<8 | AP4.
-func (p *Periph) PREFIX1() uint32 {
-	return p.prefix1.Load()
-}
-
-// SetPREFIX1 sets PREFIX1 to prefix = AP7<<24 | AP6<<16 | AP5<<8 | AP4.
-func (p *Periph) SetPREFIX1(prefix uint32) {
-	p.prefix1.Store(prefix)
+// SetPREFIX sets prefix bytes in n-th PREFIX register.
+func (p *Periph) SetPREFIX(n int, prefix uint32) {
+	p.prefix[n].Store(prefix)
 }
 
 // TXADDRESS returns logical address used when transmitting a packet.

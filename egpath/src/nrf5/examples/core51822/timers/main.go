@@ -41,7 +41,7 @@ func init() {
 	t0.SetCC(1, 65526/2)
 	t0.Event(timer.COMPARE0).EnableIRQ()
 	t0.Event(timer.COMPARE1).EnableIRQ()
-	rtos.IRQ(irq.Timer0).Enable()
+	rtos.IRQ(irq.TIMER0).Enable()
 	t0.Task(timer.START).Trigger()
 
 	rtc0.SetPRESCALER(0) // 32768 Hz
@@ -86,6 +86,6 @@ func main() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.Timer0: timerISR,
+	irq.TIMER0: timerISR,
 	irq.RTC0:   rtcISR,
 }

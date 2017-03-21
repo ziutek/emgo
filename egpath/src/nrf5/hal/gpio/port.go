@@ -4,9 +4,10 @@ import (
 	"mmio"
 	"unsafe"
 
-	"nrf5/hal/internal"
+	"nrf5/hal/internal/mmap"
 )
 
+// Port represents one GPIO port.
 type Port struct {
 	_      mmio.U32
 	out    mmio.U32
@@ -21,7 +22,24 @@ type Port struct {
 }
 
 //emgo:const
-var P0 = (*Port)(unsafe.Pointer(internal.BaseAHB + 0x500))
+var (
+	P0 = (*Port)(unsafe.Pointer(mmap.BaseAHB + 0x500))
+	P1 = (*Port)(unsafe.Pointer(mmap.BaseAHB + 0x800))
+)
+
+// PortN returns n-th GPIO port.
+func PortN(n int) *Port {
+	if uint(n) > 1 {
+		panic("gpio: bad port")
+	}
+	addr := mmap.BaseAHB + 0x500 + 0x300*uintptr(n)
+	return (*Port)(unsafe.Pointer(addr))
+}
+
+// Index returns the port number.
+func (p *Port) Index() int {
+	return int(uintptr(unsafe.Pointer(p))-mmap.BaseAHB-0x500) / 0x300
+}
 
 // Pins is a bitmask which represents the pins of GPIO port.
 type Pins uint32
@@ -61,7 +79,11 @@ const (
 	Pin31
 )
 
-func (p *Port) Pin(index int) Pin {
+// Pin returns n-th pin in port p.
+func (p *Port) Pin(n int) Pin {
+	if uint(n) > 31 {
+		panic("gpio: bad pin")
+	}
 	ptr := uintptr(unsafe.Pointer(p))
-	return Pin{ptr | uintptr(index&0x1f)}
+	return Pin{ptr | uintptr(n)}
 }

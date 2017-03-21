@@ -20,9 +20,11 @@ func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
 	rtcst.Setup(rtc.RTC0, 1)
 
-	key = gpio.P0.Pin(16)
+	p0 := gpio.P0
+	
+	key = p0.Pin(16)
 	for i := range leds {
-		leds[i] = gpio.P0.Pin(18 + i)
+		leds[i] = p0.Pin(18 + i)
 	}
 
 	for _, led := range leds {

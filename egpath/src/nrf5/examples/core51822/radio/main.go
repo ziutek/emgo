@@ -25,8 +25,10 @@ func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
 	rtcst.Setup(rtc.RTC0, 1)
 
+	p0 := gpio.P0
+
 	for i := range leds {
-		led := gpio.P0.Pin(18 + i)
+		led := p0.Pin(18 + i)
 		led.Setup(&gpio.Config{Mode: gpio.Out})
 		leds[i] = led
 	}
@@ -37,8 +39,8 @@ func init() {
 	r.SetCRCCNF(2, false)
 	r.SetCRCPOLY(1<<16 | 1<<12 | 1<<5 | 1)
 	r.SetCRCINIT(0xFFFF)
-	r.SetBASE0(0xE7E70000) // Reversed 0xE7E70000.
-	r.SetPREFIX0(0xE7)     // Reversed 0xE7.
+	r.SetBASE(0, 0xE7E70000) // Reversed 0xE7E70000.
+	r.SetPREFIX(0, 0xE7)     // Reversed 0xE7.
 	r.SetTXADDRESS(0)
 	r.SetMODE(radio.NRF_250K)
 	r.SetFREQUENCY(radio.Channel(50))
@@ -79,7 +81,7 @@ func main() {
 			dir = 1
 			leds[0].Set()
 		}
-		leds[1].Store(n & 1)
+		leds[1].Store(n)
 		n += dir
 		delay.Millisec(25)
 	}

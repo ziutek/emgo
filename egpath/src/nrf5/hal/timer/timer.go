@@ -5,7 +5,7 @@ import (
 	"mmio"
 	"unsafe"
 
-	"nrf5/hal/internal"
+	"nrf5/hal/internal/mmap"
 	"nrf5/hal/te"
 )
 
@@ -24,9 +24,9 @@ type Periph struct {
 
 //emgo:const
 var (
-	TIMER0 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x08000))
-	TIMER1 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x09000))
-	TIMER2 = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x0a000))
+	TIMER0 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x08000))
+	TIMER1 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x09000))
+	TIMER2 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x0a000))
 )
 
 type Task int

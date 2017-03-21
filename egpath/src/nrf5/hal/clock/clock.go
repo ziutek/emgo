@@ -5,7 +5,7 @@ import (
 	"mmio"
 	"unsafe"
 
-	"nrf5/hal/internal"
+	"nrf5/hal/internal/mmap"
 	"nrf5/hal/te"
 )
 
@@ -29,7 +29,7 @@ type Periph struct {
 }
 
 //emgo:const
-var CLOCK = (*Periph)(unsafe.Pointer(internal.BaseAPB + 0x00000))
+var CLOCK = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x00000))
 
 type Task byte
 
