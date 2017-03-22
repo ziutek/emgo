@@ -41,9 +41,9 @@ func AssignEventFlag() Event {
 
 // Send sends event that means it waking up all tasks that wait for e. If some 
 // task isn't waiting for any event, e is saved for this task for possible
-// future call of Wait. Send do not execute until all memory write operations
-// before it, in program order, will be completed. In very simple implementation
-// Send can do nothing.
+// future call of Wait. Send do not execute until all normal (not I/O) memory
+// write operations before it, in program order, will be completed. In very
+// simple implementation Send can do nothing.
 func (e Event) Send() {
 	fence.W_SMP() // Send signals that some shared variable was changed.
 	atomic.OrUintptr((*uintptr)(&eventReg), uintptr(e))
@@ -59,9 +59,10 @@ func TakeEventReg() Event {
 
 // Wait waits for event. If e == 0 it returns immediately. Wait clears all saved
 // events for current task so the information about recieved events, that Wait
-// hasn't waited for, is lost. Wait ensures that any memory operation after it,
-// in program order, do not be executed until Wait return. In very simple
-// implementation Wait can do nothing and always return immediatelly.
+// hasn't waited for, is lost. Wait ensures that any normal (not I/O) memory
+// operation after it, in program order, do not be executed until Wait return.
+// In very simple implementation Wait can do nothing and always return
+// immediatelly.
 func (e Event) Wait() {
 	internal.Syscall1(EVENTWAIT, uintptr(e))
 }
