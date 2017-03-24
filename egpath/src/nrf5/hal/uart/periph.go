@@ -35,11 +35,11 @@ var UART0 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x02000))
 type Task byte
 
 const (
-	STARTRX Task = 0  // Start UART receiver.
-	STOPRX  Task = 1  // Stop UART receiver.
-	STARTTX Task = 2  // Start UART transmitter.
-	STOPTX  Task = 3  // Stop UART transmitter.
-	SUSPEND Task = 19 // Suspend UART. (nRF52)
+	STARTRX Task = 0 // Start UART receiver.
+	STOPRX  Task = 1 // Stop UART receiver.
+	STARTTX Task = 2 // Start UART transmitter.
+	STOPTX  Task = 3 // Stop UART transmitter.
+	SUSPEND Task = 7 // Suspend UART. (nRF52)
 )
 
 type Event byte
@@ -48,9 +48,9 @@ const (
 	CTS    Event = 0  // CTS is activated (set low). nRF51v3+.
 	NCTS   Event = 1  // CTS is deactivated (set high). nRF51v3+.
 	RXDRDY Event = 2  // Data received in RXD.
-	TXDRDY Event = 3  // Data sent from TXD.
-	ERROR  Event = 11 // Error detected.
-	RXTO   Event = 43 // Receiver timeout.
+	TXDRDY Event = 7  // Data sent from TXD.
+	ERROR  Event = 9  // Error detected.
+	RXTO   Event = 17 // Receiver timeout.
 )
 
 func (p *Periph) Task(t Task) *te.Task    { return p.Regs.Task(int(t)) }
@@ -104,14 +104,13 @@ func (e Error) Error() string {
 	return s
 }
 
-// ERRORSRC returns error source.
+// ERRORSRC returns error flags.
 func (p *Periph) ERRORSRC() Error {
 	return Error(p.errorsrc.Load())
 }
 
-// SetERRORSRC sets value of ERRORSRC. Usually used to reset all error flags:
-// p.SetERRORSRC(0).
-func (p *Periph) SetERRORSRC(e Error) {
+// ClearERRORSRC clears specfied error flags.
+func (p *Periph) ClearERRORSRC(e Error) {
 	p.errorsrc.Store(uint32(e))
 }
 

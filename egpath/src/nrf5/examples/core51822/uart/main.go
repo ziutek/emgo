@@ -1,6 +1,9 @@
 package main
 
 import (
+	"delay"
+	"rtos"
+
 	"nrf5/hal/clock"
 	"nrf5/hal/gpio"
 	"nrf5/hal/irq"
@@ -10,7 +13,10 @@ import (
 	"nrf5/hal/uart"
 )
 
-var leds [5]gpio.Pin
+var (
+	leds [5]gpio.Pin
+	u    *uart.Driver
+)
 
 func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
@@ -23,33 +29,36 @@ func init() {
 		leds[i] = led
 	}
 
-	u := uart.UART0
-	u.SetPSEL(uart.SignalRXD, p0.Pin(11))
-	u.SetPSEL(uart.SignalTXD, p0.Pin(9))
-	u.SetBAUDRATE(uart.Baud115200)
-	u.SetENABLE(true)
+	u = uart.NewDriver(uart.UART0, make([]byte, 80))
+	u.P.SetPSEL(uart.SignalRXD, p0.Pin(11))
+	u.P.SetPSEL(uart.SignalTXD, p0.Pin(9))
+	u.P.SetBAUDRATE(uart.Baud230400)
+	u.P.SetENABLE(true)
+	rtos.IRQ(u.P.IRQ()).Enable()
 }
 
 func main() {
-	u := uart.UART0
-
-	u.Task(uart.STARTTX).Trigger()
-	txdrdy := u.Event(uart.TXDRDY)
-
-	s := "Hello!\r\n"
+	u.EnableRx()
+	u.EnableTx()
+	u.WriteString("\r\nHello World!\r\n")
 	for i := 0; ; i++ {
-		leds[0].Store(i)
-		for i := 0; i < len(s); i++ {
-			txdrdy.Clear()
-			u.SetTXD(s[i])
-			for !txdrdy.IsSet() {
-			}
+		b, err := u.ReadByte()
+		for i := 0; err != nil; i++ {
+			leds[4].Store(i)
+			delay.Millisec(200)
 		}
+		u.WriteByte(b)
+		leds[0].Store(i)
 	}
+}
+
+func uartISR() {
+	u.ISR()
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTC0: rtcst.ISR,
+	irq.RTC0:  rtcst.ISR,
+	irq.UART0: uartISR,
 }
