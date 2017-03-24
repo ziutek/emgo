@@ -12,11 +12,11 @@ sync$fence$RW_SMP() {
 }
 
 void
-sync$fence$RD() {
+sync$fence$RDP() {
 }
 
 void
-sync$fence$RD_SMP() {
+sync$fence$RDP_SMP() {
 }
 
 void

@@ -17,7 +17,7 @@ func (i *Int64) ABA() uintptr {
 }
 
 func (i *Int64) TryLoad(aba uintptr) int64 {
-	fence.RD_SMP() // load(i.val[aba&1]) depends on load(i.aba).
+	fence.RDP_SMP() // load(i.val[aba&1]) depends on load(i.aba).
 	return i.val[aba&1]
 }
 

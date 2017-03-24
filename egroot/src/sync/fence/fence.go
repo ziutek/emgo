@@ -34,7 +34,7 @@ func W()
 func W_SMP()
 
 //c:static inline
-func RD()
+func RDP()
 
 //c:static inline
-func RD_SMP()
+func RDP_SMP()
