@@ -32,7 +32,7 @@ func init() {
 	u = uart.NewDriver(uart.UART0, make([]byte, 80))
 	u.P.SetPSEL(uart.SignalRXD, p0.Pin(11))
 	u.P.SetPSEL(uart.SignalTXD, p0.Pin(9))
-	u.P.SetBAUDRATE(uart.Baud230400)
+	u.P.SetBAUDRATE(uart.Baud115200)
 	u.P.SetENABLE(true)
 	rtos.IRQ(u.P.IRQ()).Enable()
 }
@@ -41,13 +41,16 @@ func main() {
 	u.EnableRx()
 	u.EnableTx()
 	u.WriteString("\r\nHello World!\r\n")
+	var buf [40]byte
 	for i := 0; ; i++ {
-		b, err := u.ReadByte()
+		u.WriteByte('^')
+		n, err := u.Read(buf[:])
 		for i := 0; err != nil; i++ {
 			leds[4].Store(i)
 			delay.Millisec(200)
 		}
-		u.WriteByte(b)
+		u.WriteByte('#')
+		u.Write(buf[:n])
 		leds[0].Store(i)
 	}
 }
