@@ -37,17 +37,17 @@ func init() {
 
 	p0.Setup(led0|led1|led2|led3|led4, &gpio.Config{Mode: gpio.Out})
 
-	t0.SetPRESCALER(8) // 62500 Hz
-	t0.SetCC(1, 65526/2)
+	t0.StorePRESCALER(8) // 62500 Hz
+	t0.StoreCC(1, 65526/2)
 	t0.Event(timer.COMPARE0).EnableIRQ()
 	t0.Event(timer.COMPARE1).EnableIRQ()
 	rtos.IRQ(irq.TIMER0).Enable()
 	t0.Task(timer.START).Trigger()
 
-	rtc0.SetPRESCALER(0) // 32768 Hz
+	rtc0.StorePRESCALER(0) // 32768 Hz
 	rtc0.Event(rtc.COMPARE1).EnableIRQ()
 	rtos.IRQ(irq.RTC0).Enable()
-	rtc0.SetCC(1, period)
+	rtc0.StoreCC(1, period)
 	rtc0.Task(rtc.START).Trigger()
 }
 
@@ -70,7 +70,7 @@ func timerISR() {
 
 func rtcISR() {
 	rtc0.Event(rtc.COMPARE1).Clear()
-	rtc0.SetCC(1, rtc0.CC(1)+period)
+	rtc0.StoreCC(1, rtc0.LoadCC(1)+period)
 	blink(led2, 1e3)
 }
 

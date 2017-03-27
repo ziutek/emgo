@@ -34,17 +34,17 @@ func init() {
 	}
 
 	r := radio.RADIO
-	r.SetPCNF0(0)
-	r.SetPCNF1(radio.MaxLen(2) | radio.StatLen(2) | radio.BALen(2) | radio.MSBFirst)
-	r.SetCRCCNF(2, false)
-	r.SetCRCPOLY(1<<16 | 1<<12 | 1<<5 | 1)
-	r.SetCRCINIT(0xFFFF)
-	r.SetBASE(0, 0xE7E70000) // Reversed 0xE7E70000.
-	r.SetPREFIX(0, 0xE7)     // Reversed 0xE7.
-	r.SetTXADDRESS(0)
-	r.SetMODE(radio.NRF_250K)
-	r.SetFREQUENCY(radio.Channel(50))
-	r.SetSHORTS(radio.READY_START | radio.END_DISABLE)
+	r.StorePCNF0(0)
+	r.StorePCNF1(radio.MaxLen(2) | radio.StatLen(2) | radio.BALen(2) | radio.MSBFirst)
+	r.StoreCRCCNF(2, false)
+	r.StoreCRCPOLY(1<<16 | 1<<12 | 1<<5 | 1)
+	r.StoreCRCINIT(0xFFFF)
+	r.StoreBASE(0, 0xE7E70000) // Reversed 0xE7E70000.
+	r.StorePREFIX(0, 0xE7)     // Reversed 0xE7.
+	r.StoreTXADDRESS(0)
+	r.StoreMODE(radio.NRF_250K)
+	r.StoreFREQUENCY(radio.Channel(50))
+	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
 	rtos.IRQ(r.IRQ()).Enable()
 
 	//f, err := semihosting.OpenFile(":tt", semihosting.W)
@@ -57,7 +57,7 @@ func main() {
 	var data [2]int8
 
 	r := radio.RADIO
-	r.SetPACKETPTR(unsafe.Pointer(&data[0]))
+	r.StorePACKETPTR(unsafe.Pointer(&data[0]))
 
 	leds[0].Set()
 	dir := 1

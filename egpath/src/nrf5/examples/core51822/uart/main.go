@@ -30,10 +30,10 @@ func init() {
 	}
 
 	u = uart.NewDriver(uart.UART0, make([]byte, 80))
-	u.P.SetPSEL(uart.SignalRXD, p0.Pin(11))
-	u.P.SetPSEL(uart.SignalTXD, p0.Pin(9))
-	u.P.SetBAUDRATE(uart.Baud115200)
-	u.P.SetENABLE(true)
+	u.P.StorePSEL(uart.SignalRXD, p0.Pin(11))
+	u.P.StorePSEL(uart.SignalTXD, p0.Pin(9))
+	u.P.StoreBAUDRATE(uart.Baud115200)
+	u.P.StoreENABLE(true)
 	rtos.IRQ(u.P.IRQ()).Enable()
 }
 

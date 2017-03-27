@@ -108,7 +108,7 @@ func (d *Driver) ISR() {
 		again := false
 		if p.Event(RXDRDY).IsSet() {
 			p.Event(RXDRDY).Clear()
-			b := p.RXD() // Always read RXD to do not block RXDRDY event.
+			b := p.LoadRXD() // Always read RXD to do not block RXDRDY event.
 			nextpi := d.pi + 1
 			if nextpi == len(d.RxBuf) {
 				nextpi = 0
@@ -124,7 +124,7 @@ func (d *Driver) ISR() {
 		}
 		if p.Event(ERROR).IsSet() {
 			p.Event(ERROR).Clear()
-			err := p.ERRORSRC()
+			err := p.LoadERRORSRC()
 			p.ClearERRORSRC(err)
 			atomic.OrUint32(&d.err, uint32(err))
 			again = true
@@ -140,7 +140,7 @@ func (d *Driver) ISR() {
 				atomic.StoreInt(&d.offs, newo)
 				d.txdone.Send()
 			} else {
-				p.SetTXD(*(*byte)(unsafe.Pointer(d.txend + uintptr(newo))))
+				p.StoreTXD(*(*byte)(unsafe.Pointer(d.txend + uintptr(newo))))
 				atomic.StoreInt(&d.offs, newo)
 				again = true
 			}
@@ -266,7 +266,7 @@ func (d *Driver) waitWrite() (int, error) {
 func (d *Driver) WriteByte(b byte) error {
 	d.offs = -1
 	fence.W() // store(d.offs) must be observed before p.SetTX.
-	d.P.SetTXD(b)
+	d.P.StoreTXD(b)
 	_, err := d.waitWrite()
 	return err
 }
@@ -279,7 +279,7 @@ func (d *Driver) WriteString(s string) (int, error) {
 	d.txend = h.Data + uintptr(h.Len)
 	d.offs = -h.Len
 	fence.W() // store(d.offs) must be observed before p.SetTX.
-	d.P.SetTXD(s[0])
+	d.P.StoreTXD(s[0])
 	return d.waitWrite()
 }
 

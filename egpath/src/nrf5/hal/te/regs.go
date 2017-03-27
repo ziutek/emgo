@@ -79,12 +79,12 @@ func (r *Regs) DisablePPI(mask EventMask) {
 	r.evtEnClr.Store(uint32(mask))
 }
 
-// SHORTS returns currents value of the SHORTS register.
-func (r *Regs) SHORTS() uint32 {
+// LoadSHORTS returns currents value of the SHORTS register.
+func (r *Regs) LoadSHORTS() uint32 {
 	return r.shorts.Load()
 }
 
-// SetSHORTS stores s to the SHORTS register.
-func (r *Regs) SetSHORTS(s uint32) {
+// StoreSHORTS stores s to the SHORTS register.
+func (r *Regs) StoreSHORTS(s uint32) {
 	r.shorts.Store(s)
 }

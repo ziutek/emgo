@@ -63,8 +63,8 @@ const (
 	NCTS_STOPRX Shorts = 1 << 4
 )
 
-func (p *Periph) SHORTS() Shorts     { return Shorts(p.Regs.SHORTS()) }
-func (p *Periph) SetSHORTS(s Shorts) { p.Regs.SetSHORTS(uint32(s)) }
+func (p *Periph) LoadSHORTS() Shorts   { return Shorts(p.Regs.LoadSHORTS()) }
+func (p *Periph) StoreSHORTS(s Shorts) { p.Regs.StoreSHORTS(uint32(s)) }
 
 // Error is a bitfield that describes detected errors.
 type Error byte
@@ -104,8 +104,8 @@ func (e Error) Error() string {
 	return s
 }
 
-// ERRORSRC returns error flags.
-func (p *Periph) ERRORSRC() Error {
+// LoadERRORSRC returns error flags.
+func (p *Periph) LoadERRORSRC() Error {
 	return Error(p.errorsrc.Load())
 }
 
@@ -114,12 +114,12 @@ func (p *Periph) ClearERRORSRC(e Error) {
 	p.errorsrc.Store(uint32(e))
 }
 
-// ENABLE reports whether the p UART peripheral is enabled.
-func (p *Periph) ENABLE() bool {
+// LoadENABLE reports whether the p UART peripheral is enabled.
+func (p *Periph) LoadENABLE() bool {
 	return p.enable.Load()&4 != 0
 }
 
-func (p *Periph) SetENABLE(en bool) {
+func (p *Periph) StoreENABLE(en bool) {
 	p.enable.Store(uint32(bits.One(en)) << 2)
 }
 
@@ -132,18 +132,18 @@ const (
 	SignalRXD Signal = 3
 )
 
-func (p *Periph) PSEL(s Signal) gpio.Pin {
+func (p *Periph) LoadPSEL(s Signal) gpio.Pin {
 	return psel.Pin(p.psel[s].Load())
 }
-func (p *Periph) SetPSEL(s Signal, pin gpio.Pin) {
+func (p *Periph) StorePSEL(s Signal, pin gpio.Pin) {
 	p.psel[s].Store(psel.Sel(pin))
 }
 
-func (p *Periph) RXD() byte {
+func (p *Periph) LoadRXD() byte {
 	return byte(p.rxd.Load())
 }
 
-func (p *Periph) SetTXD(b byte) {
+func (p *Periph) StoreTXD(b byte) {
 	p.txd.Store(uint32(b))
 }
 
@@ -177,12 +177,12 @@ func (br Baudrate) Baud() int {
 	return int((uint64(br)*16e6 + 1<<31) >> 32)
 }
 
-// BAUDRATE returns configured baudrate.
-func (p *Periph) BAUDRATE() Baudrate {
+// LoadBAUDRATE returns configured baudrate.
+func (p *Periph) LoadBAUDRATE() Baudrate {
 	return Baudrate(p.baudrate.Load())
 }
 
-// SetBAUDRATE set baudrate.
-func (p *Periph) SetBAUDRATE(br Baudrate) {
+// StoreBAUDRATE stores baudrate.
+func (p *Periph) StoreBAUDRATE(br Baudrate) {
 	p.baudrate.Store(uint32(br))
 }

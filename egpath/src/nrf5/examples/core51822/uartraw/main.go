@@ -25,10 +25,10 @@ func init() {
 	led.Setup(&gpio.Config{Mode: gpio.Out})
 
 	u = uart.UART0
-	u.SetPSEL(uart.SignalRXD, p0.Pin(11))
-	u.SetPSEL(uart.SignalTXD, p0.Pin(9))
-	u.SetBAUDRATE(uart.Baud115200)
-	u.SetENABLE(true)
+	u.StorePSEL(uart.SignalRXD, p0.Pin(11))
+	u.StorePSEL(uart.SignalTXD, p0.Pin(9))
+	u.StoreBAUDRATE(uart.Baud115200)
+	u.StoreENABLE(true)
 }
 
 func main() {
@@ -41,11 +41,11 @@ func main() {
 		for !rxdrdy.IsSet() {
 		}
 		rxdrdy.Clear()
-		b := u.RXD()
+		b := u.LoadRXD()
 		for i != 0 && !txdrdy.IsSet() {
 		}
 		txdrdy.Clear()
-		u.SetTXD(b)
+		u.StoreTXD(b)
 		led.Store(i)
 	}
 }

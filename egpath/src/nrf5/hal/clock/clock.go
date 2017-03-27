@@ -56,7 +56,7 @@ func (p *Periph) Task(t Task) *te.Task    { return p.Regs.Task(int(t)) }
 func (p *Periph) Event(e Event) *te.Event { return p.Regs.Event(int(e)) }
 
 // HFCLKRUN returns true if HFCLKSTART task was triggered.
-func (p *Periph) HFCLKRUN() bool {
+func (p *Periph) LoadHFCLKRUN() bool {
 	return p.hfclkrun.Load() != 0
 }
 
@@ -68,50 +68,50 @@ const (
 	SYNTH Source = 2
 )
 
-// HFCLKStat returns information about HFCLK status (running or not) and clock
-// source.
-func (p *Periph) HFCLKSTAT() (src Source, running bool) {
+// LoadHFCLKStat returns information about HFCLK status (running or not) and
+// clock source.
+func (p *Periph) LoadHFCLKSTAT() (src Source, running bool) {
 	s := p.hfclkstat.Load()
 	return Source(s & 1), s&(1<<16) != 0
 }
 
-// LFCLKRUN returns true if LFCLKSTART task was triggered.
-func (p *Periph) LFCLKRUN() bool {
+// LoadLFCLKRUN returns true if LFCLKSTART task was triggered.
+func (p *Periph) LoadLFCLKRUN() bool {
 	return p.lfclkrun.Bit(0) != 0
 }
 
-// LFCLKSTAT returns information about LFCLK status (running or not) and clock
-// source.
-func (p *Periph) LFCLKSTAT() (src Source, running bool) {
+// LoadLFCLKSTAT returns information about LFCLK status (running or not) and
+// clock source.
+func (p *Periph) LoadLFCLKSTAT() (src Source, running bool) {
 	s := p.lfclkstat.Load()
 	return Source(s & 1), s&(1<<16) != 0
 }
 
-// LFCLKSRCCOPY returns clock source for LFCLK from time when LFCLKSTART task
-// has been triggered.
-func (p *Periph) LFCLKSRCCOPY() Source {
+// LoadLFCLKSRCCOPY returns clock source for LFCLK from time when LFCLKSTART
+// task has been triggered.
+func (p *Periph) LoadLFCLKSRCCOPY() Source {
 	return Source(p.lfclksrccopy.Bits(3))
 }
 
-// LFCLKSRC returns clock source for LFCLK..
-func (p *Periph) LFCLKSRC() Source {
+// LoadLFCLKSRC returns clock source for LFCLK.
+func (p *Periph) LoadLFCLKSRC() Source {
 	return Source(p.lfclksrc.Bits(3))
 }
 
-// SetLFCLKSRC sets clock source for LFCLK. It can only be modified when LFCLK
-// is not running.
-func (p *Periph) SetLFCLKSRC(src Source) {
+// StoreLFCLKSRC sets clock source for LFCLK. It can only be modified when
+// LFCLK is not running.
+func (p *Periph) StoreLFCLKSRC(src Source) {
 	p.lfclksrc.Store(uint32(src))
 }
 
-// CTIV returns calibration timer interval in milliseconds.
-func (p *Periph) CTIV() int {
+// LoadCTIV returns calibration timer interval in milliseconds.
+func (p *Periph) LoadCTIV() int {
 	return int(p.ctiv.Bits(0x7f) * 250)
 }
 
-// SetCTIV sets calibration timer interval as number of milliseconds
+// StoreCTIV sets calibration timer interval as number of milliseconds
 // (range: 250 ms to 31750 ms).
-func (p *Periph) SetCTIV(ctiv int) {
+func (p *Periph) StoreCTIV(ctiv int) {
 	p.ctiv.Store(uint32(ctiv+125) / 250)
 }
 
@@ -122,10 +122,10 @@ const (
 	F32MHz Freq = 0x00
 )
 
-func (p *Periph) XTALFREQ() Freq {
+func (p *Periph) LoadXTALFREQ() Freq {
 	return Freq(p.xtalfreq.Bits(0xff))
 }
 
-func (p *Periph) SetXTALFREQ(f Freq) {
+func (p *Periph) StoreXTALFREQ(f Freq) {
 	p.xtalfreq.Store(uint32(f))
 }

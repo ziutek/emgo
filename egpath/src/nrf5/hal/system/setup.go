@@ -7,7 +7,7 @@ import (
 // Setup setups nRF51 to operate using specified HFCLK and LFCLK clock sources..
 func Setup(hfsrc, lfsrc clock.Source, lfena bool) {
 	clk := clock.CLOCK
-	clk.SetLFCLKSRC(lfsrc)
+	clk.StoreLFCLKSRC(lfsrc)
 	if hfsrc == clock.XTAL {
 		clk.Task(clock.HFCLKSTART).Trigger()
 	}
@@ -15,13 +15,13 @@ func Setup(hfsrc, lfsrc clock.Source, lfena bool) {
 		clk.Task(clock.LFCLKSTART).Trigger()
 	}
 	for {
-		src, run := clk.HFCLKSTAT()
+		src, run := clk.LoadHFCLKSTAT()
 		if src == hfsrc && run {
 			break
 		}
 	}
 	for lfena {
-		src, run := clk.LFCLKSTAT()
+		src, run := clk.LoadLFCLKSTAT()
 		if src == lfsrc && run {
 			break
 		}

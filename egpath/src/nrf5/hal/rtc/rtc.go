@@ -33,7 +33,7 @@ const (
 	START      Task = 0 // Start RTC COUNTER.
 	STOP       Task = 1 // Stop RTC COUNTER.
 	CLEAR      Task = 2 // Clear RTC COUNTER.
-	TRIGOVRFLW Task = 3 // Set COUNTER to 0xFFFFF0.
+	TRIGOVRFLW Task = 3 // Store COUNTER to 0xFFFFF0.
 )
 
 type Event byte
@@ -50,33 +50,33 @@ const (
 func (p *Periph) Task(t Task) *te.Task    { return p.Regs.Task(int(t)) }
 func (p *Periph) Event(e Event) *te.Event { return p.Regs.Event(int(e)) }
 
-// COUNTER returns value of counter register.
-func (p *Periph) COUNTER() uint32 {
+// LoadCOUNTER returns value of counter register.
+func (p *Periph) LoadCOUNTER() uint32 {
 	return p.counter.Bits(0xffffff)
 }
 
-// SetCOUNTER sets value of counter register.
-func (p *Periph) SetCOUNTER(c uint32) {
+// StoreCOUNTER stores value of counter register.
+func (p *Periph) StoreCOUNTER(c uint32) {
 	p.counter.Store(c)
 }
 
-// PRESCALER returns value of prescaler register.
-func (p *Periph) PRESCALER() uint32 {
+// LoadPRESCALER returns value of prescaler register.
+func (p *Periph) LoadPRESCALER() uint32 {
 	return p.counter.Bits(0xfff)
 }
 
-// SetPRESCALER sets prescaler to pr (freq = 32768Hz/(pr+1)). Must only be used
+// StorePRESCALER stores prescaler to pr (freq = 32768Hz/(pr+1)). Must only be used
 // when the timer is stopped.
-func (p *Periph) SetPRESCALER(pr int) {
+func (p *Periph) StorePRESCALER(pr int) {
 	p.prescaler.Store(uint32(pr))
 }
 
-// CC returns value of n-th compare register.
-func (p *Periph) CC(n int) uint32 {
+// LoadCC returns value of n-th compare register.
+func (p *Periph) LoadCC(n int) uint32 {
 	return p.cc[n].Bits(0xffffff)
 }
 
-// SetCC sets n-th compare register to cc.
-func (p *Periph) SetCC(n int, cc uint32) {
+// StoreCC stores n-th compare register to cc.
+func (p *Periph) StoreCC(n int, cc uint32) {
 	p.cc[n].Store(cc)
 }

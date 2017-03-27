@@ -43,7 +43,7 @@ func Setup(st *rtc.Periph, ccn int) {
 	cce := cce()
 	cce.DisablePPI()
 	cce.DisableIRQ()
-	g.scale = (st.PRESCALER() + 1) * (1e9 >> 9)
+	g.scale = (st.LoadPRESCALER() + 1) * (1e9 >> 9)
 	ove := st.Event(rtc.OVRFLW)
 	ove.DisablePPI()
 	ove.EnableIRQ()
@@ -88,7 +88,7 @@ func counters() (ch, cl uint32) {
 	ch = atomic.LoadUint32(&g.softcnt)
 	for {
 		fence.R() // Ensure IO load after load(g.softcnt).
-		cl = g.st.COUNTER()
+		cl = g.st.LoadCOUNTER()
 		fence.R() // Ensure load(g.softcnt) after IO load.
 		ch1 := atomic.LoadUint32(&g.softcnt)
 		if ch1 == ch {
@@ -126,9 +126,9 @@ func setWakeup(ns int64, alarm bool) {
 	sleep := wkup - now
 	switch {
 	case sleep > 0xffffff:
-		g.st.SetCC(int(g.ccn), cl)
+		g.st.StoreCC(int(g.ccn), cl)
 	case sleep > 0:
-		g.st.SetCC(int(g.ccn), uint32(wkup)&0xffffff)
+		g.st.StoreCC(int(g.ccn), uint32(wkup)&0xffffff)
 		now = ticks(counters())
 	}
 	if now < wkup {

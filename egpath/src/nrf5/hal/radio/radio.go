@@ -98,40 +98,40 @@ const (
 	DISABLED_RSSISTOP Shorts = 1 << 8
 )
 
-func (p *Periph) SHORTS() Shorts     { return Shorts(p.Regs.SHORTS()) }
-func (p *Periph) SetSHORTS(s Shorts) { p.Regs.SetSHORTS(uint32(s)) }
+func (p *Periph) LoadSHORTS() Shorts   { return Shorts(p.Regs.LoadSHORTS()) }
+func (p *Periph) StoreSHORTS(s Shorts) { p.Regs.StoreSHORTS(uint32(s)) }
 
-// CRCSTATUS returns CRC status of packet received.
-func (p *Periph) CRCSTATUS() bool {
+// LoadCRCSTATUS returns CRC status of packet received.
+func (p *Periph) LoadCRCSTATUS() bool {
 	return p.crcstatus.Bits(1) != 0
 }
 
-// RXMATCH returns logical address on which previous packet was received.
-func (p *Periph) RXMATCH() int {
+// LoadRXMATCH returns logical address on which previous packet was received.
+func (p *Periph) LoadRXMATCH() int {
 	return int(p.rxmatch.Bits(7))
 }
 
-// RXCRC returns CRC field of previously received packet.
-func (p *Periph) RXCRC() uint32 {
+// LoadRXCRC returns CRC field of previously received packet.
+func (p *Periph) LoadRXCRC() uint32 {
 	return p.rxcrc.Bits(0xffffff)
 }
 
-// DAI returns index(n) of device address, see DAB[n] and DAP[n], that got an
-// address match.
-func (p *Periph) DAI() int {
+// LoadDAI returns index(n) of device address, see DAB[n] and DAP[n], that got
+// an address match.
+func (p *Periph) LoadDAI() int {
 	return int(p.dai.Bits(7))
 }
 
-// PACKETPTR returns packet address to be used for the next transmission or
+// LoadPACKETPTR returns packet address to be used for the next transmission or
 // reception. When transmitting, the packet pointed to by this address will be
 // transmitted and when receiving, the received packet will be written to this
 // address.
-func (p *Periph) PACKETPTR() uintptr {
+func (p *Periph) LoadPACKETPTR() uintptr {
 	return uintptr(p.packetptr.Load())
 }
 
-// SetPACKETPTR sets PACKETPTR. See PACKETPTR for more information.
-func (p *Periph) SetPACKETPTR(addr unsafe.Pointer) {
+// StorePACKETPTR stores PACKETPTR. See LoadPACKETPTR for more information.
+func (p *Periph) StorePACKETPTR(addr unsafe.Pointer) {
 	p.packetptr.Store(uint32(uintptr(addr)))
 }
 
@@ -150,23 +150,24 @@ func (f Freq) Channel() int {
 	return int(f & 0x7f)
 }
 
-// FREQUENCY returns a bitmap that encodes current radio channel and channelmap.
-func (p *Periph) FREQUENCY() Freq {
+// LoadFREQUENCY returns a bitmap that encodes current radio channel and
+// channelmap.
+func (p *Periph) LoadFREQUENCY() Freq {
 	return Freq(p.frequency.Load())
 }
 
-// SetFREQUENCY sets radio channel and channel map.
-func (p *Periph) SetFREQUENCY(f Freq) {
+// StoreFREQUENCY stores radio channel and channel map.
+func (p *Periph) StoreFREQUENCY(f Freq) {
 	p.frequency.Store(uint32(f))
 }
 
-// TXPOWER returns RADIO output power in dBm.
-func (p *Periph) TXPOWER() int {
+// LoadTXPOWER returns RADIO output power in dBm.
+func (p *Periph) LoadTXPOWER() int {
 	return int(int8(p.txpower.Load()))
 }
 
-// SetTXPOWER sets TXPOWER. See TXPOWER for more information.
-func (p *Periph) SetTXPOWER(dBm int) {
+// StoreTXPOWER stores TXPOWER. See LoadTXPOWER for more information.
+func (p *Periph) StoreTXPOWER(dBm int) {
 	p.txpower.StoreBits(0xff, uint32(dBm))
 }
 
@@ -180,16 +181,16 @@ const (
 	BLE_2M   = 4
 )
 
-// MODE returns radio data rate and modulation setting. The radio supports
+// LoadMODE returns radio data rate and modulation setting. The radio supports
 // Frequency-shift Keying (FSK) modulation, which depending on setting are
 // compatible with either Nordic Semiconductor’s proprietary radios, or
 // Bluetooth low energy.
-func (p *Periph) MODE() Mode {
+func (p *Periph) LoadMODE() Mode {
 	return Mode(p.mode.Bits(0xf))
 }
 
-// SetMODE sets MODE. See MODE for more information.
-func (p *Periph) SetMODE(mode Mode) {
+// StoreMODE stores MODE. See LoadMODE for more information.
+func (p *Periph) StoreMODE(mode Mode) {
 	p.mode.StoreBits(0xf, uint32(mode))
 }
 
@@ -222,11 +223,11 @@ func (c PktConf0) S1BitN() int {
 	return int(c >> 16 & 15)
 }
 
-func (p *Periph) PCNF0() PktConf0 {
+func (p *Periph) LoadPCNF0() PktConf0 {
 	return PktConf0(p.pcnf0.Load())
 }
 
-func (p *Periph) SetPCNF0(pcnf PktConf0) {
+func (p *Periph) StorePCNF0(pcnf PktConf0) {
 	p.pcnf0.Store(uint32(pcnf))
 }
 
@@ -266,114 +267,114 @@ func (c PktConf1) BALen() int {
 	return int(c >> 16 & 7)
 }
 
-func (p *Periph) PCNF1() PktConf1 {
+func (p *Periph) LoadPCNF1() PktConf1 {
 	return PktConf1(p.pcnf1.Load())
 }
 
-func (p *Periph) SetPCNF1(pcnf PktConf1) {
+func (p *Periph) StorePCNF1(pcnf PktConf1) {
 	p.pcnf1.Store(uint32(pcnf))
 }
 
-// BASE returns n-th radio base address.
-func (p *Periph) BASE(n int) uint32 {
+// LoadBASE returns n-th radio base address.
+func (p *Periph) LoadBASE(n int) uint32 {
 	return p.base[n].Load()
 }
 
-// SetBASE sets n-th radio base address 0.
-func (p *Periph) SetBASE(n, ba uint32) {
+// StoreBASE stores n-th radio base address 0.
+func (p *Periph) StoreBASE(n, ba uint32) {
 	p.base[n].Store(ba)
 }
 
-// PREFIX returns prefix bytes from n-th PREFIX register.
-func (p *Periph) PREFIX(n int) uint32 {
+// LoadPREFIX returns prefix bytes from n-th PREFIX register.
+func (p *Periph) LoadPREFIX(n int) uint32 {
 	return p.prefix[n].Load()
 }
 
-// SetPREFIX sets prefix bytes in n-th PREFIX register.
-func (p *Periph) SetPREFIX(n int, prefix uint32) {
+// StorePREFIX stores prefix bytes in n-th PREFIX register.
+func (p *Periph) StorePREFIX(n int, prefix uint32) {
 	p.prefix[n].Store(prefix)
 }
 
-// TXADDRESS returns logical address used when transmitting a packet.
-func (p *Periph) TXADDRESS() int {
+// LoadTXADDRESS returns logical address used when transmitting a packet.
+func (p *Periph) LoadTXADDRESS() int {
 	return int(p.txaddress.Bits(7))
 }
 
-// SetTXADDRESS sets logical address to be used when transmitting a packet.
-func (p *Periph) SetTXADDRESS(laddr int) {
+// StoreTXADDRESS stores logical address to be used when transmitting a packet.
+func (p *Periph) StoreTXADDRESS(laddr int) {
 	p.txaddress.StoreBits(7, uint32(laddr))
 }
 
-// RXADERESSES returns bit field where eache of 8 low significant bits enables or
-// disables one logical addresses for receive.
-func (p *Periph) RXADDERESSES() uint32 {
+// LoadRXADERESSES returns bit field where eache of 8 low significant bits
+// enables or disables one logical addresses for receive.
+func (p *Periph) LoadRXADERESSES() uint32 {
 	return p.rxaddresses.Load()
 }
 
-// SetRXADDERESSES sets bit field where eache of 8 low significant bits enables or
-// disables one logical addresses for receive.
-func (p *Periph) SetRXADDERESSES(laddr int) {
+// StoreRXADDERESSES stores bit field where eache of 8 low significant bits
+// enables or disables one logical addresses for receive.
+func (p *Periph) StoreRXADDERESSES(laddr int) {
 	p.rxaddresses.StoreBits(7, uint32(laddr))
 }
 
-// CRCCNF returns number of bytes in CRC field and whether address field is
+// LoadCRCCNF returns number of bytes in CRC field and whether address field is
 // skipped for CRC calculation.
-func (p *Periph) CRCCNF() (length int, skipAddr bool) {
+func (p *Periph) LoadCRCCNF() (length int, skipAddr bool) {
 	crccnf := p.crccnf.Load()
 	return int(crccnf & 3), crccnf>>8&1 != 0
 }
 
-// SetCRCCNF sets number of bytes in CRC field and whether address will be
+// StoreCRCCNF stores number of bytes in CRC field and whether address will be
 // skipped for CRC calculation.
-func (p *Periph) SetCRCCNF(length int, skipAddr bool) {
+func (p *Periph) StoreCRCCNF(length int, skipAddr bool) {
 	p.crccnf.Store(uint32(bits.One(skipAddr))<<8 | uint32(length)&3)
 }
 
-// CRCPOLY returns CRC polynominal coefficients.
-func (p *Periph) CRCPOLY() uint32 {
+// LoadCRCPOLY returns CRC polynominal coefficients.
+func (p *Periph) LoadCRCPOLY() uint32 {
 	return p.crcpoly.Load() | 1
 }
 
-//  SetCRCPOLY sets CRC polynominal coefficients.
-func (p *Periph) SetCRCPOLY(crcpoly uint32) {
+//  StoreCRCPOLY stores CRC polynominal coefficients.
+func (p *Periph) StoreCRCPOLY(crcpoly uint32) {
 	p.crcpoly.Store(crcpoly)
 }
 
-// CRCINIT returns initial value for CRC calculation.
-func (p *Periph) CRCINIT() uint32 {
+// LoadCRCINIT returns initial value for CRC calculation.
+func (p *Periph) LoadCRCINIT() uint32 {
 	return p.crcinit.Load()
 }
 
-//  SetCRCINIT sets initial value for CRC calculation.
-func (p *Periph) SetCRCINIT(crcinit uint32) {
+//  StoreCRCINIT stores initial value for CRC calculation.
+func (p *Periph) StoreCRCINIT(crcinit uint32) {
 	p.crcinit.Store(crcinit)
 }
 
-func (p *Periph) TEST() (constCarrier, pllLock bool) {
+func (p *Periph) LoadTEST() (constCarrier, pllLock bool) {
 	test := p.test.Load()
 	return test&1 != 0, test&2 != 0
 }
 
-func (p *Periph) SetTEST(constCarrier, pllLock bool) {
+func (p *Periph) StoreTEST(constCarrier, pllLock bool) {
 	p.test.Store(uint32(bits.One(pllLock))<<1 | uint32(bits.One(constCarrier)))
 }
 
-// TIFS returns interframe spacing as the number of microseconds from the end of
-// the last bit of the previous packet to the start of the first bit of the
-// subsequent packet.
-func (p *Periph) TIFS() int {
+// LoadTIFS returns interframe spacing as the number of microseconds from the
+// end of the last bit of the previous packet to the start of the first bit of
+// the subsequent packet.
+func (p *Periph) LoadTIFS() int {
 	return int(p.tifs.Load() & 255)
 }
 
-// SetTIFS sets interframe spacing as the number of microseconds from the end of
-// the last bit of the previous packet to the start of the first bit of the
-// subsequent packet.
-func (p *Periph) SetTIFS(us int) {
+// StoreTIFS stores interframe spacing as the number of microseconds from the
+// end of the last bit of the previous packet to the start of the first bit of
+// the subsequent packet.
+func (p *Periph) StoreTIFS(us int) {
 	p.tifs.Store(uint32(us) & 255)
 }
 
-// RSSISAMPLE returns received signal strength [dBm].
-func (p *Periph) RSSISAMPLE() int {
+// LoadRSSISAMPLE returns received signal strength [dBm].
+func (p *Periph) LoadRSSISAMPLE() int {
 	return -int(p.rssisample.Load() & 127)
 }
 
@@ -415,67 +416,64 @@ func (s State) String() string {
 	return name
 }
 
-// STATE returns current radio state.
-func (p *Periph) STATE() State {
+// LoadSTATE returns current radio state.
+func (p *Periph) LoadSTATE() State {
 	return State(p.state.Bits(0xf))
 }
 
-// DATAWHITEIV returns data whitening initial value.
-func (p *Periph) DATAWHITEIV() uint32 {
+// LoadATAWHITEIV returns data whitening initial value.
+func (p *Periph) LoadDATAWHITEIV() uint32 {
 	return p.datawhiteiv.Load()
 }
 
-// SetDATAWHITEIV sets data whitening initial value.
-func (p *Periph) SetDATAWHITEIV(initVal uint32) {
+// StoreDATAWHITEIV stores data whitening initial value.
+func (p *Periph) StoreDATAWHITEIV(initVal uint32) {
 	p.datawhiteiv.Store(initVal)
 }
 
-// BCC returns value of bit counter compare.
-func (p *Periph) BCC() int {
+// LoadBCC returns value of bit counter compare.
+func (p *Periph) LoadBCC() int {
 	return int(p.bcc.Load())
 }
 
-// SetBCC sets value of bit counter compare.
-func (p *Periph) SetBCC(bcc int) {
+// StoreBCC stores value of bit counter compare.
+func (p *Periph) StoreBCC(bcc int) {
 	p.bcc.Store(uint32(bcc))
 }
 
-// POWER reports whether radio is powered on.
-func (p *Periph) POWER() bool {
-	return p.power.Bits(1) != 0
-}
-
-// DAB returns n-th device address base segment (32 LSBits of device address).
-func (p *Periph) DAB(n int) uint32 {
+// LoadDAB returns n-th device address base segment (32 LSBits of device
+// address).
+func (p *Periph) LoadDAB(n int) uint32 {
 	return p.dab[n].Load()
 }
 
-// SetDAB sets n-th device address base segment (32 LSBits of device address).
-func (p *Periph) SetDAB(n int, dab uint32) {
+// StoreDAB stores n-th device address base segment (32 LSBits of device
+// address).
+func (p *Periph) StoreDAB(n int, dab uint32) {
 	p.dab[n].Store(dab)
 }
 
-// DAP returns n-th device address prefix (16 MSBits of device address).
-func (p *Periph) DAP(n int) uint16 {
+// LoadDAP returns n-th device address prefix (16 MSBits of device address).
+func (p *Periph) LoadDAP(n int) uint16 {
 	return uint16(p.dap[n].Load())
 }
 
-// SetDAP sets n-th device address prefix (16 MSBits of device address).
-func (p *Periph) SetDAP(n int, dap uint16) {
+// StoreDAP stores n-th device address prefix (16 MSBits of device address).
+func (p *Periph) StoreDAP(n int, dap uint16) {
 	p.dap[n].Store(uint32(dap))
 }
 
-// DACNF returns a dap and txadd bit fields. Dap is a bit field where eache of 8 low
-// significant bits enables or disables one device adressess (DAP-DAB pairs) for
-// matching.
-func (p *Periph) DACNF() (match, txadd byte) {
+// LoadDACNF returns a dap and txadd bit fields. Dap is a bit field where eache
+// of 8 low significant bits enables or disables one device adressess (DAP-DAB
+// pairs) for matching.
+func (p *Periph) LoadDACNF() (match, txadd byte) {
 	dacnf := p.dacnf.Load()
 	return byte(dacnf), byte(dacnf >> 8)
 }
 
-// SetDACNF sets bitmask that lists device adressess (DAP-DAB pairs) enabled
+// StoreDACNF stores bitmask that lists device adressess (DAP-DAB pairs) enabled
 // for matching and TxAdd bits
-func (p *Periph) SetDACNF(match, txadd byte) {
+func (p *Periph) StoreDACNF(match, txadd byte) {
 	p.dacnf.Store(uint32(txadd)<<8 | uint32(match))
 }
 
@@ -488,22 +486,22 @@ const (
 	TxCenter ModeConf0 = 2 << 8
 )
 
-// MODECNF0 (nRF52 only).
-func (p *Periph) MODECNF0() ModeConf0 {
+// LoadMODECNF0 (nRF52 only).
+func (p *Periph) LoadMODECNF0() ModeConf0 {
 	return ModeConf0(p.modecnf0.Load())
 }
 
-// SetMODECNF0 (nRF52 only).
-func (p *Periph) SetMODECNF0(c ModeConf0) {
+// StoreMODECNF0 (nRF52 only).
+func (p *Periph) StoreMODECNF0(c ModeConf0) {
 	p.modecnf0.Store(uint32(c))
 }
 
-// POWER reports whether radio is power on.
-func (p *Periph) SPOWER() bool {
+// LoadPOWER reports whether radio is powered on.
+func (p *Periph) LoadPOWER() bool {
 	return p.power.Bits(1) != 0
 }
 
-// SetPOWER can set peripheral power on or off.
-func (p *Periph) SetPOWER(on bool) {
+// StorePOWER sets peripheral power on or off.
+func (p *Periph) StorePOWER(on bool) {
 	p.power.StoreBits(1, uint32(bits.One(on)))
 }

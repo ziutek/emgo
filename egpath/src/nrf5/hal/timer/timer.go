@@ -51,8 +51,8 @@ const (
 	COMPARE3 Event = 19 // Compare event on CC[3] match.
 )
 
-func (p *Periph) Task(t Task) *te.Task      { return p.Regs.Task(int(t)) }
-func (p *Periph) Event(e Event) *te.Event   { return p.Regs.Event(int(e)) }
+func (p *Periph) Task(t Task) *te.Task    { return p.Regs.Task(int(t)) }
+func (p *Periph) Event(e Event) *te.Event { return p.Regs.Event(int(e)) }
 
 type Shorts uint32
 
@@ -67,8 +67,8 @@ const (
 	COMPARE3_STOP  Shorts = 1 << 11
 )
 
-func (p *Periph) SHORTS() Shorts     { return Shorts(p.Regs.SHORTS()) }
-func (p *Periph) SetSHORTS(s Shorts) { p.Regs.SetSHORTS(uint32(s)) }
+func (p *Periph) LoadSHORTS() Shorts   { return Shorts(p.Regs.LoadSHORTS()) }
+func (p *Periph) StoreSHORTS(s Shorts) { p.Regs.StoreSHORTS(uint32(s)) }
 
 type Mode byte
 
@@ -77,11 +77,11 @@ const (
 	COUNTER Mode = 1
 )
 
-func (p *Periph) MODE() Mode {
+func (p *Periph) LoadMODE() Mode {
 	return Mode(p.mode.Bits(1))
 }
 
-func (p *Periph) SetMODE(m Mode) {
+func (p *Periph) StoreMODE(m Mode) {
 	p.mode.Store(uint32(m))
 }
 
@@ -94,28 +94,28 @@ const (
 	BIT32 Bitmode = 3
 )
 
-func (p *Periph) BITMODE() Bitmode {
+func (p *Periph) LoadBITMODE() Bitmode {
 	return Bitmode(p.bitmode.Bits(3))
 }
 
-func (p *Periph) SetBITMODE(m Bitmode) {
+func (p *Periph) StoreBITMODE(m Bitmode) {
 	p.bitmode.Store(uint32(m))
 }
 
-func (p *Periph) PRESCALER() int {
+func (p *Periph) LoadPRESCALER() int {
 	return int(p.prescaler.Bits(0xf))
 }
 
-// SetPrescaler sets prescaler to exp (freq = 16MHz/2^exp). Must only be used
+// StorePRESCALER sets prescaler to exp (freq = 16MHz/2^exp). Must only be used
 // when the timer is stopped.
-func (p *Periph) SetPRESCALER(exp int) {
+func (p *Periph) StorePRESCALER(exp int) {
 	p.prescaler.Store(uint32(exp))
 }
 
-func (p *Periph) CC(n int) uint32 {
+func (p *Periph) LoadCC(n int) uint32 {
 	return p.cc[n].Load()
 }
 
-func (p *Periph) SetCC(n int, cc uint32) {
+func (p *Periph) StoreCC(n int, cc uint32) {
 	p.cc[n].Store(cc)
 }
