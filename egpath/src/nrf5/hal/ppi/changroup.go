@@ -4,8 +4,8 @@ import (
 	"nrf5/hal/te"
 )
 
-// ChanGroup repersents channel group. There is 6 channel groups numbered from
-// 0 to 5.
+// ChanGroup repersents PPI channel group. There are 6 channel groups numbered
+// from 0 to 5.
 type ChanGroup byte
 
 // Channels returns channels that belongs to the group c.

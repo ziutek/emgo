@@ -45,11 +45,23 @@ type Config struct {
 	Sense Sense
 }
 
+// Setup configures n-th pin in port p.
 func (p *Port) SetupPin(n int, cfg Config) {
 	p.pincnf[n].Store(
 		uint32(cfg.Sense)<<16 | uint32(cfg.Drive)<<8 | uint32(cfg.Pull)<<2 |
 			uint32(cfg.Mode),
 	)
+}
+
+// PinConfig returns current configuration of n-th pin in port p.
+func (p *Port) PinConfig(n int) Config {
+	c := p.pincnf[n].Load()
+	return Config{
+		Mode:  Mode(c & 3),
+		Pull:  Pull(c >> 2 & 3),
+		Drive: Drive(c >> 8 & 7),
+		Sense: Sense(c >> 16 & 3),
+	}
 }
 
 // Setup configures pins.

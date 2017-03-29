@@ -19,23 +19,22 @@ func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
 	rtcst.Setup(rtc.RTC0, 1)
 
-	te := gpiote.GPIOTE
+	gtec := gpiote.Chan(0)
 	cfg := gpiote.Config{
-		Pin:      gpio.P0.Pin(18), // LED0
 		Mode:     gpiote.Task,
 		Polarity: gpiote.Toggle,
 	}
-	te.StoreCONFIG(0, cfg)
+	gtec.Setup(gpio.P0.Pin(18), cfg)
 
 	t := timer.TIMER0
 	t.StorePRESCALER(8) // 16 MHz / 2^8 = 62500 Hz
 	t.StoreCC(1, 62500/4)
 	t.StoreSHORTS(timer.COMPARE1_CLEAR)
 
-	c := ppi.Chan(0)
-	c.SetEEP(t.Event(timer.COMPARE1))
-	c.SetTEP(te.OUT(0))
-	c.Enable()
+	ppic := ppi.Chan(0)
+	ppic.SetEEP(t.Event(timer.COMPARE1))
+	ppic.SetTEP(gtec.OUT())
+	ppic.Enable()
 
 	t.Task(timer.START).Trigger()
 }

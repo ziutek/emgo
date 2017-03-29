@@ -6,6 +6,8 @@ import (
 	"nrf5/hal/te"
 )
 
+// Chan represents PPI channel. There are 31 channels numbered from 0 to 31.
+// Channels from 20 to 31 are pre-programmed.
 type Chan byte
 
 // Pre-programmed channels.
@@ -63,12 +65,12 @@ func (c Chan) SetTEP(t *te.Task) {
 	r().ch[c].tep.Store(uint32(uintptr(unsafe.Pointer(t))))
 }
 
-// FTEP returns the value of Fork Task End Point register for channel c.
+// FTEP returns the value of Fork Task End Point register for channel c. nRF52.
 func (c Chan) FTEP() *te.Task {
 	return (*te.Task)(unsafe.Pointer(uintptr(r().forktep[c].Load())))
 }
 
-// SetFTEP sets the value of Fork Task End Point register for channel c.
+// SetFTEP sets the value of Fork Task End Point register for channel c. nRF52.
 func (c Chan) SetFTEP(t *te.Task) {
 	r().forktep[c].Store(uint32(uintptr(unsafe.Pointer(t))))
 }

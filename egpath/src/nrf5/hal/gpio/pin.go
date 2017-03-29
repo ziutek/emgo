@@ -33,6 +33,11 @@ func (p Pin) Setup(cfg Config) {
 	p.Port().SetupPin(p.Index(), cfg)
 }
 
+// Config returns current configuration of pin.
+func (p Pin) Config() Config {
+	return p.Port().PinConfig(p.Index())
+}
+
 // Mask returns bitmask that represents the pin.
 func (p Pin) Mask() Pins {
 	return Pin0 << p.index()
