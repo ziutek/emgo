@@ -15,23 +15,38 @@ import (
 	"nrf5/hal/timer"
 )
 
+const (
+	pre  = 1
+	freq = 244 // Hz
+	max  = 16000000 / (1 << pre) / freq
+)
+
+var (
+	t    *timer.Periph
+	led  gpio.Pin
+	gtec gpiote.Chan
+)
+
 func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
 	rtcst.Setup(rtc.RTC0, 1)
 
-	gtec := gpiote.Chan(0)
-	cfg := gpiote.Config{
-		Mode:     gpiote.Task,
-		Polarity: gpiote.Toggle,
-	}
-	gtec.Setup(gpio.P0.Pin(18), cfg)
+	led = gpio.P0.Pin(18)
+	led.Setup(gpio.Config{Mode: gpio.Out})
 
-	t := timer.TIMER0
-	t.StorePRESCALER(8) // 16 MHz / 2^8 = 62500 Hz
-	t.StoreCC(1, 62500/4)
+	gtec = gpiote.Chan(0)
+
+	t = timer.TIMER1
+	t.StorePRESCALER(pre)
+	t.StoreCC(0, 1)
+	t.StoreCC(1, max)
 	t.StoreSHORTS(timer.COMPARE1_CLEAR)
 
 	ppic := ppi.Chan(0)
+	ppic.SetEEP(t.Event(timer.COMPARE0))
+	ppic.SetTEP(gtec.OUT())
+	ppic.Enable()
+	ppic = ppi.Chan(1)
 	ppic.SetEEP(t.Event(timer.COMPARE1))
 	ppic.SetTEP(gtec.OUT())
 	ppic.Enable()
@@ -40,8 +55,22 @@ func init() {
 }
 
 func main() {
+	pwmcfg := gpiote.Config{
+		Mode:     gpiote.Task,
+		Polarity: gpiote.Toggle,
+		OutInit:  1,
+	}
 	for {
-		delay.Millisec(1000)
+		for v := uint32(1); v <= max; v *= 2 {
+			gtec.Setup(led, gpiote.Config{})
+			t.Task(timer.STOP).Trigger()
+			t.Task(timer.CLEAR).Trigger()
+			t.StoreCC(0, v)
+			gtec.Setup(led, pwmcfg)
+			t.Task(timer.START).Trigger()
+
+			delay.Millisec(500)
+		}
 	}
 }
 
