@@ -7,7 +7,8 @@ import (
 	"nrf5/hal/internal/psel"
 )
 
-// Chan represents GPIOTE channel. There are 8 channels numbered from 0 to 7.
+// Chan represents GPIOTE channel. There are 4 (8 in nRF52) channels numbered
+// from 0 to 3 (7 in nRF52).
 type Chan byte
 
 // OUT returns task for writing to pin associated with channel c.
@@ -15,12 +16,12 @@ func (c Chan) OUT() *te.Task {
 	return r().Regs.Task(int(c))
 }
 
-// SET returns task for set pin associated with channel c.
+// SET returns task for set pin associated with channel c. nRF52.
 func (c Chan) SET() *te.Task {
 	return r().Regs.Task(int(c) + 12)
 }
 
-// CLR returns task for clear pin associated with channel c.
+// CLR returns task for clear pin associated with channel c. nRF52.
 func (c Chan) CLR() *te.Task {
 	return r().Regs.Task(int(c) + 24)
 }
@@ -31,7 +32,7 @@ func (c Chan) IN() *te.Event {
 }
 
 // PORT returns event generated from multiple input pins with SENSE mechanism
-// enabled. nRF52.
+// enabled.
 func PORT() *te.Event {
 	return r().Regs.Event(31)
 }
