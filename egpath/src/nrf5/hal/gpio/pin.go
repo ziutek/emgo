@@ -29,7 +29,7 @@ func (p Pin) Index() int {
 }
 
 // Setup configures pin.
-func (p Pin) Setup(cfg *Config) {
+func (p Pin) Setup(cfg Config) {
 	p.Port().SetupPin(p.Index(), cfg)
 }
 

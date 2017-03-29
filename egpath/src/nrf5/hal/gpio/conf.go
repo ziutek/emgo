@@ -45,7 +45,7 @@ type Config struct {
 	Sense Sense
 }
 
-func (p *Port) SetupPin(n int, cfg *Config) {
+func (p *Port) SetupPin(n int, cfg Config) {
 	p.pincnf[n].Store(
 		uint32(cfg.Sense)<<16 | uint32(cfg.Drive)<<8 | uint32(cfg.Pull)<<2 |
 			uint32(cfg.Mode),
@@ -53,7 +53,7 @@ func (p *Port) SetupPin(n int, cfg *Config) {
 }
 
 // Setup configures pins.
-func (p *Port) Setup(pins Pins, cfg *Config) {
+func (p *Port) Setup(pins Pins, cfg Config) {
 	for n := 0; n < 32; n++ {
 		if pins&(1<<uint(n)) != 0 {
 			p.SetupPin(n, cfg)

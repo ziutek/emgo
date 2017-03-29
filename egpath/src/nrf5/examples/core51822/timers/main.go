@@ -35,10 +35,10 @@ const period = 2 * 32768 // 2s
 func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
 
-	p0.Setup(led0|led1|led2|led3|led4, &gpio.Config{Mode: gpio.Out})
+	p0.Setup(led0|led1|led2|led3|led4, gpio.Config{Mode: gpio.Out})
 
 	t0.StorePRESCALER(8) // 62500 Hz
-	t0.StoreCC(1, 65526/2)
+	t0.StoreCC(1, 65536/2)
 	t0.Event(timer.COMPARE0).EnableIRQ()
 	t0.Event(timer.COMPARE1).EnableIRQ()
 	rtos.IRQ(irq.TIMER0).Enable()

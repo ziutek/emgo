@@ -28,9 +28,9 @@ func init() {
 	}
 
 	for _, led := range leds {
-		led.Setup(&gpio.Config{Mode: gpio.Out})
+		led.Setup(gpio.Config{Mode: gpio.Out})
 	}
-	key.Setup(&gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
+	key.Setup(gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
 }
 
 func main() {
