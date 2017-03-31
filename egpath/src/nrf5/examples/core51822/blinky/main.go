@@ -21,16 +21,16 @@ func init() {
 	rtcst.Setup(rtc.RTC0, 1)
 
 	p0 := gpio.P0
-	
+
 	key = p0.Pin(16)
 	for i := range leds {
 		leds[i] = p0.Pin(18 + i)
 	}
 
 	for _, led := range leds {
-		led.Setup(gpio.Config{Mode: gpio.Out})
+		led.Setup(gpio.ModeOut)
 	}
-	key.Setup(gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
+	key.Setup(gpio.ModeIn | gpio.PullUp)
 }
 
 func main() {

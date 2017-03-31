@@ -32,7 +32,7 @@ func init() {
 	rtcst.Setup(rtc.RTC0, 1)
 
 	led = gpio.P0.Pin(18)
-	led.Setup(gpio.Config{Mode: gpio.Out})
+	led.Setup(gpio.ModeOut)
 
 	gtec = gpiote.Chan(0)
 
@@ -55,14 +55,12 @@ func init() {
 }
 
 func main() {
-	pwmcfg := gpiote.Config{
-		Mode:     gpiote.Task,
-		Polarity: gpiote.Toggle,
-		OutInit:  1,
-	}
+	pwmcfg := gpiote.ModeTask |
+		gpiote.PolarityToggle |
+		gpiote.OutInitHigh
 	for {
 		for v := uint32(1); v <= max; v *= 2 {
-			gtec.Setup(led, gpiote.Config{})
+			gtec.Setup(led, 0)
 			t.Task(timer.STOP).Trigger()
 			t.Task(timer.CLEAR).Trigger()
 			t.StoreCC(0, v)

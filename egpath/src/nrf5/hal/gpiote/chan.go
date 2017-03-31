@@ -3,8 +3,6 @@ package gpiote
 import (
 	"nrf5/hal/gpio"
 	"nrf5/hal/te"
-
-	"nrf5/hal/internal/psel"
 )
 
 // Chan represents GPIOTE channel. There are 4 (8 in nRF52) channels numbered
@@ -37,43 +35,30 @@ func PORT() *te.Event {
 	return r().Regs.Event(31)
 }
 
-type Mode byte
+type Config uint32
 
 const (
-	Disabled Mode = 0 // Disconnect pin from GPIOTE module.
-	Event    Mode = 1 // Pin generates IN event.
-	Task     Mode = 3 // Pin controlled by OUT, SET, CLR task.
+	ModeDiscon Config = 0 // Disconnect pin from GPIOTE module.
+	ModeEvent  Config = 1 // Pin generates IN event.
+	ModeTask   Config = 3 // Pin controlled by OUT, SET, CLR task.
+
+	PolarityNone   Config = 0 << 16 // No task on pin, no event from pin.
+	PolarityLoToHi Config = 1 << 16 // OUT sets pin, IN when rising edge.
+	PolarityHiToLo Config = 2 << 16 // OUT clears pin, IN when falling edge.
+	PolarityToggle Config = 3 << 16 // OUT toggles pin, IN when any change.
+
+	OutInitLow  Config = 0       // Low initial output value.
+	OutInitHigh Config = 1 << 20 // High initial output value.
 )
-
-type Polarity byte
-
-const (
-	None   Polarity = 0 // No task on pin, no event from pin.
-	LoToHi Polarity = 1 // OUT task sets pin, IN event when rising edge.
-	HiToLo Polarity = 2 // OUT task clears pin, IN event when falling edge.
-	Toggle Polarity = 3 // OUT task toggles pin, IN event when any change.
-)
-
-type Config struct {
-	Mode     Mode
-	Polarity Polarity
-	OutInit  byte
-}
 
 // Config returns current configuration of channel c.
 func (c Chan) Config() (gpio.Pin, Config) {
 	v := r().config[c].Load()
-	return psel.Pin(v >> 8 & 0x3f), Config{
-		Mode:     Mode(v & 3),
-		Polarity: Polarity(v >> 16 & 3),
-		OutInit:  byte(v >> 20 & 1),
-	}
-
+	const psel = 0x7 << 8
+	return gpio.SelPin(int8(v & psel >> 8)), Config(v &^ psel)
 }
 
 // Setup setups channel c to use pin and cfg configuration.
 func (c Chan) Setup(pin gpio.Pin, cfg Config) {
-	v := psel.Sel(pin)<<8 | uint32(cfg.Mode) |
-		uint32(cfg.Polarity)<<16 | uint32(cfg.OutInit)&1<<20
-	r().config[c].Store(v)
+	r().config[c].Store(uint32(pin.Sel())<<8 | uint32(cfg))
 }

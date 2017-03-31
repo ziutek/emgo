@@ -9,7 +9,6 @@ import (
 	"nrf5/hal/te"
 
 	"nrf5/hal/internal/mmap"
-	"nrf5/hal/internal/psel"
 )
 
 type Periph struct {
@@ -133,10 +132,10 @@ const (
 )
 
 func (p *Periph) LoadPSEL(s Signal) gpio.Pin {
-	return psel.Pin(p.psel[s].Load())
+	return gpio.SelPin(int8(p.psel[s].Load()))
 }
 func (p *Periph) StorePSEL(s Signal, pin gpio.Pin) {
-	p.psel[s].Store(psel.Sel(pin))
+	p.psel[s].Store(uint32(pin.Sel()))
 }
 
 func (p *Periph) LoadRXD() byte {

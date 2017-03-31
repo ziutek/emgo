@@ -9,6 +9,12 @@ type Pin struct {
 	h uintptr
 }
 
+// SelPin returns pin for its compact representation.
+func SelPin(psel int8) Pin {
+	ptr := uintptr(unsafe.Pointer(PortN(int(psel >> 5))))
+	return Pin{ptr | uintptr(psel)&0x7F}
+}
+
 // IsValid reports whether p represents a valid pin.
 func (p Pin) IsValid() bool {
 	return p.h != 0
@@ -16,11 +22,16 @@ func (p Pin) IsValid() bool {
 
 // Port returns the port where the pin is located.
 func (p Pin) Port() *Port {
-	return (*Port)(unsafe.Pointer(p.h &^ 0x1f))
+	return (*Port)(unsafe.Pointer(p.h &^ 0x7F))
+}
+
+// Sel returns compact representation of Pin.
+func (p Pin) Sel() int8 {
+	return int8(p.h & 0x7F)
 }
 
 func (p Pin) index() uintptr {
-	return p.h & 0x1f
+	return p.h & 0x1F
 }
 
 // Index returns pin index in the port.

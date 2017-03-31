@@ -1,67 +1,39 @@
 package gpio
 
-type Mode byte
+type Config uint32
 
 const (
-	In     Mode = 0
-	InOut  Mode = 1
-	Discon Mode = 2
-	Out    Mode = 3
+	ModeIn     Config = 0 // Input buffer connected, output disabled.
+	ModeInOut  Config = 1 // Input buffer connected, output enabled.
+	ModeDiscon Config = 2 // Input buffer disconnected, output disabled.
+	ModeOut    Config = 3 // Input buffer disconnected, output enabled.
+
+	PullNone Config = 0 << 2 // No pull.
+	PullDown Config = 1 << 2 // Pull down on pin.
+	PullUp   Config = 3 << 2 // Pull dup on pin.
+
+	DriveS0S1 Config = 0 << 8 // Standard 0, standard 1.
+	DriveH0S1 Config = 1 << 8 // High drive 0, standard 1.
+	DriveS0H1 Config = 2 << 8 // Standard 0, high drive 1.
+	DriveH0H1 Config = 3 << 8 // High drive 0, high drive 1.
+	DriveD0S1 Config = 4 << 8 // Disconnect 0, standard 1.
+	DriveD0H1 Config = 5 << 8 // Disconnect 0, high drive 1.
+	DriveS0D1 Config = 6 << 8 // Standard 0, disconnect 1.
+	DriveH0D1 Config = 7 << 8 // High drive 0, disconnect 1.
+
+	SenseNone Config = 0 << 16 // Sense disabled.
+	SenseHigh Config = 2 << 16 // Sense for high level.
+	SenseLow  Config = 3 << 16 // Sense for low level.
 )
-
-type Pull byte
-
-const (
-	NoPull   Pull = 0
-	PullDown Pull = 1
-	PullUp   Pull = 3
-)
-
-type Drive byte
-
-const (
-	S0S1 Drive = 0 // Standard 0, standard 1.
-	H0S1 Drive = 1 // High drive 0, standard 1.
-	S0H1 Drive = 2 // Standard 0, high drive 1.
-	H0H1 Drive = 3 // High drive 0, high drive 1.
-	D0S1 Drive = 4 // Disconnect 0, standard 1.
-	D0H1 Drive = 5 // Disconnect 0, high drive 1.
-	S0D1 Drive = 6 // Standard 0, disconnect 1.
-	H0D1 Drive = 7 // High drive 0, disconnect 1.
-)
-
-type Sense byte
-
-const (
-	NoSense   Sense = 0
-	SenseHigh Sense = 2
-	SenseLow  Sense = 3
-)
-
-type Config struct {
-	Mode  Mode
-	Pull  Pull
-	Drive Drive
-	Sense Sense
-}
 
 // Setup configures n-th pin in port p.
 func (p *Port) SetupPin(n int, cfg Config) {
-	p.pincnf[n].Store(
-		uint32(cfg.Sense)<<16 | uint32(cfg.Drive)<<8 | uint32(cfg.Pull)<<2 |
-			uint32(cfg.Mode),
-	)
+	p.pincnf[n].Store(uint32(cfg))
 }
 
 // PinConfig returns current configuration of n-th pin in port p.
 func (p *Port) PinConfig(n int) Config {
-	c := p.pincnf[n].Load()
-	return Config{
-		Mode:  Mode(c & 3),
-		Pull:  Pull(c >> 2 & 3),
-		Drive: Drive(c >> 8 & 7),
-		Sense: Sense(c >> 16 & 3),
-	}
+	return Config(p.pincnf[n].Load())
 }
 
 // Setup configures pins.

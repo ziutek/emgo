@@ -9,16 +9,18 @@ import (
 
 // Port represents one GPIO port.
 type Port struct {
-	_      mmio.U32
-	out    mmio.U32
-	outset mmio.U32
-	outclr mmio.U32
-	in     mmio.U32
-	dir    mmio.U32
-	dirset mmio.U32
-	dirclr mmio.U32
-	_      [120]mmio.U32
-	pincnf [32]mmio.U32
+	_          mmio.U32
+	out        mmio.U32
+	outset     mmio.U32
+	outclr     mmio.U32
+	in         mmio.U32
+	dir        mmio.U32
+	dirset     mmio.U32
+	dirclr     mmio.U32
+	latch      mmio.U32
+	detectmode mmio.U32
+	_          [118]mmio.U32
+	pincnf     [32]mmio.U32
 }
 
 //emgo:const
@@ -38,7 +40,8 @@ func PortN(n int) *Port {
 
 // Index returns the port number.
 func (p *Port) Index() int {
-	return int(uintptr(unsafe.Pointer(p))-mmap.BaseAHB-0x500) / 0x300
+	//return int(uintptr(unsafe.Pointer(p))-mmap.BaseAHB-0x500) / 0x300
+	return int(uintptr(unsafe.Pointer(p)) >> 8 & 0xF * 11 >> 5)
 }
 
 // Pins is a bitmask which represents the pins of GPIO port.
@@ -85,5 +88,5 @@ func (p *Port) Pin(n int) Pin {
 		panic("gpio: bad pin")
 	}
 	ptr := uintptr(unsafe.Pointer(p))
-	return Pin{ptr | uintptr(n)}
+	return Pin{ptr | uintptr(p.Index())<<5 | uintptr(n)}
 }

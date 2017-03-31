@@ -35,7 +35,7 @@ const period = 2 * 32768 // 2s
 func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
 
-	p0.Setup(led0|led1|led2|led3|led4, gpio.Config{Mode: gpio.Out})
+	p0.Setup(led0|led1|led2|led3|led4, gpio.ModeOut)
 
 	t0.StorePRESCALER(8) // 62500 Hz
 	t0.StoreCC(1, 65536/2)

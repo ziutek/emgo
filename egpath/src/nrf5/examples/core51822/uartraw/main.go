@@ -22,7 +22,7 @@ func init() {
 	p0 := gpio.P0
 
 	led = p0.Pin(18)
-	led.Setup(gpio.Config{Mode: gpio.Out})
+	led.Setup(gpio.ModeOut)
 
 	u = uart.UART0
 	u.StorePSEL(uart.SignalRXD, p0.Pin(11))

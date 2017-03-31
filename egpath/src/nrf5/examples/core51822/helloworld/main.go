@@ -21,7 +21,7 @@ func init() {
 
 	for i := range leds {
 		led := gpio.P0.Pin(18 + i)
-		led.Setup(gpio.Config{Mode: gpio.Out})
+		led.Setup(gpio.ModeOut)
 		leds[i] = led
 	}
 }
