@@ -107,9 +107,19 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 
 	switch cdd.Typ {
 	case FuncDecl:
-		if cdd.Inline {
-			prefix = "static inline\n"
-		} else if !cdd.Export {
+		/*
+			if cdd.Inline {
+				//prefix = "static inline\n"
+				prefix = cdd.gtc.inline() + "\n"
+			} else if !cdd.Export {
+				prefix = "static\n"
+			}
+		*/
+		if cdd.Export {
+			if cdd.Inline {
+				prefix = cdd.gtc.inline() + "\n"
+			}
+		} else {
 			prefix = "static\n"
 		}
 
@@ -153,13 +163,14 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 	case FuncDecl:
 		if cdd.Export {
 			if cdd.Inline {
-				prefix = "static inline "
+				//prefix = "static inline"
+				prefix = cdd.gtc.inline()
 				w = wh
 			}
 		} else {
-			prefix = "static "
+			prefix = "static"
 		}
-		prefix += "// " + strconv.Itoa(cdd.Complexity) + "\n"
+		prefix += " // " + strconv.Itoa(cdd.Complexity) + "\n"
 
 	case VarDecl:
 		if cdd.NoAlloc {

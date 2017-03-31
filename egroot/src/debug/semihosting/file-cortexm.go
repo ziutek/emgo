@@ -7,7 +7,6 @@ import (
 	"unsafe"
 )
 
-//c:static inline
 func hostIO(cmd int, p unsafe.Pointer) int
 
 func hostErrno() Error {
