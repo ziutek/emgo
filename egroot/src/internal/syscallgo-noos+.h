@@ -1,6 +1,6 @@
 // +build noos
 
-void
+inline void
 internal$NewTask(void (*f) (), bool lock) {
 	uintptr$$uintptr r = internal$Syscall2(0, (uintptr) (f), (uintptr) (lock));
 	uintptr e = r._1;
@@ -17,7 +17,7 @@ internal$NewTask(void (*f) (), bool lock) {
 	internal$NewTask(func, lock);                \
 } while(0)
 
-static inline void
+inline void
 goready() {
 	internal$Syscall0(internal$TASKUNLOCK);
 }

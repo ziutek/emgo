@@ -8,42 +8,42 @@ import "unsafe"
 //
 // Implies compiler fence.
 //
-//c:static inline
+//c:inline
 func SEV()
 
 // DMB inserts Data Memory Barrier instruction.
 //
 // Implies compiler fence.
 //
-//c:static inline
+//c:inline
 func DMB()
 
 // DSB inserts Data Synchronization Barrier instruction.
 //
 // Implies compiler fence.
 //
-//c:static inline
+//c:inline
 func DSB()
 
 // ISB inserts Instruction Synchronization Barrier instruction.
 //
 // Implies compiler fence.
 //
-//c:static inline
+//c:inline
 func ISB()
 
 // WFE inserts Wait For Event instruction.
 //
 // Implies compiler fence.
 //
-//c:static inline
+//c:inline
 func WFE()
 
 // WFI inserts Wait For Interrupt instruction.
 //
 // Implies compiler fence.
 //
-//c:static inline
+//c:inline
 func WFI()
 
 // SVC inserts Supervisor Call instruction.
@@ -59,7 +59,7 @@ func BKPT(imm byte)
 // PRIMASK returns true if all exceptions with configurable priority are
 // disabled.
 //
-//c:static inline
+//c:inline
 func PRIMASK() bool
 
 // SetPRIMASK disables all exceptions with configurable priority. Internally it
@@ -69,7 +69,7 @@ func PRIMASK() bool
 //
 // Implies compiler fence.
 //
-//c:static inline
+//c:inline
 func SetPRIMASK()
 
 // ClearPRIMASK reverts SetPRIMASK. Internally it inserts cpsie i instruction.
@@ -78,12 +78,12 @@ func SetPRIMASK()
 //
 // Implies compiler fence.
 //
-//c:static inline
+//c:inline
 func ClearPRIMASK()
 
 // FAULTMASK returns true if all exceptions other than NMI are disabled.
 //
-//c:static inline
+//c:inline
 func FAULTMASK() bool
 
 // SetFAULTMASK disables all exceptions other than NMI. Internally it inserts
@@ -91,7 +91,7 @@ func FAULTMASK() bool
 //
 // Implies compiler fence.
 //
-//c:static inline
+//c:inline
 func SetFAULTMASK()
 
 // ClearFAULTMASK reverts SetFAULTMASK. Internally it inserts cpsie f
@@ -101,12 +101,12 @@ func SetFAULTMASK()
 //
 // Implies compiler fence.
 //
-//c:static inline
+//c:inline
 func ClearFAULTMASK()
 
 // BASEPRIO returns current value of BASEPRI register.
 //
-//c:static inline
+//c:inline
 func BASEPRI() byte
 
 // SetBASEPRI sets BASEPRI register. It prevents the activation of exceptions
@@ -114,52 +114,52 @@ func BASEPRI() byte
 //
 // Implies compiler fence.
 //
-//c:static inline
+//c:inline
 func SetBASEPRI(p byte)
 
-//c:static inline
+//c:inline
 func APSR() uint32
 
-//c:static inline
+//c:inline
 func SetAPSR(r uint32)
 
-//c:static inline
+//c:inline
 func IPSR() uint32
 
-//c:static inline
+//c:inline
 func EPSR() uint32
 
-//c:static inline
+//c:inline
 func IEPSR() uint32
 
-//c:static inline
+//c:inline
 func IAPSR() uint32
 
-//c:static inline
+//c:inline
 func EAPSR() uint32
 
-//c:static inline
+//c:inline
 func PSR() uint32
 
-//c:static inline
+//c:inline
 func SetPSR(r uint32)
 
-//c:static inline
+//c:inline
 func MSP() uintptr
 
-//c:static inline
+//c:inline
 func SetMSP(p unsafe.Pointer)
 
-//c:static inline
+//c:inline
 func PSP() uintptr
 
-//c:static inline
+//c:inline
 func SetPSP(p unsafe.Pointer)
 
-//c:static inline
+//c:inline
 func LR() uint32
 
-//c:static inline
+//c:inline
 func SetLR(r uint32)
 
 type Cflags uint32
@@ -170,8 +170,8 @@ const (
 	FPCA   Cflags = 1 << 2 // Floating-point context active
 )
 
-//c:static inline
+//c:inline
 func SetCONTROL(c Cflags)
 
-//c:static inline
+//c:inline
 func CONTROL() Cflags

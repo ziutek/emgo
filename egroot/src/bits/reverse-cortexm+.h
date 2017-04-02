@@ -1,6 +1,6 @@
 // +build cortexm3 cortexm4 cortexm4f cortexm7f cortexm7d
 
-extern inline __attribute__((always_inline))
+inline __attribute__((always_inline))
 uint32
 bits$reverse32(uint32 u) {
 	uint32 v;
@@ -8,7 +8,7 @@ bits$reverse32(uint32 u) {
 	return v;
 }
 
-extern inline __attribute__((always_inline))
+inline __attribute__((always_inline))
 uintptr
 bits$reversePtr(uintptr u) {
 	uintptr v;
@@ -16,7 +16,7 @@ bits$reversePtr(uintptr u) {
 	return v;
 }
 
-extern inline __attribute__((always_inline))
+inline __attribute__((always_inline))
 uint64
 bits$reverse64(uint64 u) {
 	uint64 v;

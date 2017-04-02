@@ -9,10 +9,19 @@ import (
 	"arch/cortexm/mpu"
 )
 
+//c:inline
 func stacksBegin() uintptr
+
+//c:inline
 func isrStackSize() uintptr
+
+//c:inline
 func mainStackSize() uintptr
+
+//c:inline
 func taskStackSize() uintptr
+
+//c:inline
 func stacksEnd() uintptr
 
 func stackTop(n int) uintptr {

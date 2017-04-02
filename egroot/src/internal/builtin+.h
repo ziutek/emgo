@@ -28,7 +28,8 @@ void panicIC();
 #define EQUALA(a1, a2) \
 	(internal$Memcmp((a1).arr, (a2).arr, sizeof((a1).arr)) == 0)
 
-static inline int_
+inline __attribute__((always_inline))
+int_
 cmpstr(string s1, string s2) {
 	int_ n = len(s1);
 	if (n > len(s2)) {

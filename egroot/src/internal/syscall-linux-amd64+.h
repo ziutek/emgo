@@ -1,7 +1,7 @@
 // +build linux
 // +build amd64
 
-static inline uintptr
+__INLINE__$internal$ uintptr
 internal$Syscall1(uintptr trap, uintptr a1) {
 	register uintptr rax asm("%rax") = trap;
 	register uintptr rdi asm("%rdi") = a1;
@@ -14,7 +14,7 @@ internal$Syscall1(uintptr trap, uintptr a1) {
 	return rax;
 }
 
-static inline uintptr
+__INLINE__$internal$ uintptr
 internal$Syscall2(uintptr trap, uintptr a1, uintptr a2) {
 	register uintptr rax asm("%rax") = trap;
 	register uintptr rdi asm("%rdi") = a1;
@@ -28,7 +28,7 @@ internal$Syscall2(uintptr trap, uintptr a1, uintptr a2) {
 	return rax;
 }
 
-static inline uintptr
+__INLINE__$internal$ uintptr
 internal$Syscall3(uintptr trap, uintptr a1, uintptr a2, uintptr a3) {
 	uintptr t0 = trap;
 	uintptr t1 = a1;
@@ -47,7 +47,7 @@ internal$Syscall3(uintptr trap, uintptr a1, uintptr a2, uintptr a3) {
 	return rax;
 }
 
-static inline uintptr
+__INLINE__$internal$ uintptr
 internal$Syscall4(uintptr trap, uintptr a1, uintptr a2, uintptr a3, uintptr a4) {
 	register uintptr rax asm("%rax") = trap;
 	register uintptr rdi asm("%rdi") = a1;
@@ -63,7 +63,7 @@ internal$Syscall4(uintptr trap, uintptr a1, uintptr a2, uintptr a3, uintptr a4) 
 	return rax;
 }
 
-static inline uintptr
+__INLINE__$internal$ uintptr
 internal$Syscall5(uintptr trap, uintptr a1, uintptr a2, uintptr a3, uintptr a4,
 	uintptr a5) {
 	register uintptr rax asm("%rax") = trap;
@@ -81,7 +81,7 @@ internal$Syscall5(uintptr trap, uintptr a1, uintptr a2, uintptr a3, uintptr a4,
 	return rax;
 }
 
-static inline uintptr
+__INLINE__$internal$ uintptr
 internal$Syscall6(uintptr trap, uintptr a1, uintptr a2, uintptr a3, uintptr a4,
 	uintptr a5, uintptr a6) {
 	register uintptr rax asm("%rax") = trap;

@@ -17,7 +17,7 @@ var archMap = map[string]string{
 	"cortexm4f": "-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16",
 	"cortexm7f": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16",
 	"cortexm7d": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-dp-d16",
-	"amd64": "",
+	"amd64":     "",
 }
 
 var osMap = map[string]struct{ cc, ld string }{
@@ -88,7 +88,7 @@ type BuildTools struct {
 func NewBuildTools(ctx *build.Context) (*BuildTools, error) {
 	cflags := CFLAGS{
 		Dbg:  "-g",
-		Opt:  "-O" + optLevel + " -fgnu89-inline -fplan9-extensions -fno-delete-null-pointer-checks -fno-common -freg-struct-return -ffunction-sections -fdata-sections",
+		Opt:  "-O" + optLevel + " -fplan9-extensions -fno-delete-null-pointer-checks -fno-common -freg-struct-return -ffunction-sections -fdata-sections",
 		Warn: "-Wall -Wno-parentheses -Wno-unused-function -Wno-unused-variable -Wno-unused-label -Wno-maybe-uninitialized -Wno-unused-local-typedefs",
 		Incl: "-I" + filepath.Join(ctx.GOROOT, "egc"),
 	}

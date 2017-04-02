@@ -25,4 +25,5 @@ var (
 	//15: SysTick vector should be provided by user code.
 )
 
+//c:inline
 func vectorsSize() uintptr

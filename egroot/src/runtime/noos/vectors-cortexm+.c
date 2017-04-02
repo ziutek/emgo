@@ -2,7 +2,8 @@
 
 extern byte VectorsBegin, VectorsEnd;
 
-static inline uintptr
+inline __attribute__((always_inline))
+uintptr
 runtime$noos$vectorsSize() {
 	return ((uintptr) & VectorsEnd) - ((uintptr) & VectorsBegin);
 }

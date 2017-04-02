@@ -98,6 +98,8 @@ func (cdd *CDD) copyInit(b *bytes.Buffer) {
 	cdd.Init = append([]byte(nil), b.Bytes()...)
 }
 
+const staticInline = true
+
 func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 	if len(cdd.Decl) == 0 {
 		return nil
@@ -117,7 +119,18 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 		*/
 		if cdd.Export {
 			if cdd.Inline {
-				prefix = cdd.gtc.inline() + "\n"
+				if staticInline {
+					prefix = "static inline\n"
+				} else {
+					prefix = "inline\n"
+					s := "extern inline\n"
+					if _, err := io.WriteString(wc, s); err != nil {
+						return err
+					}
+					if _, err := wc.Write(cdd.Decl); err != nil {
+						return err
+					}
+				}
 			}
 		} else {
 			prefix = "static\n"
@@ -142,7 +155,6 @@ func (cdd *CDD) WriteDecl(wh, wc io.Writer) error {
 	if cdd.Export {
 		w = wh
 	}
-
 	_, err := io.WriteString(w, prefix)
 	if err != nil {
 		return err
@@ -163,9 +175,12 @@ func (cdd *CDD) WriteDef(wh, wc io.Writer) error {
 	case FuncDecl:
 		if cdd.Export {
 			if cdd.Inline {
-				//prefix = "static inline"
-				prefix = cdd.gtc.inline()
 				w = wh
+				if staticInline {
+					prefix = "static inline"
+				} else {
+					prefix = "inline"
+				}
 			}
 		} else {
 			prefix = "static"

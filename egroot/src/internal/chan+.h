@@ -106,17 +106,17 @@ typedef internal$Chan *chan;
 	val##i;                                    \
 })
 
-static inline
+inline __attribute__((always_inline))
 void close(chan c) {
 	c->M->Close(c->C);
 }
 
-static inline
+inline __attribute__((always_inline))
 int_ clen(chan c) {
 	return c->M->Len(c->C);
 }
 
-static inline
+inline __attribute__((always_inline))
 int_ ccap(chan c) {
 	return c->M->Cap(c->C);
 }

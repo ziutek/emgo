@@ -107,10 +107,6 @@ func (gtc *GTC) export(cddm map[types.Object]*CDD, cdd *CDD) {
 	}
 }
 
-func (gtc *GTC) inline() string {
-	return "__INLINE__$" + Upath(gtc.pkg.Path()) + "$"
-}
-
 func (gtc *GTC) makeDefs(node ast.Node) bool {
 	switch n := node.(type) {
 	case *ast.FuncDecl:
@@ -219,28 +215,14 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 
 	pkgmain := gtc.pkg.Name() == "main"
-	inline := gtc.inline()
 
-	var err error
-
-	w := wc
-	if pkgmain {
-		w = wh
-		_, err = io.WriteString(
-			wh, "#define "+inline+" static inline\n",
-		)
-	} else {
-		_, err = io.WriteString(
-			wh,
-			"#ifndef "+inline+"\n#define "+inline+" extern inline\n#endif\n",
-		)
-	}
-	if err != nil {
-		return err
-	}
 	internal := "#include <internal/types.h>\n"
 	if gtc.pkg.Path() != "internal" {
 		internal += "#include <internal.h>\n"
+	}
+	w := wc
+	if pkgmain {
+		w = wh
 	}
 	if _, err := io.WriteString(w, internal); err != nil {
 		return err
@@ -260,11 +242,8 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 	}
 
 	if !pkgmain {
-		_, err := io.WriteString(
-			wc,
-			"\n#define "+inline+"\n#include <"+gtc.pkg.Path()+".h>\n",
-		)
-		if err != nil {
+		s := "\n#include <" + gtc.pkg.Path() + ".h>\n"
+		if _, err := io.WriteString(wc, s); err != nil {
 			return err
 		}
 	}
@@ -364,7 +343,7 @@ func (gtc *GTC) Translate(wh, wc io.Writer, files []*ast.File) error {
 		return err
 	}
 	up := Upath(gtc.pkg.Path())
-	if _, err = io.WriteString(wh, "void "+up+"$init();\n"); err != nil {
+	if _, err := io.WriteString(wh, "void "+up+"$init();\n"); err != nil {
 		return err
 	}
 	buf := new(bytes.Buffer)

@@ -57,8 +57,8 @@ enum {
 })
 	
 
-#define IASSIGN(expr, etyp, ityp) INTERFACE(        \
-	expr,                                           \
+#define IASSIGN(expr, etyp, ityp) INTERFACE(         \
+	expr,                                            \
 	internal$ItableFor((tinfo*)&ityp, (tinfo*)&etyp) \
 )
 
@@ -67,24 +67,25 @@ enum {
 	(interface){e.val$, TINFO(e)}; \
 })
 
-#define ICONVERTEI(iexpr, ityp) ({                          \
+#define ICONVERTEI(iexpr, ityp) ({                           \
+	interface e = iexpr;                                     \
+	(interface){                                             \
+		e.val$,                                              \
+		internal$ItableFor((tinfo*)&ityp, (tinfo*)(e.itab$)) \
+	};                                                       \
+})
+
+
+#define ICONVERTII(iexpr, ityp) ({                          \
 	interface e = iexpr;                                    \
 	(interface){                                            \
 		e.val$,                                             \
-		internal$ItableFor((tinfo*)&ityp, (tinfo*)(e.itab$)) \
+		internal$ItableFor((tinfo*)&ityp, (tinfo*)TINFO(e)) \
 	};                                                      \
 })
 
-
-#define ICONVERTII(iexpr, ityp) ({                         \
-	interface e = iexpr;                                   \
-	(interface){                                           \
-		e.val$,                                            \
-		internal$ItableFor((tinfo*)&ityp, (tinfo*)TINFO(e)) \
-	};                                                     \
-})
-
-static inline
-bool implements(const internal$Type* t, const internal$Type * it) {
+inline __attribute__((always_inline))
+bool
+implements(const internal$Type* t, const internal$Type * it) {
 	return internal$Type$Implements((internal$Type*)t, (internal$Type*)it);
 }

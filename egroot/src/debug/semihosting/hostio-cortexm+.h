@@ -1,5 +1,4 @@
-extern inline __attribute__((always_inline))
-int_
+inline int_
 debug$semihosting$hostIO(int_ cmd, unsafe$Pointer p) {
 	register int_ r0 asm("r0") = cmd;
 	register unsafe$Pointer r1 asm("r1") = p;

@@ -1,28 +1,34 @@
+inline __attribute__((always_inline))
 void
 arch$cortexm$SEV() {
 	asm volatile ("sev":::"memory");
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$DMB() {
 	asm volatile ("dmb":::"memory");
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$DSB() {
 	asm volatile ("dsb":::"memory");
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$ISB() {
 	asm volatile ("isb":::"memory");
 }
 
-static inline void
+inline __attribute__((always_inline))
+void
 arch$cortexm$WFE() {
 	asm volatile ("wfe":::"memory");
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$WFI() {
 	asm volatile ("wfi":::"memory");
@@ -32,6 +38,7 @@ arch$cortexm$WFI() {
 
 #define arch$cortexm$BKPT(imm) asm volatile ("bkpt %0" :: "i" (imm):"memory")
 
+inline __attribute__((always_inline))
 bool
 arch$cortexm$PRIMASK() {
 	bool b;
@@ -39,16 +46,19 @@ arch$cortexm$PRIMASK() {
 	return b;
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$SetPRIMASK() {
 	asm volatile ("cpsid i":::"memory");
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$ClearPRIMASK() {
 	asm volatile ("cpsie i":::"memory");
 }
 
+inline __attribute__((always_inline))
 bool
 arch$cortexm$FAULTMASK() {
 	bool b;
@@ -56,16 +66,19 @@ arch$cortexm$FAULTMASK() {
 	return b;
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$SetFAULTMASK() {
 	asm volatile ("cpsid fi":::"memory");
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$ClearFAULTMASK() {
 	asm volatile ("cpsie f":::"memory");
 }
 
+inline __attribute__((always_inline))
 byte
 arch$cortexm$BASEPRI() {
 	byte p;
@@ -73,11 +86,13 @@ arch$cortexm$BASEPRI() {
 	return p;
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$SetBASEPRI(byte p) {
 	asm volatile ("mrs %0, basepri"::"r" (p):"memory");
 }
 
+inline __attribute__((always_inline))
 uint32
 arch$cortexm$PSR() {
 	uint32 r;
@@ -85,12 +100,13 @@ arch$cortexm$PSR() {
 	return r;
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$SetPSR(uint32 r) {
 	asm volatile ("msr psr, %0"::"r" (r):"psr");
 }
 
-
+inline __attribute__((always_inline))
 uint32
 arch$cortexm$APSR() {
 	uintptr r;
@@ -98,11 +114,13 @@ arch$cortexm$APSR() {
 	return r;
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$SetAPSR(uint32 r) {
 	asm volatile ("msr apsr, %0"::"r" (r):"psr");
 }
 
+inline __attribute__((always_inline))
 uint32
 arch$cortexm$IPSR() {
 	uint32 r;
@@ -110,6 +128,7 @@ arch$cortexm$IPSR() {
 	return r;
 }
 
+inline __attribute__((always_inline))
 uint32
 arch$cortexm$EPSR() {
 	uint32 r;
@@ -117,6 +136,7 @@ arch$cortexm$EPSR() {
 	return r;
 }
 
+inline __attribute__((always_inline))
 uint32
 arch$cortexm$IEPSR() {
 	uint32 r;
@@ -124,6 +144,7 @@ arch$cortexm$IEPSR() {
 	return r;
 }
 
+inline __attribute__((always_inline))
 uint32
 arch$cortexm$IAPSR() {
 	uint32 r;
@@ -131,6 +152,7 @@ arch$cortexm$IAPSR() {
 	return r;
 }
 
+inline __attribute__((always_inline))
 uint32
 arch$cortexm$EAPSR() {
 	uint32 r;
@@ -138,6 +160,7 @@ arch$cortexm$EAPSR() {
 	return r;
 }
 
+inline __attribute__((always_inline))
 uintptr
 arch$cortexm$MSP() {
 	uintptr p;
@@ -145,11 +168,13 @@ arch$cortexm$MSP() {
 	return p;
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$SetMSP(unsafe$Pointer p) {
 	asm volatile ("msr msp, %0"::"r" (p):"sp");
 }
 
+inline __attribute__((always_inline))
 uintptr
 arch$cortexm$PSP() {
 	uintptr p;
@@ -157,11 +182,13 @@ arch$cortexm$PSP() {
 	return p;
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$SetPSP(unsafe$Pointer p) {
 	asm volatile ("msr psp, %0"::"r" (p):"sp");
 }
 
+inline __attribute__((always_inline))
 uint32
 arch$cortexm$LR() {
 	uint32 r;
@@ -169,11 +196,13 @@ arch$cortexm$LR() {
 	return r;
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$SetLR(uint32 r) {
 	asm volatile ("mov lr, %0"::"r" (r):"lr");
 }
 
+inline __attribute__((always_inline))
 arch$cortexm$Cflags
 arch$cortexm$CONTROL() {
 	arch$cortexm$Cflags c;
@@ -181,6 +210,7 @@ arch$cortexm$CONTROL() {
 	return c;
 }
 
+inline __attribute__((always_inline))
 void
 arch$cortexm$SetCONTROL(arch$cortexm$Cflags c) {
 	asm volatile ("msr control, %0"::"r" (c));

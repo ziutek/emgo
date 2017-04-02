@@ -1,23 +1,22 @@
-__attribute__ ((always_inline))
-static inline
-unsafe$Pointer stack$alloc(int_ n, uintptr size) {
+inline __attribute__ ((always_inline))
+unsafe$Pointer
+stack$alloc(int_ n, uintptr size) {
 	size *= n;
 	unsafe$Pointer p = __builtin_alloca(size);
 	__builtin_memset(p, 0, size);
 	return p;
 }
 
-__attribute__ ((always_inline))
-static inline
-uintptr stack$Alloc(int_ n, uintptr size) {
+inline __attribute__ ((always_inline))
+uintptr 
+stack$Alloc(int_ n, uintptr size) {
 	return (uintptr)(stack$alloc(n, size));
 }
 
-
 #define _DEFFUNC(name, typ)                                \
-	__attribute__ ((always_inline))                        \
-	static inline                                          \
-	slice stack$##name(int_ n) {                            \
+	inline __attribute__ ((always_inline))                 \
+	slice                                                  \
+	stack$##name(int_ n) {                                 \
 		return (slice){stack$alloc(n, sizeof(typ)), n, n}; \
 	}
 
@@ -32,9 +31,9 @@ _DEFFUNC(Interfaces, interface)
 #undef _DEFFUNC
 
 #define _DEFFUNC(name, bits)                          \
-	__attribute__ ((always_inline))                   \
-	static inline                                     \
-	slice stack$##name##bits(int_ n) {                 \
+	inline __attribute__ ((always_inline))            \
+	slice                                             \
+	stack$##name##bits(int_ n) {                      \
 		return (slice){stack$alloc(n, bits/8), n, n}; \
 	}
 

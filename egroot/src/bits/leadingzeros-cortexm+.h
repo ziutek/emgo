@@ -1,6 +1,6 @@
 // +build cortexm3 cortexm4 cortexm4f cortexm7f cortexm7d
 
-extern inline __attribute__((always_inline))
+inline __attribute__((always_inline))
 uint
 bits$leadingZeros32(uint32 u) {
 	uint n;
@@ -8,7 +8,7 @@ bits$leadingZeros32(uint32 u) {
 	return n;
 }
 
-extern inline __attribute__((always_inline))
+inline __attribute__((always_inline))
 uint
 bits$leadingZerosPtr(uintptr u) {
 	uint n;
@@ -16,7 +16,7 @@ bits$leadingZerosPtr(uintptr u) {
 	return n;
 }
 
-extern inline __attribute__((always_inline))
+inline __attribute__((always_inline))
 uint
 bits$leadingZeros64(uint64 u) {
 	uint n;
