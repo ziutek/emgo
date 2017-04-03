@@ -1,5 +1,5 @@
-ISRStack = 2048;
-MainStack = 2048;
+ISRStack = 64*32;
+MainStack = 100*32;
 TaskStack = 0;
 MaxTasks = 1;
 
