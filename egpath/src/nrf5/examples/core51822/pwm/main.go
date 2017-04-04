@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"rtos"
 
+	"nrf5/ppipwm"
+
 	"nrf5/hal/clock"
 	"nrf5/hal/gpio"
 	"nrf5/hal/gpiote"
@@ -17,76 +19,8 @@ import (
 	"nrf5/hal/uart"
 )
 
-type PWM struct {
-	pin gpio.Pin
-	gc  gpiote.Chan
-	t   *timer.Periph
-	max int
-}
-
-func (pwm *PWM) Init(p gpio.Pin, gc gpiote.Chan, t *timer.Periph, pc0, pc1 ppi.Chan) {
-	pwm.pin = p
-	pwm.t = t
-	pwm.gc = gc
-	p.Clear()
-	p.Setup(gpio.ModeOut)
-	t.Task(timer.STOP).Trigger()
-	t.StoreSHORTS(timer.COMPARE1_CLEAR)
-	pc0.SetEEP(t.Event(timer.COMPARE0))
-	pc0.SetTEP(gc.OUT())
-	pc0.Enable()
-	pc1.SetEEP(t.Event(timer.COMPARE1))
-	pc1.SetTEP(gc.OUT())
-	pc1.Enable()
-}
-
-// SetFreq sets prescaler to 2^pre and period (microseconds).
-func (pwm *PWM) SetFreq(pre, period int) {
-	if uint(pre) > 9 {
-		panic("PWM: bad prescaler")
-	}
-	if period < 10 {
-		panic("PWM: bad period")
-	}
-	t := pwm.t
-	t.StorePRESCALER(pre)
-	div := uint32(1) << uint(pre)
-	max := 16*uint32(period)/div - 1
-	if max > 0xFFFF {
-		panic("PWM: bad pre and/or period for 16-bit timer")
-	}
-	t.StoreCC(1, max)
-	pwm.max = int(max)
-}
-
-//  Max returns value that represents 100% duty cycle.
-func (pwm *PWM) Max() int {
-	return pwm.max
-}
-
-func (pwm *PWM) SetDutyCycle(dc int) {
-	pin := pwm.pin
-	gc := pwm.gc
-	t := pwm.t
-	if dc >= pwm.max {
-		pin.Set()
-		gc.Setup(pin, 0)
-		return
-	}
-	pin.Clear()
-	gc.Setup(pin, 0)
-	if dc == 0 {
-		return
-	}
-	t.Task(timer.STOP).Trigger()
-	t.Task(timer.CLEAR).Trigger()
-	t.StoreCC(0, uint32(dc))
-	gc.Setup(pin, gpiote.ModeTask|gpiote.PolarityToggle|gpiote.OutInitHigh)
-	t.Task(timer.START).Trigger()
-}
-
 var (
-	pwm PWM
+	pwm *ppipwm.Toggle
 	u   *uart.Driver
 )
 
@@ -105,7 +39,7 @@ func init() {
 	u.EnableTx()
 	fmt.DefaultWriter = u
 
-	pwm.Init(
+	pwm = ppipwm.NewToggle(
 		p0.Pin(22), gpiote.Chan(0),
 		timer.TIMER1,
 		ppi.Chan(0), ppi.Chan(1),
