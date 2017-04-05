@@ -39,8 +39,8 @@ func init() {
 
 	t0.StorePRESCALER(8) // 62500 Hz
 	t0.StoreCC(1, 65536/2)
-	t0.Event(timer.COMPARE0).EnableIRQ()
-	t0.Event(timer.COMPARE1).EnableIRQ()
+	t0.COMPARE(0).EnableIRQ()
+	t0.COMPARE(1).EnableIRQ()
 	rtos.IRQ(irq.TIMER0).Enable()
 	t0.Task(timer.START).Trigger()
 
@@ -58,11 +58,11 @@ func blink(led gpio.Pins, dly int) {
 }
 
 func timerISR() {
-	if e := t0.Event(timer.COMPARE0); e.IsSet() {
+	if e := t0.COMPARE(0); e.IsSet() {
 		e.Clear()
 		blink(led3, 1e3)
 	}
-	if e := t0.Event(timer.COMPARE1); e.IsSet() {
+	if e := t0.COMPARE(1); e.IsSet() {
 		e.Clear()
 		blink(led4, 1e3)
 	}

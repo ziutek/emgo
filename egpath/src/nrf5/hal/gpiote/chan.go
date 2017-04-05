@@ -54,7 +54,7 @@ const (
 // Config returns current configuration of channel c.
 func (c Chan) Config() (gpio.Pin, Config) {
 	v := r().config[c].Load()
-	const psel = 0x7 << 8
+	const psel = 0x7F << 8
 	return gpio.SelPin(int8(v & psel >> 8)), Config(v &^ psel)
 }
 

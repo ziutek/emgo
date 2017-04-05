@@ -39,12 +39,11 @@ func init() {
 	u.EnableTx()
 	fmt.DefaultWriter = u
 
-	pwm = ppipwm.NewToggle(
-		p0.Pin(22), gpiote.Chan(0),
-		timer.TIMER1,
-		ppi.Chan(0), ppi.Chan(1),
-	)
+	pwm = ppipwm.NewToggle(timer.TIMER1)
 	pwm.SetFreq(1, 4000)
+	pwm.Setup(0, p0.Pin(19), gpiote.Chan(0), ppi.Chan(0), ppi.Chan(1))
+	pwm.Setup(1, p0.Pin(20), gpiote.Chan(1), ppi.Chan(2), ppi.Chan(3))
+	pwm.Setup(2, p0.Pin(21), gpiote.Chan(2), ppi.Chan(4), ppi.Chan(5))
 }
 
 func main() {
@@ -52,7 +51,9 @@ func main() {
 	v, a, b, c := 0, 4, 5, 0
 	for {
 		fmt.Printf("%d/%d\r\n", v, max)
-		pwm.SetDutyCycle(v)
+		pwm.SetDutyCycle(0, v)
+		pwm.SetDutyCycle(1, v)
+		pwm.SetDutyCycle(2, v)
 		switch {
 		case v == 0:
 			c = a

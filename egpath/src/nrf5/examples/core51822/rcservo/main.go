@@ -39,12 +39,9 @@ func init() {
 	u.EnableTx()
 	fmt.DefaultWriter = u
 
-	pwm = ppipwm.NewToggle(
-		p0.Pin(22), gpiote.Chan(0),
-		timer.TIMER1,
-		ppi.Chan(0), ppi.Chan(1),
-	)
-	pwm.SetFreq(8, 20e3) // Gives 1250 levels of duty cycle.
+	pwm = ppipwm.NewToggle(timer.TIMER1)
+	pwm.SetFreq(7, 20e3) // Gives 2500 levels of duty cycle.
+	pwm.Setup(0, p0.Pin(22), gpiote.Chan(0), ppi.Chan(0), ppi.Chan(1))
 }
 
 func main() {
@@ -52,13 +49,13 @@ func main() {
 	max := pwm.Max() * 2400 / 20e3
 	v, dir := min, -1
 	for {
-		fmt.Printf("%d\r\n", v)
-		pwm.SetDutyCycle(v)
+		fmt.Printf("%d/%d\r\n", v, pwm.Max())
+		pwm.SetDutyCycle(0, v)
 		if v <= min || v >= max {
 			dir = -dir
 		}
 		v += dir
-		delay.Millisec(100)
+		delay.Millisec(20)
 	}
 }
 
