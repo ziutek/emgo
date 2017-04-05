@@ -19,40 +19,38 @@ type Periph struct {
 	_         mmio.U32
 	prescaler mmio.U32 // Timer prescaler register.
 	_         [11]mmio.U32
-	cc        [4]mmio.U32 // Capture/Compare registers.
+	cc        [6]mmio.U32 // Capture/Compare registers.
 }
 
 //emgo:const
 var (
 	TIMER0 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x08000))
 	TIMER1 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x09000))
-	TIMER2 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x0a000))
+	TIMER2 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x0A000))
+	TIMER3 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x1A000)) // nRF52.
+	TIMER4 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x1B000)) // nRF52.
 )
 
 type Task int
 
 const (
-	START    Task = 0  // Start Timer.
-	STOP     Task = 1  // Stop Timer.
-	COUNT    Task = 2  // Increment Timer (Counter mode only).
-	CLEAR    Task = 3  // Clear timer.
-	CAPTURE0 Task = 16 // Capture Timer value to CC0 register.
-	CAPTURE1 Task = 17 // Capture Timer value to CC1 register.
-	CAPTURE2 Task = 18 // Capture Timer value to CC2 register.
-	CAPTURE3 Task = 19 // Capture Timer value to CC3 register.
+	START Task = 0 // Start Timer.
+	STOP  Task = 1 // Stop Timer.
+	COUNT Task = 2 // Increment Timer (Counter mode only).
+	CLEAR Task = 3 // Clear timer.
 )
 
-type Event int
+func (p *Periph) Task(t Task) *te.Task { return p.Regs.Task(int(t)) }
 
-const (
-	COMPARE0 Event = 16 // Compare event on CC[0] match.
-	COMPARE1 Event = 17 // Compare event on CC[1] match.
-	COMPARE2 Event = 18 // Compare event on CC[2] match.
-	COMPARE3 Event = 19 // Compare event on CC[3] match.
-)
+// CAPTURE returns Capture task for CCn register.
+func (p *Periph) CAPTURE(n int) *te.Task {
+	return p.Regs.Task(16 + n)
+}
 
-func (p *Periph) Task(t Task) *te.Task    { return p.Regs.Task(int(t)) }
-func (p *Periph) Event(e Event) *te.Event { return p.Regs.Event(int(e)) }
+// COMPARE returns Compare event for CCn register.
+func (p *Periph) COMPARE(n int) *te.Event {
+	return p.Regs.Event(16 + n)
+}
 
 type Shorts uint32
 
@@ -61,10 +59,14 @@ const (
 	COMPARE1_CLEAR Shorts = 1 << 1
 	COMPARE2_CLEAR Shorts = 1 << 2
 	COMPARE3_CLEAR Shorts = 1 << 3
+	COMPARE4_CLEAR Shorts = 1 << 4
+	COMPARE5_CLEAR Shorts = 1 << 5
 	COMPARE0_STOP  Shorts = 1 << 8
 	COMPARE1_STOP  Shorts = 1 << 9
 	COMPARE2_STOP  Shorts = 1 << 10
 	COMPARE3_STOP  Shorts = 1 << 11
+	COMPARE4_STOP  Shorts = 1 << 12
+	COMPARE5_STOP  Shorts = 1 << 13
 )
 
 func (p *Periph) LoadSHORTS() Shorts   { return Shorts(p.Regs.LoadSHORTS()) }
@@ -112,10 +114,14 @@ func (p *Periph) StorePRESCALER(exp int) {
 	p.prescaler.Store(uint32(exp))
 }
 
+// LoadCC returns value of n-th Capture/Compare register. nRF51/nRF52 has 4/6 CC
+// registers
 func (p *Periph) LoadCC(n int) uint32 {
 	return p.cc[n].Load()
 }
 
+// StoreCC stores cc into n-th Capture/Compare register. nRF51/nRF52 has 4/6 CC
+// registers
 func (p *Periph) StoreCC(n int, cc uint32) {
 	p.cc[n].Store(cc)
 }
