@@ -305,16 +305,16 @@ func (p *Periph) StoreTXADDRESS(laddr int) {
 	p.txaddress.StoreBits(7, uint32(laddr))
 }
 
-// LoadRXADERESSES returns bit field where eache of 8 low significant bits
+// LoadRXADDRESSES returns bit field where eache of 8 low significant bits
 // enables or disables one logical addresses for receive.
-func (p *Periph) LoadRXADERESSES() uint32 {
+func (p *Periph) LoadRXADDRESSES() uint32 {
 	return p.rxaddresses.Load()
 }
 
-// StoreRXADDERESSES stores bit field where eache of 8 low significant bits
+// StoreRXADDRESSES stores bit field where eache of 8 low significant bits
 // enables or disables one logical addresses for receive.
-func (p *Periph) StoreRXADDERESSES(laddr int) {
-	p.rxaddresses.StoreBits(7, uint32(laddr))
+func (p *Periph) StoreRXADDRESSES(lamask uint32) {
+	p.rxaddresses.StoreBits(7, lamask)
 }
 
 // LoadCRCCNF returns number of bytes in CRC field and whether address field is
