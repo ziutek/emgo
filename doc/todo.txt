@@ -1,4 +1,0 @@
-1. cortexm: Div by zero exception
-2. Support for Cortex-M0 (ISRs as weak function)
-3. cortexm: Use MPU to detect stack overflow and protect
-   other things..
