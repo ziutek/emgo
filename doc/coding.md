@@ -26,5 +26,6 @@ To avoid copying some global variables (especially big arrays) from Flash to RAM
 
 ### Line length
 
-Source code in Emgo standard library avoids lines longer than 80 runes.
+Source code in Emgo standard library avoids lines longer than 80 characters.
+
 --------------------------------------------------------------------------------
