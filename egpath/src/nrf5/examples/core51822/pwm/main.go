@@ -51,9 +51,9 @@ func main() {
 	v, a, b, c := 0, 4, 5, 0
 	for {
 		fmt.Printf("%d/%d\r\n", v, max)
-		pwm.SetDutyCycle(0, v)
-		pwm.SetDutyCycle(1, v)
-		pwm.SetDutyCycle(2, v)
+		pwm.SetDC(0, v)
+		pwm.SetDC(1, v)
+		pwm.SetDC(2, v)
 		switch {
 		case v == 0:
 			c = a
