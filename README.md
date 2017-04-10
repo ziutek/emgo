@@ -50,3 +50,10 @@ or vice versa. More editing is need for STM32F1xx series.
 [Standard library](https://godoc.org/github.com/ziutek/emgo/egroot/src)
 
 [Libraries for STM32, nRF5 and other](https://godoc.org/github.com/ziutek/emgo/egpath/src)
+
+#### Resources
+
+[YouTube](https://www.youtube.com/channel/UCAW4PLMDGO7_vY4sCG0jg6Q)
+
+[Forum](https://groups.google.com/forum/#!forum/emgo)
+
