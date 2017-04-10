@@ -48,4 +48,5 @@ or vice versa. More editing is need for STM32F1xx series.
 #### Documentation
 
 [Standard library](https://godoc.org/github.com/ziutek/emgo/egroot/src)
-[Other libraries](https://godoc.org/github.com/ziutek/emgo/egpath/src)
+
+[Libraries for STM32, nRF5 and other](https://godoc.org/github.com/ziutek/emgo/egpath/src)
