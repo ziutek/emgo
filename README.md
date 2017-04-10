@@ -45,4 +45,7 @@ to
 
 or vice versa. More editing is need for STM32F1xx series.
 
-[Home page](https://sites.google.com/site/embeddedgo/)
+#### Documentation
+
+[Standard library](https://godoc.org/github.com/ziutek/emgo/egroot/src)
+[Other libraries](https://godoc.org/github.com/ziutek/emgo/egpath/src)
