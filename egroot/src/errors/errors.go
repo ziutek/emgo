@@ -1,3 +1,4 @@
+// Package errors implements functions to manipulate errors. 
 package errors
 
 type strerr string

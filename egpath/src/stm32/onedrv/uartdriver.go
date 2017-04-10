@@ -1,3 +1,5 @@
+// Package onedrv usese STM32 USART peripheral to implement basic functionality
+// of 1-wire master required by onewire package.
 package onedrv
 
 import (
@@ -8,6 +10,7 @@ import (
 	"stm32/hal/usart"
 )
 
+// USARTDriver implements onewire.Driver interface.
 type USARTDriver struct {
 	USART *usart.Driver
 }
