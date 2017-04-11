@@ -1,10 +1,10 @@
-// This is example of nRF24L01 based RC transmiter.
-// See ../../nucleo-f411re/rcservo that can be used on receiver side.
+// This is example of nRF24L01 based RC transmiter. Example receiver code:
+// ../../nucleo-f411re/rcservo
+// ../../../../nrf5/examples/core51822/rcservo
 package main
 
 import (
 	"delay"
-	"fmt"
 	"mmio"
 	"rtos"
 
@@ -87,16 +87,6 @@ func init() {
 	dci = nrfdci.NewDCI(spid, csn, system.APB1.Clock(), tim.TIM3, 3, irqline)
 	// nRF24 requires wait at least 100 ms from start before use it.
 	rtos.SleepUntil(start + 100e6)
-
-}
-
-func checkErr(err error) {
-	if err == nil {
-		return
-	}
-	fmt.Printf("Error: %v\n", err)
-	for {
-	}
 }
 
 func main() {
