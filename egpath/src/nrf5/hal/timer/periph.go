@@ -24,11 +24,11 @@ type Periph struct {
 
 //emgo:const
 var (
-	TIMER0 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x08000))
-	TIMER1 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x09000))
-	TIMER2 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x0A000))
-	TIMER3 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x1A000)) // nRF52.
-	TIMER4 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x1B000)) // nRF52.
+	TIMER0 = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x08000))
+	TIMER1 = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x09000))
+	TIMER2 = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x0A000))
+	TIMER3 = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x1A000)) // nRF52.
+	TIMER4 = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x1B000)) // nRF52.
 )
 
 type Task int

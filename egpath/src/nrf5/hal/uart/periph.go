@@ -29,7 +29,7 @@ type Periph struct {
 }
 
 //emgo:const
-var UART0 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x02000))
+var UART0 = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x02000))
 
 type Task byte
 

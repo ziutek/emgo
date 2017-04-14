@@ -25,8 +25,8 @@ type Port struct {
 
 //emgo:const
 var (
-	P0 = (*Port)(unsafe.Pointer(mmap.BaseAHB + 0x500))
-	P1 = (*Port)(unsafe.Pointer(mmap.BaseAHB + 0x800))
+	P0 = (*Port)(unsafe.Pointer(mmap.AHB_BASE + 0x500))
+	P1 = (*Port)(unsafe.Pointer(mmap.AHB_BASE + 0x800))
 )
 
 // PortN returns n-th GPIO port.
@@ -34,7 +34,7 @@ func PortN(n int) *Port {
 	if uint(n) > 1 {
 		panic("gpio: bad port")
 	}
-	addr := mmap.BaseAHB + 0x500 + 0x300*uintptr(n)
+	addr := mmap.AHB_BASE + 0x500 + 0x300*uintptr(n)
 	return (*Port)(unsafe.Pointer(addr))
 }
 

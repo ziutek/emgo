@@ -33,7 +33,7 @@ func (r *Regs) Event(n int) *Event { return &r.events[n] }
 // IRQ returns IRQ number associated to events.
 func (r *Regs) IRQ() nvic.IRQ {
 	addr := uintptr(unsafe.Pointer(r))
-	return nvic.IRQ((addr - mmap.BaseAPB) >> 12)
+	return nvic.IRQ((addr - mmap.APB_BASE) >> 12)
 }
 
 // EventMask is a bitmask that can be used to perform some operation (like

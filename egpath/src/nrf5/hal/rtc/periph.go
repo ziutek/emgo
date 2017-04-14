@@ -22,9 +22,9 @@ type Periph struct {
 
 //emgo:const
 var (
-	RTC0 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x0b000))
-	RTC1 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x11000))
-	RTC2 = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x24000))
+	RTC0 = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x0b000))
+	RTC1 = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x11000))
+	RTC2 = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x24000))
 )
 
 type Task byte

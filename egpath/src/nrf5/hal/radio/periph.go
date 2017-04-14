@@ -52,7 +52,7 @@ type Periph struct {
 }
 
 //emgo:const
-var RADIO = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x01000))
+var RADIO = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x01000))
 
 type Task byte
 
@@ -504,4 +504,14 @@ func (p *Periph) LoadPOWER() bool {
 // StorePOWER sets peripheral power on or off.
 func (p *Periph) StorePOWER(on bool) {
 	p.power.StoreBits(1, uint32(bits.One(on)))
+}
+
+// LoadOVERRIDE returns OVERRIDE[n] parameter. nRF51.
+func (p *Periph) LoadOVERRIDE(n int) uint32 {
+	return p.override[n].Load()
+}
+
+// StoreOVERRIDE stores OVERRIDE[n] parameter. nRF51.
+func (p *Periph) StoreOVERRIDE(n int, override uint32) {
+	p.override[n].Store(override)
 }

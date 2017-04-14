@@ -32,7 +32,7 @@ type regs struct {
 }
 
 func r() *regs {
-	return (*regs)(unsafe.Pointer(mmap.BaseAPB + 0x1F000))
+	return (*regs)(unsafe.Pointer(mmap.APB_BASE + 0x1F000))
 }
 
 func IRQ() nvic.IRQ {

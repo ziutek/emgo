@@ -29,7 +29,7 @@ type Periph struct {
 }
 
 //emgo:const
-var CLOCK = (*Periph)(unsafe.Pointer(mmap.BaseAPB + 0x00000))
+var CLOCK = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x00000))
 
 type Task byte
 
