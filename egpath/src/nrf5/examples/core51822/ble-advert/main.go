@@ -66,29 +66,48 @@ func init() {
 	//fmt.DefaultWriter = f
 }
 
+type ADVPDU struct {
+	Header  [2]byte
+	AdvAddr [6]byte
+	Payload [37]byte
+}
+
 func main() {
 	channels := [3]radio.Freq{
 		radio.Channel(2),  // BLE 37, 2402 MHz
 		radio.Channel(26), // BLE 38, 2426 MHz
 		radio.Channel(80), // BLE 39, 2480 MHz
 	}
-	data := []byte{
-		0x42,                               // S0
-		19,                                 // Length
-		0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, // AdvA
-		12,   // AD Length
-		0x09, // AD Type
-		'E', 'm', 'g', 'o',
-		' ', '&', ' ',
-		'n', 'R', 'F', '5',
+	txpwr := -4              // dBm
+	aa := uint32(0x8E89BED6) // Access address.
+
+	pdu := ADVPDU{
+		Header: [2]byte{
+			0x42, // 0x2/0xF:PDUType=ADV_NONCONN_IND, 0x40/0x40:TxAdd=1
+			28,   // 28/0x3F:Length=28
+		},
+		AdvAddr: [6]byte{0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF},
+		Payload: [37]byte{
+			12,  // AD0 Length
+			0x9, // A0 Type: Complete Local Name
+			'E', 'm', 'g', 'o', ' ', '&', ' ', 'n', 'R', 'F', '5',
+
+			5,   // AD1 Length
+			0x8, // AD1 Type: Shortened Local Name
+			'e', 'm', 'g', 'o',
+
+			2,   // AD2 Length
+			0xa, // AD2 Type: Tx Power Level
+			byte(txpwr),
+		},
 	}
-	aa := uint32(0x8E89BED6)
 
 	r := radio.RADIO
-	r.StorePACKETPTR(unsafe.Pointer(&data[0]))
+	r.StorePACKETPTR(unsafe.Pointer(&pdu))
 	r.StoreBASE(0, aa<<8)
 	r.StorePREFIX(0, aa>>24)
 	r.StoreCRCINIT(0x555555)
+	r.StoreTXPOWER(txpwr)
 
 	for {
 		for n, c := range channels {
@@ -103,7 +122,7 @@ func main() {
 			r.Task(radio.TXEN).Trigger()
 			radioEvent.Wait(1, 0)
 			leds[4].Store(n)
-			delay.Millisec(25)
+			delay.Millisec(100)
 		}
 	}
 }
