@@ -25,6 +25,7 @@ func (p *CRC_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var CRC = (*CRC_Periph)(unsafe.Pointer(uintptr(mmap.CRC_BASE)))
 
 type DR_Bits uint32

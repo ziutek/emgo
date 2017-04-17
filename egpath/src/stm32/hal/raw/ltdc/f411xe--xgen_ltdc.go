@@ -36,6 +36,7 @@ func (p *LTDC_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var LTDC = (*LTDC_Periph)(unsafe.Pointer(uintptr(mmap.LTDC_BASE)))
 
 type SSCR_Bits uint32

@@ -49,6 +49,7 @@ func (p *Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var FICR = (*Periph)(unsafe.Pointer(uintptr(mmap.FICR_BASE)))
 
 type CODEPAGESIZE_Bits uint32

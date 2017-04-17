@@ -32,14 +32,19 @@ func (p *USART_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var USART2 = (*USART_Periph)(unsafe.Pointer(uintptr(mmap.USART2_BASE)))
 
+//emgo:const
 var USART3 = (*USART_Periph)(unsafe.Pointer(uintptr(mmap.USART3_BASE)))
 
+//emgo:const
 var UART4 = (*USART_Periph)(unsafe.Pointer(uintptr(mmap.UART4_BASE)))
 
+//emgo:const
 var UART5 = (*USART_Periph)(unsafe.Pointer(uintptr(mmap.UART5_BASE)))
 
+//emgo:const
 var USART1 = (*USART_Periph)(unsafe.Pointer(uintptr(mmap.USART1_BASE)))
 
 type CR1_Bits uint32

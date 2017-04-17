@@ -21,8 +21,10 @@ func (p *ADC_Common_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var ADC1_2 = (*ADC_Common_Periph)(unsafe.Pointer(uintptr(mmap.ADC1_2_BASE)))
 
+//emgo:const
 var ADC3_4 = (*ADC_Common_Periph)(unsafe.Pointer(uintptr(mmap.ADC3_4_BASE)))
 
 type CSR_Bits uint32

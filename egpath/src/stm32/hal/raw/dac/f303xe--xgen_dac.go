@@ -33,8 +33,10 @@ func (p *DAC_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var DAC1 = (*DAC_Periph)(unsafe.Pointer(uintptr(mmap.DAC1_BASE)))
 
+//emgo:const
 var DAC2 = (*DAC_Periph)(unsafe.Pointer(uintptr(mmap.DAC2_BASE)))
 
 type CR_Bits uint32

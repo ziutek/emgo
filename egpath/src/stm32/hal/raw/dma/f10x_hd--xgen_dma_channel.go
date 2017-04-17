@@ -23,28 +23,40 @@ func (p *DMA_Channel_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var DMA1_Channel1 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Channel1_BASE)))
 
+//emgo:const
 var DMA1_Channel2 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Channel2_BASE)))
 
+//emgo:const
 var DMA1_Channel3 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Channel3_BASE)))
 
+//emgo:const
 var DMA1_Channel4 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Channel4_BASE)))
 
+//emgo:const
 var DMA1_Channel5 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Channel5_BASE)))
 
+//emgo:const
 var DMA1_Channel6 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Channel6_BASE)))
 
+//emgo:const
 var DMA1_Channel7 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Channel7_BASE)))
 
+//emgo:const
 var DMA2_Channel1 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Channel1_BASE)))
 
+//emgo:const
 var DMA2_Channel2 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Channel2_BASE)))
 
+//emgo:const
 var DMA2_Channel3 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Channel3_BASE)))
 
+//emgo:const
 var DMA2_Channel4 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Channel4_BASE)))
 
+//emgo:const
 var DMA2_Channel5 = (*DMA_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Channel5_BASE)))
 
 type CCR_Bits uint32

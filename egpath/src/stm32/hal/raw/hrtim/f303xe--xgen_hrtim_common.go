@@ -48,6 +48,7 @@ func (p *HRTIM_Common_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var HRTIM1_COMMON = (*HRTIM_Common_Periph)(unsafe.Pointer(uintptr(mmap.HRTIM1_COMMON_BASE)))
 
 type CR1_Bits uint32

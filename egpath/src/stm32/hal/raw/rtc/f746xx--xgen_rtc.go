@@ -38,6 +38,7 @@ func (p *RTC_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var RTC = (*RTC_Periph)(unsafe.Pointer(uintptr(mmap.RTC_BASE)))
 
 type TR_Bits uint32

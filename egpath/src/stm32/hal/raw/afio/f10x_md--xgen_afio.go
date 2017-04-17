@@ -24,6 +24,7 @@ func (p *AFIO_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var AFIO = (*AFIO_Periph)(unsafe.Pointer(uintptr(mmap.AFIO_BASE)))
 
 type EVCR_Bits uint32

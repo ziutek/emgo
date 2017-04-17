@@ -25,6 +25,7 @@ func (p *FSMC_Bank2_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var FSMC_Bank2 = (*FSMC_Bank2_Periph)(unsafe.Pointer(uintptr(mmap.FSMC_Bank2_R_BASE)))
 
 type PCR2_Bits uint32

@@ -20,10 +20,13 @@ func (p *OPAMP_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var OPAMP = (*OPAMP_Periph)(unsafe.Pointer(uintptr(mmap.OPAMP_BASE)))
 
+//emgo:const
 var OPAMP1 = (*OPAMP_Periph)(unsafe.Pointer(uintptr(mmap.OPAMP1_BASE)))
 
+//emgo:const
 var OPAMP2 = (*OPAMP_Periph)(unsafe.Pointer(uintptr(mmap.OPAMP2_BASE)))
 
 type CSR_Bits uint32

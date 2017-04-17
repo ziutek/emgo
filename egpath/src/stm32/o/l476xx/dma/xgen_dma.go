@@ -19,8 +19,10 @@ func (p *DMA_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var DMA1 = (*DMA_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_BASE)))
 
+//emgo:const
 var DMA2 = (*DMA_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_BASE)))
 
 type ISR_Bits uint32

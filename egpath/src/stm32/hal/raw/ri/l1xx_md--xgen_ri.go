@@ -41,6 +41,7 @@ func (p *RI_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var RI = (*RI_Periph)(unsafe.Pointer(uintptr(mmap.RI_BASE)))
 
 type ICR_Bits uint32

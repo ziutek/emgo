@@ -45,26 +45,37 @@ func (p *TIM_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var TIM2 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM2_BASE)))
 
+//emgo:const
 var TIM3 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM3_BASE)))
 
+//emgo:const
 var TIM4 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM4_BASE)))
 
+//emgo:const
 var TIM5 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM5_BASE)))
 
+//emgo:const
 var TIM6 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM6_BASE)))
 
+//emgo:const
 var TIM7 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM7_BASE)))
 
+//emgo:const
 var TIM1 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM1_BASE)))
 
+//emgo:const
 var TIM8 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM8_BASE)))
 
+//emgo:const
 var TIM15 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM15_BASE)))
 
+//emgo:const
 var TIM16 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM16_BASE)))
 
+//emgo:const
 var TIM17 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM17_BASE)))
 
 type CR1_Bits uint32

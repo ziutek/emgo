@@ -30,6 +30,7 @@ func (p *QUADSPI_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var QUADSPI = (*QUADSPI_Periph)(unsafe.Pointer(uintptr(mmap.QSPI_R_BASE)))
 
 type CR_Bits uint32

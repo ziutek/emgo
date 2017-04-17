@@ -42,6 +42,7 @@ func (p *DMA2D_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var DMA2D = (*DMA2D_Periph)(unsafe.Pointer(uintptr(mmap.DMA2D_BASE)))
 
 type CR_Bits uint32

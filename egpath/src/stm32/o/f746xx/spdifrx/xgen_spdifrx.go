@@ -24,6 +24,7 @@ func (p *SPDIFRX_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var SPDIFRX = (*SPDIFRX_Periph)(unsafe.Pointer(uintptr(mmap.SPDIFRX_BASE)))
 
 type CR_Bits uint32

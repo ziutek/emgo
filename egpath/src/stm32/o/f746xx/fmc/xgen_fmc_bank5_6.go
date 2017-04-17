@@ -22,6 +22,7 @@ func (p *FMC_Bank5_6_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var FMC_Bank5_6 = (*FMC_Bank5_6_Periph)(unsafe.Pointer(uintptr(mmap.FMC_Bank5_6_R_BASE)))
 
 type SDCR_Bits uint32

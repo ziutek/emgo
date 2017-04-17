@@ -24,6 +24,7 @@ func (p *SYSCFG_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var SYSCFG = (*SYSCFG_Periph)(unsafe.Pointer(uintptr(mmap.SYSCFG_BASE)))
 
 type MEMRMP_Bits uint32

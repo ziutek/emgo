@@ -25,6 +25,7 @@ func (p *FIREWALL_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var FIREWALL = (*FIREWALL_Periph)(unsafe.Pointer(uintptr(mmap.FIREWALL_BASE)))
 
 type CSSA_Bits uint32

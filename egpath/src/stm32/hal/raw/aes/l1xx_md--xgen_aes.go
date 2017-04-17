@@ -31,6 +31,7 @@ func (p *AES_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var AES = (*AES_Periph)(unsafe.Pointer(uintptr(mmap.AES_BASE)))
 
 type CR_Bits uint32

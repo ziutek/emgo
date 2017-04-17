@@ -18,6 +18,7 @@ func (p *FMC_Bank1_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var FMC_Bank1 = (*FMC_Bank1_Periph)(unsafe.Pointer(uintptr(mmap.FMC_Bank1_R_BASE)))
 
 type BTCR struct {

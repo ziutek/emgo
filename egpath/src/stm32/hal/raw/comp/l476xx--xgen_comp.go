@@ -20,8 +20,10 @@ func (p *COMP_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var COMP1 = (*COMP_Periph)(unsafe.Pointer(uintptr(mmap.COMP1_BASE)))
 
+//emgo:const
 var COMP2 = (*COMP_Periph)(unsafe.Pointer(uintptr(mmap.COMP2_BASE)))
 
 type CSR_Bits uint32

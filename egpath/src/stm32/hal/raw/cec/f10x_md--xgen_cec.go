@@ -26,6 +26,7 @@ func (p *CEC_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var CEC = (*CEC_Periph)(unsafe.Pointer(uintptr(mmap.CEC_BASE)))
 
 type CFGR_Bits uint32

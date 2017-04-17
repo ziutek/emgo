@@ -20,6 +20,7 @@ func (p *RNG_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var RNG = (*RNG_Periph)(unsafe.Pointer(uintptr(mmap.RNG_BASE)))
 
 type CR_Bits uint32

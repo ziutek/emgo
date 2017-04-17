@@ -23,6 +23,7 @@ func (p *LCD_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var LCD = (*LCD_Periph)(unsafe.Pointer(uintptr(mmap.LCD_BASE)))
 
 type CR_Bits uint32

@@ -30,6 +30,7 @@ func (p *OB_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var OB = (*OB_Periph)(unsafe.Pointer(uintptr(mmap.OB_BASE)))
 
 type RDP_Bits uint32

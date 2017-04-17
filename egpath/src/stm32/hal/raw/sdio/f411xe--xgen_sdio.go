@@ -30,6 +30,7 @@ func (p *SDIO_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var SDIO = (*SDIO_Periph)(unsafe.Pointer(uintptr(mmap.SDIO_BASE)))
 
 type POWER_Bits uint32

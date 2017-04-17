@@ -46,10 +46,13 @@ func (p *ADC_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var ADC1 = (*ADC_Periph)(unsafe.Pointer(uintptr(mmap.ADC1_BASE)))
 
+//emgo:const
 var ADC2 = (*ADC_Periph)(unsafe.Pointer(uintptr(mmap.ADC2_BASE)))
 
+//emgo:const
 var ADC3 = (*ADC_Periph)(unsafe.Pointer(uintptr(mmap.ADC3_BASE)))
 
 type ISR_Bits uint32

@@ -36,16 +36,22 @@ func (p *SPI_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var I2S2ext = (*SPI_Periph)(unsafe.Pointer(uintptr(mmap.I2S2ext_BASE)))
 
+//emgo:const
 var SPI2 = (*SPI_Periph)(unsafe.Pointer(uintptr(mmap.SPI2_BASE)))
 
+//emgo:const
 var SPI3 = (*SPI_Periph)(unsafe.Pointer(uintptr(mmap.SPI3_BASE)))
 
+//emgo:const
 var I2S3ext = (*SPI_Periph)(unsafe.Pointer(uintptr(mmap.I2S3ext_BASE)))
 
+//emgo:const
 var SPI1 = (*SPI_Periph)(unsafe.Pointer(uintptr(mmap.SPI1_BASE)))
 
+//emgo:const
 var SPI4 = (*SPI_Periph)(unsafe.Pointer(uintptr(mmap.SPI4_BASE)))
 
 type CR1_Bits uint16

@@ -31,6 +31,7 @@ func (p *TSC_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var TSC = (*TSC_Periph)(unsafe.Pointer(uintptr(mmap.TSC_BASE)))
 
 type CR_Bits uint32

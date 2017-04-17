@@ -34,8 +34,10 @@ func (p *CAN_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var CAN = (*CAN_Periph)(unsafe.Pointer(uintptr(mmap.CAN1_BASE)))
 
+//emgo:const
 var CAN1 = (*CAN_Periph)(unsafe.Pointer(uintptr(mmap.CAN1_BASE)))
 
 type MCR_Bits uint32

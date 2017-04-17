@@ -31,8 +31,10 @@ func (p *LTDC_Layer_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var LTDC_Layer1 = (*LTDC_Layer_Periph)(unsafe.Pointer(uintptr(mmap.LTDC_Layer1_BASE)))
 
+//emgo:const
 var LTDC_Layer2 = (*LTDC_Layer_Periph)(unsafe.Pointer(uintptr(mmap.LTDC_Layer2_BASE)))
 
 type CR_Bits uint32

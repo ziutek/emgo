@@ -21,6 +21,7 @@ func (p *PWR_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var PWR = (*PWR_Periph)(unsafe.Pointer(uintptr(mmap.PWR_BASE)))
 
 type CR1_Bits uint32

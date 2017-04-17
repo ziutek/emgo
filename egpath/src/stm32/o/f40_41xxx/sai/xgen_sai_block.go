@@ -25,8 +25,10 @@ func (p *SAI_Block_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var SAI1_Block_A = (*SAI_Block_Periph)(unsafe.Pointer(uintptr(mmap.SAI1_Block_A_BASE)))
 
+//emgo:const
 var SAI1_Block_B = (*SAI_Block_Periph)(unsafe.Pointer(uintptr(mmap.SAI1_Block_B_BASE)))
 
 type CR1_Bits uint32

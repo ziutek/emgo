@@ -22,20 +22,28 @@ func (p *DFSDM_Channel_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var DFSDM1_Channel0 = (*DFSDM_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Channel0_BASE)))
 
+//emgo:const
 var DFSDM1_Channel1 = (*DFSDM_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Channel1_BASE)))
 
+//emgo:const
 var DFSDM1_Channel2 = (*DFSDM_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Channel2_BASE)))
 
+//emgo:const
 var DFSDM1_Channel3 = (*DFSDM_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Channel3_BASE)))
 
+//emgo:const
 var DFSDM1_Channel4 = (*DFSDM_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Channel4_BASE)))
 
+//emgo:const
 var DFSDM1_Channel5 = (*DFSDM_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Channel5_BASE)))
 
+//emgo:const
 var DFSDM1_Channel6 = (*DFSDM_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Channel6_BASE)))
 
+//emgo:const
 var DFSDM1_Channel7 = (*DFSDM_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Channel7_BASE)))
 
 type CHCFGR1_Bits uint32

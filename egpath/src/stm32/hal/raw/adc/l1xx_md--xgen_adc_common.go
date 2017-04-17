@@ -21,6 +21,7 @@ func (p *ADC_Common_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var ADC = (*ADC_Common_Periph)(unsafe.Pointer(uintptr(mmap.ADC_BASE)))
 
 type CSR_Bits uint32

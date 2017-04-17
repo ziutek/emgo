@@ -108,6 +108,7 @@ func (p *{{$p}}) BaseAddr() uintptr {
 }
 
 {{range .Instances}}
+//emgo:const
 var {{.Name}} = (*{{$p}})(unsafe.Pointer(uintptr({{.Addr}})))
 {{end}}
 

@@ -30,12 +30,16 @@ func (p *I2C_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var I2C1 = (*I2C_Periph)(unsafe.Pointer(uintptr(mmap.I2C1_BASE)))
 
+//emgo:const
 var I2C2 = (*I2C_Periph)(unsafe.Pointer(uintptr(mmap.I2C2_BASE)))
 
+//emgo:const
 var I2C3 = (*I2C_Periph)(unsafe.Pointer(uintptr(mmap.I2C3_BASE)))
 
+//emgo:const
 var I2C4 = (*I2C_Periph)(unsafe.Pointer(uintptr(mmap.I2C4_BASE)))
 
 type CR1_Bits uint32

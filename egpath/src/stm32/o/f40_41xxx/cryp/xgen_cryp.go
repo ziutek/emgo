@@ -53,6 +53,7 @@ func (p *CRYP_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var CRYP = (*CRYP_Periph)(unsafe.Pointer(uintptr(mmap.CRYP_BASE)))
 
 type CR_Bits uint32

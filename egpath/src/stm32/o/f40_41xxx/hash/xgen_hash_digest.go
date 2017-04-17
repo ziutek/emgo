@@ -18,6 +18,7 @@ func (p *HASH_DIGEST_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var HASH_DIGEST = (*HASH_DIGEST_Periph)(unsafe.Pointer(uintptr(mmap.HASH_DIGEST_BASE)))
 
 type HR_Bits uint32

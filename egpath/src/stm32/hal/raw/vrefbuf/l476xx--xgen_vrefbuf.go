@@ -21,6 +21,7 @@ func (p *VREFBUF_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var VREFBUF = (*VREFBUF_Periph)(unsafe.Pointer(uintptr(mmap.VREFBUF_BASE)))
 
 type CSR_Bits uint32

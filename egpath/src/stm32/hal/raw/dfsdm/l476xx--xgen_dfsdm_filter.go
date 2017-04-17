@@ -34,12 +34,16 @@ func (p *DFSDM_Filter_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var DFSDM1_Filter0 = (*DFSDM_Filter_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Filter0_BASE)))
 
+//emgo:const
 var DFSDM1_Filter1 = (*DFSDM_Filter_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Filter1_BASE)))
 
+//emgo:const
 var DFSDM1_Filter2 = (*DFSDM_Filter_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Filter2_BASE)))
 
+//emgo:const
 var DFSDM1_Filter3 = (*DFSDM_Filter_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Filter3_BASE)))
 
 type FLTCR1_Bits uint32

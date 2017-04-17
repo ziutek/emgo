@@ -110,6 +110,7 @@ func (p *BKP_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var BKP = (*BKP_Periph)(unsafe.Pointer(uintptr(mmap.BKP_BASE)))
 
 type DR1_Bits uint16

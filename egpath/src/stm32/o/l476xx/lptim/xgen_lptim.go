@@ -26,8 +26,10 @@ func (p *LPTIM_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var LPTIM1 = (*LPTIM_Periph)(unsafe.Pointer(uintptr(mmap.LPTIM1_BASE)))
 
+//emgo:const
 var LPTIM2 = (*LPTIM_Periph)(unsafe.Pointer(uintptr(mmap.LPTIM2_BASE)))
 
 type ISR_Bits uint32

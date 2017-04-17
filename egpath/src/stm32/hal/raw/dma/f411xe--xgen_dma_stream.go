@@ -25,36 +25,52 @@ func (p *DMA_Stream_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var DMA1_Stream0 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Stream0_BASE)))
 
+//emgo:const
 var DMA1_Stream1 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Stream1_BASE)))
 
+//emgo:const
 var DMA1_Stream2 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Stream2_BASE)))
 
+//emgo:const
 var DMA1_Stream3 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Stream3_BASE)))
 
+//emgo:const
 var DMA1_Stream4 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Stream4_BASE)))
 
+//emgo:const
 var DMA1_Stream5 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Stream5_BASE)))
 
+//emgo:const
 var DMA1_Stream6 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Stream6_BASE)))
 
+//emgo:const
 var DMA1_Stream7 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_Stream7_BASE)))
 
+//emgo:const
 var DMA2_Stream0 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Stream0_BASE)))
 
+//emgo:const
 var DMA2_Stream1 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Stream1_BASE)))
 
+//emgo:const
 var DMA2_Stream2 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Stream2_BASE)))
 
+//emgo:const
 var DMA2_Stream3 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Stream3_BASE)))
 
+//emgo:const
 var DMA2_Stream4 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Stream4_BASE)))
 
+//emgo:const
 var DMA2_Stream5 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Stream5_BASE)))
 
+//emgo:const
 var DMA2_Stream6 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Stream6_BASE)))
 
+//emgo:const
 var DMA2_Stream7 = (*DMA_Stream_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_Stream7_BASE)))
 
 type CR_Bits uint32

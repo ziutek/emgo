@@ -30,6 +30,7 @@ func (p *SDMMC_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var SDMMC1 = (*SDMMC_Periph)(unsafe.Pointer(uintptr(mmap.SDMMC1_BASE)))
 
 type POWER_Bits uint32
