@@ -138,10 +138,9 @@ func main() {
 			rtos.SleepUntil(t)
 			r.Task(radio.TXEN).Trigger()
 			radioEvent.Wait(1, 0)
-
 		}
 		leds[4].Clear()
-		delay.Millisec(200 + rnd10())
+		delay.Millisec(625 + rnd10())
 	}
 }
 
