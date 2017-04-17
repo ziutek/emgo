@@ -89,18 +89,23 @@ func main() {
 	}
 	txpwr := -4              // dBm
 	aa := uint32(0x8E89BED6) // Access address.
-
 	const (
 		ADV_NONCONN_IND = 0x2    // Non-connectable advertisement
 		TxAdd           = 1 << 6 // Random address.
 	)
+
+	da0 := ficr.FICR.DEVICEADDR[0].Load()
+	da1 := ficr.FICR.DEVICEADDR[1].Load()
 
 	pdu := ADVPDU{
 		Header: [2]byte{
 			ADV_NONCONN_IND | TxAdd, // S0
 			28, // Length
 		},
-		AdvAddr: [6]byte{0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF},
+		AdvAddr: [6]byte{
+			byte(da0), byte(da0 >> 8), byte(da0 >> 16), byte(da0 >> 24),
+			byte(da1), byte(da1>>8) | 0xc0,
+		},
 		Payload: [31]byte{
 			5,   // AD0 Length
 			0x8, // AD0 Type: Shortened Local Name
