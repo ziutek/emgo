@@ -3,13 +3,14 @@
 // Based on:
 // https://github.com/pauloborges/blessed/tree/devel/examples/radio-broadcaster
 //
-// Install nRF Connect application and run scanner. Your phone/tablet should
-// find BLE device with local name "Emgo & nRF5" (tested on LG G2).
+// Install "nRF Connect" application and run scanner. Your phone/tablet
+// should find BLE device named "Emgo & nRF5" (tested on LG G2).
 package main
 
 import (
 	//"debug/semihosting"
 	"delay"
+	"math/rand"
 	"rtos"
 	"sync/fence"
 	"unsafe"
@@ -25,6 +26,7 @@ import (
 )
 
 var (
+	rnd        rand.XorShift64
 	leds       [5]gpio.Pin
 	radioEvent rtos.EventFlag
 )
@@ -60,16 +62,23 @@ func init() {
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
 	rtos.IRQ(r.IRQ()).Enable()
 
+	rnd.Seed(rtos.Nanosec())
+
 	//f, err := semihosting.OpenFile(":tt", semihosting.W)
 	//for err != nil {
 	//}
 	//fmt.DefaultWriter = f
 }
 
+func rnd10() int {
+	r := rnd.Uint32()
+	return int(r&7 + r>>3&3)
+}
+
 type ADVPDU struct {
 	Header  [2]byte
 	AdvAddr [6]byte
-	Payload [37]byte
+	Payload [31]byte
 }
 
 func main() {
@@ -81,20 +90,25 @@ func main() {
 	txpwr := -4              // dBm
 	aa := uint32(0x8E89BED6) // Access address.
 
+	const (
+		ADV_NONCONN_IND = 0x2    // Non-connectable advertisement
+		TxAdd           = 1 << 6 // Random address.
+	)
+
 	pdu := ADVPDU{
 		Header: [2]byte{
-			0x42, // 0x2/0xF:PDUType=ADV_NONCONN_IND, 0x40/0x40:TxAdd=1
-			28,   // 28/0x3F:Length=28
+			ADV_NONCONN_IND | TxAdd, // S0
+			28, // Length
 		},
 		AdvAddr: [6]byte{0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF},
-		Payload: [37]byte{
-			12,  // AD0 Length
-			0x9, // A0 Type: Complete Local Name
-			'E', 'm', 'g', 'o', ' ', '&', ' ', 'n', 'R', 'F', '5',
-
-			5,   // AD1 Length
-			0x8, // AD1 Type: Shortened Local Name
+		Payload: [31]byte{
+			5,   // AD0 Length
+			0x8, // AD0 Type: Shortened Local Name
 			'e', 'm', 'g', 'o',
+
+			12,  // AD1 Length
+			0x9, // AD1 Type: Complete Local Name
+			'E', 'm', 'g', 'o', ' ', '&', ' ', 'n', 'R', 'F', '5',
 
 			2,   // AD2 Length
 			0xa, // AD2 Type: Tx Power Level
@@ -110,20 +124,24 @@ func main() {
 	r.StoreTXPOWER(txpwr)
 
 	for {
+		leds[4].Set()
+		t := rtos.Nanosec()
 		for n, c := range channels {
 			r.StoreFREQUENCY(c)
 			r.StoreDATAWHITEIV(uint32(37+n) & 0x3F)
-
 			disev := r.Event(radio.DISABLED)
 			disev.Clear()
 			disev.EnableIRQ()
 			radioEvent.Reset(0)
 			fence.W()
+			t += 8e6 // 8 ms
+			rtos.SleepUntil(t)
 			r.Task(radio.TXEN).Trigger()
 			radioEvent.Wait(1, 0)
-			leds[4].Store(n)
-			delay.Millisec(100)
+
 		}
+		leds[4].Clear()
+		delay.Millisec(200 + rnd10())
 	}
 }
 
