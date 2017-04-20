@@ -1,4 +1,4 @@
-// BLE advertising example.
+// Simple BLE advertising example.
 //
 // Based on:
 // https://github.com/pauloborges/blessed/tree/devel/examples/radio-broadcaster
@@ -55,7 +55,6 @@ func init() {
 	r.StoreTIFS(150)
 	r.StorePCNF0(radio.S0_8b | radio.LenBitN(8))
 	r.StorePCNF1(radio.WhiteEna | radio.MaxLen(39-2) | radio.BALen(3))
-	//r.StoreRXADDRESSES(1)
 	r.StoreTXADDRESS(0)
 	r.StoreCRCCNF(3, true)
 	r.StoreCRCPOLY(0x100065B)
