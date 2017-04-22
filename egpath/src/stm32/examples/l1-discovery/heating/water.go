@@ -47,6 +47,7 @@ type waterHeaterControl struct {
 	tempResp      chan int
 	scale         int
 	desiredTemp16 int // °C/16
+	lastTemp16    int
 	lastPWM       int
 	tempSensor    Sensor
 }
@@ -68,12 +69,15 @@ func (w *waterHeaterControl) LastPower() int {
 	return 24 * atomic.LoadInt(&w.lastPWM) / pwmMax
 }
 
+const waterPWMPeriod = 500 // ms
+
 func (w *waterHeaterControl) Init(timPWM, timCnt *tim.TIM_Periph, pclk uint) {
-	setupPulsePWM(timPWM, pclk, 500, 9999)
+	setupPulsePWM(timPWM, pclk, waterPWMPeriod, 9999)
 	w.pwm.Init(timPWM)
 	w.cnt.Init(timCnt)
 	w.tempResp = make(chan int, 1)
 	w.SetDesiredTemp16(41 * 16) // °C/16
+	w.lastTemp16 = 20 * 16      // °C/16
 	w.scale = w.pwm.Max() / 1200
 }
 
@@ -102,7 +106,10 @@ func waterPWMISR() {
 			if temp16 == InvalidTemp {
 				break
 			}
-			delta16 += desiredTemp16 - temp16
+			dTemp16 := temp16 - water.lastTemp16
+			water.lastTemp16 = temp16
+			// Use dTemp/dt as correction to temp16.
+			delta16 += desiredTemp16 - (temp16 + 128*dTemp16/waterPWMPeriod)
 		default:
 			ledBlue.Set()
 			delay.Loop(5e4)
