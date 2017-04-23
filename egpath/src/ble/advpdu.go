@@ -1,14 +1,14 @@
 package ble
 
 // AdvPDU represents Advertising Channel PDU. It should be initialized before
-// use. AdvPDU can hold no more than 37 bytes of payload.
+// use.
 type AdvPDU struct {
 	b []byte
 }
 
 // MakeAdvPDU returns ready to use AdvPDU. If b is nil then MakeAdvPDU allocates
-// 39 bytes that is enough to store any valid Advertising Channel PDU. Returned
-// variable refers to the same memory as b or to the allocated storage.
+// 39 bytes that is enough to store any valid BLE4.x Advertising Channel PDU.
+// Returned variable refers to the same memory as b or to the allocated storage.
 func MakeAdvPDU(b []byte) AdvPDU {
 	if b == nil {
 		b = make([]byte, 39)
@@ -24,7 +24,7 @@ func (pdu AdvPDU) IsNil() bool {
 }
 
 func (pdu AdvPDU) length() int {
-	return int(pdu.b[1])&0x3F + 2
+	return int(pdu.b[1]) + 2
 }
 
 func (pdu AdvPDU) setLength(n int) {
@@ -65,15 +65,29 @@ func (pdu AdvPDU) SetType(typ AdvPDUType) {
 
 // TxAdd returns TxAdd field from header.
 func (pdu AdvPDU) TxAdd() bool {
-	return pdu.b[0]<<6&1 != 0
+	return pdu.b[0]>>6&1 != 0
 }
 
 // SetTxAdd sets TxAdd field in header.
-func (pdu AdvPDU) SetTxAdd(rndaddr bool) {
-	if rndaddr {
+func (pdu AdvPDU) SetTxAdd(rnda bool) {
+	if rnda {
 		pdu.b[0] |= 1 << 6
 	} else {
 		pdu.b[0] &^= 1 << 6
+	}
+}
+
+// RxAdd returns RxAdd field from header.
+func (pdu AdvPDU) RxAdd() bool {
+	return pdu.b[0]>>7 != 0
+}
+
+// SetRxAdd sets RxAdd field in header.
+func (pdu AdvPDU) SetRxAdd(rnda bool) {
+	if rnda {
+		pdu.b[0] |= 1 << 7
+	} else {
+		pdu.b[0] &^= 1 << 7
 	}
 }
 
@@ -82,7 +96,7 @@ func (pdu AdvPDU) Reset() {
 	pdu.setLength(2)
 }
 
-func (pdu AdvPDU) AppendAddr(addr uint64) {
+func (pdu AdvPDU) AppendAddr(addr int64) {
 	n := pdu.length()
 	pdu.setLength(n + 6)
 	pdu.b[n] = byte(addr)
@@ -95,11 +109,11 @@ func (pdu AdvPDU) AppendAddr(addr uint64) {
 
 // Flags
 const (
-	LimitedDisc   = 1 << 0 // LE Limited Discoverable mode.
-	GeneralDisc   = 1 << 1 // LE General Discoverable mode.
-	OnlyLE        = 1 << 2 // BR/EDR not supported.
-	LE_BREDR_Ctrl = 1 << 3 // Simultaneous LE and BR/EDR (controller).
-	LE_BREDR_Host = 1 << 4 // Simultaneous LE and BR/EDR (host).
+	LimitedDisc  = 1 << 0 // LE Limited Discoverable mode.
+	GeneralDisc  = 1 << 1 // LE General Discoverable mode.
+	OnlyLE       = 1 << 2 // BR/EDR not supported.
+	DualModeCtlr = 1 << 3 // LE and BR/EDR capable (controller).
+	DualModeHost = 1 << 4 // LE and BR/EDR capable (host).
 )
 
 type ADType byte
@@ -118,6 +132,8 @@ const (
 	LocalName      ADType = 0x09 // Complete local name.
 
 	TxPower ADType = 0x0A // Tx Power Level: -127 to +127 dBm.
+
+	SlaveConnIntRange ADType = 0x12 // Slave Connection Interval Range.
 
 	ManufSpecData ADType = 0xFF // Manufacturer Specific Data.
 )
