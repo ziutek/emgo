@@ -135,7 +135,7 @@ func (p *Periph) StorePACKETPTR(addr unsafe.Pointer) {
 	p.packetptr.Store(uint32(uintptr(addr)))
 }
 
-type Freq uint32
+type Freq uint16
 
 const (
 	CM2400_2500 Freq = 0      // nRF5x
