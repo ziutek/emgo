@@ -1,3 +1,6 @@
+// This is test program that tries to communicate with ILI9341 controller using
+// raw SPI (without any display library). There are more useful examples (for
+// other boards) that use display/ili9341 package.
 package main
 
 import (
