@@ -62,7 +62,7 @@ func (p *Periph) StoreCOUNTER(c uint32) {
 
 // LoadPRESCALER returns value of prescaler register.
 func (p *Periph) LoadPRESCALER() uint32 {
-	return p.counter.Bits(0xfff)
+	return p.prescaler.Bits(0xfff)
 }
 
 // StorePRESCALER stores prescaler to pr (freq = 32768Hz/(pr+1)). Must only be used
