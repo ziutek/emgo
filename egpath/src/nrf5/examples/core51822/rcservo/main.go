@@ -85,9 +85,16 @@ func main() {
 		fence.W()
 		start.Trigger()
 		radioEvent.Wait(1, 0)
+		crcok := r.LoadCRCSTATUS()
 
 		x, y := int(int8(data[0])), int(int8(data[1]))
-		fmt.Printf("x=%d y=%d\r\n", x, y)
+		fmt.Printf("x=%d y=%d crc=%t\r\n", x, y, crcok)
+
+		start = r.Task(radio.START)
+
+		if !crcok {
+			continue
+		}
 		switch {
 		case x < -64:
 			x = -64
@@ -95,8 +102,6 @@ func main() {
 			x = 64
 		}
 		pwm.SetDC(0, center+x*(max-min)/128)
-
-		start = r.Task(radio.START)
 	}
 }
 
