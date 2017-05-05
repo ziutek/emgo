@@ -28,6 +28,8 @@ type Periph struct {
 	advFreq   [3]radio.Freq
 	advCh     byte
 	dirRx     bool
+
+	scanReq chan [12]byte
 }
 
 func NewPeriph(name string, txpwr int) *Periph {
@@ -36,13 +38,14 @@ func NewPeriph(name string, txpwr int) *Periph {
 	p.rtc0 = rtc.RTC0
 	p.tim0 = timer.TIMER0
 	p.init(name, txpwr)
+	p.scanReq = make(chan [12]byte, 2)
 	return p
 }
 
 func getDevAddr() int64 {
 	FICR := ficr.FICR
 	da0 := FICR.DEVICEADDR[0].Load()
-	da1 := FICR.DEVICEADDR[1].Load()
+	da1 := FICR.DEVICEADDR[1].Load() & 0xFFFF
 	if FICR.DEVICEADDRTYPE.Load()&1 != 0 {
 		da1 |= 0x8000C000
 	}
@@ -75,7 +78,7 @@ func (p *Periph) init(name string, txpwr int) {
 	af[2] = radio.Channel(80) // BLE 39, 2480 MHz
 
 	pdu := ble.MakeAdvPDU(nil)
-	pdu.SetType(ble.AdvNonconnInd)
+	pdu.SetType(ble.AdvInd)
 	da := getDevAddr()
 	pdu.SetTxAdd(da < 0)
 	pdu.AppendAddr(da)
@@ -98,7 +101,7 @@ func (p *Periph) StartAdvert() {
 	setAA(r, 0x8E89BED6)
 	r.StoreCRCINIT(0x555555)
 	r.StorePACKETPTR(unsafe.Pointer(&p.txPDU.Bytes()[0]))
-	r.EnableIRQ(1<<radio.READY | 1<<radio.DISABLED)
+	r.EnableIRQ(1<<radio.READY | 1<<radio.DISABLED | 1<<radio.ADDRESS)
 	r.StoreFREQUENCY(p.advFreq[0])
 	r.StoreDATAWHITEIV(37)
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
@@ -106,14 +109,14 @@ func (p *Periph) StartAdvert() {
 
 	rtc0 := p.rtc0
 	rtc0.StoreCC(0, rtc0.LoadCOUNTER())
-	rtc0.Event(rtc.COMPARE0).EnablePPI()
+	rtc0.Event(rtc.COMPARE(0)).EnablePPI()
 	p.rtc512ms = 512 * 32768 / (1e3 * (rtc0.LoadPRESCALER() + 1))
 
 	ppi.RTC0_COMPARE0__RADIO_TXEN.Enable()
 
 	tim0 := p.tim0
-	tim0.StorePRESCALER(9) // 31250 Hz
-	tim0.StoreCC(1, 256)   // 8.2 ms
+	tim0.StorePRESCALER(4) // 1 MHz
+	tim0.StoreCC(1, 8000)  // 8 ms
 	tim0.StoreSHORTS(timer.COMPARE1_STOP)
 	ppi.TIMER0_COMPARE1__RADIO_DISABLE.Enable()
 
@@ -144,7 +147,7 @@ func (p *Periph) ISR() {
 				// Now Rx on channel 39. Setup Tx on channel 37.
 				ch = 37
 				rtc0 := p.rtc0
-				deadline := rtc0.LoadCC(0) + p.msToRTC(625+rnd10(&p.rnd))
+				deadline := rtc0.LoadCOUNTER() + p.msToRTC(500+rnd10(&p.rnd))
 				rtc0.StoreCC(0, deadline&0xFFFFFF)
 			} else {
 				// Setup Tx on next channel.
@@ -165,18 +168,34 @@ func (p *Periph) ISR() {
 			// Now Tx. Setup Rx on the same channel.
 			leds[4].Set()
 			shorts |= radio.DISABLED_RXEN
-			r.StoreDATAWHITEIV(ch)
 			r.StorePACKETPTR(unsafe.Pointer(&p.rxPDU.Bytes()[0]))
 			p.dirRx = true
 		}
 		r.StoreSHORTS(shorts)
 	}
-	if ev := r.Event(radio.DISABLED); ev.IsSet() {
+	if ev := r.Event(radio.ADDRESS); ev.IsSet() {
 		ev.Clear()
 		if !p.dirRx {
+			leds[1].Set()
+		}
+	}
+	if ev := r.Event(radio.DISABLED); ev.IsSet() {
+		ev.Clear()
+		ev = r.Event(radio.END)
+		if !p.dirRx {
+			if ev.IsSet() && r.LoadCRCSTATUS() {
+				var scanReq [12]byte
+				copy(scanReq[:], p.rxPDU.Payload())
+				select {
+				case p.scanReq <- scanReq:
+				default:
+				}
+			}
+			leds[1].Clear()
 			leds[3].Clear()
 		} else {
 			leds[4].Clear()
 		}
+		ev.Clear()
 	}
 }

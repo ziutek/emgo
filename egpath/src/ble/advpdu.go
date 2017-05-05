@@ -18,6 +18,10 @@ func MakeAdvPDU(b []byte) AdvPDU {
 	return AdvPDU{b}
 }
 
+func AsAdvPDU(b []byte) AdvPDU {
+	return AdvPDU{b}
+}
+
 // IsNil returns true in case of uninitialized pdu variable.
 func (pdu AdvPDU) IsNil() bool {
 	return pdu.b == nil
@@ -37,6 +41,10 @@ func (pdu AdvPDU) setLength(n int) {
 // Bytes returns underlying bytes of pdu.
 func (pdu AdvPDU) Bytes() []byte {
 	return pdu.b[:pdu.length()]
+}
+
+func (pdu AdvPDU) Payload() []byte {
+	return pdu.b[2:pdu.length()]
 }
 
 // AdvPDUType represents Advertising Channel PDU type.

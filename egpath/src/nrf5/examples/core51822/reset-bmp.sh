@@ -1,0 +1,1 @@
+../utils/reset-bmp.sh

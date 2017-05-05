@@ -1,13 +1,10 @@
 package main
 
 import (
-	"delay"
+	//"debug/semihosting"
 	"fmt"
 	"rtos"
 
-	"ble"
-
-	"nrf5/blec"
 	"nrf5/hal/clock"
 	"nrf5/hal/gpio"
 	"nrf5/hal/irq"
@@ -19,13 +16,13 @@ import (
 
 var (
 	leds [5]gpio.Pin
-	bctr *blec.Ctrl
+	blep *Periph
 	udrv *uart.Driver
 )
 
 func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
-	rtcst.Setup(rtc.RTC1, 0)
+	rtcst.Setup(rtc.RTC0, 1)
 
 	p0 := gpio.P0
 
@@ -35,9 +32,7 @@ func init() {
 		leds[i] = led
 	}
 
-	bctr = blec.NewCtrl()
-	bctr.InitPhy()
-	bctr.LEDs = &leds
+	blep = NewPeriph("Emgo & nRF5", -4)
 
 	udrv = uart.NewDriver(uart.UART0, make([]byte, 80))
 	udrv.P.StorePSEL(uart.SignalRXD, p0.Pin(11))
@@ -47,34 +42,23 @@ func init() {
 	udrv.EnableTx()
 	rtos.IRQ(udrv.P.IRQ()).Enable()
 	fmt.DefaultWriter = udrv
+
+	//f, err := semihosting.OpenFile(":tt", semihosting.W)
+	//for err != nil {
+	//}
+	//fmt.DefaultWriter = f
 }
 
 func main() {
-	fmt.Printf("DevAddr: %08x\r\n", uint64(bctr.DevAddr()))
-
-	pdu := ble.MakeAdvPDU(nil)
-	pdu.SetType(ble.ScanRsp)
-	pdu.SetTxAdd(bctr.DevAddr() < 0)
-	pdu.AppendAddr(bctr.DevAddr())
-	pdu.AppendString(ble.LocalName, "Emgo & nRF5")
-	pdu.AppendBytes(ble.TxPower, 0)
-	bctr.Advertise(pdu, 650)
-	for i := 0; ; i++ {
-		fmt.Printf(
-			"CC=%d CNT=%d Chi=%d\r\n",
-			rtc.RTC0.LoadCC(0), rtc.RTC0.LoadCOUNTER(),
-			bctr.Chi(),
-		)
-		delay.Millisec(650)
+	fmt.Printf("DevAddr: %08x\r\n", uint64(getDevAddr()))
+	blep.StartAdvert()
+	for scanReq := range blep.scanReq {
+		fmt.Printf("%d: %02x\r\n", rtos.Nanosec(), scanReq)
 	}
 }
 
 func radioISR() {
-	bctr.RadioISR()
-}
-
-func rtc0ISR() {
-	bctr.RTCISR()
+	blep.ISR()
 }
 
 func uartISR() {
@@ -84,10 +68,7 @@ func uartISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTC1: rtcst.ISR,
-
+	irq.RTC0:  rtcst.ISR,
 	irq.RADIO: radioISR,
-	irq.RTC0:  rtc0ISR,
-
 	irq.UART0: uartISR,
 }
