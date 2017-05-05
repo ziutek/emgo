@@ -39,13 +39,14 @@ const (
 type Event byte
 
 const (
-	TICK     Event = 0  // Event on COUNTER increment.
-	OVRFLW   Event = 1  // Event on COUNTER overflow.
-	COMPARE0 Event = 16 // Compare event on CC[0] match.
-	COMPARE1 Event = 17 // Compare event on CC[1] match.
-	COMPARE2 Event = 18 // Compare event on CC[2] match.
-	COMPARE3 Event = 19 // Compare event on CC[3] match.
+	TICK   Event = 0 // Event on COUNTER increment.
+	OVRFLW Event = 1 // Event on COUNTER overflow.
 )
+
+// COMPARE returns compare event on CC[n] match.
+func COMPARE(n int) Event {
+	return Event(16 + n)
+}
 
 func (p *Periph) Task(t Task) *te.Task    { return p.Regs.Task(int(t)) }
 func (p *Periph) Event(e Event) *te.Event { return p.Regs.Event(int(e)) }
@@ -53,11 +54,6 @@ func (p *Periph) Event(e Event) *te.Event { return p.Regs.Event(int(e)) }
 // LoadCOUNTER returns value of counter register.
 func (p *Periph) LoadCOUNTER() uint32 {
 	return p.counter.Bits(0xffffff)
-}
-
-// StoreCOUNTER stores value of counter register.
-func (p *Periph) StoreCOUNTER(c uint32) {
-	p.counter.Store(c)
 }
 
 // LoadPRESCALER returns value of prescaler register.

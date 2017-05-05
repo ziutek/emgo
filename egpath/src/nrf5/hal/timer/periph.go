@@ -31,7 +31,7 @@ var (
 	TIMER4 = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x1B000)) // nRF52.
 )
 
-type Task int
+type Task byte
 
 const (
 	START Task = 0 // Start Timer.
@@ -40,17 +40,20 @@ const (
 	CLEAR Task = 3 // Clear timer.
 )
 
-func (p *Periph) Task(t Task) *te.Task { return p.Regs.Task(int(t)) }
-
 // CAPTURE returns Capture task for CCn register.
-func (p *Periph) CAPTURE(n int) *te.Task {
-	return p.Regs.Task(16 + n)
+func CAPTURE(n int) Task {
+	return Task(16 + n)
 }
+
+type Event byte
 
 // COMPARE returns Compare event for CCn register.
-func (p *Periph) COMPARE(n int) *te.Event {
-	return p.Regs.Event(16 + n)
+func COMPARE(n int) Event {
+	return Event(16 + n)
 }
+
+func (p *Periph) Task(t Task) *te.Task    { return p.Regs.Task(int(t)) }
+func (p *Periph) Event(e Event) *te.Event { return p.Regs.Event(int(e)) }
 
 type Shorts uint32
 

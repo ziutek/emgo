@@ -40,6 +40,8 @@ func (r *Regs) IRQ() nvic.IRQ {
 // enable/disable IRQ) on multiple events atomically.
 type EventMask uint32
 
+const EvAll EventMask = 0xFFFFFFFF
+
 // IRQEnabled returns EventMask, wherein the bit set indicates that the
 // corresponding event will generate IRQ.
 func (r *Regs) IRQEnabled() EventMask {

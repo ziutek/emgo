@@ -24,13 +24,13 @@ type globals struct {
 var g globals
 
 func cce() *te.Event {
-	return g.st.Event(rtc.COMPARE0 + rtc.Event(g.ccn))
+	return g.st.Event(rtc.COMPARE(int(g.ccn)))
 }
 
 // Setup setups st as system timer using ccn compare channel number. Usually
-// rtc.RTC0 and channel number 1 is used. Setup accepts st at its reset state or
+// rtc.RTC1 and channel number 0 is used. Setup accepts st at its reset state or
 // configured before for other purposes. For its needs it uses only rtc.OVRFLW
-// and rtc.COMPARE0+ccn events and can work with any prescaler set before
+// and rtc.COMPARE(ccn) events and can work with any prescaler set before
 // (avoid prescaler values that cause tick period > 1 ms). Setup starts st by
 // triggering rtc.START task but accepts RTC started before. It setups st.IRQ()
 // priority in NVIC and enables IRQ handling.

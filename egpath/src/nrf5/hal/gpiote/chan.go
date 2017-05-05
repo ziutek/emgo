@@ -9,31 +9,34 @@ import (
 // from 0 to 3 (7 in nRF52).
 type Chan byte
 
+type Task byte
+
 // OUT returns task for writing to pin associated with channel c.
-func (c Chan) OUT() *te.Task {
-	return r().Regs.Task(int(c))
+func (c Chan) OUT() Task {
+	return Task(c)
 }
 
 // SET returns task for set pin associated with channel c. nRF52.
-func (c Chan) SET() *te.Task {
-	return r().Regs.Task(int(c) + 12)
+func (c Chan) SET() Task {
+	return Task(c + 12)
 }
 
 // CLR returns task for clear pin associated with channel c. nRF52.
-func (c Chan) CLR() *te.Task {
-	return r().Regs.Task(int(c) + 24)
+func (c Chan) CLR() Task {
+	return Task(c + 24)
 }
+
+type Event byte
+
+const PORT Event = 31 // From multiple input pins with SENSE mechanism enabled.
 
 // IN returns event generated from pin associated with channel c.
-func (c Chan) IN() *te.Event {
-	return r().Regs.Event(int(c))
+func (c Chan) IN() Event {
+	return Event(c)
 }
 
-// PORT returns event generated from multiple input pins with SENSE mechanism
-// enabled.
-func PORT() *te.Event {
-	return r().Regs.Event(31)
-}
+func (t Task) Task() *te.Task    { return r().Regs.Task(int(t)) }
+func (e Event) Event() *te.Event { return r().Regs.Event(int(e)) }
 
 type Config uint32
 
