@@ -17,19 +17,19 @@ Examples:
 
 The following function is correct Go function:
 
-func F() ([]byte, *int) {
-	i := 4
-	return []byte{1, 2, 3}, &i
-}
+	func F() ([]byte, *int) {
+		i := 4
+		return []byte{1, 2, 3}, &i
+	}
 
 but it isn't correct Emgo function - you need to rewrite it this way:
 
-func F() ([]byte, *int) {
-	i := new(int)
-	*i = 4
-	b := append([]byte{}, []byte{1, 2, 3}...)
-	return b, i
-}
+	func F() ([]byte, *int) {
+		i := new(int)
+		*i = 4
+		b := append([]byte{}, []byte{1, 2, 3}...)
+		return b, i
+	}
 
 ### Unexported methods
 
