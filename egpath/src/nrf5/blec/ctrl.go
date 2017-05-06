@@ -28,11 +28,12 @@ type Ctrl struct {
 
 	radio *radio.Periph
 	rtc0  *rtc.Periph
+	ppic  ppi.Chan
 
 	LEDs *[5]gpio.Pin
 }
 
-func NewCtrl() *Ctrl {
+func NewCtrl(ppic ppi.Chan) *Ctrl {
 	c := new(Ctrl)
 	c.addr = getDevAddr()
 	c.advPDU = ble.MakeAdvPDU(make([]byte, 2+6+3))
@@ -43,6 +44,7 @@ func NewCtrl() *Ctrl {
 	c.rxd = make([]byte, 39)
 	c.radio = radio.RADIO
 	c.rtc0 = rtc.RTC0
+	c.ppic = ppic
 	c.rnd.Seed(rtos.Nanosec())
 	return c
 }
@@ -53,10 +55,6 @@ func (c *Ctrl) SetTxPwr(dBm int) {
 
 func (c *Ctrl) DevAddr() int64 {
 	return c.addr
-}
-
-func (c *Ctrl) Chi() int {
-	return int(c.chi)
 }
 
 // InitPhy initialises physical layer: radio, timers, PPI.
@@ -92,17 +90,23 @@ func (c *Ctrl) Advertise(respPDU ble.AdvPDU, periodms int) {
 	c.period = uint32(periodms*32768+500) / 1000
 	c.scanDisabledISR()
 
+	t := c.rtc0
+	t.Event(rtc.COMPARE(0)).EnablePPI()
+	t.Task(rtc.CLEAR).Trigger()
+	t.StoreCC(0, 1)
+	pc := c.ppic
+	pc.SetEEP(t.Event(rtc.COMPARE(1)))
+	pc.SetTEP(r.Task(radio.DISABLE))
+	pc.Enable()
 	ppi.RTC0_COMPARE0__RADIO_TXEN.Enable()
-	rt := c.rtc0
-	rt.Event(rtc.COMPARE(0)).EnablePPI()
-	rt.Task(rtc.CLEAR).Trigger()
-	rt.StoreCC(0, 1)
 
 	fence.W()
-	rt.Task(rtc.START).Trigger()
+	t.Task(rtc.START).Trigger()
 }
 
 func (c *Ctrl) RadioISR() {
+	c.rtc0.Event(rtc.COMPARE(1)).DisablePPI()
+
 	r := c.radio
 	if ev := r.Event(radio.DISABLED); ev.IsSet() {
 		ev.Clear()
@@ -111,46 +115,51 @@ func (c *Ctrl) RadioISR() {
 	}
 
 	r.Event(radio.PAYLOAD).DisableIRQ()
-	c.rtc0.Event(rtc.COMPARE(1)).DisableIRQ()
 
 	pdu := ble.AsAdvPDU(c.rxd)
-	if pdu.Type() != ble.ScanReq ||
+	if pdu.Type() != ble.ScanReq || len(pdu.Payload()) != 12 ||
 		decodeDevAddr(pdu.Payload()[6:], pdu.RxAdd()) != c.addr {
-
-		c.setupTxAdvInd()
 		return
 	}
 
 	// Setup for TxScanRsp.
+	if c.chi != 37 {
+		c.chi--
+	} else {
+		c.chi = 39
+	}
+	radioSetChi(r, c.chi)
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN)
 	c.isr = (*Ctrl).scanReqRxDisabledISR
 	c.LEDs[1].Set()
 }
 
-func (c *Ctrl) RTCISR() {
-	rt := c.rtc0
-	rt.Event(rtc.COMPARE(1)).DisableIRQ()
-	rt.Event(rtc.COMPARE(1)).Clear()
-	c.setupTxAdvInd()
-	r := c.radio
-	r.Task(radio.DISABLE).Trigger()
-	r.Event(radio.PAYLOAD).DisableIRQ()
-}
-
 // scanDisabledISR handles DISABLED/RTC->TXEN between RxTxScan* and TxAdvInd.
 func (c *Ctrl) scanDisabledISR() {
+	c.LEDs[4].Clear()
+
 	r := c.radio
 
 	// Must be before TxAdvInd.START.
 	radioSetPDU(r, c.advPDU.Bytes())
 
+	// Must be before TxAdvInd.PAYLOAD
+	r.Event(radio.PAYLOAD).DisableIRQ()
+
 	// Must be before TxAdvInd.DISABLED.
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_RXEN)
 	c.isr = (*Ctrl).advIndTxDisabledISR
+
+	if c.chi == 39 {
+		t := c.rtc0
+		t.StoreCC(0, t.LoadCC(0)+c.period+c.rnd.Uint32()&255)
+	}
 }
 
 // advIndTxDisabledISR handles DISABLED->RXEN between TxAdvInd and RxScanReq.
 func (c *Ctrl) advIndTxDisabledISR() {
+	c.LEDs[4].Set()
+
 	r := c.radio
 
 	// Must be before RxScanReq.START.
@@ -162,11 +171,10 @@ func (c *Ctrl) advIndTxDisabledISR() {
 	ev.EnableIRQ()
 
 	// Setup for RxScanReq timeout.
-	const timeout = 4 // ms
-	rt := c.rtc0
-	rt.StoreCC(1, rt.LoadCOUNTER()+(timeout*32768+999)/1000)
-	rt.Event(rtc.COMPARE(1)).EnableIRQ()
-	c.isr = (*Ctrl).invalidISR
+	t := c.rtc0
+	t.StoreCC(1, t.LoadCOUNTER()+16) // 488 µs
+	t.Event(rtc.COMPARE(1)).EnablePPI()
+	c.setupTxAdvInd()
 }
 
 // scanReqRxDisabledISR handles DISABLED->TXEN between RxScanReq and TxScanRsp.
@@ -183,22 +191,15 @@ func (c *Ctrl) scanReqRxDisabledISR() {
 func (c *Ctrl) setupTxAdvInd() {
 	// Calculate next channel index. Setup shorts and wakeup time.
 	shorts := radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN
-	switch c.chi {
-	case 37:
-		c.LEDs[4].Set()
-		c.chi = 38
-	case 38:
-		c.chi = 39
-	default:
+	if c.chi != 39 {
+		c.chi++
+	} else {
 		c.chi = 37
 		shorts &^= radio.DISABLED_TXEN
-		rt := c.rtc0
-		rt.StoreCC(0, rt.LoadCC(0)+c.period+c.rnd.Uint32()&255)
-		c.LEDs[4].Clear()
 	}
-	r := c.radio
 
 	// Must be before RxTxScan*.DISABLED
+	r := c.radio
 	r.StoreSHORTS(shorts)
 	radioSetChi(r, c.chi)
 
@@ -207,12 +208,6 @@ func (c *Ctrl) setupTxAdvInd() {
 
 func (c *Ctrl) setupTxScanRsp() {
 
-}
-
-func (c *Ctrl) invalidISR() {
-	for {
-		_ = c
-	}
 }
 
 /*func (c *Ctrl) WaitConn(deadline int64) {

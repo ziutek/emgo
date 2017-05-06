@@ -11,6 +11,7 @@ import (
 	"nrf5/hal/clock"
 	"nrf5/hal/gpio"
 	"nrf5/hal/irq"
+	"nrf5/hal/ppi"
 	"nrf5/hal/rtc"
 	"nrf5/hal/system"
 	"nrf5/hal/system/timer/rtcst"
@@ -35,7 +36,7 @@ func init() {
 		leds[i] = led
 	}
 
-	bctr = blec.NewCtrl()
+	bctr = blec.NewCtrl(ppi.Chan(0))
 	bctr.InitPhy()
 	bctr.LEDs = &leds
 
@@ -58,23 +59,18 @@ func main() {
 	pdu.AppendAddr(bctr.DevAddr())
 	pdu.AppendString(ble.LocalName, "Emgo & nRF5")
 	pdu.AppendBytes(ble.TxPower, 0)
-	bctr.Advertise(pdu, 650)
+	bctr.Advertise(pdu, 625)
 	for i := 0; ; i++ {
 		fmt.Printf(
-			"CC=%d CNT=%d Chi=%d\r\n",
+			"CC=%d CNT=%d\r\n",
 			rtc.RTC0.LoadCC(0), rtc.RTC0.LoadCOUNTER(),
-			bctr.Chi(),
 		)
-		delay.Millisec(650)
+		delay.Millisec(625)
 	}
 }
 
 func radioISR() {
 	bctr.RadioISR()
-}
-
-func rtc0ISR() {
-	bctr.RTCISR()
 }
 
 func uartISR() {
@@ -84,10 +80,7 @@ func uartISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTC1: rtcst.ISR,
-
+	irq.RTC1:  rtcst.ISR,
 	irq.RADIO: radioISR,
-	irq.RTC0:  rtc0ISR,
-
 	irq.UART0: uartISR,
 }
