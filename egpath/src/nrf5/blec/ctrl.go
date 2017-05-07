@@ -33,6 +33,10 @@ type Ctrl struct {
 	LEDs *[5]gpio.Pin
 }
 
+func (c *Ctrl) RxD() []byte {
+	return c.rxd
+}
+
 func NewCtrl(ppic ppi.Chan) *Ctrl {
 	c := new(Ctrl)
 	c.addr = getDevAddr()
@@ -117,21 +121,29 @@ func (c *Ctrl) RadioISR() {
 	r.Event(radio.PAYLOAD).DisableIRQ()
 
 	pdu := ble.AsAdvPDU(c.rxd)
-	if pdu.Type() != ble.ScanReq || len(pdu.Payload()) != 12 ||
+	if len(pdu.Payload()) < 12 ||
 		decodeDevAddr(pdu.Payload()[6:], pdu.RxAdd()) != c.addr {
 		return
 	}
-
-	// Setup for TxScanRsp.
-	if c.chi != 37 {
-		c.chi--
-	} else {
-		c.chi = 39
+	switch {
+	case pdu.Type() == ble.ScanReq && len(pdu.Payload()) == 6+6:
+		// Setup for TxScanRsp.
+		if c.chi != 37 {
+			c.chi--
+		} else {
+			c.chi = 39
+		}
+		radioSetChi(r, c.chi)
+		r.StoreSHORTS(radio.READY_START | radio.END_DISABLE |
+			radio.DISABLED_TXEN)
+		c.isr = (*Ctrl).scanReqRxDisabledISR
+		c.LEDs[1].Set()
+	case pdu.Type() == ble.ConnectReq && len(pdu.Payload()) == 6+6+22:
+		// Setup for connection state.
+		r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
+		c.isr = (*Ctrl).connectReqRxDisabledISR
+		c.LEDs[2].Set()
 	}
-	radioSetChi(r, c.chi)
-	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN)
-	c.isr = (*Ctrl).scanReqRxDisabledISR
-	c.LEDs[1].Set()
 }
 
 // scanDisabledISR handles DISABLED/RTC->TXEN between RxTxScan* and TxAdvInd.
@@ -206,8 +218,17 @@ func (c *Ctrl) setupTxAdvInd() {
 	c.isr = (*Ctrl).scanDisabledISR
 }
 
-func (c *Ctrl) setupTxScanRsp() {
+func (c *Ctrl) connectReqRxDisabledISR() {
+	r := c.radio
+	if !r.LoadCRCSTATUS() {
+		// Return to advertising.
+		r.Task(radio.TXEN).Trigger()
+		c.scanDisabledISR()
+		c.LEDs[2].Clear()
+		return
+	}
 
+	c.rtc0.Task(rtc.STOP).Trigger()
 }
 
 /*func (c *Ctrl) WaitConn(deadline int64) {

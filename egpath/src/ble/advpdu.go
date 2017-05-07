@@ -104,15 +104,20 @@ func (pdu AdvPDU) Reset() {
 	pdu.setLength(2)
 }
 
-func (pdu AdvPDU) AppendAddr(addr int64) {
-	n := pdu.length()
-	pdu.setLength(n + 6)
-	pdu.b[n] = byte(addr)
-	pdu.b[n+1] = byte(addr >> 8)
-	pdu.b[n+2] = byte(addr >> 16)
-	pdu.b[n+3] = byte(addr >> 24)
-	pdu.b[n+4] = byte(addr >> 32)
-	pdu.b[n+5] = byte(addr >> 40)
+func (pdu AdvPDU) UpdateAddr(offset int, addr int64) {
+	pdu.b[offset] = byte(addr)
+	pdu.b[offset+1] = byte(addr >> 8)
+	pdu.b[offset+2] = byte(addr >> 16)
+	pdu.b[offset+3] = byte(addr >> 24)
+	pdu.b[offset+4] = byte(addr >> 32)
+	pdu.b[offset+5] = byte(addr >> 40)
+}
+
+func (pdu AdvPDU) AppendAddr(addr int64) (offset int) {
+	offset = pdu.length()
+	pdu.setLength(offset + 6)
+	pdu.UpdateAddr(offset, addr)
+	return
 }
 
 // Flags
