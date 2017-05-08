@@ -1,6 +1,8 @@
 ### Emgo
 
-To try Emgo you first need to download it. You can probably use `go get` but preffered way is to clone this repository:
+First of all, to try Emgo you need [Go compiler](https://golang.org/) installed. The current Emgo compiler and whole process described below requires also some kind of Unix-like operating system. There is a chance that Windows with Cygwin can be used but this was not tested.
+
+You can probably use `go get` to install Emgo but preffered way is to clone repository using `git` command:
 
 	git clone https://github.com/ziutek/emgo.git
 
@@ -50,6 +52,10 @@ To run program loaded to RAM you must change MCU boot option. In case of most ST
 But eventually your program should be loaded to Flash. Sometimes you simply can not load to RAM: program is too big, your MCU does not provide easy way to run program loaded to RAM (eg. nRF51). At last, some bugs may only appear when program runs from Flash.
 
 At this point you need some tools to load compiled binary to your MCU's RAM/Flash and allow to debug it. Such tools usually have a hardware part and a software part. In case of STM32 Nucleo or Discovery development boards the hardware part (ST-LINK programmer) is integrated with the board, so you only need the software part, which can be [OpenOCD](http://openocd.org) or [Texane's stlink](https://github.com/texane/stlink).
+
+`load-oocd.sh` script uses [itmsplit](https://github.com/ziutek/itmsplit) to print SWO messages from your application. fmt.Print* functions by default use SWO trace port as standard output. Install itmsplit with command:
+
+	go get github.com/ziutek/itmsplit
 
 To program your MCU using binary built to run from RAM:
 
