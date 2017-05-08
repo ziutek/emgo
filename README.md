@@ -9,7 +9,7 @@ To build examples, you first have to install ARM toolchain. You can install a pa
 
 	apt-get install gcc-arm-none-eabi
 
-or go to [GNU ARM Embedded Toolchain](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm) and download most recent toolchain as TAR archive (this is preffered version of toolchain, try use it before report a bug with compilation).
+Or go to [GNU ARM Embedded Toolchain website](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm) and download most recent toolchain as TAR archive (this is preffered version of toolchain, try use it before report a bug with compilation).
 
 Next set required enviroment variables:
 
