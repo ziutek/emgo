@@ -47,6 +47,8 @@ To run program loaded to RAM you must change MCU boot option. In case of most ST
 
 But eventually your program should be loaded to Flash. Sometimes you simply can not load to RAM: program is too big, your MCU does not provide easy way to run program loaded to RAM (eg. nRF51). At last, some bugs may only appear when program runs from Flash.
 
+At this point you need some tools to load compiled binary to your MCU's RAM/Flash and allow to debug it. Such tools usually have a hardware part and a software part. In case of STM32 Nucleo or Discovery development boards the hardware part (ST-LINK programmer) is integrated with the board, so you only need the software part, which can be [OpenOCD](http://openocd.org) or [Texane's stlink](https://github.com/texane/stlink).
+
 To program your MCU using binary built to run from RAM:
 
 	../load.sh      # This uses st-util.
