@@ -1,6 +1,6 @@
 ### Emgo
 
-To try Emgo you need first download it. You can probably use `go get` but preffered way is to clone this repository:
+To try Emgo you first need to download it. You can probably use `go get` but preffered way is to clone this repository:
 
 	git clone https://github.com/ziutek/emgo.git
 
