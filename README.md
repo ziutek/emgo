@@ -63,7 +63,7 @@ or
 
 	../load-oocd.sh flash
 
-To change this RAM/Flash build option you need to edit script.ld file and change the line:
+To change this RAM/Flash build option you need to edit `script.ld` file and change the line:
 
 	INCLUDE stm32/loadram
 
