@@ -23,6 +23,7 @@ import (
 	"nrf5/hal/rtc"
 	"nrf5/hal/system"
 	"nrf5/hal/system/timer/rtcst"
+	"nrf5/hal/te"
 )
 
 var (
@@ -149,7 +150,7 @@ func main() {
 }
 
 func radioISR() {
-	radio.RADIO.DisableIRQ(0xFFFFFFFF)
+	radio.RADIO.DisableIRQ(te.EvAll)
 	radioEvent.Signal(1)
 }
 

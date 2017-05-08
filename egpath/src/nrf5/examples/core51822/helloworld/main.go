@@ -44,7 +44,7 @@ func main() {
 		_, err := fmt.Fprintf(w, "%d: Hello world!\n", i)
 		checkErr(err)
 		checkErr(w.Flush())
-		leds[2].Store(i & 1)
+		leds[2].Store(i)
 	}
 }
 
