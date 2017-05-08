@@ -24,6 +24,8 @@ Installed toolchain contains set of `arm-none-eabi-*` binaries. Find their locat
 	export EGROOT=path_to_egroot_directory # eg. $HOME/emgo/egroot
 	export EGPATH=path_to_egpath_directory # eg. $HOME/emgo/egpath
 
+	export PATH=$PATH:path_to_arm_bin_dir  # eg. /usr/local/arm/bin
+
 Now you are ready to compile some example code. There are two directories that contain examples:
 
 [$EGPATH/src/stm32/examples](https://github.com/ziutek/emgo/tree/master/egpath/src/stm32/examples)
@@ -92,4 +94,3 @@ There are also scripts for [Black Magic Probe](https://github.com/blacksphere/bl
 [YouTube](https://www.youtube.com/channel/UCAW4PLMDGO7_vY4sCG0jg6Q)
 
 [Forum](https://groups.google.com/forum/#!forum/emgo)
-
