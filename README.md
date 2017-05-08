@@ -57,7 +57,7 @@ or
 
 	../load-oocd.sh # This uses openocd.
 
-To load binary built to run from flash (this erases Flash and programs it with new firmware):
+To load binary built to run from Flash (this erases Flash and programs it with new firmware):
 
 	../load.sh flash
 
@@ -75,7 +75,11 @@ to
 
 or vice versa. More editing is need for STM32F1xx series.
 
-There are also scripts for [Black Magic Probe](https://github.com/blacksphere/blackmagic/wiki): load-bmp.sh, debug-bmp.sh.
+In case of nRF51 load scripts have no `flash` option: binary is always loaded to Flash.
+
+You can also load you program during debug session in gdb. Try `../debug.sh` or `../debug-oocd.sh`.
+
+There are also scripts for [Black Magic Probe](https://github.com/blacksphere/blackmagic/wiki): `load-bmp.sh`, `debug-bmp.sh`.
 
 #### Documentation
 
