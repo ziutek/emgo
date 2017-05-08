@@ -1,17 +1,21 @@
 ### Emgo
 
-To build and install egc (Emgo compiler): 
+To try Emgo first download it. You can probably use `go get` but preffered way is to clone it:
 
-    cd egc
+	git clone https://github.com/ziutek/emgo.git
+
+Next you need to build and install egc (Emgo compiler): 
+
+    cd emgo/egc
     go install
   
-To build examples, you first have to install ARM toolchain. You can install a package included in your OS distribution. In case of Debian/Ubuntu Linux:
+All examples are for ARM Cortex-M based MCUS. To build them, you need to install ARM toolchain. You have two options: install a package included in your OS distribution (in case of Debian/Ubuntu Linux):
 
 	apt-get install gcc-arm-none-eabi
 
-Or go to [GNU ARM Embedded Toolchain website](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm) and download most recent toolchain as TAR archive (this is preffered version of toolchain, try use it before report a bug with compilation).
+or better go to the [GNU ARM Embedded Toolchain website](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm) and download most recent toolchain (this is preffered version of toolchain, try use it before report any bug with compilation).
 
-Next set required enviroment variables:
+Installed toolchain contains set of arm-none-eabi-* binaries. Find their location and set required enviroment variables:
 
 	export EGCC=path_to_arm_gcc            # eg. /usr/local/arm/bin/arm-none-eabi-gcc
 	export EGLD=path_to_arm_linekr         # eg. /usr/local/arm/bin/arm-none-eabi-ld
@@ -22,17 +26,28 @@ Next set required enviroment variables:
 
 Now you are ready to compile some example code. There are two directories that contain examples:
 
-	[$EGPATH/src/stm32/examples](https://github.com/ziutek/emgo/tree/master/egpath/src/stm32/examples)
-	[$EGPATH/src/nrf5/examples](https://github.com/ziutek/emgo/tree/master/egpath/src/nrf5/examples)
+[$EGPATH/src/stm32/examples](https://github.com/ziutek/emgo/tree/master/egpath/src/stm32/examples)
+
+[$EGPATH/src/nrf5/examples](https://github.com/ziutek/emgo/tree/master/egpath/src/nrf5/examples)
 
 Use one that contains example for your MCU/devboard.
 
-For example, to build blinky for STM32 Nucleo-F411RE board you need:
+For example, to build blinky for STM32 NUCLEO-F411RE board:
 
 	cd $EGPATH/src/stm32/examples/nucleo-f411re/blinky
     ../build.sh
 
-To program your MCU using binary built to run from SRAM:
+First compilation may take some time because `egc` must process all required libraries and runtime. If everything went well you obtain `cortexm4.elf` binary.
+
+Compilation can produce two kind of binaries: binaries that should be loaded to RAM or to Flash of your MCU.
+
+Load into RAM is useful in case of small programs, during working on the code and debuging. Loading into RAM is faster, allows unlimited number of breakpoints, allows to modify constants and even the code from debuger and saves your Flash, which has big but limited number of erase cycles.
+
+To run program loaded to RAM you usually must 
+
+But eventually your program should be loaded to Flash. Sometimes you just can not load to RAM: program is too big, your MCU does not provide easy way to run program loaded to RAM (eg. nRF51). At last, some bugs may only appear when program runs from Flash.
+
+To program your MCU using binary built to run from RAM:
 
 	../load.sh      # This uses st-util.
 
@@ -48,7 +63,7 @@ or
 
 	../load-oocd.sh flash
 
-To change this SRAM/flash build option you need to edit script.ld file and change the line:
+To change this RAM/Flash build option you need to edit script.ld file and change the line:
 
 	INCLUDE stm32/loadram
 
