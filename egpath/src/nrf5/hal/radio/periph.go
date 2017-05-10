@@ -382,11 +382,11 @@ type State byte
 
 const (
 	Disabled  State = 0  // RADIO is in the Disabled state
-	RxRu      State = 1  // RADIO is in the RXRU state
+	RxRU      State = 1  // RADIO is in the RXRU state
 	RxIdle    State = 2  // RADIO is in the RXIDLE state
 	Rx        State = 3  // RADIO is in the RX state
 	RxDisable State = 4  // ADIO is in the RXDISABLED state
-	TxRu      State = 9  // RADIO is in the TXRU state
+	TxRU      State = 9  // RADIO is in the TXRU state
 	TxIdle    State = 10 // RADIO is in the TXIDLE state
 	Tx        State = 11 // RADIO is in the TX state
 	TxDisable State = 12 // RADIO is in the TXDISABLED state
@@ -395,11 +395,11 @@ const (
 //emgo:const
 var stateStr = [...]string{
 	Disabled:  "Disabled",
-	RxRu:      "RxRu",
+	RxRU:      "RxRU",
 	RxIdle:    "RxIdle",
 	Rx:        "Rx",
 	RxDisable: "RxDisable",
-	TxRu:      "TxRu",
+	TxRU:      "TxRU",
 	TxIdle:    "TxIdle",
 	Tx:        "Tx",
 	TxDisable: "TxDisable",
