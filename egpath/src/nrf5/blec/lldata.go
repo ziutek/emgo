@@ -1,47 +1,57 @@
 package blec
 
-type LLData []byte
+type llData []byte
 
-func (d LLData) AA() uint32 {
+func (d llData) AA() uint32 {
 	return uint32(d[0]) | uint32(d[1])<<8 | uint32(d[2])<<16 | uint32(d[3])<<24
 }
 
-func (d LLData) CRCInit() uint32 {
+func (d llData) CRCInit() uint32 {
 	return uint32(d[4]) | uint32(d[5])<<8 | uint32(d[6])<<16
 }
 
-func (d LLData) WinSize() int {
-	return int(d[7])
+func (d llData) WinSize() uint32 {
+	return uint32(d[7])
 }
 
-func (d LLData) WinOffset() int {
-	return int(d[8]) | int(d[9])<<8
+func (d llData) WinOffset() uint32 {
+	return uint32(d[8]) | uint32(d[9])<<8
 }
 
-func (d LLData) Interval() int {
-	return int(d[10]) | int(d[11])<<8
+func (d llData) Interval() uint32 {
+	return uint32(d[10]) | uint32(d[11])<<8
 }
 
-func (d LLData) Latency() int {
-	return int(d[12]) | int(d[13])<<8
+func (d llData) Latency() uint32 {
+	return uint32(d[12]) | uint32(d[13])<<8
 }
 
-func (d LLData) Timeout() int {
-	return int(d[14]) | int(d[15])<<8
+func (d llData) Timeout() uint32 {
+	return uint32(d[14]) | uint32(d[15])<<8
 }
 
-func (d LLData) ChM() uint64 {
+func (d llData) ChM() uint64 {
 	cml := uint32(d[16]) | uint32(d[17])<<8 | uint32(d[18])<<16 |
 		uint32(d[19])<<24
 	return uint64(cml) | uint64(d[20])<<32
 }
 
-func (d LLData) Hop() int {
+func (d llData) Hop() int {
 	return int(d[21]) & 0x1F
 }
 
-var scaPPM = [8]byte{500 / 2, 250 / 2, 150 / 2, 100 / 2, 76 / 2, 50 / 2, 30 / 2, 20 / 2}
+var ssca = [8]byte{
+	(500<<19+999999)/1000000 - 8,
+	(250<<19+999999)/1000000 - 8,
+	(150<<19+999999)/1000000 - 8,
+	(100<<19+999999)/1000000 - 8,
+	(75<<19+999999)/1000000 - 8,
+	(50<<19+999999)/1000000 - 8,
+	(30<<19+999999)/1000000 - 8,
+	(20<<19+999999)/1000000 - 8,
+}
 
-func (d LLData) SCA() int {
-	return int(scaPPM[d[21]>>5]) * 2
+// SSCA returns (maxSCAPPM<<19 + 1e6 - 1) / 1e6.
+func (d llData) SSCA() uint32 {
+	return uint32(ssca[d[21]>>5]) + 8
 }

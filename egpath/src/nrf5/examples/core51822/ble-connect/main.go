@@ -60,20 +60,10 @@ func main() {
 	pdu.AppendString(ble.LocalName, "Emgo & nRF5")
 	pdu.AppendBytes(ble.TxPower, 0)
 	bctr.Advertise(pdu, 625)
-
-	d := blec.LLData(bctr.RxD()[2+6+6:])
 	for i := 0; ; i++ {
-		/*fmt.Printf(
+		fmt.Printf(
 			"CC=%d CNT=%d\r\n",
 			rtc.RTC0.LoadCC(0), rtc.RTC0.LoadCOUNTER(),
-		)*/
-		fmt.Printf(
-			"AA=%04x CRCInit=%03x WinSize=%d WinOffset=%d Interval=%d\r\n",
-			d.AA(), d.CRCInit(), d.WinSize(), d.WinOffset(), d.Interval(),
-		)
-		fmt.Printf(
-			"Latency=%d Timeout=%d ChM=%05x Hop=%d SCA=%d\r\n\n",
-			d.Latency(), d.Timeout(), d.ChM(), d.Hop(), d.SCA(),
 		)
 		delay.Millisec(625)
 	}
@@ -90,7 +80,9 @@ func uartISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTC1:  rtcst.ISR,
+	irq.RTC1: rtcst.ISR,
+
 	irq.RADIO: radioISR,
+
 	irq.UART0: uartISR,
 }

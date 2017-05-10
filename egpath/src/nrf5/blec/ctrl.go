@@ -16,13 +16,15 @@ import (
 type Ctrl struct {
 	rnd rand.XorShift64
 
-	addr   int64
-	advPDU ble.AdvPDU
-	rxd    []byte
-	txd    []byte
+	devAddr int64
+	advPDU  ble.AdvPDU
+	rxd     []byte
+	txd     []byte
 
-	period uint32
-	chi    byte
+	advInterval  uint32
+	connInterval uint32
+	rxWait       byte
+	chi          byte
 
 	isr func(c *Ctrl)
 
@@ -39,11 +41,11 @@ func (c *Ctrl) RxD() []byte {
 
 func NewCtrl(ppic ppi.Chan) *Ctrl {
 	c := new(Ctrl)
-	c.addr = getDevAddr()
+	c.devAddr = getDevAddr()
 	c.advPDU = ble.MakeAdvPDU(make([]byte, 2+6+3))
 	c.advPDU.SetType(ble.AdvInd)
-	c.advPDU.SetTxAdd(c.addr < 0)
-	c.advPDU.AppendAddr(c.addr)
+	c.advPDU.SetTxAdd(c.devAddr < 0)
+	c.advPDU.AppendAddr(c.devAddr)
 	c.advPDU.AppendBytes(ble.Flags, ble.GeneralDisc|ble.OnlyLE)
 	c.rxd = make([]byte, 39)
 	c.radio = radio.RADIO
@@ -58,7 +60,7 @@ func (c *Ctrl) SetTxPwr(dBm int) {
 }
 
 func (c *Ctrl) DevAddr() int64 {
-	return c.addr
+	return c.devAddr
 }
 
 // InitPhy initialises physical layer: radio, timers, PPI.
@@ -80,18 +82,17 @@ func (c *Ctrl) InitPhy() {
 	pp.Disable()
 }
 
-func (c *Ctrl) Advertise(respPDU ble.AdvPDU, periodms int) {
+func (c *Ctrl) Advertise(respPDU ble.AdvPDU, advIntervalms int) {
 	r := c.radio
 	r.StoreCRCINIT(0x555555)
 	r.Event(radio.DISABLED).EnableIRQ()
 	radioSetAA(r, 0x8E89BED6)
-	radioSetAddrMatch(r, c.addr)
 	radioSetMaxLen(r, 39-2)
 	radioSetChi(r, 37)
 
 	c.chi = 37
 	c.txd = respPDU.Bytes()
-	c.period = uint32(periodms*32768+500) / 1000
+	c.advInterval = uint32(advIntervalms*32768+500) / 1000
 	c.scanDisabledISR()
 
 	t := c.rtc0
@@ -120,9 +121,15 @@ func (c *Ctrl) RadioISR() {
 
 	r.Event(radio.PAYLOAD).DisableIRQ()
 
+	if r.LoadSTATE() != radio.Rx {
+		// Race beetwen radio.PAYLOAD and rtc.COMPARE(1): some payload received
+		// but timeout occured before routing to PPI was disabled.
+		return
+	}
+
 	pdu := ble.AsAdvPDU(c.rxd)
 	if len(pdu.Payload()) < 12 ||
-		decodeDevAddr(pdu.Payload()[6:], pdu.RxAdd()) != c.addr {
+		decodeDevAddr(pdu.Payload()[6:], pdu.RxAdd()) != c.devAddr {
 		return
 	}
 	switch {
@@ -146,7 +153,7 @@ func (c *Ctrl) RadioISR() {
 	}
 }
 
-// scanDisabledISR handles DISABLED/RTC->TXEN between RxTxScan* and TxAdvInd.
+// scanDisabledISR handles DISABLED->(TXEN/NOP) between RxTxScan* and TxAdvInd.
 func (c *Ctrl) scanDisabledISR() {
 	c.LEDs[4].Clear()
 
@@ -164,7 +171,7 @@ func (c *Ctrl) scanDisabledISR() {
 
 	if c.chi == 39 {
 		t := c.rtc0
-		t.StoreCC(0, t.LoadCC(0)+c.period+c.rnd.Uint32()&255)
+		t.StoreCC(0, t.LoadCC(0)+c.advInterval+c.rnd.Uint32()&255)
 	}
 }
 
@@ -184,7 +191,9 @@ func (c *Ctrl) advIndTxDisabledISR() {
 
 	// Setup for RxScanReq timeout.
 	t := c.rtc0
-	t.StoreCC(1, t.LoadCOUNTER()+16) // 488 µs
+	const timeout = 16 // 488 µs > t_IFS+t_ConnReqPkt-t_CRC = 478 µs
+	t.StoreCC(1, t.LoadCOUNTER()+timeout)
+
 	t.Event(rtc.COMPARE(1)).EnablePPI()
 	c.setupTxAdvInd()
 }
@@ -227,10 +236,26 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 		c.LEDs[2].Clear()
 		return
 	}
+	d := llData(c.rxd[2+6+6:])
+
+	r.StoreCRCINIT(d.CRCInit())
+	radioSetAA(r, d.AA())
+	radioSetMaxLen(r, 253-2)
+
+	const scale = 41943 // 32768*1.25<<10 / 1000 = 41943.04 (error ~= 1ppm).
+
+	// Calculate timing parameters as RTC ticks, rounding to safe direction.
+	c.connInterval = d.Interval() * scale >> 10
+	winSize := (d.WinSize()*scale + 2<<10 - 1) >> 10
+	winOffset := (d.WinOffset() + 1) * scale >> 10
+
+	ssca := d.SSCA() + (100<<19+999999)/1000000
+	tsca := (winOffset*ssca + 1<<19 - 1) >> 19
+
+	winOffset -= tsca
+	winSize += 2 * tsca
+
+	c.rxWait = byte((150*32768+999999)/1000000 + 2*tsca) // CHECK THIS!
 
 	c.rtc0.Task(rtc.STOP).Trigger()
 }
-
-/*func (c *Ctrl) WaitConn(deadline int64) {
-
-}*/
