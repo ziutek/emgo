@@ -11,6 +11,7 @@ import (
 	"nrf5/hal/ppi"
 	"nrf5/hal/radio"
 	"nrf5/hal/rtc"
+	"nrf5/hal/timer"
 )
 
 type Ctrl struct {
@@ -23,14 +24,15 @@ type Ctrl struct {
 
 	advInterval  uint32
 	connInterval uint32
-	rxWait       byte
+	hop          byte
 	chi          byte
 
 	isr func(c *Ctrl)
 
 	radio *radio.Periph
 	rtc0  *rtc.Periph
-	ppic  ppi.Chan
+	tim0  *timer.Periph
+	ppi   ppi.Chan
 
 	LEDs *[5]gpio.Pin
 }
@@ -39,7 +41,7 @@ func (c *Ctrl) RxD() []byte {
 	return c.rxd
 }
 
-func NewCtrl(ppic ppi.Chan) *Ctrl {
+func NewCtrl(p ppi.Chan) *Ctrl {
 	c := new(Ctrl)
 	c.devAddr = getDevAddr()
 	c.advPDU = ble.MakeAdvPDU(make([]byte, 2+6+3))
@@ -50,7 +52,8 @@ func NewCtrl(ppic ppi.Chan) *Ctrl {
 	c.rxd = make([]byte, 39)
 	c.radio = radio.RADIO
 	c.rtc0 = rtc.RTC0
-	c.ppic = ppic
+	c.tim0 = timer.TIMER0
+	c.ppi = p
 	c.rnd.Seed(rtos.Nanosec())
 	return c
 }
@@ -67,6 +70,7 @@ func (c *Ctrl) DevAddr() int64 {
 func (c *Ctrl) InitPhy() {
 	radioInit(c.radio, 39)
 	rtcInit(c.rtc0)
+	timerInit(c.tim0)
 	pp := ppi.RADIO_BCMATCH__AAR_START.Mask() |
 		ppi.RADIO_READY__CCM_KSGEN.Mask() |
 		ppi.RADIO_ADDRESS__CCM_CRYPT.Mask() |
@@ -95,23 +99,32 @@ func (c *Ctrl) Advertise(respPDU ble.AdvPDU, advIntervalms int) {
 	c.advInterval = uint32(advIntervalms*32768+500) / 1000
 	c.scanDisabledISR()
 
-	t := c.rtc0
-	t.Event(rtc.COMPARE(0)).EnablePPI()
-	t.Task(rtc.CLEAR).Trigger()
-	t.StoreCC(0, 1)
-	pc := c.ppic
-	pc.SetEEP(t.Event(rtc.COMPARE(1)))
-	pc.SetTEP(r.Task(radio.DISABLE))
-	pc.Enable()
+	// TIMER0_COMPARE1 is used to implement Rx timeout.
+	t := c.tim0
+	t.StoreCC(1, 200) // > t_IFS+t_Preamble+t_AA = 190 µs.
+	ppi.TIMER0_COMPARE1__RADIO_DISABLE.Enable()
+	p := c.ppi
+	p.SetEEP(r.Event(radio.ADDRESS))
+	p.SetTEP(t.Task(timer.STOP))
+	p.Enable()
+
+	// RTC0_COMPARE0 is used to implement periodical events.
+	rt := c.rtc0
+	rt.Event(rtc.COMPARE(0)).EnablePPI()
+	rt.Task(rtc.CLEAR).Trigger()
+	rt.StoreCC(0, 1)
 	ppi.RTC0_COMPARE0__RADIO_TXEN.Enable()
 
 	fence.W()
-	t.Task(rtc.START).Trigger()
+	rt.Task(rtc.START).Trigger()
 }
 
-func (c *Ctrl) RadioISR() {
-	c.rtc0.Event(rtc.COMPARE(1)).DisablePPI()
+/*pc := c.ppic
+pc.SetEEP(t.Event(rtc.COMPARE(1)))
+pc.SetTEP(r.Task(radio.DISABLE))
+pc.Enable()*/
 
+func (c *Ctrl) RadioISR() {
 	r := c.radio
 	if ev := r.Event(radio.DISABLED); ev.IsSet() {
 		ev.Clear()
@@ -120,12 +133,6 @@ func (c *Ctrl) RadioISR() {
 	}
 
 	r.Event(radio.PAYLOAD).DisableIRQ()
-
-	if r.LoadSTATE() != radio.Rx {
-		// Race beetwen radio.PAYLOAD and rtc.COMPARE(1): some payload received
-		// but timeout occured before routing to PPI was disabled.
-		return
-	}
 
 	pdu := ble.AsAdvPDU(c.rxd)
 	if len(pdu.Payload()) < 12 ||
@@ -147,6 +154,7 @@ func (c *Ctrl) RadioISR() {
 		c.LEDs[1].Set()
 	case pdu.Type() == ble.ConnectReq && len(pdu.Payload()) == 6+6+22:
 		// Setup for connection state.
+		c.connInterval = c.rtc0.LoadCOUNTER()
 		r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
 		c.isr = (*Ctrl).connectReqRxDisabledISR
 		c.LEDs[2].Set()
@@ -170,8 +178,8 @@ func (c *Ctrl) scanDisabledISR() {
 	c.isr = (*Ctrl).advIndTxDisabledISR
 
 	if c.chi == 39 {
-		t := c.rtc0
-		t.StoreCC(0, t.LoadCC(0)+c.advInterval+c.rnd.Uint32()&255)
+		rt := c.rtc0
+		rt.StoreCC(0, rt.LoadCC(0)+c.advInterval+c.rnd.Uint32()&255)
 	}
 }
 
@@ -189,12 +197,11 @@ func (c *Ctrl) advIndTxDisabledISR() {
 	ev.Clear()
 	ev.EnableIRQ()
 
-	// Setup for RxScanReq timeout.
-	t := c.rtc0
-	const timeout = 16 // 488 µs > t_IFS+t_ConnReqPkt-t_CRC = 478 µs
-	t.StoreCC(1, t.LoadCOUNTER()+timeout)
+	// Enable RxScanReq timeout.
+	t := c.tim0
+	t.Task(timer.CLEAR).Trigger()
+	t.Task(timer.START).Trigger()
 
-	t.Event(rtc.COMPARE(1)).EnablePPI()
 	c.setupTxAdvInd()
 }
 
@@ -236,26 +243,40 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 		c.LEDs[2].Clear()
 		return
 	}
+	ppi.RTC0_COMPARE0__RADIO_TXEN.Disable()
+
 	d := llData(c.rxd[2+6+6:])
 
 	r.StoreCRCINIT(d.CRCInit())
 	radioSetAA(r, d.AA())
 	radioSetMaxLen(r, 253-2)
-
-	const scale = 41943 // 32768*1.25<<10 / 1000 = 41943.04 (error ~= 1ppm).
+	//radioSetChi()
 
 	// Calculate timing parameters as RTC ticks, rounding to safe direction.
-	c.connInterval = d.Interval() * scale >> 10
+	const (
+		scale = 41943 // 32768*1.25*1024/1000 = 41943.04 (error ~= 1ppm).
+		tcrc  = (24*32768 + 500) / 1000
+	)
 	winSize := (d.WinSize()*scale + 2<<10 - 1) >> 10
 	winOffset := (d.WinOffset() + 1) * scale >> 10
-
 	ssca := d.SSCA() + (100<<19+999999)/1000000
 	tsca := (winOffset*ssca + 1<<19 - 1) >> 19
-
 	winOffset -= tsca
 	winSize += 2 * tsca
 
-	c.rxWait = byte((150*32768+999999)/1000000 + 2*tsca) // CHECK THIS!
+	// c.connInterval contains time of ConnectReq.PAYLOAD event.
+	rxstart := c.connInterval + tcrc + winOffset
+	rxstop := rxstart + winSize + ((150+2080)*32768+999)/1000
+	rt := c.rtc0
 
-	c.rtc0.Task(rtc.STOP).Trigger()
+	rt.Task(rtc.STOP).Trigger()
+
+	rt.StoreCC(0, rxstart)
+	rt.StoreCC(1, rxstop)
+	c.connInterval = d.Interval() * scale >> 10
+
+	ppi.RTC0_COMPARE0__RADIO_RXEN.Enable()
+	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN)
+	//c.isr = (*Ctrl).connRxDisabledISR
+
 }

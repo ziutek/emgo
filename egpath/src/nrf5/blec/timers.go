@@ -1,8 +1,6 @@
 package blec
 
 import (
-	"rtos"
-
 	"nrf5/hal/rtc"
 	"nrf5/hal/te"
 	"nrf5/hal/timer"
@@ -15,9 +13,10 @@ func timerInit(t *timer.Periph) {
 	t.StorePRESCALER(4) // 1 MHz (allows switch HFCLK to 1 MHz low power mode)
 	t.StoreSHORTS(timer.COMPARE1_STOP)
 	t.DisableIRQ(te.EvAll)
-	irq := rtos.IRQ(t.IRQ())
+	
+	/*irq := rtos.IRQ(t.IRQ())
 	irq.SetPrio(rtos.IRQPrioHighest)
-	irq.Enable()
+	irq.Enable()*/
 }
 
 func rtcInit(rt *rtc.Periph) {
@@ -25,7 +24,8 @@ func rtcInit(rt *rtc.Periph) {
 	rt.StorePRESCALER(0) // 32768 Hz
 	rt.DisableIRQ(te.EvAll)
 	rt.DisablePPI(te.EvAll)
-	irq := rtos.IRQ(rt.IRQ())
+	
+	/*irq := rtos.IRQ(rt.IRQ())
 	irq.SetPrio(rtos.IRQPrioHighest)
-	irq.Enable()
+	irq.Enable()*/
 }
