@@ -9,7 +9,7 @@ import (
 	"nrf5/hal/te"
 )
 
-func radioInit(r *radio.Periph, maxPayLen int) {
+func radioInit(r *radio.Periph) {
 	if f := ficr.FICR; f.BLE_1MBIT_OK().Load() == 0 {
 		r.StoreOVERRIDE(0, f.BLE_1MBIT[0].U32.Load())
 		r.StoreOVERRIDE(1, f.BLE_1MBIT[1].U32.Load())
@@ -43,14 +43,14 @@ func radioSetAA(r *radio.Periph, addr uint32) {
 	r.StorePREFIX(0, addr>>24)
 }
 
-func radioSetChi(r *radio.Periph, chi byte) {
+func radioSetChi(r *radio.Periph, chi int) {
 	r.StoreDATAWHITEIV(uint32(chi))
 	var ch int
 	switch {
 	case chi <= 10:
-		ch = int(chi*2 + 4)
+		ch = chi*2 + 4
 	case chi <= 36:
-		ch = int(chi*2 + 6)
+		ch = chi*2 + 6
 	case chi == 37:
 		ch = 2
 	case chi == 38:

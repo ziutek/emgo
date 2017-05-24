@@ -11,7 +11,6 @@ import (
 	"nrf5/hal/clock"
 	"nrf5/hal/gpio"
 	"nrf5/hal/irq"
-	"nrf5/hal/ppi"
 	"nrf5/hal/rtc"
 	"nrf5/hal/system"
 	"nrf5/hal/system/timer/rtcst"
@@ -36,7 +35,7 @@ func init() {
 		leds[i] = led
 	}
 
-	bctr = blec.NewCtrl(ppi.Chan(0))
+	bctr = blec.NewCtrl()
 	bctr.InitPhy()
 	bctr.LEDs = &leds
 
