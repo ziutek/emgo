@@ -23,11 +23,11 @@ type Ctrl struct {
 	txd    []byte
 
 	advIntervalRTC uint32
-	connInterval   uint32
+	connDelay      uint32
+	connWindow     uint16
 
-	chm chmap
-	sca uint16
 	chi byte
+	chm chmap
 
 	isr func(c *Ctrl)
 
@@ -76,7 +76,7 @@ func (c *Ctrl) InitPhy() {
 	radioInit(c.radio)
 	rtcInit(c.rtc0)
 	timerInit(c.tim0)
-	pp := ppi.RADIO_BCMATCH__AAR_START.Mask() |
+	ppm := ppi.RADIO_BCMATCH__AAR_START.Mask() |
 		ppi.RADIO_READY__CCM_KSGEN.Mask() |
 		ppi.RADIO_ADDRESS__CCM_CRYPT.Mask() |
 		ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Mask() |
@@ -88,7 +88,7 @@ func (c *Ctrl) InitPhy() {
 		ppi.TIMER0_COMPARE0__RADIO_TXEN.Mask() |
 		ppi.TIMER0_COMPARE0__RADIO_RXEN.Mask() |
 		ppi.TIMER0_COMPARE1__RADIO_DISABLE.Mask()
-	pp.Disable()
+	ppm.Disable()
 }
 
 func (c *Ctrl) Advertise(respPDU ble.AdvPDU, advIntervalms int) {
@@ -110,7 +110,7 @@ func (c *Ctrl) Advertise(respPDU ble.AdvPDU, advIntervalms int) {
 	ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Enable()
 	ppi.RADIO_END__TIMER0_CAPTURE2.Enable()
 
-	// RTC0_COMPARE0 is used to implement periodical events.
+	// RTC0_COMPARE0 is used to implement periodical Tx events.
 	rt := c.rtc0
 	rt.Event(rtc.COMPARE(0)).EnablePPI()
 	rt.Task(rtc.CLEAR).Trigger()
@@ -233,9 +233,48 @@ func (c *Ctrl) setupTxAdvInd() {
 	c.isr = (*Ctrl).scanDisabledISR
 }
 
-const rxRU = 130 // µs
+// setRxTimers setups RTC0 and Timer0 to trigger RXEN event or timeout DISABLE
+// event using base, delay, window in µs.
+func (c *Ctrl) setRxTimers(base, delay, window uint32) {
+	t := c.tim0
+	rt := c.rtc0
+	t.Task(timer.CAPTURE(0)).Trigger()
+	baseRTC := rt.LoadCOUNTER()
+	t.Task(timer.STOP).Trigger()
+	t.Task(timer.CLEAR).Trigger()
+
+	delay -= t.LoadCC(0) - base
+	rtcTick := delay * 67 / 2048         // 67/2048 < 32768/1e6 == 512/15625
+	timTick := delay - rtcTick*15625/512 // µs
+
+	rt.StoreCC(0, baseRTC+rtcTick)
+	if timTick < 4 {
+		t.StoreCC(1, window)
+		ppm := ppi.RTC0_COMPARE0__RADIO_TXEN.Mask() |
+			ppi.TIMER0_COMPARE0__RADIO_RXEN.Mask()
+		ppm.Disable()
+		ppm = ppi.RTC0_COMPARE0__RADIO_RXEN.Mask() |
+			ppi.RTC0_COMPARE0__TIMER0_START.Mask()
+		ppm.Enable()
+	} else {
+		t.StoreCC(0, timTick)
+		t.StoreCC(1, timTick+window)
+		ppm := ppi.RTC0_COMPARE0__RADIO_TXEN.Mask() |
+			ppi.RTC0_COMPARE0__RADIO_RXEN.Mask()
+		ppm.Disable()
+		ppm = ppi.RTC0_COMPARE0__TIMER0_START.Mask() |
+			ppi.TIMER0_COMPARE0__RADIO_RXEN.Mask()
+		ppm.Enable()
+	}
+}
 
 func (c *Ctrl) connectReqRxDisabledISR() {
+	const (
+		rxRU    = 130 // RADIO Rx ramp up (µs).
+		rtcRA   = 30  // RTC read accuracy (µs): read <= real <= read+rtcRA.
+		aaDelay = 40  // Delay between start of packet and ADDRESS event (µs).
+	)
+
 	r := c.radio
 	if !r.LoadCRCSTATUS() {
 		// Return to advertising.
@@ -244,7 +283,8 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 		c.LEDs[2].Clear()
 		return
 	}
-	c.rtc0.Task(rtc.STOP).Trigger()
+	// Both timers (RTC0, TIMER0) are running. TIMER0.CC2 contains time of
+	// END event (end of ConnectReq packet).
 
 	d := llData(c.rxd[2+6+6:])
 	c.chm = d.ChM()
@@ -255,22 +295,23 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	radioSetChi(r, c.chm.NextChi())
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN)
 
+	rsca := d.SCA() + (100<<19+999999)/1000000 // Assume 100 ppm local SCA.
+
 	winOffset := d.WinOffset()
-	c.connInterval = d.Interval()
+	sca := (winOffset*rsca + 1<<19 - 1) >> 19 // Absolute SCA for (µs).
 
-	// Calculate absolute SCA in µs, round it up.
-	sca := d.SCA() + (100<<19+999999)/1000000 // Assume 100 ppm local SCA.
-	c.sca = uint16((c.connInterval*sca + 1<<19 - 1) >> 19)
-	sca = (winOffset*sca + 1<<19 - 1) >> 19
-
-	t := c.tim0
-	connReqEnd := t.LoadCC(2)
-	t.StoreCC(0, connReqEnd+winOffset-sca-rxRU)
-	t.StoreCC(1, connReqEnd+winOffset+sca+d.WinSize())
-
-	ppi.TIMER0_COMPARE0__RADIO_RXEN.Enable()
-
+	// Setup first anchor point.
+	c.setRxTimers(
+		c.tim0.LoadCC(2),
+		winOffset-rxRU-sca,
+		d.WinSize()+rxRU+2*sca+rtcRA,
+	)
 	c.isr = (*Ctrl).connRxDisabledISR
+
+	connInterval := d.Interval()
+	sca = (connInterval*rsca + 1<<19 - 1) >> 19
+	c.connDelay = connInterval - rxRU - sca - aaDelay
+	c.connWindow = uint16(rxRU + 2*sca + rtcRA)
 }
 
 var txDataPDU [maxPDULen]byte
@@ -282,6 +323,8 @@ func (c *Ctrl) connRxDisabledISR() {
 		c.LEDs[2].Clear()
 		return
 	}
+	// Both timers (TIM0, TIMER0) are running. TIMER0.CC1 contains time of
+	// ADDRESS event (end of address field of data packet).
 
 	// Must be before ConnTx.START.
 	rxd := c.rxd
@@ -290,17 +333,11 @@ func (c *Ctrl) connRxDisabledISR() {
 	txd[0] = dcL2CAPCont | rxd[0]&dcNESN<<1 | rxd[0]&dcSN>>1
 	txd[1] = 0
 
-	t := c.tim0
-	connRxAddr := t.LoadCC(1)
-
 	// Must be before ConnTx.DISABLED
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
 	c.isr = (*Ctrl).connTxDisabledISR
 
-	nextRxAddr := c.connInterval + connRxAddr
-	sca := uint32(c.sca)
-	t.StoreCC(0, nextRxAddr-sca-(1+4)*8-rxRU)
-	t.StoreCC(1, nextRxAddr+sca)
+	c.setRxTimers(c.tim0.LoadCC(1), c.connDelay, uint32(c.connWindow))
 
 	c.LEDs[0].Store(int(txd[0]) >> 3)
 }

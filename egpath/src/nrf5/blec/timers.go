@@ -10,7 +10,7 @@ func timerInit(t *timer.Periph) {
 	t.Task(timer.STOP).Trigger()
 	t.StoreMODE(timer.TIMER)
 	t.StoreBITMODE(timer.BIT32)
-	t.StorePRESCALER(4) // 1 MHz (allows switch HFCLK to 1 MHz low power mode)
+	t.StorePRESCALER(4) // 1 MHz (allows switch HFCLK to low power mode)
 	t.DisableIRQ(te.EvAll)
 	
 	/*irq := rtos.IRQ(t.IRQ())
