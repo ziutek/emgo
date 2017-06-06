@@ -1,7 +1,6 @@
 package main
 
 import (
-	"delay"
 	"fmt"
 	"rtos"
 
@@ -35,7 +34,7 @@ func init() {
 		leds[i] = led
 	}
 
-	bctr = blec.NewCtrl()
+	bctr = blec.NewCtrl(ble.MaxDataPay, 3, 3)
 	bctr.InitPhy()
 	bctr.LEDs = &leds
 
@@ -50,9 +49,9 @@ func init() {
 }
 
 func main() {
-	fmt.Printf("DevAddr: %08x\r\n", uint64(bctr.DevAddr()))
+	fmt.Printf("\r\nDevAddr: %08x\r\n", uint64(bctr.DevAddr()))
 
-	pdu := ble.MakeAdvPDU(nil)
+	pdu := ble.MakeAdvPDU(ble.MaxDataPay)
 	pdu.SetType(ble.ScanRsp)
 	pdu.SetTxAdd(bctr.DevAddr() < 0)
 	pdu.AppendAddr(bctr.DevAddr())
@@ -60,11 +59,12 @@ func main() {
 	pdu.AppendBytes(ble.TxPower, 0)
 	bctr.Advertise(pdu, 625)
 	for i := 0; ; i++ {
-		fmt.Printf(
-			"CC=%d CNT=%d\r\n",
-			rtc.RTC0.LoadCC(0), rtc.RTC0.LoadCOUNTER(),
-		)
-		delay.Millisec(625)
+		pdu := bctr.Recv()
+		if pdu.PayLen() > ble.MaxDataPay {
+			fmt.Printf("error\r\n")
+			continue
+		}
+		fmt.Printf("%02x\r\n", pdu.Bytes())
 	}
 }
 

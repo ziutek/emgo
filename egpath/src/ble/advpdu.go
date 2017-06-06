@@ -1,50 +1,13 @@
 package ble
 
-// AdvPDU represents Advertising Channel PDU. It should be initialized before
-// use.
+// AdvPDU represents Advertising Channel PDU. See PDU for more information.
 type AdvPDU struct {
-	b []byte
+	PDU
 }
 
-// MakeAdvPDU returns ready to use AdvPDU. If b is nil then MakeAdvPDU allocates
-// 39 bytes that is enough to store any valid BLE4.x Advertising Channel PDU.
-// Returned variable refers to the same memory as b or to the allocated storage.
-func MakeAdvPDU(b []byte) AdvPDU {
-	if b == nil {
-		b = make([]byte, 39)
-	}
-	b[0] = 0
-	b[1] = 0
-	return AdvPDU{b}
-}
-
-func AsAdvPDU(b []byte) AdvPDU {
-	return AdvPDU{b}
-}
-
-// IsNil returns true in case of uninitialized pdu variable.
-func (pdu AdvPDU) IsNil() bool {
-	return pdu.b == nil
-}
-
-func (pdu AdvPDU) length() int {
-	return int(pdu.b[1]) + 2
-}
-
-func (pdu AdvPDU) setLength(n int) {
-	if uint(n) > 39 {
-		panic("ble: bad PDU length")
-	}
-	pdu.b[1] = byte(n - 2)
-}
-
-// Bytes returns underlying bytes of pdu.
-func (pdu AdvPDU) Bytes() []byte {
-	return pdu.b[:pdu.length()]
-}
-
-func (pdu AdvPDU) Payload() []byte {
-	return pdu.b[2:pdu.length()]
+// MakeAdvPDU is more readable counterpart of AdvPDU{MakePDU(maxpay)}.
+func MakeAdvPDU(maxpay int) AdvPDU {
+	return AdvPDU{MakePDU(maxpay)}
 }
 
 // AdvPDUType represents Advertising Channel PDU type.
@@ -68,7 +31,6 @@ func (pdu AdvPDU) Type() AdvPDUType {
 // SetType sets pdu type in header.
 func (pdu AdvPDU) SetType(typ AdvPDUType) {
 	pdu.b[0] = pdu.b[0]&^0xf | byte(typ)
-	pdu.Reset()
 }
 
 // TxAdd returns TxAdd field from header.
@@ -99,23 +61,19 @@ func (pdu AdvPDU) SetRxAdd(rnda bool) {
 	}
 }
 
-// Reset resets length of pdu.
-func (pdu AdvPDU) Reset() {
-	pdu.setLength(2)
-}
-
 func (pdu AdvPDU) UpdateAddr(offset int, addr int64) {
-	pdu.b[offset] = byte(addr)
-	pdu.b[offset+1] = byte(addr >> 8)
-	pdu.b[offset+2] = byte(addr >> 16)
-	pdu.b[offset+3] = byte(addr >> 24)
-	pdu.b[offset+4] = byte(addr >> 32)
-	pdu.b[offset+5] = byte(addr >> 40)
+	data := pdu.Payload()[offset:]
+	data[0] = byte(addr)
+	data[1] = byte(addr >> 8)
+	data[2] = byte(addr >> 16)
+	data[3] = byte(addr >> 24)
+	data[4] = byte(addr >> 32)
+	data[5] = byte(addr >> 40)
 }
 
 func (pdu AdvPDU) AppendAddr(addr int64) (offset int) {
-	offset = pdu.length()
-	pdu.setLength(offset + 6)
+	offset = pdu.PayLen()
+	pdu.SetPayLen(offset + 6)
 	pdu.UpdateAddr(offset, addr)
 	return
 }
@@ -152,41 +110,45 @@ const (
 )
 
 func (pdu AdvPDU) AppendBytes(typ ADType, s ...byte) {
-	n := pdu.length()
-	pdu.setLength(n + 2 + len(s))
-	pdu.b[n] = byte(1 + len(s))
-	pdu.b[n+1] = byte(typ)
-	copy(pdu.b[n+2:], s)
+	n := pdu.PayLen()
+	pdu.SetPayLen(n + 2 + len(s))
+	data := pdu.Payload()[n:]
+	data[0] = byte(1 + len(s))
+	data[1] = byte(typ)
+	copy(data[2:], s)
+}
+
+func (pdu AdvPDU) AppendString(typ ADType, s string) {
+	n := pdu.PayLen()
+	pdu.SetPayLen(n + 2 + len(s))
+	data := pdu.Payload()[n:]
+	data[0] = byte(1 + len(s))
+	data[1] = byte(typ)
+	copy(data[2:], s)
 }
 
 func (pdu AdvPDU) AppendWords16(typ ADType, s ...uint16) {
-	n := pdu.length()
-	pdu.setLength(n + 2 + 2*len(s))
-	pdu.b[n] = byte(1 + 2*len(s))
-	pdu.b[n+1] = byte(typ)
+	n := pdu.PayLen()
+	pdu.SetPayLen(n + 2 + len(s)*2)
+	data := pdu.Payload()[n:]
+	data[0] = byte(1 + len(s)*2)
+	data[1] = byte(typ)
 	for i, u := range s {
-		pdu.b[n+2+2*i] = byte(u)
-		pdu.b[n+3+2*i] = byte(u >> 8)
+		data[2+i*2] = byte(u)
+		data[3+i*2] = byte(u >> 8)
 	}
 }
 
 func (pdu AdvPDU) AppendWords32(typ ADType, s ...uint32) {
-	n := pdu.length()
-	pdu.setLength(n + 2 + 4*len(s))
-	pdu.b[n] = byte(1 + 4*len(s))
-	pdu.b[n+1] = byte(typ)
+	n := pdu.PayLen()
+	pdu.SetPayLen(n + 2 + len(s)*4)
+	data := pdu.Payload()[n:]
+	data[0] = byte(1 + 4*len(s))
+	data[1] = byte(typ)
 	for i, u := range s {
-		pdu.b[n+2+4*i] = byte(u)
-		pdu.b[n+3+4*i] = byte(u >> 8)
-		pdu.b[n+4+4*i] = byte(u >> 16)
-		pdu.b[n+5+4*i] = byte(u >> 24)
+		data[2+i*4] = byte(u)
+		data[3+i*4] = byte(u >> 8)
+		data[4+i*4] = byte(u >> 16)
+		data[5+i*4] = byte(u >> 24)
 	}
-}
-
-func (pdu AdvPDU) AppendString(typ ADType, s string) {
-	n := pdu.length()
-	pdu.setLength(n + 2 + len(s))
-	pdu.b[n] = byte(1 + len(s))
-	pdu.b[n+1] = byte(typ)
-	copy(pdu.b[n+2:], s)
 }

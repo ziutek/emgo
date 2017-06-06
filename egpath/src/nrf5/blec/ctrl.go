@@ -18,13 +18,19 @@ type Ctrl struct {
 	rnd     rand.XorShift64
 	devAddr int64
 
-	advPDU ble.AdvPDU
-	rxd    []byte
-	txd    []byte
-
 	advIntervalRTC uint32
 	connDelay      uint32
 	connWindow     uint16
+	sn, nesn       byte
+
+	advPDU  ble.AdvPDU
+	rxaPDU  ble.AdvPDU
+	txcPDU  ble.DataPDU
+	rxdPDUs []ble.DataPDU
+	rxcRef  ble.DataPDU
+	rspRef  ble.PDU
+	rxn     byte
+	md      bool
 
 	chi byte
 	chm chmap
@@ -35,32 +41,47 @@ type Ctrl struct {
 	rtc0  *rtc.Periph
 	tim0  *timer.Periph
 
+	recv chan ble.DataPDU
+	send chan ble.DataPDU
+
+	iter int
 	LEDs *[5]gpio.Pin
 }
 
-func (c *Ctrl) RxD() []byte {
-	return c.rxd
-}
-
-const (
-	maxPDULen = 39
-	maxPayLen = maxPDULen - 2
-)
-
-func NewCtrl() *Ctrl {
+// NewCtrl returns controller that supports payloads of maxpay length (counts
+// MIC if used). Use 31 in case of BLE 4.0, 4.1 and any value from 31 to 255 in
+// case of BLE 4.2+. nRF51 can not support BLE 4.2+ full length payloads (radio
+// hardware limits max. payload length to 253 bytes). Rxcap and txcap sets
+// capacities of internal Rx and Tx queues (channels).
+func NewCtrl(maxpay, rxcap, txcap int) *Ctrl {
 	c := new(Ctrl)
 	c.devAddr = getDevAddr()
-	c.advPDU = ble.MakeAdvPDU(make([]byte, 2+6+3))
+	c.advPDU = ble.MakeAdvPDU(6 + 3)
 	c.advPDU.SetType(ble.AdvInd)
 	c.advPDU.SetTxAdd(c.devAddr < 0)
 	c.advPDU.AppendAddr(c.devAddr)
 	c.advPDU.AppendBytes(ble.Flags, ble.GeneralDisc|ble.OnlyLE)
-	c.rxd = make([]byte, maxPDULen)
+	c.rxaPDU = ble.MakeAdvPDU(ble.MaxAdvPay)
+	c.txcPDU = ble.MakeDataPDU(27)
+	c.rxdPDUs = make([]ble.DataPDU, rxcap+2)
+	for i := range c.rxdPDUs {
+		c.rxdPDUs[i] = ble.MakeDataPDU(maxpay)
+	}
+	c.recv = make(chan ble.DataPDU, rxcap)
+	c.send = make(chan ble.DataPDU, txcap)
 	c.radio = radio.RADIO
 	c.rtc0 = rtc.RTC0
 	c.tim0 = timer.TIMER0
 	c.rnd.Seed(rtos.Nanosec())
 	return c
+}
+
+func (c *Ctrl) Recv() ble.DataPDU {
+	return <-c.recv
+}
+
+func (c *Ctrl) Send(pdu ble.DataPDU) {
+	c.send <- pdu
 }
 
 func (c *Ctrl) SetTxPwr(dBm int) {
@@ -91,16 +112,16 @@ func (c *Ctrl) InitPhy() {
 	ppm.Disable()
 }
 
-func (c *Ctrl) Advertise(respPDU ble.AdvPDU, advIntervalms int) {
+func (c *Ctrl) Advertise(rspPDU ble.AdvPDU, advIntervalms int) {
 	r := c.radio
 	r.StoreCRCINIT(0x555555)
 	r.Event(radio.DISABLED).EnableIRQ()
 	radioSetAA(r, 0x8E89BED6)
-	radioSetMaxLen(r, maxPayLen)
+	radioSetMaxLen(r, ble.MaxAdvPay)
 	radioSetChi(r, 37)
 
 	c.chi = 37
-	c.txd = respPDU.Bytes()
+	c.rspRef = rspPDU.PDU
 	c.advIntervalRTC = uint32(advIntervalms*32768+500) / 1000
 	c.scanDisabledISR()
 
@@ -131,13 +152,13 @@ func (c *Ctrl) RadioISR() {
 
 	r.Event(radio.PAYLOAD).DisableIRQ()
 
-	pdu := ble.AsAdvPDU(c.rxd)
+	pdu := c.rxaPDU
 	if len(pdu.Payload()) < 12 ||
 		decodeDevAddr(pdu.Payload()[6:], pdu.RxAdd()) != c.devAddr {
 		return
 	}
 	switch {
-	case pdu.Type() == ble.ScanReq && len(pdu.Payload()) == 6+6:
+	case pdu.Type() == ble.ScanReq && pdu.PayLen() == 6+6:
 		// Setup for TxScanRsp.
 		if c.chi != 37 {
 			c.chi--
@@ -148,8 +169,8 @@ func (c *Ctrl) RadioISR() {
 		r.StoreSHORTS(radio.READY_START | radio.END_DISABLE |
 			radio.DISABLED_TXEN)
 		c.isr = (*Ctrl).scanReqRxDisabledISR
-		c.LEDs[1].Set()
-	case pdu.Type() == ble.ConnectReq && len(pdu.Payload()) == 6+6+22:
+		c.LEDs[3].Set()
+	case pdu.Type() == ble.ConnectReq && pdu.PayLen() == 6+6+22:
 		// Setup for connection state.
 		r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
 		c.isr = (*Ctrl).connectReqRxDisabledISR
@@ -164,7 +185,7 @@ func (c *Ctrl) scanDisabledISR() {
 	r := c.radio
 
 	// Must be before TxAdvInd.START.
-	radioSetPDU(r, c.advPDU.Bytes())
+	radioSetPDU(r, c.advPDU.PDU)
 
 	// Must be before TxAdvInd.PAYLOAD
 	r.Event(radio.PAYLOAD).DisableIRQ()
@@ -188,7 +209,7 @@ func (c *Ctrl) advIndTxDisabledISR() {
 	r := c.radio
 
 	// Must be before RxScanReq.START.
-	radioSetPDU(r, c.rxd)
+	radioSetPDU(r, c.rxaPDU.PDU)
 
 	// Must be before RxScanReq.PAYLOAD
 	ev := r.Event(radio.PAYLOAD)
@@ -207,12 +228,12 @@ func (c *Ctrl) advIndTxDisabledISR() {
 // scanReqRxDisabledISR handles DISABLED->TXEN between RxScanReq and TxScanRsp.
 func (c *Ctrl) scanReqRxDisabledISR() {
 	// Must be before TxScanRsp.START.
-	radioSetPDU(c.radio, c.txd)
+	radioSetPDU(c.radio, c.rspRef)
 
 	// Must be before TxScanRsp.DISABLED.
 	c.setupTxAdvInd()
 
-	c.LEDs[1].Clear()
+	c.LEDs[3].Clear()
 }
 
 func (c *Ctrl) setupTxAdvInd() {
@@ -249,7 +270,7 @@ func (c *Ctrl) setRxTimers(base, delay, window uint32) {
 
 	rt.StoreCC(0, baseRTC+rtcTick)
 	if timTick < 4 {
-		t.StoreCC(1, window)
+		t.StoreCC(1, timTick+window)
 		ppm := ppi.RTC0_COMPARE0__RADIO_TXEN.Mask() |
 			ppi.TIMER0_COMPARE0__RADIO_RXEN.Mask()
 		ppm.Disable()
@@ -286,13 +307,16 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	// Both timers (RTC0, TIMER0) are running. TIMER0.CC2 contains time of
 	// END event (end of ConnectReq packet).
 
-	d := llData(c.rxd[2+6+6:])
+	d := llData(c.rxaPDU.Payload()[6+6:])
 	c.chm = d.ChM()
+	rxPDU := c.rxdPDUs[c.rxn].PDU
 
 	r.Event(radio.ADDRESS).Clear()
 	r.StoreCRCINIT(d.CRCInit())
+	radioSetMaxLen(r, rxPDU.PayLen())
 	radioSetAA(r, d.AA())
 	radioSetChi(r, c.chm.NextChi())
+	radioSetPDU(r, rxPDU)
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN)
 
 	rsca := d.SCA() + (100<<19+999999)/1000000 // Assume 100 ppm local SCA.
@@ -312,43 +336,123 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	sca = (connInterval*rsca + 1<<19 - 1) >> 19
 	c.connDelay = connInterval - rxRU - sca - aaDelay
 	c.connWindow = uint16(rxRU + 2*sca + rtcRA)
-}
 
-var txDataPDU [maxPDULen]byte
+	c.txcPDU.SetHeader(ble.L2CAPCont | ble.Header(c.nesn&1<<2|c.sn&1<<3))
+	c.txcPDU.SetPayLen(0)
+	c.rspRef = c.txcPDU.PDU
+}
 
 func (c *Ctrl) connRxDisabledISR() {
 	r := c.radio
-	if !r.Event(radio.ADDRESS).IsSet() || !r.LoadCRCSTATUS() {
+	if !r.Event(radio.ADDRESS).IsSet() {
 		c.tim0.Task(timer.STOP).Trigger()
+		c.rtc0.Task(rtc.STOP).Trigger()
 		c.LEDs[2].Clear()
 		return
 	}
-	// Both timers (TIM0, TIMER0) are running. TIMER0.CC1 contains time of
-	// ADDRESS event (end of address field of data packet).
+	// Both timers (RTC0, TIMER0) are running. TIMER0.CC1 contains time of
+	// ADDRESS event (end of address field in data packet).
+
+	r.Event(radio.READY).Clear()
+
+	if r.LoadCRCSTATUS() {
+		rxPDU := c.rxdPDUs[c.rxn]
+		header := rxPDU.Header()
+		c.md = header&ble.MD != 0 // BUG: fix this.
+		nesn := byte(header) >> 2 & 1
+		sn := byte(header) >> 3 & 1
+		if sn == c.nesn&1 {
+			// New PDU received. Try enqueue it.
+			if header&ble.LLID == ble.LLControl {
+				if c.rxcRef.IsZero() {
+					c.nesn++
+					c.rxcRef = rxPDU
+				}
+			} else {
+				select {
+				case c.recv <- rxPDU:
+					c.nesn++
+					if c.rxn++; int(c.rxn) == len(c.rxdPDUs) {
+						c.rxn = 0
+					}
+				default:
+				}
+			}
+		}
+		if nesn != c.sn&1 {
+			// Previous packet ACKed. Can send new one.
+			var rspPDU ble.DataPDU
+			if !c.rxcRef.IsZero() {
+				// Handle last controll PDU.
+				header = ble.LLControl
+				req := c.rxcRef.Payload()
+				switch req[0] {
+				case llFeatureReq:
+					c.txcPDU.SetPayLen(9)
+					rsp := c.txcPDU.Payload()
+					rsp[0] = llFeatureRsp
+					rsp[1] = 0
+					rsp[2] = 0
+					rsp[3] = 0
+					rsp[4] = 0
+					rsp[5] = 0
+					rsp[6] = 0
+					rsp[7] = 0
+					rsp[8] = 0
+				default:
+					c.txcPDU.SetPayLen(2)
+					rsp := c.txcPDU.Payload()
+					rsp[0] = llUnknownRsp
+					rsp[1] = req[0]
+				}
+				c.rxcRef = ble.DataPDU{}
+				rspPDU = c.txcPDU
+			} else {
+				// Send data PDU from send queue or empty PDU.
+				select {
+				case rspPDU = <-c.send:
+					header = rspPDU.Header()
+				default:
+					header = ble.L2CAPCont
+					c.txcPDU.SetPayLen(0)
+					rspPDU = c.txcPDU
+				}
+			}
+			rspPDU.SetHeader(header | ble.Header(c.nesn&1<<2|c.sn&1<<3))
+			c.rspRef = rspPDU.PDU
+			c.sn++
+		}
+	}
 
 	// Must be before ConnTx.START.
-	rxd := c.rxd
-	txd := txDataPDU[:]
-	radioSetPDU(r, txd)
-	txd[0] = dcL2CAPCont | rxd[0]&dcNESN<<1 | rxd[0]&dcSN>>1
-	txd[1] = 0
+	radioSetPDU(r, c.rspRef)
+
+	/*
+		// Test safety margin to START event.
+		delay.Loop(320)
+		if r.Event(radio.READY).IsSet() {
+			c.LEDs[0].Set()
+		}
+	*/
 
 	// Must be before ConnTx.DISABLED
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
 	c.isr = (*Ctrl).connTxDisabledISR
 
 	c.setRxTimers(c.tim0.LoadCC(1), c.connDelay, uint32(c.connWindow))
-
-	c.LEDs[0].Store(int(txd[0]) >> 3)
 }
 
 func (c *Ctrl) connTxDisabledISR() {
 	r := c.radio
-	radioSetChi(r, c.chm.NextChi())
-	radioSetPDU(r, c.rxd)
+	if !c.md {
+		radioSetChi(r, c.chm.NextChi())
+	}
+	radioSetPDU(r, c.rxdPDUs[c.rxn].PDU)
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN)
+	r.Event(radio.ADDRESS).Clear()
 
 	c.isr = (*Ctrl).connRxDisabledISR
 
-	c.LEDs[3].Store(int(txDataPDU[0]) >> 2)
+	c.LEDs[1].Store(c.iter)
+	c.iter++
 }

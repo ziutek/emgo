@@ -4,6 +4,8 @@ import (
 	"rtos"
 	"unsafe"
 
+	"ble"
+
 	"nrf5/hal/ficr"
 	"nrf5/hal/radio"
 	"nrf5/hal/te"
@@ -34,8 +36,8 @@ func radioSetMaxLen(r *radio.Periph, maxPayLen int) {
 	r.StorePCNF1(radio.WhiteEna | radio.MaxLen(maxPayLen) | radio.BALen(3))
 }
 
-func radioSetPDU(r *radio.Periph, pdu []byte) {
-	r.StorePACKETPTR(unsafe.Pointer(&pdu[0]))
+func radioSetPDU(r *radio.Periph, pdu ble.PDU) {
+	r.StorePACKETPTR(unsafe.Pointer(&pdu.Bytes()[0]))
 }
 
 func radioSetAA(r *radio.Periph, addr uint32) {
