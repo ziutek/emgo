@@ -353,7 +353,10 @@ func (c *Ctrl) connRxDisabledISR() {
 	// Both timers (RTC0, TIMER0) are running. TIMER0.CC1 contains time of
 	// ADDRESS event (end of address field in data packet).
 
-	r.Event(radio.READY).Clear()
+	/*
+		// Test safety margin to START event.
+		r.Event(radio.READY).Clear()
+	*/
 
 	if r.LoadCRCSTATUS() {
 		rxPDU := c.rxdPDUs[c.rxn]
@@ -361,20 +364,32 @@ func (c *Ctrl) connRxDisabledISR() {
 		c.md = header&ble.MD != 0 // BUG: fix this.
 		nesn := byte(header) >> 2 & 1
 		sn := byte(header) >> 3 & 1
+		c.LEDs[0].Store(int(sn))
+		c.LEDs[1].Store(int(c.nesn))
+		c.LEDs[2].Store(int(nesn))
+		c.LEDs[3].Store(int(c.sn))
 		if sn == c.nesn&1 {
-			// New PDU received. Try enqueue it.
-			if header&ble.LLID == ble.LLControl {
+			// New PDU received.
+			llid := header & ble.LLID
+			switch {
+			case llid == ble.LLControl:
+				// LL Control PDU. Pass it for further processing if the
+				// previous one was done.
 				if c.rxcRef.IsZero() {
-					c.nesn++
 					c.rxcRef = rxPDU
+					c.nesn++
 				}
-			} else {
+			case llid == ble.L2CAPCont && rxPDU.PayLen() == 0:
+				// Empty L2CAP PDU.
+				c.nesn++
+			default:
+				// Non-empty L2CAP PDU.
 				select {
 				case c.recv <- rxPDU:
-					c.nesn++
 					if c.rxn++; int(c.rxn) == len(c.rxdPDUs) {
 						c.rxn = 0
 					}
+					c.nesn++
 				default:
 				}
 			}
@@ -383,7 +398,7 @@ func (c *Ctrl) connRxDisabledISR() {
 			// Previous packet ACKed. Can send new one.
 			var rspPDU ble.DataPDU
 			if !c.rxcRef.IsZero() {
-				// Handle last controll PDU.
+				// Process last controll PDU.
 				header = ble.LLControl
 				req := c.rxcRef.Payload()
 				switch req[0] {
@@ -399,11 +414,22 @@ func (c *Ctrl) connRxDisabledISR() {
 					rsp[6] = 0
 					rsp[7] = 0
 					rsp[8] = 0
+				case llVersionInd:
+					c.txcPDU.SetPayLen(6)
+					rsp := c.txcPDU.Payload()
+					rsp[0] = llVersionInd
+					rsp[1] = 6    // BLE version: 6: 4.0, 7: 4.1, 8: 4.2, 9: 5.
+					rsp[2] = 0xFF // Company ID (2 octets).
+					rsp[3] = 0xFF // Using 0xFFFF: tests / not assigned.
+					rsp[4] = 0    // Subversion (2 octets). Unique for each
+					rsp[5] = 0    // implementation or revision of controller.
 				default:
 					c.txcPDU.SetPayLen(2)
 					rsp := c.txcPDU.Payload()
 					rsp[0] = llUnknownRsp
 					rsp[1] = req[0]
+					c.LEDs[4].Clear()
+					c.recv <- rxPDU
 				}
 				c.rxcRef = ble.DataPDU{}
 				rspPDU = c.txcPDU
@@ -418,9 +444,9 @@ func (c *Ctrl) connRxDisabledISR() {
 					rspPDU = c.txcPDU
 				}
 			}
+			c.sn++
 			rspPDU.SetHeader(header | ble.Header(c.nesn&1<<2|c.sn&1<<3))
 			c.rspRef = rspPDU.PDU
-			c.sn++
 		}
 	}
 
@@ -452,7 +478,5 @@ func (c *Ctrl) connTxDisabledISR() {
 	r.Event(radio.ADDRESS).Clear()
 
 	c.isr = (*Ctrl).connRxDisabledISR
-
-	c.LEDs[1].Store(c.iter)
 	c.iter++
 }

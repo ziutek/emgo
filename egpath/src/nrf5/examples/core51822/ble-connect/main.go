@@ -64,7 +64,9 @@ func main() {
 			fmt.Printf("error\r\n")
 			continue
 		}
-		fmt.Printf("%02x\r\n", pdu.Bytes())
+		fmt.Printf(
+			"LLID=%x P=%02x\r\n",
+			pdu.Header()&ble.LLID, pdu.Payload())
 	}
 }
 
