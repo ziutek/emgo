@@ -5,7 +5,7 @@ import (
 	"rtos"
 	"sync/fence"
 
-	"ble"
+	"bluetooth/ble"
 
 	"nrf5/hal/gpio"
 	"nrf5/hal/ppi"
@@ -44,7 +44,7 @@ type Ctrl struct {
 	recv chan ble.DataPDU
 	send chan ble.DataPDU
 
-	iter int
+	Iter int
 	LEDs *[5]gpio.Pin
 }
 
@@ -76,12 +76,13 @@ func NewCtrl(maxpay, rxcap, txcap int) *Ctrl {
 	return c
 }
 
-func (c *Ctrl) Recv() ble.DataPDU {
-	return <-c.recv
+func (c *Ctrl) Recv() (ble.DataPDU, error) {
+	return <-c.recv, nil
 }
 
-func (c *Ctrl) Send(pdu ble.DataPDU) {
+func (c *Ctrl) Send(pdu ble.DataPDU) error {
 	c.send <- pdu
+	return nil
 }
 
 func (c *Ctrl) SetTxPwr(dBm int) {
@@ -478,5 +479,5 @@ func (c *Ctrl) connTxDisabledISR() {
 	r.Event(radio.ADDRESS).Clear()
 
 	c.isr = (*Ctrl).connRxDisabledISR
-	c.iter++
+	c.Iter++
 }

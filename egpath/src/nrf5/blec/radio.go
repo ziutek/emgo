@@ -4,7 +4,7 @@ import (
 	"rtos"
 	"unsafe"
 
-	"ble"
+	"bluetooth/ble"
 
 	"nrf5/hal/ficr"
 	"nrf5/hal/radio"

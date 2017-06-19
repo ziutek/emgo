@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"rtos"
 
-	"ble"
+	"bluetooth/ble"
 
 	"nrf5/blec"
 	"nrf5/hal/clock"
@@ -58,15 +58,16 @@ func main() {
 	pdu.AppendString(ble.LocalName, "Emgo & nRF5")
 	pdu.AppendBytes(ble.TxPower, 0)
 	bctr.Advertise(pdu, 625)
-	for i := 0; ; i++ {
-		pdu := bctr.Recv()
+	for {
+		pdu, _ := bctr.Recv()
+		i := bctr.Iter
 		if pdu.PayLen() > ble.MaxDataPay {
 			fmt.Printf("error\r\n")
 			continue
 		}
 		fmt.Printf(
-			"LLID=%x P=%02x\r\n",
-			pdu.Header()&ble.LLID, pdu.Payload())
+			"%d LLID=%x P=%02x\r\n",
+			i, pdu.Header()&ble.LLID, pdu.Payload())
 	}
 }
 
