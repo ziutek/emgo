@@ -5,6 +5,7 @@ import (
 	"rtos"
 
 	"bluetooth/ble"
+	"bluetooth/l2cap"
 
 	"nrf5/blec"
 	"nrf5/hal/clock"
@@ -48,6 +49,26 @@ func init() {
 	fmt.DefaultWriter = udrv
 }
 
+type pduLogger struct {
+	c *blec.Ctrl
+}
+
+func (p pduLogger) Recv() (ble.DataPDU, error) {
+	pdu, err := p.c.Recv()
+	i := p.c.Iter
+	if err == nil {
+		fmt.Printf(
+			"R LL PDU %d LLID=%x P=%02x\r\n",
+			i, pdu.Header()&ble.LLID, pdu.Payload(),
+		)
+	}
+	return pdu, err
+}
+
+func (p pduLogger) Send(pdu ble.DataPDU) error {
+	return p.c.Send(pdu)
+}
+
 func main() {
 	fmt.Printf("\r\nDevAddr: %08x\r\n", uint64(bctr.DevAddr()))
 
@@ -58,16 +79,28 @@ func main() {
 	pdu.AppendString(ble.LocalName, "Emgo & nRF5")
 	pdu.AppendBytes(ble.TxPower, 0)
 	bctr.Advertise(pdu, 625)
+
+	far := new(l2cap.BLEFAR)
+	far.SetHCI(pduLogger{bctr})
+	buf := make([]byte, 128)
 	for {
-		pdu, _ := bctr.Recv()
-		i := bctr.Iter
-		if pdu.PayLen() > ble.MaxDataPay {
-			fmt.Printf("error\r\n")
+		n, cid, err := far.ReadHeader()
+		if err != nil {
+			fmt.Printf("ReadHeader: %v\r\n", err)
 			continue
 		}
-		fmt.Printf(
-			"%d LLID=%x P=%02x\r\n",
-			i, pdu.Header()&ble.LLID, pdu.Payload())
+		fmt.Printf("R L2CAP header: len=%d cid=%d\r\n", n, cid)
+		for {
+			m, err := far.Read(buf)
+			if err != nil {
+				fmt.Printf("Read: %v\r\n", err)
+				break
+			}
+			if m == 0 {
+				break
+			}
+			fmt.Printf("R L2CAP payload: %02x\r\n", buf[:m])
+		}
 	}
 }
 
