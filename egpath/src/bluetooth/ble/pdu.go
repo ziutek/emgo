@@ -45,14 +45,20 @@ func (pdu PDU) PayLen() int {
 	return int(pdu.b[1])
 }
 
+// SetPayLen sets payload length to n.
 func (pdu PDU) SetPayLen(n int) {
 	checkPayLen(n, pdu.maxpay)
 	pdu.b[1] = byte(n)
 }
 
-// Payload returns payload part of pdu.
+// Payload returns used payload part of PDU.
 func (pdu PDU) Payload() []byte {
 	return pdu.b[2 : 2+pdu.PayLen()]
+}
+
+// Remain returns unused payload part of PDU.
+func (pdu PDU) Remain() []byte {
+	return pdu.b[2+pdu.PayLen() : 2+pdu.maxpay]
 }
 
 // Bytes returns underlying bytes of header and payload part of pdu.

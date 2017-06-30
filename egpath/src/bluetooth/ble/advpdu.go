@@ -110,45 +110,41 @@ const (
 )
 
 func (pdu AdvPDU) AppendBytes(typ ADType, s ...byte) {
-	n := pdu.PayLen()
-	pdu.SetPayLen(n + 2 + len(s))
-	data := pdu.Payload()[n:]
-	data[0] = byte(1 + len(s))
-	data[1] = byte(typ)
-	copy(data[2:], s)
+	r := pdu.Remain()
+	pdu.SetPayLen(pdu.PayLen() + 2 + len(s))
+	r[0] = byte(1 + len(s))
+	r[1] = byte(typ)
+	copy(r[2:], s)
 }
 
 func (pdu AdvPDU) AppendString(typ ADType, s string) {
-	n := pdu.PayLen()
-	pdu.SetPayLen(n + 2 + len(s))
-	data := pdu.Payload()[n:]
-	data[0] = byte(1 + len(s))
-	data[1] = byte(typ)
-	copy(data[2:], s)
+	r := pdu.Remain()
+	pdu.SetPayLen(pdu.PayLen() + 2 + len(s))
+	r[0] = byte(1 + len(s))
+	r[1] = byte(typ)
+	copy(r[2:], s)
 }
 
 func (pdu AdvPDU) AppendWords16(typ ADType, s ...uint16) {
-	n := pdu.PayLen()
-	pdu.SetPayLen(n + 2 + len(s)*2)
-	data := pdu.Payload()[n:]
-	data[0] = byte(1 + len(s)*2)
-	data[1] = byte(typ)
+	r := pdu.Remain()
+	pdu.SetPayLen(pdu.PayLen() + 2 + len(s)*2)
+	r[0] = byte(1 + len(s)*2)
+	r[1] = byte(typ)
 	for i, u := range s {
-		data[2+i*2] = byte(u)
-		data[3+i*2] = byte(u >> 8)
+		r[2+i*2] = byte(u)
+		r[3+i*2] = byte(u >> 8)
 	}
 }
 
 func (pdu AdvPDU) AppendWords32(typ ADType, s ...uint32) {
-	n := pdu.PayLen()
-	pdu.SetPayLen(n + 2 + len(s)*4)
-	data := pdu.Payload()[n:]
-	data[0] = byte(1 + 4*len(s))
-	data[1] = byte(typ)
+	r := pdu.Remain()
+	pdu.SetPayLen(pdu.PayLen() + 2 + len(s)*4)
+	r[0] = byte(1 + len(s)*4)
+	r[1] = byte(typ)
 	for i, u := range s {
-		data[2+i*4] = byte(u)
-		data[3+i*4] = byte(u >> 8)
-		data[4+i*4] = byte(u >> 16)
-		data[5+i*4] = byte(u >> 24)
+		r[2+i*4] = byte(u)
+		r[3+i*4] = byte(u >> 8)
+		r[4+i*4] = byte(u >> 16)
+		r[5+i*4] = byte(u >> 24)
 	}
 }

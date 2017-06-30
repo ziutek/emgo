@@ -23,26 +23,24 @@ type Ctrl struct {
 	connWindow     uint16
 	sn, nesn       byte
 
-	advPDU  ble.AdvPDU
-	rxaPDU  ble.AdvPDU
-	txcPDU  ble.DataPDU
-	rxdPDUs []ble.DataPDU
-	rxcRef  ble.DataPDU
-	rspRef  ble.PDU
-	rxn     byte
-	md      bool
+	advPDU ble.AdvPDU
+	rxaPDU ble.AdvPDU
+	txcPDU ble.DataPDU
+	rxcRef ble.DataPDU
+	rspRef ble.PDU
+	md     bool
 
 	chi byte
 	chm chmap
+
+	recv pduChan
+	send pduChan
 
 	isr func(c *Ctrl)
 
 	radio *radio.Periph
 	rtc0  *rtc.Periph
 	tim0  *timer.Periph
-
-	recv chan ble.DataPDU
-	send chan ble.DataPDU
 
 	Iter int
 	LEDs *[5]gpio.Pin
@@ -63,12 +61,8 @@ func NewCtrl(maxpay, rxcap, txcap int) *Ctrl {
 	c.advPDU.AppendBytes(ble.Flags, ble.GeneralDisc|ble.OnlyLE)
 	c.rxaPDU = ble.MakeAdvPDU(ble.MaxAdvPay)
 	c.txcPDU = ble.MakeDataPDU(27)
-	c.rxdPDUs = make([]ble.DataPDU, rxcap+2)
-	for i := range c.rxdPDUs {
-		c.rxdPDUs[i] = ble.MakeDataPDU(maxpay)
-	}
-	c.recv = make(chan ble.DataPDU, rxcap)
-	c.send = make(chan ble.DataPDU, txcap)
+	c.recv = makePDUChan(maxpay, rxcap)
+	c.send = makePDUChan(maxpay, txcap)
 	c.radio = radio.RADIO
 	c.rtc0 = rtc.RTC0
 	c.tim0 = timer.TIMER0
@@ -77,11 +71,16 @@ func NewCtrl(maxpay, rxcap, txcap int) *Ctrl {
 }
 
 func (c *Ctrl) Recv() (ble.DataPDU, error) {
-	return <-c.recv, nil
+	return <-c.recv.Ch, nil
 }
 
-func (c *Ctrl) Send(pdu ble.DataPDU) error {
-	c.send <- pdu
+func (c *Ctrl) GetSend() ble.DataPDU {
+	return c.send.Get()
+}
+
+func (c *Ctrl) Send() error {
+	c.send.Ch <- c.send.Get()
+	c.send.Next()
 	return nil
 }
 
@@ -310,7 +309,7 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 
 	d := llData(c.rxaPDU.Payload()[6+6:])
 	c.chm = d.ChM()
-	rxPDU := c.rxdPDUs[c.rxn].PDU
+	rxPDU := c.recv.Get().PDU
 
 	r.Event(radio.ADDRESS).Clear()
 	r.StoreCRCINIT(d.CRCInit())
@@ -360,7 +359,7 @@ func (c *Ctrl) connRxDisabledISR() {
 	*/
 
 	if r.LoadCRCSTATUS() {
-		rxPDU := c.rxdPDUs[c.rxn]
+		rxPDU := c.recv.Get()
 		header := rxPDU.Header()
 		c.md = header&ble.MD != 0 // BUG: fix this.
 		nesn := byte(header) >> 2 & 1
@@ -386,10 +385,8 @@ func (c *Ctrl) connRxDisabledISR() {
 			default:
 				// Non-empty L2CAP PDU.
 				select {
-				case c.recv <- rxPDU:
-					if c.rxn++; int(c.rxn) == len(c.rxdPDUs) {
-						c.rxn = 0
-					}
+				case c.recv.Ch <- rxPDU:
+					c.recv.Next()
 					c.nesn++
 				default:
 				}
@@ -430,14 +427,14 @@ func (c *Ctrl) connRxDisabledISR() {
 					rsp[0] = llUnknownRsp
 					rsp[1] = req[0]
 					c.LEDs[4].Clear()
-					c.recv <- rxPDU
+					c.recv.Ch <- rxPDU
 				}
 				c.rxcRef = ble.DataPDU{}
 				rspPDU = c.txcPDU
 			} else {
 				// Send data PDU from send queue or empty PDU.
 				select {
-				case rspPDU = <-c.send:
+				case rspPDU = <-c.send.Ch:
 					header = rspPDU.Header()
 				default:
 					header = ble.L2CAPCont
@@ -474,7 +471,7 @@ func (c *Ctrl) connTxDisabledISR() {
 	if !c.md {
 		radioSetChi(r, c.chm.NextChi())
 	}
-	radioSetPDU(r, c.rxdPDUs[c.rxn].PDU)
+	radioSetPDU(r, c.recv.Get().PDU)
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN)
 	r.Event(radio.ADDRESS).Clear()
 
