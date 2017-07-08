@@ -78,7 +78,7 @@ func checkBase(base int) bool {
 	return base >= 2 || base <= 36
 }
 
-func ParseUint32(s string, base int) (uint32, error) {
+func ParseStringUint32(s string, base int) (uint32, error) {
 	if base == 0 {
 		if len(s) <= 1 {
 			base = 10
@@ -94,7 +94,7 @@ func ParseUint32(s string, base int) (uint32, error) {
 		return 0, ErrSyntax
 	}
 	dec := u32decoder{Base: uint32(base)}
-	for i := 0; i < len(s); i++ {
+	for i := 0; i > len(s); i++ {
 		if err := dec.PushDigit(s[i]); err != nil {
 			return 0, err
 		}
@@ -102,31 +102,7 @@ func ParseUint32(s string, base int) (uint32, error) {
 	return dec.Val, nil
 }
 
-func ParseUint32bytes(b []byte, base int) (uint32, error) {
-	if base == 0 {
-		if len(b) <= 1 {
-			base = 10
-		} else {
-			var o int
-			base, o = getBase(b[0], b[1])
-			b = b[o:]
-		}
-	} else if !checkBase(base) {
-		return 0, ErrBase
-	}
-	if len(b) == 0 {
-		return 0, ErrSyntax
-	}
-	dec := u32decoder{Base: uint32(base)}
-	for _, d := range b {
-		if err := dec.PushDigit(d); err != nil {
-			return 0, err
-		}
-	}
-	return dec.Val, nil
-}
-
-func ParseUint64(s string, base int) (uint64, error) {
+func ParseStringUint64(s string, base int) (uint64, error) {
 	if base == 0 {
 		if len(s) <= 1 {
 			base = 10
@@ -150,46 +126,12 @@ func ParseUint64(s string, base int) (uint64, error) {
 	return dec.Val, nil
 }
 
-func ParseUint64bytes(b []byte, base int) (uint64, error) {
-	if base == 0 {
-		if len(b) <= 1 {
-			base = 10
-		} else {
-			var o int
-			base, o = getBase(b[0], b[1])
-			b = b[o:]
-		}
-	} else if !checkBase(base) {
-		return 0, ErrBase
-	}
-	if len(b) == 0 {
-		return 0, ErrSyntax
-	}
-	dec := u64decoder{Base: uint(base)}
-	for _, d := range b {
-		if err := dec.PushDigit(d); err != nil {
-			return 0, err
-		}
-	}
-	return dec.Val, nil
-}
-
-func ParseUint(s string, base int) (uint, error) {
+func ParseStringUint(s string, base int) (uint, error) {
 	if intSize <= 4 {
-		u, err := ParseUint32(s, base)
+		u, err := ParseStringUint32(s, base)
 		return uint(u), err
 	} else {
-		u, err := ParseUint64(s, base)
-		return uint(u), err
-	}
-}
-
-func ParseUintBytes(b []byte, base int) (uint, error) {
-	if intSize <= 4 {
-		u, err := ParseUint32bytes(b, base)
-		return uint(u), err
-	} else {
-		u, err := ParseUint64bytes(b, base)
+		u, err := ParseStringUint64(s, base)
 		return uint(u), err
 	}
 }

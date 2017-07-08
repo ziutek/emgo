@@ -38,13 +38,13 @@ func (wpf *wpf) parse(flags string) {
 		}
 	}
 	if i > 0 {
-		width, _ := strconv.ParseUint32(flags[:i], 10)
+		width, _ := strconv.ParseStringUint32(flags[:i], 10)
 		wpf.width = int16(width)
 	}
 	if i >= len(flags)-1 {
 		return
 	}
-	prec, _ := strconv.ParseUint32(flags[i+1:], 10)
+	prec, _ := strconv.ParseStringUint32(flags[i+1:], 10)
 	wpf.prec = int16(prec)
 	return
 }
