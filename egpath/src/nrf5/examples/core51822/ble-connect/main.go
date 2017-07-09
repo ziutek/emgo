@@ -71,6 +71,13 @@ func (p pduLogger) Recv() (ble.DataPDU, error) {
 func main() {
 	fmt.Printf("\r\nDevAddr: %08x\r\n", uint64(bctr.DevAddr()))
 
+	u, err := att.ParseUUID([]byte("abcdef01-1234-1651-8765-43805F9B34F1"))
+	ub := make([]byte, 16)
+	u.Encode(ub)
+	u = att.DecodeUUID(ub)
+
+	fmt.Printf("%x %x %v %v\r\n", u.H, u.L, u, err)
+
 	pdu := ble.MakeAdvPDU(ble.MaxAdvPay)
 	pdu.SetType(ble.ScanRsp)
 	pdu.SetTxAdd(bctr.DevAddr() < 0)
@@ -197,6 +204,8 @@ func parseATT(far *l2cap.LEFAR, req []byte) {
 					far, 0x10,
 					gatt.Write|gatt.WriteWithoutResp, 0x11, Nordic_UART_Tx,
 				)
+			} else if startHandle <= 0x11 {
+				writeError(far, method, startHandle, att.AttributeNotFound)
 			}
 		}
 	case att.ReadByGroupReq:
