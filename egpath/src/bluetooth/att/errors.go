@@ -21,3 +21,31 @@ const (
 	UnsupportedGroupType          ErrorCode = 0x10 // The attribute type is not a supported grouping attribute as defined by a higher layer specification.
 	InsufficientResources         ErrorCode = 0x11 // Insufficient Resources to complete the request.
 )
+
+//emgo:const
+var errCodeStr = [...]string{
+	InvalidHandle:                 "invalid handle",
+	ReadNotPermitted:              "read not permitted",
+	WriteNotPermitted:             "write not permitted",
+	InvalidPDU:                    "invalid PDU",
+	InsufficientAuthentication:    "insufficient authentication",
+	RequestNotSupported:           "Rrequest not supported",
+	InvalidOffset:                 "invalid offset",
+	InsufficientAuthorization:     "insufficient authorization",
+	PrepareQueueFull:              "prepare queue full",
+	AttributeNotFound:             "attribute not found",
+	AttributeNotLong:              "attribute not long",
+	InsufficientEncryptionKeySize: "insufficient encryption key size",
+	InvalidAttributeValueLength:   "invalid attribute value length",
+	UnlikelyError:                 "unlikely error",
+	InsufficientEncryption:        "insufficient encryption",
+	UnsupportedGroupType:          "unsupported group type",
+	InsufficientResources:         "insufficient resources",
+}
+
+func (e ErrorCode) Error() string {
+	if int(e) >= len(errCodeStr) {
+		return "unknown ATT error"
+	}
+	return errCodeStr[e]
+}

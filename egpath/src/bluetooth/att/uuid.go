@@ -76,7 +76,7 @@ func (u UUID) Equal(short uint) bool {
 	return u.H == BaseUUID.H|uint64(short)<<32 && u.L == BaseUUID.L
 }
 
-// Format generates 8-4-4-4-12 text format of u.
+// Format produces 8-4-4-4-12 text format of u.
 func (u UUID) Format(f fmt.State, c rune) {
 	var buf [36]byte
 	n := uint(128)
