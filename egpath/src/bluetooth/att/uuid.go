@@ -5,30 +5,31 @@ import (
 	"fmt"
 )
 
-// UUID is an universally unique identifier. H and L represent respectively the
-// most and the less significant bytes of UUID (in 8-4-4-4-12 text format:
-// HHHHHHHH-HHHH-HHHH-LLLL-LLLLLLLLLLLL).
-type UUID struct {
+// UUID is an interface that should be implemented by any type of UUID.
+type UUID interface {
+	Full() UUID128       // Returns full 128-bit representation of UUID.
+	Encode(s []byte) int // Encodes value of UUID into provided slice
+}
+
+// UUID128 is full (128-bit) universally unique identifier. H and L represent
+// respectively the most and the less significant bytes of UUID (in 8-4-4-4-12
+// text format: HHHHHHHH-HHHH-HHHH-LLLL-LLLLLLLLLLLL).
+type UUID128 struct {
 	H, L uint64
 }
 
-// BaseUUID is the Base Bluetooth UUID, used for calculating 128-bit UUIDs from
-// shortened (16-bit, 32-bit) UUIDs. Bluetooth UUIDs follow the template
-// xxxxxxxx-0000-1000-8000-00805F9B34FB so BaseUUID == FullUUID(0).
-//
-//emgo:const
-var BaseUUID = UUID{0x1000, 0x800000805F9B34FB}
-
-// FullUUID returns full UUID equal to its shortened form short.
-func FullUUID(short int) UUID {
-	return UUID{BaseUUID.H | uint64(short)<<32, BaseUUID.L}
+// DecodeUUID128 decodes UUID128 from first 16 bytes of s.
+func DecodeUUID128(s []byte) (u UUID128) {
+	u.L = Decode64(s)
+	u.H = Decode64(s[8:])
+	return
 }
 
 var ErrBadUUID = errors.New("bad UUID")
 
-// ParseUUID parses text representation of UUID. It requires 8-4-4-4-12 format
-// (len(s) must be 36).
-func ParseUUID(s []byte) (u UUID, err error) {
+// ParseUUID parses text representation of 128-bit UUID. It requires 8-4-4-4-12
+// format (len(s) must be 36).
+func ParseUUID(s []byte) (u UUID128, err error) {
 	if len(s) != 36 {
 		return u, ErrBadUUID
 	}
@@ -37,7 +38,7 @@ func ParseUUID(s []byte) (u UUID, err error) {
 		d := int(s[i])
 		if i == 8 || i == 13 || i == 18 || i == 23 {
 			if d != '-' {
-				return UUID{}, ErrBadUUID
+				return UUID128{}, ErrBadUUID
 			}
 			continue
 		}
@@ -49,7 +50,7 @@ func ParseUUID(s []byte) (u UUID, err error) {
 		case d >= 'a' && d <= 'f':
 			d -= 'a' - 10
 		default:
-			return UUID{}, ErrBadUUID
+			return UUID128{}, ErrBadUUID
 		}
 		if n -= 4; n < 64 {
 			u.L |= uint64(d) << n
@@ -60,24 +61,18 @@ func ParseUUID(s []byte) (u UUID, err error) {
 	return u, nil
 }
 
-func DecodeUUID(s []byte) (u UUID) {
-	u.L = Decode64(s)
-	u.H = Decode64(s[8:])
-	return
+func (u UUID128) Full() UUID128 {
+	return u
 }
 
-func (u UUID) Encode(s []byte) {
+func (u UUID128) Encode(s []byte) int {
 	Encode64(s, u.L)
 	Encode64(s[8:], u.H)
-}
-
-// Equal reports whether the full UUID u is equal to shortened UUID short.
-func (u UUID) Equal(short uint) bool {
-	return u.H == BaseUUID.H|uint64(short)<<32 && u.L == BaseUUID.L
+	return 16
 }
 
 // Format produces 8-4-4-4-12 text format of u.
-func (u UUID) Format(f fmt.State, c rune) {
+func (u UUID128) Format(f fmt.State, c rune) {
 	var buf [36]byte
 	n := uint(128)
 	for i := range buf {
@@ -102,4 +97,47 @@ func (u UUID) Format(f fmt.State, c rune) {
 		buf[i] = byte(d)
 	}
 	f.Write(buf[:])
+}
+
+// BaseUUID is the Base Bluetooth UUID, used for calculating 128-bit UUIDs from
+// shortened (16-bit, 32-bit) UUIDs. Bluetooth UUIDs follow the template
+// xxxxxxxx-0000-1000-8000-00805F9B34FB so BaseUUID == FullUUID(0).
+//
+//emgo:const
+var BaseUUID = UUID128{0x1000, 0x800000805F9B34FB}
+
+// UUID16 is shortened (16-bit) bluetooth universally unique identifier.
+// See BaseUUID for more information about shortened form of UUID.
+type UUID16 uint16
+
+// DecodeUUID16 decodes UUID16 from first 2 bytes of s.
+func DecodeUUID16(s []byte) UUID16 {
+	return UUID16(Decode16(s))
+}
+
+func (u UUID16) Full() UUID128 {
+	return UUID128{BaseUUID.H | uint64(u)<<32, BaseUUID.L}
+}
+
+func (u UUID16) Encode(s []byte) int {
+	Encode16(s, uint16(u))
+	return 2
+}
+
+// UUID32 is shortened (32-bit) bluetooth universally unique identifier.
+// See BaseUUID for more information about shortened form of UUID.
+type UUID32 uint32
+
+// DecodeUUID32 decodes UUID16 from first 4 bytes of s.
+func DecodeUUID32(s []byte) UUID32 {
+	return UUID32(Decode32(s))
+}
+
+func (u UUID32) Full() UUID128 {
+	return UUID128{BaseUUID.H | uint64(u)<<32, BaseUUID.L}
+}
+
+func (u UUID32) Encode(s []byte) int {
+	Encode32(s, uint32(u))
+	return 4
 }

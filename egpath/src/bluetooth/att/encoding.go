@@ -4,18 +4,18 @@ func panicShort() {
 	panic("att: to short")
 }
 
-func Decode16(s []byte) uint {
+func Decode16(s []byte) uint16 {
 	if len(s) < 2 {
 		panicShort()
 	}
-	return uint(s[0]) | uint(s[1])<<8
+	return uint16(s[0]) | uint16(s[1])<<8
 }
 
-func Decode32(s []byte) uint {
+func Decode32(s []byte) uint32 {
 	if len(s) < 4 {
 		panicShort()
 	}
-	return uint(s[0]) | uint(s[1])<<8 | uint(s[2])<<16 | uint(s[3])<<24
+	return uint32(s[0]) | uint32(s[1])<<8 | uint32(s[2])<<16 | uint32(s[3])<<24
 }
 
 func Decode64(s []byte) uint64 {
@@ -27,7 +27,7 @@ func Decode64(s []byte) uint64 {
 	return uint64(l) | uint64(h)<<32
 }
 
-func Encode16(s []byte, u uint) {
+func Encode16(s []byte, u uint16) {
 	if len(s) < 2 {
 		panicShort()
 	}
@@ -35,7 +35,7 @@ func Encode16(s []byte, u uint) {
 	s[1] = byte(u >> 8)
 }
 
-func Encode32(s []byte, u uint) {
+func Encode32(s []byte, u uint32) {
 	if len(s) < 4 {
 		panicShort()
 	}
