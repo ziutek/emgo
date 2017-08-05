@@ -5,21 +5,15 @@ import (
 	"fmt"
 )
 
-// UUID is an interface that should be implemented by any type of UUID.
-type UUID interface {
-	Full() UUID128       // Returns full 128-bit representation of UUID.
-	Encode(s []byte) int // Encodes value of UUID into provided slice
-}
-
-// UUID128 is full (128-bit) universally unique identifier. H and L represent
+// UUID is full (128-bit) universally unique identifier. H and L represent
 // respectively the most and the less significant bytes of UUID (in 8-4-4-4-12
 // text format: HHHHHHHH-HHHH-HHHH-LLLL-LLLLLLLLLLLL).
-type UUID128 struct {
+type UUID struct {
 	H, L uint64
 }
 
-// DecodeUUID128 decodes UUID128 from first 16 bytes of s.
-func DecodeUUID128(s []byte) (u UUID128) {
+// DecodeUUID decodes UUID from first 16 bytes of s.
+func DecodeUUID(s []byte) (u UUID) {
 	u.L = Decode64(s)
 	u.H = Decode64(s[8:])
 	return
@@ -29,7 +23,7 @@ var ErrBadUUID = errors.New("bad UUID")
 
 // ParseUUID parses text representation of 128-bit UUID. It requires 8-4-4-4-12
 // format (len(s) must be 36).
-func ParseUUID(s []byte) (u UUID128, err error) {
+func ParseUUID(s []byte) (u UUID, err error) {
 	if len(s) != 36 {
 		return u, ErrBadUUID
 	}
@@ -38,7 +32,7 @@ func ParseUUID(s []byte) (u UUID128, err error) {
 		d := int(s[i])
 		if i == 8 || i == 13 || i == 18 || i == 23 {
 			if d != '-' {
-				return UUID128{}, ErrBadUUID
+				return UUID{}, ErrBadUUID
 			}
 			continue
 		}
@@ -50,7 +44,7 @@ func ParseUUID(s []byte) (u UUID128, err error) {
 		case d >= 'a' && d <= 'f':
 			d -= 'a' - 10
 		default:
-			return UUID128{}, ErrBadUUID
+			return UUID{}, ErrBadUUID
 		}
 		if n -= 4; n < 64 {
 			u.L |= uint64(d) << n
@@ -61,18 +55,14 @@ func ParseUUID(s []byte) (u UUID128, err error) {
 	return u, nil
 }
 
-func (u UUID128) Full() UUID128 {
-	return u
-}
-
-func (u UUID128) Encode(s []byte) int {
+func (u UUID) Encode(s []byte) int {
 	Encode64(s, u.L)
 	Encode64(s[8:], u.H)
 	return 16
 }
 
 // Format produces 8-4-4-4-12 text format of u.
-func (u UUID128) Format(f fmt.State, c rune) {
+func (u UUID) Format(f fmt.State, c rune) {
 	var buf [36]byte
 	n := uint(128)
 	for i := range buf {
@@ -104,7 +94,7 @@ func (u UUID128) Format(f fmt.State, c rune) {
 // xxxxxxxx-0000-1000-8000-00805F9B34FB so BaseUUID == FullUUID(0).
 //
 //emgo:const
-var BaseUUID = UUID128{0x1000, 0x800000805F9B34FB}
+var BaseUUID = UUID{0x1000, 0x800000805F9B34FB}
 
 // UUID16 is shortened (16-bit) bluetooth universally unique identifier.
 // See BaseUUID for more information about shortened form of UUID.
@@ -115,8 +105,8 @@ func DecodeUUID16(s []byte) UUID16 {
 	return UUID16(Decode16(s))
 }
 
-func (u UUID16) Full() UUID128 {
-	return UUID128{BaseUUID.H | uint64(u)<<32, BaseUUID.L}
+func (u UUID16) Full() UUID {
+	return UUID{BaseUUID.H | uint64(u)<<32, BaseUUID.L}
 }
 
 func (u UUID16) Encode(s []byte) int {
@@ -133,8 +123,8 @@ func DecodeUUID32(s []byte) UUID32 {
 	return UUID32(Decode32(s))
 }
 
-func (u UUID32) Full() UUID128 {
-	return UUID128{BaseUUID.H | uint64(u)<<32, BaseUUID.L}
+func (u UUID32) Full() UUID {
+	return UUID{BaseUUID.H | uint64(u)<<32, BaseUUID.L}
 }
 
 func (u UUID32) Encode(s []byte) int {

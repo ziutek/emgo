@@ -5,6 +5,6 @@ import (
 )
 
 // Write works like WriteString.
-func (f *LEFAR) Write(s []byte) (n int, err error) {
+func (f *BLEFAR) Write(s []byte) (n int, err error) {
 	return f.WriteString(*(*string)(unsafe.Pointer(&s)))
 }
