@@ -1,5 +1,5 @@
 package att
 
 type Handler interface {
-	ServeATT(w ResponseWriter, r *Request)
+	ServeATT(w *ResponseWriter, r *Request)
 }
