@@ -5,18 +5,18 @@ void memset(unsafe$Pointer s, byte b, uintptr n);
 __attribute__ ((noreturn))
 void panicIC();
 
-#define NEW(typ) (typ*) internal$Alloc(1, sizeof(typ), __alignof__(typ))
+#define NEW(typ) ((typ*)internal$Alloc(1, sizeof(typ), __alignof__(typ)))
 
 #define MAKESLI(typ, lx) ({						                     \
 	uintptr l = lx;                                                  \
 	(slice){internal$Alloc(l, sizeof(typ), __alignof__(typ)), l, l}; \
 })
 
-#define MAKESLIC(typ, lx, cx) (slice){                               \
+#define MAKESLIC(typ, lx, cx) ({                                     \
 	uintptr l = lx;                                                  \
 	uintptr c = cx;		                                             \
 	(slice){internal$Alloc(c, sizeof(typ), __alignof__(typ)), l, c}; \
-}
+})
 
 #define NEWSTR(bx) ({                                        \
 	slice b = bx;                                            \
