@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"rtos"
 
 	"bluetooth/att"
 	"bluetooth/ble"
-	"bluetooth/gatt"
 	"bluetooth/l2cap"
+	"bluetooth/uuid"
 
 	"nrf5/blec"
 	"nrf5/hal/clock"
@@ -71,10 +70,10 @@ func (p pduLogger) Recv() (ble.DataPDU, error) {
 func main() {
 	fmt.Printf("\r\nDevAddr: %08x\r\n", uint64(bctr.DevAddr()))
 
-	u, err := att.ParseUUID([]byte("abcdef01-1234-1651-8765-43805F9B34F1"))
+	u, err := uuid.Parse([]byte("abcdef01-1234-1651-8765-43805F9B34F1"))
 	ub := make([]byte, 16)
 	u.Encode(ub)
-	u = att.DecodeUUID(ub)
+	u = uuid.DecodeLong(ub)
 
 	fmt.Printf("%x %x %v %v\r\n", u.H, u.L, u, err)
 
@@ -83,38 +82,29 @@ func main() {
 	pdu.SetTxAdd(bctr.DevAddr() < 0)
 	pdu.AppendAddr(bctr.DevAddr())
 	pdu.AppendString(ble.LocalName, "Emgo BLE")
-	pdu.AppendBytes(ble.Services, Nordic_UART...)
+	pdu.AppendUUIDs(ble.Services, serviceNordicUART)
 	pdu.AppendBytes(ble.TxPower, 0)
 	bctr.Advertise(pdu, 625)
 
-	far := l2cap.NewLEFAR(pduLogger{bctr})
-	buf := make([]byte, 128)
+	far := l2cap.NewBLEFAR(pduLogger{bctr})
+	srv := att.NewServer(23)
+	handler := new(nordicUART)
+	srv.SetHandler(handler)
 	for {
-		n, cid, err := far.ReadHeader()
+		cid, err := far.ReadHeader()
 		if err != nil {
 			fmt.Printf("ReadHeader: %v\r\n", err)
 			continue
 		}
-		fmt.Printf("R L2CAP header: len=%d cid=%d\r\n", n, cid)
-		for {
-			m, err := far.Read(buf)
-			if m != 0 {
-				fmt.Printf("R L2CAP payload: %02x\r\n", buf[:m])
-				switch cid {
-				case 4: // ATT
-					parseATT(far, buf[:m])
-				}
-			}
-			if err != nil {
-				if err != io.EOF {
-					fmt.Printf("R error: %v\r\n", err)
-				}
-				break
-			}
+		fmt.Printf("R L2CAP header: len=%d cid=%d\r\n", far.Len(), cid)
+		switch cid {
+		case 4: // ATT
+			srv.HandleTransaction(far, cid)
 		}
 	}
 }
 
+/*
 var (
 	Nordic_UART = []byte{
 		0x9E, 0xCA, 0xDC, 0x24, 0x0E, 0xE5,
@@ -221,7 +211,7 @@ func parseATT(far *l2cap.LEFAR, req []byte) {
 			" startHandle=%04x endHandle=%04x groupType=%04x\r\n",
 			startHandle, endHandle, groupType,
 		)
-		/*resp := []byte{
+		resp := []byte{
 			0x11,       // Opcode: Read by Group Type Response
 			6,          // Length
 
@@ -232,7 +222,7 @@ func parseATT(far *l2cap.LEFAR, req []byte) {
 			0x08, 0x00, // Attribute handle
 			0x0B, 0x00, // End group handle
 			0x01, 0x18, // Attribute: Generic Attribute Profile
-		}*/
+		}
 		resp := []byte{
 			0x11, // Opcode: Read by Group Type Response
 			4 + byte(len(Nordic_UART)), // Length
@@ -245,6 +235,7 @@ func parseATT(far *l2cap.LEFAR, req []byte) {
 		far.Write(Nordic_UART)
 	}
 }
+*/
 
 func radioISR() {
 	bctr.RadioISR()

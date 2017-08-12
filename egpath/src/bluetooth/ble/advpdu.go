@@ -1,5 +1,11 @@
 package ble
 
+import (
+	"encoding/binary/le"
+
+	"bluetooth/uuid"
+)
+
 // AdvPDU represents Advertising Channel PDU. See PDU for more information.
 type AdvPDU struct {
 	PDU
@@ -131,8 +137,7 @@ func (pdu AdvPDU) AppendWords16(typ ADType, s ...uint16) {
 	r[0] = byte(1 + len(s)*2)
 	r[1] = byte(typ)
 	for i, u := range s {
-		r[2+i*2] = byte(u)
-		r[3+i*2] = byte(u >> 8)
+		le.Encode16(r[2+i*2:], u)
 	}
 }
 
@@ -142,9 +147,17 @@ func (pdu AdvPDU) AppendWords32(typ ADType, s ...uint32) {
 	r[0] = byte(1 + len(s)*4)
 	r[1] = byte(typ)
 	for i, u := range s {
-		r[2+i*4] = byte(u)
-		r[3+i*4] = byte(u >> 8)
-		r[4+i*4] = byte(u >> 16)
-		r[5+i*4] = byte(u >> 24)
+		le.Encode32(r[2+i*4:], u)
 	}
+}
+
+func (pdu AdvPDU) AppendUUIDs(typ ADType, uuids ...uuid.Long) {
+	r := pdu.Remain()
+	pdu.SetPayLen(pdu.PayLen() + 2 + len(uuids)*16)
+	r[0] = byte(1 + len(uuids)*16)
+	r[1] = byte(typ)
+	for i, u := range uuids {
+		u.Encode(r[2+i*16:])
+	}
+
 }

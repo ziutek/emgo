@@ -1,10 +1,12 @@
 package att
 
 import (
+	"encoding/binary/le"
 	"errors"
 	"io"
 
 	"bluetooth/l2cap"
+	"bluetooth/uuid"
 )
 
 var (
@@ -17,10 +19,58 @@ type Request struct {
 	Cmd       bool
 	Handle    uint16 // Handle, Start Handle.
 	EndHandle uint16
-	Other     uint16 // Offset, MTU, Flags.
-	UUID      UUID   // Attribute type.
+	Other     uint16    // Offset, MTU, Flags.
+	UUID      uuid.Long // Attribute type.
 
 	far *l2cap.BLEFAR
+}
+
+// BUG: Authentication Signature unhandled.
+func (r *Request) readAndParse(far *l2cap.BLEFAR) error {
+	var buf [18]byte
+	r.far = far
+	n, err := r.Read(buf[:3])
+	if err != nil && err != io.EOF {
+		return err
+	}
+	if n < 2 {
+		return ErrBadPDU
+	}
+	r.Method = Method(buf[0] & 0x3F)
+	r.Cmd = buf[0]&0x40 != 0
+	r.Handle = 0
+	r.EndHandle = 0
+	r.Other = 0
+	r.UUID = uuid.Long{}
+	if n == 2 {
+		if r.Method != ExecuteWrite {
+			return ErrBadPDU
+		}
+		r.Other = uint16(buf[1]) // Flags
+		return nil
+	}
+	m := int(r.Method)>>1 - 1
+	if r.Method == unusedMethod || m >= len(reqDecoders) {
+		return ErrBadMethod
+	}
+	r.Handle = le.Decode16(buf[1:3])
+	dec := reqDecoders[m]
+	if dec.n1 != 0 {
+		n, err = r.Read(buf[:dec.n1])
+		if err != nil && err != io.EOF {
+			return err
+		}
+		if n != int(dec.n1) && n != int(dec.n2) {
+			return ErrBadPDU
+		}
+	}
+	if dec.n2 >= 0 && r.far.Len() != 0 {
+		return ErrBadPDU
+	}
+	if dec.f != nil {
+		dec.f(r, &buf, n)
+	}
+	return nil
 }
 
 func (r *Request) decodeMTU(buf *[18]byte, n int) {
@@ -29,20 +79,20 @@ func (r *Request) decodeMTU(buf *[18]byte, n int) {
 }
 
 func (r *Request) decodeEndHandle(buf *[18]byte, n int) {
-	r.EndHandle = Decode16(buf[0:2])
+	r.EndHandle = le.Decode16(buf[0:2])
 }
 
 func (r *Request) decodeEndHandleUUID(buf *[18]byte, n int) {
-	r.EndHandle = Decode16(buf[0:2])
+	r.EndHandle = le.Decode16(buf[0:2])
 	if n == 4 {
-		r.UUID = DecodeUUID16(buf[2:4]).Full()
+		r.UUID = uuid.DecodeShort(buf[2:4]).Long()
 	} else {
-		r.UUID = DecodeUUID(buf[2:18])
+		r.UUID = uuid.DecodeLong(buf[2:18])
 	}
 }
 
 func (r *Request) decodeOffset(buf *[18]byte, n int) {
-	r.Other = Decode16(buf[0:2]) // Value Offset
+	r.Other = le.Decode16(buf[0:2]) // Value Offset
 }
 
 type reqDecder struct {
@@ -65,49 +115,6 @@ var reqDecoders = [...]reqDecder{
 	PrepareWrite>>1 - 1:    {2, -1, (*Request).decodeOffset},
 }
 
-// BUG: Authentication Signature unhandled.
-func (r *Request) readAndParse(length int) error {
-	var buf [18]byte
-	n, err := r.Read(buf[:3])
-	if err != nil && err != io.EOF {
-		return err
-	}
-	if n < 2 {
-		return ErrBadPDU
-	}
-	r.Method = Method(buf[0] & 0x3F)
-	r.Cmd = buf[0]&0x40 != 0
-	if n == 2 {
-		if r.Method != ExecuteWrite {
-			return ErrBadPDU
-		}
-		r.Other = uint16(buf[1]) // Flags
-		return nil
-	}
-	m := int(r.Method)>>1 - 1
-	if r.Method == unusedMethod || m >= len(reqDecoders) {
-		return ErrBadMethod
-	}
-	r.Handle = Decode16(buf[1:3])
-	dec := reqDecoders[m]
-	if dec.n1 != 0 {
-		n, err = r.Read(buf[:dec.n1])
-		if err != nil && err != io.EOF {
-			return err
-		}
-		if n != int(dec.n1) && n != int(dec.n2) {
-			return ErrBadPDU
-		}
-	}
-	if dec.n2 >= 0 && r.far.Len() != 0 {
-		return ErrBadPDU
-	}
-	if dec.f != nil {
-		dec.f(r, &buf, n)
-	}
-	return nil
-}
-
 // Len returns number of bytes of the unparsed portion of request.
 func (r *Request) Len() int {
 	return r.far.Len()
@@ -116,7 +123,7 @@ func (r *Request) Len() int {
 // Read can be used to read the unparsed portion of request (eg: attribute value
 // in case of Find By Type Value, Write, PrepareWrite requests).
 func (r *Request) Read(s []byte) (int, error) {
-	return r.Read(s)
+	return r.far.Read(s)
 }
 
 // ReadNextHandle can be used to read more attribute handles in case of
@@ -124,6 +131,6 @@ func (r *Request) Read(s []byte) (int, error) {
 func (r *Request) ReadNextHandle() error {
 	var buf [2]byte
 	_, err := r.Read(buf[:])
-	r.Handle = Decode16(buf[:])
+	r.Handle = le.Decode16(buf[:])
 	return err
 }

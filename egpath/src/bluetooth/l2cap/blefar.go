@@ -17,8 +17,10 @@ type BLEFAR struct {
 	towr  uint16
 }
 
-func (f *BLEFAR) Init(hci ble.HCI) {
-	f.hci = hci
+func NewBLEFAR(hci ble.HCI) *BLEFAR {
+	far := new(BLEFAR)
+	far.hci = hci
+	return far
 }
 
 var ErrShortFrame = errors.New("l2cap: short frame")
