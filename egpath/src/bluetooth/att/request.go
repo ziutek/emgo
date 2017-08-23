@@ -20,7 +20,7 @@ type Request struct {
 	Handle    uint16 // Handle, Start Handle.
 	EndHandle uint16
 	Other     uint16    // Offset, MTU, Flags.
-	UUID      uuid.Long // Attribute type.
+	UUID      uuid.UUID // Attribute type.
 
 	far *l2cap.BLEFAR
 }
@@ -41,7 +41,7 @@ func (r *Request) readAndParse(far *l2cap.BLEFAR) error {
 	r.Handle = 0
 	r.EndHandle = 0
 	r.Other = 0
-	r.UUID = uuid.Long{}
+	r.UUID = uuid.UUID{}
 	if n == 2 {
 		if r.Method != ExecuteWrite {
 			return ErrBadPDU
@@ -50,7 +50,7 @@ func (r *Request) readAndParse(far *l2cap.BLEFAR) error {
 		return nil
 	}
 	m := int(r.Method)>>1 - 1
-	if r.Method == unusedMethod || m >= len(reqDecoders) {
+	if r.Method == unknownMethod || m >= len(reqDecoders) {
 		return ErrBadMethod
 	}
 	r.Handle = le.Decode16(buf[1:3])
@@ -85,9 +85,9 @@ func (r *Request) decodeEndHandle(buf *[18]byte, n int) {
 func (r *Request) decodeEndHandleUUID(buf *[18]byte, n int) {
 	r.EndHandle = le.Decode16(buf[0:2])
 	if n == 4 {
-		r.UUID = uuid.DecodeShort(buf[2:4]).Long()
+		r.UUID = uuid.DecodeShort(buf[2:4]).Full()
 	} else {
-		r.UUID = uuid.DecodeLong(buf[2:18])
+		r.UUID = uuid.Decode(buf[2:18])
 	}
 }
 

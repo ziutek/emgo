@@ -29,6 +29,6 @@ func (srv *Server) SetHandler(h Handler) {
 // single application.
 func (srv *Server) HandleTransaction(far *l2cap.BLEFAR, cid int) {
 	srv.req.readAndParse(far)
-	srv.w.next(far, cid)
+	srv.w.reset(far, cid)
 	srv.handler.ServeATT(&srv.w, &srv.req)
 }
