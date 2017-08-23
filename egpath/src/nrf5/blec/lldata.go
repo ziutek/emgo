@@ -1,5 +1,9 @@
 package blec
 
+import (
+	"encoding/binary/le"
+)
+
 type llData []byte
 
 func (d llData) AA() uint32 {
@@ -50,67 +54,10 @@ func (d llData) SCA() uint32 {
 	return uint32(sca[d[21]>>5]) + 8
 }
 
-type chmap struct {
-	l    uint32
-	h    byte
-	used byte
-	hop  byte
-	uchi byte
+func (d llData) ChM() (l uint32, h byte) {
+	return le.Decode32(d[16:]), d[20]
 }
 
-func (d llData) ChM() chmap {
-	var chm chmap
-	chm.l = uint32(d[16]) | uint32(d[17])<<8 | uint32(d[18])<<16 |
-		uint32(d[19])<<24
-	chm.h = d[20]
-	chm.hop = d[21] & 0x1F
-	used := 0
-	for v := chm.l; v != 0; v >>= 1 {
-		used++
-	}
-	for v := chm.h; v != 0; v >>= 1 {
-		used++
-	}
-	chm.used = byte(used)
-	return chm
-}
-
-func (chm *chmap) NextChi() int {
-	uchi := uint(chm.uchi) + uint(chm.hop)
-	if uchi >= 37 {
-		uchi -= 37
-	}
-	chm.uchi = byte(uchi)
-	if uchi < 32 {
-		if chm.l&(1<<uchi) != 0 {
-			return int(uchi)
-		}
-	} else {
-		if chm.h&(1<<(uchi-32)) != 0 {
-			return int(uchi)
-		}
-	}
-	remapIdx := uchi % uint(chm.used)
-	uchi = 0
-	for uchi < 32 {
-		for chm.l&(1<<uchi) == 0 {
-			uchi++
-		}
-		if remapIdx == 0 {
-			return int(uchi)
-		}
-		remapIdx--
-		uchi++
-	}
-	uchi = 0
-	for {
-		for chm.h&(1<<uchi) == 0 {
-			uchi++
-		}
-		if remapIdx == 0 {
-			return int(uchi + 32)
-		}
-		remapIdx--
-		uchi++
-	}
+func (d llData) Hop() byte {
+	return d[21] & 0x1F
 }

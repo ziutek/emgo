@@ -1,6 +1,7 @@
 package blec
 
 import (
+	"encoding/binary/le"
 	"math/rand"
 	"rtos"
 	"sync/fence"
@@ -21,6 +22,7 @@ type Ctrl struct {
 	advIntervalRTC uint32
 	connDelay      uint32
 	connWindow     uint16
+	connEventCnt   uint16
 	sn, nesn       byte
 
 	advPDU ble.AdvPDU
@@ -42,7 +44,6 @@ type Ctrl struct {
 	rtc0  *rtc.Periph
 	tim0  *timer.Periph
 
-	Iter int
 	LEDs *[5]gpio.Pin
 }
 
@@ -90,6 +91,10 @@ func (c *Ctrl) SetTxPwr(dBm int) {
 
 func (c *Ctrl) DevAddr() int64 {
 	return c.devAddr
+}
+
+func (c *Ctrl) ConnEventCnt() uint16 {
+	return c.connEventCnt
 }
 
 // InitPhy initialises physical layer: radio, timers, PPI.
@@ -307,8 +312,10 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	// Both timers (RTC0, TIMER0) are running. TIMER0.CC2 contains time of
 	// END event (end of ConnectReq packet).
 
+	c.connEventCnt = 0
 	d := llData(c.rxaPDU.Payload()[6+6:])
-	c.chm = d.ChM()
+	c.chm.SetLH(d.ChM())
+	c.chm.SetHop(d.Hop())
 	rxPDU := c.recv.Get().PDU
 
 	r.Event(radio.ADDRESS).Clear()
@@ -343,6 +350,7 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 }
 
 func (c *Ctrl) connRxDisabledISR() {
+	c.connEventCnt++
 	r := c.radio
 	if !r.Event(radio.ADDRESS).IsSet() {
 		c.tim0.Task(timer.STOP).Trigger()
@@ -400,6 +408,16 @@ func (c *Ctrl) connRxDisabledISR() {
 				header = ble.LLControl
 				req := c.rxcRef.Payload()
 				switch req[0] {
+				case llChanMapReq:
+					if len(req) == 7 {
+						l := le.Decode32(req)
+						h := req[4]
+						instant := le.Decode16(req[5:])
+						_ = l
+						_ = h
+						_ = instant
+						c.recv.Ch <- rxPDU
+					}
 				case llFeatureReq:
 					c.txcPDU.SetPayLen(9)
 					rsp := c.txcPDU.Payload()
@@ -476,5 +494,4 @@ func (c *Ctrl) connTxDisabledISR() {
 	r.Event(radio.ADDRESS).Clear()
 
 	c.isr = (*Ctrl).connRxDisabledISR
-	c.Iter++
 }
