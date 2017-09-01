@@ -32,8 +32,8 @@ type Driver struct {
 	deadlineTx int64
 
 	P     *Periph
-	RxBuf []byte
-
+	
+	rxBuf []byte
 	pi, pr  int
 	err     uint32
 	rxready syscall.Event
@@ -47,7 +47,7 @@ type Driver struct {
 func NewDriver(p *Periph, rxbuf []byte) *Driver {
 	d := new(Driver)
 	d.P = p
-	d.RxBuf = rxbuf
+	d.rxBuf = rxbuf
 	return d
 }
 
@@ -110,14 +110,14 @@ func (d *Driver) ISR() {
 			p.Event(RXDRDY).Clear()
 			b := p.LoadRXD() // Always read RXD to do not block RXDRDY event.
 			nextpi := d.pi + 1
-			if nextpi == len(d.RxBuf) {
+			if nextpi == len(d.rxBuf) {
 				nextpi = 0
 			}
 			if atomic.LoadInt(&d.pr) == nextpi {
 				atomic.OrUint32(&d.err, uint32(ErrBufOverflow)<<8)
 			} else {
-				d.RxBuf[d.pi] = b
-				fence.W_SMP() // store(d.RxBuf) must be before store(d.pi).
+				d.rxBuf[d.pi] = b
+				fence.W_SMP() // store(d.rxBuf) must be before store(d.pi).
 				atomic.StoreInt(&d.pi, nextpi)
 			}
 			again = true
@@ -155,7 +155,7 @@ func (d *Driver) ISR() {
 func (d *Driver) Len() int {
 	n := atomic.LoadInt(&d.pi) - d.pr
 	if n < 0 {
-		n += len(d.RxBuf)
+		n += len(d.rxBuf)
 	}
 	return n
 }
@@ -178,12 +178,12 @@ func (d *Driver) ReadByte() (b byte, err error) {
 			err = d.clearError()
 		}
 		if pr := d.pr; atomic.LoadInt(&d.pi) != pr {
-			fence.R_SMP() // Control dep. between load(d.pi) and load(d.RxBuf).
-			b = d.RxBuf[pr]
-			if pr++; pr == len(d.RxBuf) {
+			fence.R_SMP() // Control dep. between load(d.pi) and load(d.rxBuf).
+			b = d.rxBuf[pr]
+			if pr++; pr == len(d.rxBuf) {
 				pr = 0
 			}
-			fence.RW_SMP() // Ensure load(d.RxBuf) finished before store(d.pr).
+			fence.RW_SMP() // Ensure load(d.rxBuf) finished before store(d.pr).
 			atomic.StoreInt(&d.pr, pr)
 			return
 		}
@@ -213,20 +213,20 @@ func (d *Driver) Read(b []byte) (n int, err error) {
 			err = d.clearError()
 		}
 		if pr, pi := d.pr, atomic.LoadInt(&d.pi); pr != pi {
-			fence.R_SMP() // Control dep. between load(d.pi) and load(d.RxBuf).
+			fence.R_SMP() // Control dep. between load(d.pi) and load(d.rxBuf).
 			if pi > pr {
-				n = copy(b, d.RxBuf[pr:pi])
+				n = copy(b, d.rxBuf[pr:pi])
 				pr += n
 			} else {
-				n = copy(b, d.RxBuf[pr:])
+				n = copy(b, d.rxBuf[pr:])
 				if n < len(b) && pi != 0 {
-					n += copy(b[n:], d.RxBuf[:pi])
+					n += copy(b[n:], d.rxBuf[:pi])
 				}
-				if pr += n; pr >= len(d.RxBuf) {
-					pr -= len(d.RxBuf)
+				if pr += n; pr >= len(d.rxBuf) {
+					pr -= len(d.rxBuf)
 				}
 			}
-			fence.RW_SMP() // Ensure load(d.RxBuf) finished before store(d.pr).
+			fence.RW_SMP() // Ensure load(d.rxBuf) finished before store(d.pr).
 			atomic.StoreInt(&d.pr, pr)
 			return
 		}

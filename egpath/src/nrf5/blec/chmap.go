@@ -6,9 +6,19 @@ type chmap struct {
 	used byte
 	hop  byte
 	uchi byte
+
+	instant int32
+	newL    uint32
+	newH    byte
+
+	connEventCnt uint16
 }
 
-func (chm *chmap) SetLH(l uint32, h byte) {
+func (chm *chmap) ConnEventCnt() uint16 {
+	return chm.connEventCnt
+}
+
+func (chm *chmap) set(l uint32, h byte) {
 	chm.l = l
 	chm.h = h
 	used := 0
@@ -21,13 +31,26 @@ func (chm *chmap) SetLH(l uint32, h byte) {
 		h >>= 1
 	}
 	chm.used = byte(used)
+	chm.instant = -1
 }
 
-func (chm *chmap) SetHop(hop byte) {
+func (chm *chmap) Init(l uint32, h, hop byte) {
+	chm.set(l, h)
 	chm.hop = hop
+	chm.connEventCnt = 0
+}
+
+func (chm *chmap) Update(l uint32, h byte, instant uint16) {
+	chm.instant = int32(instant)
+	chm.newL = l
+	chm.newH = h
 }
 
 func (chm *chmap) NextChi() int {
+	chm.connEventCnt++
+	if int32(chm.connEventCnt) == chm.instant {
+		chm.set(chm.newL, chm.newH)
+	}
 	uchi := uint(chm.uchi) + uint(chm.hop)
 	if uchi >= 37 {
 		uchi -= 37

@@ -22,7 +22,6 @@ type Ctrl struct {
 	advIntervalRTC uint32
 	connDelay      uint32
 	connWindow     uint16
-	connEventCnt   uint16
 	sn, nesn       byte
 
 	advPDU ble.AdvPDU
@@ -94,7 +93,7 @@ func (c *Ctrl) DevAddr() int64 {
 }
 
 func (c *Ctrl) ConnEventCnt() uint16 {
-	return c.connEventCnt
+	return c.chm.ConnEventCnt()
 }
 
 // InitPhy initialises physical layer: radio, timers, PPI.
@@ -312,10 +311,8 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	// Both timers (RTC0, TIMER0) are running. TIMER0.CC2 contains time of
 	// END event (end of ConnectReq packet).
 
-	c.connEventCnt = 0
 	d := llData(c.rxaPDU.Payload()[6+6:])
-	c.chm.SetLH(d.ChM())
-	c.chm.SetHop(d.Hop())
+	c.chm.Init(d.ChMapL(), d.ChMapH(), d.Hop())
 	rxPDU := c.recv.Get().PDU
 
 	r.Event(radio.ADDRESS).Clear()
@@ -350,16 +347,24 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 }
 
 func (c *Ctrl) connRxDisabledISR() {
-	c.connEventCnt++
-	r := c.radio
-	if !r.Event(radio.ADDRESS).IsSet() {
+
+	/*if !r.Event(radio.ADDRESS).IsSet() {
 		c.tim0.Task(timer.STOP).Trigger()
 		c.rtc0.Task(rtc.STOP).Trigger()
 		c.LEDs[2].Clear()
 		return
-	}
+	}*/
 	// Both timers (RTC0, TIMER0) are running. TIMER0.CC1 contains time of
 	// ADDRESS event (end of address field in data packet).
+
+	c.setRxTimers(c.tim0.LoadCC(1), c.connDelay, uint32(c.connWindow))
+
+	r := c.radio
+	if !r.Event(radio.ADDRESS).IsSet() {
+		c.md = false
+		radioSetChi(r, c.chm.NextChi())
+		return
+	}
 
 	/*
 		// Test safety margin to START event.
@@ -406,58 +411,60 @@ func (c *Ctrl) connRxDisabledISR() {
 			if !c.rxcRef.IsZero() {
 				// Process last controll PDU.
 				header = ble.LLControl
+				rspPDU = c.txcPDU
 				req := c.rxcRef.Payload()
 				switch req[0] {
 				case llChanMapReq:
-					if len(req) == 7 {
-						l := le.Decode32(req)
-						h := req[4]
-						instant := le.Decode16(req[5:])
-						_ = l
-						_ = h
-						_ = instant
-						c.recv.Ch <- rxPDU
+					if len(req) != 7 {
+						break
 					}
-				case llFeatureReq:
-					c.txcPDU.SetPayLen(9)
-					rsp := c.txcPDU.Payload()
-					rsp[0] = llFeatureRsp
-					rsp[1] = 0
-					rsp[2] = 0
-					rsp[3] = 0
-					rsp[4] = 0
-					rsp[5] = 0
-					rsp[6] = 0
-					rsp[7] = 0
-					rsp[8] = 0
-				case llVersionInd:
-					c.txcPDU.SetPayLen(6)
-					rsp := c.txcPDU.Payload()
-					rsp[0] = llVersionInd
-					rsp[1] = 6    // BLE version: 6: 4.0, 7: 4.1, 8: 4.2, 9: 5.
-					rsp[2] = 0xFF // Company ID (2 octets).
-					rsp[3] = 0xFF // Using 0xFFFF: tests / not assigned.
-					rsp[4] = 0    // Subversion (2 octets). Unique for each
-					rsp[5] = 0    // implementation or revision of controller.
-				default:
-					c.txcPDU.SetPayLen(2)
-					rsp := c.txcPDU.Payload()
-					rsp[0] = llUnknownRsp
-					rsp[1] = req[0]
+					instant := le.Decode16(req[5:])
+					if instant-c.chm.ConnEventCnt() >= 32767 {
+						break // BUG: Connection is lost.
+					}
+					c.chm.Update(le.Decode32(req), req[4], instant)
+					rspPDU = ble.DataPDU{} // llChanMapReq has no response PDU.
 					c.LEDs[4].Clear()
+				case llFeatureReq:
+					rspPDU.SetPayLen(9)
+					pay := rspPDU.Payload()
+					pay[0] = llFeatureRsp
+					pay[1] = 0
+					pay[2] = 0
+					pay[3] = 0
+					pay[4] = 0
+					pay[5] = 0
+					pay[6] = 0
+					pay[7] = 0
+					pay[8] = 0
+				case llVersionInd:
+					rspPDU.SetPayLen(6)
+					pay := rspPDU.Payload()
+					pay[0] = llVersionInd
+					pay[1] = 6    // BLE version: 6: 4.0, 7: 4.1, 8: 4.2, 9: 5.
+					pay[2] = 0xFF // Company ID (2 octets).
+					pay[3] = 0xFF // Using 0xFFFF: tests / not assigned.
+					pay[4] = 0    // Subversion (2 octets). Unique for each
+					pay[5] = 0    // implementation or revision of controller.
+				default:
+					rspPDU.SetPayLen(2)
+					pay := rspPDU.Payload()
+					pay[0] = llUnknownRsp
+					pay[1] = req[0]
+					//c.LEDs[4].Clear()
 					c.recv.Ch <- rxPDU
 				}
 				c.rxcRef = ble.DataPDU{}
-				rspPDU = c.txcPDU
-			} else {
+			}
+			if rspPDU.IsZero() {
 				// Send data PDU from send queue or empty PDU.
 				select {
 				case rspPDU = <-c.send.Ch:
 					header = rspPDU.Header()
 				default:
 					header = ble.L2CAPCont
-					c.txcPDU.SetPayLen(0)
 					rspPDU = c.txcPDU
+					rspPDU.SetPayLen(0)
 				}
 			}
 			c.sn++
@@ -480,8 +487,6 @@ func (c *Ctrl) connRxDisabledISR() {
 	// Must be before ConnTx.DISABLED
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
 	c.isr = (*Ctrl).connTxDisabledISR
-
-	c.setRxTimers(c.tim0.LoadCC(1), c.connDelay, uint32(c.connWindow))
 }
 
 func (c *Ctrl) connTxDisabledISR() {

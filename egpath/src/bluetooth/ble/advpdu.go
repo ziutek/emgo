@@ -151,7 +151,7 @@ func (pdu AdvPDU) AppendWords32(typ ADType, s ...uint32) {
 	}
 }
 
-func (pdu AdvPDU) AppendUUIDs(typ ADType, uuids ...uuid.Long) {
+func (pdu AdvPDU) AppendUUIDs(typ ADType, uuids ...uuid.UUID) {
 	r := pdu.Remain()
 	pdu.SetPayLen(pdu.PayLen() + 2 + len(uuids)*16)
 	r[0] = byte(1 + len(uuids)*16)

@@ -6,23 +6,23 @@ import (
 	"fmt"
 )
 
-// Long is full (128-bit) universally unique identifier. H and L represent
+// UUID is full (128-bit) universally unique identifier. H and L represent
 // respectively the most and the less significant bytes of UUID (in 8-4-4-4-12
 // text format: HHHHHHHH-HHHH-HHHH-LLLL-LLLLLLLLLLLL).
-type Long struct {
+type UUID struct {
 	H, L uint64
 }
 
-// DecodeLong decodes UUID from first 16 bytes of s.
-func DecodeLong(s []byte) Long {
-	return Long{le.Decode64(s[8:]), le.Decode64(s)}
+// Decode decodes UUID from first 16 bytes of s.
+func Decode(s []byte) UUID {
+	return UUID{le.Decode64(s[8:]), le.Decode64(s)}
 }
 
 var ErrBadUUID = errors.New("bad UUID")
 
 // Parse parses text representation of 128-bit UUID. It requires 8-4-4-4-12
 // format (len(s) must be 36).
-func Parse(s []byte) (u Long, err error) {
+func Parse(s []byte) (u UUID, err error) {
 	if len(s) != 36 {
 		return u, ErrBadUUID
 	}
@@ -31,7 +31,7 @@ func Parse(s []byte) (u Long, err error) {
 		d := int(s[i])
 		if i == 8 || i == 13 || i == 18 || i == 23 {
 			if d != '-' {
-				return Long{}, ErrBadUUID
+				return UUID{}, ErrBadUUID
 			}
 			continue
 		}
@@ -43,7 +43,7 @@ func Parse(s []byte) (u Long, err error) {
 		case d >= 'a' && d <= 'f':
 			d -= 'a' - 10
 		default:
-			return Long{}, ErrBadUUID
+			return UUID{}, ErrBadUUID
 		}
 		if n -= 4; n < 64 {
 			u.L |= uint64(d) << n
@@ -54,16 +54,38 @@ func Parse(s []byte) (u Long, err error) {
 	return u, nil
 }
 
-func (u Long) Encode(s []byte) {
+func (u UUID) Encode(s []byte) {
 	le.Encode64(s, u.L)
 	le.Encode64(s[8:], u.H)
 }
 
+func (u UUID) CanShorten(bits int) bool {
+	return u.L == Base.L && u.H&0xFFFFFFFF == Base.H &&
+		uint(u.H>>32)>>uint(bits) == 0
+}
+
+func (u UUID) Short16() UUID16 {
+	if u.CanShorten(16) {
+		return UUID16(u.H >> 32)
+	}
+	panic("uuid: can not shorten")
+}
+
+func (u UUID) Short32() UUID32 {
+	if u.CanShorten(32) {
+		return UUID32(u.H >> 32)
+	}
+	panic("uuid: can not shorten")
+}
+
 // Format produces 8-4-4-4-12 text format of u.
-func (u Long) Format(f fmt.State, c rune) {
+func (u UUID) Format(f fmt.State, c rune) {
 	var buf [36]byte
-	n := uint(128)
-	for i := range buf {
+	blen := len(buf)
+	if c == 'v' && u.CanShorten(32) {
+		blen = 8
+	}
+	for i, n := 0, uint(128); i < blen; i++ {
 		if i == 8 || i == 13 || i == 18 || i == 23 {
 			buf[i] = '-'
 			continue
@@ -84,29 +106,40 @@ func (u Long) Format(f fmt.State, c rune) {
 		}
 		buf[i] = byte(d)
 	}
+	if blen < len(buf) {
+		copy(buf[blen:], "-bluetooth")
+	}
 	f.Write(buf[:])
 }
 
 // Base is the Base Bluetooth UUID, used for calculating 128-bit UUIDs from
 // shortened (16-bit, 32-bit) UUIDs. Bluetooth UUIDs follow the template
-// xxxxxxxx-0000-1000-8000-00805F9B34FB so BaseUUID == LongUUID(0).
+// xxxxxxxx-0000-1000-8000-00805F9B34FB so Short(0).UUID() == Base.
 //
 //emgo:const
-var Base = Long{0x1000, 0x800000805F9B34FB}
+var Base = UUID{0x1000, 0x800000805F9B34FB}
 
-// Short is shortened (16-bit) bluetooth universally unique identifier. See Base
-// for more information about shortened form of UUID.
-type Short uint16
+// UUID16 is shortened (16-bit) bluetooth universally unique identifier. See
+// Base for more information about shortened form of UUID.
+type UUID16 uint16
 
 // DecodeShort decodes short UUID from first 2 bytes of s.
-func DecodeShort(s []byte) Short {
-	return Short(le.Decode16(s))
+func DecodeShort(s []byte) UUID16 {
+	return UUID16(le.Decode16(s))
 }
 
-func (u Short) Long() Long {
-	return Long{Base.H | uint64(u)<<32, Base.L}
+func (u UUID16) Full() UUID {
+	return UUID{Base.H | uint64(u)<<32, Base.L}
 }
 
-func (u Short) Encode(s []byte) {
+func (u UUID16) Encode(s []byte) {
 	le.Encode16(s, uint16(u))
+}
+
+// UUID32 is shortened (32-bit) bluetooth universally unique identifier. See
+// Base for more information about shortened form of UUID.
+type UUID32 uint32
+
+func (u UUID32) Full() UUID {
+	return UUID{Base.H | uint64(u)<<32, Base.L}
 }

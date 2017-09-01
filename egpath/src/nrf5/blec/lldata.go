@@ -54,8 +54,12 @@ func (d llData) SCA() uint32 {
 	return uint32(sca[d[21]>>5]) + 8
 }
 
-func (d llData) ChM() (l uint32, h byte) {
-	return le.Decode32(d[16:]), d[20]
+func (d llData) ChMapL() uint32 {
+	return le.Decode32(d[16:])
+}
+
+func (d llData) ChMapH() byte {
+	return d[20]
 }
 
 func (d llData) Hop() byte {
