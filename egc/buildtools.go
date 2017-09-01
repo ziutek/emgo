@@ -198,7 +198,7 @@ func (bt *BuildTools) getImports(known map[string]struct{}, add []string) ([]str
 	var a []string
 
 	for _, ppath := range add {
-		if _, ok := known[ppath]; ok {
+		if _, ok := known[ppath]; ok || ppath == "unsafe" {
 			continue
 		}
 		var (
