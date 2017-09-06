@@ -25,12 +25,19 @@ func decodeDevAddr(b []byte, random bool) int64 {
 	return int64(h)<<32 | int64(l)
 }
 
-type encodedPPM uint32
+// Fixed19 is 32-bit binary fixed-point unsigned number with scaling factor
+// 1/2^19 = 1/524288 = 0.0000019073486328125. It divides 32-bit word to 13-bit
+// integer part and 19-bit fractional part. fixed19 can store values from 0 to
+// 8191.9999980926513671875.
+type fixed19 uint32
 
-func encodePPM(ppm int) encodedPPM {
-	return (encodedPPM(ppm)<<19 + 999999) / 1000000
+// ppmToFixedUp converts ppm (Parts Per Million) to fixed19 (rounding mode: up).
+// Allowed ppm values: 0 <= ppm <= 8191.
+func ppmToFixedUp(ppm int) fixed19 {
+	return (fixed19(ppm)<<19 + 999999) / 1000000
 }
 
-func (e encodedPPM) Mul(v uint32) uint32 {
-	return (v*uint32(e) + 1<<19 - 1) >> 19
+// MulUp multiples integer value v by x and returns integer value rounded up.
+func (x fixed19) MulUp(v uint32) uint32 {
+	return (v*uint32(x) + 1<<19 - 1) >> 19
 }

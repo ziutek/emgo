@@ -20,8 +20,9 @@ type Ctrl struct {
 	devAddr int64
 
 	advIntervalRTC uint32
-	connDelay      uint32
-	connWindow     uint16
+	connInterval   uint32
+	winSize        uint32
+	sca            fixed19
 	sn, nesn       byte
 
 	advPDU ble.AdvPDU
@@ -293,13 +294,13 @@ func (c *Ctrl) setRxTimers(base, delay, window uint32) {
 	}
 }
 
-func (c *Ctrl) connectReqRxDisabledISR() {
-	const (
-		rxRU    = 130 // RADIO Rx ramp up (µs).
-		rtcRA   = 30  // RTC read accuracy (µs): read <= real <= read+rtcRA.
-		aaDelay = 40  // Delay between start of packet and ADDRESS event (µs).
-	)
+const (
+	rxRU    = 130 // RADIO Rx ramp up (µs).
+	rtcRA   = 30  // RTC read accuracy (µs): readRTC <= RTC <= readRTC+rtcRA.
+	aaDelay = 40  // Delay between start of packet and ADDRESS event (µs).
+)
 
+func (c *Ctrl) connectReqRxDisabledISR() {
 	r := c.radio
 	if !r.LoadCRCSTATUS() {
 		// Return to advertising.
@@ -323,22 +324,20 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	radioSetPDU(r, rxPDU)
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN)
 
-	scappm := d.SCA() + encodePPM(100) // Assume 100 ppm local SCA.
+	c.sca = d.SCA() + ppmToFixedUp(100) // Assume 100 ppm local SCA.
+	c.connInterval = d.Interval()
+	c.winSize = d.WinSize()
+
 	winOffset := d.WinOffset()
-	sca := scappm.Mul(winOffset) // Absolute SCA after winOffset (µs).
+	asca := c.sca.MulUp(winOffset) // Absolute SCA after winOffset (µs).
 
 	// Setup first anchor point.
 	c.setRxTimers(
 		c.tim0.LoadCC(2),
-		winOffset-rxRU-sca,
-		d.WinSize()+rxRU+2*sca+rtcRA,
+		winOffset-rxRU-asca,
+		c.winSize+rxRU+2*asca+rtcRA,
 	)
 	c.isr = (*Ctrl).connRxDisabledISR
-
-	connInterval := d.Interval()
-	sca = scappm.Mul(connInterval)
-	c.connDelay = connInterval - rxRU - sca - aaDelay
-	c.connWindow = uint16(rxRU + 2*sca + rtcRA)
 
 	c.txcPDU.SetHeader(ble.L2CAPCont | ble.Header(c.nesn&1<<2|c.sn&1<<3))
 	c.txcPDU.SetPayLen(0)
@@ -356,7 +355,12 @@ func (c *Ctrl) connRxDisabledISR() {
 	// Both timers (RTC0, TIMER0) are running. TIMER0.CC1 contains time of
 	// ADDRESS event (end of address field in data packet).
 
-	c.setRxTimers(c.tim0.LoadCC(1), c.connDelay, uint32(c.connWindow))
+	asca := c.sca.MulUp(c.connInterval) // Absolute SCA after connInterval (µs).
+	c.setRxTimers(
+		c.tim0.LoadCC(1),
+		c.connInterval-rxRU-asca-aaDelay,
+		rxRU+2*asca+rtcRA,
+	)
 
 	r := c.radio
 	if !r.Event(radio.ADDRESS).IsSet() {

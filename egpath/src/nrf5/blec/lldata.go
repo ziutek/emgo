@@ -50,9 +50,9 @@ var sca = [8]byte{
 	(20<<19+999999)/1000000 - 8,
 }
 
-// SCA returns master's Sleep Clock Accuracy as encodedPPM.
-func (d llData) SCA() encodedPPM {
-	return encodedPPM(sca[d[21]>>5]) + 8
+// SCA returns master's Sleep Clock Accuracy as fixed19 number.
+func (d llData) SCA() fixed19 {
+	return fixed19(sca[d[21]>>5]) + 8
 }
 
 func (d llData) ChMapL() uint32 {
