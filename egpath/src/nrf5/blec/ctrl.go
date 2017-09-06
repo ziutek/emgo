@@ -323,10 +323,9 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	radioSetPDU(r, rxPDU)
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN)
 
-	rsca := d.SCA() + (100<<19+999999)/1000000 // Assume 100 ppm local SCA.
-
+	scappm := d.SCA() + encodePPM(100) // Assume 100 ppm local SCA.
 	winOffset := d.WinOffset()
-	sca := (winOffset*rsca + 1<<19 - 1) >> 19 // Absolute SCA for (µs).
+	sca := scappm.Mul(winOffset) // Absolute SCA after winOffset (µs).
 
 	// Setup first anchor point.
 	c.setRxTimers(
@@ -337,7 +336,7 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	c.isr = (*Ctrl).connRxDisabledISR
 
 	connInterval := d.Interval()
-	sca = (connInterval*rsca + 1<<19 - 1) >> 19
+	sca = scappm.Mul(connInterval)
 	c.connDelay = connInterval - rxRU - sca - aaDelay
 	c.connWindow = uint16(rxRU + 2*sca + rtcRA)
 

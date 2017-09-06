@@ -14,17 +14,17 @@ func (d llData) CRCInit() uint32 {
 	return uint32(d[4]) | uint32(d[5])<<8 | uint32(d[6])<<16
 }
 
-// WinSize returns window size as number microseconds.
+// WinSize returns window size (µs).
 func (d llData) WinSize() uint32 {
 	return uint32(d[7]) * 1250
 }
 
-// WinOffset returns window offset as number microseconds + 1250.
+// WinOffset returns final window offset (µs) (WinOffset field + 1250 µs).
 func (d llData) WinOffset() uint32 {
 	return (uint32(d[8]) | uint32(d[9])<<8 + 1) * 1250
 }
 
-// Interval returns connection interval as number microseconds.
+// Interval returns connection interval (µs).
 func (d llData) Interval() uint32 {
 	return (uint32(d[10]) | uint32(d[11])<<8) * 1250
 }
@@ -33,11 +33,12 @@ func (d llData) Latency() int {
 	return int(d[12]) | int(d[13])<<8
 }
 
-// Timeout returns connection supervision timeout as number microseconds.
+// Timeout returns connection supervision timeout (µs).
 func (d llData) Timeout() uint32 {
 	return (uint32(d[14]) | uint32(d[15])<<8) * 10000
 }
 
+//emgo:const
 var sca = [8]byte{
 	(500<<19+999999)/1000000 - 8,
 	(250<<19+999999)/1000000 - 8,
@@ -49,9 +50,9 @@ var sca = [8]byte{
 	(20<<19+999999)/1000000 - 8,
 }
 
-// SCA returns (maxSCAPPM<<19 + 1e6 - 1) / 1e6.
-func (d llData) SCA() uint32 {
-	return uint32(sca[d[21]>>5]) + 8
+// SCA returns master's Sleep Clock Accuracy as encodedPPM.
+func (d llData) SCA() encodedPPM {
+	return encodedPPM(sca[d[21]>>5]) + 8
 }
 
 func (d llData) ChMapL() uint32 {
