@@ -27,7 +27,7 @@ func decodeDevAddr(b []byte, random bool) int64 {
 
 // Fixed19 is 32-bit binary fixed-point unsigned number with scaling factor
 // 1/2^19 = 1/524288 = 0.0000019073486328125. It divides 32-bit word to 13-bit
-// integer part and 19-bit fractional part. fixed19 can store values from 0 to
+// integer part and 19-bit fractional part. Fixed19 can store values from 0 to
 // 8191.9999980926513671875.
 type fixed19 uint32
 
