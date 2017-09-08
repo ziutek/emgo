@@ -137,10 +137,10 @@ func (c *Ctrl) Advertise(rspPDU ble.AdvPDU, advIntervalms int) {
 	ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Enable() // ADDRESS sets timeout to >1h.
 	ppi.RADIO_END__TIMER0_CAPTURE2.Enable()
 
-	p := ppi.Chan(9)
+	/*p := ppi.Chan(9)
 	p.SetEEP(r.Event(radio.READY))
 	p.SetTEP(c.tim0.Task(timer.CAPTURE(3)))
-	p.Enable()
+	p.Enable()*/
 
 	// RTC0_COMPARE0 is used to implement periodical Tx events.
 	rt := c.rtc0
@@ -155,14 +155,21 @@ func (c *Ctrl) Advertise(rspPDU ble.AdvPDU, advIntervalms int) {
 
 func (c *Ctrl) RadioISR() {
 	r := c.radio
-	if ev := r.Event(radio.DISABLED); ev.IsSet() {
+	if ev := r.Event(radio.DISABLED); ev.IRQEnabled() && ev.IsSet() {
 		ev.Clear()
 		c.isr(c)
 		return
 	}
 
-	r.Event(radio.PAYLOAD).DisableIRQ()
+	if ev := r.Event(radio.ADDRESS); ev.IRQEnabled() && ev.IsSet() {
+		// Receiving PDU in connection event.
+		ev.DisableIRQ()
+		r.StoreSHORTS(radio.READY_START | radio.END_DISABLE |
+			radio.DISABLED_TXEN)
+		return
+	}
 
+	r.Event(radio.PAYLOAD).DisableIRQ()
 	pdu := c.rxaPDU
 	if len(pdu.Payload()) < 12 ||
 		decodeDevAddr(pdu.Payload()[6:], pdu.RxAdd()) != c.devAddr {
@@ -191,7 +198,7 @@ func (c *Ctrl) RadioISR() {
 
 // scanDisabledISR handles DISABLED->(TXEN/NOP) between RxTxScan* and TxAdvInd.
 func (c *Ctrl) scanDisabledISR() {
-	c.LEDs[4].Clear()
+	c.LEDs[0].Clear()
 
 	r := c.radio
 
@@ -215,7 +222,7 @@ func (c *Ctrl) scanDisabledISR() {
 
 // advIndTxDisabledISR handles DISABLED->RXEN between TxAdvInd and RxScanReq.
 func (c *Ctrl) advIndTxDisabledISR() {
-	c.LEDs[4].Set()
+	c.LEDs[0].Set()
 
 	r := c.radio
 
@@ -287,11 +294,12 @@ func (c *Ctrl) setRxTimers(start, window uint32) {
 
 	// rt.CC0 with t.CC0 controlls RXEN, t.CC1 controlls Rx timeout.
 	rt.StoreCC(0, rt.LoadCOUNTER()+rtcTick)
-	t.StoreCC(1, timTick+window+rxRU+aaDelay+rtcRA+1000)
+	t.StoreCC(1, timTick+window+rxRU+aaDelay+rtcRA)
 	if timTick < 4 {
 		ppm := ppi.RTC0_COMPARE0__RADIO_TXEN.Mask() |
 			ppi.TIMER0_COMPARE0__RADIO_RXEN.Mask() |
-			ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Mask()
+			ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Mask() |
+			ppi.RADIO_END__TIMER0_CAPTURE2.Mask()
 		ppm.Disable()
 		ppm = ppi.RTC0_COMPARE0__TIMER0_START.Mask() |
 			ppi.RTC0_COMPARE0__RADIO_RXEN.Mask()
@@ -300,7 +308,8 @@ func (c *Ctrl) setRxTimers(start, window uint32) {
 		t.StoreCC(0, timTick) // Use t.CC0 for better accuracy of RXEN.
 		ppm := ppi.RTC0_COMPARE0__RADIO_TXEN.Mask() |
 			ppi.RTC0_COMPARE0__RADIO_RXEN.Mask() |
-			ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Mask()
+			ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Mask() |
+			ppi.RADIO_END__TIMER0_CAPTURE2.Mask()
 		ppm.Disable()
 		ppm = ppi.RTC0_COMPARE0__TIMER0_START.Mask() |
 			ppi.TIMER0_COMPARE0__RADIO_RXEN.Mask()
@@ -324,13 +333,15 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	c.chm.Init(d.ChMapL(), d.ChMapH(), d.Hop())
 	rxPDU := c.recv.Get().PDU
 
-	r.Event(radio.ADDRESS).Clear()
 	r.StoreCRCINIT(d.CRCInit())
 	radioSetMaxLen(r, rxPDU.PayLen())
 	radioSetAA(r, d.AA())
 	radioSetChi(r, c.chm.NextChi())
 	radioSetPDU(r, rxPDU)
-	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN)
+	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
+	ev := r.Event(radio.ADDRESS)
+	ev.Clear()
+	ev.EnableIRQ()
 
 	c.sca = d.SCA() + ppmToFixedUp(100) // Assume 100 ppm local SCA.
 	c.connInterval = d.Interval()
@@ -342,6 +353,9 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	// Setup first anchor point.
 	c.setRxTimers(c.tim0.LoadCC(2)+winOffset-asca, c.winSize+2*asca)
 	c.isr = (*Ctrl).connRxDisabledISR
+
+	// Reenable ADDRESS time capture. See setRxTimer and connTxDisabledISR.
+	ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Enable()
 
 	c.txcPDU.SetHeader(ble.L2CAPCont | ble.Header(c.nesn&1<<2|c.sn&1<<3))
 	c.txcPDU.SetPayLen(0)
@@ -357,7 +371,6 @@ func (c *Ctrl) connRxDisabledISR() {
 		if c.winSize != 0 {
 			// Still in Connection Setup state.
 		}
-		r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
 		cortexm.BKPT(9)
 		for {
 			c.LEDs[0].Set()
@@ -389,7 +402,7 @@ func (c *Ctrl) connRxDisabledISR() {
 	if r.LoadCRCSTATUS() {
 		rxPDU := c.recv.Get()
 		header := rxPDU.Header()
-		c.md = header&ble.MD != 0 // BUG: fix this.
+		//c.md = header&ble.MD != 0 // BUG: fix this.
 		nesn := byte(header) >> 2 & 1
 		sn := byte(header) >> 3 & 1
 		c.LEDs[0].Store(int(sn))
@@ -508,9 +521,13 @@ func (c *Ctrl) connTxDisabledISR() {
 	if !c.md {
 		radioSetChi(r, c.chm.NextChi())
 	}
-	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN)
-	r.Event(radio.ADDRESS).Clear()
-	ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Enable() // ADDRESS sets timeout to >1h.
+	ev := r.Event(radio.ADDRESS)
+	ev.Clear()
+	ev.EnableIRQ()
+
+	// Need to record time of Rx ADDRESS event. At the same time, this avoids
+	// Rx timeout (sets it to >1h).
+	ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Enable()
 
 	radioSetPDU(r, c.recv.Get().PDU)
 
