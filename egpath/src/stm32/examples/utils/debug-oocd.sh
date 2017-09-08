@@ -15,7 +15,10 @@ oocd_cmd="openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg -c "$cfg" -c
 
 arm-none-eabi-gdb --tui \
 	-ex "target extended-remote | $oocd_cmd" \
+	-ex 'set mem inaccessible-by-default off' \
 	-ex 'set remote hardware-breakpoint-limit 6' \
 	-ex 'set remote hardware-watchpoint-limit 4' \
-	-ex 'set mem inaccessible-by-default off' \
+	-ex 'set history save on' \
+	-ex 'set history filename ~/.gdb-history-emgo'
+	-ex 'set history size 1000' \
 	$arch.elf

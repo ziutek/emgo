@@ -13,9 +13,12 @@ trap /bin/true INT
 
 arm-none-eabi-gdb --tui \
 	-ex 'target extended-remote localhost:4242' \
+	-ex 'set mem inaccessible-by-default off' \
 	-ex 'set remote hardware-breakpoint-limit 6' \
 	-ex 'set remote hardware-watchpoint-limit 4' \
-	-ex 'set mem inaccessible-by-default off' \
+	-ex 'set history save on' \
+	-ex 'set history filename ~/.gdb-history-emgo' \
+	-ex 'set history size 1000' \
 	$arch.elf
 
 killall st-util

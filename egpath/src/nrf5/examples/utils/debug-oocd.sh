@@ -11,8 +11,11 @@ oocd_cmd="openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg -c 'gdb_port
 
 arm-none-eabi-gdb --tui \
 	-ex "target extended-remote | $oocd_cmd" \
+	-ex 'set mem inaccessible-by-default off' \
 	-ex "set remote hardware-breakpoint-limit 4" \
 	-ex "set remote hardware-watchpoint-limit 2" \
-	-ex 'set mem inaccessible-by-default off' \
+	-ex 'set history save on' \
+	-ex 'set history filename ~/.gdb-history-emgo' \
+	-ex 'set history size 1000' \
 	-ex 'monitor reset init' \
 	$arch.elf
