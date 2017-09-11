@@ -17,7 +17,7 @@ import (
 	"nrf5/hal/timer"
 )
 
-type Ctrl struct {
+type Controller struct {
 	rnd     rand.XorShift64
 	devAddr int64
 
@@ -40,7 +40,7 @@ type Ctrl struct {
 	recv pduChan
 	send pduChan
 
-	isr func(c *Ctrl)
+	isr func(c *Controller)
 
 	radio *radio.Periph
 	rtc0  *rtc.Periph
@@ -49,13 +49,13 @@ type Ctrl struct {
 	LEDs *[5]gpio.Pin
 }
 
-// NewCtrl returns controller that supports payloads of maxpay length (counts
+// NewController returns controller that supports payloads of maxpay length (counts
 // MIC if used). Use 31 in case of BLE 4.0, 4.1 and any value from 31 to 255 in
 // case of BLE 4.2+. nRF51 can not support BLE 4.2+ full length payloads (radio
 // hardware limits max. payload length to 253 bytes). Rxcap and txcap sets
 // capacities of internal Rx and Tx queues (channels).
-func NewCtrl(maxpay, rxcap, txcap int) *Ctrl {
-	c := new(Ctrl)
+func NewController(maxpay, rxcap, txcap int) *Controller {
+	c := new(Controller)
 	c.devAddr = getDevAddr()
 	c.advPDU = ble.MakeAdvPDU(6 + 3)
 	c.advPDU.SetType(ble.AdvInd)
@@ -73,34 +73,34 @@ func NewCtrl(maxpay, rxcap, txcap int) *Ctrl {
 	return c
 }
 
-func (c *Ctrl) Recv() (ble.DataPDU, error) {
+func (c *Controller) Recv() (ble.DataPDU, error) {
 	return <-c.recv.Ch, nil
 }
 
-func (c *Ctrl) GetSend() ble.DataPDU {
+func (c *Controller) GetSend() ble.DataPDU {
 	return c.send.Get()
 }
 
-func (c *Ctrl) Send() error {
+func (c *Controller) Send() error {
 	c.send.Ch <- c.send.Get()
 	c.send.Next()
 	return nil
 }
 
-func (c *Ctrl) SetTxPwr(dBm int) {
+func (c *Controller) SetTxPwr(dBm int) {
 	c.radio.StoreTXPOWER(dBm)
 }
 
-func (c *Ctrl) DevAddr() int64 {
+func (c *Controller) DevAddr() int64 {
 	return c.devAddr
 }
 
-func (c *Ctrl) ConnEventCnt() uint16 {
+func (c *Controller) ConnEventCnt() uint16 {
 	return c.chm.ConnEventCnt()
 }
 
 // InitPhy initialises physical layer: radio, timers, PPI.
-func (c *Ctrl) InitPhy() {
+func (c *Controller) InitPhy() {
 	radioInit(c.radio)
 	rtcInit(c.rtc0)
 	timerInit(c.tim0)
@@ -119,7 +119,7 @@ func (c *Ctrl) InitPhy() {
 	ppm.Disable()
 }
 
-func (c *Ctrl) Advertise(rspPDU ble.AdvPDU, advIntervalms int) {
+func (c *Controller) Advertise(rspPDU ble.AdvPDU, advIntervalms int) {
 	r := c.radio
 	r.StoreCRCINIT(0x555555)
 	r.Event(radio.DISABLED).EnableIRQ()
@@ -153,7 +153,7 @@ func (c *Ctrl) Advertise(rspPDU ble.AdvPDU, advIntervalms int) {
 	rt.Task(rtc.START).Trigger()
 }
 
-func (c *Ctrl) RadioISR() {
+func (c *Controller) RadioISR() {
 	r := c.radio
 	if ev := r.Event(radio.DISABLED); ev.IRQEnabled() && ev.IsSet() {
 		ev.Clear()
@@ -186,18 +186,18 @@ func (c *Ctrl) RadioISR() {
 		radioSetChi(r, int(c.chi))
 		r.StoreSHORTS(radio.READY_START | radio.END_DISABLE |
 			radio.DISABLED_TXEN)
-		c.isr = (*Ctrl).scanReqRxDisabledISR
+		c.isr = (*Controller).scanReqRxDisabledISR
 		c.LEDs[3].Set()
 	case pdu.Type() == ble.ConnectReq && pdu.PayLen() == 6+6+22:
 		// Setup for connection state.
 		r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
-		c.isr = (*Ctrl).connectReqRxDisabledISR
+		c.isr = (*Controller).connectReqRxDisabledISR
 		c.LEDs[2].Set()
 	}
 }
 
 // scanDisabledISR handles DISABLED->(TXEN/NOP) between RxTxScan* and TxAdvInd.
-func (c *Ctrl) scanDisabledISR() {
+func (c *Controller) scanDisabledISR() {
 	c.LEDs[0].Clear()
 
 	r := c.radio
@@ -210,7 +210,7 @@ func (c *Ctrl) scanDisabledISR() {
 
 	// Must be before TxAdvInd.DISABLED.
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE | radio.DISABLED_RXEN)
-	c.isr = (*Ctrl).advIndTxDisabledISR
+	c.isr = (*Controller).advIndTxDisabledISR
 
 	c.tim0.Task(timer.STOP).Trigger()
 
@@ -221,7 +221,7 @@ func (c *Ctrl) scanDisabledISR() {
 }
 
 // advIndTxDisabledISR handles DISABLED->RXEN between TxAdvInd and RxScanReq.
-func (c *Ctrl) advIndTxDisabledISR() {
+func (c *Controller) advIndTxDisabledISR() {
 	c.LEDs[0].Set()
 
 	r := c.radio
@@ -244,7 +244,7 @@ func (c *Ctrl) advIndTxDisabledISR() {
 }
 
 // scanReqRxDisabledISR handles DISABLED->TXEN between RxScanReq and TxScanRsp.
-func (c *Ctrl) scanReqRxDisabledISR() {
+func (c *Controller) scanReqRxDisabledISR() {
 	// Must be before TxScanRsp.START.
 	radioSetPDU(c.radio, c.rspRef)
 
@@ -254,7 +254,7 @@ func (c *Ctrl) scanReqRxDisabledISR() {
 	c.LEDs[3].Clear()
 }
 
-func (c *Ctrl) setupTxAdvInd() {
+func (c *Controller) setupTxAdvInd() {
 	// Calculate next channel index. Setup shorts and wakeup time.
 	shorts := radio.READY_START | radio.END_DISABLE | radio.DISABLED_TXEN
 	if c.chi != 39 {
@@ -269,7 +269,7 @@ func (c *Ctrl) setupTxAdvInd() {
 	r.StoreSHORTS(shorts)
 	radioSetChi(r, int(c.chi))
 
-	c.isr = (*Ctrl).scanDisabledISR
+	c.isr = (*Controller).scanDisabledISR
 }
 
 const (
@@ -281,7 +281,7 @@ const (
 // SetRxTimers setups RTC0 and TIMER0 to trigger RXEN event or timeout DISABLE
 // event using start and window (µs). TIMER0 still counts from some base event.
 // Start contains the value of TIMER0 at which radio should start Rx.
-func (c *Ctrl) setRxTimers(start, window uint32) {
+func (c *Controller) setRxTimers(start, window uint32) {
 	t := c.tim0
 	rt := c.rtc0
 	t.Task(timer.CAPTURE(0)).Trigger()
@@ -317,7 +317,7 @@ func (c *Ctrl) setRxTimers(start, window uint32) {
 	}
 }
 
-func (c *Ctrl) connectReqRxDisabledISR() {
+func (c *Controller) connectReqRxDisabledISR() {
 	r := c.radio
 	if !r.LoadCRCSTATUS() {
 		// Return to advertising.
@@ -329,7 +329,7 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	// Both timers (RTC0, TIMER0) are running. TIMER0.CC2 contains time of END
 	// event (end of received ConnectReq packet).
 
-	d := llData(c.rxaPDU.Payload()[6+6:])
+	d := connReqLLData(c.rxaPDU.Payload()[6+6:])
 	c.chm.Init(d.ChMapL(), d.ChMapH(), d.Hop())
 	rxPDU := c.recv.Get().PDU
 
@@ -348,11 +348,11 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	c.winSize = d.WinSize()
 
 	winOffset := d.WinOffset()
-	asca := c.sca.MulUp(winOffset) // Absolute SCA after winOffset (��s).
+	asca := c.sca.MulUp(winOffset) // Absolute SCA after winOffset (µs).
 
 	// Setup first anchor point.
 	c.setRxTimers(c.tim0.LoadCC(2)+winOffset-asca, c.winSize+2*asca)
-	c.isr = (*Ctrl).connRxDisabledISR
+	c.isr = (*Controller).connRxDisabledISR
 
 	// Reenable ADDRESS time capture. See setRxTimer and connTxDisabledISR.
 	ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Enable()
@@ -362,7 +362,7 @@ func (c *Ctrl) connectReqRxDisabledISR() {
 	c.rspRef = c.txcPDU.PDU
 }
 
-func (c *Ctrl) connRxDisabledISR() {
+func (c *Controller) connRxDisabledISR() {
 	c.LEDs[4].Clear()
 	r := c.radio
 	if !r.Event(radio.ADDRESS).IsSet() {
@@ -442,6 +442,23 @@ func (c *Ctrl) connRxDisabledISR() {
 				rspPDU = c.txcPDU
 				req := c.rxcRef.Payload()
 				switch req[0] {
+				case llConnUpdateReq:
+					if len(req) != 11 {
+						break
+					}
+					/*
+						d := llConnUpdate(req)
+						c.winSize = d.WinSize()
+						winOffset := d.WinOffset + c.connInterval
+						c.connInterval = d.Interval()
+						asca := c.sca.MulUp(winOffset)
+						c.setRxTimers(
+							c.tim0.LoadCC(1)+winOffset-asca-aaDelay,
+							c.winSize+2*asca,
+						)
+						c.isr = (*Controller).connRxDisabledISR
+						return
+					*/
 				case llChanMapReq:
 					if len(req) != 7 {
 						break
@@ -512,10 +529,10 @@ func (c *Ctrl) connRxDisabledISR() {
 
 	// Must be before ConnTx.DISABLED
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
-	c.isr = (*Ctrl).connTxDisabledISR
+	c.isr = (*Controller).connTxDisabledISR
 }
 
-func (c *Ctrl) connTxDisabledISR() {
+func (c *Controller) connTxDisabledISR() {
 	c.LEDs[4].Set()
 	r := c.radio
 	if !c.md {
@@ -531,5 +548,5 @@ func (c *Ctrl) connTxDisabledISR() {
 
 	radioSetPDU(r, c.recv.Get().PDU)
 
-	c.isr = (*Ctrl).connRxDisabledISR
+	c.isr = (*Controller).connRxDisabledISR
 }

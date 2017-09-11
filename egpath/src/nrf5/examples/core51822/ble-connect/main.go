@@ -20,7 +20,7 @@ import (
 
 var (
 	leds [5]gpio.Pin
-	bctr *blec.Ctrl
+	bctr *blec.Controller
 	udrv *uart.Driver
 )
 
@@ -36,7 +36,7 @@ func init() {
 		leds[i] = led
 	}
 
-	bctr = blec.NewCtrl(ble.MaxDataPay, 3, 3)
+	bctr = blec.NewController(ble.MaxDataPay, 3, 3)
 	bctr.InitPhy()
 	bctr.LEDs = &leds
 
@@ -51,11 +51,11 @@ func init() {
 }
 
 type pduLogger struct {
-	*blec.Ctrl
+	*blec.Controller
 }
 
 func (p pduLogger) Recv() (ble.DataPDU, error) {
-	pdu, err := p.Ctrl.Recv()
+	pdu, err := p.Controller.Recv()
 	if err == nil {
 		fmt.Printf(
 			"R LL#%d LLID=%x P=%02x\r\n",
