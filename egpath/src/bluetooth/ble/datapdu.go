@@ -20,9 +20,9 @@ const (
 	L2CAPStart Header = 0x02 // Start of L2CAP message or complete message.
 	LLControl  Header = 0x03 // LL Control PDU.
 
-	NESN Header = 0x04 // Next Expected Sequence Number.
-	SN   Header = 0x08 // Sequence Number.
-	MD   Header = 0x10 // More Data.
+	NESN Header = 1 << 2 // Next Expected Sequence Number.
+	SN   Header = 1 << 3 // Sequence Number.
+	MD   Header = 1 << 4 // More Data.
 )
 
 // Header returns first byte of header of pdu.
@@ -32,5 +32,5 @@ func (pdu DataPDU) Header() Header {
 
 // SetHeader sets first byte of header of pdu.
 func (pdu DataPDU) SetHeader(h Header) {
-	 pdu.b[0] = byte(h)
+	pdu.b[0] = byte(h)
 }

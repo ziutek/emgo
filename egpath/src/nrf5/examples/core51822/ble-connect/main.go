@@ -58,7 +58,7 @@ func (p pduLogger) Recv() (ble.DataPDU, error) {
 	pdu, err := p.Controller.Recv()
 	if err == nil {
 		fmt.Printf(
-			"R LL#%d LLID=%x P=%02x\r\n",
+			"\r\nR LL#%d LLID=%x P=%02x\r\n",
 			p.ConnEventCnt(), pdu.Header()&ble.LLID, pdu.Payload(),
 		)
 	}

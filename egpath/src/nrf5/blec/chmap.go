@@ -11,7 +11,7 @@ type chmap struct {
 	newL    uint32
 	newH    byte
 
-	connEventCnt uint16
+	connEventCnt uint16 // Zero for first received connEvent.
 }
 
 func (chm *chmap) ConnEventCnt() uint16 {
@@ -37,7 +37,7 @@ func (chm *chmap) set(l uint32, h byte) {
 func (chm *chmap) Init(l uint32, h, hop byte) {
 	chm.set(l, h)
 	chm.hop = hop
-	chm.connEventCnt = 0
+	chm.connEventCnt = 0xFFFF
 }
 
 func (chm *chmap) Update(l uint32, h byte, instant uint16) {

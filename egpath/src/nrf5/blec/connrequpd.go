@@ -67,32 +67,58 @@ func (d connReqLLData) SCA() fixed19 {
 	return fixed19(sca[d[21]>>5]) + 8
 }
 
-type llConnUpdate []byte
+type connUpdate struct {
+	valid     bool
+	winSize   byte
+	winOffset uint16
+	interval  uint16
+	latency   uint16
+	timeout   uint16
+	instant   uint16
+}
+
+func (cu *connUpdate) Init(llConnUpdateReq []byte) {
+	cu.valid = true
+	cu.winSize = llConnUpdateReq[0]
+	cu.winOffset = le.Decode16(llConnUpdateReq[1:3])
+	cu.interval = le.Decode16(llConnUpdateReq[3:5])
+	cu.latency = le.Decode16(llConnUpdateReq[5:7])
+	cu.timeout = le.Decode16(llConnUpdateReq[7:9])
+	cu.instant = le.Decode16(llConnUpdateReq[9:11])
+}
+
+func (cu *connUpdate) CheckInstant(connEventCnt uint16) bool {
+	return cu.valid && connEventCnt == cu.instant
+}
+
+func (cu *connUpdate) SetDone() {
+	cu.valid = false
+}
 
 // WinSize returns window size (µs).
-func (d llConnUpdate) WinSize() uint32 {
-	return uint32(d[0]) * 1250
+func (cu *connUpdate) WinSize() uint32 {
+	return uint32(cu.winSize) * 1250
 }
 
 // WinOffset returns window offset (µs).
-func (d llConnUpdate) WinOffset() uint32 {
-	return (uint32(le.Decode16(d[1:3]))) * 1250
+func (cu *connUpdate) WinOffset() uint32 {
+	return uint32(cu.winOffset) * 1250
 }
 
 // Interval returns connection interval (µs).
-func (d llConnUpdate) Interval() uint32 {
-	return uint32(le.Decode16(d[3:5])) * 1250
+func (cu *connUpdate) Interval() uint32 {
+	return uint32(cu.interval) * 1250
 }
 
-func (d llConnUpdate) Latency() int {
-	return int(le.Decode16(d[5:7]))
+func (cu *connUpdate) Latency() int {
+	return int(cu.latency)
 }
 
 // Timeout returns connection supervision timeout (µs).
-func (d llConnUpdate) Timeout() uint32 {
-	return uint32(le.Decode16(d[7:9])) * 10000
+func (cu *connUpdate) Timeout() uint32 {
+	return uint32(cu.timeout) * 10000
 }
 
-func (d llConnUpdate) Instant() uint16 {
-	return le.Decode16(d[9:11])
+func (cu *connUpdate) Instant() uint16 {
+	return cu.instant
 }
