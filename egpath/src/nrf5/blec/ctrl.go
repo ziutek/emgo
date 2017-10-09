@@ -25,10 +25,12 @@ type Controller struct {
 	winSize        uint32
 	sca            fixed19
 
-	flags   ble.Header // NESN, SN, MD
-	advChi  byte
-	chm     chmap
-	connUpd connUpdate
+	advChi   byte
+	flags    ble.Header // NESN, SN, MD
+	noReq    uint16
+	noReqMax uint16
+	chm      chmap
+	connUpd  connUpdate
 
 	advPDU ble.AdvPDU
 	rxaPDU ble.AdvPDU
@@ -281,6 +283,8 @@ const (
 // event using start and window (µs). TIMER0 still counts from some base event.
 // Start contains the value of TIMER0 at which radio should start Rx.
 func (c *Controller) setRxTimers(start, window uint32) {
+	start -= 300
+	window += 600
 	t := c.tim0
 	rt := c.rtc0
 	t.Task(timer.CAPTURE(0)).Trigger()
@@ -316,6 +320,25 @@ func (c *Controller) setRxTimers(start, window uint32) {
 	}
 }
 
+func (c *Controller) setupNoReq(timeout uint32) {
+	c.noReq = 0
+	c.noReqMax = 10
+	return
+	
+	
+	if timeout > 32e6 {
+		timeout = 32e6 // 32 s
+	}
+	asca := c.sca.MulUp(c.connInterval)
+	maxWin := c.connInterval - rxRU - rtcRA
+	noReqMax := timeout / c.connInterval
+	if noReqMax*2*asca >= maxWin {
+		noReqMax = maxWin/(2*asca) - 1
+	}
+	c.noReq = 0
+	c.noReqMax = uint16(noReqMax)
+}
+
 func (c *Controller) connectReqRxDisabledISR() {
 	r := c.radio
 	if !r.LoadCRCSTATUS() {
@@ -342,9 +365,10 @@ func (c *Controller) connectReqRxDisabledISR() {
 	ev.Clear()
 	ev.EnableIRQ()
 
+	c.winSize = d.WinSize()
 	c.sca = d.SCA() + ppmToFixedUp(100) // Assume 100 ppm local SCA.
 	c.connInterval = d.Interval()
-	c.winSize = d.WinSize()
+	c.setupNoReq(d.Timeout())
 
 	winOffset := d.WinOffset()
 	asca := c.sca.MulUp(winOffset + c.winSize) // Abs.SCA at end of window (µs).
@@ -364,14 +388,39 @@ func (c *Controller) connectReqRxDisabledISR() {
 func (c *Controller) connRxDisabledISR() {
 	r := c.radio
 	if !r.Event(radio.ADDRESS).IsSet() {
-		c.flags &^= ble.MD
-		//radioSetChi(r, c.chm.NextChi())
+		// Timeout.
 		if c.winSize != 0 {
 			// Still in Connection Setup state.
+			for {
+				cortexm.BKPT(9)
+			}
 		}
-		cortexm.BKPT(9)
+		if c.noReq++; c.noReq == c.noReqMax {
+			// Connection timed-out.
+			for {
+				cortexm.BKPT(10)
+			}
+		}
+		c.flags &^= ble.MD
+		radioSetChi(r, c.chm.NextChi())
+		ev := r.Event(radio.ADDRESS)
+		ev.Clear()
+		ev.EnableIRQ()
+
+		// TIMER0 still counts. TIMER0.CC0 contains previous start time.
+		asca := c.sca.MulUp(c.connInterval)
+		c.setRxTimers(
+			c.tim0.LoadCC(0)+c.connInterval-asca,
+			2*(uint32(c.noReq)+1)*asca,
+		)
+
+		// Need to record time of Rx ADDRESS event At the same time, this
+		// avoids Rx timeout (sets it to >1h).
+		ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Enable() // setRxTimers disabled it.
+
 		return
 	}
+	c.noReq = 0
 	c.winSize = 0
 
 	/*
@@ -387,6 +436,7 @@ func (c *Controller) connRxDisabledISR() {
 		c.winSize = c.connUpd.WinSize()
 		winOffset := c.connUpd.WinOffset() + c.connInterval
 		c.connInterval = c.connUpd.Interval()
+		c.setupNoReq(c.connUpd.Timeout())
 		c.connUpd.SetDone()
 		asca := c.sca.MulUp(winOffset + c.winSize) // Abs. SCA at end o window.
 		c.setRxTimers(c.tim0.LoadCC(1)+winOffset-asca-aaDelay, c.winSize+2*asca)
@@ -441,22 +491,21 @@ func (c *Controller) connRxDisabledISR() {
 				switch opcode {
 				case llConnUpdateReq:
 					for len(req) != 11 {
-						cortexm.BKPT(9)
+						cortexm.BKPT(12)
 					}
 					c.connUpd.Init(req)
-					if c.connUpd.Instant()-c.chm.ConnEventCnt() >= 32767 {
-						c.LEDs[4].Set()
-						break // BUG: Connection is lost.
+					for c.connUpd.Instant()-c.chm.ConnEventCnt() >= 32767 {
+						cortexm.BKPT(11)
 					}
 					rspPDU = ble.DataPDU{} // There is no llConnUpdateRsp.
+					c.recv.Ch <- rxPDU
 				case llChanMapReq:
 					for len(req) != 7 {
-						cortexm.BKPT(9)
+						cortexm.BKPT(13)
 					}
 					instant := le.Decode16(req[5:])
-					if instant-c.chm.ConnEventCnt() >= 32767 {
-						c.LEDs[4].Set()
-						break // BUG: Connection is lost.
+					for instant-c.chm.ConnEventCnt() >= 32767 {
+						cortexm.BKPT(14)
 					}
 					c.chm.Update(le.Decode32(req), req[4], instant)
 					rspPDU = ble.DataPDU{} // There is no llChanMapRsp.
@@ -534,7 +583,7 @@ func (c *Controller) connTxDisabledISR() {
 
 	// Need to record time of Rx ADDRESS event. At the same time, this avoids
 	// Rx timeout (sets it to >1h).
-	ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Enable()
+	ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Enable() // setRxTimers disabled it.
 
 	radioSetPDU(r, c.recv.Get().PDU)
 
