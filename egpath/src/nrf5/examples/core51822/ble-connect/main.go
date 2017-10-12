@@ -12,6 +12,7 @@ import (
 	"nrf5/hal/clock"
 	"nrf5/hal/gpio"
 	"nrf5/hal/irq"
+	"nrf5/hal/power"
 	"nrf5/hal/rtc"
 	"nrf5/hal/system"
 	"nrf5/hal/system/timer/rtcst"
@@ -67,6 +68,8 @@ func (p pduLogger) Recv() (ble.DataPDU, error) {
 
 func main() {
 	fmt.Printf("\r\nDevAddr: %08x\r\n", uint64(bctr.DevAddr()))
+
+	power.POWER.Task(power.CONSTLAT).Trigger()
 
 	pdu := ble.MakeAdvPDU(ble.MaxAdvPay)
 	pdu.SetType(ble.ScanRsp)
