@@ -39,16 +39,16 @@ var POWER = (*Periph)(unsafe.Pointer(mmap.APB_BASE))
 type Task byte
 
 const (
-	CONSTLAT Task = 0x78 // Enable constant latency mode.
-	LOWPWR   Task = 0x7C // Enable low power mode (variable latency).
+	CONSTLAT Task = 30 // Enable constant latency mode.
+	LOWPWR   Task = 31 // Enable low power mode (variable latency).
 )
 
 type Event byte
 
 const (
-	POFWARN    Event = 0x08 // Power failure warning.
-	SLEEPENTER Event = 0x14 // CPU entered WFI/WFE sleep (nRF52).
-	SLEEPEXIT  Event = 0x18 // CPU exited WFI/WFE sleep (nRF52).
+	POFWARN    Event = 2 // Power failure warning.
+	SLEEPENTER Event = 5 // CPU entered WFI/WFE sleep (nRF52).
+	SLEEPEXIT  Event = 6 // CPU exited WFI/WFE sleep (nRF52).
 )
 
 func (p *Periph) Task(t Task) *te.Task    { return p.Regs.Task(int(t)) }
