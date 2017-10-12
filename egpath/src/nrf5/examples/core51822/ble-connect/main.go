@@ -67,9 +67,29 @@ func (p pduLogger) Recv() (ble.DataPDU, error) {
 }
 
 func main() {
-	fmt.Printf("\r\nDevAddr: %08x\r\n", uint64(bctr.DevAddr()))
+	rr := power.POWER.LoadRESETREAS()
+	fmt.Printf("\r\nReset reson: (0x%x)", rr)
+	if power.RESETPIN&rr != 0 {
+		fmt.Printf(" RESETPIN")
+	} else if power.DOG&rr != 0 {
+		fmt.Printf(" DOG")
+	} else if power.SREQ&rr != 0 {
+		fmt.Printf(" SREQ")
+	} else if power.LOCKUP&rr != 0 {
+		fmt.Printf(" LOCKUP")
+	} else if power.OFF&rr != 0 {
+		fmt.Printf(" OFF")
+	} else if power.LPCOMP&rr != 0 {
+		fmt.Printf(" LPCOMP")
+	} else if power.DIF&rr != 0 {
+		fmt.Printf(" DIF")
+	} else if power.NFC&rr != 0 {
+		fmt.Printf(" NFC")
+	}
 
-	power.POWER.Task(power.CONSTLAT).Trigger()
+	fmt.Printf("\r\n\r\nDevAddr: %08x\r\n", uint64(bctr.DevAddr()))
+
+	//power.POWER.Task(power.CONSTLAT).Trigger()
 
 	pdu := ble.MakeAdvPDU(ble.MaxAdvPay)
 	pdu.SetType(ble.ScanRsp)

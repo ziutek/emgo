@@ -49,6 +49,8 @@ func radioSetChi(r *radio.Periph, chi int) {
 	r.StoreDATAWHITEIV(uint32(chi))
 	var ch int
 	switch {
+	case chi < 0:
+		goto badChIndex
 	case chi <= 10:
 		ch = chi*2 + 4
 	case chi <= 36:
@@ -60,9 +62,12 @@ func radioSetChi(r *radio.Periph, chi int) {
 	case chi == 39:
 		ch = 80
 	default:
-		panic("ble: bad ch.index")
+		goto badChIndex
 	}
 	r.StoreFREQUENCY(radio.Channel(ch))
+	return
+badChIndex:
+	panic("ble: bad ch.index")
 }
 
 func radioSetAddrMatch(r *radio.Periph, addr int64) {

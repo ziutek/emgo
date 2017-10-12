@@ -283,8 +283,8 @@ const (
 // event using start and window (µs). TIMER0 still counts from some base event.
 // Start contains the value of TIMER0 at which radio should start Rx.
 func (c *Controller) setRxTimers(start, window uint32) {
-	start -= 300
-	window += 600
+	start -= 40
+	window += 80
 	t := c.tim0
 	rt := c.rtc0
 	t.Task(timer.CAPTURE(0)).Trigger()
@@ -398,7 +398,7 @@ func (c *Controller) connRxDisabledISR() {
 		if c.noReq++; c.noReq == c.noReqMax {
 			// Connection timed-out.
 			for {
-				cortexm.BKPT(10)
+				cortexm.BKPT(9)
 			}
 		}
 		c.flags &^= ble.MD
@@ -491,24 +491,25 @@ func (c *Controller) connRxDisabledISR() {
 				switch opcode {
 				case llConnUpdateReq:
 					for len(req) != 11 {
-						cortexm.BKPT(12)
+						cortexm.BKPT(9)
 					}
 					c.connUpd.Init(req)
 					for c.connUpd.Instant()-c.chm.ConnEventCnt() >= 32767 {
-						cortexm.BKPT(11)
+						cortexm.BKPT(9)
 					}
 					rspPDU = ble.DataPDU{} // There is no llConnUpdateRsp.
 					c.recv.Ch <- rxPDU
 				case llChanMapReq:
 					for len(req) != 7 {
-						cortexm.BKPT(13)
+						cortexm.BKPT(9)
 					}
 					instant := le.Decode16(req[5:])
 					for instant-c.chm.ConnEventCnt() >= 32767 {
-						cortexm.BKPT(14)
+						cortexm.BKPT(9)
 					}
 					c.chm.Update(le.Decode32(req), req[4], instant)
 					rspPDU = ble.DataPDU{} // There is no llChanMapRsp.
+					c.recv.Ch <- rxPDU
 				case llFeatureReq:
 					rspPDU.SetPayLen(9)
 					pay := rspPDU.Payload()

@@ -23,11 +23,11 @@ func (chm *chmap) set(l uint32, h byte) {
 	chm.h = h
 	used := 0
 	for l != 0 {
-		used++
+		used += int(l & 1)
 		l >>= 1
 	}
 	for h != 0 {
-		used++
+		used += int(h & 1)
 		h >>= 1
 	}
 	chm.used = byte(used)
@@ -51,41 +51,41 @@ func (chm *chmap) NextChi() int {
 	if int32(chm.connEventCnt) == chm.instant {
 		chm.set(chm.newL, chm.newH)
 	}
-	uchi := uint(chm.uchi) + uint(chm.hop)
-	if uchi >= 37 {
-		uchi -= 37
+	chi := uint(chm.uchi) + uint(chm.hop)
+	if chi >= 37 {
+		chi -= 37
 	}
-	chm.uchi = byte(uchi)
-	if uchi < 32 {
-		if chm.l&(1<<uchi) != 0 {
-			return int(uchi)
+	chm.uchi = byte(chi)
+	if chi < 32 {
+		if chm.l&(1<<chi) != 0 {
+			return int(chi)
 		}
 	} else {
-		if chm.h&(1<<(uchi-32)) != 0 {
-			return int(uchi)
+		if chm.h&(1<<(chi-32)) != 0 {
+			return int(chi)
 		}
 	}
-	remapIdx := uchi % uint(chm.used)
-	uchi = 0
-	for uchi < 32 {
-		for chm.l&(1<<uchi) == 0 {
-			uchi++
+	remapIdx := chi % uint(chm.used)
+	chi = 0
+	for chi < 32 {
+		for chm.l&(1<<chi) == 0 {
+			chi++
 		}
 		if remapIdx == 0 {
-			return int(uchi)
+			return int(chi)
 		}
 		remapIdx--
-		uchi++
+		chi++
 	}
-	uchi = 0
+	chi = 0
 	for {
-		for chm.h&(1<<uchi) == 0 {
-			uchi++
+		for chm.h&(1<<chi) == 0 {
+			chi++
 		}
 		if remapIdx == 0 {
-			return int(uchi + 32)
+			return int(chi + 32)
 		}
 		remapIdx--
-		uchi++
+		chi++
 	}
 }
