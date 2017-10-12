@@ -2,6 +2,7 @@
 package power
 
 import (
+	"bits"
 	"mmio"
 	"unsafe"
 
@@ -77,19 +78,19 @@ func (p *Periph) ClearRESETREAS(mask ResetReas) {
 	p.resetreas.Store(uint32(mask))
 }
 
-// RAMStatus is a bitfield that describes RAM blocks status.
-type RAMStatus byte
+// RAMBlocks is a bitfield that describes RAM blocks.
+type RAMBlocks byte
 
 const (
-	RAMBLOCK0 RAMStatus = 1 << 0 // RAM block 0 is powered up.
-	RAMBLOCK1 RAMStatus = 1 << 1 // RAM block 1 is powered up.
-	RAMBLOCK2 RAMStatus = 1 << 2 // RAM block 2 is powered up.
-	RAMBLOCK3 RAMStatus = 1 << 3 // RAM block 3 is powered up.
+	RAMBLOCK0 RAMBlocks = 1 << 0 // RAM block 0.
+	RAMBLOCK1 RAMBlocks = 1 << 1 // RAM block 1.
+	RAMBLOCK2 RAMBlocks = 1 << 2 // RAM block 2.
+	RAMBLOCK3 RAMBlocks = 1 << 3 // RAM block 3.
 )
 
-// LoadRAMSTATUS returns bitfield that describes status of RAM blocks.
-func (p *Periph) LoadRAMSTATUS() RAMStatus {
-	return RAMStatus(p.ramstatus.Load())
+// LoadRAMSTATUS returns bitfield that lists RAM blocks that are powered up.
+func (p *Periph) LoadRAMSTATUS() RAMBlocks {
+	return RAMBlocks(p.ramstatus.Load())
 }
 
 // SetSYSTEMOFF sets system into OFF state.
@@ -104,7 +105,7 @@ const (
 	POF       POFCon = 1 << 0  // Set if power failure comparoator is enabled.
 	THRESHOLD POFCon = 15 << 1 // Power failure comparator threshold mask.
 
-	// Power failure comparoator thresholds.
+	// Power failure comparator thresholds.
 
 	V2_1 POFCon = 0 << 1 // Threshold: 2.1 V (nrF51).
 	V2_3 POFCon = 1 << 1 // Threshold: 2.3 V (nrF51).
@@ -125,12 +126,12 @@ const (
 	V28 POFCon = 15 << 1 // Threshold: 2.8 V (nRF52).
 )
 
-// LoadPOFCON returns power failure comparoator configuration.
+// LoadPOFCON returns power failure comparator configuration.
 func (p *Periph) LoadPOFCON() POFCon {
 	return POFCon(p.pofcon.Load())
 }
 
-// StorePOFCON sets power failure comparoator configuration.
+// StorePOFCON sets power failure comparator configuration.
 func (p *Periph) StorePOFCON(pofcon POFCon) {
 	p.pofcon.Store(uint32(pofcon))
 }
@@ -141,13 +142,71 @@ func (p *Periph) GPREGRET(n int) *mmio.U32 {
 	return &p.gpregret[n]
 }
 
-/*
-// LoadRAMON
-func (p *Periph) LoadRAMON() RAMBlocks {
-	return RAMBlocks(p.ramon.Load())
+// LoadRAMON returns configuration of four RAM blocks. On lists RAM blocks
+// that are kept on in system ON mode, retain lists RAM blocks that should be
+// retained when RAM block is off.
+func (p *Periph) LoadRAMON() (on, retain RAMBlocks) {
+	a := p.ramon.Load()
+	b := p.ramonb.Load()
+	return RAMBlocks(a | b<<2), RAMBlocks(a>>16 | b>>14)
 }
 
-func (p *Periph) StoreRAMON(ramon RAMBlocks) {
-	p.ramon.Store(uint32(ramon))
+// StoreRAMON sets configuration of four RAM blocks. On lists RAM blocks that
+// should be kept on in system ON mode, retain lists RAM blocks that should be
+// retained in system off mode.
+func (p *Periph) StoreRAMON(on, retain RAMBlocks) {
+	p.ramon.Store(uint32(on&3) | uint32(retain&3)<<16)
+	p.ramonb.Store(uint32(on&12)>>2 | uint32(retain&12)<<14)
 }
-*/
+
+// LoadRESET reports wheter pin reset is enabled in debug mode (nRF51).
+func (p *Periph) LoadRESET() bool {
+	return p.reset.Load()&1 != 0
+}
+
+// StoreRESET enables/disables pin reset in debug mode (nRF51).
+func (p *Periph) StoreRESET(pinreset bool) {
+	p.reset.Store(uint32(bits.One(pinreset)))
+}
+
+// LoadDCDCEN reports wheter the DC/DC converter is enabled.
+func (p *Periph) LoadDCDCEN() bool {
+	return p.dcdcen.Load()&1 != 0
+}
+
+// StoreDCDCEN enables/disables DC/DC converter.
+func (p *Periph) StoreDCDCEN(en bool) {
+	p.dcdcen.Store(uint32(bits.One(en)))
+}
+
+// RAMPower describes power configuration for two sections of RAM block (nRF52).
+type RAMPower uint32
+
+const (
+	S0POWER     RAMPower = 1 << 0  // Keep RAM section S0 on in system on mode.
+	S1POWER     RAMPower = 1 << 1  // Keep RAM section S1 on in system on mode.
+	S0RETENTION RAMPower = 1 << 16 // Keep retention of S0 when RAM is off.
+	S1RETENTION RAMPower = 1 << 17 // Keep retention of S1 when RAM is off.
+)
+
+// LoadRAMPOWER returns power configuration of RAM block n (nRF52).
+func (p *Periph) LoadRAMPOWER(n int) RAMPower {
+	return RAMPower(p.ram[n].power.Load())
+}
+
+// LoadRAMPOWER power configuration of RAM block n (nRF52).
+func (p *Periph) StoreRAMPOWER(n int, val RAMPower) {
+	p.ram[n].power.Store(uint32(val))
+}
+
+// SetRAMPOWER sets on power configuration of RAM block n according to mask
+// (nRF52).
+func (p *Periph) SetRAMPOWER(n int, mask RAMPower) {
+	p.ram[n].powerset.Store(uint32(mask))
+}
+
+// ClearRAMPOWER sets off power configuration of RAM block n according to mask
+// (nRF52).
+func (p *Periph) ClearRAMPOWER(n int, mask RAMPower) {
+	p.ram[n].powerclr.Store(uint32(mask))
+}
