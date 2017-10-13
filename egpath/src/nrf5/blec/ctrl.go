@@ -1,7 +1,6 @@
 package blec
 
 import (
-	"arch/cortexm"
 	"encoding/binary/le"
 	"math/rand"
 	"rtos"
@@ -392,13 +391,13 @@ func (c *Controller) connRxDisabledISR() {
 		if c.winSize != 0 {
 			// Still in Connection Setup state.
 			for {
-				cortexm.BKPT(9)
+				// BUG:
 			}
 		}
 		if c.noReq++; c.noReq == c.noReqMax {
 			// Connection timed-out.
 			for {
-				cortexm.BKPT(9)
+				// BUG:
 			}
 		}
 		c.flags &^= ble.MD
@@ -491,21 +490,21 @@ func (c *Controller) connRxDisabledISR() {
 				switch opcode {
 				case llConnUpdateReq:
 					for len(req) != 11 {
-						cortexm.BKPT(9)
+						// BUG:
 					}
 					c.connUpd.Init(req)
 					for c.connUpd.Instant()-c.chm.ConnEventCnt() >= 32767 {
-						cortexm.BKPT(9)
+						// BUG:
 					}
 					rspPDU = ble.DataPDU{} // There is no llConnUpdateRsp.
 					c.recv.Ch <- rxPDU
 				case llChanMapReq:
 					for len(req) != 7 {
-						cortexm.BKPT(9)
+						// BUG:
 					}
 					instant := le.Decode16(req[5:])
 					for instant-c.chm.ConnEventCnt() >= 32767 {
-						cortexm.BKPT(9)
+						// BUG:
 					}
 					c.chm.Update(le.Decode32(req), req[4], instant)
 					rspPDU = ble.DataPDU{} // There is no llChanMapRsp.

@@ -2,7 +2,6 @@
 package noos
 
 import (
-	"arch/cortexm"
 	//"arch/cortexm/debug/itm"
 )
 
@@ -31,6 +30,5 @@ func panic_(i interface{}) {
 		dbg.WriteByte('\n')
 	*/
 	for {
-		cortexm.BKPT(1)
 	}
 }

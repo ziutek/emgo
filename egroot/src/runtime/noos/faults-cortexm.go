@@ -2,14 +2,9 @@
 
 package noos
 
-import (
-	"arch/cortexm"
-)
-
 //emgo:noinline
 func nmiHandler() {
 	for {
-		cortexm.BKPT(0)
 	}
 }
 
