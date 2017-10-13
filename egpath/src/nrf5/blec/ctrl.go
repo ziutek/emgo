@@ -273,8 +273,8 @@ func (c *Controller) setupTxAdvInd() {
 }
 
 const (
-	rxRU    = 130 // RADIO DISABLED to Rx READY (Rx ramp-up) (µs).
-	rtcRA   = 30  // RTC read accuracy (µs): readRTC <= RTC <= readRTC+rtcRA.
+	rxRU    = 138 // RADIO DISABLED to Rx READY (Rx ramp-up) for BLE (µs).
+	rtcRA   = 31  // RTC read accuracy (µs): readRTC <= RTC <= readRTC+rtcRA.
 	aaDelay = 40  // Delay between start of packet and ADDRESS event (µs).
 )
 
@@ -282,21 +282,25 @@ const (
 // event using start and window (µs). TIMER0 still counts from some base event.
 // Start contains the value of TIMER0 at which radio should start Rx.
 func (c *Controller) setRxTimers(start, window uint32) {
-	start -= 40
-	window += 80
-	t := c.tim0
+	start -= rxRU
+	window += rxRU + aaDelay + rtcRA
+
 	rt := c.rtc0
+	t := c.tim0
+
+	// Capture RTC0 (takes 5 cycles) and TIMER0 (just after RTC0).
+	rtcBase := rt.LoadCOUNTER()
 	t.Task(timer.CAPTURE(0)).Trigger()
 	t.Task(timer.STOP).Trigger()
 	t.Task(timer.CLEAR).Trigger()
 
-	delay := start - t.LoadCC(0) - rxRU
+	delay := start - t.LoadCC(0)
 	rtcTick := delay * 67 / 2048         // 67/2048 < 32768/1e6 == 512/15625
 	timTick := delay - rtcTick*15625/512 // µs
 
 	// rt.CC0 with t.CC0 controlls RXEN, t.CC1 controlls Rx timeout.
-	rt.StoreCC(0, rt.LoadCOUNTER()+rtcTick)
-	t.StoreCC(1, timTick+window+rxRU+aaDelay+rtcRA)
+	rt.StoreCC(0, rtcBase+rtcTick)
+	t.StoreCC(1, timTick+window)
 	if timTick < 4 {
 		ppm := ppi.RTC0_COMPARE0__RADIO_TXEN.Mask() |
 			ppi.TIMER0_COMPARE0__RADIO_RXEN.Mask() |
@@ -323,8 +327,7 @@ func (c *Controller) setupNoReq(timeout uint32) {
 	c.noReq = 0
 	c.noReqMax = 10
 	return
-	
-	
+
 	if timeout > 32e6 {
 		timeout = 32e6 // 32 s
 	}
