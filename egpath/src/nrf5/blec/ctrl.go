@@ -282,13 +282,13 @@ const (
 // event using start and window (µs). TIMER0 still counts from some base event.
 // Start contains the value of TIMER0 at which radio should start Rx.
 func (c *Controller) setRxTimers(start, window uint32) {
-	start -= rxRU
-	window += rxRU + aaDelay + rtcRA
+	start -= rxRU + 1
+	window += rxRU + aaDelay + rtcRA + 2
 
 	rt := c.rtc0
 	t := c.tim0
 
-	// Capture RTC0 (takes 5 cycles) and TIMER0 (just after RTC0).
+	// Capture RTC0 (takes 5 CPU cycles) and TIMER0 (just after RTC0).
 	rtcBase := rt.LoadCOUNTER()
 	t.Task(timer.CAPTURE(0)).Trigger()
 	t.Task(timer.STOP).Trigger()
@@ -299,28 +299,24 @@ func (c *Controller) setRxTimers(start, window uint32) {
 	timTick := delay - rtcTick*15625/512 // µs
 
 	// rt.CC0 with t.CC0 controlls RXEN, t.CC1 controlls Rx timeout.
+	
 	rt.StoreCC(0, rtcBase+rtcTick)
 	t.StoreCC(1, timTick+window)
-	if timTick < 4 {
-		ppm := ppi.RTC0_COMPARE0__RADIO_TXEN.Mask() |
-			ppi.TIMER0_COMPARE0__RADIO_RXEN.Mask() |
-			ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Mask() |
-			ppi.RADIO_END__TIMER0_CAPTURE2.Mask()
-		ppm.Disable()
+	ppm := ppi.RTC0_COMPARE0__RADIO_TXEN.Mask() |
+		ppi.RTC0_COMPARE0__RADIO_RXEN.Mask() |
+		ppi.TIMER0_COMPARE0__RADIO_RXEN.Mask() |
+		ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Mask() |
+		ppi.RADIO_END__TIMER0_CAPTURE2.Mask()
+	ppm.Disable()
+	if timTick < 2 {
 		ppm = ppi.RTC0_COMPARE0__TIMER0_START.Mask() |
 			ppi.RTC0_COMPARE0__RADIO_RXEN.Mask()
-		ppm.Enable()
 	} else {
 		t.StoreCC(0, timTick) // Use t.CC0 for better accuracy of RXEN.
-		ppm := ppi.RTC0_COMPARE0__RADIO_TXEN.Mask() |
-			ppi.RTC0_COMPARE0__RADIO_RXEN.Mask() |
-			ppi.RADIO_ADDRESS__TIMER0_CAPTURE1.Mask() |
-			ppi.RADIO_END__TIMER0_CAPTURE2.Mask()
-		ppm.Disable()
 		ppm = ppi.RTC0_COMPARE0__TIMER0_START.Mask() |
 			ppi.TIMER0_COMPARE0__RADIO_RXEN.Mask()
-		ppm.Enable()
 	}
+	ppm.Enable()
 }
 
 func (c *Controller) setupNoReq(timeout uint32) {
