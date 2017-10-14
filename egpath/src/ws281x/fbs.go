@@ -21,11 +21,12 @@ func AsFBS(b []byte) FBS {
 	return FBS{b}
 }
 
-// PixelSize returns pixel size.
+// PixelSize returns pixel size in bytes (always 12).
 func (_ FBS) PixelSize() int {
 	return 12
 }
 
+// Len returns FBS length as number of pixels.
 func (s FBS) Len() int {
 	return len(s.data) / 12
 }
@@ -42,7 +43,7 @@ func (s FBS) Head(n int) FBS {
 
 const zeroSPI = 0x88
 
-// EncodeRGB encodes c to one pixel at begining of buf in WFBS811 RGB order.
+// EncodeRGB encodes c to one pixel at begining of s in WS2811 RGB order.
 func (s FBS) EncodeRGB(c Color) {
 	r, g, b := c.Red(), c.Green(), c.Blue()
 	for n := uint(0); n < 4; n++ {
@@ -52,7 +53,7 @@ func (s FBS) EncodeRGB(c Color) {
 	}
 }
 
-// EncodeGRB encodes c to one pixel at begining of buf in WFBS812 GRB order.
+// EncodeGRB encodes c to one pixel at begining of s in WS2812 GRB order.
 func (s FBS) EncodeGRB(c Color) {
 	r, g, b := c.Red(), c.Green(), c.Blue()
 	for n := uint(0); n < 4; n++ {
@@ -67,7 +68,7 @@ func (s FBS) Bytes() []byte {
 	return s.data
 }
 
-// Write writes src to beginning of p.
+// Write writes src to beginning of s.
 func (s FBS) Write(src FBS) {
 	copy(s.Bytes(), src.Bytes())
 }

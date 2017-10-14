@@ -20,11 +20,12 @@ func AsFBU(b []byte) FBU {
 	return FBU{b}
 }
 
-// PixelSize returns pixel size.
+// PixelSize returns pixel size in bytes (always 8).
 func (_ FBU) PixelSize() int {
 	return 8
 }
 
+// Len returns FBU length as number of pixels.
 func (s FBU) Len() int {
 	return len(s.data) / 8
 }
@@ -41,7 +42,7 @@ func (s FBU) Head(n int) FBU {
 
 const zeroUART = (6>>1 + 6<<2 + 6<<5)
 
-// EncodeRGB encodes c to one pixel at begining of buf in WS2811 RGB order.
+// EncodeRGB encodes c to one pixel at begining of s in WS2811 RGB order.
 func (s FBU) EncodeRGB(c Color) {
 	r, g, b := c.Red(), c.Green(), c.Blue()
 	s.data[0] = byte(zeroUART &^ (r>>7&1 | r>>3&8 | r<<1&0x40))
@@ -54,7 +55,7 @@ func (s FBU) EncodeRGB(c Color) {
 	s.data[7] = byte(zeroUART &^ (b>>2&1 | b<<2&8 | b<<6&0x40))
 }
 
-// EncodeGRB encodes c to one pixel at begining of buf in WS2812 GRB order.
+// EncodeGRB encodes c to one pixel at begining of s in WS2812 GRB order.
 func (s FBU) EncodeGRB(c Color) {
 	r, g, b := c.Red(), c.Green(), c.Blue()
 	s.data[0] = byte(zeroUART &^ (g>>7&1 | g>>3&8 | g<<1&0x40))
@@ -72,7 +73,7 @@ func (s FBU) Bytes() []byte {
 	return s.data
 }
 
-// Write writes src to beginning of p.
+// Write writes src to beginning of s.
 func (s FBU) Write(src FBU) {
 	copy(s.Bytes(), src.Bytes())
 }
