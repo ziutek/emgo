@@ -273,9 +273,9 @@ func (c *Controller) setupTxAdvInd() {
 }
 
 const (
-	rxRU    = 138 // RADIO DISABLED to Rx READY (Rx ramp-up) for BLE (µs).
-	rtcRA   = 31  // RTC read accuracy (µs): readRTC <= RTC <= readRTC+rtcRA.
-	aaDelay = 40  // Delay between start of packet and ADDRESS event (µs).
+	rxRU    = 138    // RADIO DISABLED to Rx READY (Rx ramp-up) for BLE (µs).
+	rtcRA   = 31     // RTC read accuracy (µs): readRTC <= RTC <= readRTC+rtcRA.
+	aaDelay = 40 + 1 // Delay between start of packet and ADDRESS event (µs).
 )
 
 // SetRxTimers setups RTC0 and TIMER0 to trigger RXEN event or timeout DISABLE
@@ -299,7 +299,7 @@ func (c *Controller) setRxTimers(start, window uint32) {
 	timTick := delay - rtcTick*15625/512 // µs
 
 	// rt.CC0 with t.CC0 controlls RXEN, t.CC1 controlls Rx timeout.
-	
+
 	rt.StoreCC(0, rtcBase+rtcTick)
 	t.StoreCC(1, timTick+window)
 	ppm := ppi.RTC0_COMPARE0__RADIO_TXEN.Mask() |
