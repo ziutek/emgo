@@ -1,6 +1,6 @@
 typedef internal$Chan *chan;
 
-#define NILCHAN (chan){}
+#define NILCHAN ((chan)0)
 
 #define MAKECHAN(typ, cap) internal$MakeChan(cap, sizeof(typ), __alignof__(typ))
 
