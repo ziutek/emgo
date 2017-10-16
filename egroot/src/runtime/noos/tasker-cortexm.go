@@ -54,6 +54,7 @@ func (ti *taskInfo) setState(s taskState) {
 type task struct {
 	info   *taskInfo
 	rng    rand.XorShift64
+	sendAt int64
 }
 
 // Comment for future separate tasker package:

@@ -213,7 +213,7 @@ func (c *chanA) Cap() int {
 	return int(c.cap)
 }
 
-type chanAMethods struct {
+var chanAMethods = struct {
 	Send       func(c *chanA, e unsafe.Pointer) (p unsafe.Pointer, d uintptr)
 	Recv       func(c *chanA, e unsafe.Pointer) (p unsafe.Pointer, d uintptr)
 	TrySend    func(c *chanA, e, _ unsafe.Pointer) (p unsafe.Pointer, d uintptr)
@@ -224,9 +224,7 @@ type chanAMethods struct {
 	Close      func(c *chanA)
 	Len        func(c *chanA) int
 	Cap        func(c *chanA) int
-}
-
-var cam = chanAMethods{
+}{
 	(*chanA).Send,
 	(*chanA).Recv,
 	(*chanA).TrySend,

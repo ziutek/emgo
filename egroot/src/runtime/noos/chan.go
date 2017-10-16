@@ -25,10 +25,10 @@ func makeChan(cap int, size, align uintptr) *internal.Chan {
 	c := new(internal.Chan)
 	if cap == 0 {
 		c.C = unsafe.Pointer(makeChanS())
-		c.M = (*internal.ChanMethods)(unsafe.Pointer(&csm))
+		c.M = (*internal.ChanMethods)(unsafe.Pointer(&chanSMethods))
 	} else {
 		c.C = unsafe.Pointer(makeChanA(cap, size, align))
-		c.M = (*internal.ChanMethods)(unsafe.Pointer(&cam))
+		c.M = (*internal.ChanMethods)(unsafe.Pointer(&chanAMethods))
 	}
 	return c
 }
