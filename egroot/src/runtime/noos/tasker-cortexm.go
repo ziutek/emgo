@@ -51,6 +51,11 @@ func (ti *taskInfo) setState(s taskState) {
 	ti.flags = ti.flags&^3 | s
 }
 
+type task struct {
+	info   *taskInfo
+	rng    rand.XorShift64
+}
+
 // Comment for future separate tasker package:
 // 1. Exported methods can be called only from thread mode (using SVC handler)
 //    or from PendSV handler.
@@ -60,8 +65,7 @@ type taskSched struct {
 	period    uint32
 	nanosec   func() int64
 	setWakeup func(int64, bool)
-	tasks     []*taskInfo
-	rng       []rand.XorShift64
+	tasks     []task
 	curTask   int
 }
 
@@ -95,17 +99,18 @@ func (ts *taskSched) SetSysTimer(nanosec func() int64, setWakeup func(int64, boo
 }
 
 func (ts *taskSched) deliverEvent(e syscall.Event) {
-	for _, t := range ts.tasks {
-		switch t.state() {
+	for n := range ts.tasks {
+		ti := ts.tasks[n].info
+		switch ti.state() {
 		case taskEmpty:
 			// skip
 		case taskWaitEvent:
-			if t.event&e != 0 {
-				t.event = 0
-				t.setState(taskReady)
+			if ti.event&e != 0 {
+				ti.event = 0
+				ti.setState(taskReady)
 			}
 		default:
-			t.event |= e
+			ti.event |= e
 		}
 	}
 }
@@ -124,12 +129,11 @@ func (ts *taskSched) init() {
 		panic("noos: taskInfo to big")
 	}
 
-	ts.tasks = make([]*taskInfo, maxTasks())
-	ts.rng = make([]rand.XorShift64, maxTasks())
+	ts.tasks = make([]task, maxTasks())
 	for n := range ts.tasks {
 		// Place taskinfo for n-th task in its stack guard slot.
 		resetStackGuard(n)
-		ts.tasks[n] = (*taskInfo)(unsafe.Pointer(stackGuardBegin(n)))
+		ts.tasks[n].info = (*taskInfo)(unsafe.Pointer(stackGuardBegin(n)))
 	}
 
 	// Use PSP as stack pointer for thread mode. Current (zero) task has stack
@@ -211,13 +215,13 @@ func (ts *taskSched) init() {
 }
 
 func (ts *taskSched) initTask(n int, sp uintptr) {
-	t := ts.tasks[n]
-	t.init(ts.curTask, sp)
+	t := &ts.tasks[n]
+	t.info.init(ts.curTask, sp)
 	ns := ts.nanosec()
 	if ns == 0 {
-		ts.rng[n].Seed(int64(uintptr(unsafe.Pointer(t))))
+		t.rng.Seed(int64(uintptr(unsafe.Pointer(t))))
 	} else {
-		ts.rng[n].Seed(ns + 1)
+		t.rng.Seed(ns + 1)
 	}
 }
 
@@ -227,7 +231,7 @@ func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err sy
 		if n++; n >= len(ts.tasks) {
 			n = 0
 		}
-		if ts.tasks[n].state() == taskEmpty {
+		if ts.tasks[n].info.state() == taskEmpty {
 			break
 		}
 		if n == ts.curTask {
@@ -242,7 +246,7 @@ func (ts *taskSched) newTask(pc uintptr, psr uint32, lock bool) (tid int, err sy
 	ts.initTask(n, sp)
 
 	if lock {
-		ts.tasks[ts.curTask].setState(taskLocked)
+		ts.tasks[ts.curTask].info.setState(taskLocked)
 	}
 	raisePendSV() // Ensure that scheduler knowns that has more than one task.
 	return n + 1, syscall.OK
@@ -253,13 +257,14 @@ func (ts *taskSched) killTask(tid int) syscall.Errno {
 	if tid != 0 {
 		n = tid - 1.
 	}
-	if n >= len(ts.tasks) || ts.tasks[n].state() == taskEmpty {
+	ti := ts.tasks[n].info
+	if n >= len(ts.tasks) || ti.state() == taskEmpty {
 		return syscall.ENFOUND
 	}
-	ts.tasks[n].setState(taskEmpty)
+	ti.setState(taskEmpty)
 	for i := range ts.tasks {
-		if t := ts.tasks[i]; int(t.parent) == n {
-			t.parent = -1
+		if ti := ts.tasks[i].info; int(ti.parent) == n {
+			ti.parent = -1
 		}
 	}
 	if n == ts.curTask {
@@ -269,23 +274,23 @@ func (ts *taskSched) killTask(tid int) syscall.Errno {
 }
 
 func (ts *taskSched) unlockParent() {
-	parent := ts.tasks[ts.curTask].parent
+	parent := ts.tasks[ts.curTask].info.parent
 	if parent == -1 {
 		return
 	}
-	if pt := ts.tasks[parent]; pt.state() == taskLocked {
-		pt.setState(taskReady)
+	if ti := ts.tasks[parent].info; ti.state() == taskLocked {
+		ti.setState(taskReady)
 	}
 }
 
 func (ts *taskSched) waitEvent(e syscall.Event) {
-	t := ts.tasks[ts.curTask]
-	if e == 0 || t.event&e != 0 {
-		t.event = 0
+	ti := ts.tasks[ts.curTask].info
+	if e == 0 || ti.event&e != 0 {
+		ti.event = 0
 		return
 	}
-	t.setState(taskWaitEvent)
-	t.event = e
+	ti.setState(taskWaitEvent)
+	ti.event = e
 	raisePendSV()
 }
 

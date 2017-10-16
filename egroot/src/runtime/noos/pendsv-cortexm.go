@@ -37,7 +37,7 @@ again:
 		if n++; n == len(tasker.tasks) {
 			n = 0
 		}
-		if tasker.tasks[n].state() == taskReady {
+		if tasker.tasks[n].info.state() == taskReady {
 			break
 		}
 		if n == tasker.curTask {
@@ -53,7 +53,7 @@ again:
 		tasker.setWakeup(tasker.alarm, tasker.alarm != noalarm)
 		return 0
 	}
-	tasker.tasks[tasker.curTask].sp = sp
+	tasker.tasks[tasker.curTask].info.sp = sp
 	tasker.curTask = n
 	wkup := tasker.nanosec() + int64(tasker.period)
 	if wkup > tasker.alarm {
@@ -63,5 +63,5 @@ again:
 		setMPUStackGuard(n)
 	}
 	tasker.setWakeup(wkup, false)
-	return tasker.tasks[n].sp
+	return tasker.tasks[n].info.sp
 }
