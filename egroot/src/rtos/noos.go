@@ -14,6 +14,11 @@ func sleepUntil(end int64) {
 	}
 }
 
+func sendAt(t int64) <-chan int64 {
+	syscall.SetSendAt(t)
+	return syscall.TimeChan()
+}
+
 type eventFlag struct {
 	state syscall.Event
 }

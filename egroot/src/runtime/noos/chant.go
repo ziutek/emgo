@@ -6,8 +6,8 @@ import (
 	"unsafe"
 )
 
-// ChanT is asynchronous pseudo channel (read only) that allows to receive once
-// at or after time stored in thread scope variable. This is dirty hack but
+// ChanT is pseudo channel (synchronous, read only) that allows to receive once
+// at or after time stored in task local variable. This is dirty hack but
 // allows to implement deadlines in select statements without createing
 // additional gorutines.
 type chanT struct {
@@ -42,14 +42,11 @@ func (c *chanT) Done(_ uintptr) {
 }
 
 func (c *chanT) Len() int {
-	if syscall.Nanosec() >= tasker.tasks[tasker.curTask].sendAt {
-		return 1
-	}
 	return 0
 }
 
 func (c *chanT) Cap() int {
-	return 1
+	return 0
 }
 
 var chanTMethods = struct {
@@ -71,14 +68,11 @@ var chanTMethods = struct {
 	Cap:     (*chanT).Cap,
 }
 
-var singleChanT = internal.Chan{
-	C: unsafe.Pointer(&chanT{syscall.Alarm}),
-	M: (*internal.ChanMethods)(unsafe.Pointer(&chanTMethods)),
-}
+var timeChan = chanT{syscall.Alarm}
 
-func SendAt(ns int64) <-chan int64 {
-	tasker.tasks[tasker.curTask].sendAt = ns
-	syscall.SetAlarm(ns)
-	p := &singleChanT
-	return *(*<-chan int64)(unsafe.Pointer(&p))
+func makeTimeChan() internal.Chan {
+	return internal.Chan{
+		C: unsafe.Pointer(&timeChan),
+		M: (*internal.ChanMethods)(unsafe.Pointer(&chanTMethods)),
+	}
 }

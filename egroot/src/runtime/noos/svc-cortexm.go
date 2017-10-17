@@ -22,6 +22,7 @@ var syscalls = [...]func(fp *cortexm.StackFrame, lr uintptr){
 	syscall.SETSYSTIM:     scSetSysTimer,
 	syscall.NANOSEC:       scNanosec,
 	syscall.SETALARM:      scSetAlarm,
+	syscall.SETSENDAT:     scSetSendAt,
 	syscall.SETIRQENA:     scSetIRQEna,
 	syscall.SETIRQPRIO:    scSetIRQPrio,
 	syscall.SETIRQHANDLER: scSetIRQHandler,
@@ -83,6 +84,11 @@ func scNanosec(fp *cortexm.StackFrame, lr uintptr) {
 func scSetAlarm(fp *cortexm.StackFrame, lr uintptr) {
 	mustThread(lr)
 	tasker.SetAlarm(*(*int64)(unsafe.Pointer(&fp.R[0])))
+}
+
+func scSetSendAt(fp *cortexm.StackFrame, lr uintptr) {
+	mustThread(lr)
+	tasker.SetSendAt(*(*int64)(unsafe.Pointer(&fp.R[0])))
 }
 
 func scSetIRQEna(fp *cortexm.StackFrame, lr uintptr) {

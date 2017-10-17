@@ -12,9 +12,15 @@ func Nanosec() int64 {
 	return syscall.Nanosec()
 }
 
-// SleepUntil sleeps task until Nanosec() < end.
-func SleepUntil(end int64) {
-	sleepUntil(end)
+// SleepUntil sleeps task until Nanosec() < t.
+func SleepUntil(t int64) {
+	sleepUntil(t)
+}
+
+// SendAt returns read-only channel that can be used to wait for t. Received
+// time can be equal or greather than t.
+func SendAt(t int64) <-chan int64 {
+	return sendAt(t)
 }
 
 // SetPrivLevel sets privilege level for current task to n. Level 0 is the most

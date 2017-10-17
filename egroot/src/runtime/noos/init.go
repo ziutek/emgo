@@ -8,6 +8,7 @@ func init() {
 	internal.Alloc = alloc
 	internal.MakeChan = makeChan
 	internal.Select = selectComm
+	internal.TimeChan = makeTimeChan()
 	if maxTasks() > 0 {
 		tasker.init()
 	}

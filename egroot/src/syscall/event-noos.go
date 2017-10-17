@@ -39,7 +39,7 @@ func AssignEventFlag() Event {
 	return Event(2) << (u % (eventBits - 1))
 }
 
-// Send sends event that means it waking up all tasks that wait for e. If some 
+// Send sends event that means it waking up all tasks that wait for e. If some
 // task isn't waiting for any event, e is saved for this task for possible
 // future call of Wait. Send do not execute until all normal (not I/O) memory
 // write operations before it, in program order, will be completed. In very
@@ -50,7 +50,7 @@ func (e Event) Send() {
 	schedNext()
 }
 
-// TakeEventReg is intended to be used by runtime to obtain accumulated events.
+// TakeEventReg is intended tao be used by runtime to obtain accumulated events.
 // It returns value of shared event register and clears it in one atomic
 // operation.
 func TakeEventReg() Event {
@@ -67,8 +67,12 @@ func (e Event) Wait() {
 	internal.Syscall1(EVENTWAIT, uintptr(e))
 }
 
+// Assign Allarm event. Event(1) seems to be good choise for such ubiquitous
+// event: it is always different from events returned by AssignEventFlag and
+// different from the first 31 events assigned by AssignFlag.
+
 // Alarm is an event that is sent by runtime when asked by using SetAlarm.
-var Alarm = AssignEventFlag()
+var Alarm = Event(1)
 
 func AtomicLoadEvent(p *Event) Event {
 	return Event(atomic.LoadUintptr((*uintptr)(p)))

@@ -44,3 +44,7 @@ type Comm struct {
 // Select is used internelly to implement select statement. After Select comms
 // can be modified (shuffled).
 var Select func(comms []*Comm, dflt unsafe.Pointer) (jmp, p unsafe.Pointer, d uintptr)
+
+// TimeChan is used to wait for specified time (mainly for deadline/timeout in
+// select statement).
+var TimeChan Chan

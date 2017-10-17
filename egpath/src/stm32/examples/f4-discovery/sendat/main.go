@@ -11,7 +11,6 @@ package main
 import (
 	"delay"
 	"rtos"
-	"runtime/noos"
 
 	"stm32/hal/exti"
 	"stm32/hal/gpio"
@@ -83,7 +82,7 @@ func main() {
 	for {
 		select {
 		case <-c:
-		case <-noos.SendAt(rtos.Nanosec() + 2e9):
+		case <-rtos.SendAt(rtos.Nanosec() + 2e9):
 		}
 		toggle(colors[i])
 		if i++; i == 3 {

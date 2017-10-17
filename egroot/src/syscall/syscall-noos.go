@@ -18,6 +18,7 @@ const (
 	SETSYSTIM
 	NANOSEC
 	SETALARM
+	SETSENDAT
 	SETIRQENA
 	SETIRQPRIO
 	SETIRQHANDLER
@@ -94,12 +95,24 @@ func Nanosec() int64 {
 	return internal.Syscall0r64(NANOSEC)
 }
 
-// SetAlarm asks the runtime to send Alarm event at t. t is
-// only a hint for runtime, because it can send alarm at any time: before t,
-// at t and after t. Typically, task use SetAlarm in conjunction with
-// Alarm.Wait and Nanosec.
+// SetAlarm asks the runtime to send Alarm event at t. T is only a hint for the
+// runtime, because it can send alarm at any time: before t, at t and after t.
+// Typically, task use SetAlarm in conjunction with Alarm.Wait and Nanosec.
 func SetAlarm(t int64) {
 	internal.Syscall1i64(SETALARM, t)
+}
+
+// SetSendAt works like SetAlarm but additionaly sets task local variable, used
+// to implement internal.TimeChan.
+func SetSendAt(t int64) {
+	internal.Syscall1i64(SETSENDAT, t)
+}
+
+// TimeChan returns channel that can be used to wait for time set using
+// SetSendAt. TimeChan is used mainly for deadline/timeout in select statements.
+func TimeChan() <-chan int64 {
+	ch := &internal.TimeChan
+	return *(*<-chan int64)(unsafe.Pointer(&ch))
 }
 
 // SetIRQEna enables or disables irq.

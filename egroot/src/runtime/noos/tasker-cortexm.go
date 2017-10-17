@@ -303,3 +303,9 @@ func (ts *taskSched) SetAlarm(t int64) {
 	// Can be read only in SVC or PendSV so non-atomic assignment is good.
 	ts.alarm = t
 }
+
+// SetSendAt can be called only from thread mode (through SVCall).
+func (ts *taskSched) SetSendAt(t int64) {
+	tasker.tasks[tasker.curTask].sendAt = t
+	ts.SetAlarm(t)
+}
