@@ -15,10 +15,10 @@ import (
 
 var (
 	leds [5]gpio.Pin
-	key  gpio.Pin
+	ch   = make(chan struct{}, 1)
 )
 
-const gch = gpiote.Chan(0)
+const key = gpiote.Chan(0)
 
 func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
@@ -26,7 +26,7 @@ func init() {
 
 	p0 := gpio.P0
 
-	key = p0.Pin(16)
+	keyPin := p0.Pin(16)
 	for i := range leds {
 		leds[i] = p0.Pin(18 + i)
 	}
@@ -34,32 +34,34 @@ func init() {
 	for _, led := range leds {
 		led.Setup(gpio.ModeOut)
 	}
-	key.Setup(gpio.ModeIn | gpio.PullUp)
-	gch.Setup(key, gpiote.ModeEvent|gpiote.PolarityHiToLo|gpiote.OutInitHigh)
-	gch.IN().Event().IRQ().Enable()
+	keyPin.Setup(gpio.ModeIn | gpio.PullUp)
+	key.Setup(keyPin, gpiote.ModeEvent|gpiote.PolarityHiToLo)
+	key.IN().Event().EnableIRQ()
 	rtos.IRQ(irq.GPIOTE).Enable()
 }
 
-func gpioteISR() {
-	if ev := gch.IN().Event(); ev.IsSet() {
-		ev.Clear()
-		for _, led := range leds {
-			led.Set()
+func main() {
+	n := 0
+	for {
+		leds[n].Set()
+		delay.Millisec(50)
+		leds[n].Clear()
+		if n++; n >= len(leds) {
+			n = 0
+		}
+		select {
+		case <-ch:
+		case <-rtos.At(rtos.Nanosec() + 2e9):
 		}
 	}
 }
 
-func main() {
-	gpioteISR()
-	n := 0
-	for {
-		led := leds[n]
-		led.Set()
-		delay.Millisec(50)
-		led.Clear()
-		delay.Millisec(500)
-		if n++; n >= len(leds) {
-			n = 0
+func gpioteISR() {
+	if ev := key.IN().Event(); ev.IsSet() {
+		ev.Clear()
+		select {
+		case ch <- struct{}{}:
+		default:
 		}
 	}
 }
