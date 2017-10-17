@@ -34,7 +34,7 @@ func init() {
 	u.P.StorePSEL(uart.SignalTXD, p0.Pin(9))
 	u.P.StoreBAUDRATE(uart.Baud115200)
 	u.P.StoreENABLE(true)
-	rtos.IRQ(u.P.IRQ()).Enable()
+	rtos.IRQ(u.P.NVIC()).Enable()
 }
 
 func main() {

@@ -39,7 +39,7 @@ func init() {
 	u.P.StorePSEL(uart.SignalTXD, p0.Pin(9))
 	u.P.StoreBAUDRATE(uart.Baud115200)
 	u.P.StoreENABLE(true)
-	rtos.IRQ(u.P.IRQ()).Enable()
+	rtos.IRQ(u.P.NVIC()).Enable()
 	u.EnableTx()
 	fmt.DefaultWriter = u
 
@@ -57,7 +57,7 @@ func init() {
 	r.StoreMODE(radio.NRF_250K)
 	r.StoreFREQUENCY(radio.Channel(50))
 	r.StoreSHORTS(radio.READY_START)
-	rtos.IRQ(r.IRQ()).Enable()
+	rtos.IRQ(r.NVIC()).Enable()
 
 	pwm = ppipwm.NewToggle(timer.TIMER1)
 	pwm.SetFreq(8, 20e3) // Gives resolution of 1250 levels of duty cycle.

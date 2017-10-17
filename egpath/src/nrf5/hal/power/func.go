@@ -1,40 +1,11 @@
-// Package power provides interface to power managemnt peripheral.
 package power
 
 import (
 	"bits"
 	"mmio"
-	"unsafe"
 
-	"nrf5/hal/internal/mmap"
 	"nrf5/hal/te"
 )
-
-type Periph struct {
-	te.Regs
-
-	resetreas mmio.U32     // 0x400
-	_         [9]mmio.U32  //
-	ramstatus mmio.U32     // 0x428
-	_         [53]mmio.U32 //
-	systemoff mmio.U32     // 0x500
-	_         [3]mmio.U32  //
-	pofcon    mmio.U32     // 0x510
-	_         [2]mmio.U32  //
-	gpregret  [2]mmio.U32  // 0x51C
-	ramon     mmio.U32     // 0x524
-	_         [7]mmio.U32  //
-	reset     mmio.U32     // 0x544
-	_         [3]mmio.U32  //
-	ramonb    mmio.U32     // 0x554
-	_         [8]mmio.U32  //
-	dcdcen    mmio.U32     // 0x578
-	_         [225]mmio.U32
-	ram       [8]struct{ power, powerset, powerclr mmio.U32 }
-}
-
-//emgo:const
-var POWER = (*Periph)(unsafe.Pointer(mmap.APB_BASE))
 
 type Task byte
 
@@ -42,6 +13,8 @@ const (
 	CONSTLAT Task = 30 // Enable constant latency mode.
 	LOWPWR   Task = 31 // Enable low power mode (variable latency).
 )
+
+func (t Task) Task() *te.Task { return r().Regs.Task(int(t)) }
 
 type Event byte
 
@@ -51,8 +24,7 @@ const (
 	SLEEPEXIT  Event = 6 // CPU exited WFI/WFE sleep (nRF52).
 )
 
-func (p *Periph) Task(t Task) *te.Task    { return p.Regs.Task(int(t)) }
-func (p *Periph) Event(e Event) *te.Event { return p.Regs.Event(int(e)) }
+func (e Event) Event() *te.Event { return r().Regs.Event(int(e)) }
 
 // ResetReas is a bitfield that describes reset reason.
 type ResetReas uint32
@@ -69,13 +41,13 @@ const (
 )
 
 // LoadRESETREAS returns reset reason bits.
-func (p *Periph) LoadRESETREAS() ResetReas {
-	return ResetReas(p.resetreas.Load())
+func LoadRESETREAS() ResetReas {
+	return ResetReas(r().resetreas.Load())
 }
 
 // ClearRESETREAS clears reset reason bits specified by mask.
-func (p *Periph) ClearRESETREAS(mask ResetReas) {
-	p.resetreas.Store(uint32(mask))
+func ClearRESETREAS(mask ResetReas) {
+	r().resetreas.Store(uint32(mask))
 }
 
 // RAMBlocks is a bitfield that describes RAM blocks.
@@ -89,13 +61,13 @@ const (
 )
 
 // LoadRAMSTATUS returns bitfield that lists RAM blocks that are powered up.
-func (p *Periph) LoadRAMSTATUS() RAMBlocks {
-	return RAMBlocks(p.ramstatus.Load())
+func LoadRAMSTATUS() RAMBlocks {
+	return RAMBlocks(r().ramstatus.Load())
 }
 
 // SetSYSTEMOFF sets system into OFF state.
-func (p *Periph) SetSYSTEMOFF() {
-	p.systemoff.Store(1)
+func SetSYSTEMOFF() {
+	r().systemoff.Store(1)
 }
 
 // POFCon is power failure comparator configuration.
@@ -127,56 +99,56 @@ const (
 )
 
 // LoadPOFCON returns power failure comparator configuration.
-func (p *Periph) LoadPOFCON() POFCon {
-	return POFCon(p.pofcon.Load())
+func LoadPOFCON() POFCon {
+	return POFCon(r().pofcon.Load())
 }
 
 // StorePOFCON sets power failure comparator configuration.
-func (p *Periph) StorePOFCON(pofcon POFCon) {
-	p.pofcon.Store(uint32(pofcon))
+func StorePOFCON(pofcon POFCon) {
+	r().pofcon.Store(uint32(pofcon))
 }
 
 // GPREGRET returns pointer to n-th general purpose retention register. nRF51
 // supports one, nRF52 supports two. Only lowest 8 bits can be used.
-func (p *Periph) GPREGRET(n int) *mmio.U32 {
-	return &p.gpregret[n]
+func GPREGRET(n int) *mmio.U32 {
+	return &r().gpregret[n]
 }
 
 // LoadRAMON returns configuration of four RAM blocks. On lists RAM blocks
 // that are kept on in system ON mode, retain lists RAM blocks that should be
 // retained when RAM block is off.
-func (p *Periph) LoadRAMON() (on, retain RAMBlocks) {
-	a := p.ramon.Load()
-	b := p.ramonb.Load()
+func LoadRAMON() (on, retain RAMBlocks) {
+	a := r().ramon.Load()
+	b := r().ramonb.Load()
 	return RAMBlocks(a | b<<2), RAMBlocks(a>>16 | b>>14)
 }
 
 // StoreRAMON sets configuration of four RAM blocks. On lists RAM blocks that
 // should be kept on in system ON mode, retain lists RAM blocks that should be
 // retained in system off mode.
-func (p *Periph) StoreRAMON(on, retain RAMBlocks) {
-	p.ramon.Store(uint32(on&3) | uint32(retain&3)<<16)
-	p.ramonb.Store(uint32(on&12)>>2 | uint32(retain&12)<<14)
+func StoreRAMON(on, retain RAMBlocks) {
+	r().ramon.Store(uint32(on&3) | uint32(retain&3)<<16)
+	r().ramonb.Store(uint32(on&12)>>2 | uint32(retain&12)<<14)
 }
 
 // LoadRESET reports wheter pin reset is enabled in debug mode (nRF51).
-func (p *Periph) LoadRESET() bool {
-	return p.reset.Load()&1 != 0
+func LoadRESET() bool {
+	return r().reset.Load()&1 != 0
 }
 
 // StoreRESET enables/disables pin reset in debug mode (nRF51).
-func (p *Periph) StoreRESET(pinreset bool) {
-	p.reset.Store(uint32(bits.One(pinreset)))
+func StoreRESET(pinreset bool) {
+	r().reset.Store(uint32(bits.One(pinreset)))
 }
 
 // LoadDCDCEN reports wheter the DC/DC converter is enabled.
-func (p *Periph) LoadDCDCEN() bool {
-	return p.dcdcen.Load()&1 != 0
+func LoadDCDCEN() bool {
+	return r().dcdcen.Load()&1 != 0
 }
 
 // StoreDCDCEN enables/disables DC/DC converter.
-func (p *Periph) StoreDCDCEN(en bool) {
-	p.dcdcen.Store(uint32(bits.One(en)))
+func StoreDCDCEN(en bool) {
+	r().dcdcen.Store(uint32(bits.One(en)))
 }
 
 // RAMPower describes power configuration for two sections of RAM block (nRF52).
@@ -190,23 +162,23 @@ const (
 )
 
 // LoadRAMPOWER returns power configuration of RAM block n (nRF52).
-func (p *Periph) LoadRAMPOWER(n int) RAMPower {
-	return RAMPower(p.ram[n].power.Load())
+func LoadRAMPOWER(n int) RAMPower {
+	return RAMPower(r().ram[n].power.Load())
 }
 
 // LoadRAMPOWER power configuration of RAM block n (nRF52).
-func (p *Periph) StoreRAMPOWER(n int, val RAMPower) {
-	p.ram[n].power.Store(uint32(val))
+func StoreRAMPOWER(n int, val RAMPower) {
+	r().ram[n].power.Store(uint32(val))
 }
 
 // SetRAMPOWER sets on power configuration of RAM block n according to mask
 // (nRF52).
-func (p *Periph) SetRAMPOWER(n int, mask RAMPower) {
-	p.ram[n].powerset.Store(uint32(mask))
+func SetRAMPOWER(n int, mask RAMPower) {
+	r().ram[n].powerset.Store(uint32(mask))
 }
 
 // ClearRAMPOWER sets off power configuration of RAM block n according to mask
 // (nRF52).
-func (p *Periph) ClearRAMPOWER(n int, mask RAMPower) {
-	p.ram[n].powerclr.Store(uint32(mask))
+func ClearRAMPOWER(n int, mask RAMPower) {
+	r().ram[n].powerclr.Store(uint32(mask))
 }

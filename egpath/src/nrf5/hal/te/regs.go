@@ -30,8 +30,8 @@ func (r *Regs) Task(n int) *Task { return &r.tasks[n] }
 
 func (r *Regs) Event(n int) *Event { return &r.events[n] }
 
-// IRQ returns IRQ number associated to events.
-func (r *Regs) IRQ() nvic.IRQ {
+// NVIC returns IRQ number associated to events.
+func (r *Regs) NVIC() nvic.IRQ {
 	addr := uintptr(unsafe.Pointer(r))
 	return nvic.IRQ((addr - mmap.APB_BASE) >> 12)
 }

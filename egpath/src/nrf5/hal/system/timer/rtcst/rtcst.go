@@ -47,7 +47,7 @@ func Setup(st *rtc.Periph, ccn int) {
 	ove := st.Event(rtc.OVRFLW)
 	ove.DisablePPI()
 	ove.EnableIRQ()
-	irq := rtos.IRQ(st.IRQ())
+	irq := rtos.IRQ(st.NVIC())
 	// Priority of rtc.OVRFLW IRQ must be higher than SVCall proprity, to ensure
 	// that any user of rtos.Nanosec observes both COUNTER reset and softcnt
 	// increment as one atomic operation.

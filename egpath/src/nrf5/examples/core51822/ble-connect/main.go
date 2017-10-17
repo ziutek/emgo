@@ -47,7 +47,7 @@ func init() {
 	udrv.P.StoreBAUDRATE(uart.Baud115200)
 	udrv.P.StoreENABLE(true)
 	udrv.EnableTx()
-	rtos.IRQ(udrv.P.IRQ()).Enable()
+	rtos.IRQ(udrv.P.NVIC()).Enable()
 	fmt.DefaultWriter = udrv
 }
 
@@ -67,9 +67,8 @@ func (p pduLogger) Recv() (ble.DataPDU, error) {
 }
 
 func main() {
-	pwr := power.POWER
-	rr := pwr.LoadRESETREAS()
-	pwr.ClearRESETREAS(rr)
+	rr := power.LoadRESETREAS()
+	power.ClearRESETREAS(rr)
 	fmt.Printf("\r\nReset reson: (0x%x)", rr)
 	if power.RESETPIN&rr != 0 {
 		fmt.Printf(" RESETPIN")

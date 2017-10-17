@@ -90,7 +90,7 @@ func (d *Driver) EnableTx() {
 func (d *Driver) DisableTx() {
 	p := d.P
 	p.Task(STOPTX).Trigger()
-	p.Event(TXDRDY).IRQ().Disable()
+	p.Event(TXDRDY).NVIC().Disable()
 }
 
 func (d *Driver) SetReadDeadline(t int64) {

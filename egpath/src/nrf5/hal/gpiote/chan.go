@@ -16,12 +16,12 @@ func (c Chan) OUT() Task {
 	return Task(c)
 }
 
-// SET returns task for set pin associated with channel c. nRF52.
+// SET returns task for set pin associated with channel c (nRF52).
 func (c Chan) SET() Task {
 	return Task(c + 12)
 }
 
-// CLR returns task for clear pin associated with channel c. nRF52.
+// CLR returns task for clear pin associated with channel c (nRF52).
 func (c Chan) CLR() Task {
 	return Task(c + 24)
 }

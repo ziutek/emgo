@@ -35,8 +35,8 @@ func r() *regs {
 	return (*regs)(unsafe.Pointer(mmap.APB_BASE + 0x1F000))
 }
 
-func IRQ() nvic.IRQ {
-	return r().IRQ()
+func NVIC() nvic.IRQ {
+	return r().NVIC()
 }
 
 func IRQEnabled() te.EventMask {

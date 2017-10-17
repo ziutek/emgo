@@ -48,10 +48,10 @@ func (r *Event) DisableIRQ() {
 	rr.intEnClr.Store(mask)
 }
 
-// IRQ returns IRQ number associated to r.
-func (r *Event) IRQ() nvic.IRQ {
+// NVIC returns IRQ number associated to r.
+func (r *Event) NVIC() nvic.IRQ {
 	rr, _ := regsMask(r)
-	return rr.IRQ()
+	return rr.NVIC()
 }
 
 // PPIEnabled reports whether the occurrence of an event will be recorded by

@@ -46,7 +46,7 @@ func init() {
 	r.StoreMODE(radio.NRF_250K)
 	r.StoreFREQUENCY(radio.Channel(50))
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
-	rtos.IRQ(r.IRQ()).Enable()
+	rtos.IRQ(r.NVIC()).Enable()
 
 	//f, err := semihosting.OpenFile(":tt", semihosting.W)
 	//for err != nil {
