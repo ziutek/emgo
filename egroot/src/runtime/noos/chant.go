@@ -15,7 +15,7 @@ type chanT struct {
 }
 
 func (c *chanT) TryRecv(_, _ unsafe.Pointer) (unsafe.Pointer, uintptr) {
-	p := &tasker.tasks[tasker.curTask].sendAt
+	p := &tasker.tasks[tasker.curTask].at
 	if *p == 0 {
 		return nil, cclosed
 	}
@@ -38,7 +38,7 @@ func (c *chanT) Recv(_ unsafe.Pointer) (p unsafe.Pointer, d uintptr) {
 }
 
 func (c *chanT) Done(_ uintptr) {
-	tasker.tasks[tasker.curTask].sendAt = 0
+	tasker.tasks[tasker.curTask].at = 0
 }
 
 func (c *chanT) Len() int {

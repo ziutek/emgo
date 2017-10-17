@@ -14,8 +14,8 @@ func sleepUntil(end int64) {
 	}
 }
 
-func sendAt(t int64) <-chan int64 {
-	syscall.SetSendAt(t)
+func at(t int64) <-chan int64 {
+	syscall.SetAt(t)
 	return syscall.TimeChan()
 }
 

@@ -52,9 +52,9 @@ func (ti *taskInfo) setState(s taskState) {
 }
 
 type task struct {
-	info   *taskInfo
-	rng    rand.XorShift64
-	sendAt int64
+	info *taskInfo
+	rng  rand.XorShift64
+	at   int64
 }
 
 // Comment for future separate tasker package:
@@ -304,8 +304,8 @@ func (ts *taskSched) SetAlarm(t int64) {
 	ts.alarm = t
 }
 
-// SetSendAt can be called only from thread mode (through SVCall).
-func (ts *taskSched) SetSendAt(t int64) {
-	tasker.tasks[tasker.curTask].sendAt = t
+// SetAt can be called only from thread mode (through SVCall).
+func (ts *taskSched) SetAt(t int64) {
+	tasker.tasks[tasker.curTask].at = t
 	ts.SetAlarm(t)
 }

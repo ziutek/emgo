@@ -71,9 +71,8 @@ func buttonISR() {
 
 func toggle(pins gpio.Pins) {
 	leds.SetPins(pins)
-	delay.Millisec(500)
+	delay.Millisec(300)
 	leds.ClearPins(pins)
-	delay.Millisec(500)
 }
 
 func main() {
@@ -82,7 +81,7 @@ func main() {
 	for {
 		select {
 		case <-c:
-		case <-rtos.SendAt(rtos.Nanosec() + 2e9):
+		case <-rtos.At(rtos.Nanosec() + 2e9):
 		}
 		toggle(colors[i])
 		if i++; i == 3 {

@@ -17,10 +17,10 @@ func SleepUntil(t int64) {
 	sleepUntil(t)
 }
 
-// SendAt returns read-only channel that can be used to wait for t. Received
-// time can be equal or greather than t.
-func SendAt(t int64) <-chan int64 {
-	return sendAt(t)
+// At returns read-only channel that can be used to wait for t. Received time
+// can be equal or greather than t.
+func At(t int64) <-chan int64 {
+	return at(t)
 }
 
 // SetPrivLevel sets privilege level for current task to n. Level 0 is the most

@@ -18,7 +18,7 @@ const (
 	SETSYSTIM
 	NANOSEC
 	SETALARM
-	SETSENDAT
+	SETAT
 	SETIRQENA
 	SETIRQPRIO
 	SETIRQHANDLER
@@ -102,14 +102,14 @@ func SetAlarm(t int64) {
 	internal.Syscall1i64(SETALARM, t)
 }
 
-// SetSendAt works like SetAlarm but additionaly sets task local variable, used
-// to implement internal.TimeChan.
-func SetSendAt(t int64) {
-	internal.Syscall1i64(SETSENDAT, t)
+// SetAt works like SetAlarm but additionaly sets task local variable, used to
+// implement internal.TimeChan.
+func SetAt(t int64) {
+	internal.Syscall1i64(SETAT, t)
 }
 
 // TimeChan returns channel that can be used to wait for time set using
-// SetSendAt. TimeChan is used mainly for deadline/timeout in select statements.
+// SetAt. TimeChan is used mainly for deadline/timeout in select statements.
 func TimeChan() <-chan int64 {
 	ch := &internal.TimeChan
 	return *(*<-chan int64)(unsafe.Pointer(&ch))
