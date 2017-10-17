@@ -1,3 +1,4 @@
+// This example shows random behavior of select statement.
 package main
 
 import (

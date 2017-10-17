@@ -1,3 +1,5 @@
+// This example shows how to use rtos.EventFlag for communication between
+// interrupt handler and thread.
 package main
 
 import (
@@ -12,7 +14,7 @@ import (
 
 const button = gpio.Pin0
 
-var leds struct{ Red, Green, Blue, Orange gpio.Pin }
+var Red, Green, Blue, Orange gpio.Pin
 
 func init() {
 	system.Setup168(8)
@@ -21,15 +23,15 @@ func init() {
 	gpio.A.EnableClock(true)
 	btnport := gpio.A
 	gpio.D.EnableClock(false)
-	leds.Green = gpio.D.Pin(12)
-	leds.Orange = gpio.D.Pin(13)
-	leds.Red = gpio.D.Pin(14)
-	leds.Blue = gpio.D.Pin(15)
+	Green = gpio.D.Pin(12)
+	Orange = gpio.D.Pin(13)
+	Red = gpio.D.Pin(14)
+	lBlue = gpio.D.Pin(15)
 
 	// LEDs
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	for _, pin := range []gpio.Pin{leds.Green, leds.Orange, leds.Red, leds.Blue} {
+	for _, pin := range []gpio.Pin{Green, Orange, Red, Blue} {
 		pin.Setup(&cfg)
 	}
 
@@ -58,14 +60,14 @@ func wait() {
 
 func main() {
 	for {
-		leds.Green.Clear()
-		leds.Orange.Set()
+		Green.Clear()
+		Orange.Set()
 		wait()
-		leds.Orange.Clear()
-		leds.Red.Set()
+		Orange.Clear()
+		Red.Set()
 		wait()
-		leds.Red.Clear()
-		leds.Blue.Set()
+		Red.Clear()
+		Blue.Set()
 		wait()
 		leds.Blue.Clear()
 		leds.Green.Set()
