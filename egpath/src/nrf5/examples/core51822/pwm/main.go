@@ -1,3 +1,4 @@
+// This example shows how to use TIMER, GPIOTE and PPI to implement PWM output.
 package main
 
 import (
@@ -51,9 +52,9 @@ func main() {
 	v, a, b, c := 0, 4, 5, 0
 	for {
 		fmt.Printf("%d/%d\r\n", v, max)
-		pwm.SetDC(0, v)
-		pwm.SetDC(1, v)
-		pwm.SetDC(2, v)
+		pwm.SetVal(0, v)
+		pwm.SetVal(1, v)
+		pwm.SetVal(2, v)
 		switch {
 		case v == 0:
 			c = a

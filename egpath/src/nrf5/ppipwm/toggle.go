@@ -47,7 +47,7 @@ func NewToggle(t *timer.Periph) *Toggle {
 // SetFreq sets prescaler to 2^log2pre and period to periodus microseconds. It
 // allows to configure a duty cycle with resolution = 16 * periodus / 2^log2pre.
 // SetFreq returns (resolution-1), which is a value that should be passed to
-// SetDC/SetInvDC to produce PWM with 100% duty cycle.
+// SetDuty/SetInvDuty to produce PWM with 100% duty cycle.
 func (pwm *Toggle) SetFreq(log2pre, periodus int) int {
 	if uint(log2pre) > 9 {
 		panic("pwm: bad prescaler")
@@ -95,19 +95,19 @@ func (pwm *Toggle) Setup(n int, pin gpio.Pin, gc gpiote.Chan, pc0, pc1 ppi.Chan)
 	pc1.Enable()
 }
 
-// SetDC sets a duty cycle for n-th PWM channel.
-func (pwm *Toggle) SetDC(n, dc int) {
+// SetVal sets a duty cycle for n-th PWM channel.
+func (pwm *Toggle) SetVal(n, val int) {
 	checkOutput(n)
 	gc := pwm.gc[n]
 	t := pwm.t
 	pin, _ := gc.Config()
 	t.Task(timer.STOP).Trigger()
 	switch {
-	case dc <= 0:
+	case val <= 0:
 		pin.Clear()
 		gc.Setup(pin, 0)
 		return
-	case dc >= pwm.Max():
+	case val >= pwm.Max():
 		pin.Set()
 		gc.Setup(pin, 0)
 		return
@@ -115,29 +115,29 @@ func (pwm *Toggle) SetDC(n, dc int) {
 	cfg := gpiote.ModeTask | gpiote.PolarityToggle
 	t.Task(timer.CAPTURE(n)).Trigger()
 	cnt := int(t.LoadCC(n))
-	if cnt < dc {
+	if cnt < val {
 		gc.Setup(pin, cfg|gpiote.OutInitHigh)
 	} else {
 		gc.Setup(pin, cfg|gpiote.OutInitLow)
 	}
-	t.StoreCC(n, uint32(dc))
+	t.StoreCC(n, uint32(val))
 	t.Task(timer.START).Trigger()
 }
 
-// SetInvDC sets a duty cycle for n-th PWM channel. It produces inverted
+// SetInvDuty sets a duty cycle for n-th PWM channel. It produces inverted
 // waveform.
-func (pwm *Toggle) SetInvDC(n, dc int) {
+func (pwm *Toggle) SetInvVal(n, val int) {
 	checkOutput(n)
 	gc := pwm.gc[n]
 	t := pwm.t
 	pin, _ := gc.Config()
 	t.Task(timer.STOP).Trigger()
 	switch {
-	case dc <= 0:
+	case val <= 0:
 		pin.Set()
 		gc.Setup(pin, 0)
 		return
-	case dc >= pwm.Max():
+	case val >= pwm.Max():
 		pin.Clear()
 		gc.Setup(pin, 0)
 		return
@@ -145,11 +145,11 @@ func (pwm *Toggle) SetInvDC(n, dc int) {
 	cfg := gpiote.ModeTask | gpiote.PolarityToggle
 	t.Task(timer.CAPTURE(n)).Trigger()
 	cnt := int(t.LoadCC(n))
-	if cnt < dc {
+	if cnt < val {
 		gc.Setup(pin, cfg|gpiote.OutInitLow)
 	} else {
 		gc.Setup(pin, cfg|gpiote.OutInitHigh)
 	}
-	t.StoreCC(n, uint32(dc))
+	t.StoreCC(n, uint32(val))
 	t.Task(timer.START).Trigger()
 }
