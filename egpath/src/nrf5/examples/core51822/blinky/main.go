@@ -1,3 +1,5 @@
+// This example shows how to use GPIO to as digital output (to blink connected
+// LEDs) and input (to read state of KEY1).
 package main
 
 import (
@@ -17,16 +19,18 @@ var (
 )
 
 func init() {
+	// Initialize system and runtime.
 	system.Setup(clock.XTAL, clock.XTAL, true)
 	rtcst.Setup(rtc.RTC0, 1)
 
+	// Allocate pins (always do it in one place to avoid conflicts).
 	p0 := gpio.P0
-
-	key = p0.Pin(16)
+	key = p0.Pin(16) // KEY1
 	for i := range leds {
 		leds[i] = p0.Pin(18 + i)
 	}
 
+	// Configure pins.
 	for _, led := range leds {
 		led.Setup(gpio.ModeOut)
 	}
@@ -36,7 +40,11 @@ func init() {
 func main() {
 	n := 0
 	for {
-		n += key.Load()*2 - 1
+		dir := 1
+		if key.Load() != 0 {
+			dir = -1
+		}
+		n += dir
 		switch n {
 		case -1:
 			n = len(leds) - 1

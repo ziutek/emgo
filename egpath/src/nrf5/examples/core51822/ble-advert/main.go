@@ -63,11 +63,6 @@ func init() {
 	rtos.IRQ(r.NVIC()).Enable()
 
 	rnd.Seed(rtos.Nanosec())
-
-	//f, err := semihosting.OpenFile(":tt", semihosting.W)
-	//for err != nil {
-	//}
-	//fmt.DefaultWriter = f
 }
 
 func rnd10() int {

@@ -1,3 +1,5 @@
+// This example shows how to use semihosting to print to the debuging host
+// standard output.
 package main
 
 import (

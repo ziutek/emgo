@@ -1,3 +1,7 @@
+// Remotely cotrolled servo. This exemple shows how to use ppipwm to controll
+// locally connected servo. Additionally it shows how to use RADIO peripheral
+// to receive servo settings. stm32/examples/minidev/nrfrc contains code of
+// example transmitter.
 package main
 
 import (
