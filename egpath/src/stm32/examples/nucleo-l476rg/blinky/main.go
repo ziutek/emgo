@@ -21,15 +21,11 @@ func init() {
 	led.Setup(&cfg)
 }
 
-func wait() {
-	delay.Millisec(500)
-}
-
 func main() {
 	for {
 		led.Set()
-		wait()
+		delay.Millisec(50)
 		led.Clear()
-		wait()
+		delay.Millisec(950)
 	}
 }
