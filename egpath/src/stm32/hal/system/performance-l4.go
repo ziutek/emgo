@@ -1,10 +1,10 @@
 // +build l476xx
 
-// Clock setup
+// Clock setup for USB
 //
 // Goal is to provide 48 MHz for USB FS using PLL48M1CLK. USB can be clocked
 // also from second PLL (PLLSAI1) which gives more flexibility for clocks setup
-// but additional PLL means more power (TODO: check how much).
+// but additional PLL means more power (see Current consumption).
 //
 // PLLCK must satisfy the equation:
 //
@@ -33,9 +33,26 @@
 //
 // USB friendly values of CLKSRC:
 //
-//  - MSI: 4, 8, 16, 32, 48 MHz,
-//  - HSI: 16 MHz,
-//  - HSE: 4, 6, 8, 9, 12, 16, 18, 20, 21, 24, 27, 30, 32, 36, 40, 42, 48.
+//  - MSI: 48 Mhz (must be in LSE PLL mode: 32768 Hz * 1465 = 48005120 Hz).
+//  - HSE: 4, 6, 8, 9, 12, 16, 18, 20, 21, 24, 27, 30, 32, 36, 40, 42, 48 MHz.
+//
+// Current consumption
+//
+//  MSI:  1   2   4   8   16   24   32   48  MHz
+//  --------------------------------------------
+//  Typ:  5   7  11  19   62   85  110  155  µA
+//  Max:  6   9  15  25   80  110  130  190  µA
+//
+//  HSI16 (typ/max): 155/190 µA
+//
+//  HSE:   8   48  MHz
+//  ------------------
+//  Typ: 450  940  µA
+//
+//  PLLVCO:  64   96  192  344  MHz
+//  --------------------------------
+//  Typ:    150  200  300  520  µA
+//  Max:    200  260  380  650  µA
 //
 package system
 
@@ -70,6 +87,9 @@ import (
 // (disabled), 2, 4, 6, 8.
 //
 // R is VCO divider for SYSCLK. Allowed R values: 2, 4, 6, 8.
+//
+// Voltage scaling Range 1 (high-performance) is configured if SYSCLK > 26 MHz
+// or VCO > 128 MHz, otherwise Range 2 (low-power).
 func Setup(clksrc, M, N, P, Q, R int) {
 	RCC := rcc.RCC
 
@@ -89,7 +109,7 @@ func Setup(clksrc, M, N, P, Q, R int) {
 	if N < 8 || N > 86 {
 		panic("bad N")
 	}
-	if P != 0 || P != 7 || P != 17 {
+	if P != 0 && P != 7 && P != 17 {
 		panic("bad P")
 	}
 	if Q&1 != 0 || Q < 0 || Q > 8 {
@@ -102,11 +122,11 @@ func Setup(clksrc, M, N, P, Q, R int) {
 	var osc uint
 
 	switch clksrc {
+	case -4, -8, -16, -24, -32, -48:
+		osc = uint(-clksrc)
 	case 0:
 		RCC.HSION().Set()
 		osc = 16
-	case -4, -8, -16, -24, -32, -48:
-		osc = uint(-clksrc)
 	default:
 		if clksrc < 4 || clksrc > 48 {
 			panic("bad clksrc")
@@ -129,9 +149,9 @@ func Setup(clksrc, M, N, P, Q, R int) {
 	// Setup PWR and Flash.
 	var (
 		vos     pwr.CR1_Bits
-		latency flash.ACR_bits
+		latency flash.ACR_Bits
 	)
-	if sysclk > 26e6 {
+	if sysclk > 26e6 || vco > 128e6 {
 		// Range 1: High-performance.
 		vos = 1
 		switch {
@@ -210,17 +230,33 @@ func Setup(clksrc, M, N, P, Q, R int) {
 	clock[APB2] = apb2clk
 
 	// Setup PLL.
+	for PWR.VOSF().Load() != 0 {
+	}
 	var src rcc.PLLCFGR_Bits
-	if sysclk == 0 {
+	if clksrc == 0 {
 		src = rcc.PLLSRC_HSI
 		for RCC.HSIRDY().Load() == 0 {
 		}
-	} else if sysclk > 0 {
+	} else if clksrc > 0 {
 		src = rcc.PLLSRC_HSE
 		for RCC.HSERDY().Load() == 0 {
 		}
 	} else {
 		src = rcc.PLLSRC_MSI
+		var msirange rcc.CR_Bits
+		switch clksrc {
+		case -4:
+			// Current freq.
+		case -48:
+			msirange = 11
+		default:
+			msirange = rcc.CR_Bits(-clksrc/8 + 6)
+		}
+		if msirange != 0 {
+			RCC.MSIRANGE().Store(msirange << rcc.MSIRANGEn)
+			for RCC.MSIRDY().Load() == 0 {
+			}
+		}
 	}
 	mnpqr := rcc.PLLCFGR_Bits(M-1)<<rcc.PLLMn | rcc.PLLCFGR_Bits(N)<<rcc.PLLNn
 	if P != 0 {
@@ -232,18 +268,15 @@ func Setup(clksrc, M, N, P, Q, R int) {
 	if Q != 0 {
 		mnpqr |= rcc.PLLQEN | rcc.PLLCFGR_Bits(Q/2-1)
 	}
-	mnpqr |= rcc.PLLCFGR_Bits(R/2 - 1)
+	mnpqr |= rcc.PLLREN | rcc.PLLCFGR_Bits(R/2-1)
 	RCC.PLLCFGR.Store(mnpqr | src)
 	RCC.PLLON().Set()
 	for RCC.PLLRDY().Load() == 0 {
 	}
 
 	// Set system clock source to PLL.
-	for PWR.VOF() != 0 {
-	}
 	RCC.CFGR.Store(cfgr | rcc.SW_PLL)
 	for RCC.SWS().Load() != rcc.SWS_PLL {
-		// Wait for system clock setup...
 	}
 	if osc >= 0 {
 		RCC.MSION().Clear()

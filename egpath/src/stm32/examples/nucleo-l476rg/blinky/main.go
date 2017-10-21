@@ -2,6 +2,7 @@ package main
 
 import (
 	"delay"
+	"fmt"
 
 	"stm32/hal/gpio"
 	"stm32/hal/system"
@@ -11,7 +12,7 @@ import (
 var led gpio.Pin
 
 func init() {
-	system.Setup()
+	system.Setup(-48, 6, 20, 0, 0, 2)
 	systick.Setup()
 
 	gpio.A.EnableClock(false)
@@ -22,6 +23,17 @@ func init() {
 }
 
 func main() {
+	delay.Millisec(500)
+	buses := []system.Bus{
+		system.Core,
+		system.AHB,
+		system.APB1,
+		system.APB2,
+	}
+	fmt.Printf("\r\n")
+	for _, bus := range buses {
+		fmt.Printf("%s: %d MHz\r\n", bus, bus.Clock())
+	}
 	for {
 		led.Set()
 		delay.Millisec(50)

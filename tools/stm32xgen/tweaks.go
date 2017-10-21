@@ -32,6 +32,8 @@ func lastTweaks(pkg *Package) {
 			adc(p)
 		case "ADC_Common":
 			adcCommon(p)
+		case "PWR":
+			pwr(p)
 		}
 	}
 }
@@ -313,6 +315,21 @@ func adcCommon(p *Periph) {
 					bit.Name = "MDMACFG"
 					break
 				}
+			}
+		}
+	}
+}
+
+func pwr(p *Periph) {
+	for _, r := range p.Regs {
+		switch {
+		case strings.HasPrefix(r.Name, "PUCR"):
+			for _, bit := range r.Bits {
+				bit.Name = "PU" + bit.Name
+			}
+		case strings.HasPrefix(r.Name, "PDCR"):
+			for _, bit := range r.Bits {
+				bit.Name = "PD" + bit.Name
 			}
 		}
 	}
