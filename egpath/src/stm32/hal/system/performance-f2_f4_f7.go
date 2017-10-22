@@ -1,25 +1,25 @@
 // +build f2xxx-TODO f40_41xxx f411xe f746xx
 
-// Clock setup
+// Clock setup for USB
 //
-// Goal is to provide 48 MHz for USB FS. So PLLCK must satisfy the equation:
+// Goal is to provide 48 MHz for USB FS. So PLLVCO must satisfy the equation:
 //
-//  PLLCK = 48 MHz * Q
+//  PLLVCO = 48 MHz * Q
 //
-// where Q = 2..15, which means that PLLCK can be: 96, 144, ... , 720 MHz.
+// where Q = 2..15, which means that PLLVCO can be: 96, 144, ... , 720 MHz.
 //
-// But allowed PLLCK is between 100 and 432 MHz so useful Q values are:
+// But allowed PLLVCO is between 100 and 432 MHz so useful Q values are:
 //
 //  Q = 3..9
 //
-// which means PLLCK can be: 144, 192, 240, 288, 336, 384, 432 MHz.
+// which means PLLVCO can be: 144, 192, 240, 288, 336, 384, 432 MHz.
 //
 // PLL multipler N range is 50..432. There is recommendation to use 2 MHz input
-// clock to PLL to limit its jitter. Taking this into account PCLK can be:
+// clock to PLL to limit its jitter. Taking this into account PLLVCO can be:
 //
-//  PLLCK = N * 2 MHz
+//  PLLVCO = N * 2 MHz
 //
-// PCLK should be between 100 and 432 MHz so useful N values are:
+// PLLVCO should be between 100 and 432 MHz so useful N values are:
 //
 //  N = 50..216
 //
@@ -27,9 +27,9 @@
 //
 //  N = 72, 96, 120, 144, 168, 192, 216.
 //
-// System Clock is derived from PLLCK as follows:
+// System Clock is derived from PLLVCO as follows:
 //
-//  SYSCLK = PLLCK / P
+//  SYSCLK = PLLVCO / P
 //
 // where P = 2, 4, 6, 8.
 //
@@ -51,19 +51,19 @@ import (
 // of 2, from 4 to 26. Use 0 to select internal HSI oscilator as system clock
 // source.
 //
-// mul is PLL multipler. Allowed values are from 50 to 216 but if USB FS will be
-// used, mul can be only:
+// N is PLL multipler. Allowed values are from 50 to 216 but if USB FS will be
+// used, N can be only:
 //
-//  mul(USB) = 72, 96, 120, 144, 168, 192, 216
+//  N(USB) = 72, 96, 120, 144, 168, 192, 216
 //
-// sdiv is system clock divider. Allowed values: 2, 4, 6, 8.
+// P is system clock divider. Allowed values: 2, 4, 6, 8.
 //
-// Both mul and sdiv determine the system clock frequency according to the
+// Both N and P determine the system clock frequency according to the
 // formula:
 //
-//  SysClk = 2e6 * mul / sdiv [Hz]
+//  SysClk = 2e6 * N / P [Hz]
 //
-func Setup(osc, mul, sdiv int) {
+func Setup(osc, N, P int) {
 	RCC := rcc.RCC
 
 	// Reset RCC clock configuration.
@@ -75,7 +75,7 @@ func Setup(osc, mul, sdiv int) {
 	for RCC.SWS().Load() != rcc.SWS_HSI {
 		// Wait for system clock setup...
 	}
-	RCC.CR.ClearBits(rcc.HSEON | rcc.CSSON | rcc.PLLON | rcc.HSEBYP)
+	RCC.CR.Store(rcc.HSION)
 	RCC.PLLCFGR.Store(0x24003010)
 	RCC.CIR.Store(0) // Disable clock interrupts.
 
@@ -83,59 +83,67 @@ func Setup(osc, mul, sdiv int) {
 	if osc != 0 && (osc < 4 || osc > 26 || osc&1 != 0) {
 		panic("bad HSE osc freq")
 	}
-	if mul < 72 || mul > 216 {
-		panic("bad PLL N multipler")
+	if N < 72 || N > 216 {
+		panic("bad N")
 	}
-	switch sdiv {
-	case 2, 4, 6, 8:
-		// OK.
-	default:
-		panic("bad PLL P divider")
+	if P&1 != 0 || P < 2 || P > 8 {
+		panic("bad P")
 	}
 	// HSE needs milliseconds to stabilize, so enable it now.
 	if osc != 0 {
 		RCC.HSEON().Set()
 	}
 
-	// Setup linear voltage regulator scaling.
+	sysclk := 2e6 * uint(N) / uint(P)
+
+	// Setup linear voltage regulator scaling (TODO: this must be specialized).
 	// RCC.PWREN().Set()
 	// pwr.PWR.VOS().Store(pwr.VOS_1 | pwr.VOS_0)
 	// RCC.PWREN().Clear()
 
+	// Setup Flash.
+	FLASH := flash.FLASH
+	latency := flash.ACR_Bits((sysclk-1)/30e6) * flash.LATENCY_1WS
+	const dcen = 1 << 10 // F7 has no DCEN.
+	const icen = 1 << 9  // ICEN in F4, ARTEN in F7.
+	FLASH.ACR.Store(dcen | icen | flash.PRFTEN | latency)
+
 	// Setup clock dividers for AHB, APB1, APB2 bus.
-	sysclk := 2e6 * uint(mul) / uint(sdiv)
 	ahbclk := sysclk
+	cfgr := rcc.HPRE_DIV1
 	var apb1clk, apb2clk uint
 	switch {
 	case ahbclk <= 1*maxAPB1Clk:
+		cfgr |= rcc.PPRE1_DIV1
 		apb1clk = ahbclk / 1
 	case ahbclk <= 2*maxAPB1Clk:
-		RCC.PPRE1().Store(rcc.PPRE1_DIV2)
+		cfgr |= rcc.PPRE1_DIV2
 		apb1clk = ahbclk / 2
 	case ahbclk <= 4*maxAPB1Clk:
-		RCC.PPRE1().Store(rcc.PPRE1_DIV4)
+		cfgr |= rcc.PPRE1_DIV4
 		apb1clk = ahbclk / 4
 	case ahbclk <= 8*maxAPB1Clk:
-		RCC.PPRE1().Store(rcc.PPRE1_DIV8)
+		cfgr |= rcc.PPRE1_DIV8
 		apb1clk = ahbclk / 8
 	default:
-		RCC.PPRE1().Store(rcc.PPRE1_DIV16)
+		cfgr |= rcc.PPRE1_DIV16
 		apb1clk = ahbclk / 16
 	}
 	switch {
 	case ahbclk <= 1*maxAPB2Clk:
+		cfgr |= rcc.PPRE2_DIV1
 		apb2clk = ahbclk / 1
 	case ahbclk <= 2*maxAPB2Clk:
-		RCC.PPRE2().Store(rcc.PPRE2_DIV2)
+		cfgr |= rcc.PPRE2_DIV2
 		apb2clk = ahbclk / 2
 	case ahbclk <= 4*maxAPB2Clk:
-		RCC.PPRE2().Store(rcc.PPRE2_DIV4)
+		cfgr |= rcc.PPRE2_DIV4
 		apb2clk = ahbclk / 4
 	case ahbclk <= 8*maxAPB2Clk:
-		RCC.PPRE2().Store(rcc.PPRE2_DIV8)
+		cfgr |= rcc.PPRE2_DIV8
 		apb2clk = ahbclk / 8
 	default:
-		RCC.PPRE2().Store(rcc.PPRE2_DIV16)
+		cfgr |= rcc.PPRE2_DIV16
 		apb2clk = ahbclk / 16
 	}
 	clock[Core] = sysclk
@@ -143,41 +151,28 @@ func Setup(osc, mul, sdiv int) {
 	clock[APB1] = apb1clk
 	clock[APB2] = apb2clk
 
-	// Setup Flash.
-	FLASH := flash.FLASH
-	latency := flash.ACR_Bits((sysclk-1)/30e6) * flash.LATENCY_1WS
-	const dcen = 1 << 10 // F7 has no DCEN.
-	const icen = 1 << 9  // ICEN in F4, ARTEN in F7.
-	FLASH.ACR.SetBits(dcen | icen | flash.PRFTEN | latency)
-
 	// Setup PLL.
-	var (
-		src rcc.PLLCFGR_Bits
-		M   rcc.PLLCFGR_Bits                               // PLL input divider.
-		N   = rcc.PLLCFGR_Bits(mul) * rcc.PLLN_0           // PLL multiler.
-		P   = rcc.PLLCFGR_Bits(sdiv/2-1) * rcc.PLLP_0      // SysClk divider.
-		Q   = rcc.PLLCFGR_Bits(2*mul+47) / 48 * rcc.PLLQ_0 // USB 48MHz divider.
-	)
+	var src rcc.PLLCFGR_Bits
+	mnpq := rcc.PLLCFGR_Bits(N)<<rcc.PLLNn | // PLL multiler.
+		rcc.PLLCFGR_Bits(P/2-1)<<rcc.PLLPn | // SysClk divider.
+		rcc.PLLCFGR_Bits(2*N+47)/48<<rcc.PLLQn // USB 48MHz divider.
 	if osc != 0 {
 		src = rcc.PLLSRC_HSE
-		M = rcc.PLLCFGR_Bits(osc/2) * rcc.PLLM_0
+		mnpq |= rcc.PLLCFGR_Bits(osc/2) << rcc.PLLMn
 		for RCC.HSERDY().Load() == 0 {
-			// Wait for HSE...
 		}
 	} else {
 		src = rcc.PLLSRC_HSI
-		M = HSIClk / 2 * rcc.PLLM_0
+		mnpq |= HSIClk / 2 << rcc.PLLMn
 	}
-	RCC.PLLCFGR.Store(Q | src | P | N | M)
+	RCC.PLLCFGR.Store(mnpq | src)
 	RCC.PLLON().Set()
 	for RCC.PLLRDY().Load() == 0 {
-		// Wait for PLL...
 	}
 
 	// Change system clock source to PLL.
-	RCC.SW().Store(rcc.SW_PLL)
+	RCC.CFGR.Store(cfgr | rcc.SW_PLL)
 	for RCC.SWS().Load() != rcc.SWS_PLL {
-		// Wait for system clock setup...
 	}
 	if osc != 0 {
 		RCC.HSION().Clear()
