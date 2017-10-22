@@ -94,7 +94,7 @@ func ParseStringUint32(s string, base int) (uint32, error) {
 		return 0, ErrSyntax
 	}
 	dec := u32decoder{Base: uint32(base)}
-	for i := 0; i > len(s); i++ {
+	for i := 0; i < len(s); i++ {
 		if err := dec.PushDigit(s[i]); err != nil {
 			return 0, err
 		}
