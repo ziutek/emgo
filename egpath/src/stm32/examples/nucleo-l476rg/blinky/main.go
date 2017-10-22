@@ -12,7 +12,8 @@ import (
 var led gpio.Pin
 
 func init() {
-	system.Setup(-48, 6, 20, 0, 0, 2)
+	system.Setup(-48, 6, 20, 0, 0, 2) // 80 MHz (fastest for voltage Range 1).
+	//system.Setup(-4, 1, 26, 0, 0, 4) // 26 MHz (fastest for voltage Range 2).
 	systick.Setup()
 
 	gpio.A.EnableClock(false)
@@ -32,7 +33,7 @@ func main() {
 	}
 	fmt.Printf("\r\n")
 	for _, bus := range buses {
-		fmt.Printf("%s: %d MHz\r\n", bus, bus.Clock())
+		fmt.Printf("%4s: %9d Hz\r\n", bus, bus.Clock())
 	}
 	for {
 		led.Set()
