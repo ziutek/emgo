@@ -6,16 +6,16 @@
 // also from second PLL (PLLSAI1) which gives more flexibility for clocks setup
 // but additional PLL means more power (see Current consumption).
 //
-// PLLCK must satisfy the equation:
+// PLLVCO must satisfy the equation:
 //
-//  PLLCK = 48 MHz * Q
+//  PLLVCO = 48 MHz * Q
 //
 // where Q can be:
 //
 //  Q = 2, 4, 6
 //
-// which means that PLLCK can be: 96, 192, 288 MHz. We cannot use Q = 8 (PLLCK
-// = 384 MHz) because allowed PLLCK range is 64 MHz to 344 MHz.
+// which means that PLLVCO can be: 96, 192, 288 MHz. We cannot use Q = 8 (PLLVCO
+// = 384 MHz) because allowed PLLVCO range is 64 MHz to 344 MHz.
 //
 //  PLLIN = CLKSRC / M
 //
@@ -183,7 +183,6 @@ func Setup(clksrc, M, N, P, Q, R int) {
 	RCC.PWREN().Set()
 	PWR := pwr.PWR
 	PWR.CR1.Store(vos << pwr.VOSn)
-	RCC.PWREN().Clear()
 	flash.FLASH.ACR.Store(flash.DCEN | flash.ICEN | flash.PRFTEN | latency)
 
 	// Setup clock dividers for AHB, APB1, APB2 bus.
@@ -232,6 +231,7 @@ func Setup(clksrc, M, N, P, Q, R int) {
 	// Setup PLL.
 	for PWR.VOSF().Load() != 0 {
 	}
+	RCC.PWREN().Clear()
 	var src rcc.PLLCFGR_Bits
 	if clksrc == 0 {
 		src = rcc.PLLSRC_HSI
