@@ -26,7 +26,7 @@ func init() {
 	Green = gpio.D.Pin(12)
 	Orange = gpio.D.Pin(13)
 	Red = gpio.D.Pin(14)
-	lBlue = gpio.D.Pin(15)
+	Blue = gpio.D.Pin(15)
 
 	// LEDs
 
@@ -69,8 +69,8 @@ func main() {
 		Red.Clear()
 		Blue.Set()
 		wait()
-		leds.Blue.Clear()
-		leds.Green.Set()
+		Blue.Clear()
+		Green.Set()
 		wait()
 	}
 }
