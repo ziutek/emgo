@@ -53,8 +53,9 @@ func main() {
 		}
 		led := leds[n]
 		led.Set()
-		delay.Millisec(100)
+		delay.Millisec(20)
 		led.Clear()
+		delay.Millisec(500)
 	}
 }
 
