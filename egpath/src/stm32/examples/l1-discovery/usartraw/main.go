@@ -18,7 +18,7 @@ var tts *usart.Periph
 
 func init() {
 	system.Setup32(0)
-	systick.Setup()
+	systick.Setup(2e6)
 
 	gpio.B.EnableClock(true)
 	port, tx, rx := gpio.B, gpio.Pin10, gpio.Pin11

@@ -29,7 +29,7 @@ var (
 
 func init() {
 	system.Setup96(8)
-	systick.Setup()
+	systick.Setup(2e6)
 
 	// GPIO
 	gpio.A.EnableClock(true)

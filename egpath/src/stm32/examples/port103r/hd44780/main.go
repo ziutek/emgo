@@ -38,7 +38,7 @@ var (
 )
 
 func init() {
-	system.Setup(8, 1, 72/8)
+	system.SetupPLL(8, 1, 72/8)
 	rtcst.Setup(32768)
 
 	gpio.B.EnableClock(true)

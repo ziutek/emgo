@@ -19,7 +19,7 @@ const (
 )
 
 func init() {
-	system.Setup(8, 1, 72/8)
+	system.SetupPLL(8, 1, 72/8)
 	rtcst.Setup(32768)
 
 	gpio.B.EnableClock(true)
@@ -28,7 +28,6 @@ func init() {
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	leds.Setup(LED1|LED2, &cfg)
 }
-
 
 func printDate(led gpio.Pins, dly int) {
 	for {

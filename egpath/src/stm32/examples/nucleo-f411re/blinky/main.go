@@ -12,7 +12,7 @@ var led gpio.Pin
 
 func init() {
 	system.Setup96(8)
-	systick.Setup()
+	systick.Setup(2e6)
 
 	gpio.A.EnableClock(false)
 	led = gpio.A.Pin(5)

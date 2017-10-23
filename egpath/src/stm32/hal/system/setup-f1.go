@@ -27,7 +27,7 @@ import (
 // div can be 1..16 (some models support only 1..2). mul can be 2..16.
 //
 // USB requires HSE and SysClk set to 48e6 or 72e6 Hz.
-func Setup(osc, div, mul int) {
+func SetupPLL(osc, div, mul int) {
 	RCC := rcc.RCC
 
 	// Reset RCC clock configuration.

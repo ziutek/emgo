@@ -7,9 +7,10 @@ import (
 	"stm32/hal/raw/rcc"
 )
 
-// Setup setups MCU for best performance.
+// SetupPLL setups MCU for best performance (prefetch on, minimum allowed Flash
+// latency) using integrated PLL as system clock source.
 //
-// osc is freqency of external resonator in MHz. Allowed values: 4 to 32 MHz.
+// Osc is freqency of external resonator in MHz. Allowed values: 4 to 32 MHz.
 // Use 0 to select internal HSI oscilator (8 MHz / 2) as system clock source.
 //
 // sdiv is system clock divider.
@@ -27,7 +28,7 @@ import (
 // div can be 1..16. mul can be 2..16.
 //
 // USB requires HSE and SysClk set to 48e6 or 72e6 Hz.
-func Setup(osc, div, mul int) {
+func SetupPLL(osc, div, mul int) {
 	RCC := rcc.RCC
 
 	// Reset RCC clock configuration.

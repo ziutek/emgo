@@ -10,9 +10,9 @@ import (
 )
 
 // Setup setups and uses Cortex-M SYSTICK as system timer.
-func Setup() {
+func Setup(periodns uint) {
 	lev, _ := syscall.SetPrivLevel(0)
-	cmst.Setup(2e6, system.AHB.Clock()/8, true)
+	cmst.Setup(periodns, system.AHB.Clock()/8, true)
 	syscall.SetPrivLevel(lev)
 	syscall.SetSysTimer(cmst.Nanosec, cmst.SetWakeup)
 }

@@ -30,7 +30,7 @@ const (
 
 func init() {
 	system.Setup32(0)
-	systick.Setup()
+	systick.Setup(2e6)
 
 	gpio.A.EnableClock(true)
 	bport := gpio.A

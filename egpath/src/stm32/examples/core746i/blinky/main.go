@@ -25,7 +25,7 @@ var (
 
 func init() {
 	system.Setup192(8)
-	systick.Setup()
+	systick.Setup(2e6)
 
 	gpio.H.EnableClock(false)
 	leds, led1, led2 = gpio.H, gpio.Pin3, gpio.Pin4

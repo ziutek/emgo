@@ -18,10 +18,10 @@ import (
 	"stm32/hal/raw/rcc"
 )
 
-// Setup setups MCU for best performance (Flash prefetch and 64-bit access
-// on).
+// SetupPLL setups MCU for best performance (prefetch on, 64-bit flash access)
+// using integrated PLL as system clock source.
 //
-// osc is freqency of external resonator in MHz. Allowed values: 2, 3, 4, 6, 8,
+// Osc is freqency of external resonator in MHz. Allowed values: 2, 3, 4, 6, 8,
 // 12, 16, 24. Use 0 to select internal HSI oscilator as system clock source.
 //
 // sdiv is system clock divider. Allowed values: 2, 3, 4. sdiv determine the
@@ -29,7 +29,7 @@ import (
 //
 //  SysClk = 96e6 / sdiv [Hz]
 //
-func Setup(osc, sdiv int) {
+func SetupPLL(osc, sdiv int) {
 	RCC := rcc.RCC
 
 	// Reset RCC clock configuration.
@@ -133,8 +133,8 @@ func Setup(osc, sdiv int) {
 	RCC.MSION().Clear()
 }
 
-// Setup32 setups MCU to work with 96 MHz clock.
-// See Setup for description of osc.
+// Setup32 wraps SetupPLL to setup MCU to work with 32 MHz clock. See SetupPLL
+// for more information.
 func Setup32(osc int) {
-	Setup(osc, 3)
+	SetupPLL(osc, 3)
 }

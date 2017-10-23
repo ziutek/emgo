@@ -12,9 +12,10 @@ import (
 var led gpio.Pin
 
 func init() {
-	system.Setup(-48, 6, 20, 0, 0, 2) // 80 MHz (fastest for voltage Range 1).
-	//system.Setup(-4, 1, 26, 0, 0, 4) // 26 MHz (fastest for voltage Range 2).
-	systick.Setup()
+	//system.SetupPLL(-48, 6, 20, 0, 0, 2) // 80 MHz (max. for voltage Range 1).
+	//system.SetupPLL(-4, 1, 26, 0, 0, 4) // 26 MHz (max. for voltage Range 2).
+	system.SetupMSI(100) // Lowest possible frequency.
+	systick.Setup(1e7) // Typical 2e6 ns is to low for 100 kHz SysClk.
 
 	gpio.A.EnableClock(false)
 	led = gpio.A.Pin(5)
@@ -37,8 +38,8 @@ func main() {
 	}
 	for {
 		led.Set()
-		delay.Millisec(50)
+		delay.Millisec(100)
 		led.Clear()
-		delay.Millisec(950)
+		delay.Millisec(1900)
 	}
 }

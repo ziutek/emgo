@@ -12,7 +12,7 @@ var green, orange, red, blue gpio.Pin
 
 func init() {
 	system.Setup168(8)
-	systick.Setup()
+	systick.Setup(2e6)
 
 	gpio.D.EnableClock(false)
 	green = gpio.D.Pin(12)

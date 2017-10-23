@@ -53,7 +53,7 @@ func AlignS64() uintptr
 
 func main() {
 	system.Setup32(0)
-	systick.Setup()
+	systick.Setup(2e6)
 
 	dbg.WriteString("Data size/alignment\n\n")
 	dbg.WriteString("Type    Emgo       C\n")

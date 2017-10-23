@@ -31,7 +31,7 @@ var (
 
 func init() {
 	system.Setup96(8)
-	systick.Setup()
+	systick.Setup(2e6)
 	start := rtos.Nanosec()
 
 	// GPIO

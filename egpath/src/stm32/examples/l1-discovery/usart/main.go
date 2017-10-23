@@ -36,7 +36,7 @@ var (
 
 func init() {
 	system.Setup32(0)
-	systick.Setup()
+	systick.Setup(2e6)
 
 	// GPIO
 

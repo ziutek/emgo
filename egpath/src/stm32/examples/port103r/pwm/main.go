@@ -18,14 +18,14 @@ const PWMmax = 1e4
 var led1, led2 *mmio.U16
 
 func init() {
-	system.Setup(8, 1, 72/8)
+	system.SetupPLL(8, 1, 72/8)
 	rtcst.Setup(32768)
 
 	gpio.B.EnableClock(true)
 	leds := gpio.B
 
 	leds.Setup(
-		gpio.Pin7|gpio.Pin6, 
+		gpio.Pin7|gpio.Pin6,
 		&gpio.Config{Mode: gpio.Alt, Speed: gpio.Low},
 	)
 	rcc.RCC.TIM4EN().Set()
@@ -40,11 +40,11 @@ func init() {
 	}
 	t.PSC.U16.Store(uint16(pclk/(PWMmax*pwmfreq) - 1))
 	t.ARR.Store(PWMmax - 1)
-	
-	// Following PWM configuration is very readable but not optimal. The same 
+
+	// Following PWM configuration is very readable but not optimal. The same
 	// registers are accessed many times. All read-modify-write Set/Store bits
 	// operations can be replaced by simple Store whole register.
-	
+
 	t.OC1M().Store(pwmmode << tim.OC1Mn)
 	t.OC2M().Store(pwmmode << tim.OC2Mn)
 	t.OC1PE().Set()

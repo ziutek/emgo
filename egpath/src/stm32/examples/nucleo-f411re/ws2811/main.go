@@ -26,7 +26,7 @@ func init() {
 	// This gives 3 MHz SPI clock (slower but seems to work more realiable).
 	system.Setup96(8)
 
-	systick.Setup()
+	systick.Setup(2e6)
 
 	// GPIO
 

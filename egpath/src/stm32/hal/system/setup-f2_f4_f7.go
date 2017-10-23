@@ -44,8 +44,8 @@ import (
 	"stm32/hal/raw/rcc"
 )
 
-// Setup setups MCU for best performance (prefetch on, I/D cache on, minimum
-// allowed Flash latency).
+// SetupPLL setups MCU for best performance (prefetch on, I/D cache on, minimum
+// allowed Flash latency) using integrated PLL as system clock source.
 //
 // osc is freqency of external resonator in MHz. Allowed values are multiples
 // of 2, from 4 to 26. Use 0 to select internal HSI oscilator as system clock
@@ -63,7 +63,7 @@ import (
 //
 //  SysClk = 2e6 * N / P [Hz]
 //
-func Setup(osc, N, P int) {
+func SetupPLL(osc, N, P int) {
 	RCC := rcc.RCC
 
 	// Reset RCC clock configuration.
@@ -179,20 +179,20 @@ func Setup(osc, N, P int) {
 	}
 }
 
-// Setup96 setups MCU to work with 96 MHz clock.
-// See Performance for description of osc.
+// Setup96 wraps SetupPLL to setup MCU to work with 96 MHz clock. See SetupPLL
+// for more information.
 func Setup96(osc int) {
-	Setup(osc, 192, 4)
+	SetupPLL(osc, 192, 4)
 }
 
-// Setup168 setups MCU to work with 168 MHz clock.
-// See Performance for description of osc.
+// Setup168 wraps SetupPLL to setup MCU to work with 168 MHz clock. See SetupPLL
+// for more information.
 func Setup168(osc int) {
-	Setup(osc, 168, 2)
+	SetupPLL(osc, 168, 2)
 }
 
-// Setup192 setups MCU to work with 216 MHz clock.
-// See Performance for description of osc.
+// Setup192 wraps SetupPLL to setup MCU to work with 192 MHz clock. See SetupPLL
+// for more information.
 func Setup192(osc int) {
-	Setup(osc, 192, 2)
+	SetupPLL(osc, 192, 2)
 }

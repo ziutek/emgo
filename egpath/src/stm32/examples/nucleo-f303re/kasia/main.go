@@ -24,8 +24,8 @@ var (
 )
 
 func init() {
-	system.Setup(8, 1, 72/8)
-	systick.Setup()
+	system.SetupPLL(8, 1, 72/8)
+	systick.Setup(2e6)
 
 	// GPIO
 
@@ -91,7 +91,7 @@ func main() {
 	lcd.PixSet(ili9341.PF16) // 16-bit pixel format.
 	lcd.MADCtl(ili9341.MY | ili9341.MX | ili9341.MV | ili9341.BGR)
 	lcd.SetWordSize(16)
-	
+
 	scr := lcd.Area(lcd.Bounds())
 
 	scr.SetColor(0xde7b)

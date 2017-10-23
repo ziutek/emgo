@@ -14,7 +14,7 @@ var leds *gpio.Port
 const Blue = gpio.Pin13
 
 func init() {
-	system.Setup(8, 1, 72/8)
+	system.SetupPLL(8, 1, 72/8)
 	rtcst.Setup(32768)
 
 	gpio.C.EnableClock(true)

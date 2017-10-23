@@ -22,7 +22,7 @@ var twi *i2c.Driver
 
 func init() {
 	system.Setup96(8)
-	systick.Setup()
+	systick.Setup(2e6)
 
 	gpio.B.EnableClock(true)
 	port, pins := gpio.B, gpio.Pin8|gpio.Pin9

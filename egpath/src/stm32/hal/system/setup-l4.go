@@ -62,8 +62,8 @@ import (
 	"stm32/hal/raw/rcc"
 )
 
-// Setup setups MCU for best performance (prefetch on, I/D cache on, minimum
-// allowed Flash latency).
+// SetupPLL setups MCU for best performance (prefetch on, I/D cache on, minimum
+// allowed Flash latency) using integrated PLL as system clock source.
 //
 // Clksrc configures clock source for PLL.
 //
@@ -90,7 +90,7 @@ import (
 //
 // Voltage scaling Range 1 (high-performance) is configured if SYSCLK > 26 MHz
 // or VCO > 128 MHz, otherwise Range 2 (low-power).
-func Setup(clksrc, M, N, P, Q, R int) {
+func SetupPLL(clksrc, M, N, P, Q, R int) {
 	RCC := rcc.RCC
 
 	// Reset RCC clock configuration.
@@ -280,5 +280,130 @@ func Setup(clksrc, M, N, P, Q, R int) {
 	}
 	if osc >= 0 {
 		RCC.MSION().Clear()
+	}
+}
+
+//emgo:const
+var msiRanges = [...]uint16{
+	100, 200, 400, 800, 1e3, 2e3, 4e3, 8e3, 16e3, 24e3, 32e3, 48e3,
+}
+
+// SetupMSI setups MCU for best performance (prefetch on, I/D cache on, minimum
+// allowed Flash latency) using integrated multi-speed oscilator as system
+// clock source.  
+func SetupMSI(msikHz int) {
+	RCC := rcc.RCC
+
+	// Reset RCC clock configuration.
+	RCC.MSION().Set()
+	for RCC.MSIRDY().Load() == 0 {
+	}
+	RCC.CR.Store(6<<rcc.MSIRANGEn | rcc.MSIRGSEL | rcc.MSION)
+	RCC.CFGR.Store(0) // MSI selected as system clock. APBCLK, AHBCLK = SYSCLK.
+	RCC.PLLCFGR.Store(0x1000)
+	RCC.CIER.Store(0) // Disable clock interrupts.
+
+	// Calculate system clock.
+	var msirange rcc.CR_Bits
+	for int(msirange) < len(msiRanges) {
+		if int(msiRanges[msirange]) == msikHz {
+			break
+		}
+		msirange++
+	}
+	if int(msirange) == len(msiRanges) {
+		panic("bad msikHz")
+	}
+	sysclk := uint(msikHz) * 1e3
+
+	// Setup PWR and Flash.
+	var (
+		vos     pwr.CR1_Bits
+		latency flash.ACR_Bits
+	)
+	if sysclk > 26e6 {
+		// Range 1: High-performance.
+		vos = 1
+		switch {
+		case sysclk <= 16e6:
+			latency = 0
+		case sysclk <= 32e6:
+			latency = 1
+		case sysclk <= 48e6:
+			latency = 2
+		case sysclk <= 64e6:
+			latency = 3
+		default:
+			latency = 4
+		}
+	} else {
+		// Range 2: Low-power.
+		vos = 2
+		switch {
+		case sysclk <= 6e6:
+			latency = 0
+		case sysclk <= 12e6:
+			latency = 1
+		case sysclk <= 18e6:
+			latency = 2
+		default:
+			latency = 3
+		}
+	}
+
+	RCC.PWREN().Set()
+	PWR := pwr.PWR
+	PWR.CR1.Store(vos << pwr.VOSn)
+	flash.FLASH.ACR.Store(flash.DCEN | flash.ICEN | flash.PRFTEN | latency)
+
+	// Setup clock dividers for AHB, APB1, APB2 bus.
+	ahbclk := sysclk
+	cfgr := rcc.HPRE_DIV1
+	var apb1clk, apb2clk uint
+	switch {
+	case ahbclk <= 1*maxAPB1Clk:
+		cfgr |= rcc.PPRE1_DIV1
+		apb1clk = ahbclk / 1
+	case ahbclk <= 2*maxAPB1Clk:
+		cfgr |= rcc.PPRE1_DIV2
+		apb1clk = ahbclk / 2
+	case ahbclk <= 4*maxAPB1Clk:
+		cfgr |= rcc.PPRE1_DIV4
+		apb1clk = ahbclk / 4
+	case ahbclk <= 8*maxAPB1Clk:
+		cfgr |= rcc.PPRE1_DIV8
+		apb1clk = ahbclk / 8
+	default:
+		cfgr |= rcc.PPRE1_DIV16
+		apb1clk = ahbclk / 16
+	}
+	switch {
+	case ahbclk <= 1*maxAPB2Clk:
+		cfgr |= rcc.PPRE2_DIV1
+		apb2clk = ahbclk / 1
+	case ahbclk <= 2*maxAPB2Clk:
+		cfgr |= rcc.PPRE2_DIV2
+		apb2clk = ahbclk / 2
+	case ahbclk <= 4*maxAPB2Clk:
+		cfgr |= rcc.PPRE2_DIV4
+		apb2clk = ahbclk / 4
+	case ahbclk <= 8*maxAPB2Clk:
+		cfgr |= rcc.PPRE2_DIV8
+		apb2clk = ahbclk / 8
+	default:
+		cfgr |= rcc.PPRE2_DIV16
+		apb2clk = ahbclk / 16
+	}
+	clock[Core] = sysclk
+	clock[AHB] = ahbclk
+	clock[APB1] = apb1clk
+	clock[APB2] = apb2clk
+
+	// Setup MSI freq.
+	for PWR.VOSF().Load() != 0 {
+	}
+	RCC.PWREN().Clear()
+	if msirange != 6 {
+		RCC.MSIRANGE().Store(msirange << rcc.MSIRANGEn)
 	}
 }

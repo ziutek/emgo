@@ -18,7 +18,7 @@ var Red, Green, Blue, Orange gpio.Pin
 
 func init() {
 	system.Setup168(8)
-	systick.Setup()
+	systick.Setup(2e6)
 
 	gpio.A.EnableClock(true)
 	btnport := gpio.A

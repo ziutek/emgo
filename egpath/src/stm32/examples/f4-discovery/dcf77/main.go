@@ -21,7 +21,7 @@ var dcfport *gpio.Port
 
 func init() {
 	system.Setup168(8)
-	systick.Setup()
+	systick.Setup(2e6)
 
 	gpio.C.EnableClock(true)
 	dcfport = gpio.C
