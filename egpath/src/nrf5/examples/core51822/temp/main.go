@@ -16,10 +16,9 @@ import (
 	"nrf5/hal/uart"
 )
 
-const bias = 6.25 * 4 // Specific for any chip (°C/4).
+const bias = 7.00 * 4 // Specific for any chip (°C/4).
 
 var (
-	leds [5]gpio.Pin
 	u    *uart.Driver
 	done rtos.EventFlag
 )
@@ -28,15 +27,8 @@ func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
 	rtcst.Setup(rtc.RTC0, 1)
 
-	p0 := gpio.P0
-	for i := range leds {
-		led := p0.Pin(18 + i)
-		led.Setup(gpio.ModeOut)
-		leds[i] = led
-	}
-
 	u = uart.NewDriver(uart.UART0, make([]byte, 80))
-	u.P.StorePSEL(uart.SignalTXD, p0.Pin(9))
+	u.P.StorePSEL(uart.SignalTXD, gpio.P0.Pin(9))
 	u.P.StoreBAUDRATE(uart.Baud115200)
 	u.P.StoreENABLE(true)
 	rtos.IRQ(u.P.NVIC()).Enable()
@@ -56,7 +48,6 @@ func main() {
 		if done.Wait(1, rtos.Nanosec()+1e9) {
 			f := float32(t.LoadTEMP()-bias) * 0.25
 			fmt.Printf("T = %6.2f °C\r\n", f)
-
 		} else {
 			fmt.Printf("Timeout\r\n")
 		}
