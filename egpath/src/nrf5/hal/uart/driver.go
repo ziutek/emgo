@@ -31,9 +31,9 @@ type Driver struct {
 	deadlineRx int64
 	deadlineTx int64
 
-	P     *Periph
-	
-	rxBuf []byte
+	P *Periph
+
+	rxBuf   []byte
 	pi, pr  int
 	err     uint32
 	rxready syscall.Event
@@ -280,7 +280,8 @@ func (d *Driver) WriteString(s string) (int, error) {
 	d.offs = -h.Len
 	fence.W() // store(d.offs) must be observed before p.SetTX.
 	d.P.StoreTXD(s[0])
-	return d.waitWrite()
+	offs, err := d.waitWrite()
+	return len(s) - offs, err
 }
 
 func (d *Driver) Write(b []byte) (int, error) {
