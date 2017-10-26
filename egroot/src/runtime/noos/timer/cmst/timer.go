@@ -19,15 +19,13 @@ import (
 // nanoseconds requires only ordinary 64-bit multiply and divide but is
 // accurate only in some special cases.
 
-type globals struct {
+var g struct {
 	counter     nbl.Int64
 	wkupTicks   int64
 	freqHz      uint
 	periodTicks uint32
 	alarm       uint32
 }
-
-var g globals
 
 func tons(tick int64) int64 {
 	return int64(math.Muldiv(uint64(tick), 1e9, uint64(g.freqHz)))

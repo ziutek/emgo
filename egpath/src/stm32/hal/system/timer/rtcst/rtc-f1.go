@@ -35,7 +35,7 @@ const (
 	flagSet = 1
 )
 
-type globals struct {
+var g struct {
 	wakens  int64
 	freqHz  uint
 	cntExt  int32  // 16 bit RTC VCNT excension.
@@ -43,8 +43,6 @@ type globals struct {
 	status  bitband.Bits16
 	alarm   bool
 }
-
-var g globals
 
 func init() {
 	status := rtcBackup{bkp.BKP}.Status()
