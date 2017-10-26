@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"arch/cortexm/bitband"
+	//"arch/cortexm/scb"
 
 	"stm32/hal/exti"
 	"stm32/hal/irq"
@@ -116,6 +117,10 @@ func setup(freqHz uint) {
 
 	// Force RTCISR to initialise or early handle possible overflow.
 	exti.RTCALR.Trigger()
+
+	/*level, _ := rtos.SetPrivLevel(0)
+	scb.SCB.SLEEPDEEP().Set()
+	rtos.SetPrivLevel(level)*/
 }
 
 // loadVCNT returns value of virtual counter that counts number of ticks of

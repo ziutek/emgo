@@ -27,9 +27,9 @@ func init() {
 func main() {
 	for {
 		leds.ClearPins(Blue)
-		delay.Millisec(100)
+		delay.Millisec(50)
 		leds.SetPins(Blue)
-		delay.Millisec(900)
+		delay.Millisec(2950)
 	}
 }
 
