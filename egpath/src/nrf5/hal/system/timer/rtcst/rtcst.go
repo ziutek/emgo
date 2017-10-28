@@ -12,16 +12,13 @@ import (
 	"nrf5/hal/te"
 )
 
-type globals struct {
+var g  struct {
 	wakens  int64
 	st      *rtc.Periph
 	softcnt uint32
 	scale   uint32
 	ccn     byte
-	alarm   bool
 }
-
-var g globals
 
 func cce() *te.Event {
 	return g.st.Event(rtc.COMPARE(int(g.ccn)))
@@ -67,12 +64,7 @@ func ISR() {
 	if cce.IsSet() {
 		cce.DisableIRQ()
 		g.wakens = 0
-		if g.alarm {
-			g.alarm = false
-			syscall.Alarm.Send()
-		} else {
-			syscall.SchedNext()
-		}
+		syscall.SchedNext()
 	}
 }
 
@@ -112,12 +104,11 @@ func nstotick(ns int64) int64 {
 }
 
 // setWakeup: see syscall.SetSysTimer.
-func setWakeup(ns int64, alarm bool) {
-	if g.wakens == ns && g.alarm == alarm {
+func setWakeup(ns int64) {
+	if g.wakens == ns  {
 		return
 	}
 	g.wakens = ns
-	g.alarm = alarm
 	wkup := nstotick(ns) + 1 // +1 to don't wakeup to early because of rounding.
 	cce := cce()
 	cce.Clear()
@@ -137,10 +128,6 @@ func setWakeup(ns int64, alarm bool) {
 	}
 	// wkup in the past or there is a chance that CC was set to late.
 	g.wakens = 0
-	if g.alarm {
-		g.alarm = false
-		syscall.Alarm.Send()
-	} else {
-		syscall.SchedNext()
-	}
+	syscall.SchedNext()
+
 }

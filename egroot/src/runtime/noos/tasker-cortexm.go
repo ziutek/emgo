@@ -65,18 +65,18 @@ type taskSched struct {
 	alarm     int64
 	period    uint32
 	nanosec   func() int64
-	setWakeup func(int64, bool)
+	setWakeup func(int64)
 	tasks     []task
 	curTask   int
 }
 
-func dummyNanosec() int64                { return 0 }
-func dummySetWakeup(t int64, alarm bool) {}
+func dummyNanosec() int64    { return 0 }
+func dummySetWakeup(t int64) {}
 
-const noalarm = 1<<63 - 1
+const maxAlarm = int64(1<<63 - 1)
 
 var tasker = taskSched{
-	alarm:     noalarm,
+	alarm:     maxAlarm,
 	period:    2e6, // 2 ms
 	nanosec:   dummyNanosec,
 	setWakeup: dummySetWakeup,
@@ -86,7 +86,7 @@ func (ts *taskSched) Nanosec() int64 {
 	return ts.nanosec()
 }
 
-func (ts *taskSched) SetSysTimer(nanosec func() int64, setWakeup func(int64, bool)) {
+func (ts *taskSched) SetSysTimer(nanosec func() int64, setWakeup func(int64)) {
 	if nanosec == nil {
 		ts.nanosec = dummyNanosec
 	} else {
@@ -99,7 +99,7 @@ func (ts *taskSched) SetSysTimer(nanosec func() int64, setWakeup func(int64, boo
 	}
 }
 
-func (ts *taskSched) deliverEvent(e syscall.Event) {
+func (ts *taskSched) deliverEvents(e syscall.Event) {
 	for n := range ts.tasks {
 		ti := ts.tasks[n].info
 		switch ti.state() {

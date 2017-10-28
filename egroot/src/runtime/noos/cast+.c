@@ -1,6 +1,6 @@
 
-void (*runtime$noos$utof64b(uintptr u)) (int64, bool) {
-	return (void (*)(int64, bool))(u);
+void (*runtime$noos$utof64(uintptr u)) (int64) {
+	return (void (*)(int64))(u);
 }
 
 int64(*runtime$noos$utofr64(uintptr u)) () {

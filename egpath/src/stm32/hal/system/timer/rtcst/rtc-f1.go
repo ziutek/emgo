@@ -41,7 +41,6 @@ var g struct {
 	cntExt  int32  // 16 bit RTC VCNT excension.
 	lastISR uint32 // Last ISR time using uint32(loadVCNT() >> preLog2).
 	status  bitband.Bits16
-	alarm   bool
 }
 
 func init() {
@@ -197,12 +196,7 @@ func isr() {
 		}
 		g.lastISR = vcnt32 // Ordinary store (load only when IRQ disabled).
 	}
-	if g.alarm {
-		g.alarm = false
-		syscall.Alarm.Send()
-	} else {
-		syscall.SchedNext()
-	}
+	syscall.SchedNext()
 }
 
 func loadTicks() int64 {
@@ -226,8 +220,8 @@ func nanosec() int64 {
 }
 
 // setWakeup: see syscall.SetSysTimer.
-func setWakeup(ns int64, alarm bool) {
-	if g.wakens == ns && g.alarm == alarm {
+func setWakeup(ns int64) {
+	if g.wakens == ns {
 		return
 	}
 	// Use EXTI instead of NVIC to actually disable IRQ source and not colide
@@ -236,7 +230,6 @@ func setWakeup(ns int64, alarm bool) {
 	fence.RW() // Ensure disable IRQ before normal memory access.
 
 	g.wakens = ns
-	g.alarm = alarm
 
 	now := loadTicks() >> preLog2
 	wkup := (nstotick(ns) + prescaler - 1) >> preLog2

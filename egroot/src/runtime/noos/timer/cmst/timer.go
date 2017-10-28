@@ -6,8 +6,6 @@ package cmst
 import (
 	"math"
 	"nbl"
-	"sync/atomic"
-	"sync/fence"
 	"syscall"
 
 	"arch/cortexm"
@@ -19,13 +17,13 @@ import (
 // nanoseconds requires only ordinary 64-bit multiply and divide but is
 // accurate only in some special cases.
 
-var g struct {
+type globals struct {
 	counter     nbl.Int64
-	wkupTicks   int64
 	freqHz      uint
 	periodTicks uint32
-	alarm       uint32
 }
+
+var g globals
 
 func tons(tick int64) int64 {
 	return int64(math.Muldiv(uint64(tick), 1e9, uint64(g.freqHz)))
@@ -36,7 +34,7 @@ func totick(ns int64) int64 {
 }
 
 // Setup setups SysTick to work as sytem timer.
-//  periodns - number of nanoseconds between ticks (generating PendSV),
+//  periodns - number of nanoseconds between ticks,
 //  hz       - frequency of SysTick clock source,
 //  external - false: SysTick uses CPU clock; true: SysTick uses external clock.
 // Setup must be run in privileged mode.
@@ -64,16 +62,7 @@ func Setup(periodns, hz uint, external bool) {
 }
 
 // SetWakeup: see syscall.SetSysTimer.
-func SetWakeup(ns int64, alarm bool) {
-	if !alarm {
-		return
-	}
-	atomic.StoreUint32(&g.alarm, 0)
-	fence.Compiler() // cmst aassumes uniprocessor system.
-	g.wkupTicks = totick(ns)
-	fence.Compiler() // cmst aassumes uniprocessor system.
-	atomic.StoreUint32(&g.alarm, 1)
-}
+func SetWakeup(ns int64) {}
 
 // Nanosec: see syscall.SetSysClock.
 func Nanosec() int64 {
@@ -92,17 +81,8 @@ func Nanosec() int64 {
 }
 
 func sysTickHandler() {
-	// SysTick exception has higher priority than PendSV so sysTickHandler can
-	// preempt SetWakeup but not vice versa. This handler is for uniprocessor
-	// system so atomics are not need (used only for documentation purposes).
-
-	cnt := g.counter.WriterAdd(int64(g.periodTicks))
-	if atomic.LoadUint32(&g.alarm) != 0 && cnt >= g.wkupTicks {
-		atomic.StoreUint32(&g.alarm, 0)
-		syscall.Alarm.Send()
-	} else {
-		syscall.SchedNext()
-	}
+	g.counter.WriterAdd(int64(g.periodTicks))
+	syscall.SchedNext()
 }
 
 //emgo:const

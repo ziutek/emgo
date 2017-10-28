@@ -68,26 +68,17 @@ func SchedNext() {
 // the system timer.
 //
 // Nanosec is used to implement Nanosec system call. It should return the
-// monotonic time i nanoseconds (typically the time of system timer run).
+// monotonic time in nanoseconds (typically the time of system timer run).
 //
-// SetWakeup is called by scheduler to ask system timer to wakeup it (using
-// SchedNext function) at time t. It is always called just before sheduler
-// enters into waiting for event/interrupt state, even if the sheduler do not
-// want to be woken up by system timer (in such case t is set to 1<<63-1).
-//
-// If alarm is true the system timer should check t >= nanosec() condition (or
-// its internal counterpart) just before waking up the scheduler. If such
-// condition occured it should use the Alarm event to wakeup the scheduler and
-// hance all tasks that wait for this event. Otherwise it should wakeup the
-// scheduler using SchedNext function. It is acceptable (although it should be
-// avoided) to send Alarm event when alarm is true but the wakeup condition did
-// not occured.
-//
-// Weak (ticking) system timer can wakeup the scheduler with fixed period. Good
-// (tickless) system timer should wakeup the scheduler as accurately as possible
-// (if t <= nanosec() it should wakeup it immediately).
-func SetSysTimer(nanosec func() int64, setWakeup func(t int64, alarm bool)) {
-	internal.Syscall2(SETSYSTIM, fr64tou(nanosec), f64btou(setWakeup))
+// SetWakeUp is called by scheduler to ask system timer to wake it up at time t
+// (using SchedNext function). T can be a monotonic time in nanoseconds or -1
+// if the scheduler does not want to be woken. System timer must guarantee that
+// it will wake up the scheduler at t or after t. Additional awakenings before
+// and after t are acceptable but not recommended. Ticking timer simply wakes up
+// the scheduler with a constant period and its setWakeUp function does nothing.
+// Tickless timer schould wake up the scheduler only once, at t or just after t.
+func SetSysTimer(nanosec func() int64, setWakeUp func(t int64)) {
+	internal.Syscall2(SETSYSTIM, fr64tou(nanosec), f64tou(setWakeUp))
 }
 
 // Nanosec: see rtos package.

@@ -6,7 +6,7 @@ syscall$ftou(void (*f) ()) {
 
 inline __attribute__((always_inline))
 uintptr
-syscall$f64btou(void (*f) (int64, bool)) {
+syscall$f64tou(void (*f) (int64)) {
 	return (uintptr)(f);
 }
 

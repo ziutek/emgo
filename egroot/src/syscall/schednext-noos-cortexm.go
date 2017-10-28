@@ -15,19 +15,12 @@ func schedNext() {
 	case 0:
 		// Called from thread mode.
 		SchedYield()
-	case cortexm.PendSV:
-		// Called from PendSV handler when it sends Alarm event.
-	default:
-		// Called from ISR.
-		SCB := scb.SCB
-		if SCB.PENDSVACT().Load() != 0 {
-			// Wakeup PendSV handler.
-			fence.W_SMP() // Complete all writes before wake up other CPUs.
-			cortexm.SEV()
-		} else {
-			// Raise PendSV exception.
-			fence.W() // Treat NVIC as external observer of CPU memory write.
-			SCB.ICSR.Store(scb.PENDSVSET)
+	case cortexm.PendSV: // Called from PendSV
+		for {
+			// This should not happen!
 		}
+	default: // Called from ISR (raise PendSV exception).
+		fence.W() // Treat NVIC as external observer of CPU memory write.
+		scb.SCB.ICSR.Store(scb.PENDSVSET)
 	}
 }
