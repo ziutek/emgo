@@ -9,8 +9,7 @@ import (
 	"stm32/hal/raw/rcc"
 )
 
-const (
-)
+const ()
 
 const (
 	veryLow  = -1 // Not supported.
@@ -35,5 +34,9 @@ var (
 func enreg() *rcc.AHB2ENR   { return &rcc.RCC.AHB2ENR }
 func rstreg() *rcc.AHB2RSTR { return &rcc.RCC.AHB2RSTR }
 
-func lpenaclk(pnum uint) { rcc.RCC.AHB2SMENR.SetBits(rcc.GPIOASMEN << pnum) }
-func lpdisclk(pnum uint) { rcc.RCC.AHB2SMENR.ClearBits(rcc.GPIOASMEN << pnum) }
+func lpenaclk(pnum uint) {
+	rcc.RCC.AHB2SMENR.U32.AtomicSetBits(uint32(rcc.GPIOASMEN << pnum))
+}
+func lpdisclk(pnum uint) {
+	rcc.RCC.AHB2SMENR.U32.AtomicClearBits(uint32(rcc.GPIOASMEN << pnum))
+}

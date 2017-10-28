@@ -4,6 +4,7 @@ package mmio
 
 import (
 	"bits"
+	"sync/atomic"
 	"unsafe"
 )
 
@@ -208,8 +209,16 @@ func (r *U32) SetBits(mask uint32) {
 	r.r |= mask
 }
 
+func (r *U32) AtomicSetBits(mask uint32) {
+	atomic.OrUint32(&r.r, mask)
+}
+
 func (r *U32) ClearBits(mask uint32) {
 	r.r &^= mask
+}
+
+func (r *U32) AtomicClearBits(mask uint32) {
+	atomic.XorUint32(&r.r, mask)
 }
 
 func (r *U32) Load() uint32 {

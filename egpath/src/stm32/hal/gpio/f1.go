@@ -54,18 +54,18 @@ const (
 )
 
 func enableClock(p *Port, _ bool) {
-	rcc.RCC.APB2ENR.SetBits(rcc.IOPAEN << portnum(p))
+	rcc.RCC.APB2ENR.U32.AtomicSetBits(uint32(rcc.IOPAEN << portnum(p)))
 	rcc.RCC.APB2ENR.Load() // RCC delay (workaround for silicon bugs).
 }
 
 func disableClock(p *Port) {
-	rcc.RCC.APB2ENR.SetBits(rcc.IOPAEN << portnum(p))
+	rcc.RCC.APB2ENR.U32.AtomicClearBits(uint32(rcc.IOPAEN << portnum(p)))
 }
 
 func reset(p *Port) {
 	pnum := portnum(p)
-	rcc.RCC.APB2RSTR.SetBits(rcc.IOPARST << pnum)
-	rcc.RCC.APB2RSTR.ClearBits(rcc.IOPARST << pnum)
+	rcc.RCC.APB2RSTR.U32.AtomicSetBits(uint32(rcc.IOPARST << pnum))
+	rcc.RCC.APB2RSTR.U32.AtomicClearBits(uint32(rcc.IOPARST << pnum))
 }
 
 func setup(p *Port, n int, cfg *Config) {

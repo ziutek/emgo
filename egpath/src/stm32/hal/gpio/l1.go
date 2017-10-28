@@ -66,5 +66,9 @@ var (
 func enreg() *rcc.AHBENR   { return &rcc.RCC.AHBENR }
 func rstreg() *rcc.AHBRSTR { return &rcc.RCC.AHBRSTR }
 
-func lpenaclk(pnum uint) { rcc.RCC.AHBLPENR.SetBits(rcc.GPIOALPEN << pnum) }
-func lpdisclk(pnum uint) { rcc.RCC.AHBLPENR.ClearBits(rcc.GPIOALPEN << pnum) }
+func lpenaclk(pnum uint) {
+	rcc.RCC.AHBLPENR.U32.AtomicSetBits(uint32(rcc.GPIOALPEN << pnum))
+}
+func lpdisclk(pnum uint) {
+	rcc.RCC.AHBLPENR.U32.AtomicClearBits(uint32(rcc.GPIOALPEN << pnum))
+}

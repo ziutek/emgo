@@ -1,3 +1,4 @@
+//  +build !cortexm7f !cortexm7d
 package internal
 
 import (
