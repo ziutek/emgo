@@ -4,8 +4,7 @@ import (
 	"mmio"
 	"unsafe"
 
-	"arch/cortexm/bitband"
-
+	"stm32/hal/internal"
 	"stm32/hal/raw/mmap"
 )
 
@@ -16,6 +15,6 @@ func dmanum(p *DMA) int {
 	return int(uintptr(unsafe.Pointer(p))-mmap.DMA1_BASE) / 0x400
 }
 
-func bit(p *DMA, reg *mmio.U32, dma1bitn int) bitband.Bit {
-	return bitband.Alias32(reg).Bit(dma1bitn + dmanum(p))
+func bit(p *DMA, r *mmio.U32, dma1bitn int) internal.AtomicBit {
+	return internal.AtomicBit{r, dma1bitn+dmanum(p)}
 }

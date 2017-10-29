@@ -48,6 +48,9 @@ func (r *DR) ClearBits(mask DR_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *DR) Load() DR_Bits             { return DR_Bits(r.U32.Load()) }
 func (r *DR) Store(b DR_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *DR) AtomicSetBits(mask DR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DR) AtomicClearBits(mask DR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DR_Mask struct{ mmio.UM32 }
 
 func (rm DR_Mask) Load() DR_Bits   { return DR_Bits(rm.UM32.Load()) }
@@ -94,6 +97,9 @@ func (r *CR) ClearBits(mask CR_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *CR) Load() CR_Bits             { return CR_Bits(r.U32.Load()) }
 func (r *CR) Store(b CR_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *CR) AtomicSetBits(mask CR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CR) AtomicClearBits(mask CR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type CR_Mask struct{ mmio.UM32 }
 
 func (rm CR_Mask) Load() CR_Bits   { return CR_Bits(rm.UM32.Load()) }
@@ -133,6 +139,9 @@ func (r *INIT) ClearBits(mask INIT_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *INIT) Load() INIT_Bits               { return INIT_Bits(r.U32.Load()) }
 func (r *INIT) Store(b INIT_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *INIT) AtomicSetBits(mask INIT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *INIT) AtomicClearBits(mask INIT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type INIT_Mask struct{ mmio.UM32 }
 
 func (rm INIT_Mask) Load() INIT_Bits   { return INIT_Bits(rm.UM32.Load()) }
@@ -155,6 +164,9 @@ func (r *POL) SetBits(mask POL_Bits)       { r.U32.SetBits(uint32(mask)) }
 func (r *POL) ClearBits(mask POL_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *POL) Load() POL_Bits              { return POL_Bits(r.U32.Load()) }
 func (r *POL) Store(b POL_Bits)            { r.U32.Store(uint32(b)) }
+
+func (r *POL) AtomicSetBits(mask POL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *POL) AtomicClearBits(mask POL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type POL_Mask struct{ mmio.UM32 }
 

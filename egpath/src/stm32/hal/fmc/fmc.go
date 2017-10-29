@@ -9,15 +9,15 @@ import (
 func EnableClock(lp bool) {
 	RCC := rcc.RCC
 	if lp {
-		RCC.FMCLPEN().Set()
+		RCC.FMCLPEN().AtomicSet()
 	} else {
-		RCC.FMCLPEN().Clear()
+		RCC.FMCLPEN().AtomicClear()
 
 	}
-	RCC.FMCEN().Set()
+	RCC.FMCEN().AtomicSet()
 }
 
 // DisableClock disables clock for FMC/FSMC.
 func DisableClock() {
-	rcc.RCC.FMCEN().Clear()
+	rcc.RCC.FMCEN().AtomicClear()
 }

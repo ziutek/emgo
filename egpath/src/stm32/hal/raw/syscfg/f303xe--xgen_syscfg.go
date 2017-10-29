@@ -58,6 +58,9 @@ func (r *CFGR1) ClearBits(mask CFGR1_Bits)       { r.U32.ClearBits(uint32(mask))
 func (r *CFGR1) Load() CFGR1_Bits                { return CFGR1_Bits(r.U32.Load()) }
 func (r *CFGR1) Store(b CFGR1_Bits)              { r.U32.Store(uint32(b)) }
 
+func (r *CFGR1) AtomicSetBits(mask CFGR1_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CFGR1) AtomicClearBits(mask CFGR1_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type CFGR1_Mask struct{ mmio.UM32 }
 
 func (rm CFGR1_Mask) Load() CFGR1_Bits   { return CFGR1_Bits(rm.UM32.Load()) }
@@ -157,6 +160,9 @@ func (r *RCR) ClearBits(mask RCR_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *RCR) Load() RCR_Bits              { return RCR_Bits(r.U32.Load()) }
 func (r *RCR) Store(b RCR_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *RCR) AtomicSetBits(mask RCR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCR) AtomicClearBits(mask RCR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type RCR_Mask struct{ mmio.UM32 }
 
 func (rm RCR_Mask) Load() RCR_Bits   { return RCR_Bits(rm.UM32.Load()) }
@@ -244,6 +250,9 @@ func (r *EXTICR) ClearBits(mask EXTICR_Bits)        { r.U32.ClearBits(uint32(mas
 func (r *EXTICR) Load() EXTICR_Bits                 { return EXTICR_Bits(r.U32.Load()) }
 func (r *EXTICR) Store(b EXTICR_Bits)               { r.U32.Store(uint32(b)) }
 
+func (r *EXTICR) AtomicSetBits(mask EXTICR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *EXTICR) AtomicClearBits(mask EXTICR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type EXTICR_Mask struct{ mmio.UM32 }
 
 func (rm EXTICR_Mask) Load() EXTICR_Bits   { return EXTICR_Bits(rm.UM32.Load()) }
@@ -282,6 +291,9 @@ func (r *CFGR2) SetBits(mask CFGR2_Bits)         { r.U32.SetBits(uint32(mask)) }
 func (r *CFGR2) ClearBits(mask CFGR2_Bits)       { r.U32.ClearBits(uint32(mask)) }
 func (r *CFGR2) Load() CFGR2_Bits                { return CFGR2_Bits(r.U32.Load()) }
 func (r *CFGR2) Store(b CFGR2_Bits)              { r.U32.Store(uint32(b)) }
+
+func (r *CFGR2) AtomicSetBits(mask CFGR2_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CFGR2) AtomicClearBits(mask CFGR2_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type CFGR2_Mask struct{ mmio.UM32 }
 
@@ -328,6 +340,9 @@ func (r *RESERVED0) ClearBits(mask RESERVED0_Bits)    { r.U32.ClearBits(uint32(m
 func (r *RESERVED0) Load() RESERVED0_Bits             { return RESERVED0_Bits(r.U32.Load()) }
 func (r *RESERVED0) Store(b RESERVED0_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *RESERVED0) AtomicSetBits(mask RESERVED0_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED0) AtomicClearBits(mask RESERVED0_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type RESERVED0_Mask struct{ mmio.UM32 }
 
 func (rm RESERVED0_Mask) Load() RESERVED0_Bits   { return RESERVED0_Bits(rm.UM32.Load()) }
@@ -352,6 +367,9 @@ func (r *RESERVED1) SetBits(mask RESERVED1_Bits)      { r.U32.SetBits(uint32(mas
 func (r *RESERVED1) ClearBits(mask RESERVED1_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *RESERVED1) Load() RESERVED1_Bits             { return RESERVED1_Bits(r.U32.Load()) }
 func (r *RESERVED1) Store(b RESERVED1_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *RESERVED1) AtomicSetBits(mask RESERVED1_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED1) AtomicClearBits(mask RESERVED1_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type RESERVED1_Mask struct{ mmio.UM32 }
 
@@ -378,6 +396,9 @@ func (r *RESERVED2) ClearBits(mask RESERVED2_Bits)    { r.U32.ClearBits(uint32(m
 func (r *RESERVED2) Load() RESERVED2_Bits             { return RESERVED2_Bits(r.U32.Load()) }
 func (r *RESERVED2) Store(b RESERVED2_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *RESERVED2) AtomicSetBits(mask RESERVED2_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED2) AtomicClearBits(mask RESERVED2_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type RESERVED2_Mask struct{ mmio.UM32 }
 
 func (rm RESERVED2_Mask) Load() RESERVED2_Bits   { return RESERVED2_Bits(rm.UM32.Load()) }
@@ -402,6 +423,9 @@ func (r *RESERVED4) SetBits(mask RESERVED4_Bits)      { r.U32.SetBits(uint32(mas
 func (r *RESERVED4) ClearBits(mask RESERVED4_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *RESERVED4) Load() RESERVED4_Bits             { return RESERVED4_Bits(r.U32.Load()) }
 func (r *RESERVED4) Store(b RESERVED4_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *RESERVED4) AtomicSetBits(mask RESERVED4_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED4) AtomicClearBits(mask RESERVED4_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type RESERVED4_Mask struct{ mmio.UM32 }
 
@@ -428,6 +452,9 @@ func (r *RESERVED5) ClearBits(mask RESERVED5_Bits)    { r.U32.ClearBits(uint32(m
 func (r *RESERVED5) Load() RESERVED5_Bits             { return RESERVED5_Bits(r.U32.Load()) }
 func (r *RESERVED5) Store(b RESERVED5_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *RESERVED5) AtomicSetBits(mask RESERVED5_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED5) AtomicClearBits(mask RESERVED5_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type RESERVED5_Mask struct{ mmio.UM32 }
 
 func (rm RESERVED5_Mask) Load() RESERVED5_Bits   { return RESERVED5_Bits(rm.UM32.Load()) }
@@ -452,6 +479,9 @@ func (r *RESERVED6) SetBits(mask RESERVED6_Bits)      { r.U32.SetBits(uint32(mas
 func (r *RESERVED6) ClearBits(mask RESERVED6_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *RESERVED6) Load() RESERVED6_Bits             { return RESERVED6_Bits(r.U32.Load()) }
 func (r *RESERVED6) Store(b RESERVED6_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *RESERVED6) AtomicSetBits(mask RESERVED6_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED6) AtomicClearBits(mask RESERVED6_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type RESERVED6_Mask struct{ mmio.UM32 }
 
@@ -478,6 +508,9 @@ func (r *RESERVED7) ClearBits(mask RESERVED7_Bits)    { r.U32.ClearBits(uint32(m
 func (r *RESERVED7) Load() RESERVED7_Bits             { return RESERVED7_Bits(r.U32.Load()) }
 func (r *RESERVED7) Store(b RESERVED7_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *RESERVED7) AtomicSetBits(mask RESERVED7_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED7) AtomicClearBits(mask RESERVED7_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type RESERVED7_Mask struct{ mmio.UM32 }
 
 func (rm RESERVED7_Mask) Load() RESERVED7_Bits   { return RESERVED7_Bits(rm.UM32.Load()) }
@@ -502,6 +535,9 @@ func (r *RESERVED8) SetBits(mask RESERVED8_Bits)      { r.U32.SetBits(uint32(mas
 func (r *RESERVED8) ClearBits(mask RESERVED8_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *RESERVED8) Load() RESERVED8_Bits             { return RESERVED8_Bits(r.U32.Load()) }
 func (r *RESERVED8) Store(b RESERVED8_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *RESERVED8) AtomicSetBits(mask RESERVED8_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED8) AtomicClearBits(mask RESERVED8_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type RESERVED8_Mask struct{ mmio.UM32 }
 
@@ -528,6 +564,9 @@ func (r *RESERVED9) ClearBits(mask RESERVED9_Bits)    { r.U32.ClearBits(uint32(m
 func (r *RESERVED9) Load() RESERVED9_Bits             { return RESERVED9_Bits(r.U32.Load()) }
 func (r *RESERVED9) Store(b RESERVED9_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *RESERVED9) AtomicSetBits(mask RESERVED9_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED9) AtomicClearBits(mask RESERVED9_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type RESERVED9_Mask struct{ mmio.UM32 }
 
 func (rm RESERVED9_Mask) Load() RESERVED9_Bits   { return RESERVED9_Bits(rm.UM32.Load()) }
@@ -552,6 +591,9 @@ func (r *RESERVED10) SetBits(mask RESERVED10_Bits)      { r.U32.SetBits(uint32(m
 func (r *RESERVED10) ClearBits(mask RESERVED10_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *RESERVED10) Load() RESERVED10_Bits             { return RESERVED10_Bits(r.U32.Load()) }
 func (r *RESERVED10) Store(b RESERVED10_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *RESERVED10) AtomicSetBits(mask RESERVED10_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED10) AtomicClearBits(mask RESERVED10_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type RESERVED10_Mask struct{ mmio.UM32 }
 
@@ -578,6 +620,9 @@ func (r *RESERVED11) ClearBits(mask RESERVED11_Bits)    { r.U32.ClearBits(uint32
 func (r *RESERVED11) Load() RESERVED11_Bits             { return RESERVED11_Bits(r.U32.Load()) }
 func (r *RESERVED11) Store(b RESERVED11_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *RESERVED11) AtomicSetBits(mask RESERVED11_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED11) AtomicClearBits(mask RESERVED11_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type RESERVED11_Mask struct{ mmio.UM32 }
 
 func (rm RESERVED11_Mask) Load() RESERVED11_Bits   { return RESERVED11_Bits(rm.UM32.Load()) }
@@ -600,6 +645,9 @@ func (r *CFGR4) SetBits(mask CFGR4_Bits)         { r.U32.SetBits(uint32(mask)) }
 func (r *CFGR4) ClearBits(mask CFGR4_Bits)       { r.U32.ClearBits(uint32(mask)) }
 func (r *CFGR4) Load() CFGR4_Bits                { return CFGR4_Bits(r.U32.Load()) }
 func (r *CFGR4) Store(b CFGR4_Bits)              { r.U32.Store(uint32(b)) }
+
+func (r *CFGR4) AtomicSetBits(mask CFGR4_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CFGR4) AtomicClearBits(mask CFGR4_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type CFGR4_Mask struct{ mmio.UM32 }
 
@@ -682,6 +730,9 @@ func (r *RESERVED13) ClearBits(mask RESERVED13_Bits)    { r.U32.ClearBits(uint32
 func (r *RESERVED13) Load() RESERVED13_Bits             { return RESERVED13_Bits(r.U32.Load()) }
 func (r *RESERVED13) Store(b RESERVED13_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *RESERVED13) AtomicSetBits(mask RESERVED13_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RESERVED13) AtomicClearBits(mask RESERVED13_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type RESERVED13_Mask struct{ mmio.UM32 }
 
 func (rm RESERVED13_Mask) Load() RESERVED13_Bits   { return RESERVED13_Bits(rm.UM32.Load()) }
@@ -704,6 +755,9 @@ func (r *CFGR3) SetBits(mask CFGR3_Bits)         { r.U32.SetBits(uint32(mask)) }
 func (r *CFGR3) ClearBits(mask CFGR3_Bits)       { r.U32.ClearBits(uint32(mask)) }
 func (r *CFGR3) Load() CFGR3_Bits                { return CFGR3_Bits(r.U32.Load()) }
 func (r *CFGR3) Store(b CFGR3_Bits)              { r.U32.Store(uint32(b)) }
+
+func (r *CFGR3) AtomicSetBits(mask CFGR3_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CFGR3) AtomicClearBits(mask CFGR3_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type CFGR3_Mask struct{ mmio.UM32 }
 

@@ -45,6 +45,9 @@ func (r *PCR4) ClearBits(mask PCR4_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *PCR4) Load() PCR4_Bits               { return PCR4_Bits(r.U32.Load()) }
 func (r *PCR4) Store(b PCR4_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *PCR4) AtomicSetBits(mask PCR4_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *PCR4) AtomicClearBits(mask PCR4_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type PCR4_Mask struct{ mmio.UM32 }
 
 func (rm PCR4_Mask) Load() PCR4_Bits   { return PCR4_Bits(rm.UM32.Load()) }
@@ -100,6 +103,9 @@ func (r *SR4) ClearBits(mask SR4_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *SR4) Load() SR4_Bits              { return SR4_Bits(r.U32.Load()) }
 func (r *SR4) Store(b SR4_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *SR4) AtomicSetBits(mask SR4_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *SR4) AtomicClearBits(mask SR4_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type SR4_Mask struct{ mmio.UM32 }
 
 func (rm SR4_Mask) Load() SR4_Bits   { return SR4_Bits(rm.UM32.Load()) }
@@ -151,6 +157,9 @@ func (r *PMEM4) ClearBits(mask PMEM4_Bits)       { r.U32.ClearBits(uint32(mask))
 func (r *PMEM4) Load() PMEM4_Bits                { return PMEM4_Bits(r.U32.Load()) }
 func (r *PMEM4) Store(b PMEM4_Bits)              { r.U32.Store(uint32(b)) }
 
+func (r *PMEM4) AtomicSetBits(mask PMEM4_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *PMEM4) AtomicClearBits(mask PMEM4_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type PMEM4_Mask struct{ mmio.UM32 }
 
 func (rm PMEM4_Mask) Load() PMEM4_Bits   { return PMEM4_Bits(rm.UM32.Load()) }
@@ -190,6 +199,9 @@ func (r *PATT4) ClearBits(mask PATT4_Bits)       { r.U32.ClearBits(uint32(mask))
 func (r *PATT4) Load() PATT4_Bits                { return PATT4_Bits(r.U32.Load()) }
 func (r *PATT4) Store(b PATT4_Bits)              { r.U32.Store(uint32(b)) }
 
+func (r *PATT4) AtomicSetBits(mask PATT4_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *PATT4) AtomicClearBits(mask PATT4_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type PATT4_Mask struct{ mmio.UM32 }
 
 func (rm PATT4_Mask) Load() PATT4_Bits   { return PATT4_Bits(rm.UM32.Load()) }
@@ -228,6 +240,9 @@ func (r *PIO4) SetBits(mask PIO4_Bits)        { r.U32.SetBits(uint32(mask)) }
 func (r *PIO4) ClearBits(mask PIO4_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *PIO4) Load() PIO4_Bits               { return PIO4_Bits(r.U32.Load()) }
 func (r *PIO4) Store(b PIO4_Bits)             { r.U32.Store(uint32(b)) }
+
+func (r *PIO4) AtomicSetBits(mask PIO4_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *PIO4) AtomicClearBits(mask PIO4_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type PIO4_Mask struct{ mmio.UM32 }
 

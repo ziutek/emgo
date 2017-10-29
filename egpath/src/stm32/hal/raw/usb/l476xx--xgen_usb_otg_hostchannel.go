@@ -43,6 +43,9 @@ func (r *HCCHAR) ClearBits(mask HCCHAR_Bits)        { r.U32.ClearBits(uint32(mas
 func (r *HCCHAR) Load() HCCHAR_Bits                 { return HCCHAR_Bits(r.U32.Load()) }
 func (r *HCCHAR) Store(b HCCHAR_Bits)               { r.U32.Store(uint32(b)) }
 
+func (r *HCCHAR) AtomicSetBits(mask HCCHAR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HCCHAR) AtomicClearBits(mask HCCHAR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type HCCHAR_Mask struct{ mmio.UM32 }
 
 func (rm HCCHAR_Mask) Load() HCCHAR_Bits   { return HCCHAR_Bits(rm.UM32.Load()) }
@@ -106,6 +109,9 @@ func (r *HCSPLT) ClearBits(mask HCSPLT_Bits)        { r.U32.ClearBits(uint32(mas
 func (r *HCSPLT) Load() HCSPLT_Bits                 { return HCSPLT_Bits(r.U32.Load()) }
 func (r *HCSPLT) Store(b HCSPLT_Bits)               { r.U32.Store(uint32(b)) }
 
+func (r *HCSPLT) AtomicSetBits(mask HCSPLT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HCSPLT) AtomicClearBits(mask HCSPLT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type HCSPLT_Mask struct{ mmio.UM32 }
 
 func (rm HCSPLT_Mask) Load() HCSPLT_Bits   { return HCSPLT_Bits(rm.UM32.Load()) }
@@ -148,6 +154,9 @@ func (r *HCINT) SetBits(mask HCINT_Bits)         { r.U32.SetBits(uint32(mask)) }
 func (r *HCINT) ClearBits(mask HCINT_Bits)       { r.U32.ClearBits(uint32(mask)) }
 func (r *HCINT) Load() HCINT_Bits                { return HCINT_Bits(r.U32.Load()) }
 func (r *HCINT) Store(b HCINT_Bits)              { r.U32.Store(uint32(b)) }
+
+func (r *HCINT) AtomicSetBits(mask HCINT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HCINT) AtomicClearBits(mask HCINT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type HCINT_Mask struct{ mmio.UM32 }
 
@@ -218,6 +227,9 @@ func (r *HCINTMSK) ClearBits(mask HCINTMSK_Bits)    { r.U32.ClearBits(uint32(mas
 func (r *HCINTMSK) Load() HCINTMSK_Bits             { return HCINTMSK_Bits(r.U32.Load()) }
 func (r *HCINTMSK) Store(b HCINTMSK_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *HCINTMSK) AtomicSetBits(mask HCINTMSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HCINTMSK) AtomicClearBits(mask HCINTMSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type HCINTMSK_Mask struct{ mmio.UM32 }
 
 func (rm HCINTMSK_Mask) Load() HCINTMSK_Bits   { return HCINTMSK_Bits(rm.UM32.Load()) }
@@ -285,6 +297,9 @@ func (r *HCTSIZ) ClearBits(mask HCTSIZ_Bits)        { r.U32.ClearBits(uint32(mas
 func (r *HCTSIZ) Load() HCTSIZ_Bits                 { return HCTSIZ_Bits(r.U32.Load()) }
 func (r *HCTSIZ) Store(b HCTSIZ_Bits)               { r.U32.Store(uint32(b)) }
 
+func (r *HCTSIZ) AtomicSetBits(mask HCTSIZ_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HCTSIZ) AtomicClearBits(mask HCTSIZ_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type HCTSIZ_Mask struct{ mmio.UM32 }
 
 func (rm HCTSIZ_Mask) Load() HCTSIZ_Bits   { return HCTSIZ_Bits(rm.UM32.Load()) }
@@ -323,6 +338,9 @@ func (r *HCDMA) SetBits(mask HCDMA_Bits)         { r.U32.SetBits(uint32(mask)) }
 func (r *HCDMA) ClearBits(mask HCDMA_Bits)       { r.U32.ClearBits(uint32(mask)) }
 func (r *HCDMA) Load() HCDMA_Bits                { return HCDMA_Bits(r.U32.Load()) }
 func (r *HCDMA) Store(b HCDMA_Bits)              { r.U32.Store(uint32(b)) }
+
+func (r *HCDMA) AtomicSetBits(mask HCDMA_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HCDMA) AtomicClearBits(mask HCDMA_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type HCDMA_Mask struct{ mmio.UM32 }
 

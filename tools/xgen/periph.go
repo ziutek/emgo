@@ -150,12 +150,16 @@ func (mask {{$bits}}) J(v int) {{$bits}} {
 
 type {{$r}} struct { {{$mu}} }
 
-func (r *{{$r}}) Bits(mask {{$bits}}) {{$bits}} {return {{$bits}}({{$ru}}.Bits({{$uint}}(mask))) }
-func (r *{{$r}}) StoreBits(mask, b {{$bits}})   { {{$ru}}.StoreBits({{$uint}}(mask), {{$uint}}(b)) }
-func (r *{{$r}}) SetBits(mask {{$bits}})        { {{$ru}}.SetBits({{$uint}}(mask)) }
-func (r *{{$r}}) ClearBits(mask {{$bits}})      { {{$ru}}.ClearBits({{$uint}}(mask)) }
-func (r *{{$r}}) Load() {{$bits}}               { return {{$bits}}({{$ru}}.Load()) }
-func (r *{{$r}}) Store(b {{$bits}})             { {{$ru}}.Store({{$uint}}(b)) }
+func (r *{{$r}}) Bits(mask {{$bits}}) {{$bits}}  {return {{$bits}}({{$ru}}.Bits({{$uint}}(mask))) }
+func (r *{{$r}}) StoreBits(mask, b {{$bits}})    { {{$ru}}.StoreBits({{$uint}}(mask), {{$uint}}(b)) }
+func (r *{{$r}}) SetBits(mask {{$bits}})         { {{$ru}}.SetBits({{$uint}}(mask)) }
+func (r *{{$r}}) ClearBits(mask {{$bits}})       { {{$ru}}.ClearBits({{$uint}}(mask)) }
+func (r *{{$r}}) Load() {{$bits}}                { return {{$bits}}({{$ru}}.Load()) }
+func (r *{{$r}}) Store(b {{$bits}})              { {{$ru}}.Store({{$uint}}(b)) }
+{{if eq $u "U32"}}
+func (r *{{$r}}) AtomicSetBits(mask {{$bits}})   { {{$ru}}.AtomicSetBits({{$uint}}(mask)) }
+func (r *{{$r}}) AtomicClearBits(mask {{$bits}}) { {{$ru}}.AtomicClearBits({{$uint}}(mask)) }
+{{end}}
 
 type {{$rm}} struct { {{$mum}} }
 

@@ -39,6 +39,9 @@ func (r *TIR) ClearBits(mask TIR_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *TIR) Load() TIR_Bits              { return TIR_Bits(r.U32.Load()) }
 func (r *TIR) Store(b TIR_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *TIR) AtomicSetBits(mask TIR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *TIR) AtomicClearBits(mask TIR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type TIR_Mask struct{ mmio.UM32 }
 
 func (rm TIR_Mask) Load() TIR_Bits   { return TIR_Bits(rm.UM32.Load()) }
@@ -61,6 +64,9 @@ func (r *TDTR) SetBits(mask TDTR_Bits)        { r.U32.SetBits(uint32(mask)) }
 func (r *TDTR) ClearBits(mask TDTR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *TDTR) Load() TDTR_Bits               { return TDTR_Bits(r.U32.Load()) }
 func (r *TDTR) Store(b TDTR_Bits)             { r.U32.Store(uint32(b)) }
+
+func (r *TDTR) AtomicSetBits(mask TDTR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *TDTR) AtomicClearBits(mask TDTR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type TDTR_Mask struct{ mmio.UM32 }
 
@@ -85,6 +91,9 @@ func (r *TDLR) ClearBits(mask TDLR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *TDLR) Load() TDLR_Bits               { return TDLR_Bits(r.U32.Load()) }
 func (r *TDLR) Store(b TDLR_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *TDLR) AtomicSetBits(mask TDLR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *TDLR) AtomicClearBits(mask TDLR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type TDLR_Mask struct{ mmio.UM32 }
 
 func (rm TDLR_Mask) Load() TDLR_Bits   { return TDLR_Bits(rm.UM32.Load()) }
@@ -107,6 +116,9 @@ func (r *TDHR) SetBits(mask TDHR_Bits)        { r.U32.SetBits(uint32(mask)) }
 func (r *TDHR) ClearBits(mask TDHR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *TDHR) Load() TDHR_Bits               { return TDHR_Bits(r.U32.Load()) }
 func (r *TDHR) Store(b TDHR_Bits)             { r.U32.Store(uint32(b)) }
+
+func (r *TDHR) AtomicSetBits(mask TDHR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *TDHR) AtomicClearBits(mask TDHR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type TDHR_Mask struct{ mmio.UM32 }
 

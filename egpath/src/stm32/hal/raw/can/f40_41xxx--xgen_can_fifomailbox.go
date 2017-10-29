@@ -41,6 +41,9 @@ func (r *RIR) ClearBits(mask RIR_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *RIR) Load() RIR_Bits              { return RIR_Bits(r.U32.Load()) }
 func (r *RIR) Store(b RIR_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *RIR) AtomicSetBits(mask RIR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RIR) AtomicClearBits(mask RIR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type RIR_Mask struct{ mmio.UM32 }
 
 func (rm RIR_Mask) Load() RIR_Bits   { return RIR_Bits(rm.UM32.Load()) }
@@ -63,6 +66,9 @@ func (r *RDTR) SetBits(mask RDTR_Bits)        { r.U32.SetBits(uint32(mask)) }
 func (r *RDTR) ClearBits(mask RDTR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *RDTR) Load() RDTR_Bits               { return RDTR_Bits(r.U32.Load()) }
 func (r *RDTR) Store(b RDTR_Bits)             { r.U32.Store(uint32(b)) }
+
+func (r *RDTR) AtomicSetBits(mask RDTR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDTR) AtomicClearBits(mask RDTR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type RDTR_Mask struct{ mmio.UM32 }
 
@@ -87,6 +93,9 @@ func (r *RDLR) ClearBits(mask RDLR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *RDLR) Load() RDLR_Bits               { return RDLR_Bits(r.U32.Load()) }
 func (r *RDLR) Store(b RDLR_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *RDLR) AtomicSetBits(mask RDLR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDLR) AtomicClearBits(mask RDLR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type RDLR_Mask struct{ mmio.UM32 }
 
 func (rm RDLR_Mask) Load() RDLR_Bits   { return RDLR_Bits(rm.UM32.Load()) }
@@ -109,6 +118,9 @@ func (r *RDHR) SetBits(mask RDHR_Bits)        { r.U32.SetBits(uint32(mask)) }
 func (r *RDHR) ClearBits(mask RDHR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *RDHR) Load() RDHR_Bits               { return RDHR_Bits(r.U32.Load()) }
 func (r *RDHR) Store(b RDHR_Bits)             { r.U32.Store(uint32(b)) }
+
+func (r *RDHR) AtomicSetBits(mask RDHR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDHR) AtomicClearBits(mask RDHR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type RDHR_Mask struct{ mmio.UM32 }
 

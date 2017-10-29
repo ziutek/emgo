@@ -42,6 +42,9 @@ func (r *DIEPCTL) ClearBits(mask DIEPCTL_Bits)         { r.U32.ClearBits(uint32(
 func (r *DIEPCTL) Load() DIEPCTL_Bits                  { return DIEPCTL_Bits(r.U32.Load()) }
 func (r *DIEPCTL) Store(b DIEPCTL_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *DIEPCTL) AtomicSetBits(mask DIEPCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DIEPCTL) AtomicClearBits(mask DIEPCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DIEPCTL_Mask struct{ mmio.UM32 }
 
 func (rm DIEPCTL_Mask) Load() DIEPCTL_Bits   { return DIEPCTL_Bits(rm.UM32.Load()) }
@@ -117,6 +120,9 @@ func (r *DIEPINT) ClearBits(mask DIEPINT_Bits)         { r.U32.ClearBits(uint32(
 func (r *DIEPINT) Load() DIEPINT_Bits                  { return DIEPINT_Bits(r.U32.Load()) }
 func (r *DIEPINT) Store(b DIEPINT_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *DIEPINT) AtomicSetBits(mask DIEPINT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DIEPINT) AtomicClearBits(mask DIEPINT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DIEPINT_Mask struct{ mmio.UM32 }
 
 func (rm DIEPINT_Mask) Load() DIEPINT_Bits   { return DIEPINT_Bits(rm.UM32.Load()) }
@@ -186,6 +192,9 @@ func (r *DIEPTSIZ) ClearBits(mask DIEPTSIZ_Bits)    { r.U32.ClearBits(uint32(mas
 func (r *DIEPTSIZ) Load() DIEPTSIZ_Bits             { return DIEPTSIZ_Bits(r.U32.Load()) }
 func (r *DIEPTSIZ) Store(b DIEPTSIZ_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *DIEPTSIZ) AtomicSetBits(mask DIEPTSIZ_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DIEPTSIZ) AtomicClearBits(mask DIEPTSIZ_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DIEPTSIZ_Mask struct{ mmio.UM32 }
 
 func (rm DIEPTSIZ_Mask) Load() DIEPTSIZ_Bits   { return DIEPTSIZ_Bits(rm.UM32.Load()) }
@@ -221,6 +230,9 @@ func (r *DIEPDMA) ClearBits(mask DIEPDMA_Bits)         { r.U32.ClearBits(uint32(
 func (r *DIEPDMA) Load() DIEPDMA_Bits                  { return DIEPDMA_Bits(r.U32.Load()) }
 func (r *DIEPDMA) Store(b DIEPDMA_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *DIEPDMA) AtomicSetBits(mask DIEPDMA_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DIEPDMA) AtomicClearBits(mask DIEPDMA_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DIEPDMA_Mask struct{ mmio.UM32 }
 
 func (rm DIEPDMA_Mask) Load() DIEPDMA_Bits   { return DIEPDMA_Bits(rm.UM32.Load()) }
@@ -247,6 +259,9 @@ func (r *DTXFSTS) SetBits(mask DTXFSTS_Bits)           { r.U32.SetBits(uint32(ma
 func (r *DTXFSTS) ClearBits(mask DTXFSTS_Bits)         { r.U32.ClearBits(uint32(mask)) }
 func (r *DTXFSTS) Load() DTXFSTS_Bits                  { return DTXFSTS_Bits(r.U32.Load()) }
 func (r *DTXFSTS) Store(b DTXFSTS_Bits)                { r.U32.Store(uint32(b)) }
+
+func (r *DTXFSTS) AtomicSetBits(mask DTXFSTS_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DTXFSTS) AtomicClearBits(mask DTXFSTS_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type DTXFSTS_Mask struct{ mmio.UM32 }
 

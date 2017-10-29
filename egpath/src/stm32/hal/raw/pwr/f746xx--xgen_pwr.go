@@ -44,6 +44,9 @@ func (r *CR1) ClearBits(mask CR1_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *CR1) Load() CR1_Bits              { return CR1_Bits(r.U32.Load()) }
 func (r *CR1) Store(b CR1_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *CR1) AtomicSetBits(mask CR1_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CR1) AtomicClearBits(mask CR1_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type CR1_Mask struct{ mmio.UM32 }
 
 func (rm CR1_Mask) Load() CR1_Bits   { return CR1_Bits(rm.UM32.Load()) }
@@ -123,6 +126,9 @@ func (r *CSR1) ClearBits(mask CSR1_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *CSR1) Load() CSR1_Bits               { return CSR1_Bits(r.U32.Load()) }
 func (r *CSR1) Store(b CSR1_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *CSR1) AtomicSetBits(mask CSR1_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CSR1) AtomicClearBits(mask CSR1_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type CSR1_Mask struct{ mmio.UM32 }
 
 func (rm CSR1_Mask) Load() CSR1_Bits   { return CSR1_Bits(rm.UM32.Load()) }
@@ -185,6 +191,9 @@ func (r *CR2) SetBits(mask CR2_Bits)       { r.U32.SetBits(uint32(mask)) }
 func (r *CR2) ClearBits(mask CR2_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *CR2) Load() CR2_Bits              { return CR2_Bits(r.U32.Load()) }
 func (r *CR2) Store(b CR2_Bits)            { r.U32.Store(uint32(b)) }
+
+func (r *CR2) AtomicSetBits(mask CR2_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CR2) AtomicClearBits(mask CR2_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type CR2_Mask struct{ mmio.UM32 }
 
@@ -256,6 +265,9 @@ func (r *CSR2) SetBits(mask CSR2_Bits)        { r.U32.SetBits(uint32(mask)) }
 func (r *CSR2) ClearBits(mask CSR2_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *CSR2) Load() CSR2_Bits               { return CSR2_Bits(r.U32.Load()) }
 func (r *CSR2) Store(b CSR2_Bits)             { r.U32.Store(uint32(b)) }
+
+func (r *CSR2) AtomicSetBits(mask CSR2_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CSR2) AtomicClearBits(mask CSR2_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type CSR2_Mask struct{ mmio.UM32 }
 

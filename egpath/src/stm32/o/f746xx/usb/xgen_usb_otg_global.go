@@ -60,6 +60,9 @@ func (r *GOTGCTL) ClearBits(mask GOTGCTL_Bits)         { r.U32.ClearBits(uint32(
 func (r *GOTGCTL) Load() GOTGCTL_Bits                  { return GOTGCTL_Bits(r.U32.Load()) }
 func (r *GOTGCTL) Store(b GOTGCTL_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *GOTGCTL) AtomicSetBits(mask GOTGCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GOTGCTL) AtomicClearBits(mask GOTGCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type GOTGCTL_Mask struct{ mmio.UM32 }
 
 func (rm GOTGCTL_Mask) Load() GOTGCTL_Bits   { return GOTGCTL_Bits(rm.UM32.Load()) }
@@ -155,6 +158,9 @@ func (r *GOTGINT) ClearBits(mask GOTGINT_Bits)         { r.U32.ClearBits(uint32(
 func (r *GOTGINT) Load() GOTGINT_Bits                  { return GOTGINT_Bits(r.U32.Load()) }
 func (r *GOTGINT) Store(b GOTGINT_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *GOTGINT) AtomicSetBits(mask GOTGINT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GOTGINT) AtomicClearBits(mask GOTGINT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type GOTGINT_Mask struct{ mmio.UM32 }
 
 func (rm GOTGINT_Mask) Load() GOTGINT_Bits   { return GOTGINT_Bits(rm.UM32.Load()) }
@@ -206,6 +212,9 @@ func (r *GAHBCFG) ClearBits(mask GAHBCFG_Bits)         { r.U32.ClearBits(uint32(
 func (r *GAHBCFG) Load() GAHBCFG_Bits                  { return GAHBCFG_Bits(r.U32.Load()) }
 func (r *GAHBCFG) Store(b GAHBCFG_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *GAHBCFG) AtomicSetBits(mask GAHBCFG_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GAHBCFG) AtomicClearBits(mask GAHBCFG_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type GAHBCFG_Mask struct{ mmio.UM32 }
 
 func (rm GAHBCFG_Mask) Load() GAHBCFG_Bits   { return GAHBCFG_Bits(rm.UM32.Load()) }
@@ -248,6 +257,9 @@ func (r *GUSBCFG) SetBits(mask GUSBCFG_Bits)           { r.U32.SetBits(uint32(ma
 func (r *GUSBCFG) ClearBits(mask GUSBCFG_Bits)         { r.U32.ClearBits(uint32(mask)) }
 func (r *GUSBCFG) Load() GUSBCFG_Bits                  { return GUSBCFG_Bits(r.U32.Load()) }
 func (r *GUSBCFG) Store(b GUSBCFG_Bits)                { r.U32.Store(uint32(b)) }
+
+func (r *GUSBCFG) AtomicSetBits(mask GUSBCFG_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GUSBCFG) AtomicClearBits(mask GUSBCFG_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type GUSBCFG_Mask struct{ mmio.UM32 }
 
@@ -344,6 +356,9 @@ func (r *GRSTCTL) ClearBits(mask GRSTCTL_Bits)         { r.U32.ClearBits(uint32(
 func (r *GRSTCTL) Load() GRSTCTL_Bits                  { return GRSTCTL_Bits(r.U32.Load()) }
 func (r *GRSTCTL) Store(b GRSTCTL_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *GRSTCTL) AtomicSetBits(mask GRSTCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GRSTCTL) AtomicClearBits(mask GRSTCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type GRSTCTL_Mask struct{ mmio.UM32 }
 
 func (rm GRSTCTL_Mask) Load() GRSTCTL_Bits   { return GRSTCTL_Bits(rm.UM32.Load()) }
@@ -398,6 +413,9 @@ func (r *GINTSTS) SetBits(mask GINTSTS_Bits)           { r.U32.SetBits(uint32(ma
 func (r *GINTSTS) ClearBits(mask GINTSTS_Bits)         { r.U32.ClearBits(uint32(mask)) }
 func (r *GINTSTS) Load() GINTSTS_Bits                  { return GINTSTS_Bits(r.U32.Load()) }
 func (r *GINTSTS) Store(b GINTSTS_Bits)                { r.U32.Store(uint32(b)) }
+
+func (r *GINTSTS) AtomicSetBits(mask GINTSTS_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GINTSTS) AtomicClearBits(mask GINTSTS_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type GINTSTS_Mask struct{ mmio.UM32 }
 
@@ -534,6 +552,9 @@ func (r *GINTMSK) ClearBits(mask GINTMSK_Bits)         { r.U32.ClearBits(uint32(
 func (r *GINTMSK) Load() GINTMSK_Bits                  { return GINTMSK_Bits(r.U32.Load()) }
 func (r *GINTMSK) Store(b GINTMSK_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *GINTMSK) AtomicSetBits(mask GINTMSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GINTMSK) AtomicClearBits(mask GINTMSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type GINTMSK_Mask struct{ mmio.UM32 }
 
 func (rm GINTMSK_Mask) Load() GINTMSK_Bits   { return GINTMSK_Bits(rm.UM32.Load()) }
@@ -669,6 +690,9 @@ func (r *GRXSTSR) ClearBits(mask GRXSTSR_Bits)         { r.U32.ClearBits(uint32(
 func (r *GRXSTSR) Load() GRXSTSR_Bits                  { return GRXSTSR_Bits(r.U32.Load()) }
 func (r *GRXSTSR) Store(b GRXSTSR_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *GRXSTSR) AtomicSetBits(mask GRXSTSR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GRXSTSR) AtomicClearBits(mask GRXSTSR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type GRXSTSR_Mask struct{ mmio.UM32 }
 
 func (rm GRXSTSR_Mask) Load() GRXSTSR_Bits   { return GRXSTSR_Bits(rm.UM32.Load()) }
@@ -691,6 +715,9 @@ func (r *GRXSTSP) SetBits(mask GRXSTSP_Bits)           { r.U32.SetBits(uint32(ma
 func (r *GRXSTSP) ClearBits(mask GRXSTSP_Bits)         { r.U32.ClearBits(uint32(mask)) }
 func (r *GRXSTSP) Load() GRXSTSP_Bits                  { return GRXSTSP_Bits(r.U32.Load()) }
 func (r *GRXSTSP) Store(b GRXSTSP_Bits)                { r.U32.Store(uint32(b)) }
+
+func (r *GRXSTSP) AtomicSetBits(mask GRXSTSP_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GRXSTSP) AtomicClearBits(mask GRXSTSP_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type GRXSTSP_Mask struct{ mmio.UM32 }
 
@@ -731,6 +758,9 @@ func (r *GRXFSIZ) ClearBits(mask GRXFSIZ_Bits)         { r.U32.ClearBits(uint32(
 func (r *GRXFSIZ) Load() GRXFSIZ_Bits                  { return GRXFSIZ_Bits(r.U32.Load()) }
 func (r *GRXFSIZ) Store(b GRXFSIZ_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *GRXFSIZ) AtomicSetBits(mask GRXFSIZ_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GRXFSIZ) AtomicClearBits(mask GRXFSIZ_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type GRXFSIZ_Mask struct{ mmio.UM32 }
 
 func (rm GRXFSIZ_Mask) Load() GRXFSIZ_Bits   { return GRXFSIZ_Bits(rm.UM32.Load()) }
@@ -764,6 +794,13 @@ func (r *DIEPTXF0_HNPTXFSIZ) Load() DIEPTXF0_HNPTXFSIZ_Bits {
 }
 func (r *DIEPTXF0_HNPTXFSIZ) Store(b DIEPTXF0_HNPTXFSIZ_Bits) { r.U32.Store(uint32(b)) }
 
+func (r *DIEPTXF0_HNPTXFSIZ) AtomicSetBits(mask DIEPTXF0_HNPTXFSIZ_Bits) {
+	r.U32.AtomicSetBits(uint32(mask))
+}
+func (r *DIEPTXF0_HNPTXFSIZ) AtomicClearBits(mask DIEPTXF0_HNPTXFSIZ_Bits) {
+	r.U32.AtomicClearBits(uint32(mask))
+}
+
 type DIEPTXF0_HNPTXFSIZ_Mask struct{ mmio.UM32 }
 
 func (rm DIEPTXF0_HNPTXFSIZ_Mask) Load() DIEPTXF0_HNPTXFSIZ_Bits {
@@ -791,6 +828,9 @@ func (r *HNPTXSTS) ClearBits(mask HNPTXSTS_Bits)    { r.U32.ClearBits(uint32(mas
 func (r *HNPTXSTS) Load() HNPTXSTS_Bits             { return HNPTXSTS_Bits(r.U32.Load()) }
 func (r *HNPTXSTS) Store(b HNPTXSTS_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *HNPTXSTS) AtomicSetBits(mask HNPTXSTS_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HNPTXSTS) AtomicClearBits(mask HNPTXSTS_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type HNPTXSTS_Mask struct{ mmio.UM32 }
 
 func (rm HNPTXSTS_Mask) Load() HNPTXSTS_Bits   { return HNPTXSTS_Bits(rm.UM32.Load()) }
@@ -813,6 +853,9 @@ func (r *GCCFG) SetBits(mask GCCFG_Bits)         { r.U32.SetBits(uint32(mask)) }
 func (r *GCCFG) ClearBits(mask GCCFG_Bits)       { r.U32.ClearBits(uint32(mask)) }
 func (r *GCCFG) Load() GCCFG_Bits                { return GCCFG_Bits(r.U32.Load()) }
 func (r *GCCFG) Store(b GCCFG_Bits)              { r.U32.Store(uint32(b)) }
+
+func (r *GCCFG) AtomicSetBits(mask GCCFG_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GCCFG) AtomicClearBits(mask GCCFG_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type GCCFG_Mask struct{ mmio.UM32 }
 
@@ -845,6 +888,9 @@ func (r *CID) ClearBits(mask CID_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *CID) Load() CID_Bits              { return CID_Bits(r.U32.Load()) }
 func (r *CID) Store(b CID_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *CID) AtomicSetBits(mask CID_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CID) AtomicClearBits(mask CID_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type CID_Mask struct{ mmio.UM32 }
 
 func (rm CID_Mask) Load() CID_Bits   { return CID_Bits(rm.UM32.Load()) }
@@ -872,6 +918,9 @@ func (r *GHWCFG3) ClearBits(mask GHWCFG3_Bits)         { r.U32.ClearBits(uint32(
 func (r *GHWCFG3) Load() GHWCFG3_Bits                  { return GHWCFG3_Bits(r.U32.Load()) }
 func (r *GHWCFG3) Store(b GHWCFG3_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *GHWCFG3) AtomicSetBits(mask GHWCFG3_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GHWCFG3) AtomicClearBits(mask GHWCFG3_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type GHWCFG3_Mask struct{ mmio.UM32 }
 
 func (rm GHWCFG3_Mask) Load() GHWCFG3_Bits   { return GHWCFG3_Bits(rm.UM32.Load()) }
@@ -894,6 +943,9 @@ func (r *GLPMCFG) SetBits(mask GLPMCFG_Bits)           { r.U32.SetBits(uint32(ma
 func (r *GLPMCFG) ClearBits(mask GLPMCFG_Bits)         { r.U32.ClearBits(uint32(mask)) }
 func (r *GLPMCFG) Load() GLPMCFG_Bits                  { return GLPMCFG_Bits(r.U32.Load()) }
 func (r *GLPMCFG) Store(b GLPMCFG_Bits)                { r.U32.Store(uint32(b)) }
+
+func (r *GLPMCFG) AtomicSetBits(mask GLPMCFG_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GLPMCFG) AtomicClearBits(mask GLPMCFG_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type GLPMCFG_Mask struct{ mmio.UM32 }
 
@@ -978,6 +1030,9 @@ func (r *GPWRDN) ClearBits(mask GPWRDN_Bits)        { r.U32.ClearBits(uint32(mas
 func (r *GPWRDN) Load() GPWRDN_Bits                 { return GPWRDN_Bits(r.U32.Load()) }
 func (r *GPWRDN) Store(b GPWRDN_Bits)               { r.U32.Store(uint32(b)) }
 
+func (r *GPWRDN) AtomicSetBits(mask GPWRDN_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GPWRDN) AtomicClearBits(mask GPWRDN_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type GPWRDN_Mask struct{ mmio.UM32 }
 
 func (rm GPWRDN_Mask) Load() GPWRDN_Bits   { return GPWRDN_Bits(rm.UM32.Load()) }
@@ -1011,6 +1066,9 @@ func (r *GDFIFOCFG) ClearBits(mask GDFIFOCFG_Bits)    { r.U32.ClearBits(uint32(m
 func (r *GDFIFOCFG) Load() GDFIFOCFG_Bits             { return GDFIFOCFG_Bits(r.U32.Load()) }
 func (r *GDFIFOCFG) Store(b GDFIFOCFG_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *GDFIFOCFG) AtomicSetBits(mask GDFIFOCFG_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GDFIFOCFG) AtomicClearBits(mask GDFIFOCFG_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type GDFIFOCFG_Mask struct{ mmio.UM32 }
 
 func (rm GDFIFOCFG_Mask) Load() GDFIFOCFG_Bits   { return GDFIFOCFG_Bits(rm.UM32.Load()) }
@@ -1033,6 +1091,9 @@ func (r *GADPCTL) SetBits(mask GADPCTL_Bits)           { r.U32.SetBits(uint32(ma
 func (r *GADPCTL) ClearBits(mask GADPCTL_Bits)         { r.U32.ClearBits(uint32(mask)) }
 func (r *GADPCTL) Load() GADPCTL_Bits                  { return GADPCTL_Bits(r.U32.Load()) }
 func (r *GADPCTL) Store(b GADPCTL_Bits)                { r.U32.Store(uint32(b)) }
+
+func (r *GADPCTL) AtomicSetBits(mask GADPCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GADPCTL) AtomicClearBits(mask GADPCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type GADPCTL_Mask struct{ mmio.UM32 }
 
@@ -1058,6 +1119,9 @@ func (r *HPTXFSIZ) SetBits(mask HPTXFSIZ_Bits)      { r.U32.SetBits(uint32(mask)
 func (r *HPTXFSIZ) ClearBits(mask HPTXFSIZ_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *HPTXFSIZ) Load() HPTXFSIZ_Bits             { return HPTXFSIZ_Bits(r.U32.Load()) }
 func (r *HPTXFSIZ) Store(b HPTXFSIZ_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *HPTXFSIZ) AtomicSetBits(mask HPTXFSIZ_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HPTXFSIZ) AtomicClearBits(mask HPTXFSIZ_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type HPTXFSIZ_Mask struct{ mmio.UM32 }
 
@@ -1089,6 +1153,9 @@ func (r *DIEPTXF) SetBits(mask DIEPTXF_Bits)           { r.U32.SetBits(uint32(ma
 func (r *DIEPTXF) ClearBits(mask DIEPTXF_Bits)         { r.U32.ClearBits(uint32(mask)) }
 func (r *DIEPTXF) Load() DIEPTXF_Bits                  { return DIEPTXF_Bits(r.U32.Load()) }
 func (r *DIEPTXF) Store(b DIEPTXF_Bits)                { r.U32.Store(uint32(b)) }
+
+func (r *DIEPTXF) AtomicSetBits(mask DIEPTXF_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DIEPTXF) AtomicClearBits(mask DIEPTXF_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type DIEPTXF_Mask struct{ mmio.UM32 }
 

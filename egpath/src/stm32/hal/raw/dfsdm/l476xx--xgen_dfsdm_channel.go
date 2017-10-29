@@ -66,6 +66,9 @@ func (r *CHCFGR1) ClearBits(mask CHCFGR1_Bits)         { r.U32.ClearBits(uint32(
 func (r *CHCFGR1) Load() CHCFGR1_Bits                  { return CHCFGR1_Bits(r.U32.Load()) }
 func (r *CHCFGR1) Store(b CHCFGR1_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *CHCFGR1) AtomicSetBits(mask CHCFGR1_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CHCFGR1) AtomicClearBits(mask CHCFGR1_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type CHCFGR1_Mask struct{ mmio.UM32 }
 
 func (rm CHCFGR1_Mask) Load() CHCFGR1_Bits   { return CHCFGR1_Bits(rm.UM32.Load()) }
@@ -133,6 +136,9 @@ func (r *CHCFGR2) ClearBits(mask CHCFGR2_Bits)         { r.U32.ClearBits(uint32(
 func (r *CHCFGR2) Load() CHCFGR2_Bits                  { return CHCFGR2_Bits(r.U32.Load()) }
 func (r *CHCFGR2) Store(b CHCFGR2_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *CHCFGR2) AtomicSetBits(mask CHCFGR2_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CHCFGR2) AtomicClearBits(mask CHCFGR2_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type CHCFGR2_Mask struct{ mmio.UM32 }
 
 func (rm CHCFGR2_Mask) Load() CHCFGR2_Bits   { return CHCFGR2_Bits(rm.UM32.Load()) }
@@ -165,6 +171,9 @@ func (r *CHAWSCDR) SetBits(mask CHAWSCDR_Bits)      { r.U32.SetBits(uint32(mask)
 func (r *CHAWSCDR) ClearBits(mask CHAWSCDR_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *CHAWSCDR) Load() CHAWSCDR_Bits             { return CHAWSCDR_Bits(r.U32.Load()) }
 func (r *CHAWSCDR) Store(b CHAWSCDR_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *CHAWSCDR) AtomicSetBits(mask CHAWSCDR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CHAWSCDR) AtomicClearBits(mask CHAWSCDR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type CHAWSCDR_Mask struct{ mmio.UM32 }
 
@@ -207,6 +216,9 @@ func (r *CHWDATAR) ClearBits(mask CHWDATAR_Bits)    { r.U32.ClearBits(uint32(mas
 func (r *CHWDATAR) Load() CHWDATAR_Bits             { return CHWDATAR_Bits(r.U32.Load()) }
 func (r *CHWDATAR) Store(b CHWDATAR_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *CHWDATAR) AtomicSetBits(mask CHWDATAR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CHWDATAR) AtomicClearBits(mask CHWDATAR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type CHWDATAR_Mask struct{ mmio.UM32 }
 
 func (rm CHWDATAR_Mask) Load() CHWDATAR_Bits   { return CHWDATAR_Bits(rm.UM32.Load()) }
@@ -231,6 +243,9 @@ func (r *CHDATINR) SetBits(mask CHDATINR_Bits)      { r.U32.SetBits(uint32(mask)
 func (r *CHDATINR) ClearBits(mask CHDATINR_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *CHDATINR) Load() CHDATINR_Bits             { return CHDATINR_Bits(r.U32.Load()) }
 func (r *CHDATINR) Store(b CHDATINR_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *CHDATINR) AtomicSetBits(mask CHDATINR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CHDATINR) AtomicClearBits(mask CHDATINR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type CHDATINR_Mask struct{ mmio.UM32 }
 

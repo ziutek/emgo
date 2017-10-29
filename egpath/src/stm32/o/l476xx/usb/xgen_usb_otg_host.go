@@ -42,6 +42,9 @@ func (r *HCFG) ClearBits(mask HCFG_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *HCFG) Load() HCFG_Bits               { return HCFG_Bits(r.U32.Load()) }
 func (r *HCFG) Store(b HCFG_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *HCFG) AtomicSetBits(mask HCFG_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HCFG) AtomicClearBits(mask HCFG_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type HCFG_Mask struct{ mmio.UM32 }
 
 func (rm HCFG_Mask) Load() HCFG_Bits   { return HCFG_Bits(rm.UM32.Load()) }
@@ -73,6 +76,9 @@ func (r *HFIR) ClearBits(mask HFIR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *HFIR) Load() HFIR_Bits               { return HFIR_Bits(r.U32.Load()) }
 func (r *HFIR) Store(b HFIR_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *HFIR) AtomicSetBits(mask HFIR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HFIR) AtomicClearBits(mask HFIR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type HFIR_Mask struct{ mmio.UM32 }
 
 func (rm HFIR_Mask) Load() HFIR_Bits   { return HFIR_Bits(rm.UM32.Load()) }
@@ -99,6 +105,9 @@ func (r *HFNUM) SetBits(mask HFNUM_Bits)         { r.U32.SetBits(uint32(mask)) }
 func (r *HFNUM) ClearBits(mask HFNUM_Bits)       { r.U32.ClearBits(uint32(mask)) }
 func (r *HFNUM) Load() HFNUM_Bits                { return HFNUM_Bits(r.U32.Load()) }
 func (r *HFNUM) Store(b HFNUM_Bits)              { r.U32.Store(uint32(b)) }
+
+func (r *HFNUM) AtomicSetBits(mask HFNUM_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HFNUM) AtomicClearBits(mask HFNUM_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type HFNUM_Mask struct{ mmio.UM32 }
 
@@ -130,6 +139,9 @@ func (r *HPTXSTS) SetBits(mask HPTXSTS_Bits)           { r.U32.SetBits(uint32(ma
 func (r *HPTXSTS) ClearBits(mask HPTXSTS_Bits)         { r.U32.ClearBits(uint32(mask)) }
 func (r *HPTXSTS) Load() HPTXSTS_Bits                  { return HPTXSTS_Bits(r.U32.Load()) }
 func (r *HPTXSTS) Store(b HPTXSTS_Bits)                { r.U32.Store(uint32(b)) }
+
+func (r *HPTXSTS) AtomicSetBits(mask HPTXSTS_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HPTXSTS) AtomicClearBits(mask HPTXSTS_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type HPTXSTS_Mask struct{ mmio.UM32 }
 
@@ -166,6 +178,9 @@ func (r *HAINT) ClearBits(mask HAINT_Bits)       { r.U32.ClearBits(uint32(mask))
 func (r *HAINT) Load() HAINT_Bits                { return HAINT_Bits(r.U32.Load()) }
 func (r *HAINT) Store(b HAINT_Bits)              { r.U32.Store(uint32(b)) }
 
+func (r *HAINT) AtomicSetBits(mask HAINT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HAINT) AtomicClearBits(mask HAINT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type HAINT_Mask struct{ mmio.UM32 }
 
 func (rm HAINT_Mask) Load() HAINT_Bits   { return HAINT_Bits(rm.UM32.Load()) }
@@ -190,6 +205,9 @@ func (r *HAINTMSK) SetBits(mask HAINTMSK_Bits)      { r.U32.SetBits(uint32(mask)
 func (r *HAINTMSK) ClearBits(mask HAINTMSK_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *HAINTMSK) Load() HAINTMSK_Bits             { return HAINTMSK_Bits(r.U32.Load()) }
 func (r *HAINTMSK) Store(b HAINTMSK_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *HAINTMSK) AtomicSetBits(mask HAINTMSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HAINTMSK) AtomicClearBits(mask HAINTMSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type HAINTMSK_Mask struct{ mmio.UM32 }
 

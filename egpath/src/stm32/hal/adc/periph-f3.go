@@ -111,18 +111,18 @@ func (p *Periph) common() *adc.ADC_Common_Periph {
 func (p *Periph) enableClock(_ bool) {
 	switch p.common() {
 	case adc.ADC1_2:
-		rcc.RCC.ADC12EN().Set()
+		rcc.RCC.ADC12EN().AtomicSet()
 	case adc.ADC3_4:
-		rcc.RCC.ADC34EN().Set()
+		rcc.RCC.ADC34EN().AtomicSet()
 	}
 }
 
 func (p *Periph) disableClock() {
 	switch p.common() {
 	case adc.ADC1_2:
-		rcc.RCC.ADC12EN().Clear()
+		rcc.RCC.ADC12EN().AtomicClear()
 	case adc.ADC3_4:
-		rcc.RCC.ADC34EN().Clear()
+		rcc.RCC.ADC34EN().AtomicClear()
 	}
 }
 

@@ -93,8 +93,8 @@ func enreg() *rcc.AHB1ENR   { return &rcc.RCC.AHB1ENR }
 func rstreg() *rcc.AHB1RSTR { return &rcc.RCC.AHB1RSTR }
 
 func lpenaclk(pnum uint) {
-	rcc.RCC.AHB1LPENR.U32.AtomicSetBits(uint32(rcc.GPIOALPEN << pnum))
+	rcc.RCC.AHB1LPENR.AtomicSetBits(rcc.GPIOALPEN << pnum)
 }
 func lpdisclk(pnum uint) {
-	rcc.RCC.AHB1LPENR.U32.AtomicClearBits(uint32(rcc.GPIOALPEN << pnum))
+	rcc.RCC.AHB1LPENR.AtomicClearBits(rcc.GPIOALPEN << pnum)
 }

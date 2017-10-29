@@ -63,6 +63,9 @@ func (r *CRL) ClearBits(mask CRL_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *CRL) Load() CRL_Bits              { return CRL_Bits(r.U32.Load()) }
 func (r *CRL) Store(b CRL_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *CRL) AtomicSetBits(mask CRL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CRL) AtomicClearBits(mask CRL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type CRL_Mask struct{ mmio.UM32 }
 
 func (rm CRL_Mask) Load() CRL_Bits   { return CRL_Bits(rm.UM32.Load()) }
@@ -94,6 +97,9 @@ func (r *CRH) ClearBits(mask CRH_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *CRH) Load() CRH_Bits              { return CRH_Bits(r.U32.Load()) }
 func (r *CRH) Store(b CRH_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *CRH) AtomicSetBits(mask CRH_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CRH) AtomicClearBits(mask CRH_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type CRH_Mask struct{ mmio.UM32 }
 
 func (rm CRH_Mask) Load() CRH_Bits   { return CRH_Bits(rm.UM32.Load()) }
@@ -124,6 +130,9 @@ func (r *IDR) SetBits(mask IDR_Bits)       { r.U32.SetBits(uint32(mask)) }
 func (r *IDR) ClearBits(mask IDR_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *IDR) Load() IDR_Bits              { return IDR_Bits(r.U32.Load()) }
 func (r *IDR) Store(b IDR_Bits)            { r.U32.Store(uint32(b)) }
+
+func (r *IDR) AtomicSetBits(mask IDR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *IDR) AtomicClearBits(mask IDR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type IDR_Mask struct{ mmio.UM32 }
 
@@ -212,6 +221,9 @@ func (r *ODR) ClearBits(mask ODR_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *ODR) Load() ODR_Bits              { return ODR_Bits(r.U32.Load()) }
 func (r *ODR) Store(b ODR_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *ODR) AtomicSetBits(mask ODR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *ODR) AtomicClearBits(mask ODR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type ODR_Mask struct{ mmio.UM32 }
 
 func (rm ODR_Mask) Load() ODR_Bits   { return ODR_Bits(rm.UM32.Load()) }
@@ -298,6 +310,9 @@ func (r *BSRR) SetBits(mask BSRR_Bits)        { r.U32.SetBits(uint32(mask)) }
 func (r *BSRR) ClearBits(mask BSRR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *BSRR) Load() BSRR_Bits               { return BSRR_Bits(r.U32.Load()) }
 func (r *BSRR) Store(b BSRR_Bits)             { r.U32.Store(uint32(b)) }
+
+func (r *BSRR) AtomicSetBits(mask BSRR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *BSRR) AtomicClearBits(mask BSRR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type BSRR_Mask struct{ mmio.UM32 }
 
@@ -450,6 +465,9 @@ func (r *BRR) ClearBits(mask BRR_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *BRR) Load() BRR_Bits              { return BRR_Bits(r.U32.Load()) }
 func (r *BRR) Store(b BRR_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *BRR) AtomicSetBits(mask BRR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *BRR) AtomicClearBits(mask BRR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type BRR_Mask struct{ mmio.UM32 }
 
 func (rm BRR_Mask) Load() BRR_Bits   { return BRR_Bits(rm.UM32.Load()) }
@@ -536,6 +554,9 @@ func (r *LCKR) SetBits(mask LCKR_Bits)        { r.U32.SetBits(uint32(mask)) }
 func (r *LCKR) ClearBits(mask LCKR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *LCKR) Load() LCKR_Bits               { return LCKR_Bits(r.U32.Load()) }
 func (r *LCKR) Store(b LCKR_Bits)             { r.U32.Store(uint32(b)) }
+
+func (r *LCKR) AtomicSetBits(mask LCKR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *LCKR) AtomicClearBits(mask LCKR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type LCKR_Mask struct{ mmio.UM32 }
 

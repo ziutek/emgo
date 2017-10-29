@@ -47,6 +47,9 @@ func (r *MCR) ClearBits(mask MCR_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *MCR) Load() MCR_Bits              { return MCR_Bits(r.U32.Load()) }
 func (r *MCR) Store(b MCR_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *MCR) AtomicSetBits(mask MCR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MCR) AtomicClearBits(mask MCR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type MCR_Mask struct{ mmio.UM32 }
 
 func (rm MCR_Mask) Load() MCR_Bits   { return MCR_Bits(rm.UM32.Load()) }
@@ -146,6 +149,9 @@ func (r *MISR) ClearBits(mask MISR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *MISR) Load() MISR_Bits               { return MISR_Bits(r.U32.Load()) }
 func (r *MISR) Store(b MISR_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *MISR) AtomicSetBits(mask MISR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MISR) AtomicClearBits(mask MISR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type MISR_Mask struct{ mmio.UM32 }
 
 func (rm MISR_Mask) Load() MISR_Bits   { return MISR_Bits(rm.UM32.Load()) }
@@ -197,6 +203,9 @@ func (r *MICR) ClearBits(mask MICR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *MICR) Load() MICR_Bits               { return MICR_Bits(r.U32.Load()) }
 func (r *MICR) Store(b MICR_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *MICR) AtomicSetBits(mask MICR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MICR) AtomicClearBits(mask MICR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type MICR_Mask struct{ mmio.UM32 }
 
 func (rm MICR_Mask) Load() MICR_Bits   { return MICR_Bits(rm.UM32.Load()) }
@@ -247,6 +256,9 @@ func (r *MDIER) SetBits(mask MDIER_Bits)         { r.U32.SetBits(uint32(mask)) }
 func (r *MDIER) ClearBits(mask MDIER_Bits)       { r.U32.ClearBits(uint32(mask)) }
 func (r *MDIER) Load() MDIER_Bits                { return MDIER_Bits(r.U32.Load()) }
 func (r *MDIER) Store(b MDIER_Bits)              { r.U32.Store(uint32(b)) }
+
+func (r *MDIER) AtomicSetBits(mask MDIER_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MDIER) AtomicClearBits(mask MDIER_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type MDIER_Mask struct{ mmio.UM32 }
 
@@ -327,6 +339,9 @@ func (r *MCNTR) ClearBits(mask MCNTR_Bits)       { r.U32.ClearBits(uint32(mask))
 func (r *MCNTR) Load() MCNTR_Bits                { return MCNTR_Bits(r.U32.Load()) }
 func (r *MCNTR) Store(b MCNTR_Bits)              { r.U32.Store(uint32(b)) }
 
+func (r *MCNTR) AtomicSetBits(mask MCNTR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MCNTR) AtomicClearBits(mask MCNTR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type MCNTR_Mask struct{ mmio.UM32 }
 
 func (rm MCNTR_Mask) Load() MCNTR_Bits   { return MCNTR_Bits(rm.UM32.Load()) }
@@ -349,6 +364,9 @@ func (r *MPER) SetBits(mask MPER_Bits)        { r.U32.SetBits(uint32(mask)) }
 func (r *MPER) ClearBits(mask MPER_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *MPER) Load() MPER_Bits               { return MPER_Bits(r.U32.Load()) }
 func (r *MPER) Store(b MPER_Bits)             { r.U32.Store(uint32(b)) }
+
+func (r *MPER) AtomicSetBits(mask MPER_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MPER) AtomicClearBits(mask MPER_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type MPER_Mask struct{ mmio.UM32 }
 
@@ -373,6 +391,9 @@ func (r *MREP) ClearBits(mask MREP_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *MREP) Load() MREP_Bits               { return MREP_Bits(r.U32.Load()) }
 func (r *MREP) Store(b MREP_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *MREP) AtomicSetBits(mask MREP_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MREP) AtomicClearBits(mask MREP_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type MREP_Mask struct{ mmio.UM32 }
 
 func (rm MREP_Mask) Load() MREP_Bits   { return MREP_Bits(rm.UM32.Load()) }
@@ -395,6 +416,9 @@ func (r *MCMP1R) SetBits(mask MCMP1R_Bits)          { r.U32.SetBits(uint32(mask)
 func (r *MCMP1R) ClearBits(mask MCMP1R_Bits)        { r.U32.ClearBits(uint32(mask)) }
 func (r *MCMP1R) Load() MCMP1R_Bits                 { return MCMP1R_Bits(r.U32.Load()) }
 func (r *MCMP1R) Store(b MCMP1R_Bits)               { r.U32.Store(uint32(b)) }
+
+func (r *MCMP1R) AtomicSetBits(mask MCMP1R_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MCMP1R) AtomicClearBits(mask MCMP1R_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type MCMP1R_Mask struct{ mmio.UM32 }
 
@@ -423,6 +447,9 @@ func (r *MCMP2R) ClearBits(mask MCMP2R_Bits)        { r.U32.ClearBits(uint32(mas
 func (r *MCMP2R) Load() MCMP2R_Bits                 { return MCMP2R_Bits(r.U32.Load()) }
 func (r *MCMP2R) Store(b MCMP2R_Bits)               { r.U32.Store(uint32(b)) }
 
+func (r *MCMP2R) AtomicSetBits(mask MCMP2R_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MCMP2R) AtomicClearBits(mask MCMP2R_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type MCMP2R_Mask struct{ mmio.UM32 }
 
 func (rm MCMP2R_Mask) Load() MCMP2R_Bits   { return MCMP2R_Bits(rm.UM32.Load()) }
@@ -446,6 +473,9 @@ func (r *MCMP3R) ClearBits(mask MCMP3R_Bits)        { r.U32.ClearBits(uint32(mas
 func (r *MCMP3R) Load() MCMP3R_Bits                 { return MCMP3R_Bits(r.U32.Load()) }
 func (r *MCMP3R) Store(b MCMP3R_Bits)               { r.U32.Store(uint32(b)) }
 
+func (r *MCMP3R) AtomicSetBits(mask MCMP3R_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MCMP3R) AtomicClearBits(mask MCMP3R_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type MCMP3R_Mask struct{ mmio.UM32 }
 
 func (rm MCMP3R_Mask) Load() MCMP3R_Bits   { return MCMP3R_Bits(rm.UM32.Load()) }
@@ -468,6 +498,9 @@ func (r *MCMP4R) SetBits(mask MCMP4R_Bits)          { r.U32.SetBits(uint32(mask)
 func (r *MCMP4R) ClearBits(mask MCMP4R_Bits)        { r.U32.ClearBits(uint32(mask)) }
 func (r *MCMP4R) Load() MCMP4R_Bits                 { return MCMP4R_Bits(r.U32.Load()) }
 func (r *MCMP4R) Store(b MCMP4R_Bits)               { r.U32.Store(uint32(b)) }
+
+func (r *MCMP4R) AtomicSetBits(mask MCMP4R_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MCMP4R) AtomicClearBits(mask MCMP4R_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type MCMP4R_Mask struct{ mmio.UM32 }
 

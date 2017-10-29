@@ -41,6 +41,9 @@ func (r *MEMRMP) ClearBits(mask MEMRMP_Bits)        { r.U32.ClearBits(uint32(mas
 func (r *MEMRMP) Load() MEMRMP_Bits                 { return MEMRMP_Bits(r.U32.Load()) }
 func (r *MEMRMP) Store(b MEMRMP_Bits)               { r.U32.Store(uint32(b)) }
 
+func (r *MEMRMP) AtomicSetBits(mask MEMRMP_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MEMRMP) AtomicClearBits(mask MEMRMP_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type MEMRMP_Mask struct{ mmio.UM32 }
 
 func (rm MEMRMP_Mask) Load() MEMRMP_Bits   { return MEMRMP_Bits(rm.UM32.Load()) }
@@ -72,6 +75,9 @@ func (r *PMC) ClearBits(mask PMC_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *PMC) Load() PMC_Bits              { return PMC_Bits(r.U32.Load()) }
 func (r *PMC) Store(b PMC_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *PMC) AtomicSetBits(mask PMC_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *PMC) AtomicClearBits(mask PMC_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type PMC_Mask struct{ mmio.UM32 }
 
 func (rm PMC_Mask) Load() PMC_Bits   { return PMC_Bits(rm.UM32.Load()) }
@@ -98,6 +104,9 @@ func (r *EXTICR) SetBits(mask EXTICR_Bits)          { r.U32.SetBits(uint32(mask)
 func (r *EXTICR) ClearBits(mask EXTICR_Bits)        { r.U32.ClearBits(uint32(mask)) }
 func (r *EXTICR) Load() EXTICR_Bits                 { return EXTICR_Bits(r.U32.Load()) }
 func (r *EXTICR) Store(b EXTICR_Bits)               { r.U32.Store(uint32(b)) }
+
+func (r *EXTICR) AtomicSetBits(mask EXTICR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *EXTICR) AtomicClearBits(mask EXTICR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type EXTICR_Mask struct{ mmio.UM32 }
 

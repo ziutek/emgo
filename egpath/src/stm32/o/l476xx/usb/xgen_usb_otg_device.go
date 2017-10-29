@@ -54,6 +54,9 @@ func (r *DCFG) ClearBits(mask DCFG_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *DCFG) Load() DCFG_Bits               { return DCFG_Bits(r.U32.Load()) }
 func (r *DCFG) Store(b DCFG_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *DCFG) AtomicSetBits(mask DCFG_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DCFG) AtomicClearBits(mask DCFG_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DCFG_Mask struct{ mmio.UM32 }
 
 func (rm DCFG_Mask) Load() DCFG_Bits   { return DCFG_Bits(rm.UM32.Load()) }
@@ -96,6 +99,9 @@ func (r *DCTL) SetBits(mask DCTL_Bits)        { r.U32.SetBits(uint32(mask)) }
 func (r *DCTL) ClearBits(mask DCTL_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *DCTL) Load() DCTL_Bits               { return DCTL_Bits(r.U32.Load()) }
 func (r *DCTL) Store(b DCTL_Bits)             { r.U32.Store(uint32(b)) }
+
+func (r *DCTL) AtomicSetBits(mask DCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DCTL) AtomicClearBits(mask DCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type DCTL_Mask struct{ mmio.UM32 }
 
@@ -160,6 +166,9 @@ func (r *DSTS) ClearBits(mask DSTS_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *DSTS) Load() DSTS_Bits               { return DSTS_Bits(r.U32.Load()) }
 func (r *DSTS) Store(b DSTS_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *DSTS) AtomicSetBits(mask DSTS_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DSTS) AtomicClearBits(mask DSTS_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DSTS_Mask struct{ mmio.UM32 }
 
 func (rm DSTS_Mask) Load() DSTS_Bits   { return DSTS_Bits(rm.UM32.Load()) }
@@ -198,6 +207,9 @@ func (r *DIEPMSK) SetBits(mask DIEPMSK_Bits)           { r.U32.SetBits(uint32(ma
 func (r *DIEPMSK) ClearBits(mask DIEPMSK_Bits)         { r.U32.ClearBits(uint32(mask)) }
 func (r *DIEPMSK) Load() DIEPMSK_Bits                  { return DIEPMSK_Bits(r.U32.Load()) }
 func (r *DIEPMSK) Store(b DIEPMSK_Bits)                { r.U32.Store(uint32(b)) }
+
+func (r *DIEPMSK) AtomicSetBits(mask DIEPMSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DIEPMSK) AtomicClearBits(mask DIEPMSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type DIEPMSK_Mask struct{ mmio.UM32 }
 
@@ -254,6 +266,9 @@ func (r *DOEPMSK) ClearBits(mask DOEPMSK_Bits)         { r.U32.ClearBits(uint32(
 func (r *DOEPMSK) Load() DOEPMSK_Bits                  { return DOEPMSK_Bits(r.U32.Load()) }
 func (r *DOEPMSK) Store(b DOEPMSK_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *DOEPMSK) AtomicSetBits(mask DOEPMSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DOEPMSK) AtomicClearBits(mask DOEPMSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DOEPMSK_Mask struct{ mmio.UM32 }
 
 func (rm DOEPMSK_Mask) Load() DOEPMSK_Bits   { return DOEPMSK_Bits(rm.UM32.Load()) }
@@ -305,6 +320,9 @@ func (r *DAINT) ClearBits(mask DAINT_Bits)       { r.U32.ClearBits(uint32(mask))
 func (r *DAINT) Load() DAINT_Bits                { return DAINT_Bits(r.U32.Load()) }
 func (r *DAINT) Store(b DAINT_Bits)              { r.U32.Store(uint32(b)) }
 
+func (r *DAINT) AtomicSetBits(mask DAINT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DAINT) AtomicClearBits(mask DAINT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DAINT_Mask struct{ mmio.UM32 }
 
 func (rm DAINT_Mask) Load() DAINT_Bits   { return DAINT_Bits(rm.UM32.Load()) }
@@ -337,6 +355,9 @@ func (r *DAINTMSK) SetBits(mask DAINTMSK_Bits)      { r.U32.SetBits(uint32(mask)
 func (r *DAINTMSK) ClearBits(mask DAINTMSK_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *DAINTMSK) Load() DAINTMSK_Bits             { return DAINTMSK_Bits(r.U32.Load()) }
 func (r *DAINTMSK) Store(b DAINTMSK_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *DAINTMSK) AtomicSetBits(mask DAINTMSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DAINTMSK) AtomicClearBits(mask DAINTMSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type DAINTMSK_Mask struct{ mmio.UM32 }
 
@@ -371,6 +392,9 @@ func (r *DVBUSDIS) ClearBits(mask DVBUSDIS_Bits)    { r.U32.ClearBits(uint32(mas
 func (r *DVBUSDIS) Load() DVBUSDIS_Bits             { return DVBUSDIS_Bits(r.U32.Load()) }
 func (r *DVBUSDIS) Store(b DVBUSDIS_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *DVBUSDIS) AtomicSetBits(mask DVBUSDIS_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DVBUSDIS) AtomicClearBits(mask DVBUSDIS_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DVBUSDIS_Mask struct{ mmio.UM32 }
 
 func (rm DVBUSDIS_Mask) Load() DVBUSDIS_Bits   { return DVBUSDIS_Bits(rm.UM32.Load()) }
@@ -400,6 +424,9 @@ func (r *DVBUSPULSE) ClearBits(mask DVBUSPULSE_Bits)    { r.U32.ClearBits(uint32
 func (r *DVBUSPULSE) Load() DVBUSPULSE_Bits             { return DVBUSPULSE_Bits(r.U32.Load()) }
 func (r *DVBUSPULSE) Store(b DVBUSPULSE_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *DVBUSPULSE) AtomicSetBits(mask DVBUSPULSE_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DVBUSPULSE) AtomicClearBits(mask DVBUSPULSE_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DVBUSPULSE_Mask struct{ mmio.UM32 }
 
 func (rm DVBUSPULSE_Mask) Load() DVBUSPULSE_Bits   { return DVBUSPULSE_Bits(rm.UM32.Load()) }
@@ -426,6 +453,9 @@ func (r *DTHRCTL) SetBits(mask DTHRCTL_Bits)           { r.U32.SetBits(uint32(ma
 func (r *DTHRCTL) ClearBits(mask DTHRCTL_Bits)         { r.U32.ClearBits(uint32(mask)) }
 func (r *DTHRCTL) Load() DTHRCTL_Bits                  { return DTHRCTL_Bits(r.U32.Load()) }
 func (r *DTHRCTL) Store(b DTHRCTL_Bits)                { r.U32.Store(uint32(b)) }
+
+func (r *DTHRCTL) AtomicSetBits(mask DTHRCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DTHRCTL) AtomicClearBits(mask DTHRCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type DTHRCTL_Mask struct{ mmio.UM32 }
 
@@ -476,6 +506,9 @@ func (r *DIEPEMPMSK) ClearBits(mask DIEPEMPMSK_Bits)    { r.U32.ClearBits(uint32
 func (r *DIEPEMPMSK) Load() DIEPEMPMSK_Bits             { return DIEPEMPMSK_Bits(r.U32.Load()) }
 func (r *DIEPEMPMSK) Store(b DIEPEMPMSK_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *DIEPEMPMSK) AtomicSetBits(mask DIEPEMPMSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DIEPEMPMSK) AtomicClearBits(mask DIEPEMPMSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DIEPEMPMSK_Mask struct{ mmio.UM32 }
 
 func (rm DIEPEMPMSK_Mask) Load() DIEPEMPMSK_Bits   { return DIEPEMPMSK_Bits(rm.UM32.Load()) }
@@ -504,6 +537,9 @@ func (r *DEACHINT) SetBits(mask DEACHINT_Bits)      { r.U32.SetBits(uint32(mask)
 func (r *DEACHINT) ClearBits(mask DEACHINT_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *DEACHINT) Load() DEACHINT_Bits             { return DEACHINT_Bits(r.U32.Load()) }
 func (r *DEACHINT) Store(b DEACHINT_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *DEACHINT) AtomicSetBits(mask DEACHINT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DEACHINT) AtomicClearBits(mask DEACHINT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type DEACHINT_Mask struct{ mmio.UM32 }
 
@@ -538,6 +574,9 @@ func (r *DEACHMSK) ClearBits(mask DEACHMSK_Bits)    { r.U32.ClearBits(uint32(mas
 func (r *DEACHMSK) Load() DEACHMSK_Bits             { return DEACHMSK_Bits(r.U32.Load()) }
 func (r *DEACHMSK) Store(b DEACHMSK_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *DEACHMSK) AtomicSetBits(mask DEACHMSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DEACHMSK) AtomicClearBits(mask DEACHMSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DEACHMSK_Mask struct{ mmio.UM32 }
 
 func (rm DEACHMSK_Mask) Load() DEACHMSK_Bits   { return DEACHMSK_Bits(rm.UM32.Load()) }
@@ -563,6 +602,9 @@ func (r *DINEP1MSK) ClearBits(mask DINEP1MSK_Bits)    { r.U32.ClearBits(uint32(m
 func (r *DINEP1MSK) Load() DINEP1MSK_Bits             { return DINEP1MSK_Bits(r.U32.Load()) }
 func (r *DINEP1MSK) Store(b DINEP1MSK_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *DINEP1MSK) AtomicSetBits(mask DINEP1MSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DINEP1MSK) AtomicClearBits(mask DINEP1MSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DINEP1MSK_Mask struct{ mmio.UM32 }
 
 func (rm DINEP1MSK_Mask) Load() DINEP1MSK_Bits   { return DINEP1MSK_Bits(rm.UM32.Load()) }
@@ -587,6 +629,9 @@ func (r *DOUTEP1MSK) SetBits(mask DOUTEP1MSK_Bits)      { r.U32.SetBits(uint32(m
 func (r *DOUTEP1MSK) ClearBits(mask DOUTEP1MSK_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *DOUTEP1MSK) Load() DOUTEP1MSK_Bits             { return DOUTEP1MSK_Bits(r.U32.Load()) }
 func (r *DOUTEP1MSK) Store(b DOUTEP1MSK_Bits)           { r.U32.Store(uint32(b)) }
+
+func (r *DOUTEP1MSK) AtomicSetBits(mask DOUTEP1MSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DOUTEP1MSK) AtomicClearBits(mask DOUTEP1MSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type DOUTEP1MSK_Mask struct{ mmio.UM32 }
 

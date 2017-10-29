@@ -43,6 +43,9 @@ func (r *CSR) ClearBits(mask CSR_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *CSR) Load() CSR_Bits              { return CSR_Bits(r.U32.Load()) }
 func (r *CSR) Store(b CSR_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *CSR) AtomicSetBits(mask CSR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CSR) AtomicClearBits(mask CSR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type CSR_Mask struct{ mmio.UM32 }
 
 func (rm CSR_Mask) Load() CSR_Bits   { return CSR_Bits(rm.UM32.Load()) }
@@ -194,6 +197,9 @@ func (r *OTR) ClearBits(mask OTR_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *OTR) Load() OTR_Bits              { return OTR_Bits(r.U32.Load()) }
 func (r *OTR) Store(b OTR_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *OTR) AtomicSetBits(mask OTR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *OTR) AtomicClearBits(mask OTR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type OTR_Mask struct{ mmio.UM32 }
 
 func (rm OTR_Mask) Load() OTR_Bits   { return OTR_Bits(rm.UM32.Load()) }
@@ -232,6 +238,9 @@ func (r *LPOTR) SetBits(mask LPOTR_Bits)         { r.U32.SetBits(uint32(mask)) }
 func (r *LPOTR) ClearBits(mask LPOTR_Bits)       { r.U32.ClearBits(uint32(mask)) }
 func (r *LPOTR) Load() LPOTR_Bits                { return LPOTR_Bits(r.U32.Load()) }
 func (r *LPOTR) Store(b LPOTR_Bits)              { r.U32.Store(uint32(b)) }
+
+func (r *LPOTR) AtomicSetBits(mask LPOTR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *LPOTR) AtomicClearBits(mask LPOTR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type LPOTR_Mask struct{ mmio.UM32 }
 

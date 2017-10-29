@@ -41,6 +41,9 @@ func (r *BWTR) ClearBits(mask BWTR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *BWTR) Load() BWTR_Bits               { return BWTR_Bits(r.U32.Load()) }
 func (r *BWTR) Store(b BWTR_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *BWTR) AtomicSetBits(mask BWTR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *BWTR) AtomicClearBits(mask BWTR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type BWTR_Mask struct{ mmio.UM32 }
 
 func (rm BWTR_Mask) Load() BWTR_Bits   { return BWTR_Bits(rm.UM32.Load()) }

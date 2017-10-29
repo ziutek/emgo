@@ -37,6 +37,9 @@ func (r *FR1) ClearBits(mask FR1_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *FR1) Load() FR1_Bits              { return FR1_Bits(r.U32.Load()) }
 func (r *FR1) Store(b FR1_Bits)            { r.U32.Store(uint32(b)) }
 
+func (r *FR1) AtomicSetBits(mask FR1_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *FR1) AtomicClearBits(mask FR1_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type FR1_Mask struct{ mmio.UM32 }
 
 func (rm FR1_Mask) Load() FR1_Bits   { return FR1_Bits(rm.UM32.Load()) }
@@ -59,6 +62,9 @@ func (r *FR2) SetBits(mask FR2_Bits)       { r.U32.SetBits(uint32(mask)) }
 func (r *FR2) ClearBits(mask FR2_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *FR2) Load() FR2_Bits              { return FR2_Bits(r.U32.Load()) }
 func (r *FR2) Store(b FR2_Bits)            { r.U32.Store(uint32(b)) }
+
+func (r *FR2) AtomicSetBits(mask FR2_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *FR2) AtomicClearBits(mask FR2_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type FR2_Mask struct{ mmio.UM32 }
 

@@ -17,5 +17,12 @@ const (
 func exticr(n int) *mmio.U32 {
 	return (*mmio.U32)(&afio.AFIO.EXTICR[n].U32)
 }
-func exticrEna() { rcc.RCC.AFIOEN().Set(); _ = rcc.RCC.APB2ENR.Load() }
-func exticrDis() { rcc.RCC.AFIOEN().Clear() }
+
+func exticrEna() {
+	rcc.RCC.AFIOEN().AtomicSet()
+	rcc.RCC.APB2ENR.Load()
+}
+
+func exticrDis() {
+	rcc.RCC.AFIOEN().AtomicClear()
+}

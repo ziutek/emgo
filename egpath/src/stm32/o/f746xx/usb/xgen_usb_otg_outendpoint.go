@@ -41,6 +41,9 @@ func (r *DOEPCTL) ClearBits(mask DOEPCTL_Bits)         { r.U32.ClearBits(uint32(
 func (r *DOEPCTL) Load() DOEPCTL_Bits                  { return DOEPCTL_Bits(r.U32.Load()) }
 func (r *DOEPCTL) Store(b DOEPCTL_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *DOEPCTL) AtomicSetBits(mask DOEPCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DOEPCTL) AtomicClearBits(mask DOEPCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DOEPCTL_Mask struct{ mmio.UM32 }
 
 func (rm DOEPCTL_Mask) Load() DOEPCTL_Bits   { return DOEPCTL_Bits(rm.UM32.Load()) }
@@ -112,6 +115,9 @@ func (r *DOEPINT) ClearBits(mask DOEPINT_Bits)         { r.U32.ClearBits(uint32(
 func (r *DOEPINT) Load() DOEPINT_Bits                  { return DOEPINT_Bits(r.U32.Load()) }
 func (r *DOEPINT) Store(b DOEPINT_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *DOEPINT) AtomicSetBits(mask DOEPINT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DOEPINT) AtomicClearBits(mask DOEPINT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DOEPINT_Mask struct{ mmio.UM32 }
 
 func (rm DOEPINT_Mask) Load() DOEPINT_Bits   { return DOEPINT_Bits(rm.UM32.Load()) }
@@ -165,6 +171,9 @@ func (r *DOEPTSIZ) ClearBits(mask DOEPTSIZ_Bits)    { r.U32.ClearBits(uint32(mas
 func (r *DOEPTSIZ) Load() DOEPTSIZ_Bits             { return DOEPTSIZ_Bits(r.U32.Load()) }
 func (r *DOEPTSIZ) Store(b DOEPTSIZ_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *DOEPTSIZ) AtomicSetBits(mask DOEPTSIZ_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DOEPTSIZ) AtomicClearBits(mask DOEPTSIZ_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type DOEPTSIZ_Mask struct{ mmio.UM32 }
 
 func (rm DOEPTSIZ_Mask) Load() DOEPTSIZ_Bits   { return DOEPTSIZ_Bits(rm.UM32.Load()) }
@@ -199,6 +208,9 @@ func (r *DOEPDMA) SetBits(mask DOEPDMA_Bits)           { r.U32.SetBits(uint32(ma
 func (r *DOEPDMA) ClearBits(mask DOEPDMA_Bits)         { r.U32.ClearBits(uint32(mask)) }
 func (r *DOEPDMA) Load() DOEPDMA_Bits                  { return DOEPDMA_Bits(r.U32.Load()) }
 func (r *DOEPDMA) Store(b DOEPDMA_Bits)                { r.U32.Store(uint32(b)) }
+
+func (r *DOEPDMA) AtomicSetBits(mask DOEPDMA_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *DOEPDMA) AtomicClearBits(mask DOEPDMA_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type DOEPDMA_Mask struct{ mmio.UM32 }
 

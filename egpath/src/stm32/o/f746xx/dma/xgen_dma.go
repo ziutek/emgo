@@ -45,6 +45,9 @@ func (r *LISR) ClearBits(mask LISR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *LISR) Load() LISR_Bits               { return LISR_Bits(r.U32.Load()) }
 func (r *LISR) Store(b LISR_Bits)             { r.U32.Store(uint32(b)) }
 
+func (r *LISR) AtomicSetBits(mask LISR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *LISR) AtomicClearBits(mask LISR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type LISR_Mask struct{ mmio.UM32 }
 
 func (rm LISR_Mask) Load() LISR_Bits   { return LISR_Bits(rm.UM32.Load()) }
@@ -147,6 +150,9 @@ func (r *HISR) SetBits(mask HISR_Bits)        { r.U32.SetBits(uint32(mask)) }
 func (r *HISR) ClearBits(mask HISR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *HISR) Load() HISR_Bits               { return HISR_Bits(r.U32.Load()) }
 func (r *HISR) Store(b HISR_Bits)             { r.U32.Store(uint32(b)) }
+
+func (r *HISR) AtomicSetBits(mask HISR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HISR) AtomicClearBits(mask HISR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type HISR_Mask struct{ mmio.UM32 }
 
@@ -251,6 +257,9 @@ func (r *LIFCR) ClearBits(mask LIFCR_Bits)       { r.U32.ClearBits(uint32(mask))
 func (r *LIFCR) Load() LIFCR_Bits                { return LIFCR_Bits(r.U32.Load()) }
 func (r *LIFCR) Store(b LIFCR_Bits)              { r.U32.Store(uint32(b)) }
 
+func (r *LIFCR) AtomicSetBits(mask LIFCR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *LIFCR) AtomicClearBits(mask LIFCR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+
 type LIFCR_Mask struct{ mmio.UM32 }
 
 func (rm LIFCR_Mask) Load() LIFCR_Bits   { return LIFCR_Bits(rm.UM32.Load()) }
@@ -353,6 +362,9 @@ func (r *HIFCR) SetBits(mask HIFCR_Bits)         { r.U32.SetBits(uint32(mask)) }
 func (r *HIFCR) ClearBits(mask HIFCR_Bits)       { r.U32.ClearBits(uint32(mask)) }
 func (r *HIFCR) Load() HIFCR_Bits                { return HIFCR_Bits(r.U32.Load()) }
 func (r *HIFCR) Store(b HIFCR_Bits)              { r.U32.Store(uint32(b)) }
+
+func (r *HIFCR) AtomicSetBits(mask HIFCR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HIFCR) AtomicClearBits(mask HIFCR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
 type HIFCR_Mask struct{ mmio.UM32 }
 
