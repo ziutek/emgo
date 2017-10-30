@@ -3,9 +3,8 @@
 package noos
 
 import (
-	//"delay"
 	"syscall"
-	"unsafe"
+	"sync/fence"
 
 	"arch/cortexm"
 	"arch/cortexm/scb"
@@ -20,44 +19,14 @@ func clearPendSV() { scb.SCB.ICSR.Store(scb.PENDSVCLR) }
 // context swich if nextTask returns new non-zero value for PSP.
 func pendSVHandler()
 
-//c:volatile
-type port struct {
-	cr   [2]uint32
-	idr  uint16
-	_    uint16
-	odr  uint16
-	_    uint16
-	bsrr uint32
-	brr  uint32
-	lckr uint32
-}
-
-func (p *port) Set(n uint) {
-	p.bsrr = 1 << n
-	//delay.Loop(1e6)
-}
-
-func (p *port) Clear(n uint) {
-	p.bsrr = 1 << (n + 16)
-	//delay.Loop(1e6)
-}
-
-var pb = (*port)(unsafe.Pointer(uintptr(0x40010C00)))
-
-const (
-	led1 = 7
-	led2 = 6
-	led3 = 5
-)
-
 // nextTask returns taskInfo.sp for next task or 0.
 func nextTask(sp uintptr) uintptr {
-	pb.Set(led2)
 	if softStackGuard {
 		checkStackGuard(tasker.curTask)
 	}
+	clearPendSV() // Some ISR could set it again. Can clear before nanosec.
+	fence.RW()
 	now := tasker.nanosec()
-	clearPendSV() // Some ISR could set it again. Clear just before takeEvents.
 	if ev := tasker.takeEvents(now); ev != 0 {
 		tasker.deliverEvents(ev)
 	}
@@ -68,23 +37,21 @@ func nextTask(sp uintptr) uintptr {
 			break
 		}
 		// No task to run.
-		//tasker.setWakeup(tasker.alarm)
+		tasker.setWakeup(tasker.alarm)
 		for {
+			cortexm.WFE()
+			clearPendSV()
+			fence.RW()
 			now = tasker.nanosec()
-			clearPendSV() // Clear PENDSV flag just before takeEvents.
 			if ev := tasker.takeEvents(now); ev != 0 {
 				tasker.deliverEvents(ev)
 				break
 			}
-			pb.Set(led3)
-			cortexm.WFE()
-			pb.Clear(led3)
 		}
 	}
 	if nextTask == tasker.curTask {
 		// Only one task is running.
-		//tasker.setWakeup(tasker.alarm)
-		pb.Clear(led2)
+		tasker.setWakeup(tasker.alarm)
 		return 0
 	}
 	tasker.tasks[tasker.curTask].info.sp = sp
@@ -93,11 +60,10 @@ func nextTask(sp uintptr) uintptr {
 	if wkup > tasker.alarm {
 		wkup = tasker.alarm
 	}
+	tasker.setWakeup(wkup)
 	if useMPU {
 		setMPUStackGuard(nextTask)
 	}
-	//tasker.setWakeup(wkup)
-	pb.Clear(led2)
 	return tasker.tasks[nextTask].info.sp
 }
 
@@ -170,4 +136,37 @@ again:
 	tasker.setWakeup(wkup, false)
 	return tasker.tasks[n].info.sp
 }
+
+// Debuging LEDs on Port103R.
+
+//c:volatile
+type port struct {
+	cr   [2]uint32
+	idr  uint16
+	_    uint16
+	odr  uint16
+	_    uint16
+	bsrr uint32
+	brr  uint32
+	lckr uint32
+}
+
+func (p *port) Set(n uint) {
+	p.bsrr = 1 << n
+	//delay.Loop(1e6)
+}
+
+func (p *port) Clear(n uint) {
+	p.bsrr = 1 << (n + 16)
+	//delay.Loop(1e6)
+}
+
+var pb = (*port)(unsafe.Pointer(uintptr(0x40010C00)))
+
+const (
+	led1 = 7
+	led2 = 6
+	led3 = 5
+)
+
 */

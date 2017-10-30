@@ -23,6 +23,6 @@ func schedNext() {
 	     // Raise PendSV exception.
 		fence.W() // Treat NVIC as external observer of CPU memory write.
 		scb.SCB.ICSR.Store(scb.PENDSVSET)
-		//cortexm.SEV()
+		//cortexm.SEV() // Wake up other CPUs.
 	}
 }
