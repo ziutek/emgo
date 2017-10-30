@@ -25,12 +25,8 @@ type globals struct {
 
 var g globals
 
-func tons(tick int64) int64 {
-	return int64(math.Muldiv(uint64(tick), 1e9, uint64(g.freqHz)))
-}
-
-func totick(ns int64) int64 {
-	return int64(math.Muldiv(uint64(ns), uint64(g.freqHz), 1e9))
+func ticktons(tick int64) int64 {
+	return int64(math.MulDiv(uint64(tick), 1e9, uint64(g.freqHz)))
 }
 
 // Setup setups SysTick to work as sytem timer.
@@ -75,7 +71,7 @@ func Nanosec() int64 {
 		add := g.periodTicks - uint32(systick.SYSTICK.CURRENT().Load())
 		var ok bool
 		if aba, ok = g.counter.CheckABA(aba); ok {
-			return tons(cnt + int64(add))
+			return ticktons(cnt + int64(add))
 		}
 	}
 }
