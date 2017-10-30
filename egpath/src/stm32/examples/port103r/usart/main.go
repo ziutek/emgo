@@ -15,14 +15,13 @@ import (
 )
 
 var (
-	leds     *gpio.Port
 	tts      *usart.Driver
 	dmarxbuf [88]byte
-)
 
-const (
-	LED1 = gpio.Pin7
-	LED2 = gpio.Pin6
+	led1 = gpio.B.Pin(7)
+	led2 = gpio.B.Pin(6)
+	led3 = gpio.B.Pin(5)
+	led4 = gpio.D.Pin(2)
 )
 
 func init() {
@@ -34,19 +33,22 @@ func init() {
 	gpio.A.EnableClock(true)
 	port, tx, rx := gpio.A, gpio.Pin9, gpio.Pin10
 	gpio.B.EnableClock(false)
-	leds = gpio.B
+	gpio.D.EnableClock(false)
 
 	// LEDs
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(LED1|LED2, &cfg)
+	led1.Setup(&cfg)
+	led2.Setup(&cfg)
+	led3.Setup(&cfg)
+	led4.Setup(&cfg)
 
 	// USART
 
 	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
 	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	d := dma.DMA1
-	d.EnableClock(true) // DMA clock must remain enabled in s
+	d.EnableClock(true) // DMA clock must remain enabled in sleep.
 	tts = usart.NewDriver(
 		usart.USART1, d.Channel(5, 0), d.Channel(4, 0), dmarxbuf[:],
 	)
@@ -60,18 +62,28 @@ func init() {
 	rtos.IRQ(irq.DMA1_Channel4).Enable()
 }
 
-func printDate(led gpio.Pins, dly int) {
+func main() {
+	/*
+		tts.WriteString("\r\nAFIO.MAPR: ")
+		strconv.WriteUint32(tts, afio.AFIO.MAPR.U32.Load(), -16, 0)
+		tts.WriteString("\r\n")
+	*/
+
+	if ok, set := rtcst.Status(); ok && !set {
+		rtcst.SetTime(time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC))
+	}
 	for {
-		leds.SetPins(led)
-		delay.Millisec(dly)
-		leds.ClearPins(led)
-		delay.Millisec(dly)
+		led4.Set()
+		delay.Millisec(500)
+		led4.Clear()
+		delay.Millisec(500)
+
 		t := time.Now()
 		y, mo, d := t.Date()
 		h, mi, s := t.Clock()
 		ns := t.Nanosecond()
 
-		// Is there a easy way to print formated date without fmt package? Yes,
+		// Is there an easy way to print formated date without fmt package? Yes,
 		// and by avoiding fmt package the whole program fits into 48 KB SRAM.
 
 		strconv.WriteInt(tts, y, -10, 4)
@@ -89,13 +101,6 @@ func printDate(led gpio.Pins, dly int) {
 		strconv.WriteInt(tts, ns, -10, 9)
 		tts.WriteString("\r\n")
 	}
-}
-
-func main() {
-	if ok, set := rtcst.Status(); ok && !set {
-		rtcst.SetTime(time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC))
-	}
-	printDate(LED2, 500)
 }
 
 func ttsISR() {

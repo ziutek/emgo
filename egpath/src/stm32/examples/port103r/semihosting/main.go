@@ -1,3 +1,5 @@
+// This example shows low-level method of semihosting I/O. The debug/semihosting
+// package provides simple file interface that can be used in real cases.
 package main
 
 import (

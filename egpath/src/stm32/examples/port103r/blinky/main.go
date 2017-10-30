@@ -9,14 +9,6 @@ import (
 	"stm32/hal/system/timer/rtcst"
 )
 
-var leds = gpio.B
-
-const (
-	LED1 = gpio.Pin7
-	LED2 = gpio.Pin6
-	LED3 = gpio.Pin5
-)
-
 var (
 	led1 = gpio.B.Pin(7)
 	led2 = gpio.B.Pin(6)
@@ -28,8 +20,8 @@ func init() {
 	system.SetupPLL(8, 1, 72/8)
 	rtcst.Setup(32768)
 
-	gpio.B.EnableClock(true)
-	gpio.D.EnableClock(true)
+	gpio.B.EnableClock(false)
+	gpio.D.EnableClock(false)
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
 	led1.Setup(&cfg)
@@ -40,23 +32,23 @@ func init() {
 
 func main() {
 	for {
-		led4.Set()
-		delay.Millisec(2000)
 		led4.Clear()
-		delay.Millisec(2000)
+		led1.Set()
+		delay.Millisec(500)
+		led1.Clear()
+		led2.Set()
+		delay.Millisec(500)
+		led2.Clear()
+		led3.Set()
+		delay.Millisec(500)
+		led3.Clear()
+		led4.Set()
+		delay.Millisec(500)
 	}
-}
-
-var isrLED = 1
-
-func rtcstISR() {
-	led1.Store(isrLED)
-	//isrLED ^= 1
-	rtcst.ISR()
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm: rtcstISR,
+	irq.RTCAlarm: rtcst.ISR,
 }

@@ -29,12 +29,15 @@ func init() {
 	leds.Setup(LED1|LED2, &cfg)
 }
 
-func printDate(led gpio.Pins, dly int) {
+func main() {
+	if ok, set := rtcst.Status(); ok && !set {
+		rtcst.SetTime(time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC))
+	}
 	for {
-		leds.SetPins(led)
-		delay.Millisec(dly)
-		leds.ClearPins(led)
-		delay.Millisec(dly)
+		leds.SetPins(LED1)
+		delay.Millisec(500)
+		leds.ClearPins(LED1)
+		delay.Millisec(500)
 		t := time.Now()
 		y, mo, d := t.Date()
 		h, mi, s := t.Clock()
@@ -44,13 +47,6 @@ func printDate(led gpio.Pins, dly int) {
 			y, mo, d, h, mi, s, ns,
 		)
 	}
-}
-
-func main() {
-	if ok, set := rtcst.Status(); ok && !set {
-		rtcst.SetTime(time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC))
-	}
-	printDate(LED2, 500)
 }
 
 //emgo:const
