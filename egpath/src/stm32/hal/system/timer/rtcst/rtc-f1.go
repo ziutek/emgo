@@ -106,6 +106,7 @@ func setup(freqHz uint) {
 	exti.RTCALR.EnableRisiTrig()
 	exti.RTCALR.EnableIRQ()
 	// BUG: EnableEvent must be used to wakeup from deep-sleep (STM32 stop).
+	//exti.RTCALR.EnableEvent()
 	spnum := rtos.IRQPrioStep * rtos.IRQPrioNum
 	rtos.IRQ(irq.RTCAlarm).SetPrio(rtos.IRQPrioLowest + spnum*3/4)
 	rtos.IRQ(irq.RTCAlarm).Enable()

@@ -19,8 +19,10 @@ func schedNext() {
 		for {
 			// This should not happen!
 		}
-	default: // Called from ISR (raise PendSV exception).
+	default: // Called from ISR
+	     // Raise PendSV exception.
 		fence.W() // Treat NVIC as external observer of CPU memory write.
 		scb.SCB.ICSR.Store(scb.PENDSVSET)
+		//cortexm.SEV()
 	}
 }

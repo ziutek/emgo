@@ -1,3 +1,9 @@
+// Package exti provides an interface to the External Interrupt/event
+// controller.
+//
+// Because EXTI manages different interrupt sources, related to different
+// peripherals, all functions in this package, except Connect, works atomically,
+// to allow concurrent use by multiple device drivers.
 package exti
 
 import (
@@ -40,7 +46,8 @@ func LineIndex(id int) Lines {
 // 0..15 are connected to GPIO port A.
 //
 // Connect enables AFIO/SYSCFG clock before configuration and disables it before
-// return.
+// return. It can not be called concurently with any other function (including 
+// itself) that enables/disables AFIO/SYSCFG.
 func (lines Lines) Connect(port *gpio.Port) {
 	if lines >= L15<<1 {
 		panic("exti: can not connect lines to GPIO port")
@@ -77,12 +84,12 @@ func RisiTrigEnabled() Lines {
 
 // EnableRisiTrig enables rising edge detection for lines.
 func (lines Lines) EnableRisiTrig() {
-	exti.EXTI.RTSR.U32.SetBits(uint32(lines))
+	exti.EXTI.RTSR.U32.AtomicSetBits(uint32(lines))
 }
 
 // DisableRisiTrig disables rising edge detection for lines.
 func (lines Lines) DisableRisiTrig() {
-	exti.EXTI.RTSR.U32.ClearBits(uint32(lines))
+	exti.EXTI.RTSR.U32.AtomicClearBits(uint32(lines))
 }
 
 // FallTrigEnabled returns lines that have falling edge detection enabled.
@@ -92,12 +99,12 @@ func FallTrigEnabled() Lines {
 
 // EnableFallTrig enables falling edge detection for lines.
 func (lines Lines) EnableFallTrig() {
-	exti.EXTI.FTSR.U32.SetBits(uint32(lines))
+	exti.EXTI.FTSR.U32.AtomicSetBits(uint32(lines))
 }
 
 // DisableFallTrig disables falling edge detection for lines.
 func (lines Lines) DisableFallTrig() {
-	exti.EXTI.FTSR.U32.ClearBits(uint32(lines))
+	exti.EXTI.FTSR.U32.AtomicClearBits(uint32(lines))
 }
 
 // Trig allows to trigger an interrupt/event request by software. Interrupt
@@ -114,12 +121,12 @@ func IRQEnabled() Lines {
 
 // EnableInt enables IRQ generation by lines.
 func (lines Lines) EnableIRQ() {
-	exti.EXTI.IMR.U32.SetBits(uint32(lines))
+	exti.EXTI.IMR.U32.AtomicSetBits(uint32(lines))
 }
 
 // DisableInt disable IRQ generation by lines.
 func (lines Lines) DisableIRQ() {
-	exti.EXTI.IMR.U32.ClearBits(uint32(lines))
+	exti.EXTI.IMR.U32.AtomicClearBits(uint32(lines))
 }
 
 // EventEnabled returns lines that have event generation enabled.
@@ -129,12 +136,12 @@ func EventEnabled() Lines {
 
 // EnableEvent enables event generation by lines.
 func (lines Lines) EnableEvent() {
-	exti.EXTI.EMR.U32.SetBits(uint32(lines))
+	exti.EXTI.EMR.U32.AtomicSetBits(uint32(lines))
 }
 
 // DisableEvent disable event generation by lines.
 func (lines Lines) DisableEvent() {
-	exti.EXTI.EMR.U32.ClearBits(uint32(lines))
+	exti.EXTI.EMR.U32.AtomicClearBits(uint32(lines))
 }
 
 // Pending returns lines that have pending interrupt flag set.

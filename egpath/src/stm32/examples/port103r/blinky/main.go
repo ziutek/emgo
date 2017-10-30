@@ -4,13 +4,12 @@ import (
 	"delay"
 
 	"stm32/hal/gpio"
-	//"stm32/hal/irq"
+	"stm32/hal/irq"
 	"stm32/hal/system"
-	//"stm32/hal/system/timer/rtcst"
-	"stm32/hal/system/timer/systick"
+	"stm32/hal/system/timer/rtcst"
 )
 
-var leds *gpio.Port
+var leds = gpio.B
 
 const (
 	LED1 = gpio.Pin7
@@ -18,41 +17,46 @@ const (
 	LED3 = gpio.Pin5
 )
 
+var (
+	led1 = gpio.B.Pin(7)
+	led2 = gpio.B.Pin(6)
+	led3 = gpio.B.Pin(5)
+	led4 = gpio.D.Pin(2)
+)
+
 func init() {
 	system.SetupPLL(8, 1, 72/8)
-	systick.Setup(2e6)
-	//rtcst.Setup(32768)
+	rtcst.Setup(32768)
 
 	gpio.B.EnableClock(true)
-	leds = gpio.B
+	gpio.D.EnableClock(true)
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.Low}
-	leds.Setup(LED1|LED2|LED3, &cfg)
-}
-
-func blink(led gpio.Pins, dly int) {
-	for {
-		leds.SetPins(led)
-		delay.Millisec(dly)
-		leds.ClearPins(led)
-		delay.Millisec(dly)
-	}
+	led1.Setup(&cfg)
+	led2.Setup(&cfg)
+	led3.Setup(&cfg)
+	led4.Setup(&cfg)
 }
 
 func main() {
-	//go blink(LED1, 500)
-	//blink(LED2, 1000)
-	
 	for {
-		leds.SetPins(LED3)
+		led4.Set()
 		delay.Millisec(2000)
-		leds.ClearPins(LED3)
+		led4.Clear()
 		delay.Millisec(2000)
 	}
+}
+
+var isrLED = 1
+
+func rtcstISR() {
+	led1.Store(isrLED)
+	//isrLED ^= 1
+	rtcst.ISR()
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	//irq.RTCAlarm: rtcst.ISR,
+	irq.RTCAlarm: rtcstISR,
 }
