@@ -103,10 +103,10 @@ func setup(freqHz uint) {
 	// or after configuration (avoid reading bad DIVL).
 	waitForSync(RTC)
 
-	exti.RTCALR.EnableRisiTrig()
-	exti.RTCALR.EnableIRQ()
 	// BUG: EnableEvent must be used to wakeup from deep-sleep (STM32 stop).
-	//exti.RTCALR.EnableEvent()
+	exti.RTCALR.EnableEvent()
+	exti.RTCALR.EnableIRQ()
+	exti.RTCALR.EnableRisiTrig()
 	spnum := rtos.IRQPrioStep * rtos.IRQPrioNum
 	rtos.IRQ(irq.RTCAlarm).SetPrio(rtos.IRQPrioLowest + spnum*3/4)
 	rtos.IRQ(irq.RTCAlarm).Enable()
@@ -116,9 +116,9 @@ func setup(freqHz uint) {
 	// Force RTCISR to initialise or early handle possible overflow.
 	exti.RTCALR.Trigger()
 
-	/*level, _ := rtos.SetPrivLevel(0)
+	/*prev, _ := rtos.SetPrivLevel(0)
 	scb.SCB.SLEEPDEEP().Set()
-	rtos.SetPrivLevel(level)*/
+	rtos.SetPrivLevel(prev)*/
 }
 
 // loadVCNT returns value of virtual counter that counts number of ticks of
@@ -290,9 +290,10 @@ func status() (ok, set bool) {
 }
 
 func ticktons(tick int64) int64 {
-	return int64(math.Muldiv(uint64(tick), 1e9, uint64(g.freqHz)))
+	return int64(math.MulDiv(uint64(tick), 1e9, uint64(g.freqHz)))
 }
 
 func nstotick(ns int64) int64 {
-	return int64(math.Muldiv(uint64(ns), uint64(g.freqHz), 1e9))
+	// MulDivUp to ensure wake at or after (not before) ns.
+	return int64(math.MulDivUp(uint64(ns), uint64(g.freqHz), 1e9))
 }

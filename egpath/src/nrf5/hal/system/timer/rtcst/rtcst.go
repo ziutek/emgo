@@ -100,7 +100,7 @@ func nanosec() int64 {
 }
 
 func nstotick(ns int64) int64 {
-	return int64(math.Muldiv(uint64(ns), uint64(1<<(15-9)), uint64(g.scale)))
+	return int64(math.MulDivUp(uint64(ns), uint64(1<<(15-9)), uint64(g.scale)))
 }
 
 // setWakeup: see syscall.SetSysTimer.
@@ -129,5 +129,4 @@ func setWakeup(ns int64) {
 	// wkup in the past or there is a chance that CC was set to late.
 	g.wakens = 0
 	syscall.SchedNext()
-
 }
