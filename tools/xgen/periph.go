@@ -157,8 +157,9 @@ func (r *{{$r}}) ClearBits(mask {{$bits}})       { {{$ru}}.ClearBits({{$uint}}(m
 func (r *{{$r}}) Load() {{$bits}}                { return {{$bits}}({{$ru}}.Load()) }
 func (r *{{$r}}) Store(b {{$bits}})              { {{$ru}}.Store({{$uint}}(b)) }
 {{if eq $u "U32"}}
-func (r *{{$r}}) AtomicSetBits(mask {{$bits}})   { {{$ru}}.AtomicSetBits({{$uint}}(mask)) }
-func (r *{{$r}}) AtomicClearBits(mask {{$bits}}) { {{$ru}}.AtomicClearBits({{$uint}}(mask)) }
+func (r *{{$r}}) AtomicStoreBits(mask, b {{$bits}}) { {{$ru}}.AtomicStoreBits({{$uint}}(mask), {{$uint}}(b)) }
+func (r *{{$r}}) AtomicSetBits(mask {{$bits}})      { {{$ru}}.AtomicSetBits({{$uint}}(mask)) }
+func (r *{{$r}}) AtomicClearBits(mask {{$bits}})    { {{$ru}}.AtomicClearBits({{$uint}}(mask)) }
 {{end}}
 
 type {{$rm}} struct { {{$mum}} }

@@ -41,8 +41,9 @@ func (r *GCR) ClearBits(mask GCR_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *GCR) Load() GCR_Bits              { return GCR_Bits(r.U32.Load()) }
 func (r *GCR) Store(b GCR_Bits)            { r.U32.Store(uint32(b)) }
 
-func (r *GCR) AtomicSetBits(mask GCR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GCR) AtomicClearBits(mask GCR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *GCR) AtomicStoreBits(mask, b GCR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *GCR) AtomicSetBits(mask GCR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *GCR) AtomicClearBits(mask GCR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type GCR_Mask struct{ mmio.UM32 }
 

@@ -43,6 +43,9 @@ func (r *DOEPCTL) ClearBits(mask DOEPCTL_Bits)         { r.U32.ClearBits(uint32(
 func (r *DOEPCTL) Load() DOEPCTL_Bits                  { return DOEPCTL_Bits(r.U32.Load()) }
 func (r *DOEPCTL) Store(b DOEPCTL_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *DOEPCTL) AtomicStoreBits(mask, b DOEPCTL_Bits) {
+	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
+}
 func (r *DOEPCTL) AtomicSetBits(mask DOEPCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
 func (r *DOEPCTL) AtomicClearBits(mask DOEPCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
@@ -117,6 +120,9 @@ func (r *DOEPINT) ClearBits(mask DOEPINT_Bits)         { r.U32.ClearBits(uint32(
 func (r *DOEPINT) Load() DOEPINT_Bits                  { return DOEPINT_Bits(r.U32.Load()) }
 func (r *DOEPINT) Store(b DOEPINT_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *DOEPINT) AtomicStoreBits(mask, b DOEPINT_Bits) {
+	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
+}
 func (r *DOEPINT) AtomicSetBits(mask DOEPINT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
 func (r *DOEPINT) AtomicClearBits(mask DOEPINT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
@@ -169,6 +175,9 @@ func (r *DOEPTSIZ) ClearBits(mask DOEPTSIZ_Bits)    { r.U32.ClearBits(uint32(mas
 func (r *DOEPTSIZ) Load() DOEPTSIZ_Bits             { return DOEPTSIZ_Bits(r.U32.Load()) }
 func (r *DOEPTSIZ) Store(b DOEPTSIZ_Bits)           { r.U32.Store(uint32(b)) }
 
+func (r *DOEPTSIZ) AtomicStoreBits(mask, b DOEPTSIZ_Bits) {
+	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
+}
 func (r *DOEPTSIZ) AtomicSetBits(mask DOEPTSIZ_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
 func (r *DOEPTSIZ) AtomicClearBits(mask DOEPTSIZ_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 
@@ -207,6 +216,9 @@ func (r *DOEPDMA) ClearBits(mask DOEPDMA_Bits)         { r.U32.ClearBits(uint32(
 func (r *DOEPDMA) Load() DOEPDMA_Bits                  { return DOEPDMA_Bits(r.U32.Load()) }
 func (r *DOEPDMA) Store(b DOEPDMA_Bits)                { r.U32.Store(uint32(b)) }
 
+func (r *DOEPDMA) AtomicStoreBits(mask, b DOEPDMA_Bits) {
+	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
+}
 func (r *DOEPDMA) AtomicSetBits(mask DOEPDMA_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
 func (r *DOEPDMA) AtomicClearBits(mask DOEPDMA_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
 

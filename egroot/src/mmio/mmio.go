@@ -213,6 +213,15 @@ func (r *U32) ClearBits(mask uint32) {
 	r.r &^= mask
 }
 
+func (r *U32) AtomicStoreBits(mask, bits uint32) {
+	for {
+		old := atomic.LoadUint32(&r.r)
+		if atomic.CompareAndSwapUint32(&r.r, old, old&^mask|bits&mask) {
+			return
+		}
+	}
+}
+
 func (r *U32) AtomicSetBits(mask uint32) {
 	atomic.OrUint32(&r.r, mask)
 }
@@ -242,11 +251,12 @@ type UM32 struct {
 	Mask uint32
 }
 
-func (b UM32) Set()              { b.U.SetBits(b.Mask) }
-func (b UM32) Clear()            { b.U.ClearBits(b.Mask) }
-func (b UM32) AtomicSet()        { b.U.AtomicSetBits(b.Mask) }
-func (b UM32) AtomicClear()      { b.U.AtomicClearBits(b.Mask) }
-func (b UM32) Load() uint32      { return b.U.Bits(b.Mask) }
-func (b UM32) Store(bits uint32) { b.U.StoreBits(b.Mask, bits) }
-func (b UM32) LoadVal() int      { return b.U.Field(uint32(b.Mask)) }
-func (b UM32) StoreVal(v int)    { b.U.SetField(b.Mask, v) }
+func (b UM32) Set()                    { b.U.SetBits(b.Mask) }
+func (b UM32) Clear()                  { b.U.ClearBits(b.Mask) }
+func (b UM32) Load() uint32            { return b.U.Bits(b.Mask) }
+func (b UM32) Store(bits uint32)       { b.U.StoreBits(b.Mask, bits) }
+func (b UM32) LoadVal() int            { return b.U.Field(uint32(b.Mask)) }
+func (b UM32) StoreVal(v int)          { b.U.SetField(b.Mask, v) }
+func (b UM32) AtomicSet()              { b.U.AtomicSetBits(b.Mask) }
+func (b UM32) AtomicClear()            { b.U.AtomicClearBits(b.Mask) }
+func (b UM32) AtomicStore(bits uint32) { b.U.AtomicStoreBits(b.Mask, bits) }

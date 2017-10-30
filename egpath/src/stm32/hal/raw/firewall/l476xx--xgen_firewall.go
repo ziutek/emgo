@@ -48,8 +48,9 @@ func (r *CSSA) ClearBits(mask CSSA_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *CSSA) Load() CSSA_Bits               { return CSSA_Bits(r.U32.Load()) }
 func (r *CSSA) Store(b CSSA_Bits)             { r.U32.Store(uint32(b)) }
 
-func (r *CSSA) AtomicSetBits(mask CSSA_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CSSA) AtomicClearBits(mask CSSA_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *CSSA) AtomicStoreBits(mask, b CSSA_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *CSSA) AtomicSetBits(mask CSSA_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CSSA) AtomicClearBits(mask CSSA_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type CSSA_Mask struct{ mmio.UM32 }
 
@@ -74,8 +75,9 @@ func (r *CSL) ClearBits(mask CSL_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *CSL) Load() CSL_Bits              { return CSL_Bits(r.U32.Load()) }
 func (r *CSL) Store(b CSL_Bits)            { r.U32.Store(uint32(b)) }
 
-func (r *CSL) AtomicSetBits(mask CSL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CSL) AtomicClearBits(mask CSL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *CSL) AtomicStoreBits(mask, b CSL_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *CSL) AtomicSetBits(mask CSL_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CSL) AtomicClearBits(mask CSL_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type CSL_Mask struct{ mmio.UM32 }
 
@@ -100,8 +102,9 @@ func (r *NVDSSA) ClearBits(mask NVDSSA_Bits)        { r.U32.ClearBits(uint32(mas
 func (r *NVDSSA) Load() NVDSSA_Bits                 { return NVDSSA_Bits(r.U32.Load()) }
 func (r *NVDSSA) Store(b NVDSSA_Bits)               { r.U32.Store(uint32(b)) }
 
-func (r *NVDSSA) AtomicSetBits(mask NVDSSA_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *NVDSSA) AtomicClearBits(mask NVDSSA_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *NVDSSA) AtomicStoreBits(mask, b NVDSSA_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *NVDSSA) AtomicSetBits(mask NVDSSA_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *NVDSSA) AtomicClearBits(mask NVDSSA_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type NVDSSA_Mask struct{ mmio.UM32 }
 
@@ -126,8 +129,9 @@ func (r *NVDSL) ClearBits(mask NVDSL_Bits)       { r.U32.ClearBits(uint32(mask))
 func (r *NVDSL) Load() NVDSL_Bits                { return NVDSL_Bits(r.U32.Load()) }
 func (r *NVDSL) Store(b NVDSL_Bits)              { r.U32.Store(uint32(b)) }
 
-func (r *NVDSL) AtomicSetBits(mask NVDSL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *NVDSL) AtomicClearBits(mask NVDSL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *NVDSL) AtomicStoreBits(mask, b NVDSL_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *NVDSL) AtomicSetBits(mask NVDSL_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *NVDSL) AtomicClearBits(mask NVDSL_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type NVDSL_Mask struct{ mmio.UM32 }
 
@@ -152,8 +156,9 @@ func (r *VDSSA) ClearBits(mask VDSSA_Bits)       { r.U32.ClearBits(uint32(mask))
 func (r *VDSSA) Load() VDSSA_Bits                { return VDSSA_Bits(r.U32.Load()) }
 func (r *VDSSA) Store(b VDSSA_Bits)              { r.U32.Store(uint32(b)) }
 
-func (r *VDSSA) AtomicSetBits(mask VDSSA_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *VDSSA) AtomicClearBits(mask VDSSA_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *VDSSA) AtomicStoreBits(mask, b VDSSA_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *VDSSA) AtomicSetBits(mask VDSSA_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *VDSSA) AtomicClearBits(mask VDSSA_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type VDSSA_Mask struct{ mmio.UM32 }
 
@@ -178,8 +183,9 @@ func (r *VDSL) ClearBits(mask VDSL_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *VDSL) Load() VDSL_Bits               { return VDSL_Bits(r.U32.Load()) }
 func (r *VDSL) Store(b VDSL_Bits)             { r.U32.Store(uint32(b)) }
 
-func (r *VDSL) AtomicSetBits(mask VDSL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *VDSL) AtomicClearBits(mask VDSL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *VDSL) AtomicStoreBits(mask, b VDSL_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *VDSL) AtomicSetBits(mask VDSL_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *VDSL) AtomicClearBits(mask VDSL_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type VDSL_Mask struct{ mmio.UM32 }
 
@@ -204,8 +210,9 @@ func (r *CR) ClearBits(mask CR_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *CR) Load() CR_Bits             { return CR_Bits(r.U32.Load()) }
 func (r *CR) Store(b CR_Bits)           { r.U32.Store(uint32(b)) }
 
-func (r *CR) AtomicSetBits(mask CR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CR) AtomicClearBits(mask CR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *CR) AtomicStoreBits(mask, b CR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *CR) AtomicSetBits(mask CR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *CR) AtomicClearBits(mask CR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type CR_Mask struct{ mmio.UM32 }
 

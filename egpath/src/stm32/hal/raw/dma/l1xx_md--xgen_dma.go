@@ -45,8 +45,9 @@ func (r *ISR) ClearBits(mask ISR_Bits)     { r.U32.ClearBits(uint32(mask)) }
 func (r *ISR) Load() ISR_Bits              { return ISR_Bits(r.U32.Load()) }
 func (r *ISR) Store(b ISR_Bits)            { r.U32.Store(uint32(b)) }
 
-func (r *ISR) AtomicSetBits(mask ISR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *ISR) AtomicClearBits(mask ISR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *ISR) AtomicStoreBits(mask, b ISR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *ISR) AtomicSetBits(mask ISR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *ISR) AtomicClearBits(mask ISR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type ISR_Mask struct{ mmio.UM32 }
 
@@ -183,8 +184,9 @@ func (r *IFCR) ClearBits(mask IFCR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *IFCR) Load() IFCR_Bits               { return IFCR_Bits(r.U32.Load()) }
 func (r *IFCR) Store(b IFCR_Bits)             { r.U32.Store(uint32(b)) }
 
-func (r *IFCR) AtomicSetBits(mask IFCR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *IFCR) AtomicClearBits(mask IFCR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *IFCR) AtomicStoreBits(mask, b IFCR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *IFCR) AtomicSetBits(mask IFCR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *IFCR) AtomicClearBits(mask IFCR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type IFCR_Mask struct{ mmio.UM32 }
 

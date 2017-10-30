@@ -39,8 +39,9 @@ func (r *HR) ClearBits(mask HR_Bits)    { r.U32.ClearBits(uint32(mask)) }
 func (r *HR) Load() HR_Bits             { return HR_Bits(r.U32.Load()) }
 func (r *HR) Store(b HR_Bits)           { r.U32.Store(uint32(b)) }
 
-func (r *HR) AtomicSetBits(mask HR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *HR) AtomicClearBits(mask HR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *HR) AtomicStoreBits(mask, b HR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *HR) AtomicSetBits(mask HR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *HR) AtomicClearBits(mask HR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type HR_Mask struct{ mmio.UM32 }
 

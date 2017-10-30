@@ -43,8 +43,9 @@ func (r *EVCR) ClearBits(mask EVCR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *EVCR) Load() EVCR_Bits               { return EVCR_Bits(r.U32.Load()) }
 func (r *EVCR) Store(b EVCR_Bits)             { r.U32.Store(uint32(b)) }
 
-func (r *EVCR) AtomicSetBits(mask EVCR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *EVCR) AtomicClearBits(mask EVCR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *EVCR) AtomicStoreBits(mask, b EVCR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *EVCR) AtomicSetBits(mask EVCR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *EVCR) AtomicClearBits(mask EVCR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type EVCR_Mask struct{ mmio.UM32 }
 
@@ -81,8 +82,9 @@ func (r *MAPR) ClearBits(mask MAPR_Bits)      { r.U32.ClearBits(uint32(mask)) }
 func (r *MAPR) Load() MAPR_Bits               { return MAPR_Bits(r.U32.Load()) }
 func (r *MAPR) Store(b MAPR_Bits)             { r.U32.Store(uint32(b)) }
 
-func (r *MAPR) AtomicSetBits(mask MAPR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *MAPR) AtomicClearBits(mask MAPR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *MAPR) AtomicStoreBits(mask, b MAPR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *MAPR) AtomicSetBits(mask MAPR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MAPR) AtomicClearBits(mask MAPR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type MAPR_Mask struct{ mmio.UM32 }
 
@@ -175,8 +177,9 @@ func (r *EXTICR) ClearBits(mask EXTICR_Bits)        { r.U32.ClearBits(uint32(mas
 func (r *EXTICR) Load() EXTICR_Bits                 { return EXTICR_Bits(r.U32.Load()) }
 func (r *EXTICR) Store(b EXTICR_Bits)               { r.U32.Store(uint32(b)) }
 
-func (r *EXTICR) AtomicSetBits(mask EXTICR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *EXTICR) AtomicClearBits(mask EXTICR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *EXTICR) AtomicStoreBits(mask, b EXTICR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *EXTICR) AtomicSetBits(mask EXTICR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *EXTICR) AtomicClearBits(mask EXTICR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type EXTICR_Mask struct{ mmio.UM32 }
 
@@ -217,8 +220,9 @@ func (r *MAPR2) ClearBits(mask MAPR2_Bits)       { r.U32.ClearBits(uint32(mask))
 func (r *MAPR2) Load() MAPR2_Bits                { return MAPR2_Bits(r.U32.Load()) }
 func (r *MAPR2) Store(b MAPR2_Bits)              { r.U32.Store(uint32(b)) }
 
-func (r *MAPR2) AtomicSetBits(mask MAPR2_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *MAPR2) AtomicClearBits(mask MAPR2_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *MAPR2) AtomicStoreBits(mask, b MAPR2_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *MAPR2) AtomicSetBits(mask MAPR2_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *MAPR2) AtomicClearBits(mask MAPR2_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
 type MAPR2_Mask struct{ mmio.UM32 }
 

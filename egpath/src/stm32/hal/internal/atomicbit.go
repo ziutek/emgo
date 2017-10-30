@@ -14,7 +14,7 @@ func (b AtomicBit) Load() int {
 }
 
 func (b AtomicBit) Store(v int) {
-	b.R.Store(uint32(v&1) << uint(b.N))
+	b.R.AtomicStoreBits(1<<uint(b.N), uint32(v&1)<<uint(b.N))
 }
 
 func (b AtomicBit) Set() {
