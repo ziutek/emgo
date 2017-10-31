@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"arch/cortexm/bitband"
-	//"arch/cortexm/scb"
 
 	"stm32/hal/exti"
 	"stm32/hal/irq"
@@ -103,8 +102,6 @@ func setup(freqHz uint) {
 	// or after configuration (avoid reading bad DIVL).
 	waitForSync(RTC)
 
-	// BUG: EnableEvent must be used to wakeup from deep-sleep (STM32 stop).
-	exti.RTCALR.EnableEvent()
 	exti.RTCALR.EnableIRQ()
 	exti.RTCALR.EnableRisiTrig()
 	spnum := rtos.IRQPrioStep * rtos.IRQPrioNum
@@ -115,10 +112,6 @@ func setup(freqHz uint) {
 
 	// Force RTCISR to initialise or early handle possible overflow.
 	exti.RTCALR.Trigger()
-
-	/*prev, _ := rtos.SetPrivLevel(0)
-	scb.SCB.SLEEPDEEP().Set()
-	rtos.SetPrivLevel(prev)*/
 }
 
 // loadVCNT returns value of virtual counter that counts number of ticks of
