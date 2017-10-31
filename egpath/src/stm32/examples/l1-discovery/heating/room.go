@@ -49,7 +49,7 @@ func (r *roomHeaterControl) loop(t *tim.TIM_Periph) {
 		hm := dt.Hour()*60 + dt.Minute()
 		dev := r.tempSensor.Load()
 		// Heat only if tempSensor set and cheap energy time: 22-6 and 13-15.
-		const offset = -12 // My electric meter is 12 minutes late.
+		const offset = -20 // My electric meter is 20 minutes late.
 		const margin = 5
 		if dt.IsValid() && dev.Type() != 0 &&
 			(hm < 6*60-margin+offset || hm > 22*60+margin+offset ||
