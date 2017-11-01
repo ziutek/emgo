@@ -149,10 +149,15 @@ func main() {
 	epd.Wait()
 	epd.Cmd(DisplayStartTx)
 	for i, n := 0, 200*200/4; i < n; i++ {
-		if i >= 0 {
+		switch {
+		case i >= n*3/4:
 			epd.WriteByte(0xFF)
-		} else {
-			epd.WriteByte(0)
+		case i >= n*2/4:
+			epd.WriteByte(0xAA)
+		case i >= n*1/4:
+			epd.WriteByte(0x55)
+		default:
+			epd.WriteByte(0x00)
 		}
 	}
 	epd.End()
@@ -165,22 +170,6 @@ func main() {
 		}
 	}
 	epd.End()
-	epd.Cmd(DisplayRefresh)
-	epd.End()
-	epd.Wait()
-
-	led3.Set()
-	delay.Millisec(2e3)
-	led3.Clear()
-
-	epd.Cmd(DisplayStartTx)
-	epd.Write(imageBlack[:])
-	epd.End()
-	/*
-		epd.Cmd(DisplayStartTxRed)
-		epd.Write(imgRed[:])
-		epd.End()
-	*/
 	epd.Cmd(DisplayRefresh)
 	epd.End()
 	epd.Wait()
