@@ -5,10 +5,13 @@ import (
 
 	"stm32/hal/gpio"
 	"stm32/hal/spi"
+	"stm32/hal/system"
 )
 
 type EPD struct {
-	width, height int
+	width, height uint16
+	loop20ns      byte
+	csState       bool
 
 	spi  *spi.Driver
 	cs   gpio.Pin
@@ -22,6 +25,7 @@ func (epd *EPD) Reset() {
 	delay.Millisec(200)
 	epd.rst.Set()
 	delay.Millisec(200)
+	epd.loop20ns = byte((system.Core.Clock()*2 + 1e8 - 1) / 1e8)
 }
 
 type Command byte
@@ -53,11 +57,14 @@ const (
 	SetVCMDC          Command = 0x82
 )
 
+func (epd *EPD) wait20ns() {
+	delay.Loop(int(epd.loop20ns))
+}
+
 func (epd *EPD) Cmd(cmd Command) {
-	epd.cs.Clear()
 	epd.dc.Clear()
+	epd.cs.Clear()
 	epd.spi.WriteReadByte(byte(cmd))
-	epd.cs.Set()
 	epd.dc.Set()
 }
 
@@ -66,15 +73,11 @@ func (epd *EPD) End() {
 }
 
 func (epd *EPD) WriteByte(b byte) {
-	epd.cs.Clear()
 	epd.spi.WriteReadByte(b)
-	epd.cs.Set()
 }
 
 func (epd *EPD) Write(s []byte) {
-	for _, b := range s {
-		epd.WriteByte(b)
-	}
+	epd.spi.WriteRead(s, nil)
 }
 
 func (epd *EPD) Wait() {
@@ -83,6 +86,7 @@ func (epd *EPD) Wait() {
 	}
 }
 
+//emgo:const
 var (
 	lut_vcom0 = [...]byte{
 		0x0E, 0x14, 0x01, 0x0A, 0x06, 0x04, 0x0A, 0x0A,

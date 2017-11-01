@@ -94,60 +94,95 @@ func main() {
 	epd.Reset()
 	epd.Cmd(SetPower)
 	epd.Write([]byte{7, 0, 8, 0})
+	epd.End()
 	epd.Cmd(BoosterSoftStart)
 	epd.Write([]byte{7, 7, 7})
+	epd.End()
 	epd.Cmd(PowerOn)
+	epd.End()
 	epd.Wait()
 
 	epd.Cmd(SetPanel)
 	epd.WriteByte(0xCF)
+	epd.End()
 	epd.Cmd(SetVcomAndDataInt)
 	epd.WriteByte(0x17)
+	epd.End()
 	epd.Cmd(SetPLLControl)
 	epd.WriteByte(0x39)
+	epd.End()
 	epd.Cmd(SetResolution)
 	epd.Write([]byte{0xC8, 0, 0xC8})
+	epd.End()
 	epd.Cmd(SetVCMDC)
 	epd.WriteByte(0xE)
+	epd.End()
 
 	epd.Cmd(SetVcomLUT)
 	epd.Write(lut_vcom0[:])
+	epd.End()
 	epd.Cmd(SetWhiteLUT)
 	epd.Write(lut_w[:])
+	epd.End()
 	epd.Cmd(SetBlackLUT)
 	epd.Write(lut_b[:])
+	epd.End()
 	epd.Cmd(SetGray1LUT)
 	epd.Write(lut_g1[:])
+	epd.End()
 	epd.Cmd(SetGray2LUT)
 	epd.Write(lut_g2[:])
+	epd.End()
 
 	epd.Cmd(SetVcomRedLUT)
 	epd.Write(lut_vcom1[:])
+	epd.End()
 	epd.Cmd(SetRed0LUT)
 	epd.Write(lut_red0[:])
+	epd.End()
 	epd.Cmd(SetRed1LUT)
 	epd.Write(lut_red1[:])
+	epd.End()
 
 	led2.Set()
 
 	epd.Wait()
 	epd.Cmd(DisplayStartTx)
 	for i, n := 0, 200*200/4; i < n; i++ {
-		if i > n/3 {
+		if i >= 0 {
 			epd.WriteByte(0xFF)
 		} else {
 			epd.WriteByte(0)
 		}
 	}
+	epd.End()
 	epd.Cmd(DisplayStartTxRed)
 	for i, n := 0, 200*200/8; i < n; i++ {
-		if i > n*2/3 {
+		if i >= n {
 			epd.WriteByte(0)
 		} else {
 			epd.WriteByte(0xFF)
 		}
 	}
+	epd.End()
 	epd.Cmd(DisplayRefresh)
+	epd.End()
+	epd.Wait()
+
+	led3.Set()
+	delay.Millisec(2e3)
+	led3.Clear()
+
+	epd.Cmd(DisplayStartTx)
+	epd.Write(imageBlack[:])
+	epd.End()
+	/*
+		epd.Cmd(DisplayStartTxRed)
+		epd.Write(imgRed[:])
+		epd.End()
+	*/
+	epd.Cmd(DisplayRefresh)
+	epd.End()
 	epd.Wait()
 
 	led3.Set()
