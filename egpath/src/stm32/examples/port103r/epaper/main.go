@@ -10,6 +10,7 @@
 package main
 
 import (
+	"bytes"
 	"delay"
 	"fmt"
 	"rtos"
@@ -92,86 +93,77 @@ func main() {
 	led1.Set()
 
 	epd.Reset()
+
+	epd.Begin()
+
 	epd.Cmd(SetPower)
 	epd.Write([]byte{7, 0, 8, 0})
-	epd.End()
 	epd.Cmd(BoosterSoftStart)
 	epd.Write([]byte{7, 7, 7})
-	epd.End()
 	epd.Cmd(PowerOn)
-	epd.End()
 	epd.Wait()
 
 	epd.Cmd(SetPanel)
 	epd.WriteByte(0xCF)
-	epd.End()
 	epd.Cmd(SetVcomAndDataInt)
 	epd.WriteByte(0x17)
-	epd.End()
 	epd.Cmd(SetPLLControl)
 	epd.WriteByte(0x39)
-	epd.End()
 	epd.Cmd(SetResolution)
 	epd.Write([]byte{0xC8, 0, 0xC8})
-	epd.End()
 	epd.Cmd(SetVCMDC)
 	epd.WriteByte(0xE)
-	epd.End()
 
 	epd.Cmd(SetVcomLUT)
 	epd.Write(lut_vcom0[:])
-	epd.End()
 	epd.Cmd(SetWhiteLUT)
 	epd.Write(lut_w[:])
-	epd.End()
 	epd.Cmd(SetBlackLUT)
 	epd.Write(lut_b[:])
-	epd.End()
 	epd.Cmd(SetGray1LUT)
 	epd.Write(lut_g1[:])
-	epd.End()
 	epd.Cmd(SetGray2LUT)
 	epd.Write(lut_g2[:])
-	epd.End()
 
 	epd.Cmd(SetVcomRedLUT)
 	epd.Write(lut_vcom1[:])
-	epd.End()
 	epd.Cmd(SetRed0LUT)
 	epd.Write(lut_red0[:])
-	epd.End()
 	epd.Cmd(SetRed1LUT)
 	epd.Write(lut_red1[:])
-	epd.End()
 
 	led2.Set()
 
+	const (
+		w = 200
+		h = 200
+	)
+
+	black := make([]byte, w*h/4)
+	bytes.Fill(black, 0xFF)
+	red := make([]byte, w*h/8)
+	bytes.Fill(red, 0xFF)
+
+	for i := 0; i < w; i++ {
+		x, y := i, i
+		o := y*(w/4) + x/4
+		black[o] ^= (3 << 6) >> uint(x&3*2)
+	}
+	for i := 0; i < w-10; i++ {
+		x, y := i+10, i
+		o := y*(w/8) + x/8
+		red[o] ^= (1 << 7) >> uint(x&7)
+	}
+
 	epd.Wait()
 	epd.Cmd(DisplayStartTx)
-	for i, n := 0, 200*200/4; i < n; i++ {
-		switch {
-		case i >= n*3/4:
-			epd.WriteByte(0xFF)
-		case i >= n*2/4:
-			epd.WriteByte(0xAA)
-		case i >= n*1/4:
-			epd.WriteByte(0x55)
-		default:
-			epd.WriteByte(0x00)
-		}
-	}
-	epd.End()
+	epd.Write(black)
 	epd.Cmd(DisplayStartTxRed)
-	for i, n := 0, 200*200/8; i < n; i++ {
-		if i >= n {
-			epd.WriteByte(0)
-		} else {
-			epd.WriteByte(0xFF)
-		}
-	}
-	epd.End()
+	epd.Write(red)
 	epd.Cmd(DisplayRefresh)
+
 	epd.End()
+
 	epd.Wait()
 
 	led3.Set()
