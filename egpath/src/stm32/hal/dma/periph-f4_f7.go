@@ -3,34 +3,15 @@
 package dma
 
 import (
-	"bits"
 	"mmio"
 	"unsafe"
 
 	"stm32/hal/raw/dma"
-	"stm32/hal/raw/rcc"
 )
 
 type dmaperiph struct {
 	raw dma.DMA_Periph
 	sts [8]dma.DMA_Stream_Periph
-}
-
-func (p *DMA) enableClock(lp bool) {
-	enbit := bit(p, &rcc.RCC.AHB1ENR.U32, rcc.DMA1ENn)
-	enbit.Set()
-	bit(p, &rcc.RCC.AHB1LPENR.U32, rcc.DMA1LPENn).Store(bits.One(lp))
-	enbit.Load() // RCC delay (workaround for silicon bugs).
-}
-
-func (p *DMA) disableClock() {
-	bit(p, &rcc.RCC.AHB1ENR.U32, rcc.DMA1ENn).Clear()
-}
-
-func (p *DMA) reset() {
-	bit := bit(p, &rcc.RCC.AHB1RSTR.U32, rcc.DMA1RSTn)
-	bit.Set()
-	bit.Clear()
 }
 
 type channel struct {

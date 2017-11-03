@@ -2,6 +2,8 @@
 
 // Peripheral: DMA_Request_Periph  DMA Controller.
 // Instances:
+//  DMA1_Request  mmap.DMA1_CSELR_BASE
+//  DMA2_Request  mmap.DMA2_CSELR_BASE
 // Registers:
 //  0x00 32  CSELR DMA channel selection register.
 // Import:

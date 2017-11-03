@@ -33,8 +33,7 @@ const (
 	L14
 	L15
 
-	PVD    Lines = 1 << 16 // Programmable Voltage Detector output.
-	RTCALR Lines = 1 << 17 // Real Time Clock Alarm event.
+	PVD Lines = 1 << 16 // Programmable Voltage Detector output.
 )
 
 // LineIndex returns bitmask for id EXTI line.
@@ -46,7 +45,7 @@ func LineIndex(id int) Lines {
 // 0..15 are connected to GPIO port A.
 //
 // Connect enables AFIO/SYSCFG clock before configuration and disables it before
-// return. It can not be called concurently with any other function (including 
+// return. It can not be called concurently with any other function (including
 // itself) that enables/disables AFIO/SYSCFG.
 func (lines Lines) Connect(port *gpio.Port) {
 	if lines >= L15<<1 {

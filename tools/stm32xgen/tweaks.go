@@ -34,6 +34,8 @@ func lastTweaks(pkg *Package) {
 			adcCommon(p)
 		case "PWR":
 			pwr(p)
+		case "DMA_Request":
+			dmaRequest(p)
 		}
 	}
 }
@@ -333,4 +335,12 @@ func pwr(p *Periph) {
 			}
 		}
 	}
+}
+
+func dmaRequest(p *Periph) {
+	p.Insts = append(
+		p.Insts,
+		&Instance{Name: "DMA1_Request", Base: "mmap.DMA1_CSELR_BASE"},
+		&Instance{Name: "DMA2_Request", Base: "mmap.DMA2_CSELR_BASE"},
+	)
 }

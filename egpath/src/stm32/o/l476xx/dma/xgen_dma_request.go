@@ -18,6 +18,12 @@ func (p *DMA_Request_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
+var DMA1_Request = (*DMA_Request_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_CSELR_BASE)))
+
+//emgo:const
+var DMA2_Request = (*DMA_Request_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_CSELR_BASE)))
+
 type CSELR_Bits uint32
 
 func (b CSELR_Bits) Field(mask CSELR_Bits) int {

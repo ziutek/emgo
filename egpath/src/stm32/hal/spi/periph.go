@@ -176,28 +176,28 @@ func (p *Periph) Status() (Event, Error) {
 // EnableIRQ enables generating of IRQ by events e.
 func (p *Periph) EnableIRQ(e Event) {
 	if e &= errEventMask; e != 0 {
-		p.raw.CR2.U16.SetBits(uint16(e) << spi.ERRIEn)
+		p.raw.CR2.SetBits(spi.CR2_Bits(e) << spi.ERRIEn)
 	}
 }
 
 // DisableIRQ disables generating of IRQ by events e.
 func (p *Periph) DisableIRQ(e Event) {
 	if e &= errEventMask; e != 0 {
-		p.raw.CR2.U16.ClearBits(uint16(e) << spi.ERRIEn)
+		p.raw.CR2.ClearBits(spi.CR2_Bits(e) << spi.ERRIEn)
 	}
 }
 
 // EnableDMA enables generating of DMA requests by events e.
 func (p *Periph) EnableDMA(e Event) {
 	if e &= realEventMask; e != 0 {
-		p.raw.CR2.U16.SetBits(uint16(e) >> 1)
+		p.raw.CR2.SetBits(spi.CR2_Bits(e) >> 1)
 	}
 }
 
 // DisableDMA disables generating of DMA requests by events e.
 func (p *Periph) DisableDMA(e Event) {
 	if e &= realEventMask; e != 0 {
-		p.raw.CR2.U16.ClearBits(uint16(e) >> 1)
+		p.raw.CR2.ClearBits(spi.CR2_Bits(e) >> 1)
 	}
 }
 
@@ -227,22 +227,22 @@ func (p *Periph) Duplex() Duplex {
 }
 
 func (p *Periph) SetDuplex(duplex Duplex) {
-	cr1 := p.raw.CR1.U16.Load()
-	if cr1&uint16(HalfOut) != uint16(duplex) {
-		p.raw.CR1.U16.Store(cr1&^uint16(HalfOut) | uint16(duplex))
+	cr1 := p.raw.CR1.Load()
+	if cr1&spi.CR1_Bits(HalfOut) != spi.CR1_Bits(duplex) {
+		p.raw.CR1.Store(cr1&^spi.CR1_Bits(HalfOut) | spi.CR1_Bits(duplex))
 	}
 }
 
 // StoreWord16 stores a 16-bit word to the data register. Use it only when 16-bit
 // word or data packing is configured.
 func (p *Periph) StoreWord16(v uint16) {
-	p.raw.DR.U16.Store(v)
+	(*mmio.U16)(unsafe.Pointer(&p.raw.DR)).Store(v)
 }
 
 // LoadWord16 loads a 16-bit word from the data register. Use it only when 16-bit
 // word or data packing is configured.
 func (p *Periph) LoadWord16() uint16 {
-	return p.raw.DR.U16.Load()
+	return (*mmio.U16)(unsafe.Pointer(&p.raw.DR)).Load()
 }
 
 // StoreByte stores a byte to the data register. Use it only when 8-bit frame is

@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	RTCALR Lines = 1 << 17 // Real Time Clock Alarm event.
 	USB   Lines = 1 << 18 // USB wakeup.
 	Ether Lines = 1 << 19 // Ethernet wakeup.
 )
