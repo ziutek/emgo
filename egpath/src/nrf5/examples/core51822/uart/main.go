@@ -37,6 +37,20 @@ func init() {
 	rtos.IRQ(u.P.NVIC()).Enable()
 }
 
+func checkErr(err error) {
+	if err == nil {
+		return
+	}
+	u.WriteString("\r\n>>> Error: ")
+	u.WriteString(err.Error())
+	u.WriteString(" <<<\r\n")
+	for i := 0; ; i++ {
+		leds[4].Store(i)
+		delay.Millisec(200)
+	}
+
+}
+
 func main() {
 	u.EnableRx()
 	u.EnableTx()
@@ -45,12 +59,10 @@ func main() {
 	for i := 0; ; i++ {
 		u.WriteByte('^')
 		n, err := u.Read(buf[:])
-		for i := 0; err != nil; i++ {
-			leds[4].Store(i)
-			delay.Millisec(200)
-		}
-		u.WriteByte('#')
+		checkErr(err)
+		u.WriteString("$ ")
 		u.Write(buf[:n])
+		u.WriteString("\r\n")
 		leds[0].Store(i)
 	}
 }

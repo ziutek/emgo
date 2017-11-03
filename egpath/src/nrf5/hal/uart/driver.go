@@ -1,7 +1,6 @@
 package uart
 
 import (
-	"reflect"
 	"sync/atomic"
 	"sync/fence"
 	"syscall"
@@ -33,13 +32,13 @@ type Driver struct {
 
 	P *Periph
 
-	rxBuf   []byte
+	rxbuf   []byte
 	pi, pr  int
 	err     uint32
 	rxready syscall.Event
 
-	offs   int
-	txend  uintptr
+	txn    int
+	txdata string
 	txdone syscall.Event
 }
 
@@ -47,7 +46,7 @@ type Driver struct {
 func NewDriver(p *Periph, rxbuf []byte) *Driver {
 	d := new(Driver)
 	d.P = p
-	d.rxBuf = rxbuf
+	d.rxbuf = rxbuf
 	return d
 }
 
@@ -110,14 +109,14 @@ func (d *Driver) ISR() {
 			p.Event(RXDRDY).Clear()
 			b := p.LoadRXD() // Always read RXD to do not block RXDRDY event.
 			nextpi := d.pi + 1
-			if nextpi == len(d.rxBuf) {
+			if nextpi == len(d.rxbuf) {
 				nextpi = 0
 			}
 			if atomic.LoadInt(&d.pr) == nextpi {
 				atomic.OrUint32(&d.err, uint32(ErrBufOverflow)<<8)
 			} else {
-				d.rxBuf[d.pi] = b
-				fence.W_SMP() // store(d.rxBuf) must be before store(d.pi).
+				d.rxbuf[d.pi] = b
+				fence.W_SMP() // store(d.rxbuf) must be before store(d.pi).
 				atomic.StoreInt(&d.pi, nextpi)
 			}
 			again = true
@@ -134,15 +133,14 @@ func (d *Driver) ISR() {
 		}
 		if p.Event(TXDRDY).IsSet() {
 			p.Event(TXDRDY).Clear()
-			newo := d.offs + 1
-			if newo == 0 {
-				fence.W() // clear(TXDRDY) must be observed before d.offs == 0.
-				atomic.StoreInt(&d.offs, newo)
-				d.txdone.Send()
-			} else {
-				p.StoreTXD(*(*byte)(unsafe.Pointer(d.txend + uintptr(newo))))
-				atomic.StoreInt(&d.offs, newo)
+			fence.W() // clear(TXDRDY) must be observed before d.offs == 0.
+			atomic.StoreInt(&d.txn, d.txn+1)
+			if uint(d.txn) < uint(len(d.txdata)) {
+				// Uints above allow compiler to optimize bounds checking below.
+				p.StoreTXD(d.txdata[d.txn])
 				again = true
+			} else {
+				d.txdone.Send()
 			}
 		}
 		if !again {
@@ -155,7 +153,7 @@ func (d *Driver) ISR() {
 func (d *Driver) Len() int {
 	n := atomic.LoadInt(&d.pi) - d.pr
 	if n < 0 {
-		n += len(d.rxBuf)
+		n += len(d.rxbuf)
 	}
 	return n
 }
@@ -168,6 +166,8 @@ func (d *Driver) clearError() error {
 	return DriverError(err >> 8)
 }
 
+// ReadByte reads one byte from the internal buffer. ReadByte can block only if
+// the internal buffer is empty.
 func (d *Driver) ReadByte() (b byte, err error) {
 	event := d.rxready
 	if d.deadlineRx != 0 {
@@ -178,12 +178,12 @@ func (d *Driver) ReadByte() (b byte, err error) {
 			err = d.clearError()
 		}
 		if pr := d.pr; atomic.LoadInt(&d.pi) != pr {
-			fence.R_SMP() // Control dep. between load(d.pi) and load(d.rxBuf).
-			b = d.rxBuf[pr]
-			if pr++; pr == len(d.rxBuf) {
+			fence.R_SMP() // Control dep. between load(d.pi) and load(d.rxbuf).
+			b = d.rxbuf[pr]
+			if pr++; pr == len(d.rxbuf) {
 				pr = 0
 			}
-			fence.RW_SMP() // Ensure load(d.rxBuf) finished before store(d.pr).
+			fence.RW_SMP() // Ensure load(d.rxbuf) finished before store(d.pr).
 			atomic.StoreInt(&d.pr, pr)
 			return
 		}
@@ -200,8 +200,11 @@ func (d *Driver) ReadByte() (b byte, err error) {
 	}
 }
 
-func (d *Driver) Read(b []byte) (n int, err error) {
-	if len(b) == 0 {
+// Read reads into s data from the internal buffer. It returns number of bytes
+// read and error if occured. It can return n < len(s) even if err == nil. Read
+// blocks only if the internal buffer is empty.
+func (d *Driver) Read(s []byte) (n int, err error) {
+	if len(s) == 0 {
 		return 0, nil
 	}
 	event := d.rxready
@@ -213,20 +216,20 @@ func (d *Driver) Read(b []byte) (n int, err error) {
 			err = d.clearError()
 		}
 		if pr, pi := d.pr, atomic.LoadInt(&d.pi); pr != pi {
-			fence.R_SMP() // Control dep. between load(d.pi) and load(d.rxBuf).
+			fence.R_SMP() // Control dep. between load(d.pi) and load(d.rxbuf).
 			if pi > pr {
-				n = copy(b, d.rxBuf[pr:pi])
+				n = copy(s, d.rxbuf[pr:pi])
 				pr += n
 			} else {
-				n = copy(b, d.rxBuf[pr:])
-				if n < len(b) && pi != 0 {
-					n += copy(b[n:], d.rxBuf[:pi])
+				n = copy(s, d.rxbuf[pr:])
+				if n < len(s) && pi > 0 {
+					n += copy(s[n:], d.rxbuf[:pi])
 				}
-				if pr += n; pr >= len(d.rxBuf) {
-					pr -= len(d.rxBuf)
+				if pr += n; pr >= len(d.rxbuf) {
+					pr -= len(d.rxbuf)
 				}
 			}
-			fence.RW_SMP() // Ensure load(d.rxBuf) finished before store(d.pr).
+			fence.RW_SMP() // Ensure load(d.rxbuf) finished before store(d.pr).
 			atomic.StoreInt(&d.pr, pr)
 			return
 		}
@@ -243,19 +246,21 @@ func (d *Driver) Read(b []byte) (n int, err error) {
 	}
 }
 
-func (d *Driver) waitWrite() (int, error) {
+// WaitWrite waits for the end of the previous write which must be initiated by
+// AsyncWrite or AsyncWriteString. It returns number of bytes written and error.
+func (d *Driver) WaitWrite() (int, error) {
 	event, dl := d.txdone, d.deadlineTx
 	if dl != 0 {
 		event |= syscall.Alarm
 	}
 	for {
-		offs := atomic.LoadInt(&d.offs)
-		if offs == 0 {
-			return 0, nil
+		txn := atomic.LoadInt(&d.txn)
+		if txn == len(d.txdata) {
+			return txn, nil
 		}
 		if dl != 0 {
 			if syscall.Nanosec() >= dl {
-				return offs, ErrTimeout
+				return txn, ErrTimeout
 			}
 			syscall.SetAlarm(dl)
 		}
@@ -263,27 +268,48 @@ func (d *Driver) waitWrite() (int, error) {
 	}
 }
 
-func (d *Driver) WriteByte(b byte) error {
-	d.offs = -1
-	fence.W() // store(d.offs) must be observed before p.SetTX.
-	d.P.StoreTXD(b)
-	_, err := d.waitWrite()
-	return err
+// AsyncWriteString works like AsyncWrite.
+func (d *Driver) AsyncWriteString(s string) {
+	d.txdata = s
+	d.txn = 0
+	if len(s) == 0 {
+		return
+	}
+	fence.W() // New d.txdata, d.txn must be observed before store(TXD).
+	d.P.StoreTXD(s[0])
 }
 
+// AsyncWrite initiates UART transmision of data referenced by s. This is
+// dangerous function: you must ensure that data referenced by s are alive
+// until subsequent WaitWrite return. In particular, there is probably always
+// bad idea to use AsyncWrite with stack allocated data.
+func (d *Driver) AsyncWrite(s []byte) {
+	d.AsyncWriteString(*(*string)(unsafe.Pointer(&s)))
+}
+
+// WriteString works like Write.
 func (d *Driver) WriteString(s string) (int, error) {
-	h := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	if h.Len == 0 {
+	if len(s) == 0 {
 		return 0, nil
 	}
-	d.txend = h.Data + uintptr(h.Len)
-	d.offs = -h.Len
-	fence.W() // store(d.offs) must be observed before p.SetTX.
+	d.txdata = s
+	d.txn = 0
+	fence.W() // New d.txdata, d.txn must be observed before store(TXD).
 	d.P.StoreTXD(s[0])
-	offs, err := d.waitWrite()
-	return len(s) - offs, err
+	return d.WaitWrite()
 }
 
-func (d *Driver) Write(b []byte) (int, error) {
-	return d.WriteString(*(*string)(unsafe.Pointer(&b)))
+// Write transmits data referenced by s.
+func (d *Driver) Write(s []byte) (int, error) {
+	return d.WriteString(*(*string)(unsafe.Pointer(&s)))
+}
+
+// WriteByte transmits one byte.
+func (d *Driver) WriteByte(b byte) error {
+	d.txdata = ""
+	d.txn = -1
+	fence.W() // New d.txdata, d.txn must be observed before store(TXD).
+	d.P.StoreTXD(b)
+	_, err := d.WaitWrite()
+	return err
 }
