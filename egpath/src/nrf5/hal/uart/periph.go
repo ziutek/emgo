@@ -113,11 +113,12 @@ func (p *Periph) ClearERRORSRC(e Error) {
 	p.errorsrc.Store(uint32(e))
 }
 
-// LoadENABLE reports whether the p UART peripheral is enabled.
+// LoadENABLE reports whether the UART peripheral is enabled.
 func (p *Periph) LoadENABLE() bool {
 	return p.enable.Load()&4 != 0
 }
 
+// StoreENABLE enables or disables UART peripheral.
 func (p *Periph) StoreENABLE(en bool) {
 	p.enable.Store(uint32(bits.One(en)) << 2)
 }
