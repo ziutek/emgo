@@ -27,6 +27,7 @@ var syscalls = [...]func(fp *cortexm.StackFrame, lr uintptr){
 	syscall.SETIRQPRIO:    scSetIRQPrio,
 	syscall.SETIRQHANDLER: scSetIRQHandler,
 	syscall.IRQSTATUS:     scIRQStatus,
+	syscall.TRIGGERIRQ:    scTriggerIRQ,
 	syscall.SETPRIVLEVEL:  scSetPrivLevel,
 	syscall.DEBUGOUT:      scDebugOut,
 }
@@ -91,11 +92,20 @@ func scSetAt(fp *cortexm.StackFrame, lr uintptr) {
 	tasker.SetAt(*(*int64)(unsafe.Pointer(&fp.R[0])))
 }
 
+func checkIRQ(fp *cortexm.StackFrame, irq nvic.IRQ) bool {
+	if irq > 239 {
+		fp.R[1] = uintptr(syscall.ERANGE)
+		return false
+	}
+	// TODO: EPERM in case of system timer IRQ.
+	fp.R[1] = uintptr(syscall.OK)
+	return true
+}
+
 func scSetIRQEna(fp *cortexm.StackFrame, lr uintptr) {
 	irq := nvic.IRQ(fp.R[0])
 	ena := fp.R[1] != 0
-	if irq > 239 {
-		fp.R[1] = uintptr(syscall.ERANGE)
+	if !checkIRQ(fp, irq) {
 		return
 	}
 	if ena {
@@ -103,14 +113,12 @@ func scSetIRQEna(fp *cortexm.StackFrame, lr uintptr) {
 	} else {
 		irq.Disable()
 	}
-	fp.R[1] = uintptr(syscall.OK)
 }
 
 func scSetIRQPrio(fp *cortexm.StackFrame, lr uintptr) {
 	irq := nvic.IRQ(fp.R[0])
 	prio := int(fp.R[1])
-	if irq > 239 {
-		fp.R[1] = uintptr(syscall.ERANGE)
+	if !checkIRQ(fp, irq) {
 		return
 	}
 	irq.SetPrio(prio)
@@ -123,8 +131,7 @@ func scSetIRQHandler(fp *cortexm.StackFrame, lr uintptr) {
 
 func scIRQStatus(fp *cortexm.StackFrame, lr uintptr) {
 	irq := nvic.IRQ(fp.R[0])
-	if irq > 239 {
-		fp.R[1] = uintptr(syscall.ERANGE)
+	if !checkIRQ(fp, irq) {
 		return
 	}
 	status := uintptr(irq.Prio())
@@ -133,6 +140,14 @@ func scIRQStatus(fp *cortexm.StackFrame, lr uintptr) {
 	}
 	fp.R[0] = uintptr(status)
 	fp.R[1] = uintptr(syscall.OK)
+}
+
+func scTriggerIRQ(fp *cortexm.StackFrame, lr uintptr) {
+	irq := nvic.IRQ(fp.R[0])
+	if !checkIRQ(fp, irq) {
+		return
+	}
+	irq.SetPending()
 }
 
 func scSetPrivLevel(fp *cortexm.StackFrame, lr uintptr) {

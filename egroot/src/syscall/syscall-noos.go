@@ -23,6 +23,7 @@ const (
 	SETIRQPRIO
 	SETIRQHANDLER
 	IRQSTATUS
+	TRIGGERIRQ
 	SETPRIVLEVEL
 	DEBUGOUT
 )
@@ -128,6 +129,12 @@ func SetIRQHandler(irq int, f func()) Errno {
 func IRQStatus(irq int) (int, Errno) {
 	s, e := internal.Syscall1(IRQSTATUS, uintptr(irq))
 	return int(s), Errno(e)
+}
+
+// TriggerIRQ: see rtos package.
+func TriggerIRQ(irq int) Errno {
+	_, e := internal.Syscall1(IRQSTATUS, uintptr(irq))
+	return Errno(e)
 }
 
 // SetPrivLevel: see rtos package.
