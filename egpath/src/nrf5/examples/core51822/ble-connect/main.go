@@ -42,9 +42,9 @@ func init() {
 	bctr.LEDs = &leds
 
 	udrv = uart.NewDriver(uart.UART0, make([]byte, 80))
-	udrv.P.StorePSEL(uart.SignalRXD, p0.Pin(11))
-	udrv.P.StorePSEL(uart.SignalTXD, p0.Pin(9))
-	udrv.P.StoreBAUDRATE(uart.Baud115200)
+	udrv.P.StorePSEL(uart.RXD, p0.Pin(11))
+	udrv.P.StorePSEL(uart.TXD, p0.Pin(9))
+	udrv.P.StoreBAUDRATE(uart.BR115200)
 	udrv.P.StoreENABLE(true)
 	udrv.EnableTx()
 	rtos.IRQ(udrv.P.NVIC()).Enable()

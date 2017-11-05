@@ -50,6 +50,14 @@ func NewDriver(p *Periph, rxbuf []byte) *Driver {
 	return d
 }
 
+func (d *Driver) Enable() {
+	d.P.StoreENABLE(true)
+}
+
+func (d *Driver) Disable() {
+	d.P.StoreENABLE(false)
+}
+
 // EnableRx enables UART receiver. EnableRx must be called before any of Read*
 // methods.
 func (d *Driver) EnableRx() {
