@@ -52,9 +52,9 @@ func (p *Periph) StoreENABLE(en bool) {
 type Signal byte
 
 const (
-	SignalSCK  Signal = 0
-	SignalMOSI Signal = 1
-	SignalMISO Signal = 2
+	SCK  Signal = 0
+	MOSI Signal = 1
+	MISO Signal = 2
 )
 
 func (p *Periph) LoadPSEL(s Signal) gpio.Pin {
@@ -76,13 +76,13 @@ func (p *Periph) StoreTXD(b byte) {
 type Freq uint32
 
 const (
-	Freq125k Freq = 0x02000000 // 125 kbps
-	Freq250k Freq = 0x04000000 // 250 kbps
-	Freq500k Freq = 0x08000000 // 500 kbps
-	Freq1M   Freq = 0x10000000 // 1 Mbps
-	Freq2M   Freq = 0x20000000 // 2 Mbps
-	Freq4M   Freq = 0x40000000 // 4 Mbps
-	Freq8M   Freq = 0x80000000 // 8 Mbps
+	F125k Freq = 0x02000000 // 125 kbps
+	F250k Freq = 0x04000000 // 250 kbps
+	F500k Freq = 0x08000000 // 500 kbps
+	F1M   Freq = 0x10000000 // 1 Mbps
+	F2M   Freq = 0x20000000 // 2 Mbps
+	F4M   Freq = 0x40000000 // 4 Mbps
+	F8M   Freq = 0x80000000 // 8 Mbps
 )
 
 // LoadFREQUENCY returns configured SCK frequency.
