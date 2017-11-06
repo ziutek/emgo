@@ -45,7 +45,7 @@ const (
 	RxNotEmpty = Event(usart.RXNE >> 4) // Read data register not empty.
 	TxDone     = Event(usart.TC >> 4)   // Transmission complete.
 	TxEmpty    = Event(usart.TXE >> 4)  // Transmit data register empty.
-	LINBreak   = Event(usart.LBD >> 4)  // LIN break detection flag.
+	LINBreak   = Event(lbd >> 4)        // LIN break detection flag.
 	CTS        = Event(usart.CTS >> 4)  // Change on CTS status line
 
 	EvAll = Idle | RxNotEmpty | TxDone | TxEmpty | LINBreak | CTS
@@ -95,21 +95,20 @@ func (e Error) Error() string {
 
 // Status return current status of p.
 func (p *Periph) Status() (Event, Error) {
-	sr := p.raw.SR.Load()
-	return Event(sr >> 4), Error(sr & 0xf)
+	return p.status()
 }
 
 // Clear clears events e. Only RxNotEmpty, TxDone, LINBreak and CTS can be
 // cleared this way. Other events can be cleared only by specific sequence of
 // reading status register and read or write data register.
 func (p *Periph) Clear(e Event) {
-	p.raw.SR.U16.Store(^e.reg())
+	p.clear(e)
 }
 
 // EnableIRQ enables generating of IRQ by events e.
 func (p *Periph) EnableIRQ(e Event) {
 	if cr1e := e & (Idle | RxNotEmpty | TxDone | TxEmpty); cr1e != 0 {
-		p.raw.CR1.U16.SetBits(cr1e.reg())
+		p.raw.CR1.SetBits(usart.CR1_Bits(cr1e.reg()))
 	}
 	if e&LINBreak != 0 {
 		p.raw.LBDIE().Set()
@@ -122,7 +121,7 @@ func (p *Periph) EnableIRQ(e Event) {
 // DisableIRQ disables generating of IRQ by events e.
 func (p *Periph) DisableIRQ(e Event) {
 	if cr1e := e & (Idle | RxNotEmpty | TxDone | TxEmpty); cr1e != 0 {
-		p.raw.CR1.U16.ClearBits(cr1e.reg())
+		p.raw.CR1.ClearBits(usart.CR1_Bits(cr1e.reg()))
 	}
 	if e&LINBreak != 0 {
 		p.raw.LBDIE().Clear()
@@ -156,7 +155,7 @@ func (p *Periph) SetBaudRate(baudrate int) {
 		// Oversampling = 16
 		p.raw.OVER8().Clear()
 	}
-	p.raw.BRR.U16.Store(uint16(usartdiv))
+	p.raw.BRR.Store(usart.BRR_Bits(usartdiv))
 }
 
 // Enable enables p.
@@ -183,19 +182,13 @@ const (
 )
 
 func (p *Periph) Conf() Conf {
-	mask := uint16(RxEna | TxEna | ParOdd)
-	cfg := p.raw.CR1.U16.Bits(mask)
-	mask = uint16(Stop1b5 >> 16)
-	cfg |= p.raw.CR2.U16.Bits(mask) << 16
-	return Conf(cfg)
+	return Conf(p.raw.CR1.Bits(usart.CR1_Bits(RxEna|TxEna|ParOdd))) |
+		Conf(p.raw.CR2.Bits(usart.CR2_Bits(Stop1b5>>16))<<16)
 }
 
 func (p *Periph) SetConf(cfg Conf) {
-	mask := uint16(RxEna | TxEna | ParOdd)
-	p.raw.CR1.U16.StoreBits(mask, uint16(cfg))
-	cfg >>= 16
-	mask = uint16(Stop1b5 >> 16)
-	p.raw.CR2.U16.StoreBits(mask, uint16(cfg))
+	p.raw.CR1.StoreBits(usart.CR1_Bits(RxEna|TxEna|ParOdd), usart.CR1_Bits(cfg))
+	p.raw.CR2.StoreBits(usart.CR2_Bits(Stop1b5>>16), usart.CR2_Bits(cfg>>16))
 }
 
 type Mode uint32
@@ -210,17 +203,17 @@ const (
 )
 
 func (p *Periph) SetMode(mode Mode) {
-	//mask :=
-	//p.raw.CR2.U16.StoreBits(mask, uint16(mode))
-	mode >>= 16
-	mask := uint16((HalfDuplex | OneBit) >> 16)
-	p.raw.CR3.U16.StoreBits(mask, uint16(mode))
+	//p.raw.CR2.StoreBits(mask, usart.CR2_Bits(mode))
+	p.raw.CR3.StoreBits(
+		usart.CR3_Bits((HalfDuplex|OneBit)>>16),
+		usart.CR3_Bits(mode>>16),
+	)
 }
 
 func (p *Periph) Store(d int) {
-	p.raw.DR.U16.Store(uint16(d))
+	p.store(d)
 }
 
 func (p *Periph) Load() int {
-	return int(p.raw.DR.Load())
+	return p.load()
 }

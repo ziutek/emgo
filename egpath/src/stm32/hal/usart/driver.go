@@ -53,10 +53,10 @@ func NewDriver(p *Periph, rxdma, txdma *dma.Channel, rxbuf []byte) *Driver {
 	return d
 }
 
-func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode) {
+func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode, addr uintptr) {
 	ch.Setup(mode)
 	ch.SetWordSize(1, 1)
-	ch.SetAddrP(unsafe.Pointer(d.P.raw.DR.U16.Addr()))
+	ch.SetAddrP(unsafe.Pointer(addr))
 }
 
 func startDMA(ch *dma.Channel, maddr unsafe.Pointer, mlen int) {
@@ -76,7 +76,7 @@ func (d *Driver) EnableRx() {
 	ch := d.RxDMA
 	p.RE().Set()
 	p.DMAR().Set()
-	d.setupDMA(ch, dma.PTM|dma.IncM|dma.Circ)
+	d.setupDMA(ch, dma.PTM|dma.IncM|dma.Circ, d.P.rdAddr())
 	startDMA(ch, unsafe.Pointer(&d.RxBuf[0]), len(d.RxBuf))
 }
 
@@ -210,7 +210,7 @@ func (d *Driver) EnableTx() {
 	p := &d.P.raw
 	p.TE().Set()
 	p.DMAT().Set()
-	d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4)
+	d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4, d.P.tdAddr())
 }
 
 func (d *Driver) DisableTx() {
@@ -231,7 +231,7 @@ func (d *Driver) WriteString(s string) (int, error) {
 			m = 0xffff
 		}
 		d.txdone.Reset(0)
-		d.P.raw.SR.Store(0) // Clear TC.
+		d.P.clear(TxDone) // Clear TC.
 		startDMA(ch, unsafe.Pointer(sh.Data+uintptr(n)), m)
 		n += m
 		done := d.txdone.Wait(1, d.deadlineTx)
