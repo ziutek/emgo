@@ -9,12 +9,6 @@ import (
 	"stm32/hal/raw/rcc"
 )
 
-const (
-	RTCALR Lines = 1 << 17 // Real Time Clock Alarm event.
-	USB   Lines = 1 << 18 // USB wakeup.
-	Ether Lines = 1 << 19 // Ethernet wakeup.
-)
-
 func exticr(n int) *mmio.U32 {
 	return (*mmio.U32)(&afio.AFIO.EXTICR[n].U32)
 }

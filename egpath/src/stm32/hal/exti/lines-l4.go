@@ -19,14 +19,13 @@ const (
 	USART5  Lines = 1 << 30 // USART5 wakeup event.
 	LPUART1 Lines = 1 << 31 // LPUART1 wakeup event.
 
-	// BUG: Not supported lines:
-	//LPTIM1 Lines = 1 << 32 // LPTIM1 event.
-	//LPTIM2 Lines = 1 << 33 // LPTIM1 event.
-	//SWPMI1 Lines = 1 << 34 // SWPMI1 wakeup event.
-	//PVM1   Lines = 1 << 35 // PVM1 wakeup event.
-	//PVM2   Lines = 1 << 36 // PVM2 wakeup event.
-	//PVM3   Lines = 1 << 37 // PVM3 wakeup event.
-	//PVM4   Lines = 1 << 38 // PVM4 wakeup event.
-	//LCD    Lines = 1 << 39 // LCD wakeup event.
-	//I2C4   Lines = 1 << 40 // I2C4 wakeup event.
+	LPTIM1 Lines = 1 << 32 // LPTIM1 event.
+	LPTIM2 Lines = 1 << 33 // LPTIM1 event.
+	SWPMI1 Lines = 1 << 34 // SWPMI1 wakeup event.
+	PVM1   Lines = 1 << 35 // PVM1 wakeup event.
+	PVM2   Lines = 1 << 36 // PVM2 wakeup event.
+	PVM3   Lines = 1 << 37 // PVM3 wakeup event.
+	PVM4   Lines = 1 << 38 // PVM4 wakeup event.
+	LCD    Lines = 1 << 39 // LCD wakeup event.
+	I2C4   Lines = 1 << 40 // I2C4 wakeup event.
 )
