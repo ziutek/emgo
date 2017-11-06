@@ -18,7 +18,7 @@ var (
 )
 
 func init() {
-	system.SetupPLL(-48, 6, 20, 0, 0, 2)
+	system.Setup80(0, 0)
 	systick.Setup(2e6)
 
 	// GPIO

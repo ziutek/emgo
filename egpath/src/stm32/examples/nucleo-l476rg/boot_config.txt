@@ -1,0 +1,68 @@
+STM32L476 has no BOOT1 pin to select booting from SRAM. By default BOOT0 pin allows to select to run code from Flash or to run bootloader provided by ST. The goal is to change BOOT0 pin behavior to switch between booting from Flash and booting from SRAM. 
+
+
+Using GDB to change nBOOT1
+
+
+Print FLASH_CR. LOCK bit and OPTLOCK bit are both 1.
+
+(gdb) x 0x40022000+0x14
+0x40022014:     0xc0000000
+
+Unlock FLASH_CR (write keys to FLASH_KEYR):
+
+(gdb) set *(uint32*)(0x40022000+0x08) = 0x45670123
+(gdb) set *(uint32*)(0x40022000+0x08) = 0xCDEF89AB
+
+LOCK bit is 0:
+
+(gdb) x 0x40022000+0x14
+0x40022014:     0x40000000
+
+Unlock FLASH_OPTR (write keys to FLASH_KEYR):
+
+(gdb) set *(uint32*)(0x40022000+0x0c) = 0x08192A3B
+(gdb) set *(uint32*)(0x40022000+0x0c) = 0x4C5D6E7F
+
+OPTLOCK bit is 0:
+
+(gdb) x 0x40022000+0x14
+0x40022014:     0x00000000
+
+Print FLASH_OPTR:
+
+(gdb) x 0x40022000+0x20
+0x40022020:     0xffeff8aa
+
+Calculate new value with bit nBOOT1 (bit 23) cleared:
+
+(gdb) p/x 0xffeff8aa&~(1<<23)
+$9 = 0xff6ff8aa
+
+Write new value to FLASH_OPTR:
+
+BE CAREFUL!
+If you write wrong value you can PERMANENTLY BRICK your device.
+
+(gdb) set *(uint32*)(0x40022000+0x20) = 0xff6ff8aa
+
+Print new FLASH_OPTR:
+
+(gdb) x 0x40022000+0x20
+0x40022020:     0xff6ff8aa
+
+Ensure BSY bit in FLASH_SR is zero:
+
+(gdb) x 0x40022000+0x10
+0x40022010:	0x00000000
+
+Set OPTSTRT bit in FLASH_CR:
+
+set *(uint32*)(0x40022000+0x14) = 1<<17
+
+Wait for zero FLASH_SR.BSY bit:
+
+(gdb) x 0x40022000+0x10
+0x40022010:	0x00000000
+
+Done.
