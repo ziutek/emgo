@@ -3,6 +3,7 @@
 package dma
 
 import (
+	"mmio"
 	"unsafe"
 
 	"stm32/hal/raw/dma"
@@ -14,8 +15,10 @@ type chanregs struct {
 }
 
 type dmaperiph struct {
-	raw dma.DMA_Periph
-	chs [7]chanregs
+	raw   dma.DMA_Periph
+	chs   [7]chanregs
+	_     [5]uint32
+	cselr mmio.U32
 }
 
 type channel struct {
@@ -32,9 +35,9 @@ func (p *DMA) getChannel(n, _ int) *Channel {
 	return (*Channel)(unsafe.Pointer(&p.chs[n]))
 }
 
-func sdma(ch *Channel) *dma.DMA_Periph {
+func sdma(ch *Channel) *dmaperiph {
 	addr := uintptr(unsafe.Pointer(ch)) &^ 0x3ff
-	return (*dma.DMA_Periph)(unsafe.Pointer(addr))
+	return (*dmaperiph)(unsafe.Pointer(addr))
 }
 
 // snum returns stream number - 1, eg. 0 for fisrt stream.
@@ -54,13 +57,13 @@ const (
 )
 
 func (ch *Channel) status() byte {
-	isr := sdma(ch).ISR.U32.Load()
+	isr := sdma(ch).raw.ISR.U32.Load()
 	return byte(isr >> (snum(ch) * 4) & 0xf)
 }
 
 func (ch *Channel) clear(flags byte) {
 	mask := uint32(flags&0xf) << (snum(ch) * 4)
-	sdma(ch).IFCR.U32.Store(mask)
+	sdma(ch).raw.IFCR.U32.Store(mask)
 }
 
 func (ch *Channel) enable() {
@@ -146,4 +149,9 @@ func (ch *Channel) setAddrP(a unsafe.Pointer) {
 
 func (ch *Channel) setAddrM(a unsafe.Pointer) {
 	ch.raw.CMAR.U32.Store(uint32(uintptr(a)))
+}
+
+func (ch *Channel) sel(req int) {
+	n := snum(ch) * 4
+	sdma(ch).cselr.AtomicStoreBits(0xf<<n, uint32(req)<<n)
 }

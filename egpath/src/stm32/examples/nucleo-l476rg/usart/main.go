@@ -34,11 +34,14 @@ func init() {
 	port.SetAltFunc(tx|rx, gpio.USART2)
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
+	rxdc, txdc := d.Channel(6, 0), d.Channel(7, 0)
+	rxdc.Select(2)
+	txdc.Select(2)
 	tts = usart.NewDriver(
-		usart.USART2, d.Channel(6, 0), d.Channel(7, 0), dmarxbuf[:],
+		usart.USART2, rxdc, txdc, dmarxbuf[:],
 	)
 	tts.P.EnableClock(true)
-	tts.P.SetBaudRate(9600)
+	tts.P.SetBaudRate(115200)
 	tts.P.Enable()
 	tts.EnableRx()
 	tts.EnableTx()

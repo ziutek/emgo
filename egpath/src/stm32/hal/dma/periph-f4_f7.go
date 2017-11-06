@@ -189,3 +189,6 @@ func (ch *Channel) setAddrP(a unsafe.Pointer) {
 func (ch *Channel) setAddrM(a unsafe.Pointer) {
 	sraw(ch).M0AR.U32.Store(uint32(uintptr(a)))
 }
+
+func (ch *Channel) sel(_ int) {
+}

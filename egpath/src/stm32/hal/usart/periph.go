@@ -51,10 +51,6 @@ const (
 	EvAll = Idle | RxNotEmpty | TxDone | TxEmpty | LINBreak | CTS
 )
 
-func (e Event) reg() uint16 {
-	return uint16(e) << 4
-}
-
 // Error is bitmask that describes errors that can be detected by USART hardware
 // when receiving data.
 type Error byte
@@ -98,17 +94,18 @@ func (p *Periph) Status() (Event, Error) {
 	return p.status()
 }
 
-// Clear clears events e. Only RxNotEmpty, TxDone, LINBreak and CTS can be
-// cleared this way. Other events can be cleared only by specific sequence of
-// reading status register and read or write data register.
-func (p *Periph) Clear(e Event) {
-	p.clear(e)
+// Clear clears events ev and errors err. For MCUs that have no USART_ICR
+// register (before L0, L4, F7 series) only RxNotEmpty, TxDone, LINBreak and CTS
+// events can be cleared this way. Other events can be cleared only by specific
+// sequence of reading status register and read or write data register.
+func (p *Periph) Clear(ev Event, err Error) {
+	p.clear(ev, err)
 }
 
 // EnableIRQ enables generating of IRQ by events e.
 func (p *Periph) EnableIRQ(e Event) {
 	if cr1e := e & (Idle | RxNotEmpty | TxDone | TxEmpty); cr1e != 0 {
-		p.raw.CR1.SetBits(usart.CR1_Bits(cr1e.reg()))
+		p.raw.CR1.SetBits(usart.CR1_Bits(cr1e) << 4)
 	}
 	if e&LINBreak != 0 {
 		p.raw.LBDIE().Set()
@@ -121,7 +118,7 @@ func (p *Periph) EnableIRQ(e Event) {
 // DisableIRQ disables generating of IRQ by events e.
 func (p *Periph) DisableIRQ(e Event) {
 	if cr1e := e & (Idle | RxNotEmpty | TxDone | TxEmpty); cr1e != 0 {
-		p.raw.CR1.ClearBits(usart.CR1_Bits(cr1e.reg()))
+		p.raw.CR1.ClearBits(usart.CR1_Bits(cr1e) << 4)
 	}
 	if e&LINBreak != 0 {
 		p.raw.LBDIE().Clear()

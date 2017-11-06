@@ -13,8 +13,10 @@ func (p *Periph) status() (Event, Error) {
 	return Event(sr >> 4), Error(sr & 0xf)
 }
 
-func (p *Periph) clear(e Event) {
-	p.raw.SR.Store(^usart.SR_Bits(e.reg()))
+func (p *Periph) clear(ev Event, _ Error) {
+	if ev != 0 {
+		p.raw.SR.Store(^(usart.SR_Bits(ev) << 4))
+	}
 }
 
 func (p *Periph) store(d int) {

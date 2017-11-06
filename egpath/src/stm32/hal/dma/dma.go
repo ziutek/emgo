@@ -199,3 +199,8 @@ func (ch *Channel) SetAddrP(a unsafe.Pointer) {
 func (ch *Channel) SetAddrM(a unsafe.Pointer) {
 	ch.setAddrM(a)
 }
+
+// Select selects request source (peripheral) for channel.
+func (ch *Channel) Select(req int) {
+	ch.sel(req)
+}

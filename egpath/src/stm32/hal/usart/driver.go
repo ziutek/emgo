@@ -132,7 +132,7 @@ func (d *Driver) rxNMadd(m int) {
 
 func (d *Driver) disableRxIRQ() {
 	d.P.DisableIRQ(RxNotEmpty)
-	d.P.Clear(RxNotEmpty)
+	d.P.Clear(RxNotEmpty, 0)
 	d.P.DisableErrorIRQ()
 
 }
@@ -161,8 +161,9 @@ start:
 				return 0, ErrTimeout
 			}
 			if _, e := d.P.Status(); e != 0 {
-				// Clear errors (complete "read SR then DR" sequence).
-				d.P.Load()
+				// Clear errors
+				d.P.Load()      // For older MCUs (read SR then DR seq.)
+				d.P.Clear(0, e) // For newer MCUs.
 				return 0, e
 			}
 			if _, e := d.RxDMA.Status(); e != 0 {
@@ -231,7 +232,7 @@ func (d *Driver) WriteString(s string) (int, error) {
 			m = 0xffff
 		}
 		d.txdone.Reset(0)
-		d.P.clear(TxDone) // Clear TC.
+		d.P.clear(TxDone, 0) // Clear TC.
 		startDMA(ch, unsafe.Pointer(sh.Data+uintptr(n)), m)
 		n += m
 		done := d.txdone.Wait(1, d.deadlineTx)

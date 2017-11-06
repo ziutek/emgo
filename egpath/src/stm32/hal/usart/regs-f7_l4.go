@@ -13,8 +13,8 @@ func (p *Periph) status() (Event, Error) {
 	return Event(isr >> 4), Error(isr & 0xf)
 }
 
-func (p *Periph) clear(e Event) {
-	p.raw.ICR.Store(usart.ICR_Bits(e.reg()))
+func (p *Periph) clear(ev Event, err Error) {
+	p.raw.ICR.Store(usart.ICR_Bits(ev)<<4 | usart.ICR_Bits(err))
 }
 
 func (p *Periph) store(d int) {
