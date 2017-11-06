@@ -283,6 +283,10 @@ func SetupPLL(clksrc, M, N, P, Q, R int) {
 	}
 }
 
+func Setup80(P, Q int) {
+	SetupPLL(-48, 6, 20, P, Q, 2)
+}
+
 //emgo:const
 var msiRanges = [...]uint16{
 	100, 200, 400, 800, 1e3, 2e3, 4e3, 8e3, 16e3, 24e3, 32e3, 48e3,
@@ -290,7 +294,7 @@ var msiRanges = [...]uint16{
 
 // SetupMSI setups MCU for best performance (prefetch on, I/D cache on, minimum
 // allowed Flash latency) using integrated multi-speed oscilator as system
-// clock source.  
+// clock source.
 func SetupMSI(msikHz int) {
 	RCC := rcc.RCC
 
