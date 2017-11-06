@@ -990,20 +990,20 @@ type IMR2_Mask struct{ mmio.UM32 }
 func (rm IMR2_Mask) Load() IMR2_Bits   { return IMR2_Bits(rm.UM32.Load()) }
 func (rm IMR2_Mask) Store(b IMR2_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *EXTI_Periph) MR32() IMR2_Mask {
-	return IMR2_Mask{mmio.UM32{&p.IMR2.U32, uint32(MR32)}}
+func (p *EXTI_Periph) IL32() IMR2_Mask {
+	return IMR2_Mask{mmio.UM32{&p.IMR2.U32, uint32(IL32)}}
 }
 
-func (p *EXTI_Periph) MR33() IMR2_Mask {
-	return IMR2_Mask{mmio.UM32{&p.IMR2.U32, uint32(MR33)}}
+func (p *EXTI_Periph) IL33() IMR2_Mask {
+	return IMR2_Mask{mmio.UM32{&p.IMR2.U32, uint32(IL33)}}
 }
 
-func (p *EXTI_Periph) MR34() IMR2_Mask {
-	return IMR2_Mask{mmio.UM32{&p.IMR2.U32, uint32(MR34)}}
+func (p *EXTI_Periph) IL34() IMR2_Mask {
+	return IMR2_Mask{mmio.UM32{&p.IMR2.U32, uint32(IL34)}}
 }
 
-func (p *EXTI_Periph) MR35() IMR2_Mask {
-	return IMR2_Mask{mmio.UM32{&p.IMR2.U32, uint32(MR35)}}
+func (p *EXTI_Periph) IL35() IMR2_Mask {
+	return IMR2_Mask{mmio.UM32{&p.IMR2.U32, uint32(IL35)}}
 }
 
 type EMR2_Bits uint32
@@ -1033,20 +1033,20 @@ type EMR2_Mask struct{ mmio.UM32 }
 func (rm EMR2_Mask) Load() EMR2_Bits   { return EMR2_Bits(rm.UM32.Load()) }
 func (rm EMR2_Mask) Store(b EMR2_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *EXTI_Periph) MR32() EMR2_Mask {
-	return EMR2_Mask{mmio.UM32{&p.EMR2.U32, uint32(MR32)}}
+func (p *EXTI_Periph) EL32() EMR2_Mask {
+	return EMR2_Mask{mmio.UM32{&p.EMR2.U32, uint32(EL32)}}
 }
 
-func (p *EXTI_Periph) MR33() EMR2_Mask {
-	return EMR2_Mask{mmio.UM32{&p.EMR2.U32, uint32(MR33)}}
+func (p *EXTI_Periph) EL33() EMR2_Mask {
+	return EMR2_Mask{mmio.UM32{&p.EMR2.U32, uint32(EL33)}}
 }
 
-func (p *EXTI_Periph) MR34() EMR2_Mask {
-	return EMR2_Mask{mmio.UM32{&p.EMR2.U32, uint32(MR34)}}
+func (p *EXTI_Periph) EL34() EMR2_Mask {
+	return EMR2_Mask{mmio.UM32{&p.EMR2.U32, uint32(EL34)}}
 }
 
-func (p *EXTI_Periph) MR35() EMR2_Mask {
-	return EMR2_Mask{mmio.UM32{&p.EMR2.U32, uint32(MR35)}}
+func (p *EXTI_Periph) EL35() EMR2_Mask {
+	return EMR2_Mask{mmio.UM32{&p.EMR2.U32, uint32(EL35)}}
 }
 
 type RTSR2_Bits uint32
@@ -1111,12 +1111,12 @@ type FTSR2_Mask struct{ mmio.UM32 }
 func (rm FTSR2_Mask) Load() FTSR2_Bits   { return FTSR2_Bits(rm.UM32.Load()) }
 func (rm FTSR2_Mask) Store(b FTSR2_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *EXTI_Periph) TR32() FTSR2_Mask {
-	return FTSR2_Mask{mmio.UM32{&p.FTSR2.U32, uint32(TR32)}}
+func (p *EXTI_Periph) TF32() FTSR2_Mask {
+	return FTSR2_Mask{mmio.UM32{&p.FTSR2.U32, uint32(TF32)}}
 }
 
-func (p *EXTI_Periph) TR33() FTSR2_Mask {
-	return FTSR2_Mask{mmio.UM32{&p.FTSR2.U32, uint32(TR33)}}
+func (p *EXTI_Periph) TF33() FTSR2_Mask {
+	return FTSR2_Mask{mmio.UM32{&p.FTSR2.U32, uint32(TF33)}}
 }
 
 type SWIER2_Bits uint32

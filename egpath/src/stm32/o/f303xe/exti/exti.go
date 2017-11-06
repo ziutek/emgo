@@ -441,31 +441,31 @@ const (
 )
 
 const (
-	MR32 IMR2_Bits = 0x01 << 0 //+ Interrupt Mask on line 32.
-	MR33 IMR2_Bits = 0x01 << 1 //+ Interrupt Mask on line 33.
-	MR34 IMR2_Bits = 0x01 << 2 //+ Interrupt Mask on line 34.
-	MR35 IMR2_Bits = 0x01 << 3 //+ Interrupt Mask on line 35.
+	IL32 IMR2_Bits = 0x01 << 0 //+ Interrupt Mask on line 32.
+	IL33 IMR2_Bits = 0x01 << 1 //+ Interrupt Mask on line 33.
+	IL34 IMR2_Bits = 0x01 << 2 //+ Interrupt Mask on line 34.
+	IL35 IMR2_Bits = 0x01 << 3 //+ Interrupt Mask on line 35.
 )
 
 const (
-	MR32n = 0
-	MR33n = 1
-	MR34n = 2
-	MR35n = 3
+	IL32n = 0
+	IL33n = 1
+	IL34n = 2
+	IL35n = 3
 )
 
 const (
-	MR32 EMR2_Bits = 0x01 << 0 //+ Event Mask on line 32.
-	MR33 EMR2_Bits = 0x01 << 1 //+ Event Mask on line 33.
-	MR34 EMR2_Bits = 0x01 << 2 //+ Event Mask on line 34.
-	MR35 EMR2_Bits = 0x01 << 3 //+ Event Mask on line 35.
+	EL32 EMR2_Bits = 0x01 << 0 //+ Event Mask on line 32.
+	EL33 EMR2_Bits = 0x01 << 1 //+ Event Mask on line 33.
+	EL34 EMR2_Bits = 0x01 << 2 //+ Event Mask on line 34.
+	EL35 EMR2_Bits = 0x01 << 3 //+ Event Mask on line 35.
 )
 
 const (
-	MR32n = 0
-	MR33n = 1
-	MR34n = 2
-	MR35n = 3
+	EL32n = 0
+	EL33n = 1
+	EL34n = 2
+	EL35n = 3
 )
 
 const (
@@ -479,13 +479,13 @@ const (
 )
 
 const (
-	TR32 FTSR2_Bits = 0x01 << 0 //+ Falling trigger event configuration bit of line 32.
-	TR33 FTSR2_Bits = 0x01 << 1 //+ Falling trigger event configuration bit of line 32.
+	TF32 FTSR2_Bits = 0x01 << 0 //+ Falling trigger event configuration bit of line 32.
+	TF33 FTSR2_Bits = 0x01 << 1 //+ Falling trigger event configuration bit of line 32.
 )
 
 const (
-	TR32n = 0
-	TR33n = 1
+	TF32n = 0
+	TF33n = 1
 )
 
 const (

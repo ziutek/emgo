@@ -132,15 +132,19 @@ func flash(p *Periph) {
 func exti(p *Periph) {
 	for _, r := range p.Regs {
 		switch r.Name {
-		case "IMR":
+		case "IMR", "IMR1", "IMR2":
 			for _, b := range r.Bits {
+				if b.Name == "IM" {
+					b.Name = r.Name + "ALL"
+					continue
+				}
 				b.Name = strings.Replace(b.Name, "MR", "IL", 1)
 			}
-		case "EMR":
+		case "EMR", "EMR1", "EMR2":
 			for _, b := range r.Bits {
 				b.Name = strings.Replace(b.Name, "MR", "EL", 1)
 			}
-		case "FTSR":
+		case "FTSR", "FTSR1", "FTSR2":
 			for _, b := range r.Bits {
 				b.Name = strings.Replace(b.Name, "TR", "TF", 1)
 			}
