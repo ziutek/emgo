@@ -39,7 +39,7 @@ func init() {
 	d = spi.NewDriver(spi.SPI0)
 	d.P.StorePSEL(spi.SCK, p0.Pin(27))
 	d.P.StorePSEL(spi.MOSI, p0.Pin(29))
-	d.P.StoreFREQ(spi.F125k)
+	d.P.StoreFREQUENCY(spi.F125k)
 	d.Enable()
 	rtos.IRQ(d.P.NVIC()).Enable()
 }
