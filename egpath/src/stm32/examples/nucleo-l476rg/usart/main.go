@@ -35,11 +35,9 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	rxdc, txdc := d.Channel(6, 0), d.Channel(7, 0)
-	rxdc.Select(2)
-	txdc.Select(2)
-	tts = usart.NewDriver(
-		usart.USART2, rxdc, txdc, dmarxbuf[:],
-	)
+	rxdc.SetRequest(dma.DMA1_USART2)
+	txdc.SetRequest(dma.DMA1_USART2)
+	tts = usart.NewDriver(usart.USART2, rxdc, txdc, dmarxbuf[:])
 	tts.P.EnableClock(true)
 	tts.P.SetBaudRate(115200)
 	tts.P.Enable()
@@ -55,7 +53,7 @@ func init() {
 }
 
 func main() {
-	fmt.Printf("Enter/paste some text that contains newlines:\n")
+	fmt.Printf("\nEnter/paste some text that contains newlines:\n")
 	var buf [40]byte
 	for {
 		n, err := tts.Read(buf[:])

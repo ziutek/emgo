@@ -200,7 +200,15 @@ func (ch *Channel) SetAddrM(a unsafe.Pointer) {
 	ch.setAddrM(a)
 }
 
-// Select selects request source (peripheral) for channel.
-func (ch *Channel) Select(req int) {
-	ch.sel(req)
+// Request represents request number for DMA channel.
+type Request int8
+
+// Request returns current request source.
+func (ch *Channel) Request() Request {
+	return ch.request()
+}
+
+// SetRequest selects request source for channel.
+func (ch *Channel) SetRequest(req Request) {
+	ch.setRequest(req)
 }

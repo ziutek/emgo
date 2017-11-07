@@ -151,7 +151,12 @@ func (ch *Channel) setAddrM(a unsafe.Pointer) {
 	ch.raw.CMAR.U32.Store(uint32(uintptr(a)))
 }
 
-func (ch *Channel) sel(req int) {
+func (ch *Channel) request() Request {
+	n := snum(ch) * 4
+	return Request(sdma(ch).cselr.Bits(0xf << n))
+}
+
+func (ch *Channel) setRequest(req Request) {
 	n := snum(ch) * 4
 	sdma(ch).cselr.AtomicStoreBits(0xf<<n, uint32(req)<<n)
 }

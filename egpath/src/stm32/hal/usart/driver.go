@@ -162,7 +162,7 @@ start:
 			}
 			if _, e := d.P.Status(); e != 0 {
 				// Clear errors
-				d.P.Load()      // For older MCUs (read SR then DR seq.)
+				d.P.Load()      // For older MCUs (complete read SR then DR seq)
 				d.P.Clear(0, e) // For newer MCUs.
 				return 0, e
 			}
