@@ -16,7 +16,7 @@ import (
 var lcd EVE
 
 func init() {
-	system.Setup80(0, 0)
+	system.Setup96(8)
 	systick.Setup(2e6)
 
 	// GPIO
@@ -36,12 +36,9 @@ func init() {
 	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
 	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
-	d := dma.DMA1
+	d := dma.DMA2
 	d.EnableClock(true)
-	rxdc, txdx := d.Channel(2, 0), d.Channel(3, 0)
-	rxdc.SetRequest(dma.DMA1_SPI1)
-	txdx.SetRequest(dma.DMA1_SPI1)
-	lcd.spi = spi.NewDriver(spi.SPI1, rxdc, txdx)
+	lcd.spi = spi.NewDriver(spi.SPI1, d.Channel(2, 3), d.Channel(3, 3))
 	lcd.spi.P.EnableClock(true)
 	lcd.spi.P.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
@@ -51,8 +48,8 @@ func init() {
 	lcd.spi.P.SetWordSize(8)
 	lcd.spi.P.Enable()
 	rtos.IRQ(irq.SPI1).Enable()
-	rtos.IRQ(irq.DMA1_Channel2).Enable()
-	rtos.IRQ(irq.DMA1_Channel3).Enable()
+	rtos.IRQ(irq.DMA2_Stream2).Enable()
+	rtos.IRQ(irq.DMA2_Stream3).Enable()
 
 	// Controll
 
@@ -60,7 +57,7 @@ func init() {
 	lcd.csn.Setup(&cfg)
 	lcd.csn.Set()
 	lcd.pdn.Setup(&cfg)
-	lcd.pdn.Setup(&gpio.Config{Mode: gpio.In})
+	lcd.irq.Setup(&gpio.Config{Mode: gpio.In})
 }
 
 type EVE struct {
@@ -124,7 +121,7 @@ func lcdTxDMAISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.SPI1:          lcdSPIISR,
-	irq.DMA1_Channel2: lcdRxDMAISR,
-	irq.DMA1_Channel3: lcdTxDMAISR,
+	irq.SPI1:         lcdSPIISR,
+	irq.DMA2_Stream2: lcdRxDMAISR,
+	irq.DMA2_Stream3: lcdTxDMAISR,
 }
