@@ -60,7 +60,7 @@ func init() {
 	lcd.csn.Setup(&cfg)
 	lcd.csn.Set()
 	lcd.pdn.Setup(&cfg)
-	lcd.pdn.Setup(&gpio.Config{Mode: gpio.In})
+	lcd.irq.Setup(&gpio.Config{Mode: gpio.In})
 }
 
 type EVE struct {
@@ -101,9 +101,7 @@ func main() {
 	// Select external 12 MHz oscilator as clock source..
 	lcd.Cmd(FT800_CLKEXT)
 
-	lcd.spi.P.Disable()
 	lcd.spi.P.SetConf(lcd.spi.P.Conf()&^spi.BR256 | lcd.spi.P.BR(30e6))
-	lcd.spi.P.Enable()
 
 	fmt.Printf("SPI set to %d MHz\n", lcd.spi.P.Baudrate(lcd.spi.P.Conf()))
 	fmt.Printf("REGID=0x%X\n", lcd.Read8(REG_ID))
