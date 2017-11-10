@@ -11,3 +11,4 @@ func (d *Driver) AsyncWriteRead(out, in []byte) {
 func (d *Driver) WriteRead(out, in []byte) int {
 	return d.WriteStringRead(*(*string)(unsafe.Pointer(&out)), in)
 }
+
