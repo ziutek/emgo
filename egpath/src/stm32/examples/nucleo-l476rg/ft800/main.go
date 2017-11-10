@@ -13,6 +13,25 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
+type EVE struct {
+	spi           *spi.Driver
+	pdn, csn, irq gpio.Pin
+}
+
+func (lcd *EVE) Cmd(cmd HostCmd) {
+	lcd.csn.Clear()
+	lcd.spi.WriteRead([]byte{byte(cmd), 0, 0}, nil)
+	lcd.csn.Set()
+}
+
+func (lcd *EVE) Read8(addr uint32) byte {
+	lcd.csn.Clear()
+	buf := []byte{byte(addr >> 16), byte(addr >> 8), byte(addr), 0, 0}
+	lcd.spi.WriteRead(buf, buf)
+	lcd.csn.Set()
+	return buf[4]
+}
+
 var lcd EVE
 
 func init() {
@@ -57,29 +76,10 @@ func init() {
 	// Controll
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.High}
+	lcd.pdn.Setup(&cfg)
 	lcd.csn.Setup(&cfg)
 	lcd.csn.Set()
-	lcd.pdn.Setup(&cfg)
 	lcd.irq.Setup(&gpio.Config{Mode: gpio.In})
-}
-
-type EVE struct {
-	spi           *spi.Driver
-	pdn, csn, irq gpio.Pin
-}
-
-func (lcd *EVE) Cmd(cmd HostCmd) {
-	lcd.csn.Clear()
-	lcd.spi.WriteRead([]byte{byte(cmd), 0, 0}, nil)
-	lcd.csn.Set()
-}
-
-func (lcd *EVE) Read8(addr uint32) byte {
-	lcd.csn.Clear()
-	buf := []byte{byte(addr >> 16), byte(addr >> 8), byte(addr), 0, 0}
-	lcd.spi.WriteRead(buf, buf)
-	lcd.csn.Set()
-	return buf[4]
 }
 
 func main() {
@@ -98,7 +98,7 @@ func main() {
 	// Wakeup from STANDBY to ACTIVE.
 	lcd.Cmd(FT800_ACTIVE)
 
-	// Select external 12 MHz oscilator as clock source..
+	// Select external 12 MHz oscilator as clock source.
 	lcd.Cmd(FT800_CLKEXT)
 
 	lcd.spi.P.SetConf(lcd.spi.P.Conf()&^spi.BR256 | lcd.spi.P.BR(30e6))
