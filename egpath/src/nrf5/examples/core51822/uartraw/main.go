@@ -27,7 +27,7 @@ func init() {
 	u = uart.UART0
 	u.StorePSEL(uart.RXD, p0.Pin(11))
 	u.StorePSEL(uart.TXD, p0.Pin(9))
-	u.StoreBAUDRATE(uart.BR115200)
+	u.StoreBAUDRATE(uart.Baud115200)
 	u.StoreENABLE(true)
 }
 

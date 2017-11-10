@@ -150,26 +150,26 @@ func (p *Periph) StoreTXD(b byte) {
 type Baudrate uint32
 
 const (
-	BR1200   Baudrate = 0x0004F000 // Actual rate: 1205 baud.
-	BR2400   Baudrate = 0x0009D000 // Actual rate: 2396 baud.
-	BR4800   Baudrate = 0x0013B000 // Actual rate: 4808 baud.
-	BR9600   Baudrate = 0x00275000 // Actual rate: 9598 baud.
-	BR14400  Baudrate = 0x003B0000 // Actual rate: 14414 baud.
-	BR19200  Baudrate = 0x004EA000 // Actual rate: 19208 baud.
-	BR28800  Baudrate = 0x0075F000 // Actual rate: 28829 baud.
-	BR31250  Baudrate = 0x00800000
-	BR38400  Baudrate = 0x009D5000 // Actual rate: 38462 baud.
-	BR57600  Baudrate = 0x00EBF000 // Actual rate: 55944 baud.
-	BR76800  Baudrate = 0x013A9000 // Actual rate: 57602 baud.
-	BR115200 Baudrate = 0x01D7E000 // Actual rate: 115204 baud.
-	BR230400 Baudrate = 0x03AFB000 // Actual rate: 230393 baud.
-	BR250k   Baudrate = 0x04000000
-	BR460800 Baudrate = 0x075F7000
-	BR921600 Baudrate = 0x0EBEE000 // Actual rate: 921585 baud.
-	BR1M     Baudrate = 0x10000000
+	Baud1200   Baudrate = 0x0004F000 // Actual rate: 1205 baud.
+	Baud2400   Baudrate = 0x0009D000 // Actual rate: 2396 baud.
+	Baud4800   Baudrate = 0x0013B000 // Actual rate: 4808 baud.
+	Baud9600   Baudrate = 0x00275000 // Actual rate: 9598 baud.
+	Baud14400  Baudrate = 0x003B0000 // Actual rate: 14414 baud.
+	Baud19200  Baudrate = 0x004EA000 // Actual rate: 19208 baud.
+	Baud28800  Baudrate = 0x0075F000 // Actual rate: 28829 baud.
+	Baud31250  Baudrate = 0x00800000
+	Baud38400  Baudrate = 0x009D5000 // Actual rate: 38462 baud.
+	Baud57600  Baudrate = 0x00EBF000 // Actual rate: 55944 baud.
+	Baud76800  Baudrate = 0x013A9000 // Actual rate: 57602 baud.
+	Baud115200 Baudrate = 0x01D7E000 // Actual rate: 115204 baud.
+	Baud230400 Baudrate = 0x03AFB000 // Actual rate: 230393 baud.
+	Baud250k   Baudrate = 0x04000000
+	Baud460800 Baudrate = 0x075F7000
+	Baud921600 Baudrate = 0x0EBEE000 // Actual rate: 921585 baud.
+	Baud1M     Baudrate = 0x10000000
 )
 
-func BR(baud int) Baudrate {
+func Baud(baud int) Baudrate {
 	return (Baudrate(uint64(baud)<<32/16e6) + 0x800) & 0xFFFFF000
 }
 

@@ -41,7 +41,7 @@ func init() {
 	u = uart.NewDriver(uart.UART0, make([]byte, 80))
 	u.P.StorePSEL(uart.RXD, p0.Pin(11))
 	u.P.StorePSEL(uart.TXD, p0.Pin(9))
-	u.P.StoreBAUDRATE(uart.BR115200)
+	u.P.StoreBAUDRATE(uart.Baud115200)
 	u.P.StoreENABLE(true)
 	rtos.IRQ(u.P.NVIC()).Enable()
 	u.EnableTx()

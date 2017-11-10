@@ -82,10 +82,10 @@ func (d *Driver) Wait() int {
 
 func (d *Driver) AsyncWriteStringRead(out string, in []byte) {
 	d.txbuf = out
+	d.txn = 0
 	d.rxbuf = in[0:0:len(in)]
 	if len(out) == 0 {
 		if len(in) == 0 {
-			d.txn = 0
 			d.done.Reset(1)
 			return
 		}

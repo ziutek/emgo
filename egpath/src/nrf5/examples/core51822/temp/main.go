@@ -29,7 +29,7 @@ func init() {
 
 	u = uart.NewDriver(uart.UART0, make([]byte, 80))
 	u.P.StorePSEL(uart.TXD, gpio.P0.Pin(9))
-	u.P.StoreBAUDRATE(uart.BR115200)
+	u.P.StoreBAUDRATE(uart.Baud115200)
 	u.P.StoreENABLE(true)
 	rtos.IRQ(u.P.NVIC()).Enable()
 	fmt.DefaultWriter = u
