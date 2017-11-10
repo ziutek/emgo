@@ -133,7 +133,7 @@ func IRQStatus(irq int) (int, Errno) {
 
 // TriggerIRQ: see rtos package.
 func TriggerIRQ(irq int) Errno {
-	_, e := internal.Syscall1(IRQSTATUS, uintptr(irq))
+	_, e := internal.Syscall1(TRIGGERIRQ, uintptr(irq))
 	return Errno(e)
 }
 
