@@ -68,6 +68,8 @@ func (d *Driver) ISR() {
 	d.isr(d)
 }
 
+// Wait waits for the end of SPI transaction. It must be used after any Async*
+// method to ensure that started transaction has been finished. 
 func (d *Driver) Wait() int {
 	d.done.Wait(1, 0)
 	return len(d.rxbuf) >> d.w16

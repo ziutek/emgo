@@ -16,7 +16,7 @@ func (d *Driver) isr16() {
 		d.txn = 2
 	}
 	// SPI can generate events fast (1M event/s for max. speed) so check READY
-	// event loop before return.
+	// event in loop before return.
 	ev := p.Event(READY)
 	for ev.IsSet() {
 		ev.Clear()
@@ -45,6 +45,9 @@ func (d *Driver) isr16() {
 	}
 }
 
+// AsyncWriteRead16 starts SPI transaction: sending words from out slice
+// and receiving words into in slice. It returns immediately without waiting
+// for end of transaction. See Wait for more infomation.
 func (d *Driver) AsyncWriteRead16(out, in []uint16) {
 	txbuf := *(*reflect.StringHeader)(unsafe.Pointer(&out))
 	txbuf.Len *= 2
@@ -65,11 +68,13 @@ func (d *Driver) AsyncWriteRead16(out, in []uint16) {
 	rtos.IRQ(d.P.NVIC()).Trigger()
 }
 
+// WriteRead16 calls AsyncWriteRead16 followed by Wait.
 func (d *Driver) WriteRead16(out, in []uint16) int {
 	d.AsyncWriteRead16(out, in)
 	return d.Wait()
 }
 
+// WriteReadWord16 writes and reads 16-bit word.
 func (d *Driver) WriteReadWord16(w uint16) uint16 {
 	txbuf := reflect.StringHeader{uintptr(unsafe.Pointer(&w)), 2}
 	d.txbuf = *(*string)(unsafe.Pointer(&txbuf))
@@ -82,6 +87,9 @@ func (d *Driver) WriteReadWord16(w uint16) uint16 {
 	return w
 }
 
+// AsyncRepeatWord16 starts SPI transaction that sends word n times. It returns
+// immediately without waiting for end of transaction. See Wait for more
+// infomation.
 func (d *Driver) AsyncRepeatWord16(w uint16, n int) {
 	d.rep = w
 	txbuf := reflect.StringHeader{uintptr(unsafe.Pointer(&d.rep)), 2}
@@ -93,6 +101,7 @@ func (d *Driver) AsyncRepeatWord16(w uint16, n int) {
 	rtos.IRQ(d.P.NVIC()).Trigger()
 }
 
+// RepeatByte calls AsyncRepeatWord16 followed by Wait.
 func (d *Driver) RepeatWord16(w uint16, n int) {
 	d.AsyncRepeatWord16(w, n)
 	d.Wait()

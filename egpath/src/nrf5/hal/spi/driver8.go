@@ -25,7 +25,7 @@ func (d *Driver) isr8() {
 		}
 	}
 	// SPI can generate events fast (1M event/s for max. speed) so check READY
-	// event loop before return..
+	// event in loop before return.
 	ev := p.Event(READY)
 	for ev.IsSet() {
 		ev.Clear()
@@ -52,6 +52,9 @@ func (d *Driver) isr8() {
 	}
 }
 
+// AsyncWriteStringRead starts SPI transaction: sending bytes from out string
+// and receiving bytes into in slice. It returns immediately without waiting
+// for end of transaction. See Wait for more infomation.
 func (d *Driver) AsyncWriteStringRead(out string, in []byte) {
 	d.txbuf = out
 	d.txn = 0
@@ -67,11 +70,13 @@ func (d *Driver) AsyncWriteStringRead(out string, in []byte) {
 	rtos.IRQ(d.P.NVIC()).Trigger()
 }
 
+// WriteStringRead calls AsyncWriteStringRead followed by Wait.
 func (d *Driver) WriteStringRead(out string, in []byte) int {
 	d.AsyncWriteStringRead(out, in)
 	return d.Wait()
 }
 
+// WriteReadByte writes and reads byte.
 func (d *Driver) WriteReadByte(b byte) byte {
 	d.txbuf = "\xFF" // Set txbuf to any, one-byte string.
 	d.txn = 1        // Mark txbuf as sent.
@@ -84,14 +89,23 @@ func (d *Driver) WriteReadByte(b byte) byte {
 	return buf[0]
 }
 
+// Clean and safe code ended. Magical and unsafe code begins.
+
+// AsyncWriteRead starts SPI transaction: sending bytes from out slice and
+// receiving bytes into in slice. It returns immediately without waiting for
+// end of transaction. See Wait for more infomation.
 func (d *Driver) AsyncWriteRead(out, in []byte) {
 	d.AsyncWriteStringRead(*(*string)(unsafe.Pointer(&out)), in)
 }
 
+// WriteRead calls AsyncWriteRead followed by Wait.
 func (d *Driver) WriteRead(out, in []byte) int {
 	return d.WriteStringRead(*(*string)(unsafe.Pointer(&out)), in)
 }
 
+// AsyncRepeatByte starts SPI transaction that sends byte n times. It returns
+// immediately without waiting for end of transaction. See Wait for more
+// infomation.
 func (d *Driver) AsyncRepeatByte(b byte, n int) {
 	(*[2]byte)(unsafe.Pointer(&d.rep))[0] = b
 	txbuf := reflect.StringHeader{uintptr(unsafe.Pointer(&d.rep)), 1}
@@ -103,6 +117,7 @@ func (d *Driver) AsyncRepeatByte(b byte, n int) {
 	rtos.IRQ(d.P.NVIC()).Trigger()
 }
 
+// RepeatByte calls AsyncRepeatByte followed by Wait.
 func (d *Driver) RepeatByte(b byte, n int) {
 	d.AsyncRepeatByte(b, n)
 	d.Wait()
