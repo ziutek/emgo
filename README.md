@@ -2,7 +2,7 @@
 
 First of all, to try Emgo you need [Go compiler](https://golang.org/) installed. The current Emgo compiler and whole process described below requires also some kind of Unix-like operating system. There is a chance that Windows with Cygwin can be used but this was not tested.
 
-You can probably use `go get` to install Emgo but preffered way is to clone repository using git command:
+You can probably use `go get` to install Emgo but preffered way is to clone this repository using git command:
 
 	git clone https://github.com/ziutek/emgo.git
 
