@@ -15,6 +15,7 @@ type Driver struct {
 	rxbuf []byte
 	done  rtos.EventFlag
 	isr   func(*Driver)
+	rep   uint16
 	w16   byte
 	swp   int8 // Used for 16-bit transfer: 1 - swap bytes, 0 - do not swap.
 }

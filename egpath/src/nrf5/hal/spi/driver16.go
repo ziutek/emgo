@@ -23,10 +23,15 @@ func (d *Driver) isr16() {
 		b := p.LoadRXD()
 		if n := len(d.rxbuf); n < cap(d.rxbuf) {
 			d.rxbuf = d.rxbuf[:n+1]
-			n ^= swp
-			d.rxbuf[:n+1][n] = b
+			if &d.rxbuf[0] != nil {
+				n ^= swp
+				d.rxbuf[:n+1][n] = b
+			}
 		}
-		if d.txn >= len(d.txbuf) {
+		if d.txn < len(d.txbuf) {
+			p.StoreTXD(d.txbuf[d.txn^swp])
+			d.txn++
+		} else {
 			switch len(d.rxbuf) {
 			case cap(d.rxbuf) - 1:
 				// There is still one byte to receive.
@@ -35,11 +40,6 @@ func (d *Driver) isr16() {
 				d.done.Signal(1)
 				return
 			}
-		}
-		if d.txn < len(d.txbuf) {
-			p.StoreTXD(d.txbuf[d.txn^swp])
-			d.txn++
-		} else {
 			p.StoreTXD(d.txbuf[(d.txn-1)^swp^len(d.rxbuf)&1])
 		}
 	}
@@ -80,4 +80,20 @@ func (d *Driver) WriteReadWord16(w uint16) uint16 {
 	rtos.IRQ(d.P.NVIC()).Trigger()
 	d.done.Wait(1, 0)
 	return w
+}
+
+func (d *Driver) AsyncRepeatWord16(w uint16, n int) {
+	d.rep = w
+	txbuf := reflect.StringHeader{uintptr(unsafe.Pointer(&d.rep)), 2}
+	d.txbuf = *(*string)(unsafe.Pointer(&txbuf))
+	d.txn = 0
+	rxbuf := reflect.SliceHeader{0, 0, n} // Means: discard the received bytes.
+	d.rxbuf = *(*[]byte)(unsafe.Pointer(&rxbuf))
+	d.done.Reset(0)
+	rtos.IRQ(d.P.NVIC()).Trigger()
+}
+
+func (d *Driver) RepeatWord16(w uint16, n int) {
+	d.AsyncRepeatWord16(w, n)
+	d.Wait()
 }

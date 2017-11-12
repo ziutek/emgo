@@ -1,6 +1,7 @@
 package spi
 
 import (
+	"reflect"
 	"rtos"
 	"sync/fence"
 	"unsafe"
@@ -31,9 +32,13 @@ func (d *Driver) isr8() {
 		b := p.LoadRXD()
 		if n := len(d.rxbuf); n < cap(d.rxbuf) {
 			d.rxbuf = d.rxbuf[:n+1]
-			d.rxbuf[n] = b
+			if &d.rxbuf[0] != nil {
+				d.rxbuf[n] = b
+			}
 		}
-		if d.txn >= len(d.txbuf) {
+		if d.txn < len(d.txbuf) {
+			d.txn++
+		} else {
 			switch len(d.rxbuf) {
 			case cap(d.rxbuf) - 1:
 				// There is still one byte to receive.
@@ -42,9 +47,6 @@ func (d *Driver) isr8() {
 				d.done.Signal(1)
 				return
 			}
-		}
-		if d.txn < len(d.txbuf) {
-			d.txn++
 		}
 		p.StoreTXD(d.txbuf[d.txn-1])
 	}
@@ -73,7 +75,7 @@ func (d *Driver) WriteStringRead(out string, in []byte) int {
 func (d *Driver) WriteReadByte(b byte) byte {
 	d.txbuf = "\xFF" // Set txbuf to any, one-byte string.
 	d.txn = 1        // Mark txbuf as sent.
-	var buf [1]byte
+	buf := [1]byte{b}
 	d.rxbuf = buf[0:0:1]
 	d.done.Reset(0)
 	fence.W()
@@ -88,4 +90,20 @@ func (d *Driver) AsyncWriteRead(out, in []byte) {
 
 func (d *Driver) WriteRead(out, in []byte) int {
 	return d.WriteStringRead(*(*string)(unsafe.Pointer(&out)), in)
+}
+
+func (d *Driver) AsyncRepeatByte(b byte, n int) {
+	(*[2]byte)(unsafe.Pointer(&d.rep))[0] = b
+	txbuf := reflect.StringHeader{uintptr(unsafe.Pointer(&d.rep)), 1}
+	d.txbuf = *(*string)(unsafe.Pointer(&txbuf))
+	d.txn = 0
+	rxbuf := reflect.SliceHeader{0, 0, n} // Means: discard the received bytes.
+	d.rxbuf = *(*[]byte)(unsafe.Pointer(&rxbuf))
+	d.done.Reset(0)
+	rtos.IRQ(d.P.NVIC()).Trigger()
+}
+
+func (d *Driver) RepeatByte(b byte, n int) {
+	d.AsyncRepeatByte(b, n)
+	d.Wait()
 }

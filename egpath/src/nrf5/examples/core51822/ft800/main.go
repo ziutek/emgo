@@ -80,16 +80,14 @@ func init() {
 
 func main() {
 	/*
-		lcd.spi.SetWordSize(16)
-		in := make([]uint16, 5)
-		lcd.spi.WriteRead16(nil, in)
+		in := make([]byte, 5)
+		lcd.spi.WriteRead(nil, in)
 		fmt.Printf("%d\r\n", in)
-		lcd.spi.WriteRead16([]uint16{1, 2, 3}, in)
+		lcd.spi.WriteRead([]byte{1, 2, 3}, in)
 		fmt.Printf("%d\r\n", in)
-		lcd.spi.WriteRead16([]uint16{1, 2, 3, 4, 5, 6, 7}, in)
+		lcd.spi.WriteRead([]byte{1, 2, 3, 4, 5, 6, 7}, in)
 		fmt.Printf("%d\r\n", in)
-		fmt.Printf("%x\r\n", lcd.spi.WriteReadWord16(0xABCD))
-		lcd.spi.SetWordSize(8)
+		fmt.Printf("%x\r\n", lcd.spi.WriteReadByte(0xAB))
 	*/
 	// Wakeup from POWERDOWN to STANDBY (PDn must be low min. 20 ms).
 	delay.Millisec(20)
