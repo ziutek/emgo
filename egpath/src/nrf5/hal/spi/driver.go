@@ -2,8 +2,6 @@ package spi
 
 import (
 	"rtos"
-
-	"arch/cortexm/scb"
 )
 
 // Driver is interrupt based driver to the SPI peripheral.
@@ -32,8 +30,7 @@ func (d *Driver) Enable() {
 		d.isr = (*Driver).isr8
 	}
 	p := d.P
-	cpuBigEndian := int8(scb.SCB.AIRCR.Load() >> scb.ENDIANNESSn & 1)
-	d.swp = int8(p.LoadCONFIG()&LSBF) ^ cpuBigEndian
+	d.swp = int8(p.LoadCONFIG()&LSBF) ^ 1
 	p.StoreENABLE(true)
 	ev := p.Event(READY)
 	ev.Clear()
@@ -69,7 +66,7 @@ func (d *Driver) ISR() {
 }
 
 // Wait waits for the end of SPI transaction. It must be used after any Async*
-// method to ensure that started transaction has been finished. 
+// method to ensure that started transaction has been finished.
 func (d *Driver) Wait() int {
 	d.done.Wait(1, 0)
 	return len(d.rxbuf) >> d.w16

@@ -11,14 +11,14 @@ func (a *Area) DrawPoint(p image.Point) {
 	}
 	p = p.Add(a.P0())
 	dci := a.disp.dci // Reduces code size.
-	dci.Cmd16(CASET)
-	dci.Word(uint16(p.X))
-	dci.Word(uint16(p.X))
-	dci.Cmd16(PASET)
-	dci.Word(uint16(p.Y))
-	dci.Word(uint16(p.Y))
-	dci.Cmd16(RAMWR)
-	dci.Word(uint16(a.color))
+	dci.Cmd2(CASET)
+	dci.WriteWord(uint16(p.X))
+	dci.WriteWord(uint16(p.X))
+	dci.Cmd2(PASET)
+	dci.WriteWord(uint16(p.Y))
+	dci.WriteWord(uint16(p.Y))
+	dci.Cmd2(RAMWR)
+	dci.WriteWord(uint16(a.color))
 }
 
 // rawFillRect helps to reduce code size (dci is an interface, that causes
@@ -29,13 +29,13 @@ func (a *Area) rawFillRect(x0, y0, x1, y1, wxh int) {
 	x1 += int(a.x0)
 	y1 += int(a.y0)
 	dci := a.disp.dci // Reduces code size.
-	dci.Cmd16(CASET)
-	dci.Word(uint16(x0))
-	dci.Word(uint16(x1))
-	dci.Cmd16(PASET)
-	dci.Word(uint16(y0))
-	dci.Word(uint16(y1))
-	dci.Cmd16(RAMWR)
+	dci.Cmd2(CASET)
+	dci.WriteWord(uint16(x0))
+	dci.WriteWord(uint16(x1))
+	dci.Cmd2(PASET)
+	dci.WriteWord(uint16(y0))
+	dci.WriteWord(uint16(y1))
+	dci.Cmd2(RAMWR)
 	dci.Fill(uint16(a.color), wxh)
 }
 

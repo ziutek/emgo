@@ -10,84 +10,95 @@ import (
 
 	"display/ili9341"
 
-	"stm32/ilidci"
+	"nrf5/ilidci"
 
-	"stm32/hal/dma"
-	"stm32/hal/gpio"
-	"stm32/hal/irq"
-	"stm32/hal/spi"
-	"stm32/hal/system"
-	"stm32/hal/system/timer/rtcst"
+	"nrf5/hal/clock"
+	"nrf5/hal/gpio"
+	"nrf5/hal/irq"
+	"nrf5/hal/rtc"
+	"nrf5/hal/spi"
+	"nrf5/hal/system"
+	"nrf5/hal/system/timer/rtcst"
+	"nrf5/hal/uart"
 )
 
 var (
+	leds   [5]gpio.Pin
+	u      *uart.Driver
 	lcdspi *spi.Driver
 	lcd    *ili9341.Display
 )
 
 func init() {
-	system.SetupPLL(8, 1, 72/8)
-	rtcst.Setup(32768)
+	system.Setup(clock.XTAL, clock.XTAL, true)
+	rtcst.Setup(rtc.RTC0, 1)
 
 	// GPIO
 
-	gpio.A.EnableClock(true)
-	spiport, sck, miso, mosi := gpio.A, gpio.Pin5, gpio.Pin6, gpio.Pin7
+	p0 := gpio.P0
 
-	gpio.B.EnableClock(true)
-	ilidc := gpio.B.Pin(0)
-	ilireset := gpio.B.Pin(1)
-	ilics := gpio.B.Pin(10)
+	ilireset := p0.Pin(0)
+	ilidc := p0.Pin(1)
+	ilimosi := p0.Pin(2)
+	ilisck := p0.Pin(3)
+	ilimiso := p0.Pin(4)
 
-	// SPI
+	utx := p0.Pin(9)
+	urx := p0.Pin(11)
 
-	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
-	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
-	d := dma.DMA1
-	d.EnableClock(true)
-	lcdspi = spi.NewDriver(spi.SPI1, d.Channel(2, 0), d.Channel(3, 0))
-	lcdspi.P.EnableClock(true)
-	lcdspi.P.SetConf(
-		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			lcdspi.P.BR(36e6) | // 36 MHz max.
-			spi.SoftSS | spi.ISSHigh,
-	)
-	lcdspi.P.SetWordSize(8)
-	lcdspi.P.Enable()
-	rtos.IRQ(irq.SPI1).Enable()
-	rtos.IRQ(irq.DMA1_Channel2).Enable()
-	rtos.IRQ(irq.DMA1_Channel3).Enable()
+	for i := range leds {
+		leds[i] = p0.Pin(18 + i)
+	}
 
-	// Controll
+	ilicsn := p0.Pin(30)
 
-	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.High}
-	ilics.Setup(&cfg)
-	ilics.Set()
-	ilidc.Setup(&cfg)
-	cfg.Speed = gpio.Low
-	ilireset.Setup(&cfg)
+	// LEDs
+
+	for _, led := range leds {
+		led.Setup(gpio.ModeOut)
+	}
+
+	// UART
+
+	u = uart.NewDriver(uart.UART0, make([]byte, 80))
+	u.P.StorePSEL(uart.RXD, urx)
+	u.P.StorePSEL(uart.TXD, utx)
+	u.P.StoreBAUDRATE(uart.Baud115200)
+	u.Enable()
+	//u.EnableRx()
+	u.EnableTx()
+	rtos.IRQ(u.P.NVIC()).Enable()
+	fmt.DefaultWriter = u
+
+	// LCD SPI
+
+	lcdspi = spi.NewDriver(spi.SPI0)
+	lcdspi.P.StorePSEL(spi.SCK, ilisck)
+	lcdspi.P.StorePSEL(spi.MISO, ilimiso)
+	lcdspi.P.StorePSEL(spi.MOSI, ilimosi)
+	lcdspi.P.StoreFREQUENCY(spi.Freq8M)
+	lcdspi.Enable()
+	rtos.IRQ(lcdspi.P.NVIC()).Enable()
+
+	// LCD controll
+
+	p0.Setup(ilicsn.Mask()|ilidc.Mask()|ilireset.Mask(), gpio.ModeOut)
+	ilicsn.Set()
 	delay.Millisec(1) // Reset pulse.
 	ilireset.Set()
 	delay.Millisec(5) // Wait for reset.
-	ilics.Clear()
+	ilicsn.Clear()
 
 	lcd = ili9341.NewDisplay(ilidci.NewDCI(lcdspi, ilidc))
 }
 
 func main() {
-	delay.Millisec(100)
-	spibus := lcdspi.P.Bus()
-	baudrate := lcdspi.P.Baudrate(lcdspi.P.Conf())
-	fmt.Printf(
-		"\nSPI on %s (%d MHz). SPI speed: %d bps.\n\n",
-		spibus, spibus.Clock()/1e6, baudrate,
-	)
-
 	lcd.SlpOut()
 	delay.Millisec(120)
 	lcd.DispOn()
 	lcd.PixSet(ili9341.PF16) // 16-bit pixel format.
 	lcd.MADCtl(ili9341.MY | ili9341.MX | ili9341.MV | ili9341.BGR)
+
 	lcd.SetWordSize(16)
 
 	width := lcd.Bounds().Dx()
@@ -103,7 +114,7 @@ func main() {
 	dci.WriteWord(uint16(height - 1))
 	dci.Cmd2(ili9341.RAMWR)
 
-	const N = 10
+	const N = 4
 	start := rtos.Nanosec()
 	for i := 0; i < N; i++ {
 		dci.Fill(0xffff, wxh)
@@ -111,7 +122,7 @@ func main() {
 	}
 	fps := N * 2 * 1e9 / float32(rtos.Nanosec()-start)
 	fmt.Printf(
-		"dci.Fill       speed: %4.1f fps (%.0f bps).\n",
+		"\r\n\r\ndci.Fill       speed: %4.1f fps (%.0f bps).\r\n",
 		fps, fps*float32(wxh*16),
 	)
 
@@ -126,7 +137,7 @@ func main() {
 	}
 	fps = N * 2 * 1e9 / float32(rtos.Nanosec()-start)
 	fmt.Printf(
-		"scr.FillRect   speed: %4.1f fps (%.0f bps).\n",
+		"scr.FillRect   speed: %4.1f fps (%.0f bps).\r\n",
 		fps, fps*float32(wxh*16),
 	)
 
@@ -144,7 +155,7 @@ func main() {
 		scr.DrawLine(image.Pt(160, -10), image.Pt(160, 250))
 	}
 	lps := N * 8 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("scr.DrawLine   speed: %4.0f lps.\n", lps)
+	fmt.Printf("scr.DrawLine   speed: %4.0f lps.\r\n", lps)
 
 	start = rtos.Nanosec()
 	for i := 0; i < N; i++ {
@@ -160,7 +171,7 @@ func main() {
 		scr.DrawLine_(image.Pt(160, -10), image.Pt(160, 250))
 	}
 	lps = N * 8 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("scr.DrawLine_  speed: %4.0f lps.\n", lps)
+	fmt.Printf("scr.DrawLine_  speed: %4.0f lps.\r\n", lps)
 
 	p0 := image.Pt(40, 40)
 	p1 := image.Pt(200, 100)
@@ -178,7 +189,7 @@ func main() {
 		scr.DrawLine(p2, p0)
 	}
 	lps = N * 6 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("scr.DrawLine   speed: %4.0f lps.\n", lps)
+	fmt.Printf("scr.DrawLine   speed: %4.0f lps.\r\n", lps)
 
 	start = rtos.Nanosec()
 	for i := 0; i < N; i++ {
@@ -192,7 +203,7 @@ func main() {
 		scr.DrawLine_(p2, p0)
 	}
 	lps = N * 6 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("scr.DrawLine_  speed: %4.0f lps.\n", lps)
+	fmt.Printf("scr.DrawLine_  speed: %4.0f lps.\r\n", lps)
 
 	p0 = scr.Bounds().Max.Div(2)
 	r := p0.X
@@ -208,7 +219,7 @@ func main() {
 		scr.FillCircle(p0, r)
 	}
 	cps := N * 2 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("scr.FillCircle speed: %4.0f cps.\n", cps)
+	fmt.Printf("scr.FillCircle speed: %4.0f cps.\r\n", cps)
 
 	start = rtos.Nanosec()
 	for i := 0; i < N; i++ {
@@ -218,7 +229,7 @@ func main() {
 		scr.DrawCircle(p0, r)
 	}
 	cps = N * 2 * 1e9 / float32(rtos.Nanosec()-start)
-	fmt.Printf("scr.DrawCircle speed: %4.0f cps.\n", cps)
+	fmt.Printf("scr.DrawCircle speed: %4.0f cps.\r\n", cps)
 
 	var rnd rand.XorShift64
 	rnd.Seed(rtos.Nanosec())
@@ -243,24 +254,18 @@ func main() {
 	}
 }
 
-func lcdSPIISR() {
+func spiISR() {
 	lcdspi.ISR()
 }
 
-func lcdRxDMAISR() {
-	lcdspi.DMAISR(lcdspi.RxDMA)
-}
-
-func lcdTxDMAISR() {
-	lcdspi.DMAISR(lcdspi.TxDMA)
+func uartISR() {
+	u.ISR()
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTCAlarm: rtcst.ISR,
-
-	irq.SPI1:          lcdSPIISR,
-	irq.DMA1_Channel2: lcdRxDMAISR,
-	irq.DMA1_Channel3: lcdTxDMAISR,
+	irq.RTC0:      rtcst.ISR,
+	irq.SPI0_TWI0: spiISR,
+	irq.UART0:     uartISR,
 }

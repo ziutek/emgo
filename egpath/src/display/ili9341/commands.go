@@ -52,7 +52,7 @@ const (
 // MADCtl invokes Memory Access Control command (8-bit).
 func (d *Display) MADCtl(mad MAD) {
 	d.dci.Cmd(MADCTL)
-	d.dci.Byte(byte(mad))
+	d.dci.WriteByte(byte(mad))
 	d.swapWH = mad&MV != 0
 
 }
@@ -68,5 +68,5 @@ const (
 // PixSet invokes Pixel Format Set command (8-bit).
 func (d *Display) PixSet(pf PixFmt) {
 	d.dci.Cmd(PIXSET)
-	d.dci.Byte(byte(pf))
+	d.dci.WriteByte(byte(pf))
 }

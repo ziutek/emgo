@@ -1,0 +1,23 @@
+Old SPI driver:
+
+Generic:
+
+dci.Fill       speed:  0.7 fps (888844 bps).
+scr.FillRect   speed:  0.7 fps (888393 bps).
+scr.DrawLine   speed:   10 lps.
+scr.DrawLine_  speed:    4 lps.
+scr.DrawLine   speed:   28 lps.
+scr.DrawLine_  speed:    9 lps.
+scr.FillCircle speed:    1 cps.
+scr.DrawCircle speed:    2 cps.
+
+Specialised fill.
+
+dci.Fill       speed:  2.5 fps (3047056 bps).
+scr.FillRect   speed:  2.5 fps (3041790 bps).
+scr.DrawLine   speed:   11 lps.
+scr.DrawLine_  speed:    4 lps.
+scr.DrawLine   speed:   29 lps.
+scr.DrawLine_  speed:    9 lps.
+scr.FillCircle speed:    3 cps.
+scr.DrawCircle speed:    2 cps.

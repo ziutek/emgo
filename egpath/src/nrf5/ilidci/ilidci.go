@@ -1,10 +1,8 @@
 package ilidci
 
 import (
-	"rtos"
-
-	"stm32/hal/gpio"
-	"stm32/hal/spi"
+	"nrf5/hal/gpio"
+	"nrf5/hal/spi"
 )
 
 // DCI implements ili9341.DCI interface.
@@ -25,20 +23,10 @@ func (dci *DCI) SPI() *spi.Driver {
 }
 
 func (dci *DCI) SetWordSize(size int) {
-	dci.spi.P.SetWordSize(size)
-}
-
-func (dci *DCI) waitBusy() {
-	for {
-		if ev, _ := dci.spi.P.Status(); ev&spi.Busy == 0 {
-			break
-		}
-		rtos.SchedYield()
-	}
+	dci.spi.SetWordSize(size)
 }
 
 func (dci *DCI) Cmd(b byte) {
-	dci.waitBusy()
 	dci.dc.Clear()
 	dci.spi.WriteReadByte(b)
 	dci.dc.Set()
@@ -49,7 +37,6 @@ func (dci *DCI) WriteByte(b byte) {
 }
 
 func (dci *DCI) Cmd2(w uint16) {
-	dci.waitBusy()
 	dci.dc.Clear()
 	dci.spi.WriteReadWord16(w)
 	dci.dc.Set()
@@ -68,5 +55,5 @@ func (dci *DCI) Fill(w uint16, n int) {
 }
 
 func (dci *DCI) Err() error {
-	return dci.spi.Err()
+	return nil
 }

@@ -99,13 +99,13 @@ func main() {
 	wxh := width * height
 
 	dci := lcd.DCI()
-	dci.Cmd16(ili9341.CASET)
-	dci.Word(0)
-	dci.Word(uint16(width - 1))
-	dci.Cmd16(ili9341.PASET)
-	dci.Word(0)
-	dci.Word(uint16(height - 1))
-	dci.Cmd16(ili9341.RAMWR)
+	dci.Cmd2(ili9341.CASET)
+	dci.WriteWord(0)
+	dci.WriteWord(uint16(width - 1))
+	dci.Cmd2(ili9341.PASET)
+	dci.WriteWord(0)
+	dci.WriteWord(uint16(height - 1))
+	dci.Cmd2(ili9341.RAMWR)
 
 	const N = 10
 	start := rtos.Nanosec()

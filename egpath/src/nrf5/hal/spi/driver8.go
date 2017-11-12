@@ -44,6 +44,7 @@ func (d *Driver) isr8() {
 				// There is still one byte to receive.
 				continue
 			case cap(d.rxbuf):
+				p.NVIC().ClearPending() // Can be edge triggered during ISR.
 				d.done.Signal(1)
 				return
 			}
@@ -107,6 +108,10 @@ func (d *Driver) WriteRead(out, in []byte) int {
 // immediately without waiting for end of transaction. See Wait for more
 // infomation.
 func (d *Driver) AsyncRepeatByte(b byte, n int) {
+	if n == 0 {
+		d.done.Reset(1)
+		return
+	}
 	(*[2]byte)(unsafe.Pointer(&d.rep))[0] = b
 	txbuf := reflect.StringHeader{uintptr(unsafe.Pointer(&d.rep)), 1}
 	d.txbuf = *(*string)(unsafe.Pointer(&txbuf))
