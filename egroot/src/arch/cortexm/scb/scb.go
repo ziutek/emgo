@@ -66,7 +66,12 @@ const (
 )
 
 const (
-	VECTKEYn = 16
+	VECTRESETn     = 0
+	VECTCLRACTIVEn = 1
+	SYSRESETREQn   = 2
+	PRIGROUPn      = 8
+	ENDIANNESSn    = 15
+	VECTKEYn       = 16
 )
 
 const (
