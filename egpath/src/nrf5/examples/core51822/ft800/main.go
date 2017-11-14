@@ -80,15 +80,71 @@ func init() {
 
 func main() {
 	/*
-		in := make([]byte, 5)
-		lcd.spi.WriteRead(nil, in)
-		fmt.Printf("%d\r\n", in)
-		lcd.spi.WriteRead([]byte{1, 2, 3}, in)
-		fmt.Printf("%d\r\n", in)
-		lcd.spi.WriteRead([]byte{1, 2, 3, 4, 5, 6, 7}, in)
-		fmt.Printf("%d\r\n", in)
-		fmt.Printf("%x\r\n", lcd.spi.WriteReadByte(0xAB))
+		in := make([]uint16, 4)
+		fmt.Printf(
+			"n=%d %04x\r\n",
+			lcd.spi.WriteRead16(nil, in),
+			in,
+		)
+		fmt.Printf(
+			"n=%d %04x\r\n",
+			lcd.spi.WriteRead16([]uint16{0x0123}, in),
+			in,
+		)
+		fmt.Printf(
+			"n=%d %04x\r\n",
+			lcd.spi.WriteRead16([]uint16{0x0123, 0x4567}, in),
+			in,
+		)
+		fmt.Printf(
+			"n=%d %04x\r\n",
+			lcd.spi.WriteRead16([]uint16{0x0123, 0x4567, 0x89AB}, in),
+			in,
+		)
+		fmt.Printf(
+			"n=%d %04x\r\n",
+			lcd.spi.WriteRead16([]uint16{0x0123, 0x4567, 0x89AB, 0xCDEF}, in),
+			in,
+		)
+		fmt.Printf("%x\r\n", lcd.spi.WriteReadWord16(0xABCD))
 	*/
+	in := make([]byte, 5)
+	fmt.Printf(
+		"n=%d %02x\r\n",
+		lcd.spi.WriteRead(nil, in),
+		in,
+	)
+	fmt.Printf(
+		"n=%d %02x\r\n",
+		lcd.spi.WriteRead([]byte{0x01}, in),
+		in,
+	)
+	fmt.Printf(
+		"n=%d %02x\r\n",
+		lcd.spi.WriteRead([]byte{0x01, 0x23}, in),
+		in,
+	)
+	fmt.Printf(
+		"n=%d %02x\r\n",
+		lcd.spi.WriteRead([]byte{0x01, 0x23, 0x45}, in),
+		in,
+	)
+	fmt.Printf(
+		"n=%d %02x\r\n",
+		lcd.spi.WriteRead([]byte{0x01, 0x23, 0x45, 0x67}, in),
+		in,
+	)
+	fmt.Printf(
+		"n=%d %02x\r\n",
+		lcd.spi.WriteRead([]byte{0x01, 0x23, 0x45, 0x67, 0x89}, in),
+		in,
+	)
+	fmt.Printf("%x\r\n", lcd.spi.WriteReadByte(0xAB))
+
+	lcd.spi.AsyncRepeatByte(12, 100)
+	fmt.Printf("n=%d\r\n", lcd.spi.Wait())
+
+
 	// Wakeup from POWERDOWN to STANDBY (PDn must be low min. 20 ms).
 	delay.Millisec(20)
 	lcd.pdn.Set()

@@ -19,31 +19,37 @@ func (d *Driver) WriteReadByte(b byte) byte {
 	return p.LoadRXD()
 }
 
-func (d *Driver) writeReadByteISR() {
+func (d *Driver) writeReadISR() {
 	p := d.P
 	ev := p.Event(READY)
+	txptr := d.txptr
+	txmax := d.txmax
+	rxptr := d.rxptr
+	rxmax := d.rxmax
 	for ev.IsSet() {
 		ev.Clear()
 		b := p.LoadRXD()
-		if rxptr := d.rxptr; rxptr <= d.rxmax {
+		if rxptr <= rxmax {
 			*(*byte)(unsafe.Pointer(rxptr)) = b
-			d.rxptr = rxptr + 1
+			rxptr++
 		}
-		if txptr := d.txptr; txptr < d.txmax {
+		if txptr < txmax {
 			p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
-			d.txptr = txptr + 1
+			txptr++
 		} else {
-			if d.rxptr == d.rxmax {
+			if rxptr == rxmax {
 				// There is still one byte to receive.
 				continue
-			} else if d.rxptr > d.rxmax {
+			} else if rxptr > rxmax {
 				p.NVIC().ClearPending() // Can be edge triggered during ISR.
 				d.done.Signal(1)
-				return
+				break
 			}
 			p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
 		}
 	}
+	d.txptr = txptr
+	d.rxptr = rxptr
 }
 
 // AsyncWriteStringRead starts SPI transaction: sending bytes from out string
@@ -91,9 +97,14 @@ func (d *Driver) AsyncWriteStringRead(out string, in []byte) {
 		p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
 		p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
 	}
-	d.rxptr = (*reflect.StringHeader)(unsafe.Pointer(&in)).Data
-	d.rxmax = d.rxptr + uintptr(len(in)) - 1
-	d.isr = (*Driver).writeReadByteISR
+	if len(in) == 0 {
+		d.rxptr = 0
+		d.rxmax = 0
+	} else {
+		d.rxptr = (*reflect.StringHeader)(unsafe.Pointer(&in)).Data
+		d.rxmax = d.rxptr + uintptr(len(in)) - 1
+	}
+	d.isr = (*Driver).writeReadISR
 	d.done.Reset(0)
 	fence.W()
 	p.Event(READY).EnableIRQ()
