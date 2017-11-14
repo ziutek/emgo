@@ -8,13 +8,14 @@ import (
 type Driver struct {
 	P *Periph
 
-	txbuf string
-	txn   int
-	rxbuf []byte
-	done  rtos.EventFlag
+	txptr uintptr
+	txmax uintptr
+	rxptr uintptr
+	rxmax uintptr
+	n     int
 	isr   func(*Driver)
-	rep   uint16
-	w16   byte
+	done  rtos.EventFlag
+	w     uint16
 	swp   int8 // Used for 16-bit transfer: 1 - swap bytes, 0 - do not swap.
 }
 
@@ -26,38 +27,14 @@ func NewDriver(p *Periph) *Driver {
 }
 
 func (d *Driver) Enable() {
-	if d.isr == nil {
-		d.isr = (*Driver).isr8
-	}
 	p := d.P
-	d.swp = int8(p.LoadCONFIG()&LSBF) ^ 1
+	d.swp = int8(p.LoadCONFIG()&LSBF) ^ 1 // nRF5 is little-endian.
 	p.StoreENABLE(true)
-	ev := p.Event(READY)
-	ev.Clear()
-	ev.EnableIRQ()
 }
 
 func (d *Driver) Disable() {
 	p := d.P
 	p.StoreENABLE(false)
-	p.Event(READY).DisableIRQ()
-}
-
-func (d *Driver) WordSize() int {
-	return 8 << d.w16
-}
-
-// SetWordSize sets word size in bits (driver supports only 8 and 16 bit).
-func (d *Driver) SetWordSize(size int) {
-	switch size {
-	case 8:
-		d.isr = (*Driver).isr8
-	case 16:
-		d.isr = (*Driver).isr16
-	default:
-		panic("spi: bad word size")
-	}
-	d.w16 = byte(size / 16)
 }
 
 // ISR should be used as SPI interrupt handler.
@@ -65,9 +42,12 @@ func (d *Driver) ISR() {
 	d.isr(d)
 }
 
-// Wait waits for the end of SPI transaction. It must be used after any Async*
-// method to ensure that started transaction has been finished.
+// Wait waits for the end of SPI transaction. It must be called after any Async*
+// method to ensure that the started transaction has been finished. If Wait is
+// called after any of AsyncWrite*Read* methods it returns the number of
+// bytes/words read.
 func (d *Driver) Wait() int {
 	d.done.Wait(1, 0)
-	return len(d.rxbuf) >> d.w16
+	d.P.Event(READY).DisableIRQ()
+	return d.n
 }
