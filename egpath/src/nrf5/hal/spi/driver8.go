@@ -130,7 +130,6 @@ func (d *Driver) AsyncWriteStringRead(out string, in []byte) {
 		}
 		p.StoreTXD(0xFF)
 		p.StoreTXD(0xFF)
-		d.w = uint16(0xFF) // nRF5 is little-endian.
 		d.rxptr = (*reflect.StringHeader)(unsafe.Pointer(&in)).Data
 		d.rxmax = d.rxptr + uintptr(len(in)) - 1
 		d.isr = (*Driver).readISR

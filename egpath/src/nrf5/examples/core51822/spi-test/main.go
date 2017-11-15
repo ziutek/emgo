@@ -114,6 +114,8 @@ func main() {
 		in16,
 	)
 	fmt.Printf("%x\r\n", s.WriteReadWord16(0xABCD))
+	s.AsyncRepeatWord16(0x1234, 50)
+	fmt.Printf("n=%d\r\n", s.Wait())
 }
 
 func spiISR() {

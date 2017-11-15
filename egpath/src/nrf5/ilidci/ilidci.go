@@ -22,8 +22,7 @@ func (dci *DCI) SPI() *spi.Driver {
 	return dci.spi
 }
 
-func (dci *DCI) SetWordSize(size int) {
-	dci.spi.SetWordSize(size)
+func (dci *DCI) SetWordSize(_ int) {
 }
 
 func (dci *DCI) Cmd(b byte) {
