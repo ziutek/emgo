@@ -7,7 +7,7 @@ import (
 	"unsafe"
 )
 
-// WriteReadByte sends a byte and returns received byte.
+// WriteReadByte sends byte and returns the received byte.
 func (d *Driver) WriteReadByte(b byte) byte {
 	p := d.P
 	p.StoreTXD(b)
@@ -17,6 +17,46 @@ func (d *Driver) WriteReadByte(b byte) byte {
 	}
 	ev.Clear()
 	return p.LoadRXD()
+}
+
+func (d *Driver) writeISR() {
+	p := d.P
+	ev := p.Event(READY)
+	txptr := d.txptr
+	txmax := d.txmax
+	for ev.IsSet() {
+		ev.Clear()
+		p.LoadRXD()
+		if txptr < txmax {
+			p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
+		} else if txptr > txmax {
+			p.NVIC().ClearPending() // Can be edge triggered during ISR.
+			d.done.Signal(1)
+			return
+		}
+		txptr++
+	}
+	d.txptr = txptr
+}
+
+func (d *Driver) readISR() {
+	p := d.P
+	ev := p.Event(READY)
+	rxptr := d.rxptr
+	rxmax := d.rxmax
+	for ev.IsSet() {
+		ev.Clear()
+		*(*byte)(unsafe.Pointer(rxptr)) = p.LoadRXD()
+		rxptr++
+		if rxptr < rxmax {
+			p.StoreTXD(0xFF)
+		} else if rxptr > rxmax {
+			p.NVIC().ClearPending() // Can be edge triggered during ISR.
+			d.done.Signal(1)
+			return
+		}
+	}
+	d.rxptr = rxptr
 }
 
 func (d *Driver) writeReadISR() {
@@ -43,7 +83,7 @@ func (d *Driver) writeReadISR() {
 			} else if rxptr > rxmax {
 				p.NVIC().ClearPending() // Can be edge triggered during ISR.
 				d.done.Signal(1)
-				break
+				return
 			}
 			p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
 		}
@@ -54,60 +94,76 @@ func (d *Driver) writeReadISR() {
 
 // AsyncWriteStringRead starts SPI transaction: sending bytes from out string
 // and receiving bytes into in slice. It returns immediately without waiting
-// for end of transaction. See Wait for more infomation.
+// for end of transaction. See Wait for more infomation. len(ou) and len(in) may
+// be different. If len(out) < len(in) the last byte of out is repeated as long
+// as in will be filled. If len(out) == 0 and len(in) > 0 the 0xFF byte is sent.
 func (d *Driver) AsyncWriteStringRead(out string, in []byte) {
 	d.n = len(in)
-	if len(out) == 0 && len(in) == 0 {
-		d.done.Reset(1)
-		return
-	}
-	if len(out) <= 1 && len(in) <= 1 {
-		b := byte(0xFF)
-		if len(out) == 1 {
-			b = out[0]
-		}
-		b = d.WriteReadByte(b)
-		if len(in) == 1 {
-			in[0] = b
-		}
-		d.done.Reset(1)
-		return
-	}
-	// Now we are sure that len(out) >= 2 or len(in) >= 2 so at least two bytes
-	// can be written to TXD register.
 	p := d.P
-	txptr := (*reflect.StringHeader)(unsafe.Pointer(&out)).Data
-	if len(out) >= 2 {
+	if len(out) == 0 && len(in) == 0 {
+		goto returnNoIRQ
+	}
+	if len(in) == 0 {
+		// Tx-only transaction.
+		if len(out) == 1 {
+			d.WriteReadByte(out[0])
+			goto returnNoIRQ
+		}
+		txptr := (*reflect.StringHeader)(unsafe.Pointer(&out)).Data
+		p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
+		p.StoreTXD(*(*byte)(unsafe.Pointer(txptr + 1)))
+		if len(out) == 2 {
+			d.txptr = txptr // Can be any value.
+			d.txmax = txptr // Same as in d.txptr, means: no more data to send.
+		} else {
+			d.txptr = txptr + 2
+			d.txmax = txptr + uintptr(len(out)) - 1
+		}
+		d.isr = (*Driver).writeISR
+		goto returnIRQ
+	}
+	if len(out) == 0 {
+		// Rx-only transaction. Send 0xFF bytes.
+		if len(in) == 1 {
+			in[0] = d.WriteReadByte(0xFF)
+			goto returnNoIRQ
+		}
+		p.StoreTXD(0xFF)
+		p.StoreTXD(0xFF)
+		d.w = uint16(0xFF) // nRF5 is little-endian.
+		d.rxptr = (*reflect.StringHeader)(unsafe.Pointer(&in)).Data
+		d.rxmax = d.rxptr + uintptr(len(in)) - 1
+		d.isr = (*Driver).readISR
+		goto returnIRQ
+	}
+	if len(in) == 1 && len(out) == 1 {
+		in[0] = d.WriteReadByte(out[0])
+		goto returnNoIRQ
+	}
+	// Now (len(out), len(in)) must be (>=1, >=2) or (>=2, >=1).
+	{
+		txptr := (*reflect.StringHeader)(unsafe.Pointer(&out)).Data
 		d.txmax = txptr + uintptr(len(out)) - 1
 		p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
-		txptr++
+		if len(out) >= 2 {
+			txptr++
+		}
 		p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
 		if len(out) > 2 {
 			txptr++
 		}
 		d.txptr = txptr
-	} else {
-		if len(out) == 0 {
-			// Rx-only transaction. Send 0xFF bytes.
-			d.w = 0xFF // nRF5 is little-endian.
-			txptr = uintptr(unsafe.Pointer(&d.w))
-		}
-		d.txmax = txptr
-		d.txptr = txptr
-		p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
-		p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
-	}
-	if len(in) == 0 {
-		d.rxptr = 0
-		d.rxmax = 0
-	} else {
 		d.rxptr = (*reflect.StringHeader)(unsafe.Pointer(&in)).Data
 		d.rxmax = d.rxptr + uintptr(len(in)) - 1
+		d.isr = (*Driver).writeReadISR
 	}
-	d.isr = (*Driver).writeReadISR
+returnIRQ:
 	d.done.Reset(0)
 	fence.W()
 	p.Event(READY).EnableIRQ()
+	return
+returnNoIRQ:
+	d.done.Reset(1)
 }
 
 // WriteStringRead calls AsyncWriteStringRead followed by Wait.
@@ -141,7 +197,7 @@ func (d *Driver) repeatByteISR() {
 		} else if n < 0 {
 			p.NVIC().ClearPending() // Can be edge triggered during ISR.
 			d.done.Signal(1)
-			break
+			return
 		}
 		n--
 	}
