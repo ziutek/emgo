@@ -183,6 +183,19 @@ func (d *Driver) WriteRead(out, in []byte) int {
 	return d.WriteStringRead(*(*string)(unsafe.Pointer(&out)), in)
 }
 
+func (d *Driver) WriteReadMany(oi ...[]byte) int {
+	var n int
+	for k := 0; k < len(oi); k += 2 {
+		var in []byte
+		if k+1 < len(oi) {
+			in = oi[k+1]
+		}
+		out := oi[k]
+		n += d.WriteRead(out, in)
+	}
+	return n
+}
+
 func (d *Driver) repeatByteISR() {
 	p := d.P
 	ev := p.Event(READY)

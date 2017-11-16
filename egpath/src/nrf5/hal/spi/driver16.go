@@ -202,6 +202,19 @@ func (d *Driver) WriteRead16(out, in []uint16) int {
 	return d.Wait()
 }
 
+func (d *Driver) WriteReadMany16(oi ...[]uint16) int {
+	var n int
+	for k := 0; k < len(oi); k += 2 {
+		var in []uint16
+		if k+1 < len(oi) {
+			in = oi[k+1]
+		}
+		out := oi[k]
+		n += d.WriteRead16(out, in)
+	}
+	return n
+}
+
 func (d *Driver) repeatWord16ISR() {
 	p := d.P
 	ev := p.Event(READY)
