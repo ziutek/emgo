@@ -153,14 +153,15 @@ func (cdd *CDD) Name(w *bytes.Buffer, obj types.Object, direct bool) {
 		hasPrefix = true
 	}
 	name := obj.Name()
-	switch name {
-	case "init":
-		w.WriteString(cdd.gtc.uniqueId() + name)
-	default:
-		w.WriteString(name)
-		if !hasPrefix && name != "error" {
-			w.WriteByte('$')
+	if name == "init" {
+		if _, ok := obj.(*types.Func); ok && hasPrefix {
+			w.WriteString(cdd.gtc.uniqueId() + name)
+			return
 		}
+	}
+	w.WriteString(name)
+	if !hasPrefix && name != "error" {
+		w.WriteByte('$')
 	}
 }
 
