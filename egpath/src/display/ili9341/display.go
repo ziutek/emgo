@@ -12,19 +12,19 @@ type Display struct {
 }
 
 // MakeDisplay returns initialised Display value.
-func MakeDisplay(dci DCI) Display {
+func MakeDisplay(dci DCI, width, height int) Display {
 	return Display{
 		dci:    dci,
-		width:  240,
-		height: 320,
+		width:  uint16(width),
+		height: uint16(height),
 	}
 }
 
 // NewDisplay works like MakeDisplay but returns a pointer to the heap allocated
 // variable.
-func NewDisplay(dci DCI) *Display {
+func NewDisplay(dci DCI, width, height int) *Display {
 	d := new(Display)
-	*d = MakeDisplay(dci)
+	*d = MakeDisplay(dci, width, height)
 	return d
 }
 
