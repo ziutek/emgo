@@ -1,6 +1,7 @@
 package spi
 
 import (
+	"bits"
 	"reflect"
 	"rtos"
 	"sync/fence"
@@ -225,7 +226,7 @@ func (d *Driver) repeatWord16ISR() {
 		p.LoadRXD()
 		if n > 0 {
 			p.StoreTXD(byte(w))
-			w = w>>8 | w<<8
+			w = bits.ReverseBytes16(w)
 		} else if n < 0 {
 			p.NVIC().ClearPending() // Can be edge triggered during ISR.
 			d.done.Signal(1)
@@ -248,7 +249,7 @@ func (d *Driver) AsyncRepeatWord16(w uint16, n int) {
 	d.n = n*2 - 2
 	p := d.P
 	if d.swp != 0 {
-		w = w>>8 | w<<8
+		w = bits.ReverseBytes16(w)
 	}
 	d.w = w
 	p.StoreTXD(byte(w))
