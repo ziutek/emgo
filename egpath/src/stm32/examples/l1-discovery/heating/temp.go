@@ -8,7 +8,7 @@ import (
 
 	"stm32/hal/dma"
 	"stm32/hal/usart"
-	"stm32/onedrv"
+	"stm32/onedci"
 )
 
 type OneWireDaemon struct {
@@ -23,7 +23,7 @@ func (d *OneWireDaemon) Start(u *usart.Periph, rxdma, txdma *dma.Channel) {
 	drv.P.Enable()
 	drv.EnableRx()
 	drv.EnableTx()
-	d.m.Driver = onedrv.USARTDriver{drv}
+	d.m.DCI = onedci.USART{drv}
 	d.Cmd = make(chan interface{}, 1)
 	go d.loop()
 }
@@ -139,13 +139,13 @@ func (d *OneWireDaemon) loop() {
 var owd OneWireDaemon
 
 func owdUSARTISR() {
-	owd.m.Driver.(onedrv.USARTDriver).USART.ISR()
+	owd.m.DCI.(onedci.USART).Drv.ISR()
 }
 
 func owdRxDMAISR() {
-	owd.m.Driver.(onedrv.USARTDriver).USART.RxDMAISR()
+	owd.m.DCI.(onedci.USART).Drv.RxDMAISR()
 }
 
 func owdTxDMAISR() {
-	owd.m.Driver.(onedrv.USARTDriver).USART.TxDMAISR()
+	owd.m.DCI.(onedci.USART).Drv.TxDMAISR()
 }

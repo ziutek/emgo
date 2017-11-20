@@ -1,7 +1,7 @@
 package onewire
 
 type Master struct {
-	Driver
+	DCI
 }
 
 func (m *Master) Write(data []byte) (int, error) {

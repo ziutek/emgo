@@ -14,7 +14,7 @@ import (
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
 	"stm32/hal/usart"
-	"stm32/onedrv"
+	"stm32/onedci"
 )
 
 const Red = gpio.Pin14
@@ -96,7 +96,7 @@ func printOK() {
 }
 
 func main() {
-	m := onewire.Master{Driver: onedrv.USARTDriver{one}}
+	m := onewire.Master{onedci.USART{one}}
 	dtypes := []onewire.Type{onewire.DS18S20, onewire.DS18B20, onewire.DS1822}
 
 	// This algorithm configures and starts conversion simultaneously on all

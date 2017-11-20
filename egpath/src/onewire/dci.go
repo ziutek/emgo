@@ -9,7 +9,10 @@ var (
 	ErrDevType    = errors.New("bad device type")
 )
 
-type Driver interface {
+// DCI means Data and Control Interface. It contains set of methods that
+// should provide access to 1-Wire low-level signaling. It is used by Master
+// to implement higher layer protocols.
+type DCI interface {
 	// Reset sends reset pulse. If there is no presence pulse received it
 	// returns ErrNoResponse error.
 	Reset() error
