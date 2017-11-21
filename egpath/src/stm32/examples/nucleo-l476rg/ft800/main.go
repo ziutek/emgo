@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"rtos"
 
+	"stm32/evedci"
+
 	"stm32/hal/dma"
+	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/spi"
@@ -14,25 +17,25 @@ import (
 )
 
 type EVE struct {
-	spi           *spi.Driver
-	pdn, csn, irq gpio.Pin
+	dci *evedci.SPI
 }
 
-func (lcd *EVE) Cmd(cmd HostCmd) {
-	lcd.csn.Clear()
-	lcd.spi.WriteRead([]byte{byte(cmd), 0, 0}, nil)
-	lcd.csn.Set()
+func (lcd EVE) Cmd(cmd HostCmd) {
+	lcd.dci.Begin()
+	lcd.dci.Write([]byte{byte(cmd), 0, 0})
+	lcd.dci.End()
 }
 
-func (lcd *EVE) Read8(addr uint32) byte {
-	lcd.csn.Clear()
-	buf := []byte{byte(addr >> 16), byte(addr >> 8), byte(addr), 0, 0}
-	lcd.spi.WriteRead(buf, buf)
-	lcd.csn.Set()
-	return buf[4]
+func (lcd EVE) Read8(addr uint32) byte {
+	lcd.dci.Begin()
+	buf := []byte{byte(addr >> 16), byte(addr >> 8), byte(addr), 0}
+	lcd.dci.Write(buf)
+	lcd.dci.Read(buf[:1])
+	lcd.dci.End()
+	return buf[0]
 }
 
-var lcd EVE
+var dci *evedci.SPI
 
 func init() {
 	system.Setup80(0, 0)
@@ -42,58 +45,57 @@ func init() {
 
 	gpio.A.EnableClock(true)
 	spiport, sck, miso, mosi := gpio.A, gpio.Pin5, gpio.Pin6, gpio.Pin7
-	lcd.pdn = gpio.A.Pin(9)
+	pdn := gpio.A.Pin(9)
 
 	gpio.B.EnableClock(true)
-	lcd.csn = gpio.B.Pin(6)
+	csn := gpio.B.Pin(6)
 
 	gpio.C.EnableClock(true)
-	lcd.irq = gpio.C.Pin(7)
+	irqn := gpio.C.Pin(7)
 
-	// SPI
+	// EVE SPI
 
 	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
 	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
 	d := dma.DMA1
 	d.EnableClock(true)
-	rxdc, txdx := d.Channel(2, 0), d.Channel(3, 0)
+	rxdc, txdc := d.Channel(2, 0), d.Channel(3, 0)
 	rxdc.SetRequest(dma.DMA1_SPI1)
-	txdx.SetRequest(dma.DMA1_SPI1)
-	lcd.spi = spi.NewDriver(spi.SPI1, rxdc, txdx)
-	lcd.spi.P.EnableClock(true)
-	lcd.spi.P.SetConf(
-		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			lcd.spi.P.BR(11e6) | // Max 11 MHz before configure PCLK.
-			spi.SoftSS | spi.ISSHigh,
-	)
-	lcd.spi.P.SetWordSize(8)
-	lcd.spi.P.Enable()
+	txdc.SetRequest(dma.DMA1_SPI1)
+	spidrv := spi.NewDriver(spi.SPI1, rxdc, txdc)
+	spidrv.P.EnableClock(true)
 	rtos.IRQ(irq.SPI1).Enable()
 	rtos.IRQ(irq.DMA1_Channel2).Enable()
 	rtos.IRQ(irq.DMA1_Channel3).Enable()
 
-	// Controll
+	// EVE control lines
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.High}
-	lcd.pdn.Setup(&cfg)
-	lcd.csn.Setup(&cfg)
-	lcd.csn.Set()
-	lcd.irq.Setup(&gpio.Config{Mode: gpio.In})
+	pdn.Setup(&cfg)
+	csn.Setup(&cfg)
+	irqn.Setup(&gpio.Config{Mode: gpio.In})
+	irqline := exti.Lines(irqn.Mask())
+	irqline.Connect(irqn.Port())
+	//rtos.IRQ(irq.EXTI9_5).Enable()
+
+	dci = evedci.NewSPI(spidrv, csn, pdn, irqline)
 }
 
 func main() {
 	delay.Millisec(200)
-	spibus := lcd.spi.P.Bus()
-	baudrate := lcd.spi.P.Baudrate(lcd.spi.P.Conf())
+	spibus := dci.SPI().P.Bus()
+	baudrate := dci.SPI().P.Baudrate(dci.SPI().P.Conf())
 	fmt.Printf(
 		"\nSPI on %s (%d MHz).\nSPI speed: %d bps.\n",
 		spibus, spibus.Clock()/1e6, baudrate,
 	)
 
-	// Wakeup from POWERDOWN to STANDBY (PDn must be low min. 20 ms).
-	lcd.pdn.Set()
+	// Wakeup from POWERDOWN to STANDBY (PDN must be low min. 20 ms).
+	dci.PDN().Set()
 	delay.Millisec(20) // Wait 20 ms for internal oscilator and PLL.
+
+	lcd := EVE{dci}
 
 	// Wakeup from STANDBY to ACTIVE.
 	lcd.Cmd(FT800_ACTIVE)
@@ -101,22 +103,22 @@ func main() {
 	// Select external 12 MHz oscilator as clock source.
 	lcd.Cmd(FT800_CLKEXT)
 
-	lcd.spi.P.SetConf(lcd.spi.P.Conf()&^spi.BR256 | lcd.spi.P.BR(30e6))
+	//dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
 
-	fmt.Printf("SPI set to %d MHz\n", lcd.spi.P.Baudrate(lcd.spi.P.Conf()))
+	fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 	fmt.Printf("REGID=0x%X\n", lcd.Read8(REG_ID))
 }
 
 func lcdSPIISR() {
-	lcd.spi.ISR()
+	dci.SPI().ISR()
 }
 
 func lcdRxDMAISR() {
-	lcd.spi.DMAISR(lcd.spi.RxDMA)
+	dci.SPI().DMAISR(dci.SPI().RxDMA)
 }
 
 func lcdTxDMAISR() {
-	lcd.spi.DMAISR(lcd.spi.TxDMA)
+	dci.SPI().DMAISR(dci.SPI().TxDMA)
 }
 
 //emgo:const
