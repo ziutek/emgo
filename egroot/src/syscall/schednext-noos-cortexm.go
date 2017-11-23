@@ -20,9 +20,9 @@ func schedNext() {
 			// This should not happen!
 		}
 	default: // Called from ISR
-	     // Raise PendSV exception.
-		fence.W() // Treat NVIC as external observer of CPU memory write.
+		// Raise PendSV exception.
+		fence.W()     // Treat NVIC as external observer of CPU memory write.
+		cortexm.SEV() // See ARM Errata 563915 or STM32F10xx Errata 1.1.2.
 		scb.SCB.ICSR.Store(scb.PENDSVSET)
-		//cortexm.SEV() // Wake up other CPUs.
 	}
 }
