@@ -34,7 +34,6 @@ func atomicInitLoadState(p *syscall.Event) syscall.Event {
 	return state
 }
 
-// ARMv7-M, -Os: 11 instructions, 28 bytes, stacking 4 registers.
 func (f *EventFlag) reset(val int) {
 	fence.RW_SMP() // Reset has RELEASE semantic.
 	state := atomicInitLoadState(&f.state)
@@ -45,7 +44,6 @@ func (f *EventFlag) reset(val int) {
 	}
 }
 
-// ARMv7-M, -Os: 19 instructions, 54 bytes, stacking 4 registers.
 func (f *EventFlag) signal(val int) {
 	fence.RW_SMP() // Signal has RELEASE semantic.
 	state := atomicInitLoadState(&f.state)
@@ -56,22 +54,6 @@ func (f *EventFlag) signal(val int) {
 		event.Send()
 	}
 }
-
-/*
-// ARMv7-M, -Os: 21 instructions, 58 bytes, stacking 6 registers.
-func (f *EventFlag) set(val int, wkup bool) {
-	fence.RW_SMP() // Set has RELEASE semantic.
-	state := atomicInitLoadState(&f.state)
-	event := state &^ 1
-	new := event | syscall.Event(val&1)
-	if state != new {
-		syscall.AtomicStoreEvent(&f.state, new)
-		if wkup {
-			event.Send()
-		}
-	}
-}
-*/
 
 func (f *EventFlag) value() int {
 	// Not need  atomicInitLoadState because an uninitialized f is zero.
