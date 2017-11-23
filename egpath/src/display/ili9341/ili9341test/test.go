@@ -157,7 +157,7 @@ func Run(lcd *ili9341.Display, n int, init bool) {
 	var rnd rand.XorShift64
 	rnd.Seed(1)
 	var dt int64
-	for i := n * 100; i > 0; i-- {
+	for i := n * 128; i > 0; i-- {
 		v := rnd.Uint64()
 		vl := uint32(v)
 		vh := uint32(v >> 32)
@@ -177,7 +177,7 @@ func Run(lcd *ili9341.Display, n int, init bool) {
 		}
 		dt += rtos.Nanosec() - start
 	}
-	printSpeed("Rand. rect/circle", float32(n*100)*1e9/float32(dt))
+	printSpeed("Rand. rect/circle", float32(n*128)*1e9/float32(dt))
 
 	fmt.Printf("TEST END\n")
 }
