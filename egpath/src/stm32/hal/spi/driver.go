@@ -218,6 +218,13 @@ func (d *Driver) writeDMA(out uintptr, n int, wsize uintptr, incm dma.Mode) {
 	}
 	p.DisableDMA(TxEmpty)
 	p.DisableIRQ(Err)
+	// Now DMA finished but SPI can still send buffered data. Wait for end.
+	for {
+		if ev, _ := p.Status(); ev&Busy == 0 {
+			break
+		}
+		rtos.SchedYield()
+	}
 }
 
 // Err returns the first error that was encountered by the Driver. It also

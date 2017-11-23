@@ -1,8 +1,6 @@
 package ilidci
 
 import (
-	"rtos"
-
 	"stm32/hal/gpio"
 	"stm32/hal/spi"
 )
@@ -28,17 +26,7 @@ func (dci *DCI) SetWordSize(size int) {
 	dci.spi.P.SetWordSize(size)
 }
 
-func (dci *DCI) waitBusy() {
-	for {
-		if ev, _ := dci.spi.P.Status(); ev&spi.Busy == 0 {
-			break
-		}
-		rtos.SchedYield()
-	}
-}
-
 func (dci *DCI) Cmd(b byte) {
-	dci.waitBusy()
 	dci.dc.Clear()
 	dci.spi.WriteReadByte(b)
 	dci.dc.Set()
@@ -49,7 +37,6 @@ func (dci *DCI) WriteByte(b byte) {
 }
 
 func (dci *DCI) Cmd2(w uint16) {
-	dci.waitBusy()
 	dci.dc.Clear()
 	dci.spi.WriteReadWord16(w)
 	dci.dc.Set()
