@@ -66,8 +66,8 @@ func (dci *SPI) End() {
 	dci.csn.Set()
 }
 
-func (dci *SPI) Read(s []byte) {
-	dci.spi.WriteRead(nil, s)
+func (dci *SPI) Read(s []byte) int {
+	return dci.spi.WriteRead(nil, s)
 }
 
 func (dci *SPI) Write(s []byte) {

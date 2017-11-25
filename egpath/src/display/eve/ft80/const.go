@@ -1,31 +1,33 @@
-package main
+package ft80
 
-type HostCmd byte
-
-const (
-	FT800_ACTIVE  HostCmd = 0x00 // Initializes FT800
-	FT800_STANDBY HostCmd = 0x41 // Place FT800 in Standby (clk running)
-	FT800_SLEEP   HostCmd = 0x42 // Place FT800 in Sleep (clk off)
-	FT800_PWRDOWN HostCmd = 0x50 // Place FT800 in Power Down (core off)
-	FT800_CLKEXT  HostCmd = 0x44 // Select external clock source
-	FT800_CLK48M  HostCmd = 0x62 // Select 48MHz PLL
-	FT800_CLK36M  HostCmd = 0x61 // Select 36MHz PLL
-	FT800_CORERST HostCmd = 0x68 // Reset core - all registers default
+import (
+	"display/eve"
 )
 
-// Memory Commands.
 const (
-	MEM_WRITE = 0x80
-	MEM_READ  = 0x00
+	ACTIVE  eve.HostCmd = 0x00 // Switch mode to Active.
+	STANDBY eve.HostCmd = 0x41 // Switch mode to Standby: PLL and Oscillator on.
+	SLEEP   eve.HostCmd = 0x42 // Switch mode to Sleep: PLL and Oscillator off.
+	PWRDOWN eve.HostCmd = 0x50 // Switch off LDO, Clock, PLL and Oscillator.
+
+	CLKEXT eve.HostCmd = 0x44 // Select PLL external clock source.
+	CLK48M eve.HostCmd = 0x62 // Switch PLL output to 48 MHz (default).
+	CLK36M eve.HostCmd = 0x61 // Switch PLL output to 36 MHz.
+
+	CORERST eve.HostCmd = 0x68 // Send reset pulse to FT80x core.
 )
 
-// Memory Map Addresses.
+// Memory map.
 const (
-	RAM_CMD = 0x108000
-	RAM_DL  = 0x100000
-	RAM_G   = 0x000000
-	RAM_PAL = 0x102000
-	RAM_REG = 0x102400
+	RAM_G          = 0x000000 // 256 KB
+	ROM_CHIPID     = 0x0C0000 //   4 B
+	ROM_FONT       = 0x0BB23C // 275 KB
+	ROM_FONT_ADDR  = 0x0FFFFC //   4 B
+	RAM_DL         = 0x100000 //   8 KB
+	RAM_PAL        = 0x102000 //   1 KB
+	RAM_REG        = 0x102400 // 380 B
+	RAM_CMD        = 0x108000 //   4 KB
+	RAM_SCREENSHOT = 0x1C2000 //   2 KB
 )
 
 // Register Addresses.
@@ -259,7 +261,7 @@ const (
 	OPT_SIGNED           = 256   // = 0x0100
 	PALETTED             = 8
 	PLAYCOLOR            = 0x00a0a080
-	FTPOINTS             = 2 // "POINTS" is a reserved word
+	POINTS               = 2
 	RECTS                = 9
 	REPEAT               = 1
 	REPLACE              = 2

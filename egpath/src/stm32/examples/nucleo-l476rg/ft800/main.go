@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"rtos"
 
+	"display/eve"
+	"display/eve/ft80"
+
 	"stm32/evedci"
 
 	"stm32/hal/dma"
@@ -15,25 +18,6 @@ import (
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
 )
-
-type EVE struct {
-	dci *evedci.SPI
-}
-
-func (lcd EVE) Cmd(cmd HostCmd) {
-	lcd.dci.Begin()
-	lcd.dci.Write([]byte{byte(cmd), 0, 0})
-	lcd.dci.End()
-}
-
-func (lcd EVE) Read8(addr uint32) byte {
-	lcd.dci.Begin()
-	buf := []byte{byte(addr >> 16), byte(addr >> 8), byte(addr), 0}
-	lcd.dci.Write(buf)
-	lcd.dci.Read(buf[:1])
-	lcd.dci.End()
-	return buf[0]
-}
 
 var dci *evedci.SPI
 
@@ -95,18 +79,19 @@ func main() {
 	dci.PDN().Set()
 	delay.Millisec(20) // Wait 20 ms for internal oscilator and PLL.
 
-	lcd := EVE{dci}
+	lcd := eve.EVE{dci}
 
 	// Wakeup from STANDBY to ACTIVE.
-	lcd.Cmd(FT800_ACTIVE)
+	lcd.Cmd(ft80.ACTIVE, 0)
 
 	// Select external 12 MHz oscilator as clock source.
-	lcd.Cmd(FT800_CLKEXT)
+	lcd.Cmd(ft80.CLKEXT, 0)
+
+	fmt.Printf("REGID:  0x%X\n", lcd.ReadByte(ft80.REG_ID))
+	fmt.Printf("CHIPID: 0x%X\n", lcd.ReadWord32(ft80.ROM_CHIPID))
 
 	//dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
-
-	fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
-	fmt.Printf("REGID=0x%X\n", lcd.Read8(REG_ID))
+	//fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 }
 
 func lcdSPIISR() {
