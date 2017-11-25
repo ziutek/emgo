@@ -12,3 +12,23 @@ type ReadWriter interface {
 	Reader
 	Writer
 }
+
+type Closer interface {
+	Close() error
+}
+
+type ReadCloser interface {
+	Reader
+	Closer
+}
+
+type WriteCloser interface {
+	Writer
+	Closer
+}
+
+type ReadWriteCloser interface {
+	Reader
+	Writer
+	Closer
+}
