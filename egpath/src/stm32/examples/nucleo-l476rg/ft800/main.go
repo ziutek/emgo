@@ -149,14 +149,23 @@ func main() {
 
 	lcd.WriteWord32(ft80.RAM_DL+0, ft80.DL_CLEAR_RGB)
 	lcd.WriteWord32(ft80.RAM_DL+4, ft80.DL_CLEAR|ft80.CLR_COL|ft80.CLR_STN|ft80.CLR_TAG)
-	lcd.WriteWord32(ft80.RAM_DL+8, ft80.DL_POINT_SIZE|100*16)
-	lcd.WriteWord32(ft80.RAM_DL+12, ft80.DL_BEGIN|ft80.POINTS)
-	lcd.WriteWord32(ft80.RAM_DL+16, ft80.DL_VERTEX2F|200*16<<15|100*16)
-	lcd.WriteWord32(ft80.RAM_DL+20, ft80.DL_DISPLAY)
+	lcd.WriteWord32(ft80.RAM_DL+8, ft80.DL_BEGIN|ft80.POINTS)
 
-	lcd.WriteWord32(ft80.REG_DLSWAP, ft80.DLSWAP_FRAME)
+	lcd.WriteWord32(ft80.RAM_DL+12, ft80.DL_COLOR_RGB|0xa161f4)
+	lcd.WriteWord32(ft80.RAM_DL+16, ft80.DL_POINT_SIZE|100*16)
+	lcd.WriteWord32(ft80.RAM_DL+20, ft80.DL_VERTEX2F|200*16<<15|100*16)
 
-	check(lcd)
+	lcd.WriteWord32(ft80.RAM_DL+24, ft80.DL_COLOR_RGB|0xffff00)
+	lcd.WriteWord32(ft80.RAM_DL+28, ft80.DL_POINT_SIZE|50*16)
+	lcd.WriteWord32(ft80.RAM_DL+32, ft80.DL_VERTEX2F|300*16<<15|200*16)
+
+	lcd.WriteWord32(ft80.RAM_DL+36, ft80.DL_DISPLAY)
+
+	for {
+		lcd.WriteWord32(ft80.REG_DLSWAP, ft80.DLSWAP_FRAME)
+		check(lcd)
+		delay.Millisec(500)
+	}
 }
 
 func check(lcd *eve.EVE) {
