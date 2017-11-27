@@ -14,6 +14,7 @@ type SPI struct {
 	irqline  exti.Lines
 	irqflag  rtos.EventFlag
 	pdn, csn gpio.Pin
+	started  bool
 }
 
 func NewSPI(spidrv *spi.Driver, csn, pdn gpio.Pin, irqline exti.Lines) *SPI {
@@ -59,21 +60,23 @@ func (dci *SPI) Err() error {
 	return nil
 }
 
-func (dci *SPI) Begin() {
-	dci.csn.Clear()
-}
 func (dci *SPI) End() {
+	dci.started = false
 	dci.csn.Set()
 }
 
-func (dci *SPI) Read(s []byte) int {
-	return dci.spi.WriteRead(nil, s)
+func (dci *SPI) Read(s []byte) {
+	if !dci.started {
+		dci.started = true
+		dci.csn.Clear()
+	}
+	dci.spi.WriteRead(nil, s)
 }
 
 func (dci *SPI) Write(s []byte) {
+	if !dci.started {
+		dci.started = true
+		dci.csn.Clear()
+	}
 	dci.spi.WriteRead(s, nil)
-}
-
-func (dci *SPI) WriteString(s string) {
-	dci.spi.WriteStringRead(s, nil)
 }
