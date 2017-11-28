@@ -4,6 +4,7 @@ package eve
 type Writer Driver
 
 func (w *Writer) flush() {
+	w.n += len(w.buf)
 	w.dci.Write32(w.buf)
 	w.buf = w.buf[:0]
 }
