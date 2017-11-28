@@ -21,14 +21,18 @@ func checkAddr(addr int) {
 	}
 }
 
+func (d *Driver) flush() {
+	d.n += len(d.buf)
+	d.dci.Write32(d.buf)
+	d.buf = d.buf[:0]
+}
+
 // End should be used to ensure that the previous Reader/Writer finished. It
 // returns the number of bytes written to the EVE memory. End is implicitly
 // called at the beginning of Cmd, Reader, Writer and Err methods.
 func (d *Driver) End() int {
 	if len(d.buf) > 0 {
-		d.n += len(d.buf)
-		d.dci.Write32(d.buf)
-		d.buf = d.buf[:0]
+		d.flush()
 	}
 	n := d.n
 	if n > 0 {
@@ -51,22 +55,22 @@ func (d *Driver) Cmd(cmd HostCmd, param byte) {
 }
 
 // Writer starts writing to the EVE memory at the address addr.
-func (d *Driver) Writer(addr int) *Writer {
+func (d *Driver) Writer(addr int) Writer {
 	checkAddr(addr)
 	d.End()
 	d.buf = d.buf[:1]
-	d.buf[0] = 1<<7 | uint32(addr)
-	return (*Writer)(d)
+	d.buf[0] = 1<<23 | uint32(addr)
+	return Writer{d}
 }
 
 // Reader starts reading from the EVE memory at the address addr.
-func (d *Driver) Reader(addr int) *Reader {
+func (d *Driver) Reader(addr int) Reader {
 	checkAddr(addr)
 	d.End()
 	d.dci.Write32([]uint32{uint32(addr)})
 	d.dci.Read([]byte{0}) // Read dummy byte (switch QSPI to input mode).
 	d.n = 1
-	return (*Reader)(d)
+	return Reader{d}
 }
 
 // Err returns and clears the internal error status.

@@ -117,66 +117,69 @@ func main() {
 
 	fmt.Print("Configure WQVGA (480x272) display...")
 
-	lcd.Writer(ft80.REG_PWM_DUTY).WriteWord32(0)
+	lcd.Writer(ft80.REG_PWM_DUTY).Write32(0)
 
-	w := lcd.Writer(ft80.REG_PCLK_POL)
-	w.WriteWord32(lcdPclkpol) // REG_PCLK_POL
-	w.WriteWord32(0)          // REG_PCLK
+	lcd.Writer(ft80.REG_PCLK_POL).Write32(
+		lcdPclkpol, // REG_PCLK_POL
+		0,          // REG_PCLK
+	)
 
-	w = lcd.Writer(ft80.REG_HCYCLE)
-	w.WriteWord32(lcdHcycle)  // REG_HCYCLE
-	w.WriteWord32(lcdHoffset) // REG_HOFFSET
-	w.WriteWord32(lcdWidth)   // REG_HSIZE
-	w.WriteWord32(lcdHsync0)  // REG_HSYNC0
-	w.WriteWord32(lcdHsync1)  // REG_HSYNC1
-	w.WriteWord32(lcdVcycle)  // REG_VCYCLE
-	w.WriteWord32(lcdVoffset) // REG_VOFFSET
-	w.WriteWord32(lcdHeight)  // REG_VSIZE
-	w.WriteWord32(lcdVsync0)  // REG_VSYNC0
-	w.WriteWord32(lcdVsync1)  // REG_VSYNC1
+	lcd.Writer(ft80.REG_HCYCLE).Write32(
+		lcdHcycle,  // REG_HCYCLE
+		lcdHoffset, // REG_HOFFSET
+		lcdWidth,   // REG_HSIZE
+		lcdHsync0,  // REG_HSYNC0
+		lcdHsync1,  // REG_HSYNC1
+		lcdVcycle,  // REG_VCYCLE
+		lcdVoffset, // REG_VOFFSET
+		lcdHeight,  // REG_VSIZE
+		lcdVsync0,  // REG_VSYNC0
+		lcdVsync1,  // REG_VSYNC1
+	)
 
 	check(lcd.Err(false))
 
-	fmt.Print("Write initial display list and enable display... ")
+	fmt.Print("Write initial display list and enable display...")
 
-	w = lcd.Writer(ft80.RAM_DL)
-	w.WriteWord32(ft80.DL_CLEAR_RGB)
-	w.WriteWord32(ft80.DL_CLEAR | ft80.CLR_COL | ft80.CLR_STN | ft80.CLR_TAG)
-	w.WriteWord32(ft80.DL_DISPLAY)
+	lcd.Writer(ft80.RAM_DL).Write32(
+		ft80.DL_CLEAR_RGB,
+		ft80.DL_CLEAR|ft80.CLR_COL|ft80.CLR_STN|ft80.CLR_TAG,
+		ft80.DL_DISPLAY,
+	)
 
-	lcd.Writer(ft80.REG_DLSWAP).WriteWord32(ft80.DLSWAP_FRAME)
+	lcd.Writer(ft80.REG_DLSWAP).Write32(ft80.DLSWAP_FRAME)
 
 	gpio := lcd.Reader(ft80.REG_GPIO).ReadWord32()
-	lcd.Writer(ft80.REG_GPIO).WriteWord32(gpio | 0x80)
-	lcd.Writer(ft80.REG_PCLK).WriteWord32(lcdPclk)
+	lcd.Writer(ft80.REG_GPIO).Write32(gpio | 0x80)
+	lcd.Writer(ft80.REG_PCLK).Write32(lcdPclk)
 
 	check(lcd.Err(false))
 
-	/*
-		dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
-		fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
+	dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
+	fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
-		lcd.WriteByte(ft80.REG_PWM_DUTY, 100)
+	lcd.Writer(ft80.REG_PWM_DUTY).Write32(100)
 
-			lcd.WriteWord32(ft80.RAM_DL+0, ft80.DL_CLEAR_RGB)
-			lcd.WriteWord32(ft80.RAM_DL+4, ft80.DL_CLEAR|ft80.CLR_COL|ft80.CLR_STN|ft80.CLR_TAG)
-			lcd.WriteWord32(ft80.RAM_DL+8, ft80.DL_BEGIN|ft80.POINTS)
+	fmt.Print("Testing DL...")
 
-			lcd.WriteWord32(ft80.RAM_DL+12, ft80.DL_COLOR_RGB|0xa161f4)
-			lcd.WriteWord32(ft80.RAM_DL+16, ft80.DL_POINT_SIZE|100*16)
-			lcd.WriteWord32(ft80.RAM_DL+20, ft80.DL_VERTEX2F|200*16<<15|100*16)
+	lcd.Writer(ft80.RAM_DL).Write32(
+		ft80.DL_CLEAR_RGB,
+		ft80.DL_CLEAR|ft80.CLR_COL|ft80.CLR_STN|ft80.CLR_TAG,
+		ft80.DL_BEGIN|ft80.POINTS,
+		ft80.DL_COLOR_RGB|0xa161f4,
+		ft80.DL_POINT_SIZE|100*16,
+		ft80.DL_VERTEX2F|200*16<<15|100*16,
+		ft80.DL_COLOR_RGB|0xffff00,
+		ft80.DL_POINT_SIZE|50*16,
+		ft80.DL_VERTEX2F|300*16<<15|200*16,
+		ft80.DL_DISPLAY,
+	)
 
-			lcd.WriteWord32(ft80.RAM_DL+24, ft80.DL_COLOR_RGB|0xffff00)
-			lcd.WriteWord32(ft80.RAM_DL+28, ft80.DL_POINT_SIZE|50*16)
-			lcd.WriteWord32(ft80.RAM_DL+32, ft80.DL_VERTEX2F|300*16<<15|200*16)
-
-			lcd.WriteWord32(ft80.RAM_DL+36, ft80.DL_DISPLAY)
-
-			for {
-				lcd.WriteWord32(ft80.REG_DLSWAP, ft80.DLSWAP_FRAME)
-				check(lcd)
-				delay.Millisec(500)
-			}*/
+	for {
+		lcd.Writer(ft80.REG_DLSWAP).Write32(ft80.DLSWAP_FRAME)
+		check(lcd.Err(false))
+		delay.Millisec(500)
+	}
 }
 
 func check(err error) {

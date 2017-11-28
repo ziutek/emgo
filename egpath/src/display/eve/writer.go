@@ -1,19 +1,18 @@
 package eve
 
-// Writer allows to write data to thr EVE.
-type Writer Driver
-
-func (w *Writer) flush() {
-	w.n += len(w.buf)
-	w.dci.Write32(w.buf)
-	w.buf = w.buf[:0]
+// Writer allows to write data to the EVE memory.
+type Writer struct {
+	d *Driver
 }
 
-func (w *Writer) WriteWord32(u uint32) {
-	if len(w.buf) == cap(w.buf) {
-		w.flush()
+func (w Writer) Write32(s ...uint32) {
+	d := w.d
+	for _, u := range s {
+		if len(d.buf) == cap(d.buf) {
+			d.flush()
+		}
+		n := len(d.buf)
+		d.buf = d.buf[:n+1]
+		d.buf[n] = u
 	}
-	n := len(w.buf)
-	w.buf = w.buf[:n+1]
-	w.buf[n] = u
 }
