@@ -81,15 +81,20 @@ func NewDCI(spidrv *spi.Driver, csn gpio.Pin, pclk uint, cet *tim.TIM_Periph, ch
 	return dci
 }
 
+// Err returns and clears internal error status.
+func (dci *DCI) Err(clear bool) error {
+	return dci.spi.Err(clear)
+}
+
 func (dci *DCI) SPI() *spi.Driver {
 	return dci.spi
 }
 
-func (dci *DCI) WriteRead(oi ...[]byte) (n int, err error) {
+func (dci *DCI) WriteRead(oi ...[]byte) int {
 	dci.csn.Clear()
-	dci.spi.WriteReadMany(oi...)
+	n := dci.spi.WriteReadMany(oi...)
 	dci.csn.Set()
-	return n, dci.spi.Err()
+	return n
 }
 
 // SetCE allows to control CE line.. v==0 sets CE low, v==1 sets CE high, v==2

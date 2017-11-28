@@ -1,7 +1,10 @@
 package evedci
 
 import (
+	"bits"
+	"reflect"
 	"rtos"
+	"unsafe"
 
 	"stm32/hal/exti"
 	"stm32/hal/gpio"
@@ -56,8 +59,8 @@ func (dci *SPI) ISR() {
 	dci.irqflag.Signal(1)
 }
 
-func (dci *SPI) Err() error {
-	return nil
+func (dci *SPI) Err(clear bool) error {
+	return dci.spi.Err(clear)
 }
 
 func (dci *SPI) End() {
@@ -66,17 +69,21 @@ func (dci *SPI) End() {
 }
 
 func (dci *SPI) Read(s []byte) {
-	if !dci.started {
-		dci.started = true
-		dci.csn.Clear()
-	}
 	dci.spi.WriteRead(nil, s)
 }
 
-func (dci *SPI) Write(s []byte) {
+func (dci *SPI) Write32(s []uint32) {
+	h := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	h.Len *= 4
 	if !dci.started {
+		if h.Len == 0 {
+			return
+		}
 		dci.started = true
+		s[0] = bits.ReverseBytes32(s[0])
+		h.Data++
+		h.Len--
 		dci.csn.Clear()
 	}
-	dci.spi.WriteRead(s, nil)
+	dci.spi.WriteStringRead(*(*string)(unsafe.Pointer(h)), nil)
 }

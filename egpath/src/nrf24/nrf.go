@@ -3,9 +3,12 @@ package nrf24
 // DCI represents the simplified nRF24L01(+) Data and Control Interface: only SPI
 // part of full DCI is need.
 type DCI interface {
-	// WriteRead perform SPI conversation: sets CSN low, writes and reads oi
+	// WriteRead performs full SPI transation: sets CSN low, writes and reads oi
 	// data and sets CSN high.
-	WriteRead(oi ...[]byte) (n int, err error)
+	WriteRead(oi ...[]byte) int
+	
+	// Err returns and clears internal error status.
+	Err(clear bool) error
 }
 
 // Radio provides interface to nRF24L01(+) transceiver. Radio has many methods
@@ -15,12 +18,6 @@ type DCI interface {
 // value is always returned as the last return value of the command method.
 type Radio struct {
 	DCI DCI
-
-	// Status is the value of the STATUS register received by the last executed
-	// command.
-	//Status Status
-
-	err error
 }
 
 // NewRadio provides convenient way to create heap allocated Radio struct.
@@ -32,13 +29,8 @@ func NewRadio(dci DCI) *Radio {
 
 // Err returns the error value of the last executed command. You can freely
 // invoke many commands before check an error. If one command have caused an
-// error the subsequent commands will not be executed until ClearErr will be
+// error the subsequent commands will not be executed until Err(true) will be
 // called.
-func (r *Radio) Err() error {
-	return r.err
-}
-
-// ClearErr clears internal error variable.
-func (r *Radio) ClearErr() {
-	r.err = nil
+func (r *Radio) Err(clear bool) error {
+	return r.DCI.Err(clear)
 }

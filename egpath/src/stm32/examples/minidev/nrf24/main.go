@@ -123,7 +123,7 @@ func printRegs(nrf *nrf24.Radio) {
 	fmt.Printf("DYNPD:       %v\n", dynpd)
 	feurure, status := nrf.FEATURE()
 	fmt.Printf("FEATURE:     %v\n", feurure)
-	checkErr(nrf.Err())
+	checkErr(nrf.Err(true))
 	fmt.Printf("STATUS:      %v\n", status)
 }
 
@@ -186,7 +186,7 @@ func main() {
 			dci.IRQF().Wait(1, 0)
 		}
 		dt := float32(rtos.Nanosec() - start)
-		checkErr(nrf.Err())
+		checkErr(nrf.Err(true))
 		fmt.Printf(
 			"%d: %d ms %.0f pkt/s (%.0f kb/s)\n",
 			i, uint(dt/1e6),

@@ -1,10 +1,7 @@
 package nrf24
 
 func (r *Radio) exec(args ...[]byte) STATUS {
-	if r.err != nil {
-		return 0
-	}
-	_, r.err = r.DCI.WriteRead(args...)
+	r.DCI.WriteRead(args...)
 	return STATUS(args[1][0])
 }
 

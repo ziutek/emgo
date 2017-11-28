@@ -227,19 +227,20 @@ func (d *Driver) writeDMA(out uintptr, n int, wsize uintptr, incm dma.Mode) {
 	}
 }
 
-// Err returns the first error that was encountered by the Driver. It also
-// clears internal error flags so subsequent Err call returns nil or next error.
-func (d *Driver) Err() error {
+// Err returns value of internal error variable and clears it if clear is true.
+func (d *Driver) Err(clear bool) error {
 	e := d.err
 	if e == 0 {
 		return nil
 	}
-	d.err = 0
+	if clear {
+		d.err = 0
+	}
 	if err := DriverError(e >> 16); err != 0 {
 		return err
 	}
 	if err := Error(e >> 8); err != 0 {
-		if err&ErrOverrun != 0 {
+		if err&ErrOverrun != 0 && clear {
 			d.P.LoadByte()
 			d.P.Status()
 		}

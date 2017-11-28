@@ -34,8 +34,8 @@ func (d *Display) DCI() DCI {
 }
 
 // Err returns and clears internal error variable.
-func (d *Display) Err() error {
-	return d.dci.Err()
+func (d *Display) Err(clear bool) error {
+	return d.dci.Err(clear)
 }
 
 // Bounds returns the bounds of the display

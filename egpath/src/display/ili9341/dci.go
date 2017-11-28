@@ -12,5 +12,5 @@ type DCI interface {
 	Write(data []uint16)  // Write passes many words of data (16-bit word size).
 	Fill(w uint16, n int) // Fill passes a word n times (16-bit word size).
 
-	Err() error // Err returns and clears internal error variable.
+	Err(clear bool) error // Err returns and clears internal error variable.
 }

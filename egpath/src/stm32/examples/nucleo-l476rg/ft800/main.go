@@ -95,7 +95,7 @@ func main() {
 	dci.PDN().Set()
 	delay.Millisec(20) // Wait 20 ms for internal oscilator and PLL.
 
-	lcd := eve.New(dci)
+	lcd := eve.NewDriver(dci, 32)
 
 	// Wakeup from STANDBY to ACTIVE.
 	lcd.Cmd(ft80.ACTIVE, 0)
@@ -103,16 +103,18 @@ func main() {
 	// Select external 12 MHz oscilator as clock source.
 	lcd.Cmd(ft80.CLKEXT, 0)
 
-	if lcd.ReadByte(ft80.REG_ID) != 0x7c {
+	if lcd.Reader(ft80.REG_ID).ReadByte() != 0x7c {
 		fmt.Printf("Not EVE controller.\n")
 		return
 	}
-	if lcd.ReadWord32(ft80.ROM_CHIPID) != 0x10008 {
+	if lcd.Reader(ft80.ROM_CHIPID).ReadWord32() != 0x10008 {
 		fmt.Printf("Not FT80x controller.\n")
 		return
 	}
 
-	fmt.Print("Configure WQVGA (480x272) display...")
+	check(lcd.End())
+
+	/*fmt.Print("Configure WQVGA (480x272) display...")
 
 	lcd.WriteByte(ft80.REG_PCLK, 0)
 	lcd.WriteByte(ft80.REG_PWM_DUTY, 0)
@@ -165,11 +167,10 @@ func main() {
 		lcd.WriteWord32(ft80.REG_DLSWAP, ft80.DLSWAP_FRAME)
 		check(lcd)
 		delay.Millisec(500)
-	}
+	}*/
 }
 
-func check(lcd *eve.EVE) {
-	err := lcd.Err()
+func check(err error) {
 	if err == nil {
 		fmt.Printf(" OK\n")
 		return

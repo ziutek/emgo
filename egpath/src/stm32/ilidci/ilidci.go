@@ -54,6 +54,6 @@ func (dci *DCI) Fill(w uint16, n int) {
 	dci.spi.RepeatWord16(w, n)
 }
 
-func (dci *DCI) Err() error {
-	return dci.spi.Err()
+func (dci *DCI) Err(clear bool) error {
+	return dci.spi.Err(clear)
 }
