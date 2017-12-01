@@ -51,11 +51,12 @@ const (
 // Display list commands.
 const (
 	ALPHA_FUNC         = 0x09000000 // requires OR'd arguments
+	BEGIN              = 0x1F000000 // requires OR'd arguments
 	BITMAP_HANDLE      = 0x05000000 // requires OR'd arguments
 	BITMAP_LAYOUT      = 0x07000000 // requires OR'd arguments
-	BITMAP_LAYOUT_H    = 0x28000000 // requires OR'd arguments, FT81x
+	BITMAP_LAYOUT_H    = 0x28000000 // requires OR'd arguments, EVE2
 	BITMAP_SIZE        = 0x08000000 // requires OR'd arguments
-	BITMAP_SIZE_H      = 0x29000000 // requires OR'd arguments
+	BITMAP_SIZE_H      = 0x29000000 // requires OR'd arguments, EVE2
 	BITMAP_SOURCE      = 0x01000000 // requires OR'd arguments
 	BITMAP_TRANSFORM_A = 0x15000000 // requires OR'd arguments
 	BITMAP_TRANSFORM_B = 0x16000000 // requires OR'd arguments
@@ -64,14 +65,14 @@ const (
 	BITMAP_TRANSFORM_E = 0x19000000 // requires OR'd arguments
 	BITMAP_TRANSFORM_F = 0x1A000000 // requires OR'd arguments
 	BLEND_FUNC         = 0x0B000000 // requires OR'd arguments
-	BEGIN              = 0x1F000000 // requires OR'd arguments
 	CALL               = 0x1D000000 // requires OR'd arguments
-	CLEAR              = 0x26000000 // requires OR'd arguments
 	CELL               = 0x06000000 // requires OR'd arguments
-	CLEAR_RGB          = 0x02000000 // requires OR'd arguments
+	CLEAR              = 0x26000000 // requires OR'd arguments
+	CLEAR_COLOR_A      = 0x0F000000 // requires OR'd arguments
+	CLEAR_COLOR_RGB    = 0x02000000 // requires OR'd arguments
 	CLEAR_STENCIL      = 0x11000000 // requires OR'd arguments
 	CLEAR_TAG          = 0x12000000 // requires OR'd arguments
-	COLOR_A            = 0x0F000000 // requires OR'd arguments
+	COLOR_A            = 0x10000000 // requires OR'd arguments
 	COLOR_MASK         = 0x20000000 // requires OR'd arguments
 	COLOR_RGB          = 0x04000000 // requires OR'd arguments
 	DISPLAY            = 0x00000000
@@ -79,6 +80,8 @@ const (
 	JUMP               = 0x1E000000 // requires OR'd arguments
 	LINE_WIDTH         = 0x0E000000 // requires OR'd arguments
 	MACRO              = 0x25000000 // requires OR'd arguments
+	NOP                = 0x2D000000
+	PALETTE_SOURCE     = 0x2A000000 // requires OR'd arguments, EVE2
 	POINT_SIZE         = 0x0D000000 // requires OR'd arguments
 	RESTORE_CONTEXT    = 0x23000000
 	RETURN             = 0x24000000
@@ -146,16 +149,37 @@ const (
 	WRAPY    = 1 << 0
 )
 
+// Blending options (BLEND_FUNC).
 const (
-	CLR_COL              = 0x4
-	CLR_STN              = 0x2
-	CLR_TAG              = 0x1
+	ZERO                = 0
+	ONE                 = 1
+	SRC_ALPHA           = 2
+	DST_ALPHA           = 3
+	ONE_MINUS_SRC_ALPHA = 4
+	ONE_MINUS_DST_ALPHA = 5
+)
+
+// Clearing options (CLEAR).
+const (
+	T = 1 << 0
+	S = 1 << 1
+	C = 1 << 2
+)
+
+// Color mask (COLOR_MASK)
+const (
+	A = 1 << 0
+	B = 1 << 1
+	G = 1 << 2
+	R = 1 << 3
+)
+
+const (
 	DECR                 = 4
 	DECR_WRAP            = 7
 	DLSWAP_DONE          = 0
 	DLSWAP_FRAME         = 2
 	DLSWAP_LINE          = 1
-	DST_ALPHA            = 3
 	INCR                 = 3
 	INCR_WRAP            = 6
 	INT_CMDEMPTY         = 32
@@ -169,9 +193,6 @@ const (
 	INVERT               = 5
 	KEEP                 = 1
 	LINEAR_SAMPLES       = 0
-	ONE                  = 1
-	ONE_MINUS_DST_ALPHA  = 5
-	ONE_MINUS_SRC_ALPHA  = 4
 	OPT_CENTER           = 1536 // = 0x6000
 	OPT_CENTERX          = 512  // = 0x0200
 	OPT_CENTERY          = 1024 // = 0x0400
@@ -189,11 +210,9 @@ const (
 	PLAYCOLOR            = 0x00a0a080
 	REPEAT               = 1
 	REPLACE              = 2
-	SRC_ALPHA            = 2
 	TOUCHMODE_CONTINUOUS = 3
 	TOUCHMODE_FRAME      = 2
 	TOUCHMODE_OFF        = 0
 	TOUCHMODE_ONESHOT    = 1
 	AW_SAMPLES           = 1
-	ZERO                 = 0
 )

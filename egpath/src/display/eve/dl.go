@@ -8,8 +8,8 @@ type DL struct {
 }
 
 // AlphaFunc sets the alpha test function.
-func (dl DL) AlphaFunc(fun byte, ref int) {
-	dl.wr32(ALPHA_FUNC | uint32(fun)<<8 | uint32(ref&0xFF))
+func (dl DL) AlphaFunc(fun, ref byte) {
+	dl.wr32(ALPHA_FUNC | uint32(fun)<<8 | uint32(ref))
 }
 
 // Begin begins drawing a graphics primitive.
@@ -54,31 +54,158 @@ func (dl DL) BitmapSource(addr int) {
 }
 
 // BitmapTransA sets the A coefficient of the bitmap transform matrix.
-func (dl DL) BitmapTransformA(s8_8 int) {
-	dl.wr32(BITMAP_TRANSFORM_A | uint32(s8_8)&0x1FFFF)
+func (dl DL) BitmapTransformA(a int) {
+	dl.wr32(BITMAP_TRANSFORM_A | uint32(a)&0x1FFFF)
 }
 
 // BitmapTransformB sets the B coefficient of the bitmap transform matrix.
-func (dl DL) BitmapTransformB(s8_8 int) {
-	dl.wr32(BITMAP_TRANSFORM_B | uint32(s8_8)&0x1FFFF)
+func (dl DL) BitmapTransformB(b int) {
+	dl.wr32(BITMAP_TRANSFORM_B | uint32(b)&0x1FFFF)
 }
 
 // BitmapTransformC sets the C coefficient of the bitmap transform matrix.
-func (dl DL) BitmapTransformC(s8_8 int) {
-	dl.wr32(BITMAP_TRANSFORM_C | uint32(s8_8)&0x1FFFF)
+func (dl DL) BitmapTransformC(c int) {
+	dl.wr32(BITMAP_TRANSFORM_C | uint32(c)&0x1FFFF)
 }
 
 // BitmapTransformD sets the D coefficient of the bitmap transform matrix.
-func (dl DL) BitmapTransformD(s8_8 int) {
-	dl.wr32(BITMAP_TRANSFORM_D | uint32(s8_8)&0x1FFFF)
+func (dl DL) BitmapTransformD(d int) {
+	dl.wr32(BITMAP_TRANSFORM_D | uint32(d)&0x1FFFF)
 }
 
 // BitmapTransformE sets the E coefficient of the bitmap transform matrix.
-func (dl DL) BitmapTransformE(s8_8 int) {
-	dl.wr32(BITMAP_TRANSFORM_E | uint32(s8_8)&0x1FFFF)
+func (dl DL) BitmapTransformE(e int) {
+	dl.wr32(BITMAP_TRANSFORM_E | uint32(e)&0x1FFFF)
 }
 
 // BitmapTransformF sets the F coefficient of the bitmap transform matrix.
-func (dl DL) BitmapTransformF(s8_8 int) {
-	dl.wr32(BITMAP_TRANSFORM_F | uint32(s8_8)&0x1FFFF)
+func (dl DL) BitmapTransformF(f int) {
+	dl.wr32(BITMAP_TRANSFORM_F | uint32(f)&0x1FFFF)
+}
+
+// BlendFunc configures pixel arithmetic.
+func (dl DL) BlendFunc(src, dst byte) {
+	dl.wr32(BLEND_FUNC | uint32(src)<<3 | uint32(dst))
+}
+
+// Call executes a sequence of commands at another location in the display list.
+func (dl DL) Call(dest int) {
+	dl.wr32(CALL | uint32(dest)&0xFFFF)
+}
+
+// Cell sets the bitmap cell number for the Vertex2F command.
+func (dl DL) Cell(cell byte) {
+	dl.wr32(CELL | uint32(cell))
+}
+
+// Clear clears buffers to preset values.
+func (dl DL) Clear(cst byte) {
+	dl.wr32(CLEAR | uint32(cst))
+}
+
+// ClearColorA sets the clear value for the alpha channel.
+func (dl DL) ClearColorA(alpha byte) {
+	dl.wr32(CLEAR_COLOR_A | uint32(alpha))
+}
+
+// ClearColorRGB sets the clear values for red, green and blue channels.
+func (dl DL) ClearColorRGB(red, green, blue byte) {
+	dl.wr32(CLEAR_COLOR_RGB | uint32(red)<<16 | uint32(blue)<<8 | uint32(green))
+}
+
+// ClearStencil sets the clear value for the stencil buffer.
+func (dl DL) ClearStencil(s byte) {
+	dl.wr32(CLEAR_STENCIL | uint32(s))
+}
+
+// ClearTag sets the clear value for the stencil buffer.
+func (dl DL) ClearTag(t byte) {
+	dl.wr32(CLEAR_TAG | uint32(t))
+}
+
+// ColorA sets the current color alpha.
+func (dl DL) ColorA(alpha byte) {
+	dl.wr32(COLOR_A | uint32(alpha))
+}
+
+// ColorMask enables or disables writing of color components.
+func (dl DL) ColorMask(rgba byte) {
+	dl.wr32(COLOR_MASK | uint32(rgba))
+}
+
+// ColorRGB sets the current color red, green and blue.
+func (dl DL) ColorRGB(red, green, blue byte) {
+	dl.wr32(COLOR_RGB | uint32(red)<<16 | uint32(blue)<<8 | uint32(green))
+}
+
+// Display ends the display list (following command will be ignored).
+func (dl DL) Display() {
+	dl.wr32(DISPLAY)
+}
+
+// End ends drawing a graphics primitive.
+func (dl DL) End() {
+	dl.wr32(END)
+}
+
+// Jump executes commands at another location in the display list.
+func (dl DL) Jump(dest int) {
+	dl.wr32(JUMP | uint32(dest)&0xFFFF)
+}
+
+// LineWidth sets the width of lines to be drawn with primitive LINES in 1/16
+// pixel precision.
+func (dl DL) LineWidth(width int) {
+	dl.wr32(LINE_WIDTH | uint32(width)&0xFFF)
+}
+
+// Macro executes a single command from a macro register.
+func (dl DL) Macro(m byte) {
+	dl.wr32(MACRO | uint32(m))
+
+}
+
+// Nop does nothing.
+func (dl DL) Nop() {
+	dl.wr32(NOP)
+}
+
+// PaletteSource sets the base address of the palette (EVE2).
+func (dl DL) PaletteSource(addr int) {
+	dl.wr32(PALETTE_SOURCE | uint32(addr)&0x3FFFFF)
+}
+
+// PointSize sets the radius of points.
+func (dl DL) PointSize(size int) {
+	dl.wr32(POINT_SIZE | uint32(size)&0x1FFF)
+}
+
+// RestoreContext restores the current graphics context from the context stack.
+func (dl DL) RestoreContext() {
+	dl.wr32(RESTORE_CONTEXT)
+}
+
+// Return returns from a previous CALL command.
+func (dl DL) Return() {
+	dl.wr32(RETURN)
+}
+
+// SaveContext pushes the current graphics context on the context stack.
+func (dl DL) SaveContext() {
+	dl.wr32(SAVE_CONTEXT)
+}
+
+// ScissorSize sets the size of the scissor clip rectangle.
+func (dl DL) ScissorSize(width, height int) {
+	dl.wr32(SCISSOR_SIZE | uint32(width)&0xFFF<<12 | uint32(height)&0xFFF)
+}
+
+// ScissorXY sets the size of the scissor clip rectangle.
+func (dl DL) ScissorXY(x, y int) {
+	dl.wr32(SCISSOR_XY | uint32(x)&0x7FF<<11 | uint32(y)&0x7FF)
+}
+
+// StencilFunc sets function and reference value for stencil testing.
+func (dl DL) StencilFunc(fun, ref, mask byte) {
+	dl.wr32(STENCIL_FUNC | uint32(fun)<<16 | uint32(ref)<<8 | uint32(mask))
 }
