@@ -27,7 +27,7 @@ func (dl DL) BitmapLayout(format byte, linestride, height int) {
 	a := uint32(linestride) & 0x3FF
 	b := uint32(height) & 0x1FF
 	dl.wr(BITMAP_LAYOUT | uint32(format)<<19 | a<<9 | b)
-	if linestride > 1023 || height > 512 {
+	if linestride >= 1024 || height >= 512 {
 		a = uint32(linestride) >> 10 & 3
 		b = uint32(height) >> 9 & 3
 		dl.wr(BITMAP_LAYOUT_H | a<<2 | b)
