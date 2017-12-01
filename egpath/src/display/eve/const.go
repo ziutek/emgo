@@ -50,47 +50,48 @@ const (
 
 // Display list commands.
 const (
-	ALPHA_FUNC      = 0x09000000 // requires OR'd arguments
-	BITMAP_HANDLE   = 0x05000000 // requires OR'd arguments
-	BITMAP_LAYOUT   = 0x07000000 // requires OR'd arguments
-	BITMAP_LAYOUT_H = 0x28000000 // requires OR'd arguments, FT81x
-	BITMAP_SIZE     = 0x08000000 // requires OR'd arguments
-	BITMAP_SOURCE   = 0x01000000 // requires OR'd arguments
-	BITMAP_TFORM_A  = 0x15000000 // requires OR'd arguments
-	BITMAP_TFORM_B  = 0x16000000 // requires OR'd arguments
-	BITMAP_TFORM_C  = 0x17000000 // requires OR'd arguments
-	BITMAP_TFORM_D  = 0x18000000 // requires OR'd arguments
-	BITMAP_TFORM_E  = 0x19000000 // requires OR'd arguments
-	BITMAP_TFORM_F  = 0x1A000000 // requires OR'd arguments
-	BLEND_FUNC      = 0x0B000000 // requires OR'd arguments
-	BEGIN           = 0x1F000000 // requires OR'd arguments
-	CALL            = 0x1D000000 // requires OR'd arguments
-	CLEAR           = 0x26000000 // requires OR'd arguments
-	CELL            = 0x06000000 // requires OR'd arguments
-	CLEAR_RGB       = 0x02000000 // requires OR'd arguments
-	CLEAR_STENCIL   = 0x11000000 // requires OR'd arguments
-	CLEAR_TAG       = 0x12000000 // requires OR'd arguments
-	COLOR_A         = 0x0F000000 // requires OR'd arguments
-	COLOR_MASK      = 0x20000000 // requires OR'd arguments
-	COLOR_RGB       = 0x04000000 // requires OR'd arguments
-	DISPLAY         = 0x00000000
-	END             = 0x21000000
-	JUMP            = 0x1E000000 // requires OR'd arguments
-	LINE_WIDTH      = 0x0E000000 // requires OR'd arguments
-	MACRO           = 0x25000000 // requires OR'd arguments
-	POINT_SIZE      = 0x0D000000 // requires OR'd arguments
-	RESTORE_CONTEXT = 0x23000000
-	RETURN          = 0x24000000
-	SAVE_CONTEXT    = 0x22000000
-	SCISSOR_SIZE    = 0x1C000000 // requires OR'd arguments
-	SCISSOR_XY      = 0x1B000000 // requires OR'd arguments
-	STENCIL_FUNC    = 0x0A000000 // requires OR'd arguments
-	STENCIL_MASK    = 0x13000000 // requires OR'd arguments
-	STENCIL_OP      = 0x0C000000 // requires OR'd arguments
-	TAG             = 0x03000000 // requires OR'd arguments
-	TAG_MASK        = 0x14000000 // requires OR'd arguments
-	VERTEX2F        = 0x40000000 // requires OR'd arguments
-	VERTEX2II       = 0x02000000 // requires OR'd arguments
+	ALPHA_FUNC         = 0x09000000 // requires OR'd arguments
+	BITMAP_HANDLE      = 0x05000000 // requires OR'd arguments
+	BITMAP_LAYOUT      = 0x07000000 // requires OR'd arguments
+	BITMAP_LAYOUT_H    = 0x28000000 // requires OR'd arguments, FT81x
+	BITMAP_SIZE        = 0x08000000 // requires OR'd arguments
+	BITMAP_SIZE_H      = 0x29000000 // requires OR'd arguments
+	BITMAP_SOURCE      = 0x01000000 // requires OR'd arguments
+	BITMAP_TRANSFORM_A = 0x15000000 // requires OR'd arguments
+	BITMAP_TRANSFORM_B = 0x16000000 // requires OR'd arguments
+	BITMAP_TRANSFORM_C = 0x17000000 // requires OR'd arguments
+	BITMAP_TRANSFORM_D = 0x18000000 // requires OR'd arguments
+	BITMAP_TRANSFORM_E = 0x19000000 // requires OR'd arguments
+	BITMAP_TRANSFORM_F = 0x1A000000 // requires OR'd arguments
+	BLEND_FUNC         = 0x0B000000 // requires OR'd arguments
+	BEGIN              = 0x1F000000 // requires OR'd arguments
+	CALL               = 0x1D000000 // requires OR'd arguments
+	CLEAR              = 0x26000000 // requires OR'd arguments
+	CELL               = 0x06000000 // requires OR'd arguments
+	CLEAR_RGB          = 0x02000000 // requires OR'd arguments
+	CLEAR_STENCIL      = 0x11000000 // requires OR'd arguments
+	CLEAR_TAG          = 0x12000000 // requires OR'd arguments
+	COLOR_A            = 0x0F000000 // requires OR'd arguments
+	COLOR_MASK         = 0x20000000 // requires OR'd arguments
+	COLOR_RGB          = 0x04000000 // requires OR'd arguments
+	DISPLAY            = 0x00000000
+	END                = 0x21000000
+	JUMP               = 0x1E000000 // requires OR'd arguments
+	LINE_WIDTH         = 0x0E000000 // requires OR'd arguments
+	MACRO              = 0x25000000 // requires OR'd arguments
+	POINT_SIZE         = 0x0D000000 // requires OR'd arguments
+	RESTORE_CONTEXT    = 0x23000000
+	RETURN             = 0x24000000
+	SAVE_CONTEXT       = 0x22000000
+	SCISSOR_SIZE       = 0x1C000000 // requires OR'd arguments
+	SCISSOR_XY         = 0x1B000000 // requires OR'd arguments
+	STENCIL_FUNC       = 0x0A000000 // requires OR'd arguments
+	STENCIL_MASK       = 0x13000000 // requires OR'd arguments
+	STENCIL_OP         = 0x0C000000 // requires OR'd arguments
+	TAG                = 0x03000000 // requires OR'd arguments
+	TAG_MASK           = 0x14000000 // requires OR'd arguments
+	VERTEX2F           = 0x40000000 // requires OR'd arguments
+	VERTEX2II          = 0x02000000 // requires OR'd arguments
 )
 
 // Alpha function (ALPHA_FUNC).
@@ -138,6 +139,13 @@ const (
 	L2           = 17 // FT81x
 )
 
+// Bitmap options (BITMAP_SIZE).
+const (
+	BILINEAR = 1 << 2
+	WRAPX    = 1 << 1
+	WRAPY    = 1 << 0
+)
+
 const (
 	CLR_COL              = 0x4
 	CLR_STN              = 0x2
@@ -161,7 +169,6 @@ const (
 	INVERT               = 5
 	KEEP                 = 1
 	LINEAR_SAMPLES       = 0
-	NEAREST              = 0
 	ONE                  = 1
 	ONE_MINUS_DST_ALPHA  = 5
 	ONE_MINUS_SRC_ALPHA  = 4

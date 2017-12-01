@@ -80,9 +80,9 @@ func (d *Driver) Err(clear bool) error {
 }
 
 func (d *Driver) DL(addr int) DL {
-	return DL(d.Writer(addr))
+	return DL{d.Writer(addr)}
 }
 
 func (d *Driver) GE(addr int) GE {
-	return GE(d.Writer(addr))
+	return GE{d.DL(addr)}
 }
