@@ -142,12 +142,12 @@ func main() {
 	fmt.Print("Write initial display list and enable display...")
 
 	lcd.Writer(ft80.RAM_DL).Write32(
-		ft80.DL_CLEAR_RGB,
-		ft80.DL_CLEAR|ft80.CLR_COL|ft80.CLR_STN|ft80.CLR_TAG,
-		ft80.DL_DISPLAY,
+		eve.CLEAR_RGB,
+		eve.CLEAR|eve.CLR_COL|eve.CLR_STN|eve.CLR_TAG,
+		eve.DISPLAY,
 	)
 
-	lcd.Writer(ft80.REG_DLSWAP).Write32(ft80.DLSWAP_FRAME)
+	lcd.Writer(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
 
 	gpio := lcd.Reader(ft80.REG_GPIO).ReadWord32()
 	lcd.Writer(ft80.REG_GPIO).Write32(gpio | 0x80)
@@ -163,20 +163,20 @@ func main() {
 	fmt.Print("Testing DL...")
 
 	lcd.Writer(ft80.RAM_DL).Write32(
-		ft80.DL_CLEAR_RGB,
-		ft80.DL_CLEAR|ft80.CLR_COL|ft80.CLR_STN|ft80.CLR_TAG,
-		ft80.DL_BEGIN|ft80.POINTS,
-		ft80.DL_COLOR_RGB|0xa161f4,
-		ft80.DL_POINT_SIZE|100*16,
-		ft80.DL_VERTEX2F|200*16<<15|100*16,
-		ft80.DL_COLOR_RGB|0xffff00,
-		ft80.DL_POINT_SIZE|50*16,
-		ft80.DL_VERTEX2F|300*16<<15|200*16,
-		ft80.DL_DISPLAY,
+		eve.CLEAR_RGB,
+		eve.CLEAR|eve.CLR_COL|eve.CLR_STN|eve.CLR_TAG,
+		eve.BEGIN|eve.POINTS,
+		eve.COLOR_RGB|0xa161f4,
+		eve.POINT_SIZE|100*16,
+		eve.VERTEX2F|200*16<<15|100*16,
+		eve.COLOR_RGB|0xffff00,
+		eve.POINT_SIZE|50*16,
+		eve.VERTEX2F|300*16<<15|200*16,
+		eve.DISPLAY,
 	)
 
 	for {
-		lcd.Writer(ft80.REG_DLSWAP).Write32(ft80.DLSWAP_FRAME)
+		lcd.Writer(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
 		check(lcd.Err(false))
 		delay.Millisec(500)
 	}

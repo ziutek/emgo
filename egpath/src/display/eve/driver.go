@@ -7,7 +7,7 @@ type Driver struct {
 }
 
 // NewDriver returns new driver to the EVE graphics controller accessed via dci.
-// N determines capacity of the internal buffer (in 32-bit words, must be >= 1).
+// N sets capacity of the internal buffer (in 32-bit words, must be >= 1).
 func NewDriver(dci DCI, n int) *Driver {
 	d := new(Driver)
 	d.dci = dci
@@ -77,4 +77,12 @@ func (d *Driver) Reader(addr int) Reader {
 func (d *Driver) Err(clear bool) error {
 	d.End()
 	return d.dci.Err(clear)
+}
+
+func (d *Driver) DL(addr int) DL {
+	return DL(d.Writer(addr))
+}
+
+func (d *Driver) GE(addr int) GE {
+	return GE(d.Writer(addr))
 }
