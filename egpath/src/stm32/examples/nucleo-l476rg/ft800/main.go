@@ -3,6 +3,7 @@ package main
 import (
 	"delay"
 	"fmt"
+	"math/rand"
 	"rtos"
 
 	"display/eve"
@@ -162,6 +163,8 @@ func main() {
 
 	check(lcd.Err(false))
 
+	delay.Millisec(20) // Clock switching is synchronised to VSYNC.
+
 	dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
 	fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
@@ -169,9 +172,25 @@ func main() {
 
 	fmt.Print("Testing DL...")
 
+	w := lcd.Writer(ft80.RAM_G)
+	img := &Tomato_DXT1_C0_Data_Raw
+	for i := 0; i < len(img); i += 4 {
+		w.Write32(
+			uint32(img[i]) | uint32(img[i+1])<<8 |
+				uint32(img[i+2])<<16 | uint32(img[i+3])<<24,
+		)
+	}
+
 	dl = lcd.DL(ft80.RAM_DL)
+
+	dl.BitmapHandle(1)
+	dl.BitmapSource(ft80.RAM_G)
+	dl.BitmapLayout(eve.RGB565, 64, 32)
+	dl.BitmapSize(0, 32, 32)
+
 	dl.ClearColorRGB(0, 0, 0)
 	dl.Clear(eve.CST)
+
 	dl.Begin(eve.POINTS)
 	dl.ColorRGB(161, 244, 97)
 	dl.PointSize(100 * 16)
@@ -179,13 +198,23 @@ func main() {
 	dl.ColorRGB(255, 0, 255)
 	dl.PointSize(50 * 16)
 	dl.Vertex2F(300*16, 200*16)
+
+	dl.Begin(eve.BITMAPS)
+	dl.ColorA(150)
+	dl.BitmapHandle(1)
+
+	var rnd rand.XorShift64
+	rnd.Seed(1)
+	for i := 0; i < 100; i++ {
+		v := rnd.Uint64()
+		vl := uint32(v)
+		vh := uint32(v >> 32)
+		dl.Vertex2F(int(vl%(480-32)*16), int(vh%(272-32)*16))
+	}
 	dl.Display()
 
-	for {
-		lcd.Writer(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
-		check(lcd.Err(false))
-		delay.Millisec(500)
-	}
+	lcd.Writer(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
+	check(lcd.Err(false))
 }
 
 func check(err error) {
