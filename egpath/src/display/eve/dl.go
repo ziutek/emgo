@@ -1,8 +1,8 @@
 package eve
 
-// DL provides convenient way to write Display List commands. Every command is
+// DL provides a convenient way to write Display List commands. Every command is
 // a function call, so for better performance or lower RAM usage, use raw Writer
-// with many Display List commands in array/slice.
+// with many Display List commands in (constant) array / slice.
 type DL struct {
 	Writer
 }
@@ -208,4 +208,43 @@ func (dl DL) ScissorXY(x, y int) {
 // StencilFunc sets function and reference value for stencil testing.
 func (dl DL) StencilFunc(fun, ref, mask byte) {
 	dl.wr32(STENCIL_FUNC | uint32(fun)<<16 | uint32(ref)<<8 | uint32(mask))
+}
+
+// StencilMask controls the writing of individual bits in the stencil planes.
+func (dl DL) StencilMask(mask byte) {
+	dl.wr32(STENCIL_MASK | uint32(mask))
+}
+
+// StencilOp sets stencil test actions.
+func (dl DL) StencilOp(sfail, spass byte) {
+	dl.wr32(STENCIL_OP | uint32(sfail)<<3 | uint32(spass))
+}
+
+// Tag attaches the tag value for the following graphics objects drawn on the
+// screen. The initial tag buffer value is 255.
+func (dl DL) Tag(t byte) {
+	dl.wr32(TAG | uint32(t))
+}
+
+// TagMask controls the writing of the tag buffer.
+func (dl DL) TagMask(mask byte) {
+	dl.wr32(TAG | uint32(mask))
+}
+
+// Vertex2F starts the operation of graphics primitives at the specified screen
+// coordinate, in the pixel precision set by VertexFormat (default: 1/16 pixel).
+func (dl DL) Vertex2F(x, y int) {
+	dl.wr32(VERTEX2F | uint32(x)&0x7FFF<<15 | uint32(y)&0x7FFF)
+}
+
+// Vertex2II starts the operation of graphics primitive at the specified
+// coordinates in pixel precision.
+func (dl DL) Vertex2II(x, y int, handle, cell byte) {
+	dl.wr32(VERTEX2F | uint32(x)&0x1FF<<21 | uint32(y)&0x1FF<<12 |
+		uint32(handle)<<7 | uint32(cell))
+}
+
+// VertexFormat sets the precision of Vertex2F coordinates.
+func (dl DL) VertexFormat(frac uint) {
+	dl.wr32(VERTEX_FORMAT | uint32(frac)&7)
 }

@@ -1,103 +1,56 @@
 package eve
 
-// Graphics Engine Commands.
-const (
-	CMD_APPEND       = 0xffffff1e
-	CMD_BGCOLOR      = 0xffffff09
-	CMD_BUTTON       = 0xffffff0d
-	CMD_CALIBRATE    = 0xffffff15
-	CMD_CLOCK        = 0xffffff14
-	CMD_COLDSTART    = 0xffffff32
-	CMD_DIAL         = 0xffffff2d
-	CMD_DLSTART      = 0xffffff00
-	CMD_FGCOLOR      = 0xffffff0a
-	CMD_GAUGE        = 0xffffff13
-	CMD_GETMATRIX    = 0xffffff33
-	CMD_GETPTR       = 0xffffff23
-	CMD_GRADCOLOR    = 0xffffff34
-	CMD_GRADIENT     = 0xffffff0b
-	CMD_INFLATE      = 0xffffff22
-	CMD_INTERRUPT    = 0xffffff02
-	CMD_KEYS         = 0xffffff0e
-	CMD_LOADIDENTITY = 0xffffff26
-	CMD_LOADIMAGE    = 0xffffff24
-	CMD_LOGO         = 0xffffff31
-	CMD_MEMCPY       = 0xffffff1d
-	CMD_MEMCRC       = 0xffffff18
-	CMD_MEMSET       = 0xffffff1b
-	CMD_MEMWRITE     = 0xffffff1a
-	CMD_MEMZERO      = 0xffffff1c
-	CMD_NUMBER       = 0xffffff2e
-	CMD_PROGRESS     = 0xffffff0f
-	CMD_REGREAD      = 0xffffff19
-	CMD_ROTATE       = 0xffffff29
-	CMD_SCALE        = 0xffffff28
-	CMD_SCREENSAVER  = 0xffffff2f
-	CMD_SCROLLBAR    = 0xffffff11
-	CMD_SETFONT      = 0xffffff2b
-	CMD_SETMATRIX    = 0xffffff2a
-	CMD_SKETCH       = 0xffffff30
-	CMD_SLIDER       = 0xffffff10
-	CMD_SNAPSHOT     = 0xffffff1f
-	CMD_SPINNER      = 0xffffff16
-	CMD_STOP         = 0xffffff17
-	CMD_SWAP         = 0xffffff01
-	CMD_TEXT         = 0xffffff0c
-	CMD_TOGGLE       = 0xffffff12
-	CMD_TRACK        = 0xffffff2c
-	CMD_TRANSLATE    = 0xffffff27
-)
-
 // Display list commands.
 const (
-	ALPHA_FUNC         = 0x09000000 // requires OR'd arguments
-	BEGIN              = 0x1F000000 // requires OR'd arguments
-	BITMAP_HANDLE      = 0x05000000 // requires OR'd arguments
-	BITMAP_LAYOUT      = 0x07000000 // requires OR'd arguments
-	BITMAP_LAYOUT_H    = 0x28000000 // requires OR'd arguments, EVE2
-	BITMAP_SIZE        = 0x08000000 // requires OR'd arguments
-	BITMAP_SIZE_H      = 0x29000000 // requires OR'd arguments, EVE2
-	BITMAP_SOURCE      = 0x01000000 // requires OR'd arguments
-	BITMAP_TRANSFORM_A = 0x15000000 // requires OR'd arguments
-	BITMAP_TRANSFORM_B = 0x16000000 // requires OR'd arguments
-	BITMAP_TRANSFORM_C = 0x17000000 // requires OR'd arguments
-	BITMAP_TRANSFORM_D = 0x18000000 // requires OR'd arguments
-	BITMAP_TRANSFORM_E = 0x19000000 // requires OR'd arguments
-	BITMAP_TRANSFORM_F = 0x1A000000 // requires OR'd arguments
-	BLEND_FUNC         = 0x0B000000 // requires OR'd arguments
-	CALL               = 0x1D000000 // requires OR'd arguments
-	CELL               = 0x06000000 // requires OR'd arguments
-	CLEAR              = 0x26000000 // requires OR'd arguments
-	CLEAR_COLOR_A      = 0x0F000000 // requires OR'd arguments
-	CLEAR_COLOR_RGB    = 0x02000000 // requires OR'd arguments
-	CLEAR_STENCIL      = 0x11000000 // requires OR'd arguments
-	CLEAR_TAG          = 0x12000000 // requires OR'd arguments
-	COLOR_A            = 0x10000000 // requires OR'd arguments
-	COLOR_MASK         = 0x20000000 // requires OR'd arguments
-	COLOR_RGB          = 0x04000000 // requires OR'd arguments
+	ALPHA_FUNC         = 0x09000000 // Arg: func<<8 | ref
+	BEGIN              = 0x1F000000 // Arg: prim
+	BITMAP_HANDLE      = 0x05000000 // Arg: handle
+	BITMAP_LAYOUT      = 0x07000000 // Arg: linestride<<9 | height
+	BITMAP_LAYOUT_H    = 0x28000000 // Arg: linestride<<2 | height (EVE2)
+	BITMAP_SIZE        = 0x08000000 // Arg: opt<<18 | width<<9 | height
+	BITMAP_SIZE_H      = 0x29000000 // Arg: width<<2 | height (EVE2)
+	BITMAP_SOURCE      = 0x01000000 // Arg: addr
+	BITMAP_TRANSFORM_A = 0x15000000 // Arg: a
+	BITMAP_TRANSFORM_B = 0x16000000 // Arg: b
+	BITMAP_TRANSFORM_C = 0x17000000 // Arg: c
+	BITMAP_TRANSFORM_D = 0x18000000 // Arg: d
+	BITMAP_TRANSFORM_E = 0x19000000 // Arg: e
+	BITMAP_TRANSFORM_F = 0x1A000000 // Arg: f
+	BLEND_FUNC         = 0x0B000000 // Arg: src<<3 | dst
+	CALL               = 0x1D000000 // Arg: dest
+	CELL               = 0x06000000 // Arg: cell
+	CLEAR              = 0x26000000 // Arg: cst
+	CLEAR_COLOR_A      = 0x0F000000 // Arg: alpha
+	CLEAR_COLOR_RGB    = 0x02000000 // Arg: red<<16 | blue<<8 | green
+	CLEAR_STENCIL      = 0x11000000 // Arg: s
+	CLEAR_TAG          = 0x12000000 // Arg: t
+	COLOR_A            = 0x10000000 // Arg: alpha
+	COLOR_MASK         = 0x20000000 // Arg: rgba
+	COLOR_RGB          = 0x04000000 // Arg: red<<16 | blue<<8 | green
 	DISPLAY            = 0x00000000
 	END                = 0x21000000
-	JUMP               = 0x1E000000 // requires OR'd arguments
-	LINE_WIDTH         = 0x0E000000 // requires OR'd arguments
-	MACRO              = 0x25000000 // requires OR'd arguments
+	JUMP               = 0x1E000000 // Arg: dest
+	LINE_WIDTH         = 0x0E000000 // Arg: width
+	MACRO              = 0x25000000 // Arg: m
 	NOP                = 0x2D000000
-	PALETTE_SOURCE     = 0x2A000000 // requires OR'd arguments, EVE2
-	POINT_SIZE         = 0x0D000000 // requires OR'd arguments
+	PALETTE_SOURCE     = 0x2A000000 // Arg: addr (EVE2)
+	POINT_SIZE         = 0x0D000000 // Arg: size
 	RESTORE_CONTEXT    = 0x23000000
 	RETURN             = 0x24000000
 	SAVE_CONTEXT       = 0x22000000
-	SCISSOR_SIZE       = 0x1C000000 // requires OR'd arguments
-	SCISSOR_XY         = 0x1B000000 // requires OR'd arguments
-	STENCIL_FUNC       = 0x0A000000 // requires OR'd arguments
-	STENCIL_MASK       = 0x13000000 // requires OR'd arguments
-	STENCIL_OP         = 0x0C000000 // requires OR'd arguments
-	TAG                = 0x03000000 // requires OR'd arguments
-	TAG_MASK           = 0x14000000 // requires OR'd arguments
-	VERTEX2F           = 0x40000000 // requires OR'd arguments
-	VERTEX2II          = 0x02000000 // requires OR'd arguments
+	SCISSOR_SIZE       = 0x1C000000 // Arg: width<<12 | height
+	SCISSOR_XY         = 0x1B000000 // Arg: x<<11 | y
+	STENCIL_FUNC       = 0x0A000000 // Arg: func<<16 | ref<<8 | mask
+	STENCIL_MASK       = 0x13000000 // Arg: mask
+	STENCIL_OP         = 0x0C000000 // Arg: sfail<<3 | spass
+	TAG                = 0x03000000 // Arg: t
+	TAG_MASK           = 0x14000000 // Arg: mask
+	VERTEX2F           = 0x40000000 // Arg: x<<15 | y
+	VERTEX2II          = 0x02000000 // Arg: x<<21 | y<<12 | handle<<7 | cell
+	VERTEX_FORMAT      = 0x27000000 // Arg: frac (EVE2)
 )
 
-// Alpha function (ALPHA_FUNC).
+// Alpha/stencil function (ALPHA_FUNC, STENCIL_FUNC).
 const (
 	NEVER    = 0
 	LESS     = 1
@@ -159,28 +112,96 @@ const (
 	ONE_MINUS_DST_ALPHA = 5
 )
 
-// Clearing options (CLEAR).
+// Clearing options: cst (CLEAR).
 const (
-	T = 1 << 0
-	S = 1 << 1
-	C = 1 << 2
+	T   = 1 << 0
+	S   = 1 << 1
+	C   = 1 << 2
+	CS  = C | S
+	ST  = S | T
+	CT  = C | T
+	CST = C | S | T
 )
 
-// Color mask (COLOR_MASK)
+// Color mask: rgba (COLOR_MASK).
 const (
-	A = 1 << 0
-	B = 1 << 1
-	G = 1 << 2
-	R = 1 << 3
+	A   = 1 << 0
+	B   = 1 << 1
+	G   = 1 << 2
+	R   = 1 << 3
+	RG  = R | G
+	GB  = G | B
+	RB  = R | B
+	RGB = R | G | B
+)
+
+// Stencil test actions: sfail, spass.
+const (
+	//ZERO  = 0 // Alredy defined in blending options.
+	KEEP    = 1
+	REPLACE = 2
+	INCR    = 3
+	DECR    = 4
+	INVERT  = 5
+)
+
+// Graphics Engine Commands.
+const (
+	CMD_APPEND       = 0xffffff1e
+	CMD_BGCOLOR      = 0xffffff09
+	CMD_BUTTON       = 0xffffff0d
+	CMD_CALIBRATE    = 0xffffff15
+	CMD_CLOCK        = 0xffffff14
+	CMD_COLDSTART    = 0xffffff32
+	CMD_DIAL         = 0xffffff2d
+	CMD_DLSTART      = 0xffffff00
+	CMD_FGCOLOR      = 0xffffff0a
+	CMD_GAUGE        = 0xffffff13
+	CMD_GETMATRIX    = 0xffffff33
+	CMD_GETPTR       = 0xffffff23
+	CMD_GRADCOLOR    = 0xffffff34
+	CMD_GRADIENT     = 0xffffff0b
+	CMD_INFLATE      = 0xffffff22
+	CMD_INTERRUPT    = 0xffffff02
+	CMD_KEYS         = 0xffffff0e
+	CMD_LOADIDENTITY = 0xffffff26
+	CMD_LOADIMAGE    = 0xffffff24
+	CMD_LOGO         = 0xffffff31
+	CMD_MEMCPY       = 0xffffff1d
+	CMD_MEMCRC       = 0xffffff18
+	CMD_MEMSET       = 0xffffff1b
+	CMD_MEMWRITE     = 0xffffff1a
+	CMD_MEMZERO      = 0xffffff1c
+	CMD_NUMBER       = 0xffffff2e
+	CMD_PROGRESS     = 0xffffff0f
+	CMD_REGREAD      = 0xffffff19
+	CMD_ROTATE       = 0xffffff29
+	CMD_SCALE        = 0xffffff28
+	CMD_SCREENSAVER  = 0xffffff2f
+	CMD_SCROLLBAR    = 0xffffff11
+	CMD_SETFONT      = 0xffffff2b
+	CMD_SETMATRIX    = 0xffffff2a
+	CMD_SKETCH       = 0xffffff30
+	CMD_SLIDER       = 0xffffff10
+	CMD_SNAPSHOT     = 0xffffff1f
+	CMD_SPINNER      = 0xffffff16
+	CMD_STOP         = 0xffffff17
+	CMD_SWAP         = 0xffffff01
+	CMD_TEXT         = 0xffffff0c
+	CMD_TOGGLE       = 0xffffff12
+	CMD_TRACK        = 0xffffff2c
+	CMD_TRANSLATE    = 0xffffff27
+)
+
+// REG_DLSWAP values.
+const (
+	DLSWAP_DONE  = 0
+	DLSWAP_LINE  = 1
+	DLSWAP_FRAME = 2
 )
 
 const (
-	DECR                 = 4
 	DECR_WRAP            = 7
-	DLSWAP_DONE          = 0
-	DLSWAP_FRAME         = 2
-	DLSWAP_LINE          = 1
-	INCR                 = 3
 	INCR_WRAP            = 6
 	INT_CMDEMPTY         = 32
 	INT_CMDFLAG          = 64
@@ -190,8 +211,6 @@ const (
 	INT_SWAP             = 1
 	INT_TAG              = 4
 	INT_TOUCH            = 2
-	INVERT               = 5
-	KEEP                 = 1
 	LINEAR_SAMPLES       = 0
 	OPT_CENTER           = 1536 // = 0x6000
 	OPT_CENTERX          = 512  // = 0x0200
@@ -209,7 +228,6 @@ const (
 	OPT_SIGNED           = 256   // = 0x0100
 	PLAYCOLOR            = 0x00a0a080
 	REPEAT               = 1
-	REPLACE              = 2
 	TOUCHMODE_CONTINUOUS = 3
 	TOUCHMODE_FRAME      = 2
 	TOUCHMODE_OFF        = 0

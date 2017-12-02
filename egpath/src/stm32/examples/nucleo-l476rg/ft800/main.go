@@ -141,11 +141,18 @@ func main() {
 
 	fmt.Print("Write initial display list and enable display...")
 
-	lcd.Writer(ft80.RAM_DL).Write32(
-		eve.CLEAR_RGB,
-		eve.CLEAR|eve.CLR_COL|eve.CLR_STN|eve.CLR_TAG,
-		eve.DISPLAY,
-	)
+	dl := lcd.DL(ft80.RAM_DL)
+	dl.ClearColorRGB(0, 0, 0)
+	dl.Clear(eve.CST)
+	dl.Display()
+
+	// Alternative, method:
+	//
+	//  lcd.Writer(ft80.RAM_DL).Write32(
+	//  	eve.CLEAR_COLOR_RGB,
+	//  	eve.CLEAR|eve.CST,
+	//  	eve.DISPLAY,
+	//  )
 
 	lcd.Writer(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
 
@@ -162,18 +169,17 @@ func main() {
 
 	fmt.Print("Testing DL...")
 
-	lcd.Writer(ft80.RAM_DL).Write32(
-		eve.CLEAR_RGB,
-		eve.CLEAR|eve.CLR_COL|eve.CLR_STN|eve.CLR_TAG,
-		eve.BEGIN|eve.POINTS,
-		eve.COLOR_RGB|0xa161f4,
-		eve.POINT_SIZE|100*16,
-		eve.VERTEX2F|200*16<<15|100*16,
-		eve.COLOR_RGB|0xffff00,
-		eve.POINT_SIZE|50*16,
-		eve.VERTEX2F|300*16<<15|200*16,
-		eve.DISPLAY,
-	)
+	dl = lcd.DL(ft80.RAM_DL)
+	dl.ClearColorRGB(0, 0, 0)
+	dl.Clear(eve.CST)
+	dl.Begin(eve.POINTS)
+	dl.ColorRGB(161, 244, 97)
+	dl.PointSize(100 * 16)
+	dl.Vertex2F(200*16, 100*16)
+	dl.ColorRGB(255, 0, 255)
+	dl.PointSize(50 * 16)
+	dl.Vertex2F(300*16, 200*16)
+	dl.Display()
 
 	for {
 		lcd.Writer(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
