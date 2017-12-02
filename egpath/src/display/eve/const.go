@@ -46,7 +46,7 @@ const (
 	TAG                = 0x03000000 // Arg: t
 	TAG_MASK           = 0x14000000 // Arg: mask
 	VERTEX2F           = 0x40000000 // Arg: x<<15 | y
-	VERTEX2II          = 0x02000000 // Arg: x<<21 | y<<12 | handle<<7 | cell
+	VERTEX2II          = 0x80000000 // Arg: x<<21 | y<<12 | handle<<7 | cell
 	VERTEX_FORMAT      = 0x27000000 // Arg: frac (EVE2)
 )
 
@@ -147,6 +147,9 @@ const (
 
 // Graphics Engine Commands.
 const (
+	CMD_DLSTART = 0xffffff00
+	CMD_SWAP    = 0xffffff01
+
 	CMD_APPEND       = 0xffffff1e
 	CMD_BGCOLOR      = 0xffffff09
 	CMD_BUTTON       = 0xffffff0d
@@ -154,7 +157,6 @@ const (
 	CMD_CLOCK        = 0xffffff14
 	CMD_COLDSTART    = 0xffffff32
 	CMD_DIAL         = 0xffffff2d
-	CMD_DLSTART      = 0xffffff00
 	CMD_FGCOLOR      = 0xffffff0a
 	CMD_GAUGE        = 0xffffff13
 	CMD_GETMATRIX    = 0xffffff33
@@ -186,7 +188,6 @@ const (
 	CMD_SNAPSHOT     = 0xffffff1f
 	CMD_SPINNER      = 0xffffff16
 	CMD_STOP         = 0xffffff17
-	CMD_SWAP         = 0xffffff01
 	CMD_TEXT         = 0xffffff0c
 	CMD_TOGGLE       = 0xffffff12
 	CMD_TRACK        = 0xffffff2c

@@ -24,13 +24,12 @@ func (dl DL) BitmapHandle(handle byte) {
 
 // BitmapLayout sets the bitmap memory format and layout for the current handle.
 func (dl DL) BitmapLayout(format byte, linestride, height int) {
-	l := uint32(linestride) & 1023
-	h := uint32(height) & 511
-	dl.wr32(BITMAP_LAYOUT | uint32(format)<<19 | l<<9 | h)
+	dl.wr32(BITMAP_LAYOUT | uint32(format)<<19 | uint32(linestride)&1023<<9 |
+		uint32(height)&511)
 	if linestride > 1023 || height > 511 {
 		// BUG?: Does BITMAP_LAYOUT zeros bits set by previous BITMAP_LAYOUT_H?
-		l = uint32(linestride) >> 10 & 3
-		h = uint32(height) >> 9 & 3
+		l := uint32(linestride) >> 10 & 3
+		h := uint32(height) >> 9 & 3
 		dl.wr32(BITMAP_LAYOUT_H | l<<2 | h)
 	}
 }
@@ -162,7 +161,6 @@ func (dl DL) LineWidth(width int) {
 // Macro executes a single command from a macro register.
 func (dl DL) Macro(m byte) {
 	dl.wr32(MACRO | uint32(m))
-
 }
 
 // Nop does nothing.
@@ -228,7 +226,7 @@ func (dl DL) Tag(t byte) {
 
 // TagMask controls the writing of the tag buffer.
 func (dl DL) TagMask(mask byte) {
-	dl.wr32(TAG | uint32(mask))
+	dl.wr32(TAG_MASK | uint32(mask))
 }
 
 // Vertex2F starts the operation of graphics primitives at the specified screen
@@ -240,7 +238,7 @@ func (dl DL) Vertex2F(x, y int) {
 // Vertex2II starts the operation of graphics primitive at the specified
 // coordinates in pixel precision.
 func (dl DL) Vertex2II(x, y int, handle, cell byte) {
-	dl.wr32(VERTEX2F | uint32(x)&0x1FF<<21 | uint32(y)&0x1FF<<12 |
+	dl.wr32(VERTEX2II | uint32(x)&511<<21 | uint32(y)&511<<12 |
 		uint32(handle)<<7 | uint32(cell))
 }
 
