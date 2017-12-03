@@ -147,15 +147,18 @@ const (
 
 // Graphics Engine Commands.
 const (
-	CMD_DLSTART = 0xffffff00
-	CMD_SWAP    = 0xffffff01
+	CMD_DLSTART   = 0xffffff00
+	CMD_SWAP      = 0xffffff01
+	CMD_COLDSTART = 0xffffff32
+	CMD_INTERRUPT = 0xffffff02
+	CMD_APPEND    = 0xffffff1e // Arg: addr, num
+	CMD_REGREAD   = 0xffffff19 // Arg: addr
+	CMD_MEMWRITE  = 0xffffff1a // Arg: addr, num
 
-	CMD_APPEND       = 0xffffff1e
 	CMD_BGCOLOR      = 0xffffff09
 	CMD_BUTTON       = 0xffffff0d
 	CMD_CALIBRATE    = 0xffffff15
 	CMD_CLOCK        = 0xffffff14
-	CMD_COLDSTART    = 0xffffff32
 	CMD_DIAL         = 0xffffff2d
 	CMD_FGCOLOR      = 0xffffff0a
 	CMD_GAUGE        = 0xffffff13
@@ -164,7 +167,6 @@ const (
 	CMD_GRADCOLOR    = 0xffffff34
 	CMD_GRADIENT     = 0xffffff0b
 	CMD_INFLATE      = 0xffffff22
-	CMD_INTERRUPT    = 0xffffff02
 	CMD_KEYS         = 0xffffff0e
 	CMD_LOADIDENTITY = 0xffffff26
 	CMD_LOADIMAGE    = 0xffffff24
@@ -172,11 +174,9 @@ const (
 	CMD_MEMCPY       = 0xffffff1d
 	CMD_MEMCRC       = 0xffffff18
 	CMD_MEMSET       = 0xffffff1b
-	CMD_MEMWRITE     = 0xffffff1a
 	CMD_MEMZERO      = 0xffffff1c
 	CMD_NUMBER       = 0xffffff2e
 	CMD_PROGRESS     = 0xffffff0f
-	CMD_REGREAD      = 0xffffff19
 	CMD_ROTATE       = 0xffffff29
 	CMD_SCALE        = 0xffffff28
 	CMD_SCREENSAVER  = 0xffffff2f
@@ -201,17 +201,21 @@ const (
 	DLSWAP_FRAME = 2
 )
 
+// Interrupt flags.
+const (
+	INT_SWAP         = 1
+	INT_TOUCH        = 2
+	INT_TAG          = 4
+	INT_SOUND        = 8
+	INT_PLAYBACK     = 16
+	INT_CMDEMPTY     = 32
+	INT_CMDFLAG      = 64
+	INT_CONVCOMPLETE = 128
+)
+
 const (
 	DECR_WRAP            = 7
 	INCR_WRAP            = 6
-	INT_CMDEMPTY         = 32
-	INT_CMDFLAG          = 64
-	INT_CONVCOMPLETE     = 128
-	INT_PLAYBACK         = 16
-	INT_SOUND            = 8
-	INT_SWAP             = 1
-	INT_TAG              = 4
-	INT_TOUCH            = 2
 	LINEAR_SAMPLES       = 0
 	OPT_CENTER           = 1536 // = 0x6000
 	OPT_CENTERX          = 512  // = 0x0200

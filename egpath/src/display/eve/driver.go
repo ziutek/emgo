@@ -27,10 +27,11 @@ func (d *Driver) flush() {
 	d.buf = d.buf[:0]
 }
 
-// End should be used to ensure that the previous Reader/Writer finished. It
-// returns the number of bytes written to the EVE memory. End is implicitly
-// called at the beginning of Cmd, Reader, Writer and Err methods.
-func (d *Driver) End() int {
+// Flush should be used to ensure that the previous Start* method finished. It
+// returns the number of bytes written to the EVE memory. Flush is implicitly
+// called at the beginning of all other Driver methods (Cmd, StartR, StartW,
+// StartDL, StartGE, Err).
+func (d *Driver) Flush() int {
 	if len(d.buf) > 0 {
 		d.flush()
 	}
@@ -47,26 +48,26 @@ type HostCmd byte
 
 // Cmd invokes host command. Param is a command parameter. It must be zero in
 // case of commands that do not require parameters. Cmd is not buffered by the
-// Driver: does not require calling End after it.
+// Driver: does not require calling Flush after it.
 func (d *Driver) Cmd(cmd HostCmd, param byte) {
-	d.End()
+	d.Flush()
 	d.dci.Write32([]uint32{uint32(cmd)<<16 | uint32(param)<<8})
 	d.dci.End()
 }
 
 // Writer starts writing to the EVE memory at the address addr.
-func (d *Driver) Writer(addr int) Writer {
+func (d *Driver) StartW(addr int) Writer {
 	checkAddr(addr)
-	d.End()
+	d.Flush()
 	d.buf = d.buf[:1]
 	d.buf[0] = 1<<23 | uint32(addr)
 	return Writer{d}
 }
 
 // Reader starts reading from the EVE memory at the address addr.
-func (d *Driver) Reader(addr int) Reader {
+func (d *Driver) StartR(addr int) Reader {
 	checkAddr(addr)
-	d.End()
+	d.Flush()
 	d.dci.Write32([]uint32{uint32(addr)})
 	d.dci.Read([]byte{0}) // Read dummy byte (switch QSPI to input mode).
 	d.n = 1
@@ -75,14 +76,14 @@ func (d *Driver) Reader(addr int) Reader {
 
 // Err returns and clears the internal error status.
 func (d *Driver) Err(clear bool) error {
-	d.End()
+	d.Flush()
 	return d.dci.Err(clear)
 }
 
-func (d *Driver) DL(addr int) DL {
-	return DL{d.Writer(addr)}
+func (d *Driver) StartDL(addr int) DL {
+	return DL{d.StartW(addr)}
 }
 
-func (d *Driver) GE(addr int) GE {
-	return GE{d.DL(addr)}
+func (d *Driver) StartGE(addr int) GE {
+	return GE{d.StartDL(addr)}
 }
