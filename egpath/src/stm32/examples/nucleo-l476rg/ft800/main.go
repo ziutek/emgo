@@ -67,21 +67,6 @@ func init() {
 	dci = evedci.NewSPI(spidrv, csn, pdn, irqline)
 }
 
-const (
-	lcdWidth   = 480 // Active width of LCD display
-	lcdHeight  = 272 // Active height of LCD display
-	lcdHcycle  = 548 // Total number of clocks per line
-	lcdHoffset = 43  // Start of active line
-	lcdHsync0  = 0   // Start of horizontal sync pulse
-	lcdHsync1  = 41  // End of horizontal sync pulse
-	lcdVcycle  = 292 // Total number of lines per screen
-	lcdVoffset = 12  // Start of active screen
-	lcdVsync0  = 0   // Start of vertical sync pulse
-	lcdVsync1  = 10  // End of vertical sync pulse
-	lcdPclk    = 5   // Pixel Clock
-	lcdPclkpol = 1   // Define active edge of PCLK
-)
-
 func main() {
 	delay.Millisec(200)
 	spibus := dci.SPI().P.Bus()
@@ -97,7 +82,7 @@ func main() {
 
 	lcd := eve.NewDriver(dci, 32)
 
-	fmt.Print("Init... ")
+	fmt.Print("Init:")
 
 	// Wakeup from STANDBY to ACTIVE.
 	lcd.Cmd(ft80.ACTIVE, 0)
@@ -105,75 +90,78 @@ func main() {
 	// Select external 12 MHz oscilator as clock source.
 	lcd.Cmd(ft80.CLKEXT, 0)
 
-	if lcd.Reader(ft80.REG_ID).ReadByte() != 0x7c {
+	if lcd.StartR(ft80.REG_ID).ReadByte() != 0x7c {
 		fmt.Printf("Not EVE controller.\n")
 		return
 	}
-	if lcd.Reader(ft80.ROM_CHIPID).ReadWord32() != 0x10008 {
+	if lcd.StartR(ft80.ROM_CHIPID).ReadWord32() != 0x10008 {
 		fmt.Printf("Not FT800 controller.\n")
 		return
 	}
 
 	check(lcd.Err(false))
 
-	fmt.Print("Configure WQVGA (480x272) display...")
+	fmt.Print("Configure WQVGA (480x272) display:")
 
-	lcd.Writer(ft80.REG_PWM_DUTY).Write32(0)
+	lcd.StartW(ft80.REG_PWM_DUTY).Write32(0)
 
-	lcd.Writer(ft80.REG_PCLK_POL).Write32(
-		lcdPclkpol, // REG_PCLK_POL
-		0,          // REG_PCLK
+	const pclkDiv = 5 // Pixel Clock divider: pclk = mainClk / pclkDiv.
+
+	lcd.StartW(ft80.REG_PCLK_POL).Write32(
+		1, // REG_PCLK_POL (define active edge of PCLK)
+		0, // REG_PCLK (temporary disable PCLK)
+	)
+	lcd.StartW(ft80.REG_HCYCLE).Write32(
+		548, // REG_HCYCLE  (total number of clocks per line)
+		43,  // REG_HOFFSET (tart of active line)
+		480, // REG_HSIZE   (active width of LCD display)
+		0,   // REG_HSYNC0  (start of horizontal sync pulse)
+		41,  // REG_HSYNC1  (end of horizontal sync pulse)
+		292, // REG_VCYCLE  (total number of lines per screen)
+		12,  // REG_VOFFSET (start of active screen)
+		272, // REG_VSIZE   (active height of LCD display)
+		0,   // REG_VSYNC0  (start of vertical sync pulse)
+		10,  // REG_VSYNC1  (end of vertical sync pulse)
 	)
 
-	lcd.Writer(ft80.REG_HCYCLE).Write32(
-		lcdHcycle,  // REG_HCYCLE
-		lcdHoffset, // REG_HOFFSET
-		lcdWidth,   // REG_HSIZE
-		lcdHsync0,  // REG_HSYNC0
-		lcdHsync1,  // REG_HSYNC1
-		lcdVcycle,  // REG_VCYCLE
-		lcdVoffset, // REG_VOFFSET
-		lcdHeight,  // REG_VSIZE
-		lcdVsync0,  // REG_VSYNC0
-		lcdVsync1,  // REG_VSYNC1
-	)
+	// Refresh rate: pclk/(hcycle*vcycle) = 48 MHz/5/(548*292) = 59.99 Hz.
 
 	check(lcd.Err(false))
 
-	fmt.Print("Write initial display list and enable display...")
+	fmt.Print("Write initial display list and enable display:")
 
-	dl := lcd.DL(ft80.RAM_DL)
+	dl := lcd.StartDL(ft80.RAM_DL)
 	dl.ClearColorRGB(0, 0, 0)
 	dl.Clear(eve.CST)
 	dl.Display()
 
 	// Alternative, method:
 	//
-	//  lcd.Writer(ft80.RAM_DL).Write32(
+	//  lcd.StartW(ft80.RAM_DL).Write32(
 	//  	eve.CLEAR_COLOR_RGB,
 	//  	eve.CLEAR|eve.CST,
 	//  	eve.DISPLAY,
 	//  )
 
-	lcd.Writer(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
+	lcd.StartW(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
 
-	gpio := lcd.Reader(ft80.REG_GPIO).ReadWord32()
-	lcd.Writer(ft80.REG_GPIO).Write32(gpio | 0x80)
-	lcd.Writer(ft80.REG_PCLK).Write32(lcdPclk)
+	gpio := lcd.StartR(ft80.REG_GPIO).ReadWord32()
+	lcd.StartW(ft80.REG_GPIO).Write32(gpio | 0x80)
+	lcd.StartW(ft80.REG_PCLK).Write32(pclkDiv) // Enable PCLK.
 
 	check(lcd.Err(false))
 
-	delay.Millisec(20) // Clock switching is synchronised to VSYNC.
+	delay.Millisec(20) // Wait for new main clock..
 
 	dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
 	fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
-	lcd.Writer(ft80.REG_PWM_DUTY).Write32(100)
+	lcd.StartW(ft80.REG_PWM_DUTY).Write32(100)
 
-	fmt.Print("Testing DL...")
+	fmt.Print("Testing DL:")
 
-	w := lcd.Writer(ft80.RAM_G)
-	img := &Tomato_DXT1_C0_Data_Raw
+	w := lcd.StartW(ft80.RAM_G)
+	img := &Tomato_DXT1_C1_Data_Raw
 	for i := 0; i < len(img); i += 4 {
 		w.Write32(
 			uint32(img[i]) | uint32(img[i+1])<<8 |
@@ -181,16 +169,11 @@ func main() {
 		)
 	}
 
-	dl = lcd.DL(ft80.RAM_DL)
-
-	dl.BitmapHandle(1)
-	dl.BitmapSource(ft80.RAM_G)
-	dl.BitmapLayout(eve.RGB565, 64, 32)
-	dl.BitmapSize(0, 32, 32)
+	dl = lcd.StartDL(ft80.RAM_DL)
 
 	dl.ClearColorRGB(0, 0, 0)
-	dl.Clear(eve.CST)
 
+	dl.Clear(eve.CST)
 	dl.Begin(eve.POINTS)
 	dl.ColorRGB(161, 244, 97)
 	dl.PointSize(100 * 16)
@@ -198,23 +181,40 @@ func main() {
 	dl.ColorRGB(255, 0, 255)
 	dl.PointSize(50 * 16)
 	dl.Vertex2F(300*16, 200*16)
+	dl.Display()
 
-	dl.Begin(eve.BITMAPS)
-	dl.ColorA(150)
-	dl.BitmapHandle(1)
+	lcd.StartW(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
+	check(lcd.Err(false))
+
+	delay.Millisec(1000)
 
 	var rnd rand.XorShift64
 	rnd.Seed(1)
-	for i := 0; i < 100; i++ {
-		v := rnd.Uint64()
-		vl := uint32(v)
-		vh := uint32(v >> 32)
-		dl.Vertex2F(int(vl%(480-32)*16), int(vh%(272-32)*16))
-	}
-	dl.Display()
 
-	lcd.Writer(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
-	check(lcd.Err(false))
+	for {
+		dl = lcd.StartDL(ft80.RAM_DL)
+
+		dl.BitmapHandle(1)
+		dl.BitmapSource(ft80.RAM_G)
+		dl.BitmapLayout(eve.RGB565, 64, 32)
+		dl.BitmapSize(0, 32, 32)
+
+		dl.Clear(eve.CST)
+		dl.Begin(eve.BITMAPS)
+		dl.ColorA(255)
+		dl.BitmapHandle(1)
+
+		for i := 0; i < 100; i++ {
+			v := rnd.Uint64()
+			vl := uint32(v)
+			vh := uint32(v >> 32)
+			dl.Vertex2F(int(vl%(480-32)*16), int(vh%(272-32)*16))
+		}
+		dl.Display()
+
+		lcd.StartW(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
+		check(lcd.Err(false))
+	}
 }
 
 func check(err error) {
