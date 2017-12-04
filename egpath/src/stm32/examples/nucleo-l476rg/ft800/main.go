@@ -80,7 +80,7 @@ func main() {
 	dci.PDN().Set()
 	delay.Millisec(20) // Wait 20 ms for internal oscilator and PLL.
 
-	lcd := eve.NewDriver(dci, 32)
+	lcd := eve.NewDriver(dci, 3206)
 
 	fmt.Print("Init:")
 
@@ -158,12 +158,7 @@ func main() {
 
 	lcd.StartW(ft80.REG_PWM_DUTY).Write32(100)
 
-	fmt.Print("Testing DL:")
-
-	w := lcd.StartW(ft80.RAM_G)
-	//w.Write(Tomato_DXT1_C1_Data_Raw[:])
-	w.Write(LenaFace[:])
-	check(lcd.Err(false))
+	fmt.Print("Points:")
 
 	dl = lcd.StartDL(ft80.RAM_DL)
 	dl.Clear(eve.CST)
@@ -179,37 +174,54 @@ func main() {
 	lcd.StartW(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
 	check(lcd.Err(false))
 
-	delay.Millisec(1000)
+	delay.Millisec(500)
+
+	fmt.Print("Load bitmap:")
+
+	w := lcd.StartW(ft80.RAM_G)
+	w.Write(LenaFace[:])
+
+	check(lcd.Err(false))
+
+	fmt.Print("Draw bitmap:")
 
 	var rnd rand.XorShift64
 	rnd.Seed(1)
 
-	for {
-		dl = lcd.StartDL(ft80.RAM_DL)
+	dla := ft80.RAM_DL
 
-		dl.BitmapHandle(1)
-		dl.BitmapSource(ft80.RAM_G)
-		dl.BitmapLayout(eve.RGB565, 80, 40)
-		dl.BitmapSize(0, 40, 40)
+	dl = lcd.StartDL(dla)
+	dl.BitmapHandle(1)
+	dl.BitmapSource(ft80.RAM_G)
+	dl.BitmapLayout(eve.RGB565, 80, 40)
+	dl.BitmapSize(0, 40, 40)
+	dl.Clear(eve.CST)
+	dl.Begin(eve.BITMAPS)
+	dl.ColorA(255)
+	dl.BitmapHandle(1)
 
-		dl.Clear(eve.CST)
-		dl.Begin(eve.BITMAPS)
-		dl.ColorA(255)
-		dl.BitmapHandle(1)
-
-		for i := 0; i < 1000; i++ {
-			v := rnd.Uint64()
-			vl := uint32(v)
-			vh := uint32(v >> 32)
-			dl.Vertex2F(int((vl%480-20)*16), int((vh%272-20)*16))
-		}
-		dl.Display()
-
-		lcd.StartW(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
-		check(lcd.Err(false))
-
-		delay.Millisec(100)
+	for i := 0; i < 1000; i++ {
+		v := rnd.Uint64()
+		vl := uint32(v)
+		vh := uint32(v >> 32)
+		dl.Vertex2F(int((vl%480-20)*16), int((vh%272-20)*16))
 	}
+
+	dla += dl.Close()
+	check(lcd.Err(false))
+
+	lcd.StartW(ft80.REG_CMD_DL).WriteInt(dla)
+
+	n := lcd.StartR(ft80.REG_CMD_WRITE).ReadInt()
+	ge := lcd.StartGE(ft80.RAM_CMD + n)
+	ge.Button(180, 110, 140, 40, 23, 0, "Nacisnij mnie!")
+	ge.Display()
+	ge.Swap()
+	n += ge.Close()
+	lcd.StartW(ft80.REG_CMD_WRITE).WriteInt(n)
+
+	check(lcd.Err(false))
+
 }
 
 func check(err error) {

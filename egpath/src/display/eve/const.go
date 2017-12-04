@@ -159,9 +159,14 @@ const (
 	CMD_MEDIAFIFO  = 0xffffff39 // Arg: addr, size (EVE2)
 	CMD_PLAYVIDEO  = 0xffffff3a // Arg: options, ... (EVE2)
 	CMD_VIDEOSTART = 0xffffff40 // (EVE2)
+	CMD_VIDEOFRAME = 0xffffff41 // Arg: dst, ptr (EVE2)
+	CMD_MEMCRC     = 0xffffff18 // Arg: addr, num
+	CMD_MEMZERO    = 0xffffff1c // Arg: addr, num
+	CMD_MEMSET     = 0xffffff1b // Arg: addr, val, num
+	CMD_MEMCPY     = 0xffffff1d // Arg: dst, src, num
+	CMD_BUTTON     = 0xffffff0d // Arg: x, y, w, h, font, options, ..., 0
 
 	CMD_BGCOLOR      = 0xffffff09
-	CMD_BUTTON       = 0xffffff0d
 	CMD_CALIBRATE    = 0xffffff15
 	CMD_CLOCK        = 0xffffff14
 	CMD_DIAL         = 0xffffff2d
@@ -174,10 +179,6 @@ const (
 	CMD_KEYS         = 0xffffff0e
 	CMD_LOADIDENTITY = 0xffffff26
 	CMD_LOGO         = 0xffffff31
-	CMD_MEMCPY       = 0xffffff1d
-	CMD_MEMCRC       = 0xffffff18
-	CMD_MEMSET       = 0xffffff1b
-	CMD_MEMZERO      = 0xffffff1c
 	CMD_NUMBER       = 0xffffff2e
 	CMD_PROGRESS     = 0xffffff0f
 	CMD_ROTATE       = 0xffffff29

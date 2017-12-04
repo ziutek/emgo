@@ -11,11 +11,11 @@ type Driver struct {
 }
 
 // NewDriver returns new driver to the EVE graphics controller accessed via dci.
-// N sets capacity of the internal buffer (in 32-bit words, must be >= 1).
+// N sets the capacity of the internal buffer (bytes, must be >= 4).
 func NewDriver(dci DCI, n int) *Driver {
 	d := new(Driver)
 	d.dci = dci
-	d.buf = make([]byte, 0, n*4)
+	d.buf = make([]byte, 0, n)
 	d.n = -3
 	return d
 }

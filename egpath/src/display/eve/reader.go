@@ -18,6 +18,10 @@ func (r Reader) ReadWord32() uint32 {
 		uint32(buf[3])<<24
 }
 
+func (r Reader) ReadInt() int {
+	return int(r.ReadWord32())
+}
+
 func (r Reader) Read(s []byte) (int, error) {
 	r.d.dci.Read(s)
 	if err := r.d.dci.Err(false); err != nil {
