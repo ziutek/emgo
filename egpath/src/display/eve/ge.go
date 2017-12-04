@@ -7,42 +7,75 @@ type GE struct {
 	DL
 }
 
-// Start starts a new display list.
+// DLStart starts a new display list.
 func (ge GE) DLStart() {
-	ge.w.wr32(CMD_DLSTART)
+	ge.aw32(CMD_DLSTART)
 }
 
-// Swap swapx the current display list.
+// Swap swaps the current display list.
 func (ge GE) Swap() {
-	ge.w.wr32(CMD_SWAP)
+	ge.aw32(CMD_SWAP)
 }
 
 // ColdStart sets co-processor engine state to default values.
 func (ge GE) ColdStart() {
-	ge.w.wr32(CMD_COLDSTART)
+	ge.aw32(CMD_COLDSTART)
 }
 
 // Interrupt triggers interrupt INT_CMDFLAG.
 func (ge GE) Interrupt() {
-	ge.w.wr32(CMD_INTERRUPT)
+	ge.aw32(CMD_INTERRUPT)
 }
 
-// Append appends more commands to current display list.
+// Append appends more commands resident in RAM_G to the current display list
+// memory address where the offset is specified in REG_CMD_DL.
 func (ge GE) Append(addr, num int) {
-	ge.w.wr32(CMD_APPEND)
-	ge.w.wr32(uint32(addr))
-	ge.w.wr32(uint32(num))
+	ge.aw32(CMD_APPEND)
+	ge.wr32(uint32(addr))
+	ge.wr32(uint32(num))
 }
 
 // RegRead reads a register value.
 func (ge GE) RegRead(addr int) {
-	ge.w.wr32(CMD_REGREAD)
-	ge.w.wr32(uint32(addr))
+	ge.aw32(CMD_REGREAD)
+	ge.wr32(uint32(addr))
 }
 
-// MemWrite writes bytes into memory.
+// MemWrite writes the following bytes into memory.
 func (ge GE) MemWrite(addr, num int) {
-	ge.w.wr32(CMD_MEMWRITE)
-	ge.w.wr32(uint32(addr))
-	ge.w.wr32(uint32(num))
+	ge.aw32(CMD_MEMWRITE)
+	ge.wr32(uint32(addr))
+	ge.wr32(uint32(num))
+}
+
+// Inflate decompresses the following compressed data into RAM_G.
+func (ge GE) Inflate(addr int) {
+	ge.aw32(CMD_INFLATE)
+	ge.wr32(uint32(addr))
+}
+
+// LoadImage decompresses the following JPEG image data into a bitmap, in RAM_G
+// (EVE2 supports also PNG).
+func (ge GE) LoadImage(addr int, options uint32) {
+	ge.aw32(CMD_LOADIMAGE)
+	ge.wr32(uint32(addr))
+	ge.wr32(options)
+}
+
+// MediaFIFO sets up a streaming media FIFO in RAM_G.
+func (ge GE) MediaFIFO(addr, size int) {
+	ge.aw32(CMD_MEDIAFIFO)
+	ge.wr32(uint32(addr))
+	ge.wr32(uint32(size))
+}
+
+// PlayVideo plays back MJPEG-encoded AVI video.
+func (ge GE) PlayVideo(options uint32) {
+	ge.aw32(CMD_PLAYVIDEO)
+	ge.wr32(options)
+}
+
+// VideoStart initializes the AVI video decoder.
+func (ge GE) VideoStart() {
+	ge.aw32(CMD_VIDEOSTART)
 }

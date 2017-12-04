@@ -1,10 +1,7 @@
 package evedci
 
 import (
-	"bits"
-	"reflect"
 	"rtos"
-	"unsafe"
 
 	"stm32/hal/exti"
 	"stm32/hal/gpio"
@@ -72,18 +69,13 @@ func (dci *SPI) Read(s []byte) {
 	dci.spi.WriteRead(nil, s)
 }
 
-func (dci *SPI) Write32(s []uint32) {
-	h := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	h.Len *= 4
+func (dci *SPI) Write(s []byte) {
 	if !dci.started {
-		if h.Len == 0 {
+		if len(s) == 0 {
 			return
 		}
 		dci.started = true
-		s[0] = bits.ReverseBytes32(s[0])
-		h.Data++
-		h.Len--
 		dci.csn.Clear()
 	}
-	dci.spi.WriteStringRead(*(*string)(unsafe.Pointer(h)), nil)
+	dci.spi.WriteRead(s, nil)
 }

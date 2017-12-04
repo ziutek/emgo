@@ -98,8 +98,8 @@ const (
 // Bitmap options (BITMAP_SIZE).
 const (
 	BILINEAR = 1 << 2
-	WRAPX    = 1 << 1
-	WRAPY    = 1 << 0
+	REPEATX  = 1 << 1
+	REPEATY  = 1 << 0
 )
 
 // Blending options (BLEND_FUNC).
@@ -147,13 +147,18 @@ const (
 
 // Graphics Engine Commands.
 const (
-	CMD_DLSTART   = 0xffffff00
-	CMD_SWAP      = 0xffffff01
-	CMD_COLDSTART = 0xffffff32
-	CMD_INTERRUPT = 0xffffff02
-	CMD_APPEND    = 0xffffff1e // Arg: addr, num
-	CMD_REGREAD   = 0xffffff19 // Arg: addr
-	CMD_MEMWRITE  = 0xffffff1a // Arg: addr, num
+	CMD_DLSTART    = 0xffffff00
+	CMD_SWAP       = 0xffffff01
+	CMD_COLDSTART  = 0xffffff32
+	CMD_INTERRUPT  = 0xffffff02
+	CMD_APPEND     = 0xffffff1e // Arg: addr, num
+	CMD_REGREAD    = 0xffffff19 // Arg: addr
+	CMD_MEMWRITE   = 0xffffff1a // Arg: addr, num, ...
+	CMD_INFLATE    = 0xffffff22 // Arg: addr, ...
+	CMD_LOADIMAGE  = 0xffffff24 // Arg: addr, options, ...
+	CMD_MEDIAFIFO  = 0xffffff39 // Arg: addr, size (EVE2)
+	CMD_PLAYVIDEO  = 0xffffff3a // Arg: options, ... (EVE2)
+	CMD_VIDEOSTART = 0xffffff40 // (EVE2)
 
 	CMD_BGCOLOR      = 0xffffff09
 	CMD_BUTTON       = 0xffffff0d
@@ -166,10 +171,8 @@ const (
 	CMD_GETPTR       = 0xffffff23
 	CMD_GRADCOLOR    = 0xffffff34
 	CMD_GRADIENT     = 0xffffff0b
-	CMD_INFLATE      = 0xffffff22
 	CMD_KEYS         = 0xffffff0e
 	CMD_LOADIDENTITY = 0xffffff26
-	CMD_LOADIMAGE    = 0xffffff24
 	CMD_LOGO         = 0xffffff31
 	CMD_MEMCPY       = 0xffffff1d
 	CMD_MEMCRC       = 0xffffff18
@@ -213,17 +216,25 @@ const (
 	INT_CONVCOMPLETE = 128
 )
 
+// Image/video options (CMD_LOAD_IMAGE, CMD_PLAYVIDEO).
+const (
+	OPT_MONO       = 1
+	OPT_NODL       = 2
+	OPT_NOTEAR     = 4  // EVE2
+	OPT_FULLSCREEN = 8  // EVE2
+	OPT_MEDIAFIFO  = 16 // EVE2
+	OPT_SOUND      = 32 // EVE2
+)
+
 const (
 	DECR_WRAP            = 7
 	INCR_WRAP            = 6
 	LINEAR_SAMPLES       = 0
-	OPT_CENTER           = 1536 // = 0x6000
-	OPT_CENTERX          = 512  // = 0x0200
-	OPT_CENTERY          = 1024 // = 0x0400
-	OPT_FLAT             = 256  // = 0x0100
-	OPT_MONO             = 1
-	OPT_NOBACK           = 4096 // = 0x1000
-	OPT_NODL             = 2
+	OPT_CENTER           = 1536  // = 0x6000
+	OPT_CENTERX          = 512   // = 0x0200
+	OPT_CENTERY          = 1024  // = 0x0400
+	OPT_FLAT             = 256   // = 0x0100
+	OPT_NOBACK           = 4096  // = 0x1000
 	OPT_NOHANDS          = 49152 // = 0xC168
 	OPT_NOHM             = 16384 // = 0x4000
 	OPT_NOPOINTER        = 16384 // = 0x4000

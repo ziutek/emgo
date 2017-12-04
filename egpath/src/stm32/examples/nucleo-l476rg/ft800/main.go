@@ -161,18 +161,11 @@ func main() {
 	fmt.Print("Testing DL:")
 
 	w := lcd.StartW(ft80.RAM_G)
-	img := &Tomato_DXT1_C1_Data_Raw
-	for i := 0; i < len(img); i += 4 {
-		w.Write32(
-			uint32(img[i]) | uint32(img[i+1])<<8 |
-				uint32(img[i+2])<<16 | uint32(img[i+3])<<24,
-		)
-	}
+	//w.Write(Tomato_DXT1_C1_Data_Raw[:])
+	w.Write(LenaFace[:])
+	check(lcd.Err(false))
 
 	dl = lcd.StartDL(ft80.RAM_DL)
-
-	dl.ClearColorRGB(0, 0, 0)
-
 	dl.Clear(eve.CST)
 	dl.Begin(eve.POINTS)
 	dl.ColorRGB(161, 244, 97)
@@ -196,24 +189,26 @@ func main() {
 
 		dl.BitmapHandle(1)
 		dl.BitmapSource(ft80.RAM_G)
-		dl.BitmapLayout(eve.RGB565, 64, 32)
-		dl.BitmapSize(0, 32, 32)
+		dl.BitmapLayout(eve.RGB565, 80, 40)
+		dl.BitmapSize(0, 40, 40)
 
 		dl.Clear(eve.CST)
 		dl.Begin(eve.BITMAPS)
 		dl.ColorA(255)
 		dl.BitmapHandle(1)
 
-		for i := 0; i < 100; i++ {
+		for i := 0; i < 1000; i++ {
 			v := rnd.Uint64()
 			vl := uint32(v)
 			vh := uint32(v >> 32)
-			dl.Vertex2F(int(vl%(480-32)*16), int(vh%(272-32)*16))
+			dl.Vertex2F(int((vl%480-20)*16), int((vh%272-20)*16))
 		}
 		dl.Display()
 
 		lcd.StartW(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
 		check(lcd.Err(false))
+
+		delay.Millisec(100)
 	}
 }
 

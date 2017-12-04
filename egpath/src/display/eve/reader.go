@@ -25,3 +25,8 @@ func (r Reader) Read(s []byte) (int, error) {
 	}
 	return len(s), nil
 }
+
+// Close closes the read transaction.
+func (r Reader) Close() {
+	r.d.end()
+}
