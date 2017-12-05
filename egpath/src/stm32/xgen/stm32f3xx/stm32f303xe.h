@@ -7,7 +7,7 @@
   *          This file contains:
   *           - Data structures and the address mapping for all peripherals
   *           - Peripheral's registers declarations and bits definition
-  *           - Macros to access peripheral’s registers hardware
+  *           - Macros to access peripheralï¿½s registers hardware
   *
   ******************************************************************************
   * @attention
@@ -2114,9 +2114,9 @@ typedef struct
 #define ADC34_CSR_ADRDY_EOS_SLV_Pos      (19U)                                 
 #define ADC34_CSR_ADRDY_EOS_SLV_Msk      (0x1U << ADC34_CSR_ADRDY_EOS_SLV_Pos) /*!< 0x00080000 */
 #define ADC34_CSR_ADRDY_EOS_SLV          ADC34_CSR_ADRDY_EOS_SLV_Msk           /*!< End of regular sequence flag of the slave ADC */
-#define ADC12_CSR_ADRDY_OVR_SLV_Pos      (20U)                                 
-#define ADC12_CSR_ADRDY_OVR_SLV_Msk      (0x1U << ADC12_CSR_ADRDY_OVR_SLV_Pos) /*!< 0x00100000 */
-#define ADC12_CSR_ADRDY_OVR_SLV          ADC12_CSR_ADRDY_OVR_SLV_Msk           /*!< Overrun flag of the slave ADC */
+#define ADC34_CSR_ADRDY_OVR_SLV_Pos      (20U)                                 
+#define ADC34_CSR_ADRDY_OVR_SLV_Msk      (0x1U << ADC12_CSR_ADRDY_OVR_SLV_Pos) /*!< 0x00100000 */
+#define ADC34_CSR_ADRDY_OVR_SLV          ADC34_CSR_ADRDY_OVR_SLV_Msk           /*!< Overrun flag of the slave ADC */
 #define ADC34_CSR_ADRDY_JEOC_SLV_Pos     (21U)                                 
 #define ADC34_CSR_ADRDY_JEOC_SLV_Msk     (0x1U << ADC34_CSR_ADRDY_JEOC_SLV_Pos) /*!< 0x00200000 */
 #define ADC34_CSR_ADRDY_JEOC_SLV         ADC34_CSR_ADRDY_JEOC_SLV_Msk          /*!< End of injected conversion of the slave ADC */
