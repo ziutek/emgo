@@ -12,7 +12,7 @@ import (
 	"stm32/evedci"
 
 	"stm32/hal/dma"
-	//"stm32/hal/exti"
+	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/spi"
@@ -57,11 +57,11 @@ func init() {
 	pdn.Setup(&cfg)
 	csn.Setup(&cfg)
 	irqn.Setup(&gpio.Config{Mode: gpio.In})
-	//irqline := exti.Lines(irqn.Mask())
-	//irqline.Connect(irqn.Port())
-	//rtos.IRQ(irq.EXTI9_5).Enable()
+	irqline := exti.Lines(irqn.Mask())
+	irqline.Connect(irqn.Port())
+	rtos.IRQ(irq.EXTI9_5).Enable()
 
-	dci = evedci.NewSPI(spidrv, csn, pdn /*irqline*/)
+	dci = evedci.NewSPI(spidrv, csn, pdn, irqline)
 }
 
 func main() {
@@ -77,7 +77,7 @@ func main() {
 	dci.PDN().Set()
 	delay.Millisec(20) // Wait 20 ms for internal oscilator and PLL.
 
-	lcd := eve.NewDriver(dci, 3206)
+	lcd := eve.NewDriver(dci, 128)
 
 	fmt.Print("Init:")
 
@@ -148,7 +148,7 @@ func main() {
 
 	check(lcd.Err(false))
 
-	delay.Millisec(20) // Wait for new main clock..
+	delay.Millisec(20) // Wait for new main clock.
 
 	dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
 	fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
@@ -171,7 +171,7 @@ func main() {
 	lcd.StartW(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
 	check(lcd.Err(false))
 
-	delay.Millisec(500)
+	delay.Millisec(1000)
 
 	fmt.Print("Load bitmap:")
 
@@ -196,7 +196,6 @@ func main() {
 	dl.Begin(eve.BITMAPS)
 	dl.ColorA(255)
 	dl.BitmapHandle(1)
-
 	for i := 0; i < 1000; i++ {
 		v := rnd.Uint64()
 		vl := uint32(v)
@@ -211,7 +210,7 @@ func main() {
 
 	n := lcd.StartR(ft80.REG_CMD_WRITE).ReadInt()
 	ge := lcd.StartGE(ft80.RAM_CMD + n)
-	ge.Button(180, 110, 140, 40, 23, 0, "Nacisnij mnie!")
+	ge.Button(170, 110, 140, 40, 23, 0, "Push me!")
 	ge.Display()
 	ge.Swap()
 	n += ge.Close()
@@ -219,7 +218,13 @@ func main() {
 
 	check(lcd.Err(false))
 
+	for {
+		delay.Millisec(1000)
+		lcd.StartW(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
+		check(lcd.Err(false))
+	}
 }
+
 
 func check(err error) {
 	if err == nil {

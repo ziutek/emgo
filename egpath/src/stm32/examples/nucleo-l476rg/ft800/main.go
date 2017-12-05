@@ -80,7 +80,7 @@ func main() {
 	dci.PDN().Set()
 	delay.Millisec(20) // Wait 20 ms for internal oscilator and PLL.
 
-	lcd := eve.NewDriver(dci, 3206)
+	lcd := eve.NewDriver(dci, 128)
 
 	fmt.Print("Init:")
 
@@ -199,7 +199,7 @@ func main() {
 	dl.Begin(eve.BITMAPS)
 	dl.ColorA(255)
 	dl.BitmapHandle(1)
-	for i := 0; i < 500; i++ {
+	for i := 0; i < 1000; i++ {
 		v := rnd.Uint64()
 		vl := uint32(v)
 		vh := uint32(v >> 32)
@@ -213,7 +213,7 @@ func main() {
 
 	n := lcd.StartR(ft80.REG_CMD_WRITE).ReadInt()
 	ge := lcd.StartGE(ft80.RAM_CMD + n)
-	ge.Button(170, 110, 140, 40, 23, 0, "Nacisnij mnie!")
+	ge.Button(170, 110, 140, 40, 23, 0, "Push me!")
 	ge.Display()
 	ge.Swap()
 	n += ge.Close()
@@ -226,7 +226,6 @@ func main() {
 		lcd.StartW(ft80.REG_DLSWAP).Write32(eve.DLSWAP_FRAME)
 		check(lcd.Err(false))
 	}
-
 }
 
 func check(err error) {
