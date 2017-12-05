@@ -111,8 +111,8 @@ func (p *CRC_Periph) RESET() CR_Mask {
 	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(RESET)}}
 }
 
-func (p *CRC_Periph) POLSIZE() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(POLSIZE)}}
+func (p *CRC_Periph) POLYSIZE() CR_Mask {
+	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(POLYSIZE)}}
 }
 
 func (p *CRC_Periph) REV_IN() CR_Mask {

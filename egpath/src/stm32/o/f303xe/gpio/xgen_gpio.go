@@ -13,13 +13,10 @@ import (
 type GPIO_Periph struct {
 	MODER   MODER
 	OTYPER  OTYPER
-	_       uint16
 	OSPEEDR OSPEEDR
 	PUPDR   PUPDR
 	IDR     IDR
-	_       uint16
 	ODR     ODR
-	_       uint16
 	BSRR    BSRR
 	LCKR    LCKR
 	AFR     [2]AFR
@@ -145,7 +142,7 @@ func (p *GPIO_Periph) MODER15() MODER_Mask {
 	return MODER_Mask{mmio.UM32{&p.MODER.U32, uint32(MODER15)}}
 }
 
-type OTYPER_Bits uint16
+type OTYPER_Bits uint32
 
 func (b OTYPER_Bits) Field(mask OTYPER_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
@@ -154,82 +151,86 @@ func (mask OTYPER_Bits) J(v int) OTYPER_Bits {
 	return OTYPER_Bits(bits.Make32(v, uint32(mask)))
 }
 
-type OTYPER struct{ mmio.U16 }
+type OTYPER struct{ mmio.U32 }
 
-func (r *OTYPER) Bits(mask OTYPER_Bits) OTYPER_Bits { return OTYPER_Bits(r.U16.Bits(uint16(mask))) }
-func (r *OTYPER) StoreBits(mask, b OTYPER_Bits)     { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *OTYPER) SetBits(mask OTYPER_Bits)          { r.U16.SetBits(uint16(mask)) }
-func (r *OTYPER) ClearBits(mask OTYPER_Bits)        { r.U16.ClearBits(uint16(mask)) }
-func (r *OTYPER) Load() OTYPER_Bits                 { return OTYPER_Bits(r.U16.Load()) }
-func (r *OTYPER) Store(b OTYPER_Bits)               { r.U16.Store(uint16(b)) }
+func (r *OTYPER) Bits(mask OTYPER_Bits) OTYPER_Bits { return OTYPER_Bits(r.U32.Bits(uint32(mask))) }
+func (r *OTYPER) StoreBits(mask, b OTYPER_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *OTYPER) SetBits(mask OTYPER_Bits)          { r.U32.SetBits(uint32(mask)) }
+func (r *OTYPER) ClearBits(mask OTYPER_Bits)        { r.U32.ClearBits(uint32(mask)) }
+func (r *OTYPER) Load() OTYPER_Bits                 { return OTYPER_Bits(r.U32.Load()) }
+func (r *OTYPER) Store(b OTYPER_Bits)               { r.U32.Store(uint32(b)) }
 
-type OTYPER_Mask struct{ mmio.UM16 }
+func (r *OTYPER) AtomicStoreBits(mask, b OTYPER_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *OTYPER) AtomicSetBits(mask OTYPER_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *OTYPER) AtomicClearBits(mask OTYPER_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm OTYPER_Mask) Load() OTYPER_Bits   { return OTYPER_Bits(rm.UM16.Load()) }
-func (rm OTYPER_Mask) Store(b OTYPER_Bits) { rm.UM16.Store(uint16(b)) }
+type OTYPER_Mask struct{ mmio.UM32 }
+
+func (rm OTYPER_Mask) Load() OTYPER_Bits   { return OTYPER_Bits(rm.UM32.Load()) }
+func (rm OTYPER_Mask) Store(b OTYPER_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *GPIO_Periph) OT_0() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_0)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_0)}}
 }
 
 func (p *GPIO_Periph) OT_1() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_1)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_1)}}
 }
 
 func (p *GPIO_Periph) OT_2() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_2)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_2)}}
 }
 
 func (p *GPIO_Periph) OT_3() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_3)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_3)}}
 }
 
 func (p *GPIO_Periph) OT_4() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_4)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_4)}}
 }
 
 func (p *GPIO_Periph) OT_5() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_5)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_5)}}
 }
 
 func (p *GPIO_Periph) OT_6() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_6)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_6)}}
 }
 
 func (p *GPIO_Periph) OT_7() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_7)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_7)}}
 }
 
 func (p *GPIO_Periph) OT_8() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_8)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_8)}}
 }
 
 func (p *GPIO_Periph) OT_9() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_9)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_9)}}
 }
 
 func (p *GPIO_Periph) OT_10() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_10)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_10)}}
 }
 
 func (p *GPIO_Periph) OT_11() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_11)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_11)}}
 }
 
 func (p *GPIO_Periph) OT_12() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_12)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_12)}}
 }
 
 func (p *GPIO_Periph) OT_13() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_13)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_13)}}
 }
 
 func (p *GPIO_Periph) OT_14() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_14)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_14)}}
 }
 
 func (p *GPIO_Periph) OT_15() OTYPER_Mask {
-	return OTYPER_Mask{mmio.UM16{&p.OTYPER.U16, uint16(OT_15)}}
+	return OTYPER_Mask{mmio.UM32{&p.OTYPER.U32, uint32(OT_15)}}
 }
 
 type OSPEEDR_Bits uint32
@@ -352,7 +353,7 @@ func (p *GPIO_Periph) PUPDR15() PUPDR_Mask {
 	return PUPDR_Mask{mmio.UM32{&p.PUPDR.U32, uint32(PUPDR15)}}
 }
 
-type IDR_Bits uint16
+type IDR_Bits uint32
 
 func (b IDR_Bits) Field(mask IDR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
@@ -361,85 +362,89 @@ func (mask IDR_Bits) J(v int) IDR_Bits {
 	return IDR_Bits(bits.Make32(v, uint32(mask)))
 }
 
-type IDR struct{ mmio.U16 }
+type IDR struct{ mmio.U32 }
 
-func (r *IDR) Bits(mask IDR_Bits) IDR_Bits { return IDR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *IDR) StoreBits(mask, b IDR_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *IDR) SetBits(mask IDR_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *IDR) ClearBits(mask IDR_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *IDR) Load() IDR_Bits              { return IDR_Bits(r.U16.Load()) }
-func (r *IDR) Store(b IDR_Bits)            { r.U16.Store(uint16(b)) }
+func (r *IDR) Bits(mask IDR_Bits) IDR_Bits { return IDR_Bits(r.U32.Bits(uint32(mask))) }
+func (r *IDR) StoreBits(mask, b IDR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *IDR) SetBits(mask IDR_Bits)       { r.U32.SetBits(uint32(mask)) }
+func (r *IDR) ClearBits(mask IDR_Bits)     { r.U32.ClearBits(uint32(mask)) }
+func (r *IDR) Load() IDR_Bits              { return IDR_Bits(r.U32.Load()) }
+func (r *IDR) Store(b IDR_Bits)            { r.U32.Store(uint32(b)) }
 
-type IDR_Mask struct{ mmio.UM16 }
+func (r *IDR) AtomicStoreBits(mask, b IDR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *IDR) AtomicSetBits(mask IDR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *IDR) AtomicClearBits(mask IDR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm IDR_Mask) Load() IDR_Bits   { return IDR_Bits(rm.UM16.Load()) }
-func (rm IDR_Mask) Store(b IDR_Bits) { rm.UM16.Store(uint16(b)) }
+type IDR_Mask struct{ mmio.UM32 }
+
+func (rm IDR_Mask) Load() IDR_Bits   { return IDR_Bits(rm.UM32.Load()) }
+func (rm IDR_Mask) Store(b IDR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *GPIO_Periph) V0() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V0)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V0)}}
 }
 
 func (p *GPIO_Periph) V1() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V1)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V1)}}
 }
 
 func (p *GPIO_Periph) V2() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V2)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V2)}}
 }
 
 func (p *GPIO_Periph) V3() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V3)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V3)}}
 }
 
 func (p *GPIO_Periph) V4() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V4)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V4)}}
 }
 
 func (p *GPIO_Periph) V5() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V5)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V5)}}
 }
 
 func (p *GPIO_Periph) V6() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V6)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V6)}}
 }
 
 func (p *GPIO_Periph) V7() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V7)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V7)}}
 }
 
 func (p *GPIO_Periph) V8() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V8)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V8)}}
 }
 
 func (p *GPIO_Periph) V9() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V9)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V9)}}
 }
 
 func (p *GPIO_Periph) V10() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V10)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V10)}}
 }
 
 func (p *GPIO_Periph) V11() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V11)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V11)}}
 }
 
 func (p *GPIO_Periph) V12() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V12)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V12)}}
 }
 
 func (p *GPIO_Periph) V13() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V13)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V13)}}
 }
 
 func (p *GPIO_Periph) V14() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V14)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V14)}}
 }
 
 func (p *GPIO_Periph) V15() IDR_Mask {
-	return IDR_Mask{mmio.UM16{&p.IDR.U16, uint16(V15)}}
+	return IDR_Mask{mmio.UM32{&p.IDR.U32, uint32(V15)}}
 }
 
-type ODR_Bits uint16
+type ODR_Bits uint32
 
 func (b ODR_Bits) Field(mask ODR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
@@ -448,82 +453,86 @@ func (mask ODR_Bits) J(v int) ODR_Bits {
 	return ODR_Bits(bits.Make32(v, uint32(mask)))
 }
 
-type ODR struct{ mmio.U16 }
+type ODR struct{ mmio.U32 }
 
-func (r *ODR) Bits(mask ODR_Bits) ODR_Bits { return ODR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *ODR) StoreBits(mask, b ODR_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *ODR) SetBits(mask ODR_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *ODR) ClearBits(mask ODR_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *ODR) Load() ODR_Bits              { return ODR_Bits(r.U16.Load()) }
-func (r *ODR) Store(b ODR_Bits)            { r.U16.Store(uint16(b)) }
+func (r *ODR) Bits(mask ODR_Bits) ODR_Bits { return ODR_Bits(r.U32.Bits(uint32(mask))) }
+func (r *ODR) StoreBits(mask, b ODR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *ODR) SetBits(mask ODR_Bits)       { r.U32.SetBits(uint32(mask)) }
+func (r *ODR) ClearBits(mask ODR_Bits)     { r.U32.ClearBits(uint32(mask)) }
+func (r *ODR) Load() ODR_Bits              { return ODR_Bits(r.U32.Load()) }
+func (r *ODR) Store(b ODR_Bits)            { r.U32.Store(uint32(b)) }
 
-type ODR_Mask struct{ mmio.UM16 }
+func (r *ODR) AtomicStoreBits(mask, b ODR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *ODR) AtomicSetBits(mask ODR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *ODR) AtomicClearBits(mask ODR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm ODR_Mask) Load() ODR_Bits   { return ODR_Bits(rm.UM16.Load()) }
-func (rm ODR_Mask) Store(b ODR_Bits) { rm.UM16.Store(uint16(b)) }
+type ODR_Mask struct{ mmio.UM32 }
+
+func (rm ODR_Mask) Load() ODR_Bits   { return ODR_Bits(rm.UM32.Load()) }
+func (rm ODR_Mask) Store(b ODR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *GPIO_Periph) V0() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V0)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V0)}}
 }
 
 func (p *GPIO_Periph) V1() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V1)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V1)}}
 }
 
 func (p *GPIO_Periph) V2() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V2)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V2)}}
 }
 
 func (p *GPIO_Periph) V3() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V3)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V3)}}
 }
 
 func (p *GPIO_Periph) V4() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V4)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V4)}}
 }
 
 func (p *GPIO_Periph) V5() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V5)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V5)}}
 }
 
 func (p *GPIO_Periph) V6() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V6)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V6)}}
 }
 
 func (p *GPIO_Periph) V7() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V7)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V7)}}
 }
 
 func (p *GPIO_Periph) V8() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V8)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V8)}}
 }
 
 func (p *GPIO_Periph) V9() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V9)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V9)}}
 }
 
 func (p *GPIO_Periph) V10() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V10)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V10)}}
 }
 
 func (p *GPIO_Periph) V11() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V11)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V11)}}
 }
 
 func (p *GPIO_Periph) V12() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V12)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V12)}}
 }
 
 func (p *GPIO_Periph) V13() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V13)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V13)}}
 }
 
 func (p *GPIO_Periph) V14() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V14)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V14)}}
 }
 
 func (p *GPIO_Periph) V15() ODR_Mask {
-	return ODR_Mask{mmio.UM16{&p.ODR.U16, uint16(V15)}}
+	return ODR_Mask{mmio.UM32{&p.ODR.U32, uint32(V15)}}
 }
 
 type BSRR_Bits uint32
@@ -803,7 +812,7 @@ type AFR_Mask struct{ mmio.UM32 }
 func (rm AFR_Mask) Load() AFR_Bits   { return AFR_Bits(rm.UM32.Load()) }
 func (rm AFR_Mask) Store(b AFR_Bits) { rm.UM32.Store(uint32(b)) }
 
-type BRR_Bits uint16
+type BRR_Bits uint32
 
 func (b BRR_Bits) Field(mask BRR_Bits) int {
 	return bits.Field32(uint32(b), uint32(mask))
@@ -812,80 +821,84 @@ func (mask BRR_Bits) J(v int) BRR_Bits {
 	return BRR_Bits(bits.Make32(v, uint32(mask)))
 }
 
-type BRR struct{ mmio.U16 }
+type BRR struct{ mmio.U32 }
 
-func (r *BRR) Bits(mask BRR_Bits) BRR_Bits { return BRR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *BRR) StoreBits(mask, b BRR_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *BRR) SetBits(mask BRR_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *BRR) ClearBits(mask BRR_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *BRR) Load() BRR_Bits              { return BRR_Bits(r.U16.Load()) }
-func (r *BRR) Store(b BRR_Bits)            { r.U16.Store(uint16(b)) }
+func (r *BRR) Bits(mask BRR_Bits) BRR_Bits { return BRR_Bits(r.U32.Bits(uint32(mask))) }
+func (r *BRR) StoreBits(mask, b BRR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *BRR) SetBits(mask BRR_Bits)       { r.U32.SetBits(uint32(mask)) }
+func (r *BRR) ClearBits(mask BRR_Bits)     { r.U32.ClearBits(uint32(mask)) }
+func (r *BRR) Load() BRR_Bits              { return BRR_Bits(r.U32.Load()) }
+func (r *BRR) Store(b BRR_Bits)            { r.U32.Store(uint32(b)) }
 
-type BRR_Mask struct{ mmio.UM16 }
+func (r *BRR) AtomicStoreBits(mask, b BRR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *BRR) AtomicSetBits(mask BRR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *BRR) AtomicClearBits(mask BRR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm BRR_Mask) Load() BRR_Bits   { return BRR_Bits(rm.UM16.Load()) }
-func (rm BRR_Mask) Store(b BRR_Bits) { rm.UM16.Store(uint16(b)) }
+type BRR_Mask struct{ mmio.UM32 }
+
+func (rm BRR_Mask) Load() BRR_Bits   { return BRR_Bits(rm.UM32.Load()) }
+func (rm BRR_Mask) Store(b BRR_Bits) { rm.UM32.Store(uint32(b)) }
 
 func (p *GPIO_Periph) BR_0() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_0)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_0)}}
 }
 
 func (p *GPIO_Periph) BR_1() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_1)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_1)}}
 }
 
 func (p *GPIO_Periph) BR_2() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_2)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_2)}}
 }
 
 func (p *GPIO_Periph) BR_3() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_3)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_3)}}
 }
 
 func (p *GPIO_Periph) BR_4() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_4)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_4)}}
 }
 
 func (p *GPIO_Periph) BR_5() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_5)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_5)}}
 }
 
 func (p *GPIO_Periph) BR_6() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_6)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_6)}}
 }
 
 func (p *GPIO_Periph) BR_7() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_7)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_7)}}
 }
 
 func (p *GPIO_Periph) BR_8() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_8)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_8)}}
 }
 
 func (p *GPIO_Periph) BR_9() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_9)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_9)}}
 }
 
 func (p *GPIO_Periph) BR_10() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_10)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_10)}}
 }
 
 func (p *GPIO_Periph) BR_11() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_11)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_11)}}
 }
 
 func (p *GPIO_Periph) BR_12() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_12)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_12)}}
 }
 
 func (p *GPIO_Periph) BR_13() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_13)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_13)}}
 }
 
 func (p *GPIO_Periph) BR_14() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_14)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_14)}}
 }
 
 func (p *GPIO_Periph) BR_15() BRR_Mask {
-	return BRR_Mask{mmio.UM16{&p.BRR.U16, uint16(BR_15)}}
+	return BRR_Mask{mmio.UM32{&p.BRR.U32, uint32(BR_15)}}
 }

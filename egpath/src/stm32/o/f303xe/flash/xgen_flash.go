@@ -308,16 +308,20 @@ func (p *FLASH_Periph) OPTERR() OBR_Mask {
 	return OBR_Mask{mmio.UM32{&p.OBR.U32, uint32(OPTERR)}}
 }
 
-func (p *FLASH_Periph) RDPRT1() OBR_Mask {
-	return OBR_Mask{mmio.UM32{&p.OBR.U32, uint32(RDPRT1)}}
-}
-
-func (p *FLASH_Periph) RDPRT2() OBR_Mask {
-	return OBR_Mask{mmio.UM32{&p.OBR.U32, uint32(RDPRT2)}}
+func (p *FLASH_Periph) RDPRT() OBR_Mask {
+	return OBR_Mask{mmio.UM32{&p.OBR.U32, uint32(RDPRT)}}
 }
 
 func (p *FLASH_Periph) USER() OBR_Mask {
 	return OBR_Mask{mmio.UM32{&p.OBR.U32, uint32(USER)}}
+}
+
+func (p *FLASH_Periph) DATA0() OBR_Mask {
+	return OBR_Mask{mmio.UM32{&p.OBR.U32, uint32(DATA0)}}
+}
+
+func (p *FLASH_Periph) DATA1() OBR_Mask {
+	return OBR_Mask{mmio.UM32{&p.OBR.U32, uint32(DATA1)}}
 }
 
 type WRPR_Bits uint32

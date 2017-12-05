@@ -139,7 +139,6 @@ const (
 	AM_0  FGPFCCR_Bits = 0x01 << 16 //  Alpha mode AM bit 0.
 	AM_1  FGPFCCR_Bits = 0x02 << 16 //  Alpha mode AM bit 1.
 	ALPHA FGPFCCR_Bits = 0xFF << 24 //+ Alpha value.
-	CM_3  FGPFCCR_Bits = 0x08 << 0  //  Input color mode CM bit 3.
 )
 
 const (

@@ -194,8 +194,8 @@ func (p *RTC_Periph) COSEL() CR_Mask {
 	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(COSEL)}}
 }
 
-func (p *RTC_Periph) BCK() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(BCK)}}
+func (p *RTC_Periph) BKP() CR_Mask {
+	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(BKP)}}
 }
 
 func (p *RTC_Periph) SUB1H() CR_Mask {
@@ -802,8 +802,28 @@ type TAFCR_Mask struct{ mmio.UM32 }
 func (rm TAFCR_Mask) Load() TAFCR_Bits   { return TAFCR_Bits(rm.UM32.Load()) }
 func (rm TAFCR_Mask) Store(b TAFCR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *RTC_Periph) ALARMOUTTYPE() TAFCR_Mask {
-	return TAFCR_Mask{mmio.UM32{&p.TAFCR.U32, uint32(ALARMOUTTYPE)}}
+func (p *RTC_Periph) PC15MODE() TAFCR_Mask {
+	return TAFCR_Mask{mmio.UM32{&p.TAFCR.U32, uint32(PC15MODE)}}
+}
+
+func (p *RTC_Periph) PC15VALUE() TAFCR_Mask {
+	return TAFCR_Mask{mmio.UM32{&p.TAFCR.U32, uint32(PC15VALUE)}}
+}
+
+func (p *RTC_Periph) PC14MODE() TAFCR_Mask {
+	return TAFCR_Mask{mmio.UM32{&p.TAFCR.U32, uint32(PC14MODE)}}
+}
+
+func (p *RTC_Periph) PC14VALUE() TAFCR_Mask {
+	return TAFCR_Mask{mmio.UM32{&p.TAFCR.U32, uint32(PC14VALUE)}}
+}
+
+func (p *RTC_Periph) PC13MODE() TAFCR_Mask {
+	return TAFCR_Mask{mmio.UM32{&p.TAFCR.U32, uint32(PC13MODE)}}
+}
+
+func (p *RTC_Periph) PC13VALUE() TAFCR_Mask {
+	return TAFCR_Mask{mmio.UM32{&p.TAFCR.U32, uint32(PC13VALUE)}}
 }
 
 func (p *RTC_Periph) TAMPPUDIS() TAFCR_Mask {

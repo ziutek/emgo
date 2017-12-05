@@ -4,7 +4,7 @@
 //  DMA2  mmap.DMA2_BASE
 // Registers:
 //  0x00 32  ISR  Interrupt status register.
-//  0x04 32  IFCR Interrupt clear flag register.
+//  0x04 32  IFCR Interrupt flag clear register.
 // Import:
 //  stm32/o/f303xe/mmap
 package dma

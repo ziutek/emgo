@@ -1,6 +1,6 @@
 // Peripheral: CAN_Periph  Controller Area Network.
 // Instances:
-//  CAN1  mmap.CAN1_BASE
+//  CAN  mmap.CAN_BASE
 // Registers:
 //  0x00  32  MCR   Master control register.
 //  0x04  32  MSR   Master status register.
@@ -180,15 +180,12 @@ const (
 )
 
 const (
-	EWGF  ESR_Bits = 0x01 << 0  //+ Error Warning Flag.
-	EPVF  ESR_Bits = 0x01 << 1  //+ Error Passive Flag.
-	BOFF  ESR_Bits = 0x01 << 2  //+ Bus-Off Flag.
-	LEC   ESR_Bits = 0x07 << 4  //+ LEC[2:0] bits (Last Error Code).
-	LEC_0 ESR_Bits = 0x01 << 4  //  Bit 0.
-	LEC_1 ESR_Bits = 0x02 << 4  //  Bit 1.
-	LEC_2 ESR_Bits = 0x04 << 4  //  Bit 2.
-	TEC   ESR_Bits = 0xFF << 16 //+ Least significant byte of the 9-bit Transmit Error Counter.
-	REC   ESR_Bits = 0xFF << 24 //+ Receive Error Counter.
+	EWGF ESR_Bits = 0x01 << 0  //+ Error Warning Flag.
+	EPVF ESR_Bits = 0x01 << 1  //+ Error Passive Flag.
+	BOFF ESR_Bits = 0x01 << 2  //+ Bus-Off Flag.
+	LEC  ESR_Bits = 0x07 << 4  //+ LEC[2:0] bits (Last Error Code).
+	TEC  ESR_Bits = 0xFF << 16 //+ Least significant byte of the 9-bit Transmit Error Counter.
+	REC  ESR_Bits = 0xFF << 24 //+ Receive Error Counter.
 )
 
 const (

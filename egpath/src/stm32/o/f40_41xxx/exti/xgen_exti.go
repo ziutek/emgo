@@ -497,88 +497,88 @@ type SWIER_Mask struct{ mmio.UM32 }
 func (rm SWIER_Mask) Load() SWIER_Bits   { return SWIER_Bits(rm.UM32.Load()) }
 func (rm SWIER_Mask) Store(b SWIER_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *EXTI_Periph) SWIER0() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER0)}}
+func (p *EXTI_Periph) SWI0() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI0)}}
 }
 
-func (p *EXTI_Periph) SWIER1() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER1)}}
+func (p *EXTI_Periph) SWI1() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI1)}}
 }
 
-func (p *EXTI_Periph) SWIER2() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER2)}}
+func (p *EXTI_Periph) SWI2() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI2)}}
 }
 
-func (p *EXTI_Periph) SWIER3() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER3)}}
+func (p *EXTI_Periph) SWI3() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI3)}}
 }
 
-func (p *EXTI_Periph) SWIER4() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER4)}}
+func (p *EXTI_Periph) SWI4() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI4)}}
 }
 
-func (p *EXTI_Periph) SWIER5() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER5)}}
+func (p *EXTI_Periph) SWI5() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI5)}}
 }
 
-func (p *EXTI_Periph) SWIER6() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER6)}}
+func (p *EXTI_Periph) SWI6() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI6)}}
 }
 
-func (p *EXTI_Periph) SWIER7() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER7)}}
+func (p *EXTI_Periph) SWI7() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI7)}}
 }
 
-func (p *EXTI_Periph) SWIER8() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER8)}}
+func (p *EXTI_Periph) SWI8() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI8)}}
 }
 
-func (p *EXTI_Periph) SWIER9() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER9)}}
+func (p *EXTI_Periph) SWI9() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI9)}}
 }
 
-func (p *EXTI_Periph) SWIER10() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER10)}}
+func (p *EXTI_Periph) SWI10() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI10)}}
 }
 
-func (p *EXTI_Periph) SWIER11() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER11)}}
+func (p *EXTI_Periph) SWI11() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI11)}}
 }
 
-func (p *EXTI_Periph) SWIER12() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER12)}}
+func (p *EXTI_Periph) SWI12() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI12)}}
 }
 
-func (p *EXTI_Periph) SWIER13() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER13)}}
+func (p *EXTI_Periph) SWI13() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI13)}}
 }
 
-func (p *EXTI_Periph) SWIER14() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER14)}}
+func (p *EXTI_Periph) SWI14() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI14)}}
 }
 
-func (p *EXTI_Periph) SWIER15() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER15)}}
+func (p *EXTI_Periph) SWI15() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI15)}}
 }
 
-func (p *EXTI_Periph) SWIER16() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER16)}}
+func (p *EXTI_Periph) SWI16() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI16)}}
 }
 
-func (p *EXTI_Periph) SWIER17() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER17)}}
+func (p *EXTI_Periph) SWI17() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI17)}}
 }
 
-func (p *EXTI_Periph) SWIER18() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER18)}}
+func (p *EXTI_Periph) SWI18() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI18)}}
 }
 
-func (p *EXTI_Periph) SWIER19() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER19)}}
+func (p *EXTI_Periph) SWI19() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI19)}}
 }
 
-func (p *EXTI_Periph) SWIER23() SWIER_Mask {
-	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWIER23)}}
+func (p *EXTI_Periph) SWI23() SWIER_Mask {
+	return SWIER_Mask{mmio.UM32{&p.SWIER.U32, uint32(SWI23)}}
 }
 
 type PR_Bits uint32
@@ -608,86 +608,86 @@ type PR_Mask struct{ mmio.UM32 }
 func (rm PR_Mask) Load() PR_Bits   { return PR_Bits(rm.UM32.Load()) }
 func (rm PR_Mask) Store(b PR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *EXTI_Periph) PR0() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR0)}}
+func (p *EXTI_Periph) PIF0() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF0)}}
 }
 
-func (p *EXTI_Periph) PR1() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR1)}}
+func (p *EXTI_Periph) PIF1() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF1)}}
 }
 
-func (p *EXTI_Periph) PR2() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR2)}}
+func (p *EXTI_Periph) PIF2() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF2)}}
 }
 
-func (p *EXTI_Periph) PR3() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR3)}}
+func (p *EXTI_Periph) PIF3() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF3)}}
 }
 
-func (p *EXTI_Periph) PR4() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR4)}}
+func (p *EXTI_Periph) PIF4() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF4)}}
 }
 
-func (p *EXTI_Periph) PR5() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR5)}}
+func (p *EXTI_Periph) PIF5() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF5)}}
 }
 
-func (p *EXTI_Periph) PR6() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR6)}}
+func (p *EXTI_Periph) PIF6() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF6)}}
 }
 
-func (p *EXTI_Periph) PR7() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR7)}}
+func (p *EXTI_Periph) PIF7() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF7)}}
 }
 
-func (p *EXTI_Periph) PR8() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR8)}}
+func (p *EXTI_Periph) PIF8() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF8)}}
 }
 
-func (p *EXTI_Periph) PR9() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR9)}}
+func (p *EXTI_Periph) PIF9() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF9)}}
 }
 
-func (p *EXTI_Periph) PR10() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR10)}}
+func (p *EXTI_Periph) PIF10() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF10)}}
 }
 
-func (p *EXTI_Periph) PR11() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR11)}}
+func (p *EXTI_Periph) PIF11() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF11)}}
 }
 
-func (p *EXTI_Periph) PR12() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR12)}}
+func (p *EXTI_Periph) PIF12() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF12)}}
 }
 
-func (p *EXTI_Periph) PR13() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR13)}}
+func (p *EXTI_Periph) PIF13() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF13)}}
 }
 
-func (p *EXTI_Periph) PR14() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR14)}}
+func (p *EXTI_Periph) PIF14() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF14)}}
 }
 
-func (p *EXTI_Periph) PR15() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR15)}}
+func (p *EXTI_Periph) PIF15() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF15)}}
 }
 
-func (p *EXTI_Periph) PR16() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR16)}}
+func (p *EXTI_Periph) PIF16() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF16)}}
 }
 
-func (p *EXTI_Periph) PR17() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR17)}}
+func (p *EXTI_Periph) PIF17() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF17)}}
 }
 
-func (p *EXTI_Periph) PR18() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR18)}}
+func (p *EXTI_Periph) PIF18() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF18)}}
 }
 
-func (p *EXTI_Periph) PR19() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR19)}}
+func (p *EXTI_Periph) PIF19() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF19)}}
 }
 
-func (p *EXTI_Periph) PR23() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR23)}}
+func (p *EXTI_Periph) PIF23() PR_Mask {
+	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PIF23)}}
 }

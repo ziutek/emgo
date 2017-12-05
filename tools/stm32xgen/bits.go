@@ -74,6 +74,11 @@ func addtoreg(pkgs []*Package, bits *Bits) bool {
 		return false
 	}
 	bits.Name = ident(name[m+1:])
+	for _, b := range reg.Bits {
+		if b.Name == bits.Name && b.Mask == bits.Mask && b.LSL == bits.LSL {
+			return true // Duplicate.
+		}
+	}
 	reg.Bits = append(reg.Bits, bits)
 	return true
 }

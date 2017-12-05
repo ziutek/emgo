@@ -1,4 +1,4 @@
-// +build f40_41xxx f411xe f746xx l1xx_md l1xx_mdp l1xx_hd l1xx_xl l476xx
+// +build f303xe f40_41xxx f411xe f746xx l1xx_md l1xx_mdp l1xx_hd l1xx_xl l476xx
 
 package exti
 

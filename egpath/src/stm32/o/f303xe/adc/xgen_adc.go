@@ -156,48 +156,48 @@ type IER_Mask struct{ mmio.UM32 }
 func (rm IER_Mask) Load() IER_Bits   { return IER_Bits(rm.UM32.Load()) }
 func (rm IER_Mask) Store(b IER_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *ADC_Periph) ADRDYIE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(ADRDYIE)}}
+func (p *ADC_Periph) ADRDYIEIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(ADRDYIEIE)}}
 }
 
-func (p *ADC_Periph) EOSMPIE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOSMPIE)}}
+func (p *ADC_Periph) EOSMPIEIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOSMPIEIE)}}
 }
 
-func (p *ADC_Periph) EOCIE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOCIE)}}
+func (p *ADC_Periph) EOCIEIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOCIEIE)}}
 }
 
-func (p *ADC_Periph) EOSIE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOSIE)}}
+func (p *ADC_Periph) EOSIEIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(EOSIEIE)}}
 }
 
-func (p *ADC_Periph) OVRIE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(OVRIE)}}
+func (p *ADC_Periph) OVRIEIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(OVRIEIE)}}
 }
 
-func (p *ADC_Periph) JEOCIE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JEOCIE)}}
+func (p *ADC_Periph) JEOCIEIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JEOCIEIE)}}
 }
 
-func (p *ADC_Periph) JEOSIE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JEOSIE)}}
+func (p *ADC_Periph) JEOSIEIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JEOSIEIE)}}
 }
 
-func (p *ADC_Periph) AWD1IE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD1IE)}}
+func (p *ADC_Periph) AWD1IEIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD1IEIE)}}
 }
 
-func (p *ADC_Periph) AWD2IE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD2IE)}}
+func (p *ADC_Periph) AWD2IEIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD2IEIE)}}
 }
 
-func (p *ADC_Periph) AWD3IE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD3IE)}}
+func (p *ADC_Periph) AWD3IEIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(AWD3IEIE)}}
 }
 
-func (p *ADC_Periph) JQOVFIE() IER_Mask {
-	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JQOVFIE)}}
+func (p *ADC_Periph) JQOVFIEIE() IER_Mask {
+	return IER_Mask{mmio.UM32{&p.IER.U32, uint32(JQOVFIEIE)}}
 }
 
 type CR_Bits uint32
@@ -360,6 +360,10 @@ func (p *ADC_Periph) JAUTO() CFGR_Mask {
 
 func (p *ADC_Periph) AWD1CH() CFGR_Mask {
 	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(AWD1CH)}}
+}
+
+func (p *ADC_Periph) AUTOFF() CFGR_Mask {
+	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(AUTOFF)}}
 }
 
 type SMPR1_Bits uint32

@@ -98,8 +98,8 @@ func (p *I2C_Periph) ERRIE() CR1_Mask {
 	return CR1_Mask{mmio.UM32{&p.CR1.U32, uint32(ERRIE)}}
 }
 
-func (p *I2C_Periph) DFN() CR1_Mask {
-	return CR1_Mask{mmio.UM32{&p.CR1.U32, uint32(DFN)}}
+func (p *I2C_Periph) DNF() CR1_Mask {
+	return CR1_Mask{mmio.UM32{&p.CR1.U32, uint32(DNF)}}
 }
 
 func (p *I2C_Periph) ANFOFF() CR1_Mask {

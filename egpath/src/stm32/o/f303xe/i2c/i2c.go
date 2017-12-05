@@ -30,7 +30,7 @@ const (
 	STOPIE    CR1_Bits = 0x01 << 5  //+ STOP detection interrupt enable.
 	TCIE      CR1_Bits = 0x01 << 6  //+ Transfer complete interrupt enable.
 	ERRIE     CR1_Bits = 0x01 << 7  //+ Errors interrupt enable.
-	DFN       CR1_Bits = 0x0F << 8  //+ Digital noise filter.
+	DNF       CR1_Bits = 0x0F << 8  //+ Digital noise filter.
 	ANFOFF    CR1_Bits = 0x01 << 12 //+ Analog noise filter OFF.
 	SWRST     CR1_Bits = 0x01 << 13 //+ Software reset.
 	TXDMAEN   CR1_Bits = 0x01 << 14 //+ DMA transmission requests enable.
@@ -54,7 +54,7 @@ const (
 	STOPIEn    = 5
 	TCIEn      = 6
 	ERRIEn     = 7
-	DFNn       = 8
+	DNFn       = 8
 	ANFOFFn    = 12
 	SWRSTn     = 13
 	TXDMAENn   = 14
@@ -110,9 +110,17 @@ const (
 )
 
 const (
-	OA2    OAR2_Bits = 0x7F << 1  //+ Interface own address 2.
-	OA2MSK OAR2_Bits = 0x07 << 8  //+ Own address 2 masks.
-	OA2EN  OAR2_Bits = 0x01 << 15 //+ Own address 2 enable.
+	OA2       OAR2_Bits = 0x7F << 1  //+ Interface own address 2.
+	OA2MSK    OAR2_Bits = 0x07 << 8  //+ Own address 2 masks.
+	OA2NOMASK OAR2_Bits = 0x00 << 8  //  No mask.
+	OA2MASK01 OAR2_Bits = 0x01 << 8  //  OA2[1] is masked, Only OA2[7:2] are compared.
+	OA2MASK02 OAR2_Bits = 0x02 << 8  //  OA2[2:1] is masked, Only OA2[7:3] are compared.
+	OA2MASK03 OAR2_Bits = 0x03 << 8  //  OA2[3:1] is masked, Only OA2[7:4] are compared.
+	OA2MASK04 OAR2_Bits = 0x04 << 8  //  OA2[4:1] is masked, Only OA2[7:5] are compared.
+	OA2MASK05 OAR2_Bits = 0x05 << 8  //  OA2[5:1] is masked, Only OA2[7:6] are compared.
+	OA2MASK06 OAR2_Bits = 0x06 << 8  //  OA2[6:1] is masked, Only OA2[7] are compared.
+	OA2MASK07 OAR2_Bits = 0x07 << 8  //  OA2[7:1] is masked, No comparison is done.
+	OA2EN     OAR2_Bits = 0x01 << 15 //+ Own address 2 enable.
 )
 
 const (

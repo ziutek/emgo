@@ -1,4 +1,4 @@
-// +build l476xx
+// +build f303xe l476xx
 
 package exti
 

@@ -8,7 +8,7 @@
 //  0x04 32  RCR        CCM SRAM protection register.
 //  0x08 32  EXTICR[4]  External interrupt configuration registers.
 //  0x18 32  CFGR2      Configuration register 2.
-//  0x1C 32  RESERVED0  Reserved,                                                           0x1C.
+//  0x1C 32  RESERVED0  Reserved,                                                          0x1C.
 //  0x20 32  RESERVED1  Reserved,                                                          0x20.
 //  0x24 32  RESERVED2  Reserved,                                                          0x24.
 //  0x28 32  RESERVED4  Reserved,                                                          0x28.
@@ -20,8 +20,8 @@
 //  0x40 32  RESERVED10 Reserved,                                                          0x40.
 //  0x44 32  RESERVED11 Reserved,                                                          0x44.
 //  0x48 32  CFGR4      Configuration register 4.
-//  0x4C 32  RESERVED13 Reserved,                                                          0x4C.
-//  0x50 32  CFGR3      Configuration register 3.
+//  0x4C 32  RESERVED12 Reserved,                                                          0x4C.
+//  0x50 32  RESERVED13 Reserved,                                                          0x50.
 // Import:
 //  stm32/o/f303xe/mmap
 package syscfg
@@ -36,12 +36,12 @@ const (
 	USB_IT_RMP          CFGR1_Bits = 0x01 << 5  //+ USB interrupt remap.
 	TIM1_ITR3_RMP       CFGR1_Bits = 0x01 << 6  //+ Timer 1 ITR3 selection.
 	DAC1_TRIG1_RMP      CFGR1_Bits = 0x01 << 7  //+ DAC1 Trigger1 remap.
-	ADC24_DMA_RMP       CFGR1_Bits = 0x01 << 8  //+ ADC2 and ADC4 DMA remap.
-	TIM16_DMA_RMP       CFGR1_Bits = 0x01 << 11 //+ Timer 16 DMA remap.
-	TIM17_DMA_RMP       CFGR1_Bits = 0x01 << 12 //+ Timer 17 DMA remap.
-	TIM6DAC1Ch1_DMA_RMP CFGR1_Bits = 0x01 << 13 //+ Timer 6 / DAC1 CH1 DMA remap.
-	TIM7DAC1Ch2_DMA_RMP CFGR1_Bits = 0x01 << 14 //+ Timer 7 / DAC1 CH2 DMA remap.
-	DAC2Ch1_DMA_RMP     CFGR1_Bits = 0x01 << 15 //+ DAC2 CH1 DMA remap.
+	DMA_RMP             CFGR1_Bits = 0x79 << 8  //+ DMA remap mask.
+	ADC24_DMA_RMP       CFGR1_Bits = 0x01 << 8  //  ADC2 and ADC4 DMA remap.
+	TIM16_DMA_RMP       CFGR1_Bits = 0x08 << 8  //  Timer 16 DMA remap.
+	TIM17_DMA_RMP       CFGR1_Bits = 0x10 << 8  //  Timer 17 DMA remap.
+	TIM6DAC1Ch1_DMA_RMP CFGR1_Bits = 0x20 << 8  //  Timer 6 / DAC1 Ch1 DMA remap.
+	TIM7DAC1Ch2_DMA_RMP CFGR1_Bits = 0x40 << 8  //  Timer 7 / DAC1 Ch2 DMA remap.
 	I2C_PB6_FMP         CFGR1_Bits = 0x01 << 16 //+ I2C PB6 Fast mode plus.
 	I2C_PB7_FMP         CFGR1_Bits = 0x01 << 17 //+ I2C PB7 Fast mode plus.
 	I2C_PB8_FMP         CFGR1_Bits = 0x01 << 18 //+ I2C PB8 Fast mode plus.
@@ -49,38 +49,27 @@ const (
 	I2C1_FMP            CFGR1_Bits = 0x01 << 20 //+ I2C1 Fast mode plus.
 	I2C2_FMP            CFGR1_Bits = 0x01 << 21 //+ I2C2 Fast mode plus.
 	ENCODER_MODE        CFGR1_Bits = 0x03 << 22 //+ Encoder Mode.
-	ENCODER_MODE_0      CFGR1_Bits = 0x01 << 22 //  Encoder Mode 0.
-	ENCODER_MODE_1      CFGR1_Bits = 0x02 << 22 //  Encoder Mode 1.
+	ENCODER_MODE_TIM2   CFGR1_Bits = 0x01 << 22 //  TIM2 IC1 and TIM2 IC2 are connected to TIM15 IC1 and TIM15 IC2 respectively.
+	ENCODER_MODE_TIM3   CFGR1_Bits = 0x02 << 22 //  TIM3 IC1 and TIM3 IC2 are connected to TIM15 IC1 and TIM15 IC2 respectively.
 	I2C3_FMP            CFGR1_Bits = 0x01 << 24 //+ I2C3 Fast mode plus.
 	FPU_IE              CFGR1_Bits = 0x3F << 26 //+ Floating Point Unit Interrupt Enable.
-	FPU_IE_0            CFGR1_Bits = 0x01 << 26 //  Floating Point Unit Interrupt Enable 0.
-	FPU_IE_1            CFGR1_Bits = 0x02 << 26 //  Floating Point Unit Interrupt Enable 1.
-	FPU_IE_2            CFGR1_Bits = 0x04 << 26 //  Floating Point Unit Interrupt Enable 2.
-	FPU_IE_3            CFGR1_Bits = 0x08 << 26 //  Floating Point Unit Interrupt Enable 3.
-	FPU_IE_4            CFGR1_Bits = 0x10 << 26 //  Floating Point Unit Interrupt Enable 4.
-	FPU_IE_5            CFGR1_Bits = 0x20 << 26 //  Floating Point Unit Interrupt Enable 5.
 )
 
 const (
-	MEM_MODEn            = 0
-	USB_IT_RMPn          = 5
-	TIM1_ITR3_RMPn       = 6
-	DAC1_TRIG1_RMPn      = 7
-	ADC24_DMA_RMPn       = 8
-	TIM16_DMA_RMPn       = 11
-	TIM17_DMA_RMPn       = 12
-	TIM6DAC1Ch1_DMA_RMPn = 13
-	TIM7DAC1Ch2_DMA_RMPn = 14
-	DAC2Ch1_DMA_RMPn     = 15
-	I2C_PB6_FMPn         = 16
-	I2C_PB7_FMPn         = 17
-	I2C_PB8_FMPn         = 18
-	I2C_PB9_FMPn         = 19
-	I2C1_FMPn            = 20
-	I2C2_FMPn            = 21
-	ENCODER_MODEn        = 22
-	I2C3_FMPn            = 24
-	FPU_IEn              = 26
+	MEM_MODEn       = 0
+	USB_IT_RMPn     = 5
+	TIM1_ITR3_RMPn  = 6
+	DAC1_TRIG1_RMPn = 7
+	DMA_RMPn        = 8
+	I2C_PB6_FMPn    = 16
+	I2C_PB7_FMPn    = 17
+	I2C_PB8_FMPn    = 18
+	I2C_PB9_FMPn    = 19
+	I2C1_FMPn       = 20
+	I2C2_FMPn       = 21
+	ENCODER_MODEn   = 22
+	I2C3_FMPn       = 24
+	FPU_IEn         = 26
 )
 
 const (
@@ -166,10 +155,10 @@ const (
 )
 
 const (
-	LOCKUP_LOCK      CFGR2_Bits = 0x01 << 0 //+ Enables and locks the PVD connection with Timer1/8/15/16/17 Break Input and also the PVD_EN and PVDSEL[2:0] bits of the Power Control Interface.
-	SRAM_PARITY_LOCK CFGR2_Bits = 0x01 << 1 //+ Enables and locks the SRAM_PARITY error signal with Break Input of TIMER1/8/15/16/17.
-	PVD_LOCK         CFGR2_Bits = 0x01 << 2 //+ Enables and locks the LOCKUP (Hardfault) output of CortexM4 with Break Input of TIMER1/8/15/16/17.
-	BYP_ADDR_PAR     CFGR2_Bits = 0x01 << 4 //+ Disables the address parity check on RAM.
+	LOCKUP_LOCK      CFGR2_Bits = 0x01 << 0 //+ Enables and locks the LOCKUP (Hardfault) output of CortexM4 with Break Input of TIMx.
+	SRAM_PARITY_LOCK CFGR2_Bits = 0x01 << 1 //+ Enables and locks the SRAM_PARITY error signal with Break Input of TIMx.
+	PVD_LOCK         CFGR2_Bits = 0x01 << 2 //+ Enables and locks the PVD connection with TIMx Break Input, as well as the PVDE and PLS[2:0] in the PWR_CR register.
+	BYP_ADDR_PAR     CFGR2_Bits = 0x01 << 4 //+ Disables the adddress parity check on RAM.
 	SRAM_PE          CFGR2_Bits = 0x01 << 8 //+ SRAM Parity error flag.
 )
 
@@ -213,34 +202,4 @@ const (
 	ADC34_JEXT5_RMPn  = 11
 	ADC34_JEXT11_RMPn = 12
 	ADC34_JEXT14_RMPn = 13
-)
-
-const (
-	SPI1_RX_DMA_RMP   CFGR3_Bits = 0x03 << 0  //+ SPI1 RX DMA remap.
-	SPI1_RX_DMA_RMP_0 CFGR3_Bits = 0x01 << 0  //  SPI1 RX DMA remap bit 0.
-	SPI1_RX_DMA_RMP_1 CFGR3_Bits = 0x02 << 0  //  SPI1 RX DMA remap bit 1.
-	SPI1_TX_DMA_RMP   CFGR3_Bits = 0x03 << 2  //+ SPI1 TX DMA remap.
-	SPI1_TX_DMA_RMP_0 CFGR3_Bits = 0x01 << 2  //  SPI1 TX DMA remap bit 0.
-	SPI1_TX_DMA_RMP_1 CFGR3_Bits = 0x02 << 2  //  SPI1 TX DMA remap bit 1.
-	I2C1_RX_DMA_RMP   CFGR3_Bits = 0x03 << 4  //+ I2C1 RX DMA remap.
-	I2C1_RX_DMA_RMP_0 CFGR3_Bits = 0x01 << 4  //  I2C1 RX DMA remap bit 0.
-	I2C1_RX_DMA_RMP_1 CFGR3_Bits = 0x02 << 4  //  I2C1 RX DMA remap bit 1.
-	I2C1_TX_DMA_RMP   CFGR3_Bits = 0x03 << 6  //+ I2C1 RX DMA remap.
-	I2C1_TX_DMA_RMP_0 CFGR3_Bits = 0x01 << 6  //  I2C1 TX DMA remap bit 0.
-	I2C1_TX_DMA_RMP_1 CFGR3_Bits = 0x02 << 6  //  I2C1 TX DMA remap bit 1.
-	ADC2_DMA_RMP      CFGR3_Bits = 0x03 << 8  //+ ADC2 DMA remap.
-	ADC2_DMA_RMP_0    CFGR3_Bits = 0x01 << 8  //  ADC2 DMA remap bit 0.
-	ADC2_DMA_RMP_1    CFGR3_Bits = 0x02 << 8  //  ADC2 DMA remap bit 1.
-	DAC1_TRG3_RMP     CFGR3_Bits = 0x01 << 16 //+ DAC1 TRG3 remap.
-	DAC1_TRG5_RMP     CFGR3_Bits = 0x01 << 17 //+ DAC1 TRG5 remap.
-)
-
-const (
-	SPI1_RX_DMA_RMPn = 0
-	SPI1_TX_DMA_RMPn = 2
-	I2C1_RX_DMA_RMPn = 4
-	I2C1_TX_DMA_RMPn = 6
-	ADC2_DMA_RMPn    = 8
-	DAC1_TRG3_RMPn   = 16
-	DAC1_TRG5_RMPn   = 17
 )

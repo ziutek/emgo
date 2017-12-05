@@ -2,8 +2,8 @@
 
 // Peripheral: ADC_Common_Periph  Analog to Digital Converter.
 // Instances:
-//  ADC1_2  mmap.ADC1_2_BASE
-//  ADC3_4  mmap.ADC3_4_BASE
+//  ADC12_COMMON  mmap.ADC1_2_COMMON_BASE
+//  ADC34_COMMON  mmap.ADC3_4_COMMON_BASE
 // Registers:
 //  0x00 32  CSR ADC Common status register.
 //  0x08 32  CCR ADC common control register.
@@ -37,6 +37,18 @@ const (
 	AWD2_SLV        CSR_Bits = 0x01 << 24 //+ Analog watchdog 2 flag of the slave ADC.
 	AWD3_SLV        CSR_Bits = 0x01 << 25 //+ Analog watchdog 3 flag of the slave ADC.
 	JQOVF_SLV       CSR_Bits = 0x01 << 26 //+ Injected context queue overflow flag of the slave ADC.
+	EOSMP_MST       CSR_Bits = 0x01 << 1  //  ADC multimode master group regular end of sampling flag.
+	EOC_MST         CSR_Bits = 0x01 << 2  //  ADC multimode master group regular end of unitary conversion flag.
+	EOS_MST         CSR_Bits = 0x01 << 3  //  ADC multimode master group regular end of sequence conversions flag.
+	OVR_MST         CSR_Bits = 0x01 << 4  //  ADC multimode master group regular overrun flag.
+	JEOC_MST        CSR_Bits = 0x01 << 5  //  ADC multimode master group injected end of unitary conversion flag.
+	JEOS_MST        CSR_Bits = 0x01 << 6  //  ADC multimode master group injected end of sequence conversions flag.
+	EOSMP_SLV       CSR_Bits = 0x01 << 17 //  ADC multimode slave group regular end of sampling flag.
+	EOC_SLV         CSR_Bits = 0x01 << 18 //  ADC multimode slave group regular end of unitary conversion flag.
+	EOS_SLV         CSR_Bits = 0x01 << 19 //  ADC multimode slave group regular end of sequence conversions flag.
+	OVR_SLV         CSR_Bits = 0x01 << 20 //  ADC multimode slave group regular overrun flag.
+	JEOC_SLV        CSR_Bits = 0x01 << 21 //  ADC multimode slave group injected end of unitary conversion flag.
+	JEOS_SLV        CSR_Bits = 0x01 << 22 //  ADC multimode slave group injected end of sequence conversions flag.
 )
 
 const (
@@ -65,27 +77,15 @@ const (
 )
 
 const (
-	MULTI    CCR_Bits = 0x1F << 0  //+ Multi ADC mode selection.
-	MULTI_0  CCR_Bits = 0x01 << 0  //  MULTI bit 0.
-	MULTI_1  CCR_Bits = 0x02 << 0  //  MULTI bit 1.
-	MULTI_2  CCR_Bits = 0x04 << 0  //  MULTI bit 2.
-	MULTI_3  CCR_Bits = 0x08 << 0  //  MULTI bit 3.
-	MULTI_4  CCR_Bits = 0x10 << 0  //  MULTI bit 4.
-	DELAY    CCR_Bits = 0x0F << 8  //+ Delay between 2 sampling phases.
-	DELAY_0  CCR_Bits = 0x01 << 8  //  DELAY bit 0.
-	DELAY_1  CCR_Bits = 0x02 << 8  //  DELAY bit 1.
-	DELAY_2  CCR_Bits = 0x04 << 8  //  DELAY bit 2.
-	DELAY_3  CCR_Bits = 0x08 << 8  //  DELAY bit 3.
-	MDMACFG  CCR_Bits = 0x01 << 13 //+ DMA configuration for multi-ADC mode.
-	MDMA     CCR_Bits = 0x03 << 14 //+ DMA mode for multi-ADC mode.
-	MDMA_0   CCR_Bits = 0x01 << 14 //  MDMA bit 0.
-	MDMA_1   CCR_Bits = 0x02 << 14 //  MDMA bit 1.
-	CKMODE   CCR_Bits = 0x03 << 16 //+ ADC clock mode.
-	CKMODE_0 CCR_Bits = 0x01 << 16 //  CKMODE bit 0.
-	CKMODE_1 CCR_Bits = 0x02 << 16 //  CKMODE bit 1.
-	VREFEN   CCR_Bits = 0x01 << 22 //+ VREFINT enable.
-	TSEN     CCR_Bits = 0x01 << 23 //+ Temperature sensor enable.
-	VBATEN   CCR_Bits = 0x01 << 24 //+ VBAT enable.
+	MULTI   CCR_Bits = 0x1F << 0  //+ Multi ADC mode selection.
+	DELAY   CCR_Bits = 0x0F << 8  //+ Delay between 2 sampling phases.
+	MDMACFG CCR_Bits = 0x01 << 13 //+ DMA configuration for multi-ADC mode.
+	MDMA    CCR_Bits = 0x03 << 14 //+ DMA mode for multi-ADC mode.
+	CKMODE  CCR_Bits = 0x03 << 16 //+ ADC clock mode.
+	VREFEN  CCR_Bits = 0x01 << 22 //+ VREFINT enable.
+	TSEN    CCR_Bits = 0x01 << 23 //+ Temperature sensor enable.
+	VBATEN  CCR_Bits = 0x01 << 24 //+ VBAT enable.
+	DUAL    CCR_Bits = 0x1F << 0  //  ADC multimode mode selection.
 )
 
 const (
@@ -100,40 +100,8 @@ const (
 )
 
 const (
-	RDATA_MST    CDR_Bits = 0xFFFF << 0  //+ Regular Data of the master ADC.
-	RDATA_MST_0  CDR_Bits = 0x01 << 0    //  RDATA_MST bit 0.
-	RDATA_MST_1  CDR_Bits = 0x02 << 0    //  RDATA_MST bit 1.
-	RDATA_MST_2  CDR_Bits = 0x04 << 0    //  RDATA_MST bit 2.
-	RDATA_MST_3  CDR_Bits = 0x08 << 0    //  RDATA_MST bit 3.
-	RDATA_MST_4  CDR_Bits = 0x10 << 0    //  RDATA_MST bit 4.
-	RDATA_MST_5  CDR_Bits = 0x20 << 0    //  RDATA_MST bit 5.
-	RDATA_MST_6  CDR_Bits = 0x40 << 0    //  RDATA_MST bit 6.
-	RDATA_MST_7  CDR_Bits = 0x80 << 0    //  RDATA_MST bit 7.
-	RDATA_MST_8  CDR_Bits = 0x100 << 0   //  RDATA_MST bit 8.
-	RDATA_MST_9  CDR_Bits = 0x200 << 0   //  RDATA_MST bit 9.
-	RDATA_MST_10 CDR_Bits = 0x400 << 0   //  RDATA_MST bit 10.
-	RDATA_MST_11 CDR_Bits = 0x800 << 0   //  RDATA_MST bit 11.
-	RDATA_MST_12 CDR_Bits = 0x1000 << 0  //  RDATA_MST bit 12.
-	RDATA_MST_13 CDR_Bits = 0x2000 << 0  //  RDATA_MST bit 13.
-	RDATA_MST_14 CDR_Bits = 0x4000 << 0  //  RDATA_MST bit 14.
-	RDATA_MST_15 CDR_Bits = 0x8000 << 0  //  RDATA_MST bit 15.
-	RDATA_SLV    CDR_Bits = 0xFFFF << 16 //+ Regular Data of the master ADC.
-	RDATA_SLV_0  CDR_Bits = 0x01 << 16   //  RDATA_SLV bit 0.
-	RDATA_SLV_1  CDR_Bits = 0x02 << 16   //  RDATA_SLV bit 1.
-	RDATA_SLV_2  CDR_Bits = 0x04 << 16   //  RDATA_SLV bit 2.
-	RDATA_SLV_3  CDR_Bits = 0x08 << 16   //  RDATA_SLV bit 3.
-	RDATA_SLV_4  CDR_Bits = 0x10 << 16   //  RDATA_SLV bit 4.
-	RDATA_SLV_5  CDR_Bits = 0x20 << 16   //  RDATA_SLV bit 5.
-	RDATA_SLV_6  CDR_Bits = 0x40 << 16   //  RDATA_SLV bit 6.
-	RDATA_SLV_7  CDR_Bits = 0x80 << 16   //  RDATA_SLV bit 7.
-	RDATA_SLV_8  CDR_Bits = 0x100 << 16  //  RDATA_SLV bit 8.
-	RDATA_SLV_9  CDR_Bits = 0x200 << 16  //  RDATA_SLV bit 9.
-	RDATA_SLV_10 CDR_Bits = 0x400 << 16  //  RDATA_SLV bit 10.
-	RDATA_SLV_11 CDR_Bits = 0x800 << 16  //  RDATA_SLV bit 11.
-	RDATA_SLV_12 CDR_Bits = 0x1000 << 16 //  RDATA_SLV bit 12.
-	RDATA_SLV_13 CDR_Bits = 0x2000 << 16 //  RDATA_SLV bit 13.
-	RDATA_SLV_14 CDR_Bits = 0x4000 << 16 //  RDATA_SLV bit 14.
-	RDATA_SLV_15 CDR_Bits = 0x8000 << 16 //  RDATA_SLV bit 15.
+	RDATA_MST CDR_Bits = 0xFFFF << 0  //+ Regular Data of the master ADC.
+	RDATA_SLV CDR_Bits = 0xFFFF << 16 //+ Regular Data of the master ADC.
 )
 
 const (

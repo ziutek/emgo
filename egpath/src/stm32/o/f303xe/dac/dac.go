@@ -1,7 +1,7 @@
 // Peripheral: DAC_Periph  Digital to Analog Converter.
 // Instances:
+//  DAC   mmap.DAC_BASE
 //  DAC1  mmap.DAC1_BASE
-//  DAC2  mmap.DAC2_BASE
 // Registers:
 //  0x00 32  CR      Control register.
 //  0x04 32  SWTRIGR Software trigger register.
@@ -28,34 +28,16 @@ const (
 	BOFF1     CR_Bits = 0x01 << 1  //+ DAC channel1 output buffer disable.
 	TEN1      CR_Bits = 0x01 << 2  //+ DAC channel1 Trigger enable.
 	TSEL1     CR_Bits = 0x07 << 3  //+ TSEL1[2:0] (DAC channel1 Trigger selection).
-	TSEL1_0   CR_Bits = 0x01 << 3  //  Bit 0.
-	TSEL1_1   CR_Bits = 0x02 << 3  //  Bit 1.
-	TSEL1_2   CR_Bits = 0x04 << 3  //  Bit 2.
 	WAVE1     CR_Bits = 0x03 << 6  //+ WAVE1[1:0] (DAC channel1 noise/triangle wave generation enable).
-	WAVE1_0   CR_Bits = 0x01 << 6  //  Bit 0.
-	WAVE1_1   CR_Bits = 0x02 << 6  //  Bit 1.
 	MAMP1     CR_Bits = 0x0F << 8  //+ MAMP1[3:0] (DAC channel1 Mask/Amplitude selector).
-	MAMP1_0   CR_Bits = 0x01 << 8  //  Bit 0.
-	MAMP1_1   CR_Bits = 0x02 << 8  //  Bit 1.
-	MAMP1_2   CR_Bits = 0x04 << 8  //  Bit 2.
-	MAMP1_3   CR_Bits = 0x08 << 8  //  Bit 3.
 	DMAEN1    CR_Bits = 0x01 << 12 //+ DAC channel1 DMA enable.
 	DMAUDRIE1 CR_Bits = 0x01 << 13 //+ DAC channel1 DMA underrun IT enable.
 	EN2       CR_Bits = 0x01 << 16 //+ DAC channel2 enable.
 	BOFF2     CR_Bits = 0x01 << 17 //+ DAC channel2 output buffer disable.
 	TEN2      CR_Bits = 0x01 << 18 //+ DAC channel2 Trigger enable.
 	TSEL2     CR_Bits = 0x07 << 19 //+ TSEL2[2:0] (DAC channel2 Trigger selection).
-	TSEL2_0   CR_Bits = 0x01 << 19 //  Bit 0.
-	TSEL2_1   CR_Bits = 0x02 << 19 //  Bit 1.
-	TSEL2_2   CR_Bits = 0x04 << 19 //  Bit 2.
 	WAVE2     CR_Bits = 0x03 << 22 //+ WAVE2[1:0] (DAC channel2 noise/triangle wave generation enable).
-	WAVE2_0   CR_Bits = 0x01 << 22 //  Bit 0.
-	WAVE2_1   CR_Bits = 0x02 << 22 //  Bit 1.
 	MAMP2     CR_Bits = 0x0F << 24 //+ MAMP2[3:0] (DAC channel2 Mask/Amplitude selector).
-	MAMP2_0   CR_Bits = 0x01 << 24 //  Bit 0.
-	MAMP2_1   CR_Bits = 0x02 << 24 //  Bit 1.
-	MAMP2_2   CR_Bits = 0x04 << 24 //  Bit 2.
-	MAMP2_3   CR_Bits = 0x08 << 24 //  Bit 3.
 	DMAEN2    CR_Bits = 0x01 << 28 //+ DAC channel2 DMA enabled.
 	DMAUDRIE2 CR_Bits = 0x01 << 29 //+ DAC channel2 DMA underrun IT enable.
 )

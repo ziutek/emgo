@@ -13,21 +13,23 @@ import (
 // Osc is freqency of external resonator in MHz. Allowed values: 4 to 32 MHz.
 // Use 0 to select internal HSI oscilator (8 MHz / 2) as system clock source.
 //
-// sdiv is system clock divider.
+// Div and mul determine the system clock frequency according to the formula:
 //
-// div and mul determine the system clock frequency according to the formula:
+// When osc == 0 or:
 //
-//  SysClk = osc / div * mul * 1e6 [Hz]
+//  SysClk = 8e6 / div * mul [Hz]
 //
-// when osc != 0 or:
+// div can be 1..16 (303xD, 303xE, 398xE) or must be 2 (other).
 //
-//  SysClk = 4e6 * mul [Hz]
+// When osc != 0.
 //
-// when osc == 0.
+//  SysClk = osc * 1e6 / div * mul [Hz]
 //
-// div can be 1..16. mul can be 2..16.
+// div can be 1..16 (303xD, 303xE, 398xE) or 2..16 (other).
 //
-// USB requires HSE and SysClk set to 48e6 or 72e6 Hz.
+// Mul can be 2..16.
+//
+// USB requires HSE as PLL clock source and SysClk set to 48e6 or 72e6 Hz.
 func SetupPLL(osc, div, mul int) {
 	RCC := rcc.RCC
 
@@ -50,14 +52,16 @@ func SetupPLL(osc, div, mul int) {
 	if mul < 2 || mul > 16 {
 		panic("bad PLL multipler")
 	}
-	sysclk := HSIClk / 2 * uint(mul) // Hz
-	if osc != 0 {
+	var sysclk uint
+	if osc == 0 {
+		sysclk = HSIClk / uint(div) * uint(mul) // Hz
+	} else {
 		// HSE needs milliseconds to stabilize, so enable it now.
 		RCC.HSEON().Set()
 		sysclk = uint(osc) * 1e6 / uint(div) * uint(mul) // Hz
 	}
 	ahbclk := sysclk
-	cfgr := rcc.CFGR_Bits(mul-2) * rcc.PLLMULL_0
+	cfgr := rcc.CFGR_Bits(mul-2) << rcc.PLLMULn
 	var apb1clk uint
 	switch {
 	case ahbclk <= 1*maxAPB1Clk:
@@ -85,27 +89,26 @@ func SetupPLL(osc, div, mul int) {
 	}
 	// Setup Flash.
 	FLASH := flash.FLASH
-	latency := flash.ACR_Bits((sysclk-1)/24e6) * flash.LATENCY_1
+	latency := flash.ACR_Bits((sysclk-1)/24e6) << flash.LATENCYn
 	FLASH.ACR.SetBits(flash.PRFTBE | latency)
-
 	// Setup PLL.
-	div -= 1
 	if osc == 0 {
-		cfgr |= rcc.PLLSRC_HSI_Div2
+		// Div == 2 for HSI can be selected in compatible way: PLLSRC = 0.
+		if div != 2 {
+			cfgr |= rcc.PLLSRC_HSI_PREDIV // PLLSRC = 1
+		}
 	} else {
-		cfgr |= rcc.PLLSRC_PREDIV1 // HSE
-		cfgr |= rcc.CFGR_Bits(div&1) << rcc.PLLXTPRE_PREDIV1
+		cfgr |= rcc.PLLSRC_HSE_PREDIV // PLLSRC = 2
 		for RCC.HSERDY().Load() == 0 {
 			// Wait for HSE...
 		}
 	}
 	RCC.CFGR.Store(cfgr)
-	RCC.PREDIV1().Store(rcc.CFGR2_Bits(div))
+	RCC.CFGR2.Store(rcc.CFGR2_Bits(div-1) << rcc.PREDIVn) // Must be after CFGR.
 	RCC.PLLON().Set()
 	for RCC.PLLRDY().Load() == 0 {
 		// Wait for PLL...
 	}
-
 	// Change system clock source to PLL.
 	RCC.SW().Store(rcc.SW_PLL)
 	for RCC.SWS().Load() != rcc.SWS_PLL {

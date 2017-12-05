@@ -13,11 +13,7 @@ const (
 	MBKEN     BCR_Bits = 0x01 << 0  //+ Memory bank enable bit.
 	MUXEN     BCR_Bits = 0x01 << 1  //+ Address/data multiplexing enable bit.
 	MTYP      BCR_Bits = 0x03 << 2  //+ MTYP[1:0] bits (Memory type).
-	MTYP_0    BCR_Bits = 0x01 << 2  //  Bit 0.
-	MTYP_1    BCR_Bits = 0x02 << 2  //  Bit 1.
 	MWID      BCR_Bits = 0x03 << 4  //+ MWID[1:0] bits (Memory data bus width).
-	MWID_0    BCR_Bits = 0x01 << 4  //  Bit 0.
-	MWID_1    BCR_Bits = 0x02 << 4  //  Bit 1.
 	FACCEN    BCR_Bits = 0x01 << 6  //+ Flash access enable.
 	BURSTEN   BCR_Bits = 0x01 << 8  //+ Burst enable bit.
 	WAITPOL   BCR_Bits = 0x01 << 9  //+ Wait signal polarity bit.
@@ -28,7 +24,7 @@ const (
 	EXTMOD    BCR_Bits = 0x01 << 14 //+ Extended mode enable.
 	ASYNCWAIT BCR_Bits = 0x01 << 15 //+ Asynchronous wait.
 	CBURSTRW  BCR_Bits = 0x01 << 19 //+ Write burst enable.
-	CCLKEN    BCR_Bits = 0x01 << 20 //+ Conitnuous clock enable.
+	CCLKEN    BCR_Bits = 0x01 << 20 //+ Continous clock enable.
 )
 
 const (
@@ -50,43 +46,13 @@ const (
 )
 
 const (
-	ADDSET    BTR_Bits = 0x0F << 0  //+ ADDSET[3:0] bits (Address setup phase duration).
-	ADDSET_0  BTR_Bits = 0x01 << 0  //  Bit 0.
-	ADDSET_1  BTR_Bits = 0x02 << 0  //  Bit 1.
-	ADDSET_2  BTR_Bits = 0x04 << 0  //  Bit 2.
-	ADDSET_3  BTR_Bits = 0x08 << 0  //  Bit 3.
-	ADDHLD    BTR_Bits = 0x0F << 4  //+ ADDHLD[3:0] bits (Address-hold phase duration).
-	ADDHLD_0  BTR_Bits = 0x01 << 4  //  Bit 0.
-	ADDHLD_1  BTR_Bits = 0x02 << 4  //  Bit 1.
-	ADDHLD_2  BTR_Bits = 0x04 << 4  //  Bit 2.
-	ADDHLD_3  BTR_Bits = 0x08 << 4  //  Bit 3.
-	DATAST    BTR_Bits = 0xFF << 8  //+ DATAST [3:0] bits (Data-phase duration).
-	DATAST_0  BTR_Bits = 0x01 << 8  //  Bit 0.
-	DATAST_1  BTR_Bits = 0x02 << 8  //  Bit 1.
-	DATAST_2  BTR_Bits = 0x04 << 8  //  Bit 2.
-	DATAST_3  BTR_Bits = 0x08 << 8  //  Bit 3.
-	DATAST_4  BTR_Bits = 0x10 << 8  //  Bit 4.
-	DATAST_5  BTR_Bits = 0x20 << 8  //  Bit 5.
-	DATAST_6  BTR_Bits = 0x40 << 8  //  Bit 6.
-	DATAST_7  BTR_Bits = 0x80 << 8  //  Bit 7.
-	BUSTURN   BTR_Bits = 0x0F << 16 //+ BUSTURN[3:0] bits (Bus turnaround phase duration).
-	BUSTURN_0 BTR_Bits = 0x01 << 16 //  Bit 0.
-	BUSTURN_1 BTR_Bits = 0x02 << 16 //  Bit 1.
-	BUSTURN_2 BTR_Bits = 0x04 << 16 //  Bit 2.
-	BUSTURN_3 BTR_Bits = 0x08 << 16 //  Bit 3.
-	CLKDIV    BTR_Bits = 0x0F << 20 //+ CLKDIV[3:0] bits (Clock divide ratio).
-	CLKDIV_0  BTR_Bits = 0x01 << 20 //  Bit 0.
-	CLKDIV_1  BTR_Bits = 0x02 << 20 //  Bit 1.
-	CLKDIV_2  BTR_Bits = 0x04 << 20 //  Bit 2.
-	CLKDIV_3  BTR_Bits = 0x08 << 20 //  Bit 3.
-	DATLAT    BTR_Bits = 0x0F << 24 //+ DATLA[3:0] bits (Data latency).
-	DATLAT_0  BTR_Bits = 0x01 << 24 //  Bit 0.
-	DATLAT_1  BTR_Bits = 0x02 << 24 //  Bit 1.
-	DATLAT_2  BTR_Bits = 0x04 << 24 //  Bit 2.
-	DATLAT_3  BTR_Bits = 0x08 << 24 //  Bit 3.
-	ACCMOD    BTR_Bits = 0x03 << 28 //+ ACCMOD[1:0] bits (Access mode).
-	ACCMOD_0  BTR_Bits = 0x01 << 28 //  Bit 0.
-	ACCMOD_1  BTR_Bits = 0x02 << 28 //  Bit 1.
+	ADDSET  BTR_Bits = 0x0F << 0  //+ ADDSET[3:0] bits (Address setup phase duration).
+	ADDHLD  BTR_Bits = 0x0F << 4  //+ ADDHLD[3:0] bits (Address-hold phase duration).
+	DATAST  BTR_Bits = 0xFF << 8  //+ DATAST [3:0] bits (Data-phase duration).
+	BUSTURN BTR_Bits = 0x0F << 16 //+ BUSTURN[3:0] bits (Bus turnaround phase duration).
+	CLKDIV  BTR_Bits = 0x0F << 20 //+ CLKDIV[3:0] bits (Clock divide ratio).
+	DATLAT  BTR_Bits = 0x0F << 24 //+ DATLA[3:0] bits (Data latency).
+	ACCMOD  BTR_Bits = 0x03 << 28 //+ ACCMOD[1:0] bits (Access mode).
 )
 
 const (

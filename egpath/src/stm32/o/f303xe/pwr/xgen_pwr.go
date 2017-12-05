@@ -49,8 +49,8 @@ type CR_Mask struct{ mmio.UM32 }
 func (rm CR_Mask) Load() CR_Bits   { return CR_Bits(rm.UM32.Load()) }
 func (rm CR_Mask) Store(b CR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *PWR_Periph) LPSDSR() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(LPSDSR)}}
+func (p *PWR_Periph) LPDS() CR_Mask {
+	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(LPDS)}}
 }
 
 func (p *PWR_Periph) PDDS() CR_Mask {

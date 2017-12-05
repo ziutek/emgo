@@ -19,9 +19,6 @@ func (p *COMP_Periph) BaseAddr() uintptr {
 }
 
 //emgo:const
-var COMP = (*COMP_Periph)(unsafe.Pointer(uintptr(mmap.COMP_BASE)))
-
-//emgo:const
 var COMP1 = (*COMP_Periph)(unsafe.Pointer(uintptr(mmap.COMP1_BASE)))
 
 //emgo:const
@@ -41,6 +38,9 @@ var COMP6 = (*COMP_Periph)(unsafe.Pointer(uintptr(mmap.COMP6_BASE)))
 
 //emgo:const
 var COMP7 = (*COMP_Periph)(unsafe.Pointer(uintptr(mmap.COMP7_BASE)))
+
+//emgo:const
+var COMP = (*COMP_Periph)(unsafe.Pointer(uintptr(mmap.COMP_BASE)))
 
 type CSR_Bits uint32
 
@@ -73,24 +73,12 @@ func (p *COMP_Periph) COMPxEN() CSR_Mask {
 	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMPxEN)}}
 }
 
-func (p *COMP_Periph) COMP1SW1() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMP1SW1)}}
-}
-
-func (p *COMP_Periph) COMPxMODE() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMPxMODE)}}
+func (p *COMP_Periph) COMPxSW1() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMPxSW1)}}
 }
 
 func (p *COMP_Periph) COMPxINSEL() CSR_Mask {
 	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMPxINSEL)}}
-}
-
-func (p *COMP_Periph) COMPxNONINSEL() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMPxNONINSEL)}}
-}
-
-func (p *COMP_Periph) COMPxWNDWEN() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMPxWNDWEN)}}
 }
 
 func (p *COMP_Periph) COMPxOUTSEL() CSR_Mask {
@@ -101,20 +89,8 @@ func (p *COMP_Periph) COMPxPOL() CSR_Mask {
 	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMPxPOL)}}
 }
 
-func (p *COMP_Periph) COMPxHYST() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMPxHYST)}}
-}
-
 func (p *COMP_Periph) COMPxBLANKING() CSR_Mask {
 	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMPxBLANKING)}}
-}
-
-func (p *COMP_Periph) COMPxBLANKING_2() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMPxBLANKING_2)}}
-}
-
-func (p *COMP_Periph) COMPxINSEL_3() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(COMPxINSEL_3)}}
 }
 
 func (p *COMP_Periph) COMPxOUT() CSR_Mask {

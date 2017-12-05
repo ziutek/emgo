@@ -131,15 +131,20 @@ func flash(p *Periph) {
 
 func exti(p *Periph) {
 	for _, r := range p.Regs {
-		switch r.Name {
-		case "IMR", "IMR1", "IMR2":
-			for _, b := range r.Bits {
-				if b.Name == "IM" {
-					b.Name = r.Name + "ALL"
-					continue
-				}
-				b.Name = strings.Replace(b.Name, "MR", "IL", 1)
+		n := len(r.Name) - 1
+		if r.Name[n] != '2' {
+			continue
+		}
+		name := r.Name[:n]
+		for _, r1 := range p.Regs {
+			if r1.Name == name {
+				r1.Name = name + "1"
+				break
 			}
+		}
+	}
+	for _, r := range p.Regs {
+		switch r.Name {
 		case "EMR", "EMR1", "EMR2":
 			for _, b := range r.Bits {
 				b.Name = strings.Replace(b.Name, "MR", "EL", 1)
@@ -148,7 +153,22 @@ func exti(p *Periph) {
 			for _, b := range r.Bits {
 				b.Name = strings.Replace(b.Name, "TR", "TF", 1)
 			}
-
+		case "IMR", "IMR1", "IMR2":
+			for _, b := range r.Bits {
+				if b.Name == "IM" {
+					b.Name = r.Name + "ALL"
+					continue
+				}
+				b.Name = strings.Replace(b.Name, "MR", "IL", 1)
+			}
+		case "PR", "PR1", "PR2":
+			for _, b := range r.Bits {
+				b.Name = strings.Replace(b.Name, "PR", "PIF", 1)
+			}
+		case "SWIER", "SWIER1", "SWIER2":
+			for _, b := range r.Bits {
+				b.Name = strings.Replace(b.Name, "SWIER", "SWI", 1)
+			}
 		}
 	}
 }

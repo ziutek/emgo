@@ -157,12 +157,8 @@ func (p *RCC_Periph) PLLXTPRE() CFGR_Mask {
 	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(PLLXTPRE)}}
 }
 
-func (p *RCC_Periph) PLLMULL() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(PLLMULL)}}
-}
-
-func (p *RCC_Periph) PLLSRC_HSI_PREDIV() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(PLLSRC_HSI_PREDIV)}}
+func (p *RCC_Periph) PLLMUL() CFGR_Mask {
+	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(PLLMUL)}}
 }
 
 func (p *RCC_Periph) USBPRE() CFGR_Mask {
@@ -177,16 +173,8 @@ func (p *RCC_Periph) MCO() CFGR_Mask {
 	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(MCO)}}
 }
 
-func (p *RCC_Periph) MCOF() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(MCOF)}}
-}
-
-func (p *RCC_Periph) MCO_PRE_4() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(MCO_PRE_4)}}
-}
-
-func (p *RCC_Periph) MCO_PRE_16() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(MCO_PRE_16)}}
+func (p *RCC_Periph) MCOPRE() CFGR_Mask {
+	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(MCOPRE)}}
 }
 
 func (p *RCC_Periph) PLLNODIV() CFGR_Mask {
@@ -359,10 +347,6 @@ func (p *RCC_Periph) TIM20RST() APB2RSTR_Mask {
 	return APB2RSTR_Mask{mmio.UM32{&p.APB2RSTR.U32, uint32(TIM20RST)}}
 }
 
-func (p *RCC_Periph) HRTIM1RST() APB2RSTR_Mask {
-	return APB2RSTR_Mask{mmio.UM32{&p.APB2RSTR.U32, uint32(HRTIM1RST)}}
-}
-
 type APB1RSTR_Bits uint32
 
 func (b APB1RSTR_Bits) Field(mask APB1RSTR_Bits) int {
@@ -454,8 +438,8 @@ func (p *RCC_Periph) USBRST() APB1RSTR_Mask {
 	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(USBRST)}}
 }
 
-func (p *RCC_Periph) CAN1RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(CAN1RST)}}
+func (p *RCC_Periph) CANRST() APB1RSTR_Mask {
+	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(CANRST)}}
 }
 
 func (p *RCC_Periph) PWRRST() APB1RSTR_Mask {
@@ -468,10 +452,6 @@ func (p *RCC_Periph) DAC1RST() APB1RSTR_Mask {
 
 func (p *RCC_Periph) I2C3RST() APB1RSTR_Mask {
 	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(I2C3RST)}}
-}
-
-func (p *RCC_Periph) DAC2RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(DAC2RST)}}
 }
 
 type AHBENR_Bits uint32
@@ -557,8 +537,8 @@ func (p *RCC_Periph) GPIOGEN() AHBENR_Mask {
 	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(GPIOGEN)}}
 }
 
-func (p *RCC_Periph) TSEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(TSEN)}}
+func (p *RCC_Periph) TSCEN() AHBENR_Mask {
+	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(TSCEN)}}
 }
 
 func (p *RCC_Periph) ADC12EN() AHBENR_Mask {
@@ -636,10 +616,6 @@ func (p *RCC_Periph) TIM17EN() APB2ENR_Mask {
 
 func (p *RCC_Periph) TIM20EN() APB2ENR_Mask {
 	return APB2ENR_Mask{mmio.UM32{&p.APB2ENR.U32, uint32(TIM20EN)}}
-}
-
-func (p *RCC_Periph) HRTIM1() APB2ENR_Mask {
-	return APB2ENR_Mask{mmio.UM32{&p.APB2ENR.U32, uint32(HRTIM1)}}
 }
 
 type APB1ENR_Bits uint32
@@ -731,12 +707,8 @@ func (p *RCC_Periph) USBEN() APB1ENR_Mask {
 	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(USBEN)}}
 }
 
-func (p *RCC_Periph) CAN1EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(CAN1EN)}}
-}
-
-func (p *RCC_Periph) DAC2EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(DAC2EN)}}
+func (p *RCC_Periph) CANEN() APB1ENR_Mask {
+	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(CANEN)}}
 }
 
 func (p *RCC_Periph) PWREN() APB1ENR_Mask {
@@ -778,16 +750,8 @@ type BDCR_Mask struct{ mmio.UM32 }
 func (rm BDCR_Mask) Load() BDCR_Bits   { return BDCR_Bits(rm.UM32.Load()) }
 func (rm BDCR_Mask) Store(b BDCR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *RCC_Periph) LSEON() BDCR_Mask {
-	return BDCR_Mask{mmio.UM32{&p.BDCR.U32, uint32(LSEON)}}
-}
-
-func (p *RCC_Periph) LSERDY() BDCR_Mask {
-	return BDCR_Mask{mmio.UM32{&p.BDCR.U32, uint32(LSERDY)}}
-}
-
-func (p *RCC_Periph) LSEBYP() BDCR_Mask {
-	return BDCR_Mask{mmio.UM32{&p.BDCR.U32, uint32(LSEBYP)}}
+func (p *RCC_Periph) LSE() BDCR_Mask {
+	return BDCR_Mask{mmio.UM32{&p.BDCR.U32, uint32(LSE)}}
 }
 
 func (p *RCC_Periph) LSEDRV() BDCR_Mask {
@@ -839,6 +803,10 @@ func (p *RCC_Periph) LSION() CSR_Mask {
 
 func (p *RCC_Periph) LSIRDY() CSR_Mask {
 	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(LSIRDY)}}
+}
+
+func (p *RCC_Periph) V18PWRRSTF() CSR_Mask {
+	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(V18PWRRSTF)}}
 }
 
 func (p *RCC_Periph) RMVF() CSR_Mask {
@@ -922,6 +890,10 @@ func (p *RCC_Periph) GPIOCRST() AHBRSTR_Mask {
 	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOCRST)}}
 }
 
+func (p *RCC_Periph) GPIODRST() AHBRSTR_Mask {
+	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIODRST)}}
+}
+
 func (p *RCC_Periph) GPIOERST() AHBRSTR_Mask {
 	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOERST)}}
 }
@@ -934,8 +906,8 @@ func (p *RCC_Periph) GPIOGRST() AHBRSTR_Mask {
 	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOGRST)}}
 }
 
-func (p *RCC_Periph) TSRST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(TSRST)}}
+func (p *RCC_Periph) TSCRST() AHBRSTR_Mask {
+	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(TSCRST)}}
 }
 
 func (p *RCC_Periph) ADC12RST() AHBRSTR_Mask {
@@ -973,8 +945,8 @@ type CFGR2_Mask struct{ mmio.UM32 }
 func (rm CFGR2_Mask) Load() CFGR2_Bits   { return CFGR2_Bits(rm.UM32.Load()) }
 func (rm CFGR2_Mask) Store(b CFGR2_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *RCC_Periph) PREDIV1() CFGR2_Mask {
-	return CFGR2_Mask{mmio.UM32{&p.CFGR2.U32, uint32(PREDIV1)}}
+func (p *RCC_Periph) PREDIV() CFGR2_Mask {
+	return CFGR2_Mask{mmio.UM32{&p.CFGR2.U32, uint32(PREDIV)}}
 }
 
 func (p *RCC_Periph) ADCPRE12() CFGR2_Mask {
@@ -1024,20 +996,12 @@ func (p *RCC_Periph) TIMSW() CFGR3_Mask {
 	return CFGR3_Mask{mmio.UM32{&p.CFGR3.U32, uint32(TIMSW)}}
 }
 
-func (p *RCC_Periph) TIM20SW() CFGR3_Mask {
-	return CFGR3_Mask{mmio.UM32{&p.CFGR3.U32, uint32(TIM20SW)}}
-}
-
 func (p *RCC_Periph) TIM2SW() CFGR3_Mask {
 	return CFGR3_Mask{mmio.UM32{&p.CFGR3.U32, uint32(TIM2SW)}}
 }
 
-func (p *RCC_Periph) TIM3SW() CFGR3_Mask {
-	return CFGR3_Mask{mmio.UM32{&p.CFGR3.U32, uint32(TIM3SW)}}
-}
-
-func (p *RCC_Periph) HRTIM1SW() CFGR3_Mask {
-	return CFGR3_Mask{mmio.UM32{&p.CFGR3.U32, uint32(HRTIM1SW)}}
+func (p *RCC_Periph) TIM34SW() CFGR3_Mask {
+	return CFGR3_Mask{mmio.UM32{&p.CFGR3.U32, uint32(TIM34SW)}}
 }
 
 func (p *RCC_Periph) USART2SW() CFGR3_Mask {

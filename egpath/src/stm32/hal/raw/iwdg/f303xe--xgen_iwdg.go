@@ -85,10 +85,6 @@ type PR_Mask struct{ mmio.UM32 }
 func (rm PR_Mask) Load() PR_Bits   { return PR_Bits(rm.UM32.Load()) }
 func (rm PR_Mask) Store(b PR_Bits) { rm.UM32.Store(uint32(b)) }
 
-func (p *IWDG_Periph) PR() PR_Mask {
-	return PR_Mask{mmio.UM32{&p.PR.U32, uint32(PR)}}
-}
-
 type RLR_Bits uint32
 
 func (b RLR_Bits) Field(mask RLR_Bits) int {

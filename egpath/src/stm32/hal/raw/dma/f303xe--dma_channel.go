@@ -35,14 +35,8 @@ const (
 	PINC    CCR_Bits = 0x01 << 6  //+ Peripheral increment mode.
 	MINC    CCR_Bits = 0x01 << 7  //+ Memory increment mode.
 	PSIZE   CCR_Bits = 0x03 << 8  //+ PSIZE[1:0] bits (Peripheral size).
-	PSIZE_0 CCR_Bits = 0x01 << 8  //  Bit 0.
-	PSIZE_1 CCR_Bits = 0x02 << 8  //  Bit 1.
 	MSIZE   CCR_Bits = 0x03 << 10 //+ MSIZE[1:0] bits (Memory size).
-	MSIZE_0 CCR_Bits = 0x01 << 10 //  Bit 0.
-	MSIZE_1 CCR_Bits = 0x02 << 10 //  Bit 1.
 	PL      CCR_Bits = 0x03 << 12 //+ PL[1:0] bits(Channel Priority level).
-	PL_0    CCR_Bits = 0x01 << 12 //  Bit 0.
-	PL_1    CCR_Bits = 0x02 << 12 //  Bit 1.
 	MEM2MEM CCR_Bits = 0x01 << 14 //+ Memory to memory mode.
 )
 
