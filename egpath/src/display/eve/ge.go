@@ -104,7 +104,6 @@ func (ge GE) MemZero(addr, num int) {
 // MemSet fills memory with a byte value.
 func (ge GE) MemSet(addr int, val byte, num int) {
 	ge.aw32(CMD_MEMSET)
-	ge.wr32(uint32(addr))
 	ge.wr32(uint32(val))
 	ge.wr32(uint32(num))
 }
@@ -127,7 +126,7 @@ func (ge GE) ButtonRaw(x, y, w, h int, font, options uint16) {
 // Button draws a button.
 func (ge GE) Button(x, y, w, h int, font, options uint16, s string) {
 	ge.ButtonRaw(x, y, w, h, font, options)
-	ge.wrs(s)
+	ge.ws(s)
 	ge.wr8(0)
 }
 

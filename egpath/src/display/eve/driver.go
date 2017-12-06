@@ -1,9 +1,9 @@
 package eve
 
 // Driver uses DCI to communicate with EVE graphics controller. Commands/data
-// are received/sent using DCI read/write transactions. Start* methods starts
-// new transaction and leaves it in open state. Subsequent call of any Driver's
-// method implicitly closes previously opened transaction..
+// are received/sent using DCI read/write transactions. R,W, DL, GE methods
+// starts new transaction and leaves it in open state. Subsequent call of any
+// Driver's method implicitly closes previously opened transaction.
 type Driver struct {
 	dci DCI
 	buf []byte
@@ -47,16 +47,53 @@ func (d *Driver) end() int {
 type HostCmd byte
 
 // Cmd invokes host command. Param is a command parameter. It must be zero in
-// case of commands that do not require parameters. Cmd is not buffered by the
-// Driver: does not require calling end after it.
+// case of commands that do not require parameters.
 func (d *Driver) Cmd(cmd HostCmd, param byte) {
 	d.end()
 	d.dci.Write([]byte{byte(cmd), param, 0})
 	d.dci.End()
 }
 
-// Writer starts writing to the EVE memory at the address addr.
-func (d *Driver) StartW(addr int) Writer {
+// WriteByte writes byte to the EVE memory at address addr.
+func (d *Driver) WriteByte(addr int, val byte) {
+	d.end()
+	d.dci.Write([]byte{
+		1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr),
+		val,
+	})
+	d.dci.End()
+}
+
+// WriteUint16 writes 16-bit word to the EVE memory at address addr.
+func (d *Driver) WriteUint16(addr int, val uint16) {
+	d.end()
+	d.dci.Write([]byte{
+		1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr),
+		byte(val), byte(val >> 8),
+	})
+	d.dci.End()
+}
+
+// WriteUint32 writes 32-bit word to the EVE memory at address addr.
+func (d *Driver) WriteUint32(addr int, val uint32) {
+	d.end()
+	d.dci.Write([]byte{
+		1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr),
+		byte(val), byte(val >> 8), byte(val >> 16), byte(val >> 24),
+	})
+	d.dci.End()
+}
+
+// WriteInt writes signed 32-bit word to the EVE memory at address addr.
+func (d *Driver) WriteInt(addr int, val int) {
+	d.WriteUint32(addr, uint32(val))
+}
+
+// W starts a write transaction to the EVE memory at address addr. It returns
+// Writer that proviedes set of methods for buffered writes. Any other Drivers's
+// method flushes internal buffer and finishes the write transaction started by
+// W. After that, the returned Writer is invalid and should not be used.
+func (d *Driver) W(addr int) Writer {
 	checkAddr(addr)
 	d.end()
 	d.buf = d.buf[:3]
@@ -66,8 +103,11 @@ func (d *Driver) StartW(addr int) Writer {
 	return Writer{d}
 }
 
-// Reader starts reading from the EVE memory at the address addr.
-func (d *Driver) StartR(addr int) Reader {
+// R starts a read transaction from the EVE memory at address addr. It
+// returns Reader that provides set of reading methods. Any other Driver's
+// method finish the read transaction started by R. After that, the returned
+// Reader is invalid and should not be used.
+func (d *Driver) R(addr int) Reader {
 	checkAddr(addr)
 	d.end()
 	d.dci.Write([]byte{byte(addr >> 16), byte(addr >> 8), byte(addr)})
@@ -76,16 +116,48 @@ func (d *Driver) StartR(addr int) Reader {
 	return Reader{d}
 }
 
+// ReadByte reads byte from EVE memory at address addr.
+func (d *Driver) ReadByte(addr int) byte {
+	r := d.R(addr)
+	val := r.ReadByte()
+	r.Close()
+	return val
+}
+
+// ReadUint16 reads 16-bit word from EVE memory at address addr.
+func (d *Driver) ReadUint16(addr int) uint16 {
+	r := d.R(addr)
+	val := r.ReadUint16()
+	r.Close()
+	return val
+}
+
+// ReadUint32 reads 32-bit word from EVE memory at address addr.
+func (d *Driver) ReadUint32(addr int) uint32 {
+	r := d.R(addr)
+	val := r.ReadUint32()
+	r.Close()
+	return val
+}
+
+// ReadUint32 reads signed 32-bit word from EVE memory at address addr.
+func (d *Driver) ReadInt(addr int) int {
+	return int(int32(d.ReadUint32(addr)))
+}
+
 // Err returns and clears the internal error status.
 func (d *Driver) Err(clear bool) error {
 	d.end()
 	return d.dci.Err(clear)
 }
 
-func (d *Driver) StartDL(addr int) DL {
-	return DL{d.StartW(addr)}
+// DL wraps W to return Display List writer. See W for more information.
+func (d *Driver) DL(addr int) DL {
+	return DL{d.W(addr)}
 }
 
-func (d *Driver) StartGE(addr int) GE {
-	return GE{d.StartDL(addr)}
+// GE wraps DL to retun Graphics Engine command writer. See DL for more
+// information.
+func (d *Driver) GE(addr int) GE {
+	return GE{d.DL(addr)}
 }
