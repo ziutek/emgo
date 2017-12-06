@@ -64,6 +64,19 @@ func init() {
 	dci = evedci.NewSPI(spidrv, csn, pdn, irqline)
 }
 
+func curFreq(lcd *eve.Driver) uint32 {
+	clk1 := lcd.StartR(ft80.REG_CLOCK).ReadWord32()
+	t1 := rtos.Nanosec()
+	delay.Millisec(8)
+	clk2 := lcd.StartR(ft80.REG_CLOCK).ReadWord32()
+	t2 := rtos.Nanosec()
+	return uint32(int64(clk2-clk1) * 1e9 / (t2 - t1))
+}
+
+func printFreq(lcd *eve.Driver) {
+	fmt.Printf("FT800 clock: %d Hz\n", curFreq(lcd))
+}
+
 func main() {
 	delay.Millisec(200)
 	spibus := dci.SPI().P.Bus()
@@ -73,7 +86,9 @@ func main() {
 		spibus, spibus.Clock()/1e6, baudrate,
 	)
 
-	// Wakeup from POWERDOWN to STANDBY (PDN must be low min. 20 ms).
+	// Wakeup from POWERDOWN to STANDBY.
+	dci.PDN().Clear()
+	delay.Millisec(20)
 	dci.PDN().Set()
 	delay.Millisec(20) // Wait 20 ms for internal oscilator and PLL.
 
@@ -83,6 +98,17 @@ func main() {
 
 	// Wakeup from STANDBY to ACTIVE.
 	lcd.Cmd(ft80.ACTIVE, 0)
+
+	/*
+		// Triming if internal oscilator is used.
+		for trim := uint32(0); trim <= 31; trim++ {
+			lcd.StartW(ft80.REG_TRIM).Write32(trim)
+			if f := curFreq(lcd); f > 47040000 {
+				lcd.StartW(ft80.REG_FREQUENCY).Write32(f)
+				break
+			}
+		}
+	*/
 
 	// Select external 12 MHz oscilator as clock source.
 	lcd.Cmd(ft80.CLKEXT, 0)
@@ -95,8 +121,9 @@ func main() {
 		fmt.Printf("Not FT800 controller.\n")
 		return
 	}
-
 	check(lcd.Err(false))
+
+	printFreq(lcd)
 
 	fmt.Print("Configure WQVGA (480x272) display:")
 
@@ -145,13 +172,18 @@ func main() {
 	gpio := lcd.StartR(ft80.REG_GPIO).ReadWord32()
 	lcd.StartW(ft80.REG_GPIO).Write32(gpio | 0x80)
 	lcd.StartW(ft80.REG_PCLK).Write32(pclkDiv) // Enable PCLK.
-
 	check(lcd.Err(false))
+	printFreq(lcd)
 
 	delay.Millisec(20) // Wait for new main clock.
 
-	dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
+	printFreq(lcd)
+
+	fmt.Println(dci.SPI().P.BR(12e6) >> 3)
+	dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(12e6))
 	fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
+
+	printFreq(lcd)
 
 	lcd.StartW(ft80.REG_PWM_DUTY).Write32(100)
 
@@ -250,7 +282,7 @@ func lcdTxDMAISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.SPI1:          lcdSPIISR,
+	irq.SPI1:         lcdSPIISR,
 	irq.DMA2_Stream2: lcdRxDMAISR,
 	irq.DMA2_Stream3: lcdTxDMAISR,
 }
