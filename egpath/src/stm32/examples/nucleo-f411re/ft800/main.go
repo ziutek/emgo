@@ -181,14 +181,14 @@ func main() {
 	printFreq(lcd)
 
 	//FT800CB-HY50B is unstable with fast SPI and VCC<=3.3V (74LCX125 buffers?)
-	dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
-	fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
+	//dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
+	//fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	//lcd.WriteByte(ft80.REG_CPURESET, 1)
 	//delay.Millisec(20)
 	//lcd.WriteByte(ft80.REG_CPURESET, 0)
 
-	lcd.WriteByte(ft80.REG_PWM_DUTY, 100)
+	lcd.WriteByte(ft80.REG_PWM_DUTY, 64)
 
 	fmt.Print("Draw two points:")
 
@@ -209,9 +209,7 @@ func main() {
 	delay.Millisec(1000)
 
 	fmt.Print("Load bitmap:")
-
 	lcd.W(ft80.RAM_G).Write(LenaFace[:])
-
 	check(lcd.Err(false))
 
 	fmt.Print("Draw button on top of 1000 bitmaps:")
@@ -242,6 +240,9 @@ func main() {
 	n := lcd.ReadInt(ft80.REG_CMD_WRITE)
 	ge := lcd.GE(ft80.RAM_CMD + n)
 	ge.Button(170, 110, 140, 40, 23, 0, "Push me!")
+	ge.Clock(440, 40, 30, 0, 21, 22, 42, 00)
+	ge.Gauge(440, 232, 30, 0, 5, 5, 33, 100)
+	ge.Keys(30, 242, 140, 20, 18, 0, "ABCDE")
 	ge.Display()
 	ge.Swap()
 	n += ge.Close()

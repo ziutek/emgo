@@ -116,6 +116,7 @@ func (ge GE) MemCpy(dst, src, num int) {
 	ge.wr32(uint32(num))
 }
 
+// ButtonRaw draws a button.
 func (ge GE) ButtonRaw(x, y, w, h int, font, options uint16) {
 	ge.aw32(CMD_BUTTON)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
@@ -126,6 +127,66 @@ func (ge GE) ButtonRaw(x, y, w, h int, font, options uint16) {
 // Button draws a button.
 func (ge GE) Button(x, y, w, h int, font, options uint16, s string) {
 	ge.ButtonRaw(x, y, w, h, font, options)
+	ge.ws(s)
+	ge.wr8(0)
+}
+
+// Clock draws an analog clock.
+func (ge GE) Clock(x, y, r int, options uint16, h, m, s, ms int) {
+	ge.aw32(CMD_CLOCK)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(r)&0xFFFF | uint32(options)<<16)
+	ge.wr32(uint32(h)&0xFFFF | uint32(m)&0xFFFF<<16)
+	ge.wr32(uint32(s)&0xFFFF | uint32(ms)&0xFFFF<<16)
+}
+
+// FgColor sets the foreground color.
+func (ge GE) FgColor(rgb uint32) {
+	ge.aw32(CMD_FGCOLOR)
+	ge.wr32(rgb)
+}
+
+// BgColor sets the background color.
+func (ge GE) BgColor(rgb uint32) {
+	ge.aw32(CMD_BGCOLOR)
+	ge.wr32(rgb)
+}
+
+// GradColor sets the 3D button highlight color.
+func (ge GE) GradColor(rgb uint32) {
+	ge.aw32(CMD_GRADCOLOR)
+	ge.wr32(rgb)
+}
+
+// Gauge draws a gauge.
+func (ge GE) Gauge(x, y, r int, options uint16, major, minor, val, max int) {
+	ge.aw32(CMD_GAUGE)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(r)&0xFFFF | uint32(options)<<16)
+	ge.wr32(uint32(major)&0xFFFF | uint32(minor)&0xFFFF<<16)
+	ge.wr32(uint32(val)&0xFFFF | uint32(max)&0xFFFF<<16)
+}
+
+//Gradienta draws a smooth color gradient.
+func (ge GE) Gradient(x0, y0 int, rgb0 uint32, x1, y1 int, rgb1 uint32) {
+	ge.aw32(CMD_GRADIENT)
+	ge.wr32(uint32(x0)&0xFFFF | uint32(y0)&0xFFFF<<16)
+	ge.wr32(rgb0)
+	ge.wr32(uint32(x1)&0xFFFF | uint32(y1)&0xFFFF<<16)
+	ge.wr32(rgb1)
+}
+
+// KeysRaw draws a row of keys.
+func (ge GE) KeysRaw(x, y, w, h int, font, options uint16) {
+	ge.aw32(CMD_KEYS)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
+	ge.wr32(uint32(font) | uint32(options)<<16)
+}
+
+// Keys draws a row of keys.
+func (ge GE) Keys(x, y, w, h int, font, options uint16, s string) {
+	ge.KeysRaw(x, y, w, h, font, options)
 	ge.ws(s)
 	ge.wr8(0)
 }

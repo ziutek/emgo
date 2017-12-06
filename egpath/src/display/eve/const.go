@@ -165,18 +165,18 @@ const (
 	CMD_MEMSET     = 0xffffff1b // Arg: addr, val, num
 	CMD_MEMCPY     = 0xffffff1d // Arg: dst, src, num
 	CMD_BUTTON     = 0xffffff0d // Arg: x, y, w, h, font, options, ..., 0
+	CMD_CLOCK      = 0xffffff14
+	CMD_FGCOLOR    = 0xffffff0a
+	CMD_BGCOLOR    = 0xffffff09
+	CMD_GRADCOLOR  = 0xffffff34
+	CMD_GAUGE      = 0xffffff13
+	CMD_GRADIENT   = 0xffffff0b
+	CMD_KEYS       = 0xffffff0e
 
-	CMD_BGCOLOR      = 0xffffff09
 	CMD_CALIBRATE    = 0xffffff15
-	CMD_CLOCK        = 0xffffff14
 	CMD_DIAL         = 0xffffff2d
-	CMD_FGCOLOR      = 0xffffff0a
-	CMD_GAUGE        = 0xffffff13
 	CMD_GETMATRIX    = 0xffffff33
 	CMD_GETPTR       = 0xffffff23
-	CMD_GRADCOLOR    = 0xffffff34
-	CMD_GRADIENT     = 0xffffff0b
-	CMD_KEYS         = 0xffffff0e
 	CMD_LOADIDENTITY = 0xffffff26
 	CMD_LOGO         = 0xffffff31
 	CMD_NUMBER       = 0xffffff2e
@@ -227,22 +227,30 @@ const (
 	OPT_SOUND      = 32 // EVE2
 )
 
+// Widget options.
+const (
+	OPT_FLAT    = 1 << 8
+	OPT_CENTERX = 1 << 9
+	OPT_CENTERY = 1 << 10
+	OPT_CENTER  = OPT_CENTERX | OPT_CENTERY
+	OPT_RIGHTX  = 1 << 11
+)
+
+// Clock options.
+const (
+	OPT_NOBACK    = 1 << 12
+	OPT_NOTICKS   = 1 << 13
+	OPT_NOPOINTER = 1 << 14
+	OPT_NOHM      = 1 << 14
+	OPT_NOSECS    = 1 << 15
+	OPT_NOHANDS   = OPT_NOHM | OPT_NOSECS
+)
+
 const (
 	DECR_WRAP            = 7
 	INCR_WRAP            = 6
 	LINEAR_SAMPLES       = 0
-	OPT_CENTER           = 1536  // = 0x6000
-	OPT_CENTERX          = 512   // = 0x0200
-	OPT_CENTERY          = 1024  // = 0x0400
-	OPT_FLAT             = 256   // = 0x0100
-	OPT_NOBACK           = 4096  // = 0x1000
-	OPT_NOHANDS          = 49152 // = 0xC168
-	OPT_NOHM             = 16384 // = 0x4000
-	OPT_NOPOINTER        = 16384 // = 0x4000
-	OPT_NOSECS           = 32768 // = 0x8000
-	OPT_NOTICKS          = 8192  // = 0x2000
-	OPT_RIGHTX           = 2048  // = 0x0800
-	OPT_SIGNED           = 256   // = 0x0100
+	OPT_SIGNED           = 256 // = 0x0100
 	PLAYCOLOR            = 0x00a0a080
 	REPEAT               = 1
 	TOUCHMODE_CONTINUOUS = 3
