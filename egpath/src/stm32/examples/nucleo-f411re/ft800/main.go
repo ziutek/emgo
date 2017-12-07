@@ -134,7 +134,7 @@ func main() {
 	// Refresh rate: pclk/(hcycle*vcycle) = 48 MHz/5/(548*292) = 59.99 Hz.
 
 	lcd.W(ft80.REG_CSPREAD).Write32(
-		0, // REG_CSPREAD (color signals spread, reduces EM noise)
+		1, // REG_CSPREAD (color signals spread, reduces EM noise)
 		1, // REG_PCLK_POL (define active edge of PCLK)
 		0, // REG_PCLK (temporary disable PCLK)
 	)
@@ -180,13 +180,11 @@ func main() {
 
 	printFreq(lcd)
 
-	//FT800CB-HY50B is unstable with fast SPI and VCC<=3.3V (74LCX125 buffers?)
-	//dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
-	//fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
-
-	//lcd.WriteByte(ft80.REG_CPURESET, 1)
-	//delay.Millisec(20)
-	//lcd.WriteByte(ft80.REG_CPURESET, 0)
+	// FT800CB-HY50B display is unstable with fast SPI and VCC <= 3.3V. If you
+	// have problems please comment the line bellow or better desolder U1 and U2
+	// (74LCX125 buffers) and short the U1:2-3,5-6,11-2, U2:2-3,5-6 pins.
+	dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
+	fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd.WriteByte(ft80.REG_PWM_DUTY, 64)
 
@@ -203,7 +201,6 @@ func main() {
 	dl.Vertex2F(300*16, 200*16)
 	dl.Display()
 	lcd.WriteByte(ft80.REG_DLSWAP, eve.DLSWAP_FRAME)
-
 	check(lcd.Err(false))
 
 	delay.Millisec(1000)
@@ -212,7 +209,7 @@ func main() {
 	lcd.W(ft80.RAM_G).Write(LenaFace[:])
 	check(lcd.Err(false))
 
-	fmt.Print("Draw button on top of 1000 bitmaps:")
+	fmt.Print("Draw widgets on top of 1000 bitmaps:")
 
 	var rnd rand.XorShift64
 	rnd.Seed(1)
@@ -242,7 +239,12 @@ func main() {
 	ge.Button(170, 110, 140, 40, 23, 0, "Push me!")
 	ge.Clock(440, 40, 30, 0, 21, 22, 42, 00)
 	ge.Gauge(440, 232, 30, 0, 5, 5, 33, 100)
-	ge.Keys(30, 242, 140, 20, 18, 0, "ABCDE")
+	ge.Keys(30, 242, 120, 20, 18, 0, "ABCDE")
+	ge.Progress(180, 248, 100, 10, 0, 75, 100)
+	ge.Scrollbar(10, 10, 100, 10, 0, 50, 25, 100)
+	ge.Slider(10, 30, 100, 10, 0, 25, 100)
+	ge.Dial(40, 80, 30, 0, 3000)
+	ge.Toggle(25, 130, 30, 18, 0, true, "yes")
 	ge.Display()
 	ge.Swap()
 	n += ge.Close()

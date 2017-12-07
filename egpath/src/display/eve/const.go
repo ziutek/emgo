@@ -172,28 +172,28 @@ const (
 	CMD_GAUGE      = 0xffffff13
 	CMD_GRADIENT   = 0xffffff0b
 	CMD_KEYS       = 0xffffff0e
+	CMD_PROGRESS   = 0xffffff0f
+	CMD_SCROLLBAR  = 0xffffff11
+	CMD_SLIDER     = 0xffffff10
+	CMD_DIAL       = 0xffffff2d
+	CMD_TOGGLE     = 0xffffff12
 
 	CMD_CALIBRATE    = 0xffffff15
-	CMD_DIAL         = 0xffffff2d
 	CMD_GETMATRIX    = 0xffffff33
 	CMD_GETPTR       = 0xffffff23
 	CMD_LOADIDENTITY = 0xffffff26
 	CMD_LOGO         = 0xffffff31
 	CMD_NUMBER       = 0xffffff2e
-	CMD_PROGRESS     = 0xffffff0f
 	CMD_ROTATE       = 0xffffff29
 	CMD_SCALE        = 0xffffff28
 	CMD_SCREENSAVER  = 0xffffff2f
-	CMD_SCROLLBAR    = 0xffffff11
 	CMD_SETFONT      = 0xffffff2b
 	CMD_SETMATRIX    = 0xffffff2a
 	CMD_SKETCH       = 0xffffff30
-	CMD_SLIDER       = 0xffffff10
 	CMD_SNAPSHOT     = 0xffffff1f
 	CMD_SPINNER      = 0xffffff16
 	CMD_STOP         = 0xffffff17
 	CMD_TEXT         = 0xffffff0c
-	CMD_TOGGLE       = 0xffffff12
 	CMD_TRACK        = 0xffffff2c
 	CMD_TRANSLATE    = 0xffffff27
 )
@@ -207,24 +207,24 @@ const (
 
 // Interrupt flags.
 const (
-	INT_SWAP         = 1
-	INT_TOUCH        = 2
-	INT_TAG          = 4
-	INT_SOUND        = 8
-	INT_PLAYBACK     = 16
-	INT_CMDEMPTY     = 32
-	INT_CMDFLAG      = 64
-	INT_CONVCOMPLETE = 128
+	INT_SWAP         = 1 << 0
+	INT_TOUCH        = 1 << 1
+	INT_TAG          = 1 << 2
+	INT_SOUND        = 1 << 3
+	INT_PLAYBACK     = 1 << 4
+	INT_CMDEMPTY     = 1 << 5
+	INT_CMDFLAG      = 1 << 6
+	INT_CONVCOMPLETE = 1 << 7
 )
 
 // Image/video options (CMD_LOAD_IMAGE, CMD_PLAYVIDEO).
 const (
-	OPT_MONO       = 1
-	OPT_NODL       = 2
-	OPT_NOTEAR     = 4  // EVE2
-	OPT_FULLSCREEN = 8  // EVE2
-	OPT_MEDIAFIFO  = 16 // EVE2
-	OPT_SOUND      = 32 // EVE2
+	OPT_MONO       = 1 << 0
+	OPT_NODL       = 1 << 1
+	OPT_NOTEAR     = 1 << 2 // EVE2
+	OPT_FULLSCREEN = 1 << 3 // EVE2
+	OPT_MEDIAFIFO  = 1 << 4 // EVE2
+	OPT_SOUND      = 1 << 5 // EVE2
 )
 
 // Widget options.
@@ -236,7 +236,7 @@ const (
 	OPT_RIGHTX  = 1 << 11
 )
 
-// Clock options.
+// Clock, gauge options.
 const (
 	OPT_NOBACK    = 1 << 12
 	OPT_NOTICKS   = 1 << 13

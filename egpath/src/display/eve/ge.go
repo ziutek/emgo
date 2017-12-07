@@ -1,5 +1,9 @@
 package eve
 
+import (
+	"bits"
+)
+
 // GE provides a convenient way to write Graphics Engine commands. Every command
 // is a function call, so for better performance or lower RAM usage, use raw
 // Writer with many Graphics Engine commands in array / slice.
@@ -195,4 +199,54 @@ func (ge GE) Keys(x, y, w, h int, font, options uint16, s string) {
 // rounded up to multiple of 4 (to avoid rounding use ge.Writer.Close).
 func (ge GE) Close() int {
 	return (ge.Writer.Close() + 3) &^ 3
+}
+
+// Progress draws a progress bar.
+func (ge GE) Progress(x, y, w, h int, options uint16, val, max int) {
+	ge.aw32(CMD_PROGRESS)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
+	ge.wr32(uint32(options) | uint32(val)&0xFFFF<<16)
+	ge.wr32(uint32(max) & 0xFFFF)
+}
+
+// Progress draws a scroll bar.
+func (ge GE) Scrollbar(x, y, w, h int, options uint16, val, size, max int) {
+	ge.aw32(CMD_SCROLLBAR)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
+	ge.wr32(uint32(options) | uint32(val)&0xFFFF<<16)
+	ge.wr32(uint32(size) | uint32(max)&0xFFFF<<16)
+}
+
+// Slider draws a slider.
+func (ge GE) Slider(x, y, w, h int, options uint16, val, max int) {
+	ge.aw32(CMD_SLIDER)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
+	ge.wr32(uint32(options) | uint32(val)&0xFFFF<<16)
+	ge.wr32(uint32(max) & 0xFFFF)
+}
+
+// Dial draws a rotary dial control.
+func (ge GE) Dial(x, y, r int, options uint16, val int) {
+	ge.aw32(CMD_DIAL)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(r)&0xFFFF | uint32(options)<<16)
+	ge.wr32(uint32(val))
+}
+
+// Toggle draws a toggle switch.
+func (ge GE) ToggleRaw(x, y, w int, font, options uint16, state bool) {
+	ge.aw32(CMD_TOGGLE)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(w)&0xFFFF | uint32(font)<<16)
+	ge.wr32(uint32(options) | uint32(bits.One(!state)-1)<<16)
+}
+
+// Toggle draws a toggle switch.
+func (ge GE) Toggle(x, y, w int, font, options uint16, state bool, s string) {
+	ge.ToggleRaw(x, y, w, font, options, state)
+	ge.ws(s)
+	ge.wr8(0)
 }
