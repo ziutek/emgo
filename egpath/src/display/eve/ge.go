@@ -11,6 +11,12 @@ type GE struct {
 	DL
 }
 
+// Close closes the write transaction and returns number of bytes written,
+// rounded up to multiple of 4 (to avoid rounding use ge.Writer.Close).
+func (ge GE) Close() int {
+	return (ge.Writer.Close() + 3) &^ 3
+}
+
 // DLStart starts a new display list.
 func (ge GE) DLStart() {
 	ge.aw32(CMD_DLSTART)
@@ -120,8 +126,10 @@ func (ge GE) MemCpy(dst, src, num int) {
 	ge.wr32(uint32(num))
 }
 
-// ButtonRaw draws a button.
-func (ge GE) ButtonRaw(x, y, w, h int, font, options uint16) {
+// ButtonHeader writes only header of CMD_BUTTON command (without label string).
+// Use Write* methods to write button label. Label string must be terminated
+// with zero byte.
+func (ge GE) ButtonHeader(x, y, w, h int, font, options uint16) {
 	ge.aw32(CMD_BUTTON)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
 	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
@@ -130,7 +138,7 @@ func (ge GE) ButtonRaw(x, y, w, h int, font, options uint16) {
 
 // Button draws a button.
 func (ge GE) Button(x, y, w, h int, font, options uint16, s string) {
-	ge.ButtonRaw(x, y, w, h, font, options)
+	ge.ButtonHeader(x, y, w, h, font, options)
 	ge.ws(s)
 	ge.wr8(0)
 }
@@ -180,8 +188,10 @@ func (ge GE) Gradient(x0, y0 int, rgb0 uint32, x1, y1 int, rgb1 uint32) {
 	ge.wr32(rgb1)
 }
 
-// KeysRaw draws a row of keys.
-func (ge GE) KeysRaw(x, y, w, h int, font, options uint16) {
+// KeysHeader writes only header of CMD_KEYS command (without key labels). Use
+// Write* methods to write key labels. Labels string must be terminated with
+// zero byte.
+func (ge GE) KeysHeader(x, y, w, h int, font, options uint16) {
 	ge.aw32(CMD_KEYS)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
 	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
@@ -190,15 +200,9 @@ func (ge GE) KeysRaw(x, y, w, h int, font, options uint16) {
 
 // Keys draws a row of keys.
 func (ge GE) Keys(x, y, w, h int, font, options uint16, s string) {
-	ge.KeysRaw(x, y, w, h, font, options)
+	ge.KeysHeader(x, y, w, h, font, options)
 	ge.ws(s)
 	ge.wr8(0)
-}
-
-// Close closes the write transaction and returns number of bytes written,
-// rounded up to multiple of 4 (to avoid rounding use ge.Writer.Close).
-func (ge GE) Close() int {
-	return (ge.Writer.Close() + 3) &^ 3
 }
 
 // Progress draws a progress bar.
@@ -236,8 +240,10 @@ func (ge GE) Dial(x, y, r int, options uint16, val int) {
 	ge.wr32(uint32(val))
 }
 
-// Toggle draws a toggle switch.
-func (ge GE) ToggleRaw(x, y, w int, font, options uint16, state bool) {
+// ToggleHeader writes only header of CMD_TOGGLE command (without label string).
+// Use Write* methods to write toggle label. Label string must be terminated
+// with zero byte.
+func (ge GE) ToggleHeader(x, y, w int, font, options uint16, state bool) {
 	ge.aw32(CMD_TOGGLE)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
 	ge.wr32(uint32(w)&0xFFFF | uint32(font)<<16)
@@ -246,7 +252,108 @@ func (ge GE) ToggleRaw(x, y, w int, font, options uint16, state bool) {
 
 // Toggle draws a toggle switch.
 func (ge GE) Toggle(x, y, w int, font, options uint16, state bool, s string) {
-	ge.ToggleRaw(x, y, w, font, options, state)
+	ge.ToggleHeader(x, y, w, font, options, state)
 	ge.ws(s)
 	ge.wr8(0)
+}
+
+// TextHeader writes only header of CMD_TEXT command (without text string). Use
+// Write* methods to write text. Text string must be terminated with zero byte.
+//  ge.TextHeader(40, 40, 18, 0)
+//  fmt.Fprintf(ge, "Weight: %.1f kg\000", weight)
+func (ge GE) TextHeader(x, y int, font, options uint16) {
+	ge.aw32(CMD_TEXT)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(font) | uint32(options)<<16)
+}
+
+// Text draws text.
+func (ge GE) Text(x, y int, font, options uint16, s string) {
+	ge.TextHeader(x, y, font, options)
+	ge.ws(s)
+	ge.wr8(0)
+}
+
+// SetBase sets the base for number output.
+func (ge GE) SetBase(base int) {
+	ge.aw32(CMD_TEXT)
+	ge.wr32(uint32(base))
+}
+
+// Number draws number.
+func (ge GE) Number(x, y int, font, options uint16, n int) {
+	ge.aw32(CMD_NUMBER)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(font) | uint32(options)<<16)
+	ge.wr32(uint32(n))
+}
+
+// LoadIdentity instructs the graphics engine to set the current matrix to the
+// identity matrix, so it is able to form the new matrix as requested by Scale,
+// Rotate, Translate command.
+func (ge GE) LoadIdentity() {
+	ge.aw32(CMD_LOADIDENTITY)
+}
+
+// SetMatrix assigns the value of the current matrix to the bitmap transform
+// matrix of the graphics engine by generating display list commands.
+func (ge GE) SetMatrix(a, b, c, d, e, f int) {
+	ge.aw32(CMD_SETMATRIX)
+	ge.wr32(uint32(a))
+	ge.wr32(uint32(b))
+	ge.wr32(uint32(c))
+	ge.wr32(uint32(d))
+	ge.wr32(uint32(e))
+	ge.wr32(uint32(f))
+}
+
+// GetMatrix retrieves the current matrix within the context of the graphics
+// engine.
+func (ge GE) GetMatrix() {
+	ge.aw32(CMD_GETMATRIX)
+}
+
+// GetPtr gets the end memory address of data inflated by Inflate command.
+func (ge GE) GetPtr() {
+	ge.aw32(CMD_GETPTR)
+}
+
+// GetProps gets the image properties decompressed by LoadImage.
+func (ge GE) GetProps() {
+	ge.aw32(CMD_GETPROPS)
+}
+
+// Scale applies a scale to the current matrix.
+func (ge GE) Scale(sx, sy int) {
+	ge.aw32(CMD_SCALE)
+	ge.wr32(uint32(sx))
+	ge.wr32(uint32(sy))
+}
+
+// Rotate applies a rotation to the current matrix.
+func (ge GE) Rotate(a int) {
+	ge.aw32(CMD_ROTATE)
+	ge.wr32(uint32(a))
+}
+
+// Translate applies a translation to the current matrix.
+func (ge GE) Translate(tx, ty int) {
+	ge.aw32(CMD_TRANSLATE)
+	ge.wr32(uint32(tx))
+	ge.wr32(uint32(ty))
+}
+
+// Calibrate execute the touch screen calibration routine.
+func (ge GE) Calibrate() {
+	ge.aw32(CMD_CALIBRATE)
+}
+
+// Sketch starts a continuous sketch update. It does not display anything, only
+// draws to the bitmap located in RAM_G, at address addr.
+func (ge GE) Sketch(x, y, w, h, addr int, format uint16) {
+	ge.aw32(CMD_SKETCH)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
+	ge.wr32(uint32(addr))
+	ge.wr32(uint32(format))
 }

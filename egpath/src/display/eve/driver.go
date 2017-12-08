@@ -48,7 +48,7 @@ type HostCmd byte
 
 // Cmd invokes host command. Param is a command parameter. It must be zero in
 // case of commands that do not require parameters.
-func (d *Driver) Cmd(cmd HostCmd, param byte) {
+func (d *Driver) HostCmd(cmd HostCmd, param byte) {
 	d.end()
 	d.dci.Write([]byte{byte(cmd), param, 0})
 	d.dci.End()

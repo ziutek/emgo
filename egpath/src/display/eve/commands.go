@@ -95,6 +95,8 @@ const (
 	L2           = 17 // FT81x
 )
 
+const DEFAULT = 0
+
 // Bitmap options (BITMAP_SIZE).
 const (
 	BILINEAR = 1 << 2
@@ -147,55 +149,57 @@ const (
 
 // Graphics Engine Commands.
 const (
-	CMD_DLSTART    = 0xffffff00
-	CMD_SWAP       = 0xffffff01
-	CMD_COLDSTART  = 0xffffff32
-	CMD_INTERRUPT  = 0xffffff02
-	CMD_APPEND     = 0xffffff1e // Arg: addr, num
-	CMD_REGREAD    = 0xffffff19 // Arg: addr
-	CMD_MEMWRITE   = 0xffffff1a // Arg: addr, num, ...
-	CMD_INFLATE    = 0xffffff22 // Arg: addr, ...
-	CMD_LOADIMAGE  = 0xffffff24 // Arg: addr, options, ...
-	CMD_MEDIAFIFO  = 0xffffff39 // Arg: addr, size (EVE2)
-	CMD_PLAYVIDEO  = 0xffffff3a // Arg: options, ... (EVE2)
-	CMD_VIDEOSTART = 0xffffff40 // (EVE2)
-	CMD_VIDEOFRAME = 0xffffff41 // Arg: dst, ptr (EVE2)
-	CMD_MEMCRC     = 0xffffff18 // Arg: addr, num
-	CMD_MEMZERO    = 0xffffff1c // Arg: addr, num
-	CMD_MEMSET     = 0xffffff1b // Arg: addr, val, num
-	CMD_MEMCPY     = 0xffffff1d // Arg: dst, src, num
-	CMD_BUTTON     = 0xffffff0d // Arg: x, y, w, h, font, options, ..., 0
-	CMD_CLOCK      = 0xffffff14
-	CMD_FGCOLOR    = 0xffffff0a
-	CMD_BGCOLOR    = 0xffffff09
-	CMD_GRADCOLOR  = 0xffffff34
-	CMD_GAUGE      = 0xffffff13
-	CMD_GRADIENT   = 0xffffff0b
-	CMD_KEYS       = 0xffffff0e
-	CMD_PROGRESS   = 0xffffff0f
-	CMD_SCROLLBAR  = 0xffffff11
-	CMD_SLIDER     = 0xffffff10
-	CMD_DIAL       = 0xffffff2d
-	CMD_TOGGLE     = 0xffffff12
+	CMD_DLSTART      = 0xFFFFFF00
+	CMD_SWAP         = 0xFFFFFF01
+	CMD_COLDSTART    = 0xFFFFFF32
+	CMD_INTERRUPT    = 0xFFFFFF02
+	CMD_APPEND       = 0xFFFFFF1E // Arg: addr, num
+	CMD_REGREAD      = 0xFFFFFF19 // Arg: addr
+	CMD_MEMWRITE     = 0xFFFFFF1A // Arg: addr, num, ...
+	CMD_INFLATE      = 0xFFFFFF22 // Arg: addr, ...
+	CMD_LOADIMAGE    = 0xFFFFFF24 // Arg: addr, options, ...
+	CMD_MEDIAFIFO    = 0xFFFFFF39 // Arg: addr, size (EVE2)
+	CMD_PLAYVIDEO    = 0xFFFFFF3A // Arg: options, ... (EVE2)
+	CMD_VIDEOSTART   = 0xFFFFFF40 // (EVE2)
+	CMD_VIDEOFRAME   = 0xFFFFFF41 // Arg: dst, ptr (EVE2)
+	CMD_MEMCRC       = 0xFFFFFF18 // Arg: addr, num
+	CMD_MEMZERO      = 0xFFFFFF1C // Arg: addr, num
+	CMD_MEMSET       = 0xFFFFFF1B // Arg: addr, val, num
+	CMD_MEMCPY       = 0xFFFFFF1D // Arg: dst, src, num
+	CMD_BUTTON       = 0xFFFFFF0D // Arg: x, y, w, h, font, options, ..., 0
+	CMD_CLOCK        = 0xFFFFFF14 // Arg: x, y, r, options, h, m, s, ms
+	CMD_FGCOLOR      = 0xFFFFFF0A // Arg: rgb
+	CMD_BGCOLOR      = 0xFFFFFF09 // Arg: rgb
+	CMD_GRADCOLOR    = 0xFFFFFF34 // Arg: rgb
+	CMD_GAUGE        = 0xFFFFFF13 // Arg: x, y, r, optns, major, minor, val, max
+	CMD_GRADIENT     = 0xFFFFFF0B // Arg: x0, y0, rgb0, x1, y1, rgb1
+	CMD_KEYS         = 0xFFFFFF0E // Arg: x, y, w, h, font, options, ..., 0
+	CMD_PROGRESS     = 0xFFFFFF0F // Arg: x, y, w, h, options, val, max
+	CMD_SCROLLBAR    = 0xFFFFFF11 // Arg: x, y, w, h, options, val, size, max
+	CMD_SLIDER       = 0xFFFFFF10 // Arg: x, y, w, h, options, val, max
+	CMD_DIAL         = 0xFFFFFF2d // Arg: x, y, r, options, val
+	CMD_TOGGLE       = 0xFFFFFF12 // Arg: x, y, w, font, options, state, ..., 0
+	CMD_TEXT         = 0xFFFFFF0C // Arg: x, y, font, options, ..., 0
+	CMD_SETBASE      = 0xFFFFFF38 // Arg: base (EVE2)
+	CMD_NUMBER       = 0xFFFFFF2E // Arg: x, y int, font, options, n
+	CMD_LOADIDENTITY = 0xFFFFFF26
+	CMD_SETMATRIX    = 0xFFFFFF2A // Arg: a, b, c, d, e, f
+	CMD_GETMATRIX    = 0xFFFFFF33
+	CMD_GETPTR       = 0xFFFFFF23
+	CMD_GETPROPS     = 0xFFFFFF25
+	CMD_SCALE        = 0xFFFFFF28 // Arg: sx, sy
+	CMD_ROTATE       = 0xFFFFFF29 // Arg: a
+	CMD_TRANSLATE    = 0xFFFFFF27 // Arg: tx, ty
+	CMD_CALIBRATE    = 0xFFFFFF15
 
-	CMD_CALIBRATE    = 0xffffff15
-	CMD_GETMATRIX    = 0xffffff33
-	CMD_GETPTR       = 0xffffff23
-	CMD_LOADIDENTITY = 0xffffff26
-	CMD_LOGO         = 0xffffff31
-	CMD_NUMBER       = 0xffffff2e
-	CMD_ROTATE       = 0xffffff29
-	CMD_SCALE        = 0xffffff28
-	CMD_SCREENSAVER  = 0xffffff2f
-	CMD_SETFONT      = 0xffffff2b
-	CMD_SETMATRIX    = 0xffffff2a
-	CMD_SKETCH       = 0xffffff30
-	CMD_SNAPSHOT     = 0xffffff1f
-	CMD_SPINNER      = 0xffffff16
-	CMD_STOP         = 0xffffff17
-	CMD_TEXT         = 0xffffff0c
-	CMD_TRACK        = 0xffffff2c
-	CMD_TRANSLATE    = 0xffffff27
+	CMD_LOGO        = 0xFFFFFF31
+	CMD_SCREENSAVER = 0xFFFFFF2F
+	CMD_SETFONT     = 0xFFFFFF2B
+	CMD_SKETCH      = 0xFFFFFF30
+	CMD_SNAPSHOT    = 0xFFFFFF1F
+	CMD_SPINNER     = 0xFFFFFF16
+	CMD_STOP        = 0xFFFFFF17
+	CMD_TRACK       = 0xFFFFFF2C
 )
 
 // REG_DLSWAP values.
@@ -230,10 +234,11 @@ const (
 // Widget options.
 const (
 	OPT_FLAT    = 1 << 8
+	OPT_SIGNED  = 1 << 8
 	OPT_CENTERX = 1 << 9
 	OPT_CENTERY = 1 << 10
-	OPT_CENTER  = OPT_CENTERX | OPT_CENTERY
 	OPT_RIGHTX  = 1 << 11
+	OPT_CENTER  = OPT_CENTERX | OPT_CENTERY
 )
 
 // Clock, gauge options.
@@ -250,7 +255,6 @@ const (
 	DECR_WRAP            = 7
 	INCR_WRAP            = 6
 	LINEAR_SAMPLES       = 0
-	OPT_SIGNED           = 256 // = 0x0100
 	PLAYCOLOR            = 0x00a0a080
 	REPEAT               = 1
 	TOUCHMODE_CONTINUOUS = 3
@@ -258,4 +262,13 @@ const (
 	TOUCHMODE_OFF        = 0
 	TOUCHMODE_ONESHOT    = 1
 	AW_SAMPLES           = 1
+)
+
+func MakeRGB(r, g, b int) uint32 {
+	return uint32(r&255<<16 | g&255<<8 | b&255)
+}
+
+const (
+	DarkBlue  = 0x002040
+	LightBlue = 0x003870
 )

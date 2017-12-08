@@ -97,10 +97,10 @@ func main() {
 
 	lcd := eve.NewDriver(dci, 128)
 
-	fmt.Print("Init:")
+	fmt.Printf("Init\n")
 
 	// Wakeup from STANDBY to ACTIVE.
-	lcd.Cmd(ft80.ACTIVE, 0)
+	lcd.HostCmd(ft80.ACTIVE, 0)
 
 	/*
 		// Simple triming algorithm if internal oscilator is used.
@@ -114,7 +114,7 @@ func main() {
 	*/
 
 	// Select external 12 MHz oscilator as clock source.
-	lcd.Cmd(ft80.CLKEXT, 0)
+	lcd.HostCmd(ft80.CLKEXT, 0)
 
 	if lcd.ReadByte(ft80.REG_ID) != 0x7c {
 		fmt.Printf("Not EVE controller.\n")
@@ -124,11 +124,10 @@ func main() {
 		fmt.Printf("Not FT800 controller.\n")
 		return
 	}
-	check(lcd.Err(false))
 
 	printFreq(lcd)
 
-	fmt.Print("Configure WQVGA (480x272) display:")
+	fmt.Printf("Configure WQVGA (480x272) display\n")
 
 	lcd.WriteByte(ft80.REG_PWM_DUTY, 0)
 
@@ -137,13 +136,13 @@ func main() {
 	// Refresh rate: pclk/(hcycle*vcycle) = 48 MHz/5/(548*292) = 59.99 Hz.
 
 	lcd.W(ft80.REG_CSPREAD).Write32(
-		1, // REG_CSPREAD (color signals spread, reduces EM noise)
+		0, // REG_CSPREAD (color signals spread, reduces EM noise)
 		1, // REG_PCLK_POL (define active edge of PCLK)
 		0, // REG_PCLK (temporary disable PCLK)
 	)
 	lcd.W(ft80.REG_HCYCLE).Write32(
 		548, // REG_HCYCLE  (total number of clocks per line)
-		43,  // REG_HOFFSET (tart of active line)
+		43,  // REG_HOFFSET (start of active line)
 		480, // REG_HSIZE   (active width of LCD display)
 		0,   // REG_HSYNC0  (start of horizontal sync pulse)
 		41,  // REG_HSYNC1  (end of horizontal sync pulse)
@@ -154,65 +153,57 @@ func main() {
 		10,  // REG_VSYNC1  (end of vertical sync pulse)
 	)
 
-	check(lcd.Err(false))
-
-	fmt.Print("Write initial display list and enable display:")
+	fmt.Printf("Write initial display list and enable display\n")
 
 	dl := lcd.DL(ft80.RAM_DL)
-	dl.ClearColorRGB(0, 0, 0)
 	dl.Clear(eve.CST)
 	dl.Display()
-
 	// Alternative, method:
 	//
 	//  lcd.W(ft80.RAM_DL).Write32(
-	//  	eve.CLEAR_COLOR_RGB,
 	//  	eve.CLEAR|eve.CST,
 	//  	eve.DISPLAY,
 	//  )
-
 	lcd.WriteByte(ft80.REG_DLSWAP, eve.DLSWAP_FRAME)
 
 	gpio := lcd.ReadByte(ft80.REG_GPIO)
-	lcd.WriteByte(ft80.REG_GPIO, gpio|0x80)
-	lcd.WriteByte(ft80.REG_PCLK, pclkDiv) // Enable PCLK.
-	check(lcd.Err(false))
+	lcd.WriteByte(ft80.REG_GPIO, gpio|0x80) // Set DISP high.
+	lcd.WriteByte(ft80.REG_PCLK, pclkDiv)   // Enable PCLK.
+
 	printFreq(lcd)
-
 	delay.Millisec(20) // Wait for new main clock.
-
 	printFreq(lcd)
 
 	// FT800CB-HY50B display is unstable with fast SPI and VCC <= 3.3V. If you
 	// have problems please comment the line bellow or better desolder U1 and U2
-	// (74LCX125 buffers) and short the U1:2-3,5-6,11-2, U2:2-3,5-6 pins.
+	// (74LCX125 buffers) and short the U1:2-3,5-6,11-2, U2:2-3,5-6 traces.
 	dci.SPI().P.SetConf(dci.SPI().P.Conf()&^spi.BR256 | dci.SPI().P.BR(30e6))
 	fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd.WriteByte(ft80.REG_PWM_DUTY, 64)
 
-	fmt.Print("Draw two points:")
+	n := lcd.ReadInt(ft80.REG_CMD_WRITE)
 
-	dl = lcd.DL(ft80.RAM_DL)
-	dl.Clear(eve.CST)
-	dl.Begin(eve.POINTS)
-	dl.ColorRGB(161, 244, 97)
-	dl.PointSize(100 * 16)
-	dl.Vertex2F(200*16, 100*16)
-	dl.ColorRGB(255, 0, 255)
-	dl.PointSize(50 * 16)
-	dl.Vertex2F(300*16, 200*16)
-	dl.Display()
-	lcd.WriteByte(ft80.REG_DLSWAP, eve.DLSWAP_FRAME)
-	check(lcd.Err(false))
+	fmt.Printf("Touch panel calibration...\n")
 
-	delay.Millisec(1000)
+	ge := lcd.GE(ft80.RAM_CMD + n)
+	ge.Clear(eve.CST)
+	ge.Calibrate()
+	n += ge.Close() + 4
+	lcd.WriteInt(ft80.REG_CMD_WRITE, n&4095)
 
-	fmt.Print("Load bitmap:")
+	for lcd.Err(false) == nil && lcd.ReadInt(ft80.REG_CMD_READ) != n&4095 {
+		delay.Millisec(100)
+	}
+	if lcd.ReadInt(ft80.RAM_CMD+(n-4)&4095) == 0 {
+		fmt.Printf("Failed\n")
+		return
+	}
+
+	fmt.Printf("Load bitmap\n")
 	lcd.W(ft80.RAM_G).Write(LenaFace[:])
-	check(lcd.Err(false))
 
-	fmt.Print("Draw widgets on top of 1000 bitmaps:")
+	fmt.Printf("Draw widgets on top of 1000 bitmaps\n")
 
 	var rnd rand.XorShift64
 	rnd.Seed(1)
@@ -222,11 +213,10 @@ func main() {
 	dl.BitmapHandle(1)
 	dl.BitmapSource(ft80.RAM_G)
 	dl.BitmapLayout(eve.RGB565, 80, 40)
-	dl.BitmapSize(0, 40, 40)
+	dl.BitmapSize(eve.DEFAULT, 40, 40)
 	dl.Clear(eve.CST)
 	dl.Begin(eve.BITMAPS)
 	dl.ColorA(255)
-	dl.BitmapHandle(1)
 	for i := 0; i < 1000; i++ {
 		v := rnd.Uint64()
 		vl := uint32(v)
@@ -237,39 +227,28 @@ func main() {
 
 	lcd.WriteInt(ft80.REG_CMD_DL, addr)
 
-	n := lcd.ReadInt(ft80.REG_CMD_WRITE)
-	ge := lcd.GE(ft80.RAM_CMD + n)
-	ge.Button(170, 110, 140, 40, 23, 0, "Push me!")
+	ge = lcd.GE(ft80.RAM_CMD + n)
+	ge.Button(170, 110, 140, 40, 23, eve.DEFAULT, "Push me!")
 	ge.Clock(440, 40, 30, 0, 21, 22, 42, 00)
 	ge.Gauge(440, 232, 30, 0, 5, 5, 33, 100)
-	ge.Keys(30, 242, 120, 20, 18, 0, "ABCDE")
-	ge.Progress(180, 248, 100, 10, 0, 75, 100)
-	ge.Scrollbar(10, 10, 100, 10, 0, 50, 25, 100)
-	ge.Slider(10, 30, 100, 10, 0, 25, 100)
-	ge.Dial(40, 80, 30, 0, 3000)
-	ge.Toggle(25, 130, 30, 18, 0, true, "yes")
+	ge.Keys(30, 242, 120, 20, 18, eve.DEFAULT, "ABCDE")
+	ge.Progress(180, 248, 100, 10, eve.DEFAULT, 75, 100)
+	ge.Scrollbar(10, 10, 100, 10, eve.DEFAULT, 50, 25, 100)
+	ge.Slider(10, 30, 100, 10, eve.DEFAULT, 25, 100)
+	ge.Dial(40, 80, 30, eve.DEFAULT, 3000)
+	ge.Toggle(25, 130, 30, 18, eve.DEFAULT, true, "yes")
+	ge.Text(25, 155, 29, eve.DEFAULT, "Hello world!")
+	ge.TextHeader(25, 180, 23, 0)
+	fmt.Fprintf(ge, "Weight: %d kg\000", 1000)
+	ge.Number(180, 180, 31, eve.OPT_SIGNED, -1234)
 	ge.Display()
 	ge.Swap()
 	n += ge.Close()
 	lcd.WriteInt(ft80.REG_CMD_WRITE, n)
 
-	check(lcd.Err(false))
-
 	for {
 		delay.Millisec(1000)
-		fmt.Print("Swap DL:")
 		lcd.WriteByte(ft80.REG_DLSWAP, eve.DLSWAP_FRAME)
-		check(lcd.Err(false))
-	}
-}
-
-func check(err error) {
-	if err == nil {
-		fmt.Printf(" OK\n")
-		return
-	}
-	fmt.Printf(" %v\n", err)
-	for {
 	}
 }
 
