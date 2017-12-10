@@ -62,7 +62,7 @@ func init() {
 	irqn.Setup(&gpio.Config{Mode: gpio.In})
 	irqline := exti.Lines(irqn.Mask())
 	irqline.Connect(irqn.Port())
-	//rtos.IRQ(irq.EXTI9_5).Enable()
+	rtos.IRQ(irq.EXTI9_5).Enable()
 
 	dci = evedci.NewSPI(spidrv, csn, pdn, irqline)
 }
@@ -219,9 +219,9 @@ func main() {
 	dl.ColorA(255)
 	for i := 0; i < 1000; i++ {
 		v := rnd.Uint64()
-		vl := uint32(v)
-		vh := uint32(v >> 32)
-		dl.Vertex2F(int((vl%480-20)*16), int((vh%272-20)*16))
+		x := int(v) % 480
+		y := int(v>>32) % 272
+		dl.Vertex2f(eve.F(x-20), eve.F(y-20))
 	}
 	addr += dl.Close()
 
@@ -264,10 +264,19 @@ func lcdTxDMAISR() {
 	dci.SPI().DMAISR(dci.SPI().TxDMA)
 }
 
+func exti9_5ISR() {
+	pend := exti.Pending() & (exti.L5 | exti.L6 | exti.L7 | exti.L8 | exti.L9)
+	pend.ClearPending()
+	if pend&dci.EXTI() != 0 {
+		dci.ISR()
+	}
+}
+
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
 	irq.SPI1:          lcdSPIISR,
 	irq.DMA1_Channel2: lcdRxDMAISR,
 	irq.DMA1_Channel3: lcdTxDMAISR,
+	irq.EXTI9_5:       exti9_5ISR,
 }

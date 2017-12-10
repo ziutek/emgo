@@ -44,12 +44,16 @@ func (dci *SPI) PDN() gpio.Pin {
 	return dci.pdn
 }
 
-func (dci *SPI) IRQL() exti.Lines {
+func (dci *SPI) EXTI() exti.Lines {
 	return dci.irqline
 }
 
-func (dci *SPI) IRQF() *rtos.EventFlag {
-	return &dci.irqflag
+func (dci *SPI) Wait(timeout int64) bool {
+	ok := dci.irqflag.Wait(1, timeout)
+	if ok {
+		dci.irqflag.Reset(0)
+	}
+	return ok
 }
 
 func (dci *SPI) ISR() {

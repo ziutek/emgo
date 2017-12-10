@@ -231,13 +231,13 @@ func (dl DL) TagMask(mask byte) {
 
 // Vertex2F starts the operation of graphics primitives at the specified screen
 // coordinate, in the pixel precision set by VertexFormat (default: 1/16 pixel).
-func (dl DL) Vertex2F(x, y int) {
+func (dl DL) Vertex2f(x, y Fixed) {
 	dl.aw32(VERTEX2F | uint32(x)&0x7FFF<<15 | uint32(y)&0x7FFF)
 }
 
 // Vertex2II starts the operation of graphics primitive at the specified
 // coordinates in pixel precision.
-func (dl DL) Vertex2II(x, y int, handle, cell byte) {
+func (dl DL) Vertex2ii(x, y int, handle, cell byte) {
 	dl.aw32(VERTEX2II | uint32(x)&511<<21 | uint32(y)&511<<12 |
 		uint32(handle)<<7 | uint32(cell))
 }

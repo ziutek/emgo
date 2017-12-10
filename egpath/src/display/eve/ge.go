@@ -66,10 +66,10 @@ func (ge GE) Inflate(addr int) {
 
 // LoadImage decompresses the following JPEG image data into a bitmap, in RAM_G
 // (EVE2 supports also PNG).
-func (ge GE) LoadImage(addr int, options uint32) {
+func (ge GE) LoadImage(addr int, options uint16) {
 	ge.aw32(CMD_LOADIMAGE)
 	ge.wr32(uint32(addr))
-	ge.wr32(options)
+	ge.wr32(uint32(options))
 }
 
 // MediaFIFO sets up a streaming media FIFO in RAM_G.
@@ -129,7 +129,7 @@ func (ge GE) MemCpy(dst, src, num int) {
 // ButtonHeader writes only header of CMD_BUTTON command (without label string).
 // Use Write* methods to write button label. Label string must be terminated
 // with zero byte.
-func (ge GE) ButtonHeader(x, y, w, h int, font, options uint16) {
+func (ge GE) ButtonHeader(x, y, w, h int, font byte, options uint16) {
 	ge.aw32(CMD_BUTTON)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
 	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
@@ -137,7 +137,7 @@ func (ge GE) ButtonHeader(x, y, w, h int, font, options uint16) {
 }
 
 // Button draws a button.
-func (ge GE) Button(x, y, w, h int, font, options uint16, s string) {
+func (ge GE) Button(x, y, w, h int, font byte, options uint16, s string) {
 	ge.ButtonHeader(x, y, w, h, font, options)
 	ge.ws(s)
 	ge.wr8(0)
@@ -191,7 +191,7 @@ func (ge GE) Gradient(x0, y0 int, rgb0 uint32, x1, y1 int, rgb1 uint32) {
 // KeysHeader writes only header of CMD_KEYS command (without key labels). Use
 // Write* methods to write key labels. Labels string must be terminated with
 // zero byte.
-func (ge GE) KeysHeader(x, y, w, h int, font, options uint16) {
+func (ge GE) KeysHeader(x, y, w, h int, font byte, options uint16) {
 	ge.aw32(CMD_KEYS)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
 	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
@@ -199,7 +199,7 @@ func (ge GE) KeysHeader(x, y, w, h int, font, options uint16) {
 }
 
 // Keys draws a row of keys.
-func (ge GE) Keys(x, y, w, h int, font, options uint16, s string) {
+func (ge GE) Keys(x, y, w, h int, font byte, options uint16, s string) {
 	ge.KeysHeader(x, y, w, h, font, options)
 	ge.ws(s)
 	ge.wr8(0)
@@ -243,7 +243,7 @@ func (ge GE) Dial(x, y, r int, options uint16, val int) {
 // ToggleHeader writes only header of CMD_TOGGLE command (without label string).
 // Use Write* methods to write toggle label. Label string must be terminated
 // with zero byte.
-func (ge GE) ToggleHeader(x, y, w int, font, options uint16, state bool) {
+func (ge GE) ToggleHeader(x, y, w int, font byte, options uint16, state bool) {
 	ge.aw32(CMD_TOGGLE)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
 	ge.wr32(uint32(w)&0xFFFF | uint32(font)<<16)
@@ -251,8 +251,8 @@ func (ge GE) ToggleHeader(x, y, w int, font, options uint16, state bool) {
 }
 
 // Toggle draws a toggle switch.
-func (ge GE) Toggle(x, y, w int, font, options uint16, state bool, s string) {
-	ge.ToggleHeader(x, y, w, font, options, state)
+func (ge GE) Toggle(x, y, w int, font byte, opts uint16, state bool, s string) {
+	ge.ToggleHeader(x, y, w, font, opts, state)
 	ge.ws(s)
 	ge.wr8(0)
 }
@@ -261,14 +261,14 @@ func (ge GE) Toggle(x, y, w int, font, options uint16, state bool, s string) {
 // Write* methods to write text. Text string must be terminated with zero byte.
 //  ge.TextHeader(40, 40, 18, 0)
 //  fmt.Fprintf(ge, "Weight: %.1f kg\000", weight)
-func (ge GE) TextHeader(x, y int, font, options uint16) {
+func (ge GE) TextHeader(x, y int, font byte, options uint16) {
 	ge.aw32(CMD_TEXT)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
 	ge.wr32(uint32(font) | uint32(options)<<16)
 }
 
 // Text draws text.
-func (ge GE) Text(x, y int, font, options uint16, s string) {
+func (ge GE) Text(x, y int, font byte, options uint16, s string) {
 	ge.TextHeader(x, y, font, options)
 	ge.ws(s)
 	ge.wr8(0)
@@ -281,7 +281,7 @@ func (ge GE) SetBase(base int) {
 }
 
 // Number draws number.
-func (ge GE) Number(x, y int, font, options uint16, n int) {
+func (ge GE) Number(x, y int, font byte, options uint16, n int) {
 	ge.aw32(CMD_NUMBER)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
 	ge.wr32(uint32(font) | uint32(options)<<16)
@@ -348,12 +348,109 @@ func (ge GE) Calibrate() {
 	ge.aw32(CMD_CALIBRATE)
 }
 
+// SetRotate rotate the screen (EVE2).
+func (ge GE) SetRotate(r byte) {
+	ge.aw32(CMD_SETROTATE)
+	ge.wr32(uint32(r))
+}
+
+// Spinner starts an animated spinner.
+func (ge GE) Spinner(x, y int, style uint16, scale int) {
+	ge.aw32(CMD_SPINNER)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(style) | uint32(scale)&0xFFFF<<16)
+}
+
+// Screensaver starts an animated screensaver.
+func (ge GE) Screensaver() {
+	ge.aw32(CMD_SCREENSAVER)
+}
+
 // Sketch starts a continuous sketch update. It does not display anything, only
 // draws to the bitmap located in RAM_G, at address addr.
-func (ge GE) Sketch(x, y, w, h, addr int, format uint16) {
+func (ge GE) Sketch(x, y, w, h, addr int, format byte) {
 	ge.aw32(CMD_SKETCH)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
 	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
 	ge.wr32(uint32(addr))
 	ge.wr32(uint32(format))
+}
+
+// Stop stops any of spinner, screensaver or sketch.
+func (ge GE) Stop() {
+	ge.aw32(CMD_STOP)
+}
+
+// SetFont sets up a custom font.
+func (ge GE) SetFont(font byte, addr int) {
+	ge.aw32(CMD_SETROTATE)
+	ge.wr32(uint32(font))
+	ge.wr32(uint32(addr))
+}
+
+// SetFont2 sets up a custom font (EVE2).
+func (ge GE) SetFont2(font byte, addr, firstchar int) {
+	ge.aw32(CMD_SETROTATE)
+	ge.wr32(uint32(font))
+	ge.wr32(uint32(addr))
+	ge.wr32(uint32(firstchar))
+}
+
+// SetScratch sets the scratch bitmap for widget use (EVE2).
+func (ge GE) SetScratch(handle byte) {
+	ge.aw32(CMD_SETSCRATCH)
+	ge.wr32(uint32(handle))
+}
+
+// ROMFont loads a ROM font into bitmap handle (EVE2).
+func (ge GE) ROMFont(font, romslot byte) {
+	ge.aw32(CMD_ROMFONT)
+	ge.wr32(uint32(font))
+	ge.wr32(uint32(romslot))
+}
+
+// Track tracks touches for a graphics object.
+func (ge GE) Track(x, y, w, h, tag byte) {
+	ge.aw32(CMD_TRACK)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
+	ge.wr32(uint32(tag))
+}
+
+// Snapshot takes a snapshot of the current screen.
+func (ge GE) Snapshot(addr int) {
+	ge.aw32(CMD_SNAPSHOT)
+	ge.wr32(uint32(addr))
+}
+
+// Snapshot2 takes a snapshot of part of the current screen (EVE2).
+func (ge GE) Snapshot2(format byte, addr, x, y, w, h int) {
+	ge.aw32(CMD_SNAPSHOT2)
+	ge.wr32(uint32(format))
+	ge.wr32(uint32(addr))
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
+}
+
+// SetBitmap takes a snapshot of part of the current screen.
+func (ge GE) SetBitmap(addr int, format byte, w, h int) {
+	ge.aw32(CMD_SETBITMAP)
+	ge.wr32(uint32(addr))
+	ge.wr32(uint32(format))
+	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
+}
+
+// Logo plays FTDI logo animation.
+func (ge GE) Logo() {
+	ge.aw32(CMD_LOGO)
+}
+
+// CSketch - deprecated (FT801).
+func (ge GE) CSketch(x, y, w, h, addr int, format byte, freq int) {
+	ge.aw32(CMD_SKETCH)
+	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
+	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
+	ge.wr32(uint32(addr))
+	ge.wr32(uint32(format))
+	ge.wr32(uint32(freq))
 }

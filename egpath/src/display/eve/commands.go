@@ -85,14 +85,15 @@ const (
 	ARGB2        = 5
 	ARGB4        = 6
 	RGB565       = 7
-	PALETTED     = 8 // FT80x
+	PALETTED     = 8 // EVE1
 	TEXT8X8      = 9
 	TEXTVGA      = 10
 	BARGRAPH     = 11
-	PALETTED565  = 14 // FT81x
-	PALETTED4444 = 15 // FT81x
-	PALETTED8    = 16 // FT81x
-	L2           = 17 // FT81x
+	PALETTED565  = 14 // EVE2
+	PALETTED4444 = 15 // EVE2
+	PALETTED8    = 16 // EVE2
+	L2           = 17 // EVE2
+	ARGB8        = 32 // EVE2 (CMD_SNAPSHOT2)
 )
 
 const DEFAULT = 0
@@ -191,15 +192,21 @@ const (
 	CMD_ROTATE       = 0xFFFFFF29 // Arg: a
 	CMD_TRANSLATE    = 0xFFFFFF27 // Arg: tx, ty
 	CMD_CALIBRATE    = 0xFFFFFF15
-
-	CMD_LOGO        = 0xFFFFFF31
-	CMD_SCREENSAVER = 0xFFFFFF2F
-	CMD_SETFONT     = 0xFFFFFF2B
-	CMD_SKETCH      = 0xFFFFFF30
-	CMD_SNAPSHOT    = 0xFFFFFF1F
-	CMD_SPINNER     = 0xFFFFFF16
-	CMD_STOP        = 0xFFFFFF17
-	CMD_TRACK       = 0xFFFFFF2C
+	CMD_SETROTATE    = 0xFFFFFF36 // Arg: r (EVE2)
+	CMD_SPINNER      = 0xFFFFFF16 // Arg: x, y, style, scale
+	CMD_SCREENSAVER  = 0xFFFFFF2F
+	CMD_SKETCH       = 0xFFFFFF30 // Arg: x, y, w, h, addr, format
+	CMD_STOP         = 0xFFFFFF17
+	CMD_SETFONT      = 0xFFFFFF2B // Arg: font, addr
+	CMD_SETFONT2     = 0xFFFFFF3B // Arg: font, addr, firstchar (EVE2)
+	CMD_SETSCRATCH   = 0xFFFFFF3C // Arg: handle (EVE2)
+	CMD_ROMFONT      = 0xFFFFFF3F // Arg: font, romslot (EVE2)
+	CMD_TRACK        = 0xFFFFFF2C // Arg: x, y, w, h, tag
+	CMD_SNAPSHOT     = 0xFFFFFF1F // Arg: addr
+	CMD_SNAPSHOT2    = 0xFFFFFF37 // Arg: format, addr, x, y, w, h (EVE2)
+	CMD_SETBITMAP    = 0xFFFFFF43 // Arg: addr, format, w, h (EVE2)
+	CMD_LOGO         = 0xFFFFFF31
+	CMD_CSKETCH      = 0xFFFFFF35 // Arg: x, y, w, h, addr, format, freq (FT801)
 )
 
 // REG_DLSWAP values.
@@ -267,8 +274,3 @@ const (
 func MakeRGB(r, g, b int) uint32 {
 	return uint32(r&255<<16 | g&255<<8 | b&255)
 }
-
-const (
-	DarkBlue  = 0x002040
-	LightBlue = 0x003870
-)
