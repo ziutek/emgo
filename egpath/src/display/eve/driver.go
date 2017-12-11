@@ -5,9 +5,10 @@ package eve
 // starts new transaction and leaves it in open state. Subsequent call of any
 // Driver's method implicitly closes previously opened transaction.
 type Driver struct {
-	dci DCI
-	buf []byte
-	n   int
+	dci  DCI
+	buf  []byte
+	n    int
+	mmap *mmap
 }
 
 // NewDriver returns new driver to the EVE graphics controller accessed via dci.
