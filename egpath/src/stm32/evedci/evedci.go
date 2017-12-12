@@ -1,8 +1,6 @@
 package evedci
 
 import (
-	"rtos"
-
 	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/spi"
@@ -12,19 +10,20 @@ import (
 type SPI struct {
 	spi      *spi.Driver
 	irqline  exti.Lines
-	irqflag  rtos.EventFlag
+	irqchan  chan struct{}
 	pdn, csn gpio.Pin
 	started  bool
 }
 
 func NewSPI(spidrv *spi.Driver, csn, pdn gpio.Pin, irqline exti.Lines) *SPI {
-	spidrv.P.SetConf(
+	p := spidrv.P
+	p.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			spidrv.P.BR(11e6) | // 11 MHz max. before configure PCLK.
+			p.BR(11e6) | // 11 MHz max. before configure PCLK.
 			spi.SoftSS | spi.ISSHigh,
 	)
-	spidrv.P.SetWordSize(8)
-	spidrv.P.Enable()
+	p.SetWordSize(8)
+	p.Enable()
 	csn.Set()
 	irqline.EnableFallTrig()
 	irqline.EnableIRQ()
@@ -33,31 +32,25 @@ func NewSPI(spidrv *spi.Driver, csn, pdn gpio.Pin, irqline exti.Lines) *SPI {
 	dci.csn = csn
 	dci.pdn = pdn
 	dci.irqline = irqline
+	dci.irqchan = make(chan struct{}, 1)
 	return dci
+}
+
+func (dci *SPI) SetBaudrate(baud int) {
+	p := dci.spi.P
+	p.SetConf(p.Conf()&^spi.BR256 | p.BR(30e6))
 }
 
 func (dci *SPI) SPI() *spi.Driver {
 	return dci.spi
 }
 
-func (dci *SPI) PDN() gpio.Pin {
-	return dci.pdn
+func (dci *SPI) SetPDN(pdn int) {
+	dci.pdn.Store(pdn)
 }
 
-func (dci *SPI) EXTI() exti.Lines {
-	return dci.irqline
-}
-
-func (dci *SPI) Wait(timeout int64) bool {
-	ok := dci.irqflag.Wait(1, timeout)
-	if ok {
-		dci.irqflag.Reset(0)
-	}
-	return ok
-}
-
-func (dci *SPI) ISR() {
-	dci.irqflag.Signal(1)
+func (dci *SPI) IRQ() <-chan struct{} {
+	return dci.irqchan
 }
 
 func (dci *SPI) Err(clear bool) error {
@@ -82,4 +75,15 @@ func (dci *SPI) Write(s []byte) {
 		dci.csn.Clear()
 	}
 	dci.spi.WriteRead(s, nil)
+}
+
+func (dci *SPI) ISR() {
+	select {
+	case dci.irqchan <- struct{}{}:
+	default:
+	}
+}
+
+func (dci *SPI) EXTI() exti.Lines {
+	return dci.irqline
 }

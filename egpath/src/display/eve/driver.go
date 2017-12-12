@@ -5,10 +5,11 @@ package eve
 // starts new transaction and leaves it in open state. Subsequent call of any
 // Driver's method implicitly closes previously opened transaction.
 type Driver struct {
-	dci  DCI
-	buf  []byte
-	n    int
-	mmap *mmap
+	dci      DCI
+	buf      []byte
+	n        int
+	mmap     *mmap
+	intflags byte
 }
 
 // NewDriver returns new driver to the EVE graphics controller accessed via dci.
@@ -161,4 +162,9 @@ func (d *Driver) DL(addr int) DL {
 // information.
 func (d *Driver) GE(addr int) GE {
 	return GE{d.DL(addr)}
+}
+
+// IRQ returns channel that can be used to wait for IRQ.
+func (d *Driver) IRQ() <-chan struct{} {
+	return d.dci.IRQ()
 }
