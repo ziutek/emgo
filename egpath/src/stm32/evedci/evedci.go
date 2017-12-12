@@ -1,7 +1,6 @@
 package evedci
 
 import (
-	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/spi"
 )
@@ -9,13 +8,12 @@ import (
 // SPI implements eve.DCI using Serial Peripheral Interface.
 type SPI struct {
 	spi      *spi.Driver
-	irqline  exti.Lines
 	irqchan  chan struct{}
 	pdn, csn gpio.Pin
 	started  bool
 }
 
-func NewSPI(spidrv *spi.Driver, csn, pdn gpio.Pin, irqline exti.Lines) *SPI {
+func NewSPI(spidrv *spi.Driver, csn, pdn gpio.Pin) *SPI {
 	p := spidrv.P
 	p.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
@@ -25,13 +23,10 @@ func NewSPI(spidrv *spi.Driver, csn, pdn gpio.Pin, irqline exti.Lines) *SPI {
 	p.SetWordSize(8)
 	p.Enable()
 	csn.Set()
-	irqline.EnableFallTrig()
-	irqline.EnableIRQ()
 	dci := new(SPI)
 	dci.spi = spidrv
 	dci.csn = csn
 	dci.pdn = pdn
-	dci.irqline = irqline
 	dci.irqchan = make(chan struct{}, 1)
 	return dci
 }
@@ -82,8 +77,4 @@ func (dci *SPI) ISR() {
 	case dci.irqchan <- struct{}{}:
 	default:
 	}
-}
-
-func (dci *SPI) EXTI() exti.Lines {
-	return dci.irqline
 }

@@ -132,7 +132,7 @@ func (d *Driver) Init(cfg *DisplayConfig) error {
 	w = d.W(d.mmap.ramdl)
 	w.wr32(CLEAR | CST)
 	w.wr32(DISPLAY)
-	d.SwapDL()
+	d.SwapDL(true)
 	b := d.ReadByte(d.mmap.regdlswap + ogpio)
 	d.WriteByte(d.mmap.regdlswap+ogpio, b|0x80)     // Set DISP high.
 	d.WriteByte(d.mmap.regdlswap+opclk, cfg.ClkPre) // Enable PCLK.
@@ -154,8 +154,8 @@ func (d *Driver) IntFlags() byte {
 	return d.intflags
 }
 
-// ClearFlags clears interrupt flags specified by mask.
-func (d *Driver) ClearFlags(mask byte) {
+// ClearIntFlags clears interrupt flags specified by mask.
+func (d *Driver) ClearIntFlags(mask byte) {
 	d.intflags |= d.ReadByte(d.mmap.regintflags)
 	d.intflags &^= mask
 }
@@ -170,16 +170,22 @@ func (d *Driver) SetIntMask(mask byte) {
 	d.WriteByte(d.mmap.regintflags+ointmask, mask)
 }
 
-// SwapDL swaps display lists
-func (d *Driver) SwapDL() {
-	d.ClearFlags(INT_SWAP)
+// SwapDL clears INT_SWAP and schedules the display lists swap, to be performed
+// after rendering the current frame. If wait is true SwapDL waits until swap
+// will be finished, otherwise it returns immediately.
+func (d *Driver) SwapDL(wait bool) {
+	d.ClearIntFlags(INT_SWAP)
 	d.WriteByte(d.mmap.regdlswap, DLSWAP_FRAME)
+	if !wait {
+		return
+	}
 	mask := d.IntMask()
 	d.SetIntMask(INT_SWAP)
 	for {
 		<-d.IRQ()
 		if d.IntFlags()&INT_SWAP != 0 {
 			d.SetIntMask(mask)
+			return
 		}
 	}
 }

@@ -1,3 +1,8 @@
+// This example demonstrates usage of FTDI EVE based displays.
+//
+// It seems that FT800CB-HY50B display is unstable with fast SPI. If you have
+// problems please reduce SPI speed or better desolder U1 and U2 (74LCX125
+// buffers) and short the U1:2-3,5-6,11-2, U2:2-3,5-6 traces.
 package main
 
 import (
@@ -62,47 +67,27 @@ func init() {
 	irqn.Setup(&gpio.Config{Mode: gpio.In})
 	irqline := exti.Lines(irqn.Mask())
 	irqline.Connect(irqn.Port())
+	irqline.EnableFallTrig()
+	irqline.EnableIRQ()
 	rtos.IRQ(irq.EXTI9_5).Enable()
 
-	dci = evedci.NewSPI(spidrv, csn, pdn, irqline)
-}
-
-func curFreq(lcd *eve.Driver) uint32 {
-	clk1 := lcd.ReadUint32(ft80.REG_CLOCK)
-	t1 := rtos.Nanosec()
-	delay.Millisec(8)
-	clk2 := lcd.ReadUint32(ft80.REG_CLOCK)
-	t2 := rtos.Nanosec()
-	return uint32(int64(clk2-clk1) * 1e9 / (t2 - t1))
-}
-
-func printFreq(lcd *eve.Driver) {
-	fmt.Printf("FT800 clock: %d Hz\n", curFreq(lcd))
+	dci = evedci.NewSPI(spidrv, csn, pdn)
 }
 
 func main() {
-	delay.Millisec(200)
 	spibus := dci.SPI().P.Bus()
-	baudrate := dci.SPI().P.Baudrate(dci.SPI().P.Conf())
-	fmt.Printf(
-		"\nSPI on %s (%d MHz).\nSPI speed: %d bps.\n",
-		spibus, spibus.Clock()/1e6, baudrate,
-	)
+	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
+	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd := eve.NewDriver(dci, 128)
 	lcd.Init(&eve.Default480x272)
-
-	// FT800CB-HY50B display is unstable with fast SPI and VCC <= 3.3V. If you
-	// have problems please comment the line bellow or better desolder U1 and U2
-	// (74LCX125 buffers) and short the U1:2-3,5-6,11-2, U2:2-3,5-6 traces.
 	dci.SetBaudrate(30e6)
-	fmt.Printf("SPI set to %d Hz\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
+
+	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd.SetBacklight(64)
 
 	n := lcd.ReadInt(ft80.REG_CMD_WRITE)
-
-	fmt.Printf("Touch panel calibration...\n")
 
 	/*ge := lcd.GE(ft80.RAM_CMD + n)
 	ge.Clear(eve.CST)
@@ -110,18 +95,7 @@ func main() {
 	n += ge.Close() + 4
 	lcd.WriteInt(ft80.REG_CMD_WRITE, n&4095)*/
 
-	for lcd.Err(false) == nil && lcd.ReadInt(ft80.REG_CMD_READ) != n&4095 {
-		delay.Millisec(100)
-	}
-	if lcd.ReadInt(ft80.RAM_CMD+(n-4)&4095) == 0 {
-		fmt.Printf("Failed\n")
-		return
-	}
-
-	fmt.Printf("Load bitmap\n")
 	lcd.W(ft80.RAM_G).Write(LenaFace[:])
-
-	fmt.Printf("Draw widgets on top of 1000 bitmaps\n")
 
 	var rnd rand.XorShift64
 	rnd.Seed(1)
@@ -165,8 +139,8 @@ func main() {
 	lcd.WriteInt(ft80.REG_CMD_WRITE, n)
 
 	for {
-		delay.Millisec(1000)
-		lcd.WriteByte(ft80.REG_DLSWAP, eve.DLSWAP_FRAME)
+		delay.Millisec(2000)
+		lcd.SwapDL(true)
 	}
 }
 
@@ -183,11 +157,8 @@ func lcdTxDMAISR() {
 }
 
 func exti9_5ISR() {
-	pend := exti.Pending() & (exti.L5 | exti.L6 | exti.L7 | exti.L8 | exti.L9)
-	pend.ClearPending()
-	if pend&dci.EXTI() != 0 {
-		dci.ISR()
-	}
+	exti.Pending().ClearPending()
+	dci.ISR()
 }
 
 //emgo:const
