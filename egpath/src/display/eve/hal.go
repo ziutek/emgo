@@ -180,17 +180,16 @@ func (d *Driver) SwapDL() {
 	d.WriteByte(d.mmap.regdlswap, DLSWAP_FRAME)
 }
 
-// WaitSwap waits until the previous display list swap will be completed. It is
-// usually used just before writting new display list to RAM_DL.
-func (d *Driver) WaitSwap() {
-	if d.IntFlags()&INT_SWAP != 0 {
+// Wait waits for any interrupt in flags.
+func (d *Driver) Wait(flags byte) {
+	if d.IntFlags()&flags != 0 {
 		return
 	}
 	mask := d.IntMask()
-	d.SetIntMask(INT_SWAP)
+	d.SetIntMask(flags)
 	for {
 		<-d.IRQ()
-		if d.IntFlags()&INT_SWAP != 0 {
+		if d.IntFlags()&flags != 0 {
 			break
 		}
 	}

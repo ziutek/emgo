@@ -97,25 +97,24 @@ func main() {
 	var rnd rand.XorShift64
 	rnd.Seed(1)
 
-	lcd.WaitSwap()
-	dl := lcd.DL(ft80.RAM_DL)
-	dl.BitmapHandle(1)
-	dl.BitmapSource(ft80.RAM_G)
-	dl.BitmapLayout(eve.RGB565, 80, 40)
-	dl.BitmapSize(eve.DEFAULT, 40, 40)
-	dl.Clear(eve.CST)
-	dl.Begin(eve.BITMAPS)
-	for i := 0; i < 1000; i++ {
-		v := rnd.Uint32()
-		x := int(v) % lcd.Width()
-		y := int(v>>16) % lcd.Height()
-		dl.Vertex2f((x-20)*16, (y-20)*16)
+	for {
+		lcd.Wait(eve.INT_SWAP)
+		dl := lcd.DL(ft80.RAM_DL)
+		dl.BitmapHandle(1)
+		dl.BitmapSource(ft80.RAM_G)
+		dl.BitmapLayout(eve.RGB565, 80, 40)
+		dl.BitmapSize(eve.DEFAULT, 40, 40)
+		dl.Clear(eve.CST)
+		dl.Begin(eve.BITMAPS)
+		for i := 0; i < 1000; i++ {
+			v := rnd.Uint32()
+			x := int(v) % lcd.Width()
+			y := int(v>>16) % lcd.Height()
+			dl.Vertex2f((x-20)*16, (y-20)*16)
+		}
+		dl.Display()
+		lcd.SwapDL()
 	}
-	dl.Begin(eve.LINES)
-	dl.Vertex2f(0, 0)
-	dl.Vertex2f(lcd.Width()*16, lcd.Height()*16)
-	dl.Display()
-	lcd.SwapDL()
 }
 
 func lcdSPIISR() {
