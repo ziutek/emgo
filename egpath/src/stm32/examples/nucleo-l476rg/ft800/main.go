@@ -6,7 +6,6 @@
 package main
 
 import (
-	"delay"
 	"fmt"
 	"math/rand"
 	"rtos"
@@ -87,8 +86,6 @@ func main() {
 
 	lcd.SetBacklight(64)
 
-	n := lcd.ReadInt(ft80.REG_CMD_WRITE)
-
 	/*ge := lcd.GE(ft80.RAM_CMD + n)
 	ge.Clear(eve.CST)
 	ge.Calibrate()
@@ -100,48 +97,25 @@ func main() {
 	var rnd rand.XorShift64
 	rnd.Seed(1)
 
-	addr := ft80.RAM_DL
-	dl := lcd.DL(addr)
+	lcd.WaitSwap()
+	dl := lcd.DL(ft80.RAM_DL)
 	dl.BitmapHandle(1)
 	dl.BitmapSource(ft80.RAM_G)
 	dl.BitmapLayout(eve.RGB565, 80, 40)
 	dl.BitmapSize(eve.DEFAULT, 40, 40)
 	dl.Clear(eve.CST)
 	dl.Begin(eve.BITMAPS)
-	dl.ColorA(255)
 	for i := 0; i < 1000; i++ {
 		v := rnd.Uint32()
-		x := int(v) % 480
-		y := int(v/2048) % 272
-		dl.Vertex2f(eve.F(x-20), eve.F(y-20))
+		x := int(v) % lcd.Width()
+		y := int(v>>16) % lcd.Height()
+		dl.Vertex2f((x-20)*16, (y-20)*16)
 	}
-	addr += dl.Close()
-
-	lcd.WriteInt(ft80.REG_CMD_DL, addr)
-
-	ge := lcd.GE(ft80.RAM_CMD + n)
-	ge.Button(170, 110, 140, 40, 23, eve.DEFAULT, "Push me!")
-	ge.Clock(440, 40, 30, 0, 21, 22, 42, 00)
-	ge.Gauge(440, 232, 30, 0, 5, 5, 33, 100)
-	ge.Keys(30, 242, 120, 20, 18, eve.DEFAULT, "ABCDE")
-	ge.Progress(180, 248, 100, 10, eve.DEFAULT, 75, 100)
-	ge.Scrollbar(10, 10, 100, 10, eve.DEFAULT, 50, 25, 100)
-	ge.Slider(10, 30, 100, 10, eve.DEFAULT, 25, 100)
-	ge.Dial(40, 80, 30, eve.DEFAULT, 3000)
-	ge.Toggle(25, 130, 30, 18, eve.DEFAULT, true, "yes")
-	ge.Text(25, 155, 29, eve.DEFAULT, "Hello world!")
-	ge.TextHeader(25, 180, 23, 0)
-	fmt.Fprintf(ge, "Weight: %d kg\000", 1000)
-	ge.Number(180, 180, 31, eve.OPT_SIGNED, -1234)
-	ge.Display()
-	ge.Swap()
-	n += ge.Close()
-	lcd.WriteInt(ft80.REG_CMD_WRITE, n)
-
-	for {
-		delay.Millisec(2000)
-		lcd.SwapDL(true)
-	}
+	dl.Begin(eve.LINES)
+	dl.Vertex2f(0, 0)
+	dl.Vertex2f(lcd.Width()*16, lcd.Height()*16)
+	dl.Display()
+	lcd.SwapDL()
 }
 
 func lcdSPIISR() {

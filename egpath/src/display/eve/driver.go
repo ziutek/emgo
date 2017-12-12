@@ -2,14 +2,15 @@ package eve
 
 // Driver uses DCI to communicate with EVE graphics controller. Commands/data
 // are received/sent using DCI read/write transactions. R,W, DL, GE methods
-// starts new transaction and leaves it in open state. Subsequent call of any
-// Driver's method implicitly closes previously opened transaction.
+// starts new transaction and leaves it in open state. Any subsequent
+// transaction implicitly closes current open transaction.
 type Driver struct {
-	dci      DCI
-	buf      []byte
-	n        int
-	mmap     *mmap
-	intflags byte
+	dci           DCI
+	buf           []byte
+	n             int
+	mmap          *mmap
+	width, height uint16
+	intflags      byte
 }
 
 // NewDriver returns new driver to the EVE graphics controller accessed via dci.
@@ -20,6 +21,14 @@ func NewDriver(dci DCI, n int) *Driver {
 	d.buf = make([]byte, 0, n)
 	d.n = -3
 	return d
+}
+
+func (d *Driver) Width() int {
+	return int(d.width)
+}
+
+func (d *Driver) Height() int {
+	return int(d.height)
 }
 
 func checkAddr(addr int) {

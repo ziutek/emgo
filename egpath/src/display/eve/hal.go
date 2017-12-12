@@ -75,12 +75,18 @@ const (
 	cmdClkExt = 0x44
 )
 
+// Init initializes EVE and writes first display list.
 func (d *Driver) Init(cfg *DisplayConfig) error {
 	d.dci.SetPDN(0)
 	delay.Millisec(20)
 	d.dci.SetPDN(1)
 	delay.Millisec(20) // Wait 20 ms for internal oscilator and PLL.
+
+	d.width = cfg.Hsize
+	d.height = cfg.Vsize
+
 	d.HostCmd(cmdActive, 0)
+	d.HostCmd(cmdClkExt, 0) // Select external 12 MHz oscilator as clock source.
 
 	/*
 		// Simple triming algorithm if internal oscilator is used.
@@ -92,9 +98,6 @@ func (d *Driver) Init(cfg *DisplayConfig) error {
 			}
 		}
 	*/
-
-	// Select external 12 MHz oscilator as clock source.
-	d.HostCmd(cmdClkExt, 0)
 
 	if err := d.Err(true); err != nil {
 		return err
@@ -132,7 +135,7 @@ func (d *Driver) Init(cfg *DisplayConfig) error {
 	w = d.W(d.mmap.ramdl)
 	w.wr32(CLEAR | CST)
 	w.wr32(DISPLAY)
-	d.SwapDL(true)
+	d.SwapDL()
 	b := d.ReadByte(d.mmap.regdlswap + ogpio)
 	d.WriteByte(d.mmap.regdlswap+ogpio, b|0x80)     // Set DISP high.
 	d.WriteByte(d.mmap.regdlswap+opclk, cfg.ClkPre) // Enable PCLK.
@@ -171,12 +174,16 @@ func (d *Driver) SetIntMask(mask byte) {
 }
 
 // SwapDL clears INT_SWAP and schedules the display lists swap, to be performed
-// after rendering the current frame. If wait is true SwapDL waits until swap
-// will be finished, otherwise it returns immediately.
-func (d *Driver) SwapDL(wait bool) {
+// after rendering the current frame.
+func (d *Driver) SwapDL() {
 	d.ClearIntFlags(INT_SWAP)
 	d.WriteByte(d.mmap.regdlswap, DLSWAP_FRAME)
-	if !wait {
+}
+
+// WaitSwap waits until the previous display list swap will be completed. It is
+// usually used just before writting new display list to RAM_DL.
+func (d *Driver) WaitSwap() {
+	if d.IntFlags()&INT_SWAP != 0 {
 		return
 	}
 	mask := d.IntMask()
@@ -184,8 +191,8 @@ func (d *Driver) SwapDL(wait bool) {
 	for {
 		<-d.IRQ()
 		if d.IntFlags()&INT_SWAP != 0 {
-			d.SetIntMask(mask)
-			return
+			break
 		}
 	}
+	d.SetIntMask(mask)
 }
