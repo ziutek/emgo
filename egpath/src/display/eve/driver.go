@@ -10,7 +10,7 @@ type Driver struct {
 	n             int
 	mmap          *mmap
 	width, height uint16
-	intflags      byte
+	intFlags      byte
 }
 
 // NewDriver returns new driver to the EVE graphics controller accessed via dci.

@@ -153,14 +153,14 @@ func (d *Driver) SetBacklight(pwmduty int) {
 // IntFlags reads interrupt flags from EVE and accumulates them (using logical
 // OR) in internal variable. It returns accumulated flags.
 func (d *Driver) IntFlags() byte {
-	d.intflags |= d.ReadByte(d.mmap.regintflags)
-	return d.intflags
+	d.intFlags |= d.ReadByte(d.mmap.regintflags)
+	return d.intFlags
 }
 
 // ClearIntFlags clears interrupt flags specified by mask.
 func (d *Driver) ClearIntFlags(mask byte) {
-	d.intflags |= d.ReadByte(d.mmap.regintflags)
-	d.intflags &^= mask
+	d.intFlags |= d.ReadByte(d.mmap.regintflags)
+	d.intFlags &^= mask
 }
 
 // IntMask returns current interrupt mask.
@@ -182,7 +182,7 @@ func (d *Driver) SwapDL() {
 
 // Wait waits for any interrupt in flags.
 func (d *Driver) Wait(flags byte) {
-	if d.IntFlags()&flags != 0 {
+	if d.intFlags&flags != 0 || d.IntFlags()&flags != 0 {
 		return
 	}
 	mask := d.IntMask()
