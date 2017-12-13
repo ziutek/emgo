@@ -57,9 +57,11 @@ func init() {
 	irqn.Setup(&gpio.Config{Mode: gpio.In})
 	irqline := exti.Lines(irqn.Mask())
 	irqline.Connect(irqn.Port())
-	//rtos.IRQ(irq.EXTI9_5).Enable()
+	irqline.EnableFallTrig()
+	irqline.EnableIRQ()
+	rtos.IRQ(irq.EXTI9_5).Enable()
 
-	dci = evedci.NewSPI(spidrv, csn, pdn, irqline)
+	dci = evedci.NewSPI(spidrv, csn, pdn)
 }
 
 func curFreq(lcd *eve.Driver) uint32 {
@@ -85,9 +87,9 @@ func main() {
 	)
 
 	// Wakeup from POWERDOWN to STANDBY.
-	dci.PDN().Clear()
+	dci.SetPDN(0)
 	delay.Millisec(20)
-	dci.PDN().Set()
+	dci.SetPDN(1)
 	delay.Millisec(20) // Wait 20 ms for internal oscilator and PLL.
 
 	lcd := eve.NewDriver(dci, 128)
@@ -95,7 +97,7 @@ func main() {
 	fmt.Print("Init:")
 
 	// Wakeup from STANDBY to ACTIVE.
-	lcd.Cmd(ft80.ACTIVE, 0)
+	lcd.HostCmd(ft80.ACTIVE, 0)
 
 	/*
 		// Simple triming algorithm if internal oscilator is used.
@@ -109,7 +111,7 @@ func main() {
 	*/
 
 	// Select external 12 MHz oscilator as clock source.
-	lcd.Cmd(ft80.CLKEXT, 0)
+	lcd.HostCmd(ft80.CLKEXT, 0)
 
 	if lcd.ReadByte(ft80.REG_ID) != 0x7c {
 		fmt.Printf("Not EVE controller.\n")
@@ -154,7 +156,7 @@ func main() {
 	fmt.Print("Write initial display list and enable display:")
 
 	dl := lcd.DL(ft80.RAM_DL)
-	dl.ClearColorRGB(0, 0, 0)
+	dl.ClearColorRGB(0)
 	dl.Clear(eve.CST)
 	dl.Display()
 
@@ -191,12 +193,12 @@ func main() {
 	dl = lcd.DL(ft80.RAM_DL)
 	dl.Clear(eve.CST)
 	dl.Begin(eve.POINTS)
-	dl.ColorRGB(161, 244, 97)
+	dl.ColorRGB(eve.MakeRGB(161, 244, 97))
 	dl.PointSize(100 * 16)
-	dl.Vertex2F(200*16, 100*16)
-	dl.ColorRGB(255, 0, 255)
+	dl.Vertex2f(200*16, 100*16)
+	dl.ColorRGB(0xFF00FF)
 	dl.PointSize(50 * 16)
-	dl.Vertex2F(300*16, 200*16)
+	dl.Vertex2f(300*16, 200*16)
 	dl.Display()
 	lcd.WriteByte(ft80.REG_DLSWAP, eve.DLSWAP_FRAME)
 	check(lcd.Err(false))
@@ -226,7 +228,7 @@ func main() {
 		v := rnd.Uint64()
 		vl := uint32(v)
 		vh := uint32(v >> 32)
-		dl.Vertex2F(int((vl%480-20)*16), int((vh%272-20)*16))
+		dl.Vertex2f(int((vl%480-20)*16), int((vh%272-20)*16))
 	}
 	addr += dl.Close()
 
@@ -280,10 +282,16 @@ func lcdTxDMAISR() {
 	dci.SPI().DMAISR(dci.SPI().TxDMA)
 }
 
+func exti9_5ISR() {
+	exti.Pending().ClearPending()
+	dci.ISR()
+}
+
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
 	irq.SPI1:         lcdSPIISR,
 	irq.DMA2_Stream2: lcdRxDMAISR,
 	irq.DMA2_Stream3: lcdTxDMAISR,
+	irq.EXTI9_5:      exti9_5ISR,
 }
