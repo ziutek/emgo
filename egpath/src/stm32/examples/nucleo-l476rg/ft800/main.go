@@ -6,6 +6,7 @@
 package main
 
 import (
+	"delay"
 	"fmt"
 	"math/rand"
 	"rtos"
@@ -73,6 +74,15 @@ func init() {
 	dci = evedci.NewSPI(spidrv, csn, pdn)
 }
 
+func curFreq(lcd *eve.Driver) uint32 {
+	clk1 := lcd.ReadUint32(ft80.REG_CLOCK)
+	t1 := rtos.Nanosec()
+	delay.Millisec(8)
+	clk2 := lcd.ReadUint32(ft80.REG_CLOCK)
+	t2 := rtos.Nanosec()
+	return uint32(int64(clk2-clk1) * 1e9 / (t2 - t1))
+}
+
 func main() {
 	var rnd rand.XorShift64
 	rnd.Seed(1)
@@ -84,22 +94,25 @@ func main() {
 	lcd := eve.NewDriver(dci, 128)
 	lcd.Init(&eve.Default480x272)
 
+	fmt.Printf("EVE clock: %d Hz\n", curFreq(lcd))
 	dci.SetBaudrate(30e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd.SetBacklight(64)
-	lcd.W(ft80.RAM_G).Write(LenaFaceRGB[:])
+	lcd.W(0).Write(LenaFaceRGB[:])
 
-	for i := 1; ; i++ {
-		lcd.Wait(eve.INT_SWAP)
-		dl := lcd.DL(ft80.RAM_DL)
+	fmt.Printf("500 bitmaps:")
+	const n = 120
+	t := rtos.Nanosec()
+	for i := 0; i < n; i++ {
+		dl := lcd.DL(-1)
+		dl.Clear(eve.CST)
 		dl.BitmapHandle(1)
-		dl.BitmapSource(ft80.RAM_G)
+		dl.BitmapSource(0)
 		dl.BitmapLayout(eve.RGB565, 80, 40)
 		dl.BitmapSize(eve.DEFAULT, 40, 40)
-		dl.Clear(eve.CST)
 		dl.Begin(eve.BITMAPS)
-		for n := 0; n < 500; n++ {
+		for k := 0; k < 500; k++ {
 			v := rnd.Uint32()
 			c := v&0xFFFFFF | 0x808080
 			x := int(v>>12) % lcd.Width()
@@ -110,6 +123,7 @@ func main() {
 		dl.Display()
 		lcd.SwapDL()
 	}
+	fmt.Printf(" %d fps.\n", n*1e9/(rtos.Nanosec()-t))
 }
 
 /*ge := lcd.GE(ft80.RAM_CMD + n)

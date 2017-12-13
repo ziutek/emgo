@@ -11,9 +11,10 @@ type GE struct {
 	DL
 }
 
-// GE wraps DL to retun Graphics Engine command writer. See DL for more
-// information.
+// GE wraps DL to retun Graphics Engine command writer. Special addr -1 means
+// RAM_CMD. See DL for more information.
 func (d *Driver) GE(addr int) GE {
+	
 	return GE{d.DL(addr)}
 }
 

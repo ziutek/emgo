@@ -9,8 +9,8 @@ type Reader struct {
 // method finish the read transaction started by R. After that, the returned
 // Reader is invalid and should not be used.
 func (d *Driver) R(addr int) Reader {
-	checkAddr(addr)
 	d.end()
+	checkAddr(addr)
 	d.dci.Write([]byte{byte(addr >> 16), byte(addr >> 8), byte(addr)})
 	d.n = 0
 	d.dci.Read([]byte{0}) // Read dummy byte (input mode required by QSPI ).

@@ -11,6 +11,7 @@ type Driver struct {
 	mmap          *mmap
 	width, height uint16
 	flags         byte
+	waitSwap      bool
 }
 
 // NewDriver returns new driver to the EVE graphics controller accessed via dci.
@@ -90,6 +91,11 @@ func (d *Driver) intFlags() byte {
 	return d.flags
 }
 
+func (d *Driver) clearIntFlags(mask byte) {
+	d.flags |= d.readByte(d.mmap.regintflags)
+	d.flags &^= mask
+}
+
 func (d *Driver) intMask() byte {
 	return d.readByte(d.mmap.regintflags + ointmask)
 }
@@ -114,6 +120,10 @@ func (d *Driver) wait(flags byte) {
 }
 
 func (d *Driver) flush() {
+	if d.waitSwap {
+		d.waitSwap = false
+		d.wait(INT_SWAP)
+	}
 	d.dci.Write(d.buf)
 	d.n += len(d.buf)
 	d.buf = d.buf[:0]
@@ -149,22 +159,22 @@ func checkAddr(addr int) {
 
 // WriteByte writes byte to the EVE memory at address addr.
 func (d *Driver) WriteByte(addr int, val byte) {
-	checkAddr(addr)
 	d.end()
+	checkAddr(addr)
 	d.writeByte(addr, val)
 }
 
 // WriteUint16 writes 16-bit word to the EVE memory at address addr.
 func (d *Driver) WriteUint16(addr int, val uint16) {
-	checkAddr(addr)
 	d.end()
+	checkAddr(addr)
 	d.writeUint16(addr, val)
 }
 
 // WriteUint32 writes 32-bit word to the EVE memory at address addr.
 func (d *Driver) WriteUint32(addr int, val uint32) {
-	checkAddr(addr)
 	d.end()
+	checkAddr(addr)
 	d.writeUint32(addr, val)
 }
 
@@ -175,22 +185,22 @@ func (d *Driver) WriteInt(addr int, val int) {
 
 // ReadByte reads byte from EVE memory at address addr.
 func (d *Driver) ReadByte(addr int) byte {
-	checkAddr(addr)
 	d.end()
+	checkAddr(addr)
 	return d.readByte(addr)
 }
 
 // ReadUint16 reads 16-bit word from EVE memory at address addr.
 func (d *Driver) ReadUint16(addr int) uint16 {
-	checkAddr(addr)
 	d.end()
+	checkAddr(addr)
 	return d.readUint16(addr)
 }
 
 // ReadUint32 reads 32-bit word from EVE memory at address addr.
 func (d *Driver) ReadUint32(addr int) uint32 {
-	checkAddr(addr)
 	d.end()
+	checkAddr(addr)
 	return d.readUint32(addr)
 }
 
@@ -214,8 +224,8 @@ func (d *Driver) IntFlags() byte {
 
 // ClearIntFlags clears interrupt flags specified by mask.
 func (d *Driver) ClearIntFlags(mask byte) {
-	d.flags |= d.ReadByte(d.mmap.regintflags)
-	d.flags &^= mask
+	d.end()
+	d.clearIntFlags(mask)
 }
 
 // IntMask returns current interrupt mask.
@@ -243,6 +253,7 @@ func (d *Driver) SetBacklight(pwmduty int) {
 // SwapDL clears INT_SWAP and schedules the display lists swap, to be performed
 // after rendering the current frame.
 func (d *Driver) SwapDL() {
-	d.ClearIntFlags(INT_SWAP)
-	d.WriteByte(d.mmap.regdlswap, DLSWAP_FRAME)
+	d.end()
+	d.clearIntFlags(INT_SWAP)
+	d.writeByte(d.mmap.regdlswap, DLSWAP_FRAME)
 }

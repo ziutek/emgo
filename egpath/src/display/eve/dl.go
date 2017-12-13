@@ -247,7 +247,7 @@ func (dl DL) Vertex2ii(x, y int, handle, cell byte) {
 		uint32(handle)<<7 | uint32(cell))
 }
 
-// VertexFormat sets the precision of Vertex2F coordinates.
+// VertexFormat sets the precision of Vertex2F coordinates (EVE2).
 func (dl DL) VertexFormat(frac uint) {
 	dl.aw32(VERTEX_FORMAT | uint32(frac)&7)
 }

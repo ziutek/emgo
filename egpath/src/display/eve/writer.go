@@ -6,12 +6,17 @@ type Writer struct {
 }
 
 // W starts a write transaction to the EVE memory at address addr. It returns
-// Writer that proviedes set of methods for buffered writes. Any other Drivers's
-// method flushes internal buffer and finishes the write transaction started by
-// W. After that, the returned Writer is invalid and should not be used.
+// Writer that proviedes set of methods for buffered writes. If special addr -1
+// is used W writes to RAM_DL and waits for INT_SWAP before sending first data
+// from internal buffer.
 func (d *Driver) W(addr int) Writer {
-	checkAddr(addr)
 	d.end()
+	if addr == -1 {
+		addr = d.mmap.ramdl
+		d.waitSwap = true
+	} else {
+		checkAddr(addr)
+	}
 	d.buf = d.buf[:3]
 	d.buf[0] = 1<<7 | byte(addr>>16)
 	d.buf[1] = byte(addr >> 8)
@@ -123,7 +128,10 @@ func (w Writer) WriteString(s string) (int, error) {
 	// infinite write transaction so Driver.Err can be called after all writes.
 }
 
-// Close closes the write transaction and returns number of bytes written.
+// Close flushesh internal buffer, closes the write transaction and returns
+// number of bytes written. After Close w is invalid and should not be used.
+// Close is called implicitly when another read/write/command transaction is
+// started.
 func (w Writer) Close() int {
 	return w.d.end()
 }
