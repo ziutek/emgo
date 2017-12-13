@@ -11,6 +11,12 @@ type GE struct {
 	DL
 }
 
+// GE wraps DL to retun Graphics Engine command writer. See DL for more
+// information.
+func (d *Driver) GE(addr int) GE {
+	return GE{d.DL(addr)}
+}
+
 // Close closes the write transaction and returns number of bytes written,
 // rounded up to multiple of 4 (to avoid rounding use ge.Writer.Close).
 func (ge GE) Close() int {

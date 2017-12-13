@@ -5,6 +5,20 @@ type Writer struct {
 	d *Driver
 }
 
+// W starts a write transaction to the EVE memory at address addr. It returns
+// Writer that proviedes set of methods for buffered writes. Any other Drivers's
+// method flushes internal buffer and finishes the write transaction started by
+// W. After that, the returned Writer is invalid and should not be used.
+func (d *Driver) W(addr int) Writer {
+	checkAddr(addr)
+	d.end()
+	d.buf = d.buf[:3]
+	d.buf[0] = 1<<7 | byte(addr>>16)
+	d.buf[1] = byte(addr >> 8)
+	d.buf[2] = byte(addr)
+	return Writer{d}
+}
+
 func (w Writer) wr8(b byte) {
 	d := w.d
 	if len(d.buf) == cap(d.buf) {

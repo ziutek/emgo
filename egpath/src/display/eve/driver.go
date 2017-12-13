@@ -10,7 +10,7 @@ type Driver struct {
 	n             int
 	mmap          *mmap
 	width, height uint16
-	intFlags      byte
+	flags         byte
 }
 
 // NewDriver returns new driver to the EVE graphics controller accessed via dci.
@@ -31,10 +31,86 @@ func (d *Driver) Height() int {
 	return int(d.height)
 }
 
-func checkAddr(addr int) {
-	if uint(addr) >= 1<<22 {
-		panic("eve: bad addr")
+// IRQ returns channel that can be used to wait for IRQ.
+func (d *Driver) IRQ() <-chan struct{} {
+	return d.dci.IRQ()
+}
+
+func (d *Driver) writeByte(addr int, val byte) {
+	d.dci.Write([]byte{
+		1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr),
+		val,
+	})
+	d.dci.End()
+}
+
+func (d *Driver) writeUint16(addr int, val uint16) {
+	d.dci.Write([]byte{
+		1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr),
+		byte(val), byte(val >> 8),
+	})
+	d.dci.End()
+}
+
+func (d *Driver) writeUint32(addr int, val uint32) {
+	d.dci.Write([]byte{
+		1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr),
+		byte(val), byte(val >> 8), byte(val >> 16), byte(val >> 24),
+	})
+	d.dci.End()
+}
+
+func (d *Driver) readByte(addr int) byte {
+	buf := [3]byte{byte(addr >> 16), byte(addr >> 8), byte(addr)}
+	d.dci.Write(buf[:3])
+	d.dci.Read(buf[:2])
+	d.dci.End()
+	return buf[1]
+}
+
+func (d *Driver) readUint16(addr int) uint16 {
+	buf := [3]byte{byte(addr >> 16), byte(addr >> 8), byte(addr)}
+	d.dci.Write(buf[:3])
+	d.dci.Read(buf[:3])
+	d.dci.End()
+	return uint16(buf[1]) | uint16(buf[2])<<8
+}
+
+func (d *Driver) readUint32(addr int) uint32 {
+	buf := [5]byte{byte(addr >> 16), byte(addr >> 8), byte(addr)}
+	d.dci.Write(buf[:3])
+	d.dci.Read(buf[:5])
+	d.dci.End()
+	return uint32(buf[1]) | uint32(buf[2])<<8 | uint32(buf[3])<<16 |
+		uint32(buf[4])<<24
+}
+
+func (d *Driver) intFlags() byte {
+	d.flags |= d.readByte(d.mmap.regintflags)
+	return d.flags
+}
+
+func (d *Driver) intMask() byte {
+	return d.readByte(d.mmap.regintflags + ointmask)
+}
+
+func (d *Driver) setIntMask(mask byte) {
+	d.writeByte(d.mmap.regintflags+ointmask, mask)
+}
+
+func (d *Driver) wait(flags byte) {
+	if d.flags&flags != 0 || d.intFlags()&flags != 0 {
+		return
 	}
+	mask := d.intMask()
+	d.setIntMask(flags)
+	for {
+		<-d.IRQ()
+		if d.intFlags()&flags != 0 {
+			break
+		}
+	}
+	d.setIntMask(mask)
 }
 
 func (d *Driver) flush() {
@@ -65,34 +141,31 @@ func (d *Driver) HostCmd(cmd HostCmd, param byte) {
 	d.dci.End()
 }
 
+func checkAddr(addr int) {
+	if uint(addr) >= 1<<22 {
+		panic("eve: bad addr")
+	}
+}
+
 // WriteByte writes byte to the EVE memory at address addr.
 func (d *Driver) WriteByte(addr int, val byte) {
+	checkAddr(addr)
 	d.end()
-	d.dci.Write([]byte{
-		1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr),
-		val,
-	})
-	d.dci.End()
+	d.writeByte(addr, val)
 }
 
 // WriteUint16 writes 16-bit word to the EVE memory at address addr.
 func (d *Driver) WriteUint16(addr int, val uint16) {
+	checkAddr(addr)
 	d.end()
-	d.dci.Write([]byte{
-		1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr),
-		byte(val), byte(val >> 8),
-	})
-	d.dci.End()
+	d.writeUint16(addr, val)
 }
 
 // WriteUint32 writes 32-bit word to the EVE memory at address addr.
 func (d *Driver) WriteUint32(addr int, val uint32) {
+	checkAddr(addr)
 	d.end()
-	d.dci.Write([]byte{
-		1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr),
-		byte(val), byte(val >> 8), byte(val >> 16), byte(val >> 24),
-	})
-	d.dci.End()
+	d.writeUint32(addr, val)
 }
 
 // WriteInt writes signed 32-bit word to the EVE memory at address addr.
@@ -100,55 +173,25 @@ func (d *Driver) WriteInt(addr int, val int) {
 	d.WriteUint32(addr, uint32(val))
 }
 
-// W starts a write transaction to the EVE memory at address addr. It returns
-// Writer that proviedes set of methods for buffered writes. Any other Drivers's
-// method flushes internal buffer and finishes the write transaction started by
-// W. After that, the returned Writer is invalid and should not be used.
-func (d *Driver) W(addr int) Writer {
-	checkAddr(addr)
-	d.end()
-	d.buf = d.buf[:3]
-	d.buf[0] = 1<<7 | byte(addr>>16)
-	d.buf[1] = byte(addr >> 8)
-	d.buf[2] = byte(addr)
-	return Writer{d}
-}
-
-// R starts a read transaction from the EVE memory at address addr. It
-// returns Reader that provides set of reading methods. Any other Driver's
-// method finish the read transaction started by R. After that, the returned
-// Reader is invalid and should not be used.
-func (d *Driver) R(addr int) Reader {
-	checkAddr(addr)
-	d.end()
-	d.dci.Write([]byte{byte(addr >> 16), byte(addr >> 8), byte(addr)})
-	d.n = 0
-	d.dci.Read([]byte{0}) // Read dummy byte (input mode required by QSPI ).
-	return Reader{d}
-}
-
 // ReadByte reads byte from EVE memory at address addr.
 func (d *Driver) ReadByte(addr int) byte {
-	r := d.R(addr)
-	val := r.ReadByte()
-	r.Close()
-	return val
+	checkAddr(addr)
+	d.end()
+	return d.readByte(addr)
 }
 
 // ReadUint16 reads 16-bit word from EVE memory at address addr.
 func (d *Driver) ReadUint16(addr int) uint16 {
-	r := d.R(addr)
-	val := r.ReadUint16()
-	r.Close()
-	return val
+	checkAddr(addr)
+	d.end()
+	return d.readUint16(addr)
 }
 
 // ReadUint32 reads 32-bit word from EVE memory at address addr.
 func (d *Driver) ReadUint32(addr int) uint32 {
-	r := d.R(addr)
-	val := r.ReadUint32()
-	r.Close()
-	return val
+	checkAddr(addr)
+	d.end()
+	return d.readUint32(addr)
 }
 
 // ReadUint32 reads signed 32-bit word from EVE memory at address addr.
@@ -162,18 +205,44 @@ func (d *Driver) Err(clear bool) error {
 	return d.dci.Err(clear)
 }
 
-// DL wraps W to return Display List writer. See W for more information.
-func (d *Driver) DL(addr int) DL {
-	return DL{d.W(addr)}
+// IntFlags reads interrupt flags from EVE and accumulates them (using logical
+// OR) in internal variable. It returns accumulated flags.
+func (d *Driver) IntFlags() byte {
+	d.end()
+	return d.intFlags()
 }
 
-// GE wraps DL to retun Graphics Engine command writer. See DL for more
-// information.
-func (d *Driver) GE(addr int) GE {
-	return GE{d.DL(addr)}
+// ClearIntFlags clears interrupt flags specified by mask.
+func (d *Driver) ClearIntFlags(mask byte) {
+	d.flags |= d.ReadByte(d.mmap.regintflags)
+	d.flags &^= mask
 }
 
-// IRQ returns channel that can be used to wait for IRQ.
-func (d *Driver) IRQ() <-chan struct{} {
-	return d.dci.IRQ()
+// IntMask returns current interrupt mask.
+func (d *Driver) IntMask() byte {
+	d.end()
+	return d.intMask()
+}
+
+// SetIntMask sets interrupt mask.
+func (d *Driver) SetIntMask(mask byte) {
+	d.end()
+	d.setIntMask(mask)
+}
+
+// Wait waits for any interrupt in flags.
+func (d *Driver) Wait(flags byte) {
+	d.wait(flags)
+}
+
+// SetBacklight sets backlight PWM duty cycle. Pwmduty range is from 0 to 128.
+func (d *Driver) SetBacklight(pwmduty int) {
+	d.WriteByte(d.mmap.regintflags+opwmduty, byte(pwmduty))
+}
+
+// SwapDL clears INT_SWAP and schedules the display lists swap, to be performed
+// after rendering the current frame.
+func (d *Driver) SwapDL() {
+	d.ClearIntFlags(INT_SWAP)
+	d.WriteByte(d.mmap.regdlswap, DLSWAP_FRAME)
 }

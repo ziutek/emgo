@@ -7,6 +7,11 @@ type DL struct {
 	Writer
 }
 
+// DL wraps W to return Display List writer. See W for more information.
+func (d *Driver) DL(addr int) DL {
+	return DL{d.W(addr)}
+}
+
 // AlphaFunc sets the alpha test function.
 func (dl DL) AlphaFunc(fun, ref byte) {
 	dl.aw32(ALPHA_FUNC | uint32(fun)<<8 | uint32(ref))
