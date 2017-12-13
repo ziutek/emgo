@@ -74,30 +74,23 @@ func init() {
 }
 
 func main() {
+	var rnd rand.XorShift64
+	rnd.Seed(1)
+
 	spibus := dci.SPI().P.Bus()
 	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd := eve.NewDriver(dci, 128)
 	lcd.Init(&eve.Default480x272)
-	dci.SetBaudrate(30e6)
 
+	dci.SetBaudrate(30e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd.SetBacklight(64)
+	lcd.W(ft80.RAM_G).Write(LenaFaceRGB[:])
 
-	/*ge := lcd.GE(ft80.RAM_CMD + n)
-	ge.Clear(eve.CST)
-	ge.Calibrate()
-	n += ge.Close() + 4
-	lcd.WriteInt(ft80.REG_CMD_WRITE, n&4095)*/
-
-	lcd.W(ft80.RAM_G).Write(LenaFace[:])
-
-	var rnd rand.XorShift64
-	rnd.Seed(1)
-
-	for {
+	for i := 1; ; i++ {
 		lcd.Wait(eve.INT_SWAP)
 		dl := lcd.DL(ft80.RAM_DL)
 		dl.BitmapHandle(1)
@@ -106,16 +99,24 @@ func main() {
 		dl.BitmapSize(eve.DEFAULT, 40, 40)
 		dl.Clear(eve.CST)
 		dl.Begin(eve.BITMAPS)
-		for i := 0; i < 1000; i++ {
+		for n := 0; n < 500; n++ {
 			v := rnd.Uint32()
-			x := int(v) % lcd.Width()
-			y := int(v>>16) % lcd.Height()
+			c := v&0xFFFFFF | 0x808080
+			x := int(v>>12) % lcd.Width()
+			y := int(v>>23) % lcd.Height()
+			dl.ColorRGB(c)
 			dl.Vertex2f((x-20)*16, (y-20)*16)
 		}
 		dl.Display()
 		lcd.SwapDL()
 	}
 }
+
+/*ge := lcd.GE(ft80.RAM_CMD + n)
+ge.Clear(eve.CST)
+ge.Calibrate()
+n += ge.Close() + 4
+lcd.WriteInt(ft80.REG_CMD_WRITE, n&4095)*/
 
 func lcdSPIISR() {
 	dci.SPI().ISR()
