@@ -4,6 +4,7 @@ package eve
 type Reader struct {
 	d *Driver
 }
+
 // R starts a read transaction from the EVE memory at address addr. It
 // returns Reader that provides set of reading methods. Any other Driver's
 // method finish the read transaction started by R. After that, the returned
@@ -16,7 +17,6 @@ func (d *Driver) R(addr int) Reader {
 	d.dci.Read([]byte{0}) // Read dummy byte (input mode required by QSPI ).
 	return Reader{d}
 }
-
 
 func (r Reader) ReadByte() byte {
 	var buf [1]byte

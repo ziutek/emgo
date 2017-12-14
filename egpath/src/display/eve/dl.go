@@ -152,7 +152,8 @@ func (dl DL) End() {
 	dl.aw32(END)
 }
 
-// Jump executes commands at another location in the display list.
+// Jump executes commands at another location in the display list. Dest is the
+// command number in display list (address = RAM_DL + dest*4).
 func (dl DL) Jump(dest int) {
 	dl.aw32(JUMP | uint32(dest)&0xFFFF)
 }

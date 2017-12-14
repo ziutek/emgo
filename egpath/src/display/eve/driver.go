@@ -24,12 +24,24 @@ func NewDriver(dci DCI, n int) *Driver {
 	return d
 }
 
+// Width returns screen width.
 func (d *Driver) Width() int {
 	return int(d.width)
 }
 
+// Height returns screen height.
 func (d *Driver) Height() int {
 	return int(d.height)
+}
+
+// RAMDL returns the start address of RAM_DL.
+func (d *Driver) RAMDL() int {
+	return d.mmap.ramdl
+}
+
+// RAMCMD returns the start address of RAM_CMD.
+func (d *Driver) RAMCMD() int {
+	return d.mmap.ramcmd
 }
 
 // IRQ returns channel that can be used to wait for IRQ.
