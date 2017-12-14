@@ -94,25 +94,28 @@ func main() {
 	lcd := eve.NewDriver(dci, 128)
 	lcd.Init(&eve.Default480x272)
 
-	fmt.Printf("EVE clock: %d Hz\n", curFreq(lcd))
+	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
 	dci.SetBaudrate(30e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd.SetBacklight(64)
 	lcd.W(0).Write(LenaFaceRGB[:])
 
-	fmt.Printf("500 bitmaps:")
-	const n = 120
+	const testLen = 120
+
+	n := 800 // Greather numbers can exceed the render limit (8192 pixel/line).
+	fmt.Printf("%d bitmaps:", n)
 	t := rtos.Nanosec()
-	for i := 0; i < n; i++ {
+	for i := 0; i < testLen; i++ {
 		dl := lcd.DL(-1)
 		dl.Clear(eve.CST)
 		dl.BitmapHandle(1)
 		dl.BitmapSource(0)
 		dl.BitmapLayout(eve.RGB565, 80, 40)
 		dl.BitmapSize(eve.DEFAULT, 40, 40)
+		dl.PointSize(40 * 16)
 		dl.Begin(eve.BITMAPS)
-		for k := 0; k < 500; k++ {
+		for k := 0; k < n; k++ {
 			v := rnd.Uint32()
 			c := v&0xFFFFFF | 0x808080
 			x := int(v>>12) % lcd.Width()
@@ -123,7 +126,7 @@ func main() {
 		dl.Display()
 		lcd.SwapDL()
 	}
-	fmt.Printf(" %d fps.\n", n*1e9/(rtos.Nanosec()-t))
+	fmt.Printf(" %.2f fps.\n", testLen*1e9/float32(rtos.Nanosec()-t))
 }
 
 /*ge := lcd.GE(ft80.RAM_CMD + n)
