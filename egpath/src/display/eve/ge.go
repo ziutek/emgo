@@ -11,10 +11,16 @@ type GE struct {
 	DL
 }
 
-// GE wraps DL to retun Graphics Engine command writer. Special addr -1 means
-// RAM_CMD. See DL for more information.
+// GE retuns Graphics Engine command writer. Special addr -1 means write
+// commands to the Graphics Engine co-processor.
 func (d *Driver) GE(addr int) GE {
-	
+	if addr == -1 {
+		if d.mmap == &eve1 {
+			addr = d.mmap.ramcmd + d.ReadInt(eve1_regcmdwrite)
+		} else {
+			addr = eve2_regcmdbwrite
+		}
+	}
 	return GE{d.DL(addr)}
 }
 

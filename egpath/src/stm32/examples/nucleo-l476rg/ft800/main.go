@@ -103,8 +103,10 @@ func main() {
 
 	const testLen = 120
 
+	// Create display list in RAM_DL directly.
+
 	n := 800 // Greather numbers can exceed the render limit (8192 pixel/line).
-	fmt.Printf("%d bitmaps:", n)
+	fmt.Printf("\n%d bitmaps:", n)
 	t := rtos.Nanosec()
 	for i := 0; i < testLen; i++ {
 		dl := lcd.DL(-1)
@@ -113,7 +115,6 @@ func main() {
 		dl.BitmapSource(0)
 		dl.BitmapLayout(eve.RGB565, 80, 40)
 		dl.BitmapSize(eve.DEFAULT, 40, 40)
-		dl.PointSize(40 * 16)
 		dl.Begin(eve.BITMAPS)
 		for k := 0; k < n; k++ {
 			v := rnd.Uint32()
@@ -127,6 +128,17 @@ func main() {
 		lcd.SwapDL()
 	}
 	fmt.Printf(" %.2f fps.\n", testLen*1e9/float32(rtos.Nanosec()-t))
+	delay.Millisec(1000)
+
+	// Use Graphics Engine co-processor.
+
+	ge := lcd.GE(-1)
+	ge.DLStart()
+	ge.Clear(eve.CST)
+	ge.Button(170, 110, 140, 40, 23, 0, "Push me!")
+	ge.Display()
+	ge.Swap()
+	lcd.WriteInt(ft80.REG_CMD_WRITE, ge.Close())
 }
 
 /*ge := lcd.GE(ft80.RAM_CMD + n)

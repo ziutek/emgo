@@ -14,9 +14,8 @@ func (d *Driver) W(addr int) Writer {
 	if addr == -1 {
 		addr = d.mmap.ramdl
 		d.waitSwap = true
-	} else {
-		checkAddr(addr)
 	}
+	checkAddr(addr)
 	d.buf = d.buf[:3]
 	d.buf[0] = 1<<7 | byte(addr>>16)
 	d.buf[1] = byte(addr >> 8)

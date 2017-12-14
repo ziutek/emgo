@@ -45,6 +45,16 @@ const (
 	opwmduty = 44
 )
 
+const (
+	eve1_regcmdread  = 0x1024E4
+	eve1_regcmdwrite = 0x1024E8
+)
+
+const (
+	eve2_regcmdbspace = 0x302574
+	eve2_regcmdbwrite = 0x302578
+)
+
 type DisplayConfig struct {
 	Hcycle  uint16 // Total number of clocks per line.
 	Hsize   uint16 // Active width of LCD display.
