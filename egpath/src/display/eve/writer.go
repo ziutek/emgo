@@ -5,6 +5,15 @@ type Writer struct {
 	d *Driver
 }
 
+func (d *Driver) writer(addr int) Writer {
+	checkAddr(addr)
+	d.buf = d.buf[:3]
+	d.buf[0] = 1<<7 | byte(addr>>16)
+	d.buf[1] = byte(addr >> 8)
+	d.buf[2] = byte(addr)
+	return Writer{d}
+}
+
 // W starts a write transaction to the EVE memory at address addr. It returns
 // Writer that proviedes set of methods for buffered writes. If special addr -1
 // is used W writes to RAM_DL and waits for INT_SWAP before sending first data
@@ -15,12 +24,7 @@ func (d *Driver) W(addr int) Writer {
 		addr = d.mmap.ramdl
 		d.waitSwap = true
 	}
-	checkAddr(addr)
-	d.buf = d.buf[:3]
-	d.buf[0] = 1<<7 | byte(addr>>16)
-	d.buf[1] = byte(addr >> 8)
-	d.buf[2] = byte(addr)
-	return Writer{d}
+	return d.writer(addr)
 }
 
 func (w Writer) wr8(b byte) {

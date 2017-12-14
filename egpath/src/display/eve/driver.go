@@ -10,6 +10,7 @@ type Driver struct {
 	n             int
 	mmap          *mmap
 	width, height uint16
+	cmdStart      int16
 	flags         byte
 	waitSwap      bool
 }
@@ -21,6 +22,7 @@ func NewDriver(dci DCI, n int) *Driver {
 	d.dci = dci
 	d.buf = make([]byte, 0, n)
 	d.n = -3
+	d.cmdStart = -1
 	return d
 }
 
@@ -150,6 +152,11 @@ func (d *Driver) end() int {
 		d.n = -3
 		d.dci.End()
 	}
+	if d.cmdStart >= 0 {
+		cmdEnd := (uint32(d.cmdStart) + uint32(n+3)&^3) & 4095
+		d.cmdStart = -1
+		d.writeUint32(eve1_regcmdwrite, cmdEnd)
+	}
 	return n
 }
 
@@ -254,12 +261,14 @@ func (d *Driver) SetIntMask(mask byte) {
 
 // Wait waits for any interrupt in flags.
 func (d *Driver) Wait(flags byte) {
+	d.end()
 	d.wait(flags)
 }
 
 // SetBacklight sets backlight PWM duty cycle. Pwmduty range is from 0 to 128.
 func (d *Driver) SetBacklight(pwmduty int) {
-	d.WriteByte(d.mmap.regintflags+opwmduty, byte(pwmduty))
+	d.end()
+	d.writeByte(d.mmap.regintflags+opwmduty, byte(pwmduty))
 }
 
 // SwapDL clears INT_SWAP and schedules the display lists swap, to be performed

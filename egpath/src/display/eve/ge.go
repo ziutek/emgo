@@ -14,18 +14,22 @@ type GE struct {
 // GE retuns Graphics Engine command writer. Special addr -1 means write
 // commands to the Graphics Engine co-processor.
 func (d *Driver) GE(addr int) GE {
+	d.end()
 	if addr == -1 {
 		if d.mmap == &eve1 {
-			addr = d.mmap.ramcmd + d.ReadInt(eve1_regcmdwrite)
+			cmdStart := int(d.readUint32(eve1_regcmdwrite))
+			d.cmdStart = int16(cmdStart)
+			addr = d.mmap.ramcmd + cmdStart
 		} else {
 			addr = eve2_regcmdbwrite
 		}
 	}
-	return GE{d.DL(addr)}
+	return GE{DL{d.writer(addr)}}
 }
 
-// Close closes the write transaction and returns number of bytes written,
-// rounded up to multiple of 4 (to avoid rounding use ge.Writer.Close).
+// Close closes the write transaction and returns the number of written bytes,
+// rounded up to multiple of 4. To obtain the number of actually written bytes
+// use ge.Writer.Close.
 func (ge GE) Close() int {
 	return (ge.Writer.Close() + 3) &^ 3
 }

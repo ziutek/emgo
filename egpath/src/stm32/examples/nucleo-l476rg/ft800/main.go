@@ -138,7 +138,8 @@ func main() {
 	ge.Button(170, 110, 140, 40, 23, 0, "Push me!")
 	ge.Display()
 	ge.Swap()
-	lcd.WriteInt(ft80.REG_CMD_WRITE, ge.Close())
+	lcd.Wait(eve.INT_CMDEMPTY)
+	fmt.Printf("End.\n")
 }
 
 /*ge := lcd.GE(ft80.RAM_CMD + n)

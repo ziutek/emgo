@@ -218,14 +218,14 @@ const (
 
 // Interrupt flags.
 const (
-	INT_SWAP         = 1 << 0
-	INT_TOUCH        = 1 << 1
-	INT_TAG          = 1 << 2
-	INT_SOUND        = 1 << 3
-	INT_PLAYBACK     = 1 << 4
-	INT_CMDEMPTY     = 1 << 5
-	INT_CMDFLAG      = 1 << 6
-	INT_CONVCOMPLETE = 1 << 7
+	INT_SWAP         = 1 << 0 // Display list swap occurred.
+	INT_TOUCH        = 1 << 1 // Touch detected.
+	INT_TAG          = 1 << 2 // Touch-screen tag value change.
+	INT_SOUND        = 1 << 3 // Sound effect ended.
+	INT_PLAYBACK     = 1 << 4 // Audio playback ended.
+	INT_CMDEMPTY     = 1 << 5 // Command FIFO empty.
+	INT_CMDFLAG      = 1 << 6 // Command FIFO flag.
+	INT_CONVCOMPLETE = 1 << 7 // Touch-screen conversions completed.
 )
 
 // Image/video options (CMD_LOAD_IMAGE, CMD_PLAYVIDEO).
