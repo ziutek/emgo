@@ -99,22 +99,24 @@ func main() {
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd.SetBacklight(64)
-	lcd.W(0).Write(LenaFaceRGB[:])
 
 	const testLen = 120
 
-	// Create display list in RAM_DL directly.
+	// Create display list directly in RAM_DL.
 
 	n := 800 // Greather numbers can exceed the render limit (8192 pixel/line).
 	fmt.Printf("\n%d bitmaps:", n)
+
+	addr := 0
+	lcd.W(addr).Write(LenaFaceRGB[:])
+	addr += len(LenaFaceRGB)
+
 	t := rtos.Nanosec()
 	for i := 0; i < testLen; i++ {
 		dl := lcd.DL(-1)
-		dl.Clear(eve.CST)
-		dl.BitmapHandle(1)
-		dl.BitmapSource(0)
 		dl.BitmapLayout(eve.RGB565, 80, 40)
 		dl.BitmapSize(eve.DEFAULT, 40, 40)
+		dl.Clear(eve.CST)
 		dl.Begin(eve.BITMAPS)
 		for k := 0; k < n; k++ {
 			v := rnd.Uint32()
@@ -130,15 +132,39 @@ func main() {
 	fmt.Printf(" %.2f fps.\n", testLen*1e9/float32(rtos.Nanosec()-t))
 	delay.Millisec(1000)
 
-	// Use Graphics Engine co-processor.
+	// Create display list using Graphics Engine co-processor.
 
 	ge := lcd.GE(-1)
 	ge.DLStart()
+	ge.BitmapHandle(1)
+
+	fmt.Printf("Loading JPEG image...")
+
+	t = rtos.Nanosec()
+	ge.LoadImage(addr, eve.OPT_RGB565)
+	img := Mandrill[:]
+	for len(img) >= 4000 {
+		ge.Write(img[:4000])
+		img = img[4000:]
+		lcd.Wait(eve.INT_CMDEMPTY)
+		ge = lcd.GE(-1)
+	}
+	ge.Write(img[:])
+	lcd.Wait(eve.INT_CMDEMPTY)
+
+	fmt.Printf(" done (%d B/s).\n", int64(len(Mandrill))*1e9/(rtos.Nanosec()-t))
+
+	ge = lcd.GE(-1)
 	ge.Clear(eve.CST)
-	ge.Button(170, 110, 140, 40, 23, 0, "Push me!")
+	ge.Begin(eve.BITMAPS)
+	ge.Vertex2f(0, 0)
+	ge.BitmapHandle(0)
+	ge.Vertex2f((lcd.Width()-40)*16, 0)
+	ge.Button(300, 110, 140, 40, 23, 0, "Push me!")
 	ge.Display()
 	ge.Swap()
 	lcd.Wait(eve.INT_CMDEMPTY)
+
 	fmt.Printf("End.\n")
 }
 

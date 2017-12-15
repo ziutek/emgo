@@ -20,6 +20,7 @@ func (d *Driver) writer(addr int) Writer {
 // from internal buffer.
 func (d *Driver) W(addr int) Writer {
 	d.end()
+	d.cmdStart = -1
 	if addr == -1 {
 		addr = d.mmap.ramdl
 		d.waitSwap = true

@@ -230,6 +230,7 @@ const (
 
 // Image/video options (CMD_LOAD_IMAGE, CMD_PLAYVIDEO).
 const (
+	OPT_RGB565     = 0
 	OPT_MONO       = 1 << 0
 	OPT_NODL       = 1 << 1
 	OPT_NOTEAR     = 1 << 2 // EVE2

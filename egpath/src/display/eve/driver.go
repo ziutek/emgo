@@ -151,11 +151,16 @@ func (d *Driver) end() int {
 	if n >= 0 {
 		d.n = -3
 		d.dci.End()
-	}
-	if d.cmdStart >= 0 {
-		cmdEnd := (uint32(d.cmdStart) + uint32(n+3)&^3) & 4095
-		d.cmdStart = -1
-		d.writeUint32(eve1_regcmdwrite, cmdEnd)
+		if d.cmdStart >= 0 {
+			cmdEnd := (uint32(d.cmdStart) + uint32(n+3)&^3) & 4095
+			d.cmdStart = int16(cmdEnd)
+			d.writeUint32(eve1_regcmdwrite, cmdEnd)
+			// Ensure that interrupt flag will be valid.
+			d.clearIntFlags(INT_CMDEMPTY)
+			if d.readUint32(eve1_regcmdread) == cmdEnd {
+				d.flags |= INT_CMDEMPTY
+			}
+		}
 	}
 	return n
 }
