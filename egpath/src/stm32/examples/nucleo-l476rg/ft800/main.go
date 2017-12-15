@@ -142,7 +142,7 @@ func main() {
 
 	t = rtos.Nanosec()
 	ge.LoadImage(addr, eve.OPT_RGB565)
-	img := Mandrill[:]
+	img := GopherJPEG[:]
 	for len(img) > 0 {
 		n := lcd.CmdSpace()
 		if n > len(img) {
@@ -156,7 +156,7 @@ func main() {
 	t = rtos.Nanosec() - t
 	fmt.Printf(
 		" done (%d B / %d ms = %d B/s).\n",
-		len(Mandrill), t/1e6, int64(len(Mandrill))*1e9/t,
+		len(GopherJPEG), t/1e6, int64(len(GopherJPEG))*1e9/t,
 	)
 
 	ge = lcd.GE(-1)
