@@ -100,6 +100,18 @@ func (d *Driver) readUint32(addr int) uint32 {
 		uint32(buf[4])<<24
 }
 
+func (d *Driver) readTwoUint32(addr int) (a, b uint32) {
+	buf := [9]byte{byte(addr >> 16), byte(addr >> 8), byte(addr)}
+	d.dci.Write(buf[:3])
+	d.dci.Read(buf[:9])
+	d.dci.End()
+	a = uint32(buf[1]) | uint32(buf[2])<<8 | uint32(buf[3])<<16 |
+		uint32(buf[4])<<24
+	b = uint32(buf[5]) | uint32(buf[6])<<8 | uint32(buf[7])<<16 |
+		uint32(buf[8])<<24
+	return
+}
+
 func (d *Driver) intFlags() byte {
 	d.flags |= d.readByte(d.mmap.regintflags)
 	return d.flags
@@ -282,4 +294,14 @@ func (d *Driver) SwapDL() {
 	d.end()
 	d.clearIntFlags(INT_SWAP)
 	d.writeByte(d.mmap.regdlswap, DLSWAP_FRAME)
+}
+
+func (d *Driver) CmdSpace() int {
+	d.end()
+	if d.mmap == &eve1 {
+		cmdrd, cmdwr := d.readTwoUint32(eve1_regcmdread)
+		return int(4092 - (cmdwr-cmdrd)&4095)
+	} else {
+		return int(d.readUint32(eve2_regcmdbspace))
+	}
 }

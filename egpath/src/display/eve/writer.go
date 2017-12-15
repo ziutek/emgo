@@ -6,7 +6,6 @@ type Writer struct {
 }
 
 func (d *Driver) writer(addr int) Writer {
-	checkAddr(addr)
 	d.buf = d.buf[:3]
 	d.buf[0] = 1<<7 | byte(addr>>16)
 	d.buf[1] = byte(addr >> 8)
@@ -25,6 +24,7 @@ func (d *Driver) W(addr int) Writer {
 		addr = d.mmap.ramdl
 		d.waitSwap = true
 	}
+	checkAddr(addr)
 	return d.writer(addr)
 }
 

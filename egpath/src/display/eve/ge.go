@@ -31,6 +31,7 @@ func (d *Driver) GE(addr int) GE {
 		}
 	} else {
 		d.cmdStart = -1
+		checkAddr(addr)
 	}
 	return GE{DL{d.writer(addr)}}
 }

@@ -143,16 +143,21 @@ func main() {
 	t = rtos.Nanosec()
 	ge.LoadImage(addr, eve.OPT_RGB565)
 	img := Mandrill[:]
-	for len(img) >= 4000 {
-		ge.Write(img[:4000])
-		img = img[4000:]
-		lcd.Wait(eve.INT_CMDEMPTY)
-		ge = lcd.GE(-1)
+	for len(img) > 0 {
+		n := lcd.CmdSpace()
+		if n > len(img) {
+			n = len(img)
+		}
+		lcd.GE(-1).Write(img[:n])
+		img = img[n:]
 	}
-	ge.Write(img[:])
 	lcd.Wait(eve.INT_CMDEMPTY)
 
-	fmt.Printf(" done (%d B/s).\n", int64(len(Mandrill))*1e9/(rtos.Nanosec()-t))
+	t = rtos.Nanosec() - t
+	fmt.Printf(
+		" done (%d B / %d ms = %d B/s).\n",
+		len(Mandrill), t/1e6, int64(len(Mandrill))*1e9/t,
+	)
 
 	ge = lcd.GE(-1)
 	ge.Clear(eve.CST)
