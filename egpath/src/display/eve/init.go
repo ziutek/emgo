@@ -17,7 +17,7 @@ type mmap struct {
 //emgo:const
 var eve1 = mmap{
 	ramdl:       0x100000,
-	ramcmd:      0x108000,
+	ramcmd:      0x108000, // 264 * 4096
 	regdlswap:   0x102450,
 	regintflags: 0x102498,
 }
@@ -25,7 +25,7 @@ var eve1 = mmap{
 //emgo:const
 var eve2 = mmap{
 	ramdl:       0x300000,
-	ramcmd:      0x308000,
+	ramcmd:      0x308000, // 776 * 4096
 	regdlswap:   0x302054,
 	regintflags: 0x3020a8,
 }
@@ -127,24 +127,30 @@ func (d *Driver) Init(cfg *DisplayConfig) error {
 	d.SetIntMask(0)
 	d.WriteByte(d.mmap.regintflags+ointen, 1)
 	w := d.W(d.mmap.regdlswap + oswizzle)
-	w.wr32(uint32(cfg.Swizzle))
-	w.wr32(uint32(cfg.Spreed))
-	w.wr32(uint32(cfg.ClkPol))
-	w.wr32(0)
+	w.Write32(
+		uint32(cfg.Swizzle),
+		uint32(cfg.Spreed),
+		uint32(cfg.ClkPol),
+		0, // REG_PCLK
+	)
 	w = d.W(d.mmap.regdlswap + ohcycle)
-	w.wr32(uint32(cfg.Hcycle))
-	w.wr32(uint32(cfg.Hoffset))
-	w.wr32(uint32(cfg.Hsize))
-	w.wr32(uint32(cfg.Hsync0))
-	w.wr32(uint32(cfg.Hsync1))
-	w.wr32(uint32(cfg.Vcycle))
-	w.wr32(uint32(cfg.Voffset))
-	w.wr32(uint32(cfg.Vsize))
-	w.wr32(uint32(cfg.Vsync0))
-	w.wr32(uint32(cfg.Vsync1))
+	w.Write32(
+		uint32(cfg.Hcycle),
+		uint32(cfg.Hoffset),
+		uint32(cfg.Hsize),
+		uint32(cfg.Hsync0),
+		uint32(cfg.Hsync1),
+		uint32(cfg.Vcycle),
+		uint32(cfg.Voffset),
+		uint32(cfg.Vsize),
+		uint32(cfg.Vsync0),
+		uint32(cfg.Vsync1),
+	)
 	w = d.W(d.mmap.ramdl)
-	w.wr32(CLEAR | CST)
-	w.wr32(DISPLAY)
+	w.Write32(
+		CLEAR|CST,
+		DISPLAY,
+	)
 	d.SwapDL()
 	b := d.ReadByte(d.mmap.regdlswap + ogpio)
 	d.WriteByte(d.mmap.regdlswap+ogpio, b|0x80)     // Set DISP high.

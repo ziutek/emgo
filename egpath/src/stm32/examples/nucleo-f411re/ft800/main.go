@@ -86,25 +86,31 @@ func main() {
 	lcd := eve.NewDriver(dci, 128)
 	lcd.Init(&eve.Default480x272)
 
-	fmt.Printf("EVE clock: %d Hz\n", curFreq(lcd))
+	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
 	dci.SetBaudrate(30e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd.SetBacklight(64)
-	lcd.W(0).Write(LenaFaceRGB[:])
 
-	fmt.Printf("500 bitmaps:")
-	const n = 120
+	const testLen = 120
+
+	// Create display list directly in RAM_DL.
+
+	n := 800 // Greather numbers can exceed the render limit (8192 pixel/line).
+	fmt.Printf("\n%d bitmaps:", n)
+
+	addr := 0
+	lcd.W(addr).Write(LenaFaceRGB[:])
+	addr += len(LenaFaceRGB)
+
 	t := rtos.Nanosec()
-	for i := 0; i < n; i++ {
+	for i := 0; i < testLen; i++ {
 		dl := lcd.DL(-1)
-		dl.Clear(eve.CST)
-		dl.BitmapHandle(1)
-		dl.BitmapSource(0)
 		dl.BitmapLayout(eve.RGB565, 80, 40)
 		dl.BitmapSize(eve.DEFAULT, 40, 40)
+		dl.Clear(eve.CST)
 		dl.Begin(eve.BITMAPS)
-		for k := 0; k < 500; k++ {
+		for k := 0; k < n; k++ {
 			v := rnd.Uint32()
 			c := v&0xFFFFFF | 0x808080
 			x := int(v>>12) % lcd.Width()
@@ -115,8 +121,41 @@ func main() {
 		dl.Display()
 		lcd.SwapDL()
 	}
-	fmt.Printf(" %d fps.\n", n*1e9/(rtos.Nanosec()-t))
+	fmt.Printf(" %.2f fps.\n", testLen*1e9/float32(rtos.Nanosec()-t))
+	delay.Millisec(100)
+
+	// Create display list using Graphics Engine co-processor.
+
+	ge := lcd.GE(-1)
+	ge.DLStart()
+	ge.BitmapHandle(1)
+
+	fmt.Printf("Loading JPEG image...")
+
+	t = rtos.Nanosec()
+	img := GopherJPEG[:]
+	ge.LoadImageBytes(addr, eve.OPT_RGB565, img)
+	lcd.Wait(eve.INT_CMDEMPTY)
+
+	t = rtos.Nanosec() - t
+	fmt.Printf(
+		" done (%d B / %d ms = %d B/s).\n",
+		len(GopherJPEG), t/1e6, int64(len(GopherJPEG))*1e9/t,
+	)
+
+	ge.Clear(eve.CST)
+	ge.Begin(eve.BITMAPS)
+	ge.Vertex2f(0, 0)
+	ge.BitmapHandle(0)
+	ge.Vertex2f((lcd.Width()-40)*16, 0)
+	ge.ButtonString(300, 110, 140, 40, 23, 0, "Push me!")
+	ge.Display()
+	ge.Swap()
+	lcd.Wait(eve.INT_CMDEMPTY)
+
+	fmt.Printf("End.\n")
 }
+
 
 /*ge := lcd.GE(ft80.RAM_CMD + n)
 ge.Clear(eve.CST)

@@ -130,7 +130,7 @@ func main() {
 		lcd.SwapDL()
 	}
 	fmt.Printf(" %.2f fps.\n", testLen*1e9/float32(rtos.Nanosec()-t))
-	delay.Millisec(1000)
+	delay.Millisec(100)
 
 	// Create display list using Graphics Engine co-processor.
 
@@ -141,16 +141,8 @@ func main() {
 	fmt.Printf("Loading JPEG image...")
 
 	t = rtos.Nanosec()
-	ge.LoadImage(addr, eve.OPT_RGB565)
 	img := GopherJPEG[:]
-	for len(img) > 0 {
-		n := lcd.CmdSpace()
-		if n > len(img) {
-			n = len(img)
-		}
-		lcd.GE(-1).Write(img[:n])
-		img = img[n:]
-	}
+	ge.LoadImageBytes(addr, eve.OPT_RGB565, img)
 	lcd.Wait(eve.INT_CMDEMPTY)
 
 	t = rtos.Nanosec() - t
@@ -159,13 +151,12 @@ func main() {
 		len(GopherJPEG), t/1e6, int64(len(GopherJPEG))*1e9/t,
 	)
 
-	ge = lcd.GE(-1)
 	ge.Clear(eve.CST)
 	ge.Begin(eve.BITMAPS)
 	ge.Vertex2f(0, 0)
 	ge.BitmapHandle(0)
 	ge.Vertex2f((lcd.Width()-40)*16, 0)
-	ge.Button(300, 110, 140, 40, 23, 0, "Push me!")
+	ge.ButtonString(300, 110, 140, 40, 23, 0, "Push me!")
 	ge.Display()
 	ge.Swap()
 	lcd.Wait(eve.INT_CMDEMPTY)

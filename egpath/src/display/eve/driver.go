@@ -7,12 +7,11 @@ package eve
 type Driver struct {
 	dci           DCI
 	buf           []byte
-	n             int
 	mmap          *mmap
+	addr          int
 	width, height uint16
-	cmdStart      int16
-	flags         byte
-	waitSwap      bool
+	irqf          byte
+	state         byte
 }
 
 // NewDriver returns new driver to the EVE graphics controller accessed via dci.
@@ -21,8 +20,6 @@ func NewDriver(dci DCI, n int) *Driver {
 	d := new(Driver)
 	d.dci = dci
 	d.buf = make([]byte, 0, n)
-	d.n = -3
-	d.cmdStart = -1
 	return d
 }
 
@@ -113,13 +110,13 @@ func (d *Driver) readTwoUint32(addr int) (a, b uint32) {
 }
 
 func (d *Driver) intFlags() byte {
-	d.flags |= d.readByte(d.mmap.regintflags)
-	return d.flags
+	d.irqf |= d.readByte(d.mmap.regintflags)
+	return d.irqf
 }
 
 func (d *Driver) clearIntFlags(mask byte) {
-	d.flags |= d.readByte(d.mmap.regintflags)
-	d.flags &^= mask
+	d.irqf |= d.readByte(d.mmap.regintflags)
+	d.irqf &^= mask
 }
 
 func (d *Driver) intMask() byte {
@@ -131,7 +128,7 @@ func (d *Driver) setIntMask(mask byte) {
 }
 
 func (d *Driver) wait(flags byte) {
-	if d.flags&flags != 0 || d.intFlags()&flags != 0 {
+	if d.irqf&flags != 0 || d.intFlags()&flags != 0 {
 		return
 	}
 	mask := d.intMask()
@@ -146,41 +143,62 @@ func (d *Driver) wait(flags byte) {
 }
 
 func (d *Driver) flush() {
-	if d.waitSwap {
-		d.waitSwap = false
-		d.wait(INT_SWAP)
-	}
 	d.dci.Write(d.buf)
-	d.n += len(d.buf)
 	d.buf = d.buf[:0]
 }
 
-func (d *Driver) end() int {
+const (
+	stateWrite        = 0
+	stateWriteCmd     = 1
+	stateWriteBulkCmd = 2
+
+	stateOpen = 4
+)
+
+func (d *Driver) end() {
+	if d.state&stateOpen == 0 {
+		return
+	}
 	if len(d.buf) > 0 {
 		d.flush()
 	}
-	n := d.n
-	if n >= 0 {
-		d.n = -3
-		d.dci.End()
-		if d.cmdStart >= 0 {
-			cmdEnd := (uint32(d.cmdStart) + uint32(n+3)&^3) & 4095
-			d.cmdStart = int16(cmdEnd)
-			d.writeUint32(eve1_regcmdwrite, cmdEnd)
-			// Ensure that interrupt flag will be valid.
-			d.clearIntFlags(INT_CMDEMPTY)
-			if d.readUint32(eve1_regcmdread) == cmdEnd {
-				d.flags |= INT_CMDEMPTY
-			}
+	d.dci.End()
+	d.state &^= stateOpen
+	switch d.state & 3 {
+	case stateWriteCmd:
+		cmdEnd := uint32(d.addr & 4095)
+		d.writeUint32(eve1_regcmdwrite, cmdEnd)
+		// Ensure valid interrupt flag.
+		d.clearIntFlags(INT_CMDEMPTY)
+		if d.readUint32(eve1_regcmdread) == cmdEnd {
+			d.irqf |= INT_CMDEMPTY
+		}
+	case stateWriteBulkCmd:
+		// Ensure valid interrupt flag.
+		d.clearIntFlags(INT_CMDEMPTY)
+		if d.readUint32(eve2_regcmdbspace) == 4092 {
+			d.irqf |= INT_CMDEMPTY
 		}
 	}
-	return n
+}
+
+// Addr returns the current write address. This address will be used by Writer,
+// DL, GE to write next data/command.
+func (d *Driver) Addr() int {
+	switch d.state & 3 {
+	case stateWriteCmd:
+		return d.mmap.ramcmd + d.addr&4095
+	case stateWriteBulkCmd:
+		return eve2_regcmdbwrite
+	default:
+		return d.addr
+	}
 }
 
 type HostCmd byte
 
-// Cmd invokes host command. Param is a command parameter. It must be zero in
-// case of commands that do not require parameters.
+// HostCmd invokes host command. Param is a command parameter. It must be zero
+// in case of commands that do not require parameters.
 func (d *Driver) HostCmd(cmd HostCmd, param byte) {
 	d.end()
 	d.dci.Write([]byte{byte(cmd), param, 0})
@@ -188,7 +206,7 @@ func (d *Driver) HostCmd(cmd HostCmd, param byte) {
 }
 
 func checkAddr(addr int) {
-	if uint(addr) >= 1<<22 {
+	if uint(addr)>>22 != 0 {
 		panic("eve: bad addr")
 	}
 }
@@ -240,7 +258,7 @@ func (d *Driver) ReadUint32(addr int) uint32 {
 	return d.readUint32(addr)
 }
 
-// ReadUint32 reads signed 32-bit word from EVE memory at address addr.
+// ReadInt reads signed 32-bit word from EVE memory at address addr.
 func (d *Driver) ReadInt(addr int) int {
 	return int(int32(d.ReadUint32(addr)))
 }

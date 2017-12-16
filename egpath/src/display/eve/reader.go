@@ -5,15 +5,12 @@ type Reader struct {
 	d *Driver
 }
 
-// R starts a read transaction from the EVE memory at address addr. It
-// returns Reader that provides set of reading methods. Any other Driver's
-// method finish the read transaction started by R. After that, the returned
-// Reader is invalid and should not be used.
+// R starts a read transaction from the EVE memory at address addr. It returns
+// Reader that provides set of reading methods.
 func (d *Driver) R(addr int) Reader {
 	d.end()
 	checkAddr(addr)
 	d.dci.Write([]byte{byte(addr >> 16), byte(addr >> 8), byte(addr)})
-	d.n = 0
 	d.dci.Read([]byte{0}) // Read dummy byte (input mode required by QSPI ).
 	return Reader{d}
 }
