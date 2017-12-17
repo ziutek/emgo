@@ -5,6 +5,11 @@ type Writer struct {
 	d *Driver
 }
 
+// Addr returns the current write address. See Driver.WriterAddr.
+func (w Writer) Addr() int {
+	return w.d.WriterAddr()
+}
+
 func (w Writer) start(addr int) {
 	d := w.d
 	d.buf = d.buf[:3]
@@ -35,7 +40,7 @@ func (d *Driver) W(addr int) Writer {
 func (w Writer) restart(n int) {
 	d := w.d
 	if d.state&stateOpen == 0 {
-		w.start(d.Addr())
+		w.start(d.WriterAddr())
 	}
 	d.addr += n
 }
@@ -44,7 +49,7 @@ func (w Writer) restart(n int) {
 // returns the current write address.
 func (w Writer) Flush() int {
 	w.d.end()
-	return w.d.Addr()
+	return w.d.WriterAddr()
 }
 
 func (w Writer) wr8(b byte) {
@@ -55,6 +60,11 @@ func (w Writer) wr8(b byte) {
 	n := len(d.buf)
 	d.buf = d.buf[:n+1]
 	d.buf[n] = b
+}
+
+func (w Writer) WriteByte(b byte) {
+	w.restart(1)
+	w.wr8(b)
 }
 
 func (w Writer) Write8(s ...byte) {
@@ -92,6 +102,22 @@ func (w Writer) Write(s []byte) (int, error) {
 	// write transaction so Driver.Err can be called after all writes.
 }
 
+func (w Writer) wr16(u uint16) {
+	d := w.d
+	if len(d.buf)+2 > cap(d.buf) {
+		d.flush()
+	}
+	n := len(d.buf)
+	d.buf = d.buf[:n+2]
+	d.buf[n] = byte(u)
+	d.buf[n+1] = byte(u >> 8)
+}
+
+func (w Writer) WriteUint16(u uint16) {
+	w.restart(2)
+	w.wr16(u)
+}
+
 func (w Writer) wr32(u uint32) {
 	d := w.d
 	if len(d.buf)+4 > cap(d.buf) {
@@ -103,6 +129,16 @@ func (w Writer) wr32(u uint32) {
 	d.buf[n+1] = byte(u >> 8)
 	d.buf[n+2] = byte(u >> 16)
 	d.buf[n+3] = byte(u >> 24)
+}
+
+func (w Writer) WriteUint32(u uint32) {
+	w.restart(4)
+	w.wr32(u)
+}
+
+func (w Writer) WriteInt(i int) {
+	w.restart(4)
+	w.wr32(uint32(i))
 }
 
 func (w Writer) align32() {

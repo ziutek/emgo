@@ -182,9 +182,9 @@ func (d *Driver) end() {
 	}
 }
 
-// Addr returns the current write address. This address will be used by Writer,
-// DL, GE to write next data/command.
-func (d *Driver) Addr() int {
+// WriterAddr returns the current write address. This address will be used by
+// Writer, DL, GE to write next data/command.
+func (d *Driver) WriterAddr() int {
 	switch d.state & 3 {
 	case stateWriteCmd:
 		return d.mmap.ramcmd + d.addr&4095

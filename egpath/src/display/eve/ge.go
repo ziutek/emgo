@@ -17,7 +17,7 @@ func (d *Driver) GE(addr int) GE {
 	case -1:
 		if d.state&3 > stateWrite {
 			// Use current write address.
-			addr = d.Addr()
+			addr = d.WriterAddr()
 			break
 		}
 		if d.mmap == &eve1 {
@@ -505,7 +505,7 @@ func (ge GE) ROMFont(font, romslot byte) {
 }
 
 // Track tracks touches for a graphics object.
-func (ge GE) Track(x, y, w, h, tag byte) {
+func (ge GE) Track(x, y, w, h int, tag byte) {
 	ge.restart(4 * 4)
 	ge.wr32(CMD_TRACK)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
