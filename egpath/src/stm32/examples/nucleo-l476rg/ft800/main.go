@@ -100,66 +100,56 @@ func main() {
 
 	lcd.SetBacklight(64)
 
-	const testLen = 120
-
-	// Create display list directly in RAM_DL.
-
-	n := 800 // Greather numbers can exceed the render limit (8192 pixel/line).
-	fmt.Printf("\n%d bitmaps:", n)
-
-	addr := 0
-	lcd.W(addr).Write(LenaFaceRGB[:])
-	addr += len(LenaFaceRGB)
-
-	t := rtos.Nanosec()
-	for i := 0; i < testLen; i++ {
-		dl := lcd.DL(-1)
-		dl.BitmapLayout(eve.RGB565, 80, 40)
-		dl.BitmapSize(eve.DEFAULT, 40, 40)
-		dl.Clear(eve.CST)
-		dl.Begin(eve.BITMAPS)
-		for k := 0; k < n; k++ {
-			v := rnd.Uint32()
-			c := v&0xFFFFFF | 0x808080
-			x := int(v>>12) % lcd.Width()
-			y := int(v>>23) % lcd.Height()
-			dl.ColorRGB(c)
-			dl.Vertex2f((x-20)*16, (y-20)*16)
-		}
-		dl.Display()
-		lcd.SwapDL()
-	}
-	fmt.Printf(" %.2f fps.\n", testLen*1e9/float32(rtos.Nanosec()-t))
-	delay.Millisec(100)
-
-	// Create display list using Graphics Engine co-processor.
-
 	ge := lcd.GE(-1)
-	ge.DLStart()
-	ge.BitmapHandle(1)
-
-	fmt.Printf("Loading JPEG image...")
-
-	t = rtos.Nanosec()
-	img := GopherJPEG[:]
-	ge.LoadImageBytes(addr, eve.OPT_RGB565, img)
-	lcd.Wait(eve.INT_CMDEMPTY)
-
-	t = rtos.Nanosec() - t
-	fmt.Printf(
-		" done (%d B / %d ms = %d B/s).\n",
-		len(GopherJPEG), t/1e6, int64(len(GopherJPEG))*1e9/t,
-	)
-
 	ge.Clear(eve.CST)
-	ge.Begin(eve.BITMAPS)
-	ge.Vertex2f(0, 0)
-	ge.BitmapHandle(0)
-	ge.Vertex2f((lcd.Width()-40)*16, 0)
-	ge.ButtonString(300, 110, 140, 40, 23, 0, "Push me!")
-	ge.Display()
-	ge.Swap()
+	ge.Calibrate()
+	addr := ge.Addr()
+	ge.WriteInt(0)
 	lcd.Wait(eve.INT_CMDEMPTY)
+	if lcd.ReadInt(addr) == 0 {
+		fmt.Printf("Touch calibration failed!\n")
+	}
+
+	w, h := lcd.Width(), lcd.Height()
+
+	const buttonTag = 1
+	ge.Track(20, h-50, 100, 32, buttonTag)
+
+	for n := 0; ; n++ {
+		tag := lcd.ReadByte(ft80.REG_TRACKER)
+		ge.DLStart()
+		ge.ClearColorRGB(0xc3a6f4)
+		ge.Clear(eve.CST)
+		ge.Gradient(0, 0, 0x0004ff, 0, 271, 0xe08484)
+		ge.ColorRGB(0xffffff)
+		ge.TextString(w/2, h/2, 31, eve.OPT_CENTER, "Hello World!")
+		ge.Begin(eve.RECTS)
+		ge.ColorA(128)
+		ge.ColorRGB(0xff8000)
+		ge.Vertex2ii(260, 100, 0, 0)
+		ge.Vertex2ii(360, 200, 0, 0)
+		ge.ColorRGB(0x0080ff)
+		ge.Vertex2ii(300, 160, 0, 0)
+		ge.Vertex2ii(400, 260, 0, 0)
+		ge.ColorRGB(0xffffff)
+		ge.ColorA(200)
+		ge.Clock(60, 60, 50, eve.OPT_NOBACK, 23, 49, n/60, n%60*1000/60)
+		ge.ColorA(255)
+		ge.Tag(buttonTag)
+		var (
+			buttonStyle uint16
+			buttonText  = "Push me!"
+		)
+		if tag == buttonTag {
+			buttonStyle |= eve.OPT_FLAT
+			buttonText = "Mmm..."
+			ge.TextString(20, h-90, 29, eve.DEFAULT, "Thanks!")
+		}
+		ge.ButtonString(20, h-50, 100, 32, 28, buttonStyle, buttonText)
+		ge.Display()
+		ge.Swap()
+		lcd.Wait(eve.INT_CMDEMPTY) // Waits for end of Swap (next frame).
+	}
 
 	fmt.Printf("End.\n")
 }
