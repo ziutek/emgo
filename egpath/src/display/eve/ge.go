@@ -346,6 +346,7 @@ func (ge GE) TextString(x, y int, font byte, options uint16, s string) {
 	ge.d.addr += len(s) + 1
 	ge.ws(s)
 	ge.wr8(0)
+	ge.align32()
 }
 
 // SetBase sets the base for number output.
