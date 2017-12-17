@@ -167,40 +167,28 @@ func (d *Driver) end() {
 	switch d.state & 3 {
 	case stateWriteCmd:
 		cmdEnd := uint32(d.addr & 4095)
-		regcmdwrite := d.mmap.regcmdwrite
-		d.writeUint32(regcmdwrite, cmdEnd)
+		d.writeUint32(d.mmap.regcmdwrite, cmdEnd)
 		// Ensure valid interrupt flag.
 		d.clearIntFlags(INT_CMDEMPTY)
-		if d.readUint32(regcmdwrite+ocmdread) == cmdEnd {
+		if d.readUint32(eve1_regcmdread) == cmdEnd {
 			d.irqf |= INT_CMDEMPTY
 		}
 	case stateWriteBulkCmd:
 		// Ensure valid interrupt flag.
 		d.clearIntFlags(INT_CMDEMPTY)
-		if d.readUint32(regcmdbspace) == 4092 {
+		if d.readUint32(eve2_regcmdbspace) == 4092 {
 			d.irqf |= INT_CMDEMPTY
 		}
-	}
-}
-
-func (d *Driver) writerAddr() int {
-	switch d.state & 3 {
-	case stateWriteCmd:
-		return d.mmap.ramcmd + d.addr&4095
-	case stateWriteBulkCmd:
-		return regcmdbwrite
-	default:
-		return d.addr
 	}
 }
 
 // WriterAddr returns the current write address. This address will be used by
 // Writer, DL, GE to write next data/command.
-func (d *Driver) WriterAddr() int {
-	if d.state&3 > stateWrite {
-		return d.mmap.ramcmd + d.addr&4095
+func (d *Driver) WAddr() int {
+	if d.state&3 == stateWrite {
+		return d.addr
 	}
-	return d.addr
+	return d.mmap.ramcmd + d.addr&4095
 }
 
 type HostCmd byte
@@ -325,9 +313,9 @@ func (d *Driver) SwapDL() {
 func (d *Driver) CmdSpace() int {
 	d.end()
 	if d.mmap == &eve1 {
-		cmdrd, cmdwr := d.readTwoUint32(d.mmap.regcmdwrite + ocmdread)
+		cmdrd, cmdwr := d.readTwoUint32(eve1_regcmdread)
 		return int(4092 - (cmdwr-cmdrd)&4095)
 	} else {
-		return int(d.readUint32(regcmdbspace))
+		return int(d.readUint32(eve2_regcmdbspace))
 	}
 }

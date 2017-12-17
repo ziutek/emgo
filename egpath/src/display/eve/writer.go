@@ -40,7 +40,7 @@ func (d *Driver) W(addr int) Writer {
 func (w Writer) restart(n int) {
 	d := w.d
 	if d.state&stateOpen == 0 {
-		w.start(d.WriterAddr())
+		w.start(d.writerAddr())
 	}
 	d.addr += n
 }

@@ -17,16 +17,15 @@ func (d *Driver) GE(addr int) GE {
 	case -1:
 		if d.state&3 > stateWrite {
 			// Use current write address.
-			addr = d.WriterAddr()
+			addr = d.writerAddr()
 			break
 		}
+		d.addr = int(d.readUint32(d.mmap.regcmdwrite))
 		if d.mmap == &eve1 {
-			d.addr = int(d.readUint32(eve1_regcmdwrite))
 			addr = d.mmap.ramcmd + d.addr
 			d.state = d.state&^3 | stateWriteCmd
 		} else {
-			d.addr = 0
-			addr = eve2_regcmdbwrite
+			addr = regcmdbwrite
 			d.state = d.state&^3 | stateWriteBulkCmd
 		}
 	default:

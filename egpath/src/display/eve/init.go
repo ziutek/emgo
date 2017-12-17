@@ -12,6 +12,7 @@ type mmap struct {
 	ramcmd      int
 	regdlswap   int
 	regintflags int
+	regcmdwrite int
 }
 
 //emgo:const
@@ -20,6 +21,7 @@ var eve1 = mmap{
 	ramcmd:      0x108000, // 264 * 4096
 	regdlswap:   0x102450,
 	regintflags: 0x102498,
+	regcmdwrite: 0x1024e8,
 }
 
 //emgo:const
@@ -28,6 +30,7 @@ var eve2 = mmap{
 	ramcmd:      0x308000, // 776 * 4096
 	regdlswap:   0x302054,
 	regintflags: 0x3020a8,
+	regcmdwrite: 0x3020fc,
 }
 
 // Register offsets relative to REG_DLSWAP.
@@ -45,14 +48,19 @@ const (
 	opwmduty = 44
 )
 
+// Register offsets relative to REG_CMD_WRITE.
 const (
-	eve1_regcmdread  = 0x1024E4
-	eve1_regcmdwrite = 0x1024E8
+	ocmdread       = -4
+	ocmddl         = 4
+	otouchscreenxy = 40
+	otouchtagxy    = 44
+	otouchtag      = 48
 )
 
+// EVE2 bulk write registers.
 const (
-	eve2_regcmdbspace = 0x302574
-	eve2_regcmdbwrite = 0x302578
+	regcmdbspace = 0x302574
+	regcmdbwrite = 0x302578
 )
 
 type DisplayConfig struct {
