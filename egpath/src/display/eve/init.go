@@ -13,6 +13,7 @@ type mmap struct {
 	regdlswap   int
 	regintflags int
 	regcmdwrite int
+	regtracker  int
 }
 
 //emgo:const
@@ -22,6 +23,7 @@ var eve1 = mmap{
 	regdlswap:   0x102450,
 	regintflags: 0x102498,
 	regcmdwrite: 0x1024e8,
+	regtracker:  0x109000,
 }
 
 //emgo:const
@@ -31,6 +33,7 @@ var eve2 = mmap{
 	regdlswap:   0x302054,
 	regintflags: 0x3020a8,
 	regcmdwrite: 0x3020fc,
+	regtracker:  0x309000,
 }
 
 // Register offsets relative to REG_DLSWAP.

@@ -141,9 +141,9 @@ func (dl DL) ClearStencil(s byte) {
 }
 
 // ClearTag sets the clear value for the stencil buffer.
-func (dl DL) ClearTag(t byte) {
+func (dl DL) ClearTag(t int) {
 	dl.restart(4)
-	dl.wr32(CLEAR_TAG | uint32(t))
+	dl.wr32(CLEAR_TAG | uint32(uint16(t)))
 }
 
 // ColorA sets the current color alpha.
@@ -191,9 +191,9 @@ func (dl DL) LineWidth(width int) {
 }
 
 // Macro executes a single command from a macro register.
-func (dl DL) Macro(m byte) {
+func (dl DL) Macro(m int) {
 	dl.restart(4)
-	dl.wr32(MACRO | uint32(m))
+	dl.wr32(MACRO | uint32(m&1))
 }
 
 // Nop does nothing.
@@ -264,9 +264,9 @@ func (dl DL) StencilOp(sfail, spass byte) {
 
 // Tag attaches the tag value for the following graphics objects drawn on the
 // screen. The initial tag buffer value is 255.
-func (dl DL) Tag(t byte) {
+func (dl DL) Tag(t int) {
 	dl.restart(4)
-	dl.wr32(TAG | uint32(t))
+	dl.wr32(TAG | uint32(uint16(t)))
 }
 
 // TagMask controls the writing of the tag buffer.

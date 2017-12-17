@@ -331,3 +331,26 @@ func (d *Driver) CmdSpace() int {
 		return int(d.readUint32(regcmdbspace))
 	}
 }
+
+func (d *Driver) TouchScreenXY() (x, y int) {
+	d.end()
+	xy := d.readUint32(d.mmap.regcmdwrite + otouchscreenxy)
+	return int(int16(xy >> 16)), int(int16(xy))
+}
+
+func (d *Driver) TouchTagXY() (x, y int) {
+	d.end()
+	xy := d.readUint32(d.mmap.regcmdwrite + otouchtagxy)
+	return int(int16(xy >> 16)), int(int16(xy))
+}
+
+func (d *Driver) TouchTag() int {
+	d.end()
+	return int(d.readUint32(d.mmap.regcmdwrite + otouchtag))
+}
+
+func (d *Driver) Tracker() (val, tag int) {
+	d.end()
+	tracker := d.readUint32(d.mmap.regtracker)
+	return int(uint16(tracker >> 16)), int(uint16(tracker))
+}

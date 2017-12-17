@@ -427,10 +427,13 @@ func (ge GE) Translate(tx, ty int) {
 	ge.wr32(uint32(ty))
 }
 
-// Calibrate execute the touch screen calibration routine.
-func (ge GE) Calibrate() {
-	ge.restart(4)
+// Calibrate execute the touch screen calibration routine. It returns the
+// address to the status value (status != 0 means success).
+func (ge GE) Calibrate() int {
+	ge.restart(2 * 4)
 	ge.wr32(CMD_CALIBRATE)
+	ge.wr32(0)
+	return ge.Addr() - 4
 }
 
 // SetRotate rotate the screen (EVE2).
@@ -504,12 +507,12 @@ func (ge GE) ROMFont(font, romslot byte) {
 }
 
 // Track tracks touches for a graphics object.
-func (ge GE) Track(x, y, w, h int, tag byte) {
+func (ge GE) Track(x, y, w, h, tag int) {
 	ge.restart(4 * 4)
 	ge.wr32(CMD_TRACK)
 	ge.wr32(uint32(x)&0xFFFF | uint32(y)&0xFFFF<<16)
 	ge.wr32(uint32(w)&0xFFFF | uint32(h)&0xFFFF<<16)
-	ge.wr32(uint32(tag))
+	ge.wr32(uint32(uint16(tag)))
 }
 
 // Snapshot takes a snapshot of the current screen.

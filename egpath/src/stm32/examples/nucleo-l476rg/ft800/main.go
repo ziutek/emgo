@@ -102,9 +102,7 @@ func main() {
 
 	ge := lcd.GE(-1)
 	ge.Clear(eve.CST)
-	ge.Calibrate()
-	addr := ge.Addr()
-	ge.WriteInt(0)
+	addr := ge.Calibrate()
 	lcd.Wait(eve.INT_CMDEMPTY)
 	if lcd.ReadInt(addr) == 0 {
 		fmt.Printf("Touch calibration failed!\n")
@@ -113,15 +111,17 @@ func main() {
 	w, h := lcd.Width(), lcd.Height()
 
 	const buttonTag = 1
-	ge.Track(20, h-50, 100, 32, buttonTag)
 
 	for n := 0; ; n++ {
-		tag := lcd.ReadByte(ft80.REG_TRACKER)
+		tag := lcd.TouchTag()
+		x, y := lcd.TouchScreenXY()
 		ge.DLStart()
 		ge.ClearColorRGB(0xc3a6f4)
 		ge.Clear(eve.CST)
 		ge.Gradient(0, 0, 0x0004ff, 0, 271, 0xe08484)
-		ge.ColorRGB(0xffffff)
+		ge.Text(w-180, 20, 26, eve.DEFAULT)
+		fmt.Fprintf(ge, "x=%d y=%d tag=%d\000", x, y, tag)
+		ge.Align32()
 		ge.TextString(w/2, h/2, 31, eve.OPT_CENTER, "Hello World!")
 		ge.Begin(eve.RECTS)
 		ge.ColorA(128)
@@ -136,19 +136,17 @@ func main() {
 		ge.Clock(60, 60, 50, eve.OPT_NOBACK, 23, 49, n/60, n%60*1000/60)
 		ge.ColorA(255)
 		ge.Tag(buttonTag)
-		var (
-			buttonStyle uint16
-			buttonText  = "Push me!"
-		)
+		buttonFont := byte(27)
+		buttonStyle := uint16(eve.DEFAULT)
 		if tag == buttonTag {
+			buttonFont--
 			buttonStyle |= eve.OPT_FLAT
-			buttonText = "Mmm..."
 			ge.TextString(20, h-90, 29, eve.DEFAULT, "Thanks!")
 		}
-		ge.ButtonString(20, h-50, 100, 32, 28, buttonStyle, buttonText)
+		ge.ButtonString(20, h-50, 100, 32, buttonFont, buttonStyle, "Push me!")
 		ge.Display()
 		ge.Swap()
-		lcd.Wait(eve.INT_CMDEMPTY) // Waits for end of Swap (next frame).
+		lcd.Wait(eve.INT_CMDEMPTY) // Wait for end of Swap (next frame).
 	}
 
 	fmt.Printf("End.\n")
