@@ -128,14 +128,21 @@ const (
 
 // Color mask: rgba (COLOR_MASK).
 const (
-	A   = 1 << 0
-	B   = 1 << 1
-	G   = 1 << 2
-	R   = 1 << 3
-	RG  = R | G
-	GB  = G | B
-	RB  = R | B
-	RGB = R | G | B
+	A    = 1 << 0
+	B    = 1 << 1
+	G    = 1 << 2
+	R    = 1 << 3
+	RG   = R | G
+	GB   = G | B
+	RB   = R | B
+	RGB  = R | G | B
+	BA   = B | A
+	GA   = G | A
+	RA   = R | A
+	RGA  = RG | A
+	GBA  = GB | A
+	RBA  = RB | A
+	RGBA = RGB | A
 )
 
 // Stencil test actions: sfail, spass.
