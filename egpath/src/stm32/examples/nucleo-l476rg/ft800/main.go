@@ -98,12 +98,25 @@ func main() {
 	dci.SetBaudrate(30e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
-	lcd.SetBacklight(64)
+	lcd.SetBacklight(100)
+
+	w, h := lcd.Width(), lcd.Height()
+
+	ge := lcd.GE(-1)
+	ge.DLStart()
+	ge.Clear(eve.CST)
+	ge.TextString(w/2, h/2, 31, eve.OPT_CENTER, "Emgo and EVE")
+	ge.Display()
+	ge.Swap()
+	lcd.Wait(eve.INT_CMDEMPTY) // Wait for end of Swap (next frame).
+
+	lcd.ClearIntFlags(eve.INT_TOUCH)
+	lcd.Wait(eve.INT_TOUCH)
 
 	lcd.W(0).Write(gopherMask[:])
 	addr := (len(gopherMask) + 3) &^ 3
 
-	ge := lcd.GE(-1)
+	ge = lcd.GE(-1)
 	ge.DLStart()
 	ge.LoadImageBytes(addr, eve.OPT_RGB565, gopher[:])
 	lcd.Wait(eve.INT_CMDEMPTY)
@@ -130,8 +143,6 @@ func main() {
 	if lcd.ReadInt(addr) == 0 {
 		fmt.Printf("Touch calibration failed!\n")
 	}
-
-	w, h := lcd.Width(), lcd.Height()
 
 	const buttonTag = 1
 
