@@ -1,5 +1,10 @@
 package eve
 
+type state struct {
+	addr  int
+	flags byte
+}
+
 // Driver uses DCI to communicate with EVE graphics controller. Commands/data
 // are received/sent using DCI read/write transactions. R,W, DL, GE methods
 // starts new transaction and leaves it in open state. Any subsequent
@@ -8,10 +13,9 @@ type Driver struct {
 	dci           DCI
 	buf           []byte
 	mmap          *mmap
-	addr          int
 	width, height uint16
+	state         state
 	irqf          byte
-	state         byte
 }
 
 // NewDriver returns new driver to the EVE graphics controller accessed via dci.
@@ -69,6 +73,12 @@ func (d *Driver) writeUint32(addr int, val uint32) {
 		1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr),
 		byte(val), byte(val >> 8), byte(val >> 16), byte(val >> 24),
 	})
+	d.dci.End()
+}
+
+func (d *Driver) write(addr int, s []byte) {
+	d.dci.Write([]byte{1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr)})
+	d.dci.Write(s)
 	d.dci.End()
 }
 
@@ -156,17 +166,17 @@ const (
 )
 
 func (d *Driver) end() {
-	if d.state&stateOpen == 0 {
+	if d.state.flags&stateOpen == 0 {
 		return
 	}
 	if len(d.buf) > 0 {
 		d.flush()
 	}
 	d.dci.End()
-	d.state &^= stateOpen
-	switch d.state & 3 {
+	d.state.flags &^= stateOpen
+	switch d.state.flags & 3 {
 	case stateWriteCmd:
-		cmdEnd := uint32(d.addr & 4095)
+		cmdEnd := uint32(d.state.addr & 4095)
 		regcmdwrite := d.mmap.regcmdwrite
 		d.writeUint32(regcmdwrite, cmdEnd)
 		// Ensure valid interrupt flag.
@@ -181,26 +191,6 @@ func (d *Driver) end() {
 			d.irqf |= INT_CMDEMPTY
 		}
 	}
-}
-
-func (d *Driver) writerAddr() int {
-	switch d.state & 3 {
-	case stateWriteCmd:
-		return d.mmap.ramcmd + d.addr&4095
-	case stateWriteBulkCmd:
-		return regcmdbwrite
-	default:
-		return d.addr
-	}
-}
-
-// WriterAddr returns the current write address. This address will be used by
-// Writer, DL, GE to write next data/command.
-func (d *Driver) WriterAddr() int {
-	if d.state&3 > stateWrite {
-		return d.mmap.ramcmd + d.addr&4095
-	}
-	return d.addr
 }
 
 type HostCmd byte
@@ -243,6 +233,16 @@ func (d *Driver) WriteUint32(addr int, val uint32) {
 // WriteInt writes signed 32-bit word to the EVE memory at address addr.
 func (d *Driver) WriteInt(addr int, val int) {
 	d.WriteUint32(addr, uint32(val))
+}
+
+// WriteInt writes bytes from s at address addr.
+func (d *Driver) Write(addr int, s []byte) {
+	if len(s) == 0 {
+		return
+	}
+	d.end()
+	checkAddr(addr)
+	d.write(addr, s)
 }
 
 // ReadByte reads byte from EVE memory at address addr.
@@ -327,9 +327,8 @@ func (d *Driver) CmdSpace() int {
 	if d.mmap == &eve1 {
 		cmdrd, cmdwr := d.readTwoUint32(d.mmap.regcmdwrite + ocmdread)
 		return int(4092 - (cmdwr-cmdrd)&4095)
-	} else {
-		return int(d.readUint32(regcmdbspace))
 	}
+	return int(d.readUint32(regcmdbspace))
 }
 
 func (d *Driver) TouchScreenXY() (x, y int) {

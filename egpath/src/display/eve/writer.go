@@ -2,21 +2,40 @@ package eve
 
 // Writer allows to write data to the EVE memory.
 type Writer struct {
-	d *Driver
+	d     *Driver
+	state state
 }
 
-// Addr returns the current write address. See Driver.WriterAddr.
-func (w Writer) Addr() int {
-	return w.d.WriterAddr()
+func (w *Writer) addr() int {
+	switch w.state.flags & 3 {
+	case stateWriteCmd:
+		return w.d.mmap.ramcmd + w.state.addr&4095
+	case stateWriteBulkCmd:
+		return regcmdbwrite
+	default:
+		return w.state.addr
+	}
 }
 
-func (w Writer) start(addr int) {
+func (w *Writer) addrAdd(n int) {
+	w.state.addr += n
+	w.d.state.addr = w.state.addr
+}
+
+// Addr returns the current write address.
+func (w *Writer) Addr() int {
+	if w.state.flags&3 > stateWrite {
+		return w.d.mmap.ramcmd + w.state.addr&4095
+	}
+	return w.state.addr
+}
+
+func (w *Writer) start(addr int) {
 	d := w.d
 	d.buf = d.buf[:3]
 	d.buf[0] = 1<<7 | byte(addr>>16)
 	d.buf[1] = byte(addr >> 8)
 	d.buf[2] = byte(addr)
-	d.state |= stateOpen
 }
 
 // W opens a write transaction to the EVE memory at address addr. It returns
@@ -30,29 +49,34 @@ func (d *Driver) W(addr int) Writer {
 	} else {
 		checkAddr(addr)
 	}
-	d.addr = addr
-	d.state = d.state&^3 | stateWrite
-	w := Writer{d}
+	w := Writer{d, state{addr, stateOpen | stateWrite}}
+	d.state = w.state
 	w.start(addr)
 	return w
 }
 
-func (w Writer) restart(n int) {
+func (w *Writer) restart(n int) {
 	d := w.d
-	if d.state&stateOpen == 0 {
-		w.start(d.writerAddr())
+	if d.state != w.state {
+		if d.state.flags&stateOpen != 0 {
+			d.end()
+		}
+		w.start(w.addr())
+		w.state.addr += n
+		d.state = w.state
+	} else {
+		w.addrAdd(n)
 	}
-	d.addr += n
 }
 
 // Flush writes all data from internal buffer, closes current transaction and
 // returns the current write address.
-func (w Writer) Flush() int {
+func (w *Writer) Flush() int {
 	w.d.end()
-	return w.d.WriterAddr()
+	return w.Addr()
 }
 
-func (w Writer) wr8(b byte) {
+func (w *Writer) wr8(b byte) {
 	d := w.d
 	if len(d.buf) == cap(d.buf) {
 		d.flush()
@@ -62,12 +86,12 @@ func (w Writer) wr8(b byte) {
 	d.buf[n] = b
 }
 
-func (w Writer) WriteByte(b byte) {
+func (w *Writer) WriteByte(b byte) {
 	w.restart(1)
 	w.wr8(b)
 }
 
-func (w Writer) Write8(s ...byte) {
+func (w *Writer) Write8(s ...byte) {
 	if len(s) == 0 {
 		return
 	}
@@ -95,14 +119,14 @@ func (w Writer) Write8(s ...byte) {
 	}
 }
 
-func (w Writer) Write(s []byte) (int, error) {
+func (w *Writer) Write(s []byte) (int, error) {
 	w.Write8(s...)
 	return len(s), nil
 	// BUG?: Write always succeeds. Rationale: there is no case for infinite
 	// write transaction so Driver.Err can be called after all writes.
 }
 
-func (w Writer) wr16(u uint16) {
+func (w *Writer) wr16(u uint16) {
 	d := w.d
 	if len(d.buf)+2 > cap(d.buf) {
 		d.flush()
@@ -113,12 +137,12 @@ func (w Writer) wr16(u uint16) {
 	d.buf[n+1] = byte(u >> 8)
 }
 
-func (w Writer) WriteUint16(u uint16) {
+func (w *Writer) WriteUint16(u uint16) {
 	w.restart(2)
 	w.wr16(u)
 }
 
-func (w Writer) wr32(u uint32) {
+func (w *Writer) wr32(u uint32) {
 	d := w.d
 	if len(d.buf)+4 > cap(d.buf) {
 		d.flush()
@@ -131,24 +155,24 @@ func (w Writer) wr32(u uint32) {
 	d.buf[n+3] = byte(u >> 24)
 }
 
-func (w Writer) WriteUint32(u uint32) {
+func (w *Writer) WriteUint32(u uint32) {
 	w.restart(4)
 	w.wr32(u)
 }
 
-func (w Writer) WriteInt(i int) {
+func (w *Writer) WriteInt(i int) {
 	w.restart(4)
 	w.wr32(uint32(i))
 }
 
-func (w Writer) align32() {
+func (w *Writer) align32() {
 	d := w.d
-	n := d.addr & 3
+	n := w.state.addr & 3
 	if n == 0 {
 		return
 	}
 	n = 4 - n
-	d.addr += n
+	w.addrAdd(n)
 	n += len(d.buf)
 	if n > cap(d.buf) {
 		n -= len(d.buf)
@@ -158,19 +182,19 @@ func (w Writer) align32() {
 }
 
 // Align32 writes random bytes to align the current write address to 32 bit.
-func (w Writer) Align32() {
+func (w *Writer) Align32() {
 	w.restart(0)
 	w.align32()
 }
 
-func (w Writer) Write32(s ...uint32) {
+func (w *Writer) Write32(s ...uint32) {
 	w.restart(4 * len(s))
 	for _, u := range s {
 		w.wr32(u)
 	}
 }
 
-func (w Writer) ws(s string) {
+func (w *Writer) ws(s string) {
 	d := w.d
 	for len(s) != 0 {
 		if len(d.buf) == cap(d.buf) {
@@ -183,7 +207,7 @@ func (w Writer) ws(s string) {
 	}
 }
 
-func (w Writer) WriteString(s string) (int, error) {
+func (w *Writer) WriteString(s string) (int, error) {
 	w.restart(len(s))
 	w.ws(s)
 	return len(s), nil
