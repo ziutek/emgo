@@ -100,9 +100,32 @@ func main() {
 
 	lcd.SetBacklight(64)
 
+	lcd.W(0).Write(gopherMask[:])
+	addr := (len(gopherMask) + 3) &^ 3
+
 	ge := lcd.GE(-1)
+	ge.DLStart()
+	ge.LoadImageBytes(addr, eve.OPT_RGB565, gopher[:])
+	lcd.Wait(eve.INT_CMDEMPTY)
+	ge.BitmapHandle(1)
+	ge.BitmapLayout(eve.L1, 216/8, 251)
+	ge.BitmapSize(eve.DEFAULT, 211, 251)
 	ge.Clear(eve.CST)
-	addr := ge.Calibrate()
+	ge.Begin(eve.BITMAPS)
+	ge.BitmapHandle(0)
+	ge.Vertex2f(0, 0)
+	ge.BitmapHandle(1)
+	//ge.Vertex2f(31*16, 21*16)
+	ge.Vertex2f((lcd.Width()-211)*16, (lcd.Height()-251)*16)
+	ge.Display()
+	ge.Swap()
+	lcd.Wait(eve.INT_CMDEMPTY)
+
+	delay.Millisec(1e6)
+
+	ge.DLStart()
+	ge.Clear(eve.CST)
+	addr = ge.Calibrate()
 	lcd.Wait(eve.INT_CMDEMPTY)
 	if lcd.ReadInt(addr) == 0 {
 		fmt.Printf("Touch calibration failed!\n")
