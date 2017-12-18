@@ -98,43 +98,46 @@ func main() {
 	dci.SetBaudrate(30e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
-	lcd.SetBacklight(100)
+	lcd.SetBacklight(64)
 
-	w, h := lcd.Width(), lcd.Height()
+	lcdW, lcdH := lcd.Width(), lcd.Height()
 
 	ge := lcd.GE(-1)
 	ge.DLStart()
 	ge.Clear(eve.CST)
-	ge.TextString(w/2, h/2, 31, eve.OPT_CENTER, "Emgo and EVE")
+	ge.TextString(lcdW/2, lcdH/2, 31, eve.OPT_CENTER, "Hello world!")
 	ge.Display()
 	ge.Swap()
-	lcd.Wait(eve.INT_CMDEMPTY) // Wait for end of Swap (next frame).
+	lcd.Wait(eve.INT_CMDEMPTY)
 
 	lcd.ClearIntFlags(eve.INT_TOUCH)
 	lcd.Wait(eve.INT_TOUCH)
 
-	lcd.W(0).Write(gopherMask[:])
+	lcd.Write(0, gopherMask[:])
 	addr := (len(gopherMask) + 3) &^ 3
 
-	ge = lcd.GE(-1)
 	ge.DLStart()
 	ge.LoadImageBytes(addr, eve.OPT_RGB565, gopher[:])
-	lcd.Wait(eve.INT_CMDEMPTY)
+	lcd.Wait(eve.INT_CMDEMPTY) // Ensure free space in RAM_CMD.
 	ge.BitmapHandle(1)
 	ge.BitmapLayout(eve.L1, 216/8, 251)
 	ge.BitmapSize(eve.DEFAULT, 211, 251)
 	ge.Clear(eve.CST)
+	ge.Gradient(0, 0, 0x001155, 0, 271, 0x772200)
 	ge.Begin(eve.BITMAPS)
+	ge.ColorMask(eve.A)
+	ge.Clear(eve.C)
+	ge.BitmapHandle(1)
+	ge.Vertex2f(31*16, 21*16)
+	ge.ColorMask(eve.RGBA)
+	ge.BlendFunc(eve.DST_ALPHA, eve.ONE_MINUS_DST_ALPHA)
 	ge.BitmapHandle(0)
 	ge.Vertex2f(0, 0)
-	ge.BitmapHandle(1)
-	//ge.Vertex2f(31*16, 21*16)
-	ge.Vertex2f((lcd.Width()-211)*16, (lcd.Height()-251)*16)
 	ge.Display()
 	ge.Swap()
 	lcd.Wait(eve.INT_CMDEMPTY)
 
-	delay.Millisec(1e6)
+	delay.Millisec(1e5)
 
 	ge.DLStart()
 	ge.Clear(eve.CST)
@@ -153,10 +156,10 @@ func main() {
 		ge.ClearColorRGB(0xc3a6f4)
 		ge.Clear(eve.CST)
 		ge.Gradient(0, 0, 0x0004ff, 0, 271, 0xe08484)
-		ge.Text(w-180, 20, 26, eve.DEFAULT)
-		fmt.Fprintf(ge, "x=%d y=%d tag=%d\000", x, y, tag)
+		ge.Text(lcdW-180, 20, 26, eve.DEFAULT)
+		fmt.Fprintf(&ge, "x=%d y=%d tag=%d\000", x, y, tag)
 		ge.Align32()
-		ge.TextString(w/2, h/2, 31, eve.OPT_CENTER, "Hello World!")
+		ge.TextString(lcdW/2, lcdH/2, 31, eve.OPT_CENTER, "Hello World!")
 		ge.Begin(eve.RECTS)
 		ge.ColorA(128)
 		ge.ColorRGB(0xff8000)
@@ -175,9 +178,9 @@ func main() {
 		if tag == buttonTag {
 			buttonFont--
 			buttonStyle |= eve.OPT_FLAT
-			ge.TextString(20, h-90, 29, eve.DEFAULT, "Thanks!")
+			ge.TextString(20, lcdH-90, 29, eve.DEFAULT, "Thanks!")
 		}
-		ge.ButtonString(20, h-50, 100, 32, buttonFont, buttonStyle, "Push me!")
+		ge.ButtonString(20, lcdH-50, 100, 32, buttonFont, buttonStyle, "Push me!")
 		ge.Display()
 		ge.Swap()
 		lcd.Wait(eve.INT_CMDEMPTY) // Wait for end of Swap (next frame).
