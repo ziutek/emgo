@@ -158,9 +158,10 @@ func (d *Driver) flush() {
 }
 
 const (
-	stateWrite        = 0
-	stateWriteCmd     = 1
-	stateWriteBulkCmd = 2
+	stateRead         = 0
+	stateWrite        = 1
+	stateWriteCmd     = 2
+	stateWriteBulkCmd = 3
 
 	stateOpen = 4
 )

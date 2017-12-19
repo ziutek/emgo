@@ -38,7 +38,7 @@ func (w *Writer) start(addr int) {
 	d.buf[2] = byte(addr)
 }
 
-// W opens a write transaction to the EVE memory at address addr. It returns
+// W starts a write transaction to the EVE memory at address addr. It returns
 // Writer that proviedes set of methods for buffered writes. If special addr -1
 // is used W waits for INT_SWAP and starts write to RAM_DL.
 func (d *Driver) W(addr int) Writer {
@@ -69,9 +69,9 @@ func (w *Writer) restart(n int) {
 	}
 }
 
-// Flush writes all data from internal buffer, closes current transaction and
+// Sync writes all data from internal buffer, closes current transaction and
 // returns the current write address.
-func (w *Writer) Flush() int {
+func (w *Writer) Sync() int {
 	w.d.end()
 	return w.Addr()
 }
