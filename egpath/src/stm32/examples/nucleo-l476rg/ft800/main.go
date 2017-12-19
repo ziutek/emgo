@@ -8,7 +8,6 @@ package main
 import (
 	"delay"
 	"fmt"
-	"math/rand"
 	"rtos"
 
 	"display/eve"
@@ -83,10 +82,13 @@ func curFreq(lcd *eve.Driver) uint32 {
 	return uint32(int64(clk2-clk1) * 1e9 / (t2 - t1))
 }
 
-func main() {
-	var rnd rand.XorShift64
-	rnd.Seed(1)
+func waitTouch(lcd *eve.Driver) {
+	delay.Millisec(100)
+	lcd.ClearIntFlags(eve.INT_TOUCH)
+	lcd.Wait(eve.INT_TOUCH)
+}
 
+func main() {
 	spibus := dci.SPI().P.Bus()
 	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
@@ -100,18 +102,89 @@ func main() {
 
 	lcd.SetBacklight(64)
 
-	lcdW, lcdH := lcd.Width(), lcd.Height()
+	width, height := lcd.Width(), lcd.Height()
+
+	dl := lcd.DL(-1)
+	dl.Clear(eve.CST)
+	dl.Begin(eve.POINTS)
+	dl.Vertex2f(200<<4, 100<<4)
+	dl.Display()
+
+	lcd.SwapDL()
+	waitTouch(lcd)
+
+	dl = lcd.DL(-1)
+	dl.Clear(eve.CST)
+	dl.Begin(eve.POINTS)
+	dl.PointSize(70 << 4)
+	dl.Vertex2f(200<<4, 100<<4)
+	dl.Display()
+
+	lcd.SwapDL()
+	waitTouch(lcd)
+
+	dl = lcd.DL(-1)
+	dl.Clear(eve.CST)
+	dl.Begin(eve.POINTS)
+	dl.PointSize(70 << 4)
+	dl.Vertex2f(200<<4, 100<<4)
+	dl.ColorRGB(0x0000FF)
+	dl.PointSize(50 << 4)
+	dl.Vertex2f(240<<4, 150<<4)
+	dl.Display()
+
+	lcd.SwapDL()
+	waitTouch(lcd)
+
+	dl = lcd.DL(-1)
+	dl.Clear(eve.CST)
+	dl.Begin(eve.POINTS)
+	dl.PointSize(70 << 4)
+	dl.Vertex2f(200<<4, 100<<4)
+	dl.ColorRGB(0x0000FF)
+	dl.ColorA(128)
+	dl.PointSize(50 << 4)
+	dl.Vertex2f(240<<4, 150<<4)
+	dl.Display()
+
+	lcd.SwapDL()
+	waitTouch(lcd)
+
+	dl = lcd.DL(-1)
+	dl.Clear(eve.CST)
+	dl.Begin(eve.BITMAPS)
+	dl.BitmapHandle(31)
+	dl.Cell('E')
+	dl.Vertex2f(200<<4, 100<<4)
+	dl.Display()
+
+	lcd.SwapDL()
+	waitTouch(lcd)
+
+	dl = lcd.DL(-1)
+	dl.Clear(eve.CST)
+	dl.Begin(eve.BITMAPS)
+	dl.BitmapHandle(31)
+	dl.Cell('E')
+	dl.Vertex2f(200<<4, 100<<4)
+	dl.Cell('V')
+	dl.Vertex2f(224<<4, 100<<4)
+	dl.Cell('E')
+	dl.Vertex2f(250<<4, 100<<4)
+	dl.Display()
+
+	lcd.SwapDL()
+	waitTouch(lcd)
 
 	ge := lcd.GE(-1)
 	ge.DLStart()
 	ge.Clear(eve.CST)
-	ge.TextString(lcdW/2, lcdH/2, 31, eve.OPT_CENTER, "Hello world!")
+	ge.TextString(width/2, height/2, 31, eve.OPT_CENTER, "Hello world!")
 	ge.Display()
 	ge.Swap()
 	lcd.Wait(eve.INT_CMDEMPTY)
 
-	lcd.ClearIntFlags(eve.INT_TOUCH)
-	lcd.Wait(eve.INT_TOUCH)
+	waitTouch(lcd)
 
 	lcd.Write(0, gopherMask[:])
 	addr := (len(gopherMask) + 3) &^ 3
@@ -156,10 +229,10 @@ func main() {
 		ge.ClearColorRGB(0xc3a6f4)
 		ge.Clear(eve.CST)
 		ge.Gradient(0, 0, 0x0004ff, 0, 271, 0xe08484)
-		ge.Text(lcdW-180, 20, 26, eve.DEFAULT)
+		ge.Text(width-180, 20, 26, eve.DEFAULT)
 		fmt.Fprintf(&ge, "x=%d y=%d tag=%d\000", x, y, tag)
 		ge.Align32()
-		ge.TextString(lcdW/2, lcdH/2, 31, eve.OPT_CENTER, "Hello World!")
+		ge.TextString(width/2, height/2, 31, eve.OPT_CENTER, "Hello World!")
 		ge.Begin(eve.RECTS)
 		ge.ColorA(128)
 		ge.ColorRGB(0xff8000)
@@ -178,9 +251,9 @@ func main() {
 		if tag == buttonTag {
 			buttonFont--
 			buttonStyle |= eve.OPT_FLAT
-			ge.TextString(20, lcdH-90, 29, eve.DEFAULT, "Thanks!")
+			ge.TextString(20, height-90, 29, eve.DEFAULT, "Thanks!")
 		}
-		ge.ButtonString(20, lcdH-50, 100, 32, buttonFont, buttonStyle, "Push me!")
+		ge.ButtonString(20, height-50, 100, 32, buttonFont, buttonStyle, "Push me!")
 		ge.Display()
 		ge.Swap()
 		lcd.Wait(eve.INT_CMDEMPTY) // Wait for end of Swap (next frame).
