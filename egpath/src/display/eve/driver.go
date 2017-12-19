@@ -323,6 +323,8 @@ func (d *Driver) SwapDL() {
 	d.writeByte(d.mmap.regdlswap, DLSWAP_FRAME)
 }
 
+// CmdSpace returns the number of bytes of available space in coprocessor
+// engine command FIFO.
 func (d *Driver) CmdSpace() int {
 	d.end()
 	if d.mmap == &eve1 {
@@ -332,25 +334,44 @@ func (d *Driver) CmdSpace() int {
 	return int(d.readUint32(regcmdbspace))
 }
 
+// TouchScreenXY the coordinaters of touch point.
 func (d *Driver) TouchScreenXY() (x, y int) {
 	d.end()
 	xy := d.readUint32(d.mmap.regcmdwrite + otouchscreenxy)
 	return int(int16(xy >> 16)), int(int16(xy))
 }
 
+// TouchTagXY returns the coordinates of touch point corresponding to current
+// tag.
 func (d *Driver) TouchTagXY() (x, y int) {
 	d.end()
 	xy := d.readUint32(d.mmap.regcmdwrite + otouchtagxy)
 	return int(int16(xy >> 16)), int(int16(xy))
 }
 
+// TouchTag returns current touch tag or zero in case of no touch.
 func (d *Driver) TouchTag() int {
 	d.end()
 	return int(d.readUint32(d.mmap.regcmdwrite + otouchtag))
 }
 
+// Tracker returns touch value and touch tag.
 func (d *Driver) Tracker() (val, tag int) {
 	d.end()
 	tracker := d.readUint32(d.mmap.regtracker)
 	return int(uint16(tracker >> 16)), int(uint16(tracker))
+}
+
+// CmdDL returns the offset from RAM_DL of a display list command generated b
+// the coprocessor engine.
+func (d *Driver) CmdDL() int {
+	d.end()
+	return int(int32(d.readUint32(d.mmap.regcmdwrite + ocmddl)))
+}
+
+// SetCmdDL sets the offset from RAM_DL where the coprocessor engine will start
+// to write next commands.
+func (d *Driver) SetCmdDL(offset int) {
+	d.end()
+	d.writeUint32(d.mmap.regcmdwrite+ocmddl, uint32(offset))
 }
