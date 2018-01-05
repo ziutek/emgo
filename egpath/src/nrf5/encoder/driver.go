@@ -58,7 +58,7 @@ func New(a, b, btn gpio.Pin, te gpiote.Chan, pullUp bool) *Driver {
 	qd.StoreSAMPLEPER(qdec.P1ms)
 	qd.StoreREPORTPER(qdec.P40)
 	qd.StoreSHORTS(qdec.REPORTRDY_READCLRACC)
-	//qd.StoreDBFEN(true)
+	qd.StoreDBFEN(true)
 	qd.StoreENABLE(true)
 	qd.Task(qdec.START).Trigger()
 	qd.Event(qdec.REPORTRDY).EnableIRQ()
