@@ -7,7 +7,7 @@ import (
 
 // Chan represents GPIOTE channel. There are 4 (8 in nRF52) channels numbered
 // from 0 to 3 (7 in nRF52).
-type Chan byte
+type Chan int8
 
 type Task byte
 
