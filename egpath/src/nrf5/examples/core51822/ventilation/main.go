@@ -9,25 +9,22 @@
 package main
 
 import (
-	"delay"
+	"rtos"
+
+	"nrf5/encoder"
 
 	"nrf5/hal/clock"
 	"nrf5/hal/gpio"
+	"nrf5/hal/gpiote"
 	"nrf5/hal/irq"
 	"nrf5/hal/rtc"
 	"nrf5/hal/system"
 	"nrf5/hal/system/timer/rtcst"
 )
 
-type Encoder struct {
-	a  gpio.Pins
-	b  gpio.Pins
-	bt gpio.Pins
-}
-
 var (
 	disp Display
-	enc  Encoder
+	enc  *encoder.Driver
 )
 
 func init() {
@@ -37,13 +34,14 @@ func init() {
 
 	// Allocate pins (always do it in one place to avoid conflicts).
 
+	p0 := gpio.P0
 	disp.SetSegPin(F, gpio.Pin0) // F
 	disp.SetDigPin(5, gpio.Pin1) // Bottom 1
 	disp.SetDigPin(6, gpio.Pin2) // Bottom 2
 	disp.SetSegPin(D, gpio.Pin3) // D
-	enc.bt = gpio.Pin4
-	enc.a = gpio.Pin5
-	enc.b = gpio.Pin7
+	encBtn := p0.Pin(4)
+	encA := p0.Pin(5)
+	encB := p0.Pin(7)
 	disp.SetSegPin(E, gpio.Pin9)  // E
 	disp.SetDigPin(7, gpio.Pin11) // Bottom 3
 	disp.SetDigPin(2, gpio.Pin15) // Top 2
@@ -60,41 +58,46 @@ func init() {
 	// Configure pins.
 
 	disp.SetupPins()
-	gpio.P0.Setup(enc.a|enc.b|enc.bt, gpio.ModeIn|gpio.PullUp)
+	enc = encoder.New(encA, encB, encBtn, gpiote.Chan(0), true)
+
+	// Configure interrupts.
+	rtos.IRQ(irq.QDEC).Enable()
+	rtos.IRQ(irq.GPIOTE).Enable()
 }
 
 func main() {
 	p0 := gpio.P0
 	p0.ClearPins(disp.dig[0])
-	for {
-		in := p0.Load()
+	p0.ClearPins(disp.segAll)
+	p0.SetPins(disp.seg[A])
+	n := 0
+	for ev := range enc.Events() {
+		n += ev.Offset()
+		m := n / 2 % 6
+		if m < 0 {
+			m = 6 + m
+		}
+		pins := disp.seg[m]
+		if ev.Button() {
+			pins |= disp.seg[G]
+		}
 		p0.ClearPins(disp.segAll)
-		var out gpio.Pins
-		if in&enc.a != 0 {
-			out |= disp.seg[F]
-		}
-		if in&enc.b != 0 {
-			out |= disp.seg[B]
-		}
-		if in&enc.bt != 0 {
-			out |= disp.seg[D]
-		}
-		p0.SetPins(out)
-		delay.Millisec(10)
+		p0.SetPins(pins)
 	}
+}
 
-	p0.SetPins(disp.seg[A] | disp.seg[B] | disp.seg[C] | disp.seg[D] | disp.seg[G])
-	for {
-		for _, dig := range disp.dig {
-			p0.SetPins(disp.digAll)
-			p0.ClearPins(dig)
-			delay.Millisec(2)
-		}
-	}
+func qdecISR() {
+	enc.QDECISR()
+}
+
+func gpioteISR() {
+	enc.GPIOTEISR()
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTC0: rtcst.ISR,
+	irq.RTC0:   rtcst.ISR,
+	irq.QDEC:   qdecISR,
+	irq.GPIOTE: gpioteISR,
 }
