@@ -1,6 +1,7 @@
-// This example shows how to use encoder package to handle rotary encoder. It
-// uses semihosting to print encoder events. Use Black Magic Probe
-// (../debug-bmp.sh) or OpenOCD (../semihosting.sh) to see program output.
+// This example shows how to use input/encoder and input/button packages to
+// handle rotary encoder. It uses semihosting to print encoder events. Use
+// Black Magic Probe (../debug-bmp.sh) or OpenOCD (../semihosting.sh) to see
+// program output.
 package main
 
 import (
