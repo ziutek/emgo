@@ -27,7 +27,8 @@ type Driver struct {
 // New returns new Driver. It configures pin as input to te GPIOTE channel.
 // PullUp determines whether the internal pull-up resistor is connected. If rtc
 // is non-nil it uses rtc.CC[ccn] to implement digital debouncing. RTC must be
-// started before (usually, a free channel of system timer is used).
+// started before (usually, a free channel of system timer is used). Driver
+// sends events to ch with source set to src.
 func New(pin gpio.Pin, te gpiote.Chan, pullUp bool, rtc *rtc.Periph, ccn int, ch chan<- input.Event, src byte) *Driver {
 	d := new(Driver)
 	d.ch = ch

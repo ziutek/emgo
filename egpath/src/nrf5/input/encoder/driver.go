@@ -16,8 +16,8 @@ type Driver struct {
 }
 
 // New returns new Driver. It configures a, b as input pins for QDEC peripheral.
-// PullUp determines whether the internal pull-up resistors are connected. Ch is
-// used to send changes of encoder position.
+// PullUp determines whether the internal pull-up resistors are connected.
+// Driver sends events to ch with source set to src.
 func New(a, b gpio.Pin, pull, dbf bool, ch chan<- input.Event, src byte) *Driver {
 	cfg := gpio.ModeIn
 	if pull {
