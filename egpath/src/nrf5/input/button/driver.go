@@ -77,11 +77,15 @@ func (d *Driver) handlePinChange() {
 }
 
 func (d *Driver) ISR() {
-	d.te.IN().Event().DisableIRQ()
-	d.handlePinChange()
+	if ev := d.te.IN().Event(); ev.IsSet() {
+		ev.DisableIRQ()
+		d.handlePinChange()
+	}
 }
 
 func (d *Driver) RTCISR() {
-	d.rtc.Event(rtc.COMPARE(int(d.ccn))).DisableIRQ()
-	d.handlePinChange()
+	if ev := d.rtc.Event(rtc.COMPARE(int(d.ccn))); ev.IsSet() {
+		ev.DisableIRQ()
+		d.handlePinChange()
+	}
 }
