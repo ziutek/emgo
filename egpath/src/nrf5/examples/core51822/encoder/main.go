@@ -10,7 +10,9 @@ import (
 	"fmt"
 	"rtos"
 
-	"nrf5/encoder"
+	"nrf5/input"
+	"nrf5/input/button"
+	"nrf5/input/encoder"
 
 	"nrf5/hal/clock"
 	"nrf5/hal/gpio"
@@ -21,23 +23,33 @@ import (
 	"nrf5/hal/system/timer/rtcst"
 )
 
-var enc *encoder.Driver
+const (
+	Enc = iota
+	Btn
+)
+
+var (
+	inpCh = make(chan input.Event, 4)
+	enc   *encoder.Driver
+	btn   *button.Driver
+)
 
 func init() {
 	// Initialize system and runtime.
 	system.Setup(clock.XTAL, clock.XTAL, true)
-	rtcst.Setup(rtc.RTC0, 1)
+	rtcst.Setup(rtc.RTC1, 0)
 
 	// Allocate pins (always do it in one place to avoid conflicts).
 
 	p0 := gpio.P0
-	btn := p0.Pin(4)
+	bt := p0.Pin(4)
 	a := p0.Pin(5)
 	b := p0.Pin(7)
 
 	// Configure peripherals.
 
-	enc = encoder.New(a, b, btn, gpiote.Chan(0), true)
+	enc = encoder.New(a, b, true, true, inpCh, Enc)
+	btn = button.New(bt, gpiote.Chan(0), true, rtc.RTC1, 1, inpCh, Btn)
 
 	// Configure interrupts.
 
@@ -53,22 +65,27 @@ func init() {
 }
 
 func main() {
-	for ev := range enc.Events() {
-		fmt.Printf("offset=%d button=%t\n", ev.Offset(), ev.Button())
+	for ev := range inpCh {
+		fmt.Printf("src=%d val=%d\n", ev.Src(), ev.Val())
 	}
 }
 
 func qdecISR() {
-	enc.QDECISR()
+	enc.ISR()
 }
 
 func gpioteISR() {
-	enc.GPIOTEISR()
+	btn.ISR()
+}
+
+func rtcISR() {
+	rtcst.ISR()
+	btn.RTCISR()
 }
 
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTC0:   rtcst.ISR,
+	irq.RTC1:   rtcISR,
 	irq.QDEC:   qdecISR,
 	irq.GPIOTE: gpioteISR,
 }
