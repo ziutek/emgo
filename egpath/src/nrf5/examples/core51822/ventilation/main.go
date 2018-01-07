@@ -1,6 +1,7 @@
-// This code drives ventilation unit controller. Ventilation unit consist of:
-// a counter-flow recuperator, two DC fans (EBM R1G225-AF33-12) and two air
-// filters.
+// This code drives ventilation unit controller.
+//
+// Ventilation unit consist of: a counter-flow recuperator, two DC fans (EBM
+// R1G225-AF33-12) and two air filters.
 //
 // Controller produces two PWM signals to contoll both fans. The current fan
 // speed is mesured by counting pulses from speed output. The desired speed can
@@ -11,7 +12,9 @@ package main
 import (
 	"rtos"
 
-	"nrf5/encoder"
+	"nrf5/input"
+	"nrf5/input/button"
+	"nrf5/input/encoder"
 
 	"nrf5/hal/clock"
 	"nrf5/hal/gpio"
@@ -22,15 +25,22 @@ import (
 	"nrf5/hal/system/timer/rtcst"
 )
 
+const (
+	Encoder = iota
+	Button
+)
+
 var (
-	disp Display
-	enc  *encoder.Driver
+	disp    Display
+	enc     *encoder.Driver
+	btn     *button.Driver
+	inputCh = make(chan input.Event, 4)
 )
 
 func init() {
 	// Initialize system and runtime.
 	system.Setup(clock.XTAL, clock.XTAL, true)
-	rtcst.Setup(rtc.RTC0, 1)
+	rtcst.Setup(rtc.RTC1, 0)
 
 	// Allocate pins (always do it in one place to avoid conflicts).
 
@@ -39,7 +49,7 @@ func init() {
 	disp.SetDigPin(5, gpio.Pin1) // Bottom 1
 	disp.SetDigPin(6, gpio.Pin2) // Bottom 2
 	disp.SetSegPin(D, gpio.Pin3) // D
-	encBtn := p0.Pin(4)
+	encBt := p0.Pin(4)
 	encA := p0.Pin(5)
 	encB := p0.Pin(7)
 	disp.SetSegPin(E, gpio.Pin9)  // E
@@ -58,7 +68,8 @@ func init() {
 	// Configure pins.
 
 	disp.SetupPins()
-	enc = encoder.New(encA, encB, encBtn, gpiote.Chan(0), true)
+	enc = encoder.New(encA, encB, true, true, inputCh, Encoder)
+	btn = button.New(encBt, gpiote.Chan(0), true, rtc.RTC1, 1, inputCh, Button)
 
 	// Configure interrupts.
 	rtos.IRQ(irq.QDEC).Enable()
@@ -71,14 +82,20 @@ func main() {
 	p0.ClearPins(disp.segAll)
 	p0.SetPins(disp.seg[A])
 	n := 0
-	for ev := range enc.Events() {
-		n += ev.Offset()
+	btn := false
+	for ev := range inputCh {
+		switch ev.Src() {
+		case Encoder:
+			n += ev.Val()
+		case Button:
+			btn = ev.Val() == 0
+		}
 		m := n / 2 % 6
 		if m < 0 {
 			m = 6 + m
 		}
 		pins := disp.seg[m]
-		if ev.Button() {
+		if btn {
 			pins |= disp.seg[G]
 		}
 		p0.ClearPins(disp.segAll)
@@ -87,17 +104,22 @@ func main() {
 }
 
 func qdecISR() {
-	enc.QDECISR()
+	enc.ISR()
 }
 
 func gpioteISR() {
-	enc.GPIOTEISR()
+	btn.ISR()
+}
+
+func rtcISR() {
+	rtcst.ISR()
+	btn.RTCISR()
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTC0:   rtcst.ISR,
+	irq.RTC1:   rtcISR,
 	irq.QDEC:   qdecISR,
 	irq.GPIOTE: gpioteISR,
 }
