@@ -18,10 +18,12 @@ const (
 
 // Two 4-digit 7-segment displays (BW428G-E4, common cathode).
 type Display struct {
-	dig    [8]gpio.Pins // 0-3 top display, 4-7 bottom display.
-	seg    [8]gpio.Pins // A B C D E F G :
-	digAll gpio.Pins
-	segAll gpio.Pins
+	dig     [8]gpio.Pins // 0-3 top display, 4-7 bottom display.
+	seg     [8]gpio.Pins // A B C D E F G :
+	digAll  gpio.Pins
+	segAll  gpio.Pins
+	dl      [8]gpio.Pins
+	n, last byte
 }
 
 func (d *Display) SetDigPin(digit int, pin gpio.Pins) {
@@ -45,4 +47,30 @@ func (d *Display) SetupPins() {
 	p0.Setup(disp.digAll, gpio.ModeOut|gpio.DriveH0D1)
 	// Drive segments with higd drive, open drain (p-channel).
 	p0.Setup(disp.segAll, gpio.ModeOut|gpio.DriveD0H1)
+}
+
+func (d *Display) ISR() {
+	pins := d.dl[d.n]
+	if d.n < d.last {
+		d.n++
+	} else {
+		d.n = 0
+	}
+	p0.SetPins(d.digAll)
+	p0.ClearPins(d.segAll)
+	p0.ClearPins(pins & d.digAll)
+	p0.SetPins(pins & d.segAll)
+}
+
+//emgo:const
+var digits = [16]byte{
+	// 0, 1
+}
+
+func (d *Display) PrintChar(pos, c byte) {
+
+}
+
+func (d *Display) PrintInt(pos, i int) {
+
 }
