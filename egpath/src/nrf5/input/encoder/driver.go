@@ -8,8 +8,8 @@ import (
 	"nrf5/hal/qdec"
 )
 
-// Driver uses QDEC peripheral and one GPIOTE channel to track changes in
-// an encoder position. Changes are reported using channel of events.
+// Driver uses QDEC peripheral to track changes in an encoder position. Changes
+// are reported using channel of events.
 type Driver struct {
 	ch  chan<- input.Event
 	src byte
