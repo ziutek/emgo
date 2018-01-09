@@ -10,6 +10,7 @@
 package main
 
 import (
+	"delay"
 	"rtos"
 
 	"nrf5/input"
@@ -67,7 +68,7 @@ func init() {
 
 	// Configure pins.
 
-	disp.SetupPins()
+	disp.Setup()
 	enc = encoder.New(encA, encB, true, true, inputCh, Encoder)
 	btn = button.New(encBt, gpiote.Chan(0), true, rtc.RTC1, 1, inputCh, Button)
 
@@ -77,29 +78,40 @@ func init() {
 }
 
 func main() {
-	p0 := gpio.P0
-	p0.ClearPins(disp.dig[0])
-	p0.ClearPins(disp.segAll)
-	p0.SetPins(disp.seg[A])
 	n := 0
-	btn := false
-	for ev := range inputCh {
-		switch ev.Src() {
-		case Encoder:
-			n += ev.Val()
-		case Button:
-			btn = ev.Val() == 0
+	for {
+		select {
+		case ev := <-inputCh:
+			switch ev.Src() {
+			case Encoder:
+				n += ev.Val()
+			case Button:
+				if ev.Val() == 1 {
+					for i := 0; i < 4; i++ {
+						disp.Clear(i)
+					}
+					continue
+				}
+			}
+			m := n / 2
+			if m < 0 {
+				m = -m
+				disp.StoreChar(0, 0, '-')
+			} else {
+				disp.StoreChar(0, 0, ' ')
+			}
+			d := m / 100
+			m = m % 100
+			disp.StoreDigit(1, 1, d)
+			d = m / 10
+			m = m % 10
+			disp.StoreDigit(2, 2, d)
+			disp.StoreDigit(3, 3, m)
+		default:
+			disp.Refresh()
+			delay.Millisec(2)
 		}
-		m := n / 2 % 6
-		if m < 0 {
-			m = 6 + m
-		}
-		pins := disp.seg[m]
-		if btn {
-			pins |= disp.seg[G]
-		}
-		p0.ClearPins(disp.segAll)
-		p0.SetPins(pins)
+
 	}
 }
 
