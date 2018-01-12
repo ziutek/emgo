@@ -72,16 +72,15 @@ func (d *Display) Refresh() {
 	p0.SetPins(pins & d.segAll)
 }
 
-// Clear clears symbol in display list at address addr. Empty element
-// of display list is not displayed so it does not consume time during
-// refresh.
+// Clear clears symbol in display list at address addr. Empty element of display
+// list is not displayed so it does not consume time during refresh.
 func (d *Display) Clear(addr int) {
 	atomic.StoreUint32((*uint32)(&d.dl[addr]), 0)
 }
 
-// Store stores symbol in display list at address addr. Symbol consists
-// of segments specified by segs and will be displayed at position pos.
-func (d *Display) Store(addr, pos int, segs byte) {
+// WriteSym wites symbol to the display list at address addr. Symbol consists of
+// segments specified by segs and will be displayed at position pos.
+func (d *Display) WriteSym(addr, pos int, segs byte) {
 	pins := d.dig[pos]
 	for n := 0; segs != 0; n++ {
 		if segs&1 != 0 {
@@ -116,8 +115,8 @@ var letters = [...]byte{
 	1<<A | 1<<F | 1<<E | 1<<G,               // F
 	1<<A | 1<<F | 1<<E | 1<<D | 1<<C,        // G
 	1<<F | 1<<E | 1<<G | 1<<C,               // h
-	1 << E, // i
-	1<<E | 1<<D | 1<<C | 1<<B, // J
+	1<<F | 1<<E,                             // I
+	1<<E | 1<<D | 1<<C | 1<<B,               // J
 	0,
 	1<<F | 1<<E | 1<<D, // L
 	0,
@@ -127,7 +126,7 @@ var letters = [...]byte{
 	1<<F | 1<<A | 1<<B | 1<<G | 1<<C, // q
 	1<<E | 1<<G,                      // r
 	1<<A | 1<<F | 1<<G | 1<<C | 1<<D, // S
-	1<<F | 1<<E | 1<<G,               // t
+	1<<F | 1<<E | 1<<D | 1<<G,        // t
 	1<<E | 1<<D | 1<<C,               // u
 	0,
 	0,
@@ -135,9 +134,10 @@ var letters = [...]byte{
 	1<<F | 1<<G | 1<<B | 1<<C | 1<<D, // y
 }
 
-// StoreChar stores character in display list at address addr. See store
-// for more information.
-func (d *Display) StoreChar(addr, pos int, c byte) {
+// WriteChar writes symbol to the display list that corresponds to the ASCII
+// character c. Symbol will be written at address addr and displayed at position
+// pos. Unsupported characters are written as space.
+func (d *Display) WriteChar(addr, pos int, c byte) {
 	switch {
 	case '0' <= c && c <= '9':
 		c = digits[c-'0']
@@ -147,21 +147,85 @@ func (d *Display) StoreChar(addr, pos int, c byte) {
 		c = letters[c-'A']
 	case c == '-':
 		c = 1 << G
+	case c == '_':
+		c = 1 << D
+	case c == '=':
+		c = 1<<D | 1<<G
 	default:
 		c = 0
 	}
-	d.Store(addr, pos, c)
+	d.WriteSym(addr, pos, c)
 }
 
-// StoreDigit stores digit in display list at address addr. See store
-// for more information.
-func (d *Display) StoreDigit(addr, pos, digit int) {
+// WriteDigit symbol to the display list that corresponds to hexadecimal digit
+// digit. Symbol will be written at address addr and displayed at position pos.
+// Digit <0 or >15 will be displayed as spece.
+func (d *Display) WriteDigit(addr, pos, digit int) {
 	var c byte
 	switch {
 	case 0 <= digit && digit <= 9:
 		c = digits[digit]
-	case 10 <= digit && digit <= 19:
+	case 10 <= digit && digit <= 16:
 		c = letters[digit-10]
 	}
-	d.Store(addr, pos, c)
+	d.WriteSym(addr, pos, c)
+}
+
+// WriteNumber writes width symbols to the display list that corresponds to
+// signed number. Symbols will be written starting from address addr. The least
+// significant digit will be displayed at position pos.
+func (d *Display) WriteNumber(addr, pos, width, number, base int) {
+	neg := number < 0
+	if neg {
+		width--
+		number = -number
+	}
+	i := 0
+	for ; i < width; i++ {
+		if number == 0 {
+			if i == 0 {
+				d.WriteDigit(addr, pos, 0)
+				i++
+			}
+			break
+		}
+		d.WriteDigit(addr+i, pos-i, number%base)
+		number /= base
+	}
+	if number != 0 {
+		for i = 0; i < width; i++ {
+			d.WriteSym(addr+i, pos-i, 1<<A|1<<D)
+		}
+	}
+	if neg {
+		d.WriteSym(addr+i, pos-i, 1<<G)
+		i++
+		width++
+	}
+	for i < width {
+		d.WriteSym(addr+i, pos-i, 0)
+		i++
+	}
+}
+
+// WriteDec is shorthand for WriteNumber(addr, pos, width, number, 10).
+func (d *Display) WriteDec(addr, pos, width, number int) {
+	d.WriteNumber(addr, pos, width, number, 10)
+}
+
+// WriteHex is shorthand for WriteNumber(addr, pos, width, number, 16).
+func (d *Display) WriteHex(addr, pos, width, number int) {
+	d.WriteNumber(addr, pos, width, number, 16)
+}
+
+func (d *Display) WriteString(addr, pos, width int, s string) {
+	k := 0
+	for i := 0; i < width; i++ {
+		if k < len(s) {
+			d.WriteChar(addr+i, pos+i, s[k])
+			k++
+		} else {
+			d.WriteSym(addr+i, pos+i, 0)
+		}
+	}
 }

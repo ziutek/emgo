@@ -30,9 +30,9 @@ const (
 )
 
 var (
-	inpCh = make(chan input.Event, 4)
-	enc   *encoder.Driver
-	btn   *button.Driver
+	inputCh = make(chan input.Event, 4)
+	enc     *encoder.Driver
+	btn     *button.Driver
 )
 
 func init() {
@@ -49,8 +49,8 @@ func init() {
 
 	// Configure peripherals.
 
-	enc = encoder.New(a, b, true, true, inpCh, Enc)
-	btn = button.New(bt, gpiote.Chan(0), true, rtc.RTC1, 1, inpCh, Btn)
+	enc = encoder.New(a, b, true, true, inputCh, Enc)
+	btn = button.New(bt, gpiote.Chan(0), true, rtc.RTC1, 1, inputCh, Btn)
 
 	// Configure interrupts.
 
@@ -66,7 +66,7 @@ func init() {
 }
 
 func main() {
-	for ev := range inpCh {
+	for ev := range inputCh {
 		fmt.Printf("src=%d val=%d\n", ev.Src(), ev.Val())
 	}
 }

@@ -73,12 +73,14 @@ func init() {
 	btn = button.New(encBt, gpiote.Chan(0), true, rtc.RTC1, 1, inputCh, Button)
 
 	// Configure interrupts.
+	
 	rtos.IRQ(irq.QDEC).Enable()
 	rtos.IRQ(irq.GPIOTE).Enable()
 }
 
 func main() {
 	n := 0
+	disp.WriteDec(0, 3, 4, 0)
 	for {
 		select {
 		case ev := <-inputCh:
@@ -86,32 +88,13 @@ func main() {
 			case Encoder:
 				n += ev.Val()
 			case Button:
-				if ev.Val() == 1 {
-					for i := 0; i < 4; i++ {
-						disp.Clear(i)
-					}
-					continue
-				}
+				n = 0
 			}
-			m := n / 2
-			if m < 0 {
-				m = -m
-				disp.StoreChar(0, 0, '-')
-			} else {
-				disp.StoreChar(0, 0, ' ')
-			}
-			d := m / 100
-			m = m % 100
-			disp.StoreDigit(1, 1, d)
-			d = m / 10
-			m = m % 10
-			disp.StoreDigit(2, 2, d)
-			disp.StoreDigit(3, 3, m)
+			disp.WriteDec(0, 3, 4, n/2)
 		default:
 			disp.Refresh()
 			delay.Millisec(2)
 		}
-
 	}
 }
 
