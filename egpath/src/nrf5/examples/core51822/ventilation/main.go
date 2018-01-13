@@ -36,6 +36,10 @@ var (
 	enc     *encoder.Driver
 	btn     *button.Driver
 	inputCh = make(chan input.Event, 4)
+
+	pwm   gpio.Pin
+	speed gpio.Pin
+	aux   gpio.Pin
 )
 
 func init() {
@@ -53,13 +57,18 @@ func init() {
 	encBt := p0.Pin(4)
 	encA := p0.Pin(5)
 	encB := p0.Pin(7)
-	disp.SetSegPin(E, gpio.Pin9)  // E
-	disp.SetDigPin(7, gpio.Pin11) // Bottom 3
-	disp.SetDigPin(2, gpio.Pin15) // Top 2
-	disp.SetSegPin(G, gpio.Pin17) // G
+	// gpio.Pin9 // Left connector
+	// gpio.Pin10 // Left connector
+	disp.SetSegPin(E, gpio.Pin11) // E
+	pwm = p0.Pin(12)              // PWM right
+	disp.SetDigPin(7, gpio.Pin13) // Bottom 3
+	speed = p0.Pin(14)            // Speed right
+	aux = p0.Pin(15)              // AUX right
+	disp.SetDigPin(2, gpio.Pin17) // Top 2
+	disp.SetSegPin(G, gpio.Pin18) // G
+	disp.SetSegPin(Q, gpio.Pin21) // :
 	disp.SetSegPin(B, gpio.Pin22) // B
 	disp.SetSegPin(C, gpio.Pin23) // C
-	disp.SetSegPin(Q, gpio.Pin21) // :
 	disp.SetDigPin(0, gpio.Pin24) // Top 0
 	disp.SetDigPin(3, gpio.Pin25) // Top 3
 	disp.SetSegPin(A, gpio.Pin28) // A
@@ -72,8 +81,12 @@ func init() {
 	enc = encoder.New(encA, encB, true, true, inputCh, Encoder)
 	btn = button.New(encBt, gpiote.Chan(0), true, rtc.RTC1, 1, inputCh, Button)
 
+	pwm.Setup(gpio.ModeOut)
+	speed.Setup(gpio.ModeIn)
+	aux.Setup(gpio.ModeIn)
+
 	// Configure interrupts.
-	
+
 	rtos.IRQ(irq.QDEC).Enable()
 	rtos.IRQ(irq.GPIOTE).Enable()
 }
