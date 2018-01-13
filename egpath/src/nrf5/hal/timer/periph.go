@@ -93,10 +93,10 @@ func (p *Periph) StoreMODE(m Mode) {
 type Bitmode byte
 
 const (
-	BIT8  Bitmode = 1
-	BIT16 Bitmode = 0
-	BIT24 Bitmode = 2
-	BIT32 Bitmode = 3
+	Bit8  Bitmode = 1
+	Bit16 Bitmode = 0
+	Bit24 Bitmode = 2
+	Bit32 Bitmode = 3
 )
 
 func (p *Periph) LoadBITMODE() Bitmode {
