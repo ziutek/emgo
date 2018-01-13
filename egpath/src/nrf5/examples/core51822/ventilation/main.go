@@ -16,14 +16,17 @@ import (
 	"nrf5/input"
 	"nrf5/input/button"
 	"nrf5/input/encoder"
+	"nrf5/ppipwm"
 
 	"nrf5/hal/clock"
 	"nrf5/hal/gpio"
 	"nrf5/hal/gpiote"
 	"nrf5/hal/irq"
+	"nrf5/hal/ppi"
 	"nrf5/hal/rtc"
 	"nrf5/hal/system"
 	"nrf5/hal/system/timer/rtcst"
+	"nrf5/hal/timer"
 )
 
 const (
@@ -36,10 +39,9 @@ var (
 	enc     *encoder.Driver
 	btn     *button.Driver
 	inputCh = make(chan input.Event, 4)
-
-	pwm   gpio.Pin
-	speed gpio.Pin
-	aux   gpio.Pin
+	pwm     *ppipwm.Toggle
+	tach    *Tachometer
+	aux     gpio.Pin
 )
 
 func init() {
@@ -60,9 +62,9 @@ func init() {
 	// gpio.Pin9 // Left connector
 	// gpio.Pin10 // Left connector
 	disp.SetSegPin(E, gpio.Pin11) // E
-	pwm = p0.Pin(12)              // PWM right
+	pwmR := p0.Pin(12)            // Right PWM output.
 	disp.SetDigPin(7, gpio.Pin13) // Bottom 3
-	speed = p0.Pin(14)            // Speed right
+	tachR := p0.Pin(14)           // Right tach input.
 	aux = p0.Pin(15)              // AUX right
 	disp.SetDigPin(2, gpio.Pin17) // Top 2
 	disp.SetSegPin(G, gpio.Pin18) // G
@@ -81,8 +83,12 @@ func init() {
 	enc = encoder.New(encA, encB, true, true, inputCh, Encoder)
 	btn = button.New(encBt, gpiote.Chan(0), true, rtc.RTC1, 1, inputCh, Button)
 
-	pwm.Setup(gpio.ModeOut)
-	speed.Setup(gpio.ModeIn)
+	pwm = ppipwm.NewToggle(timer.TIMER1)
+	pwm.SetFreq(6, 400) // Gives freq. 1/(400 µs) = 2.5 kHz, PWMmax = 99.
+	pwm.Setup(0, pwmR, gpiote.Chan(1), ppi.Chan(0), ppi.Chan(1))
+
+	tach = MakeTachometer(timer.TIMER2, tachR, gpiote.Chan(2), ppi.Chan(2), ppi.Chan(3))
+
 	aux.Setup(gpio.ModeIn)
 
 	// Configure interrupts.
@@ -93,18 +99,30 @@ func init() {
 
 func main() {
 	n := 0
-	disp.WriteDec(0, 3, 4, 0)
-	for {
+	rpm := 0
+	max := pwm.Max() * 2
+	pwm.SetInvVal(0, 0)
+	disp.WriteDec(4, 7, 2, 0)
+	for i := 0; ; i++ {
 		select {
 		case ev := <-inputCh:
 			switch ev.Src() {
 			case Encoder:
 				n += ev.Val()
+				switch {
+				case n < 0:
+					n = 0
+				case n > max:
+					n = max
+				}
 			case Button:
 				n = 0
 			}
-			disp.WriteDec(0, 3, 4, n/2)
+			pwm.SetInvVal(0, n/2)
+			disp.WriteDec(4, 7, 2, n/2)
 		default:
+			rpm = (rpm*15 + tach.RPM()) / 16
+			disp.WriteDec(0, 3, 4, rpm)
 			disp.Refresh()
 			delay.Millisec(2)
 		}
