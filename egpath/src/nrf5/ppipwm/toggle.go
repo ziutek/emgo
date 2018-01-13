@@ -44,10 +44,12 @@ func NewToggle(t *timer.Periph) *Toggle {
 	return pwm
 }
 
-// SetFreq sets prescaler to 2^log2pre and period to periodus microseconds. It
-// allows to configure a duty cycle with resolution = 16 * periodus / 2^log2pre.
-// SetFreq returns (resolution-1), which is a value that should be passed to
-// SetDuty/SetInvDuty to produce PWM with 100% duty cycle.
+// SetFreq sets timer prescaler to 2^log2pre and period to periodus microseconds
+// (log2pre must be in range [0..9]). It allows to configure a duty cycle with
+// a resolution = 16 * periodus / 2^log2pre. Toggle uses timer in 16-bit mode so
+// the resolution must be <= 65536. SetFreq returns (resolution-1), which is a
+// value that should be passed to SetDuty/SetInvDuty to produce PWM with 100%
+// duty cycle.
 func (pwm *Toggle) SetFreq(log2pre, periodus int) int {
 	if uint(log2pre) > 9 {
 		panic("pwm: bad prescaler")
@@ -58,7 +60,7 @@ func (pwm *Toggle) SetFreq(log2pre, periodus int) int {
 	t := pwm.t
 	t.StorePRESCALER(log2pre)
 	div := uint32(1) << uint(log2pre)
-	max := 16*uint32(periodus)/div - 1
+	max := 16*uint32(periodus)/div - 1 // 16 MHz * period / div - 1
 	if max > 0xFFFF {
 		panic("pwm: max>0xFFFF")
 	}
