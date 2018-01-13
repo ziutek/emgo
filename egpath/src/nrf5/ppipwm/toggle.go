@@ -32,6 +32,9 @@ type Toggle struct {
 // timer t.
 func MakeToggle(t *timer.Periph) Toggle {
 	t.Task(timer.STOP).Trigger()
+	t.Task(timer.CLEAR).Trigger()
+	t.StoreMODE(timer.TIMER)
+	t.StoreBITMODE(timer.Bit16)
 	t.StoreSHORTS(timer.COMPARE3_CLEAR)
 	return Toggle{t: t}
 }
