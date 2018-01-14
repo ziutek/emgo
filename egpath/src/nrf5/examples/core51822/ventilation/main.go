@@ -37,7 +37,7 @@ const (
 var (
 	disp    Display
 	enc     *encoder.Driver
-	btn     *button.IntDrv
+	btn     *button.PollDrv
 	inputCh = make(chan input.Event, 4)
 	pwm     *ppipwm.Toggle
 	tach    *Tachometer
@@ -56,7 +56,7 @@ func init() {
 	disp.SetDigPin(5, gpio.Pin1) // Bottom 1
 	disp.SetDigPin(6, gpio.Pin2) // Bottom 2
 	disp.SetSegPin(D, gpio.Pin3) // D
-	encBt := p0.Pin(4)
+	encBtn := gpio.Pin4
 	encA := p0.Pin(5)
 	encB := p0.Pin(7)
 	// gpio.Pin9 // Left connector
@@ -81,20 +81,20 @@ func init() {
 
 	disp.Setup()
 	enc = encoder.New(encA, encB, true, true, inputCh, Encoder)
-	btn = button.NewIntDrv(encBt, gpiote.Chan(0), true, rtc.RTC1, 1, inputCh, Button)
+	btn = button.NewPollDrv(p0, encBtn, true, inputCh, Button)
+	btn.UseRTC(rtc.RTC1, 1, 20)
 
 	pwm = ppipwm.NewToggle(timer.TIMER1)
 	pwm.SetFreq(6, 400) // Gives freq. 1/(400 µs) = 2.5 kHz, PWMmax = 99.
-	pwm.Setup(0, pwmR, gpiote.Chan(1), ppi.Chan(0), ppi.Chan(1))
+	pwm.Setup(0, pwmR, gpiote.Chan(0), ppi.Chan(0), ppi.Chan(1))
 
-	tach = MakeTachometer(timer.TIMER2, tachR, gpiote.Chan(2), ppi.Chan(2), ppi.Chan(3))
+	tach = MakeTachometer(timer.TIMER2, tachR, gpiote.Chan(1), ppi.Chan(2), ppi.Chan(3))
 
 	aux.Setup(gpio.ModeIn)
 
 	// Configure interrupts.
 
 	rtos.IRQ(irq.QDEC).Enable()
-	rtos.IRQ(irq.GPIOTE).Enable()
 }
 
 func main() {
@@ -133,10 +133,6 @@ func qdecISR() {
 	enc.ISR()
 }
 
-func gpioteISR() {
-	btn.ISR()
-}
-
 func rtcISR() {
 	rtcst.ISR()
 	btn.RTCISR()
@@ -145,7 +141,6 @@ func rtcISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTC1:   rtcISR,
-	irq.QDEC:   qdecISR,
-	irq.GPIOTE: gpioteISR,
+	irq.RTC1: rtcISR,
+	irq.QDEC: qdecISR,
 }

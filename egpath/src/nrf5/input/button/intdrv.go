@@ -15,9 +15,9 @@ import (
 // efficient alternative to PollDrv.
 type IntDrv struct {
 	ch    chan<- input.Event
+	src   uint32
 	te    gpiote.Chan
 	rtc   *rtc.Periph
-	src   uint32
 	delay uint16
 	ccn   byte
 	val   byte
@@ -27,7 +27,7 @@ type IntDrv struct {
 // channel. PullUp determines whether the internal pull-up resistor is used. If
 // rtc is non-nil it uses rtc.CC[ccn] to implement digital debouncing. RTC must
 // be started before (usually, a free channel of system timer is used). IntDrv
-// sends events to ch with source set to src.
+// sends int events to ch with source set to src.
 func NewIntDrv(pin gpio.Pin, te gpiote.Chan, pullUp bool, rtc *rtc.Periph, ccn int, ch chan<- input.Event, src uint32) *IntDrv {
 	d := new(IntDrv)
 	d.ch = ch
@@ -75,6 +75,7 @@ func (d *IntDrv) handlePinChange() {
 	ev.EnableIRQ()
 }
 
+// ISR should be called int GPIOTE interrupt handler.
 func (d *IntDrv) ISR() {
 	if ev := d.te.IN().Event(); ev.IsSet() {
 		ev.DisableIRQ()
@@ -82,6 +83,7 @@ func (d *IntDrv) ISR() {
 	}
 }
 
+// RTCISR should be called int RTC interrupt handler.
 func (d *IntDrv) RTCISR() {
 	if ev := d.rtc.Event(rtc.COMPARE(int(d.ccn))); ev.IsSet() {
 		ev.DisableIRQ()
