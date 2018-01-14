@@ -1,20 +1,34 @@
 package input
 
-// Event contains 8-bit identifier of source of event and 24-bit event
+import (
+	"nrf5/hal/gpio"
+)
+
+// Event contains 32-bit identifier of source of event and 32-bit event
 // value.
 type Event struct {
-	v int32
+	src uint32
+	val int32
 }
 
-// MakeEvent creates new event. Only 24 bits of val are used.
-func MakeEvent(src byte, val int) Event {
-	return Event{int32(val)<<8 | int32(src)}
+// MakeIntEvent creates new event with int value.
+func MakeIntEvent(src uint32, val int) Event {
+	return Event{src, int32(val)}
 }
 
-func (e Event) Src() byte {
-	return byte(e.v)
+// MakePinEvent creates new event with gpio.Pins value.
+func MakePinEvent(src uint32, pins gpio.Pins) Event {
+	return Event{src, int32(pins)}
 }
 
-func (e Event) Val() int {
-	return int(e.v >> 8)
+func (e Event) Src() uint32 {
+	return e.src
+}
+
+func (e Event) Int() int {
+	return int(e.val)
+}
+
+func (e Event) Pins() gpio.Pins {
+	return gpio.Pins(e.val)
 }

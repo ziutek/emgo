@@ -12,13 +12,13 @@ import (
 // are reported using channel of events.
 type Driver struct {
 	ch  chan<- input.Event
-	src byte
+	src uint32
 }
 
 // New returns new Driver. It configures a, b as input pins for QDEC peripheral.
 // PullUp determines whether the internal pull-up resistors are connected.
 // Driver sends events to ch with source set to src.
-func New(a, b gpio.Pin, pull, dbf bool, ch chan<- input.Event, src byte) *Driver {
+func New(a, b gpio.Pin, pull, dbf bool, ch chan<- input.Event, src uint32) *Driver {
 	cfg := gpio.ModeIn
 	if pull {
 		cfg |= gpio.PullUp
@@ -47,7 +47,7 @@ func (d *Driver) ISR() {
 	qd := qdec.QDEC
 	qd.Event(qdec.REPORTRDY).Clear()
 	select {
-	case d.ch <- input.MakeEvent(d.src, qd.LoadACCREAD()):
+	case d.ch <- input.MakeIntEvent(d.src, qd.LoadACCREAD()):
 	default:
 	}
 }

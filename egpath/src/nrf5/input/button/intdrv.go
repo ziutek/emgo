@@ -1,4 +1,3 @@
-// Package button provides interrupt driven driver to push button.
 package button
 
 import (
@@ -9,28 +8,28 @@ import (
 	"nrf5/hal/rtc"
 )
 
-// Driver uses GPIOTE peripheral to track changes in a button position.
-// Optionally, it can use RTC to implement digital debouncing filter. Changes
-// are reported using channel of events. Driver is rather expensive by counting
-// the resources used but provides energy efficient alternative to polling
-// implementation.
-type Driver struct {
+// IntDrv uses GPIOTE peripheral and interrupts to track changes in a button
+// state. Optionally, it can use RTC to implement digital debouncing filter.
+// Changes are reported using channel of events. IntDrv is rather expensive by
+// counting the resources used to handla only one button but provides energy
+// efficient alternative to PollDrv.
+type IntDrv struct {
 	ch    chan<- input.Event
 	te    gpiote.Chan
 	rtc   *rtc.Periph
+	src   uint32
 	delay uint16
 	ccn   byte
-	src   byte
 	val   byte
 }
 
-// New returns new Driver. It configures pin as input to te GPIOTE channel.
-// PullUp determines whether the internal pull-up resistor is connected. If rtc
-// is non-nil it uses rtc.CC[ccn] to implement digital debouncing. RTC must be
-// started before (usually, a free channel of system timer is used). Driver
+// NewIntDrv returns new IntDrv. It configures pin as input to te GPIOTE
+// channel. PullUp determines whether the internal pull-up resistor is used. If
+// rtc is non-nil it uses rtc.CC[ccn] to implement digital debouncing. RTC must
+// be started before (usually, a free channel of system timer is used). IntDrv
 // sends events to ch with source set to src.
-func New(pin gpio.Pin, te gpiote.Chan, pullUp bool, rtc *rtc.Periph, ccn int, ch chan<- input.Event, src byte) *Driver {
-	d := new(Driver)
+func NewIntDrv(pin gpio.Pin, te gpiote.Chan, pullUp bool, rtc *rtc.Periph, ccn int, ch chan<- input.Event, src uint32) *IntDrv {
+	d := new(IntDrv)
 	d.ch = ch
 	d.src = src
 	d.te = te
@@ -50,7 +49,7 @@ func New(pin gpio.Pin, te gpiote.Chan, pullUp bool, rtc *rtc.Periph, ccn int, ch
 	return d
 }
 
-func (d *Driver) handlePinChange() {
+func (d *IntDrv) handlePinChange() {
 	te := d.te
 	ev := te.IN().Event()
 	ev.Clear() // Clear before load the pin value, to don't miss any change.
@@ -62,7 +61,7 @@ func (d *Driver) handlePinChange() {
 	}
 	d.val = byte(val)
 	select {
-	case d.ch <- input.MakeEvent(d.src, val):
+	case d.ch <- input.MakeIntEvent(d.src, val):
 	default:
 	}
 	rt := d.rtc
@@ -76,14 +75,14 @@ func (d *Driver) handlePinChange() {
 	ev.EnableIRQ()
 }
 
-func (d *Driver) ISR() {
+func (d *IntDrv) ISR() {
 	if ev := d.te.IN().Event(); ev.IsSet() {
 		ev.DisableIRQ()
 		d.handlePinChange()
 	}
 }
 
-func (d *Driver) RTCISR() {
+func (d *IntDrv) RTCISR() {
 	if ev := d.rtc.Event(rtc.COMPARE(int(d.ccn))); ev.IsSet() {
 		ev.DisableIRQ()
 		d.handlePinChange()

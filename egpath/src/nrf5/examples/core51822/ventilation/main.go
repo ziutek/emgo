@@ -37,7 +37,7 @@ const (
 var (
 	disp    Display
 	enc     *encoder.Driver
-	btn     *button.Driver
+	btn     *button.IntDrv
 	inputCh = make(chan input.Event, 4)
 	pwm     *ppipwm.Toggle
 	tach    *Tachometer
@@ -81,7 +81,7 @@ func init() {
 
 	disp.Setup()
 	enc = encoder.New(encA, encB, true, true, inputCh, Encoder)
-	btn = button.New(encBt, gpiote.Chan(0), true, rtc.RTC1, 1, inputCh, Button)
+	btn = button.NewIntDrv(encBt, gpiote.Chan(0), true, rtc.RTC1, 1, inputCh, Button)
 
 	pwm = ppipwm.NewToggle(timer.TIMER1)
 	pwm.SetFreq(6, 400) // Gives freq. 1/(400 µs) = 2.5 kHz, PWMmax = 99.
@@ -108,7 +108,7 @@ func main() {
 		case ev := <-inputCh:
 			switch ev.Src() {
 			case Encoder:
-				n += ev.Val()
+				n += ev.Int()
 				switch {
 				case n < 0:
 					n = 0
