@@ -4,6 +4,7 @@ import (
 	"sync/atomic"
 
 	"nrf5/hal/gpio"
+	"nrf5/hal/rtc"
 )
 
 // Segment names
@@ -25,7 +26,10 @@ type Display struct {
 	digAll gpio.Pins
 	segAll gpio.Pins
 	dl     [8]gpio.Pins
-	n      int
+	rtc    *rtc.Periph
+	delay  uint16
+	ccn    byte
+	n      byte
 }
 
 func (d *Display) SetDigPin(digit int, pin gpio.Pins) {
@@ -54,17 +58,17 @@ func (d *Display) Setup() {
 // Refresh display next, not empty, symbol from internal display list.
 func (d *Display) Refresh() {
 	var pins gpio.Pins
-	n := d.n
+	n := int(d.n)
 	for {
 		pins = gpio.Pins(atomic.LoadUint32((*uint32)(&d.dl[n])))
 		if n++; n == len(d.dl) {
 			n = 0
 		}
-		if pins != 0 || n == d.n {
+		if pins != 0 || n == int(d.n) {
 			break
 		}
 	}
-	d.n = n
+	d.n = byte(n)
 	p0 := gpio.P0
 	p0.SetPins(d.digAll)
 	p0.ClearPins(d.segAll)
@@ -227,5 +231,31 @@ func (d *Display) WriteString(addr, pos, width int, s string) {
 		} else {
 			d.WriteSym(addr+i, pos+i, 0)
 		}
+	}
+}
+
+// UseRTC setups rtc.CC[ccn] compare register to generate interrupts with a
+// period periodms millisecond. RTC should be started before (usually, a free
+// channel of system timer is used). RTC interrupt handling must be enabled in
+// NVIC to do not miss a compare event.
+func (d *Display) UseRTC(rt *rtc.Periph, ccn, periodms int) {
+	d.rtc = rt
+	d.ccn = byte(ccn)
+	d.delay = uint16(32768 * uint32(periodms) / ((rt.LoadPRESCALER() + 1) * 1e3))
+	ev := rt.Event(rtc.COMPARE(int(d.ccn)))
+	ev.Clear()
+	rt.StoreCC(ccn, rt.LoadCOUNTER()+uint32(d.delay))
+	ev.EnableIRQ()
+}
+
+// RTCISR should be called int RTC interrupt handler. It checks the compare
+// event flag and if set it calls Refresh and updates compare register to
+// generate next event.
+func (d *Display) RTCISR() {
+	rt, ccn := d.rtc, int(d.ccn)
+	if ev := rt.Event(rtc.COMPARE(int(ccn))); ev.IsSet() {
+		ev.Clear()
+		d.Refresh()
+		rt.StoreCC(ccn, rt.LoadCOUNTER()+uint32(d.delay))
 	}
 }

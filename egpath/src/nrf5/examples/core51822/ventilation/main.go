@@ -4,7 +4,7 @@
 // R1G225-AF33-12) and two air filters.
 //
 // Controller produces two PWM signals to contoll both fans. The current fan
-// speed is mesured by counting pulses from speed output. The desired speed can
+// speed is mesured by counting pulses from TACH output. The desired speed can
 // be set using rotary encoder. Controller has two 4-digit 7-segment displays,
 // that shows the current speed of both fans.
 //
@@ -82,9 +82,12 @@ func init() {
 	// Configure pins.
 
 	disp.Setup()
+	disp.UseRTC(rtc.RTC1, 1, 3)
+
 	enc = encoder.New(encA, encB, true, true, inputCh, Encoder)
+
 	btn = button.NewPollDrv(p0, encBtn, true, inputCh, Button)
-	btn.UseRTC(rtc.RTC1, 1, 20)
+	btn.UseRTC(rtc.RTC1, 2, 20)
 
 	pwm = ppipwm.NewToggle(timer.TIMER1)
 	pwm.SetFreq(6, 400) // Gives freq. 1/(400 µs) = 2.5 kHz, PWMmax = 99.
@@ -131,8 +134,7 @@ func main() {
 		default:
 			rpm = (rpm*15 + tach[1].RPM()) / 16
 			disp.WriteDec(0, 3, 4, rpm)
-			disp.Refresh()
-			delay.Millisec(2)
+			delay.Millisec(40)
 		}
 	}
 }
@@ -143,6 +145,7 @@ func qdecISR() {
 
 func rtcISR() {
 	rtcst.ISR()
+	disp.RTCISR()
 	btn.RTCISR()
 }
 
