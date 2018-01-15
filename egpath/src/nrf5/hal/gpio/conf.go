@@ -8,9 +8,9 @@ const (
 	ModeDiscon Config = 2 // Input buffer disconnected, output disabled.
 	ModeOut    Config = 3 // Input buffer disconnected, output enabled.
 
-	PullNone Config = 0 << 2 // No pull.
-	PullDown Config = 1 << 2 // Pull down on pin.
-	PullUp   Config = 3 << 2 // Pull dup on pin.
+	PullNone Config = 0 << 2 // Disable pull-up/down resistance.
+	PullDown Config = 1 << 2 // Enable pull-down resistance.
+	PullUp   Config = 3 << 2 // Enable pull-up resistance.
 
 	DriveS0S1 Config = 0 << 8 // Standard 0, standard 1.
 	DriveH0S1 Config = 1 << 8 // High drive 0, standard 1.
