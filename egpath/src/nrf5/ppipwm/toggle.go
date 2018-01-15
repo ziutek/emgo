@@ -89,7 +89,7 @@ func (pwm *Toggle) Setup(n int, pin gpio.Pin, gc gpiote.Chan, pc0, pc1 ppi.Chan)
 	checkOutput(n)
 	pin.Clear()
 	pin.Setup(gpio.ModeOut)
-	gc.Setup(pin, 0)
+	gc.Setup(pin, gpiote.ModeDiscon)
 	pwm.gc[n] = gc
 	t := pwm.t
 	pc0.SetEEP(t.Event(timer.COMPARE(n)))
@@ -110,11 +110,11 @@ func (pwm *Toggle) SetVal(n, val int) {
 	switch {
 	case val <= 0:
 		pin.Clear()
-		gc.Setup(pin, 0)
+		gc.Setup(pin, gpiote.ModeDiscon)
 		return
 	case val >= pwm.Max():
 		pin.Set()
-		gc.Setup(pin, 0)
+		gc.Setup(pin, gpiote.ModeDiscon)
 		return
 	}
 	cfg := gpiote.ModeTask | gpiote.PolarityToggle
@@ -140,11 +140,11 @@ func (pwm *Toggle) SetInvVal(n, val int) {
 	switch {
 	case val <= 0:
 		pin.Set()
-		gc.Setup(pin, 0)
+		gc.Setup(pin, gpiote.ModeDiscon)
 		return
 	case val >= pwm.Max():
 		pin.Clear()
-		gc.Setup(pin, 0)
+		gc.Setup(pin, gpiote.ModeDiscon)
 		return
 	}
 	cfg := gpiote.ModeTask | gpiote.PolarityToggle
