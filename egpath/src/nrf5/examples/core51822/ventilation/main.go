@@ -7,6 +7,8 @@
 // speed is mesured by counting pulses from speed output. The desired speed can
 // be set using rotary encoder. Controller has two 4-digit 7-segment displays,
 // that shows the current speed of both fans.
+//
+// Work in progress...
 package main
 
 import (
@@ -40,7 +42,7 @@ var (
 	btn     *button.PollDrv
 	inputCh = make(chan input.Event, 4)
 	pwm     *ppipwm.Toggle
-	tach    *Tachometer
+	tach    [2]*Tachometer
 	aux     gpio.Pin
 )
 
@@ -52,30 +54,30 @@ func init() {
 	// Allocate pins (always do it in one place to avoid conflicts).
 
 	p0 := gpio.P0
-	disp.SetSegPin(F, gpio.Pin0) // F
-	disp.SetDigPin(5, gpio.Pin1) // Bottom 1
-	disp.SetDigPin(6, gpio.Pin2) // Bottom 2
-	disp.SetSegPin(D, gpio.Pin3) // D
-	encBtn := gpio.Pin4
-	encA := p0.Pin(5)
-	encB := p0.Pin(7)
-	// gpio.Pin9 // Left connector
-	// gpio.Pin10 // Left connector
-	disp.SetSegPin(E, gpio.Pin11) // E
-	pwmR := p0.Pin(12)            // Right PWM output.
-	disp.SetDigPin(7, gpio.Pin13) // Bottom 3
-	tachR := p0.Pin(14)           // Right tach input.
-	aux = p0.Pin(15)              // AUX right
-	disp.SetDigPin(2, gpio.Pin17) // Top 2
-	disp.SetSegPin(G, gpio.Pin18) // G
-	disp.SetSegPin(Q, gpio.Pin21) // :
-	disp.SetSegPin(B, gpio.Pin22) // B
-	disp.SetSegPin(C, gpio.Pin23) // C
-	disp.SetDigPin(0, gpio.Pin24) // Top 0
-	disp.SetDigPin(3, gpio.Pin25) // Top 3
-	disp.SetSegPin(A, gpio.Pin28) // A
-	disp.SetDigPin(1, gpio.Pin29) // Top 1
-	disp.SetDigPin(4, gpio.Pin30) // Bottom 0
+	disp.SetSegPin(F, gpio.Pin0)  // Segment F.
+	disp.SetDigPin(5, gpio.Pin1)  // Bottom digit 1.
+	disp.SetDigPin(6, gpio.Pin2)  // Bottom digit 2.
+	disp.SetSegPin(D, gpio.Pin3)  // Segment D.
+	encBtn := gpio.Pin4           // Encoder push button.
+	encA := p0.Pin(5)             // Encoder A-phase input.
+	encB := p0.Pin(7)             // Encoder B-phase input.
+	tach0 := p0.Pin(9)            // Left tach input.
+	pwm0 := p0.Pin(10)            // Left PWM output.
+	disp.SetSegPin(E, gpio.Pin11) // Segment E.
+	pwm1 := p0.Pin(12)            // Right PWM output.
+	disp.SetDigPin(7, gpio.Pin13) // Bottom digit 3.
+	tach1 := p0.Pin(14)           // Right tach input.
+	aux = p0.Pin(15)              // Right AUX.
+	disp.SetDigPin(2, gpio.Pin17) // Top digit 2.
+	disp.SetSegPin(G, gpio.Pin18) // Segment G.
+	disp.SetSegPin(Q, gpio.Pin21) // Segment :.
+	disp.SetSegPin(B, gpio.Pin22) // Segment B.
+	disp.SetSegPin(C, gpio.Pin23) // Segment C.
+	disp.SetDigPin(0, gpio.Pin24) // Top digit 0.
+	disp.SetDigPin(3, gpio.Pin25) // Top digit 3.
+	disp.SetSegPin(A, gpio.Pin28) // Segment A.
+	disp.SetDigPin(1, gpio.Pin29) // Top digit 1.
+	disp.SetDigPin(4, gpio.Pin30) // Bottom 0.
 
 	// Configure pins.
 
@@ -86,9 +88,15 @@ func init() {
 
 	pwm = ppipwm.NewToggle(timer.TIMER1)
 	pwm.SetFreq(6, 400) // Gives freq. 1/(400 µs) = 2.5 kHz, PWMmax = 99.
-	pwm.Setup(0, pwmR, gpiote.Chan(0), ppi.Chan(0), ppi.Chan(1))
+	pwm.Setup(0, pwm0, gpiote.Chan(0), ppi.Chan(0), ppi.Chan(1))
+	pwm.Setup(1, pwm1, gpiote.Chan(1), ppi.Chan(2), ppi.Chan(3))
 
-	tach = MakeTachometer(timer.TIMER2, tachR, gpiote.Chan(1), ppi.Chan(2), ppi.Chan(3))
+	tach[0] = MakeTachometer(
+		timer.TIMER2, tach0, gpiote.Chan(2), ppi.Chan(4), ppi.Chan(5),
+	)
+	tach[1] = MakeTachometer(
+		timer.TIMER3, tach1, gpiote.Chan(3), ppi.Chan(6), ppi.Chan(7),
+	)
 
 	aux.Setup(gpio.ModeIn)
 
@@ -101,7 +109,7 @@ func main() {
 	n := 0
 	rpm := 0
 	max := pwm.Max() * 2
-	pwm.SetInvVal(0, 0)
+	pwm.SetInvVal(1, 0)
 	disp.WriteDec(4, 7, 2, 0)
 	for i := 0; ; i++ {
 		select {
@@ -118,10 +126,10 @@ func main() {
 			case Button:
 				n = 0
 			}
-			pwm.SetInvVal(0, n/2)
+			pwm.SetInvVal(1, n/2)
 			disp.WriteDec(4, 7, 2, n/2)
 		default:
-			rpm = (rpm*15 + tach.RPM()) / 16
+			rpm = (rpm*15 + tach[1].RPM()) / 16
 			disp.WriteDec(0, 3, 4, rpm)
 			disp.Refresh()
 			delay.Millisec(2)
