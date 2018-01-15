@@ -77,7 +77,7 @@ func init() {
 	disp.SetDigPin(3, gpio.Pin25) // Top digit 3.
 	disp.SetSegPin(A, gpio.Pin28) // Segment A.
 	disp.SetDigPin(1, gpio.Pin29) // Top digit 1.
-	disp.SetDigPin(4, gpio.Pin30) // Bottom 0.
+	disp.SetDigPin(4, gpio.Pin30) // Bottom digit 0.
 
 	// Configure pins.
 
@@ -92,13 +92,16 @@ func init() {
 	pwm = ppipwm.NewToggle(timer.TIMER1)
 	pwm.SetFreq(6, 400) // Gives freq. 1/(400 µs) = 2.5 kHz, PWMmax = 99.
 	pwm.Setup(0, pwm0, gpiote.Chan(0), ppi.Chan(0), ppi.Chan(1))
+	pwm.SetInvVal(0, 0) // Immediately stop fan 0.
 	pwm.Setup(1, pwm1, gpiote.Chan(1), ppi.Chan(2), ppi.Chan(3))
+	pwm.SetInvVal(1, 0) // Immediately stop fan 1.
 
+	// TODO: Implement both tach channels on one timer to avoid use of TIMER0.
 	tach[0] = MakeTachometer(
 		timer.TIMER2, tach0, gpiote.Chan(2), ppi.Chan(4), ppi.Chan(5),
 	)
 	tach[1] = MakeTachometer(
-		timer.TIMER3, tach1, gpiote.Chan(3), ppi.Chan(6), ppi.Chan(7),
+		timer.TIMER0, tach1, gpiote.Chan(3), ppi.Chan(6), ppi.Chan(7),
 	)
 
 	aux.Setup(gpio.ModeIn)
@@ -109,33 +112,34 @@ func init() {
 }
 
 func main() {
+	go printRPM()
 	n := 0
-	rpm := 0
 	max := pwm.Max() * 2
-	pwm.SetInvVal(1, 0)
-	disp.WriteDec(4, 7, 2, 0)
-	for i := 0; ; i++ {
-		select {
-		case ev := <-inputCh:
-			switch ev.Src() {
-			case Encoder:
-				n += ev.Int()
-				switch {
-				case n < 0:
-					n = 0
-				case n > max:
-					n = max
-				}
-			case Button:
+	disp.WriteDec(4, 7, 2, n/2)
+	for ev := range inputCh {
+		switch ev.Src() {
+		case Button:
+			n = 0
+		case Encoder:
+			n += ev.Int()
+			switch {
+			case n < 0:
 				n = 0
+			case n > max:
+				n = max
 			}
-			pwm.SetInvVal(1, n/2)
-			disp.WriteDec(4, 7, 2, n/2)
-		default:
-			rpm = (rpm*15 + tach[1].RPM()) / 16
-			disp.WriteDec(0, 3, 4, rpm)
-			delay.Millisec(40)
 		}
+		pwm.SetInvVal(1, n/2)
+		disp.WriteDec(4, 7, 2, n/2)
+	}
+}
+
+func printRPM() {
+	rpm := 0
+	for {
+		rpm = (rpm*7 + tach[1].RPM()) / 8
+		disp.WriteDec(0, 3, 4, rpm)
+		delay.Millisec(40)
 	}
 }
 
@@ -145,8 +149,8 @@ func qdecISR() {
 
 func rtcISR() {
 	rtcst.ISR()
-	disp.RTCISR()
 	btn.RTCISR()
+	disp.RTCISR()
 }
 
 //emgo:const
