@@ -12,7 +12,6 @@
 package main
 
 import (
-	"delay"
 	"rtos"
 
 	"nrf5/input"
@@ -42,7 +41,7 @@ var (
 	btn     *button.PollDrv
 	inputCh = make(chan input.Event, 4)
 	pwm     *ppipwm.Toggle
-	tach    [2]*Tachometer
+	tach    *Tachometer
 	aux     gpio.Pin
 )
 
@@ -96,12 +95,9 @@ func init() {
 	pwm.Setup(1, pwm1, gpiote.Chan(1), ppi.Chan(2), ppi.Chan(3))
 	pwm.SetInvVal(1, 0) // Immediately stop fan 1.
 
-	// TODO: Implement both tach channels on one timer to avoid use of TIMER0.
-	tach[0] = MakeTachometer(
-		timer.TIMER2, tach0, gpiote.Chan(2), ppi.Chan(4), ppi.Chan(5),
-	)
-	tach[1] = MakeTachometer(
-		timer.TIMER0, tach1, gpiote.Chan(3), ppi.Chan(6), ppi.Chan(7),
+	tach = NewTachometer(
+		timer.TIMER2, gpiote.Chan(2), ppi.Chan(4),
+		rtc.RTC1, 3, 500, tach0, tach1,
 	)
 
 	aux.Setup(gpio.ModeIn)
@@ -112,7 +108,6 @@ func init() {
 }
 
 func main() {
-	go printRPM()
 	n := 0
 	max := pwm.Max() * 2
 	disp.WriteDec(4, 7, 2, n/2)
@@ -135,12 +130,7 @@ func main() {
 }
 
 func printRPM() {
-	rpm := 0
-	for {
-		rpm = (rpm*7 + tach[1].RPM()) / 8
-		disp.WriteDec(0, 3, 4, rpm)
-		delay.Millisec(40)
-	}
+	disp.WriteDec(0, 3, 4, tach.RPM(1))
 }
 
 func qdecISR() {
@@ -151,6 +141,9 @@ func rtcISR() {
 	rtcst.ISR()
 	btn.RTCISR()
 	disp.RTCISR()
+	if tach.RTCISR() {
+		printRPM()
+	}
 }
 
 //emgo:const
