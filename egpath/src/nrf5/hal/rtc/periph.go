@@ -53,12 +53,12 @@ func (p *Periph) Event(e Event) *te.Event { return p.Regs.Event(int(e)) }
 
 // LoadCOUNTER returns value of counter register.
 func (p *Periph) LoadCOUNTER() uint32 {
-	return p.counter.Bits(0xffffff)
+	return p.counter.Load()
 }
 
 // LoadPRESCALER returns value of prescaler register.
 func (p *Periph) LoadPRESCALER() uint32 {
-	return p.prescaler.Bits(0xfff)
+	return p.prescaler.Load()
 }
 
 // StorePRESCALER stores prescaler to pr (freq = 32768Hz/(pr+1)). Must only be used
@@ -69,7 +69,7 @@ func (p *Periph) StorePRESCALER(pr int) {
 
 // LoadCC returns value of n-th compare register.
 func (p *Periph) LoadCC(n int) uint32 {
-	return p.cc[n].Bits(0xffffff)
+	return p.cc[n].Load()
 }
 
 // StoreCC stores n-th compare register to cc.
