@@ -4,116 +4,91 @@ import (
 	"nrf5/hal/gpio"
 	"nrf5/hal/gpiote"
 	"nrf5/hal/ppi"
-	"nrf5/hal/rtc"
 	"nrf5/hal/timer"
 )
 
-// Tachometer supports up to 4 tach sources.
+const (
+	tachCC   = 0 // CC0 stores tach period.
+	ovrfCC   = 1 // CC1 produces overflow event.
+	ovrfStop = timer.COMPARE1_STOP
+	ipr      = 3 //  Impulses per revolution.
+	presc    = 4 // 1 MHz, overflow in 65.5 ms: min. freq 15.3 Hz (305 RPM).
+)
+
 type Tachometer struct {
-	cnt    *timer.Periph
-	rtc    *rtc.Periph
-	pins   [4]gpio.Pin
-	te     gpiote.Chan
-	ppi    ppi.Chan
-	period uint32
-	delay  uint16
-	ccn    byte
-	k, n   byte
+	t        *timer.Periph
+	te       gpiote.Chan
+	ppiClear ppi.Channels
+	ppiAll   ppi.Channels
+	pins     [4]gpio.Pin // Support up to 4 sources. Can be replaced with slice.
+	ticks    [4]uint16   // Support up to 4 sources. Can be replaced with slice.
+	n, i     byte
 }
 
-func NewTachometer(cnt *timer.Periph, te gpiote.Chan, ppi ppi.Chan, rt *rtc.Periph, ccn, periodms int, pins ...gpio.Pin) *Tachometer {
-	for _, pin := range pins {
-		pin.Setup(gpio.ModeIn)
-	}
-	cnt.Task(timer.STOP).Trigger()
-	cnt.StoreMODE(timer.COUNTER)
-	cnt.StoreBITMODE(timer.Bit16)
-	cnt.Task(timer.START).Trigger()
-	ppi.SetEEP(te.IN().Event())
-	ppi.SetTEP(cnt.Task(timer.COUNT))
-	ppi.Enable()
-	t := new(Tachometer)
-	t.cnt = cnt
-	for i, pin := range pins {
-		t.pins[i] = pin
-	}
-	t.n = byte(len(pins))
-	t.te = te
-	t.ppi = ppi
-	t.rtc = rt
-	t.ccn = byte(ccn)
-	presc := rt.LoadPRESCALER() + 1
-	delay := 32768 * uint32(periodms) / (presc * 1e3 * uint32(len(pins)))
-	t.delay = uint16(delay)
-	t.period = delay * presc
-	rt.StoreCC(ccn, rt.LoadCOUNTER()) // Avoid spurious interrupt.
-	ev := rt.Event(rtc.COMPARE(ccn))
-	ev.Clear()
-	t.setupChan(0)
-	ev.EnableIRQ()
-	return t
-}
-
-func (t *Tachometer) setupChan(k int) {
-	t.te.Setup(t.pins[k], gpiote.ModeEvent|gpiote.PolarityToggle)
-	t.cnt.Task(timer.CLEAR).Trigger()
-	t.rtc.StoreCC(int(t.ccn), t.rtc.LoadCOUNTER()+uint32(t.delay))
-}
-
-func (t *Tachometer) RTCISR() bool {
-	ev := t.rtc.Event(rtc.COMPARE(int(t.ccn)))
-	if !ev.IsSet() {
-		return false
-	}
-	ev.Clear()
-	cnt, k := t.cnt, int(t.k)
-	cnt.Task(timer.CAPTURE(k)).Trigger()
-	if k++; k == int(t.n) {
-		k = 0
-	}
-	t.setupChan(k)
-	t.k = byte(k)
-	return k == 0
-}
-
-func (t *Tachometer) RPM(n int) int {
-	const ipr = 6 // Impulses per revolution (both edges).
-	return int(t.cnt.LoadCC(n) * 60 / ipr * 32768 / t.period)
-}
-
-// TachFast works well but uses too many resources.
-type TachFast timer.Periph
-
-func MakeTachFast(t *timer.Periph, pin gpio.Pin, te gpiote.Chan, pp0, pp1 ppi.Chan) *TachFast {
-	pin.Setup(gpio.ModeIn)
-	te.Setup(pin, gpiote.ModeEvent|gpiote.PolarityHiToLo)
+func NewTachometer(t *timer.Periph, te gpiote.Chan, pc0, pc1, pc2, pc3 ppi.Chan, pg0, pg1 ppi.Group, pins ...gpio.Pin) *Tachometer {
 	t.Task(timer.STOP).Trigger()
 	t.StoreMODE(timer.TIMER)
 	t.StoreBITMODE(timer.Bit16)
-	t.StoreCC(0, 0)
-	t.StoreCC(1, 0)
-	t.StorePRESCALER(7) // 125 kHz
-	pp0.SetEEP(te.IN().Event())
-	pp0.SetTEP(t.Task(timer.CAPTURE(0)))
-	pp0.Enable()
-	pp1.SetEEP(te.IN().Event())
-	pp1.SetTEP(t.Task(timer.CLEAR))
-	pp1.Enable()
-	t.Task(timer.START).Trigger()
-	return (*TachFast)(t)
+	t.StorePRESCALER(presc)
+	t.Task(timer.CLEAR).Trigger()
+	t.StoreCC(ovrfCC, 0)
+	ev := t.Event(timer.COMPARE(ovrfCC))
+	ev.Clear()
+	ev.EnableIRQ()
+	t.StoreSHORTS(ovrfStop)
+	te.Setup(gpio.Pin{}, gpiote.ModeDiscon)
+
+	// This code uses behavior undocumented for nRF51 but documented for nRF52
+	// that EN task has priority over DIS task.
+	ev = te.IN().Event()
+	pc0.SetEEP(ev)
+	pc0.SetTEP(t.Task(timer.CLEAR))
+	pc1.SetEEP(ev)
+	pc1.SetTEP(pg0.EN().Task())
+	pc2.SetEEP(ev)
+	pc2.SetTEP(t.Task(timer.CAPTURE(tachCC)))
+	pc3.SetEEP(ev)
+	pc3.SetTEP(pg1.DIS().Task())
+	pg0.SetChannels(pc2.Mask() | pc3.Mask())
+	pg1.SetChannels(pc0.Mask() | pc1.Mask() | pc2.Mask() | pc3.Mask())
+
+	tach := new(Tachometer)
+	tach.t = t
+	tach.te = te
+	tach.ppiClear = pc0.Mask() | pc1.Mask()
+	tach.ppiAll = pc0.Mask() | pc1.Mask() | pc2.Mask() | pc3.Mask()
+	for i, pin := range pins {
+		pin.Setup(gpio.ModeIn)
+		tach.pins[i] = pin
+	}
+	tach.n = byte(len(pins))
+	tach.setupChan()
+	return tach
 }
 
-func (tach *TachFast) RPM() int {
-	t := (*timer.Periph)(tach)
-	cc := int(t.LoadCC(0))
-	if ev := t.Event(timer.COMPARE(1)); ev.IsSet() {
-		ev.Clear()
-		t.StoreCC(0, 0)
+func (tach *Tachometer) setupChan() {
+	tach.ppiAll.Disable()
+	tach.te.Setup(tach.pins[tach.i], gpiote.ModeEvent|gpiote.PolarityHiToLo)
+	tach.t.StoreCC(tachCC, 0)
+	tach.t.Task(timer.START).Trigger()
+	tach.ppiClear.Enable()
+}
+
+func (tach *Tachometer) ISR() int {
+	tach.t.Event(timer.COMPARE(ovrfCC)).Clear()
+	i := int(tach.i)
+	tach.ticks[i] = uint16(tach.t.LoadCC(tachCC))
+	if tach.i = byte(i + 1); tach.i == tach.n {
+		tach.i = 0
+	}
+	tach.setupChan()
+	return i
+}
+
+func (tach *Tachometer) RPM(n int) int {
+	ticks := int(tach.ticks[n])
+	if ticks == 0 {
 		return 0
 	}
-	if cc == 0 {
-		return 0
-	}
-	const ipr = 3 // Impulses per revolution.
-	return 60 * 125e3 / ipr / cc
+	return 60 * 16e6 / (1 << presc * ipr) / ticks
 }

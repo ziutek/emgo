@@ -96,15 +96,17 @@ func init() {
 	pwm.SetInvVal(1, 0) // Immediately stop fan 1.
 
 	tach = NewTachometer(
-		timer.TIMER2, gpiote.Chan(2), ppi.Chan(4),
-		rtc.RTC1, 3, 500, tach0, tach1,
+		timer.TIMER2, gpiote.Chan(2),
+		ppi.Chan(4), ppi.Chan(5), ppi.Chan(6), ppi.Chan(7),
+		ppi.Group(0), ppi.Group(1), tach0, tach1,
 	)
 
-	aux.Setup(gpio.ModeIn)
+	//aux.Setup(gpio.ModeIn)
 
 	// Configure interrupts.
 
 	rtos.IRQ(irq.QDEC).Enable()
+	rtos.IRQ(irq.TIMER2).Enable()
 }
 
 func main() {
@@ -129,8 +131,8 @@ func main() {
 	}
 }
 
-func printRPM() {
-	disp.WriteDec(0, 3, 4, tach.RPM(1))
+func printRPM(rpm int) {
+	disp.WriteDec(0, 3, 4, rpm)
 }
 
 func qdecISR() {
@@ -141,14 +143,18 @@ func rtcISR() {
 	rtcst.ISR()
 	btn.RTCISR()
 	disp.RTCISR()
-	if tach.RTCISR() {
-		printRPM()
+}
+
+func timer2ISR() {
+	if tach.ISR() == 1 {
+		printRPM(tach.RPM(1))
 	}
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.RTC1: rtcISR,
-	irq.QDEC: qdecISR,
+	irq.RTC1:   rtcISR,
+	irq.QDEC:   qdecISR,
+	irq.TIMER2: timer2ISR,
 }
