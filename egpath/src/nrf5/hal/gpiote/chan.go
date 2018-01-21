@@ -5,7 +5,7 @@ import (
 	"nrf5/hal/te"
 )
 
-// Chan represents GPIOTE channel. There are 4 (8 in nRF52) channels numbered
+// Chan represents GPIOTE channel. There are 4 channels (8 in nRF52) numbered
 // from 0 to 3 (7 in nRF52).
 type Chan int8
 
