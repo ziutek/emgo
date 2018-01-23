@@ -7,4 +7,4 @@ This directory contains examples for the following nRF5x development boards:
 [core51822/ventilation](core51822/ventilation): DIY ventilation controller based
 on WaveShare Core51822 module.
 
-![Ventilation controller](core51822/ventilation/vent1.jpg)
+![Ventilation controller](core51822/ventilation/images/vent1.jpg)

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"sync/atomic"
+
 	"nrf5/hal/gpio"
 	"nrf5/hal/gpiote"
 	"nrf5/hal/ppi"
@@ -20,8 +22,8 @@ type Tachometer struct {
 	te       gpiote.Chan
 	ppiClear ppi.Channels
 	ppiAll   ppi.Channels
-	pins     [4]gpio.Pin // Support up to 4 sources. Can be replaced with slice.
-	ticks    [4]uint16   // Support up to 4 sources. Can be replaced with slice.
+	pins     [2]gpio.Pin // Support up to 2 sources. Can be replaced with slice.
+	rpm      [2]uint32   // Support up to 2 sources. Can be replaced with slice.
 	n, i     byte
 }
 
@@ -62,11 +64,11 @@ func NewTachometer(t *timer.Periph, te gpiote.Chan, pc0, pc1, pc2, pc3 ppi.Chan,
 		tach.pins[i] = pin
 	}
 	tach.n = byte(len(pins))
-	tach.setupChan()
+	tach.startMeasure()
 	return tach
 }
 
-func (tach *Tachometer) setupChan() {
+func (tach *Tachometer) startMeasure() {
 	tach.ppiAll.Disable()
 	tach.te.Setup(tach.pins[tach.i], gpiote.ModeEvent|gpiote.PolarityHiToLo)
 	tach.t.StoreCC(tachCC, 0)
@@ -77,18 +79,18 @@ func (tach *Tachometer) setupChan() {
 func (tach *Tachometer) ISR() int {
 	tach.t.Event(timer.COMPARE(ovrfCC)).Clear()
 	i := int(tach.i)
-	tach.ticks[i] = uint16(tach.t.LoadCC(tachCC))
+	cc := tach.t.LoadCC(tachCC)
+	if cc != 0 {
+		cc = 60 * 16e6 / (1 << presc * ipr) / cc
+	}
+	atomic.StoreUint32(&tach.rpm[i], cc)
 	if tach.i = byte(i + 1); tach.i == tach.n {
 		tach.i = 0
 	}
-	tach.setupChan()
+	tach.startMeasure()
 	return i
 }
 
 func (tach *Tachometer) RPM(n int) int {
-	ticks := int(tach.ticks[n])
-	if ticks == 0 {
-		return 0
-	}
-	return 60 * 16e6 / (1 << presc * ipr) / ticks
+	return int(atomic.LoadUint32(&tach.rpm[n]))
 }
