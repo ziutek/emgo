@@ -40,8 +40,7 @@ var (
 	enc     *encoder.Driver
 	btn     *button.PollDrv
 	inputCh = make(chan input.Event, 4)
-	pwm     *ppipwm.Toggle
-	tach    *Tachometer
+	fc      *FanControl
 	aux     gpio.Pin
 )
 
@@ -88,18 +87,20 @@ func init() {
 	btn = button.NewPollDrv(p0, encBtn, true, inputCh, Button)
 	btn.UseRTC(rtc.RTC1, 2, 20)
 
-	pwm = ppipwm.NewToggle(timer.TIMER1)
-	pwm.SetFreq(6, 400) // Gives freq. 1/(400 µs) = 2.5 kHz, PWMmax = 99.
+	pwm := ppipwm.NewToggle(timer.TIMER1)
+	pwm.SetFreq(4, 256) // Gives freq. 1/(256 µs) = 3.9 kHz, PWMmax = 255.
 	pwm.Setup(0, pwm0, gpiote.Chan(0), ppi.Chan(0), ppi.Chan(1))
 	pwm.SetInvVal(0, 0) // Immediately stop fan 0.
 	pwm.Setup(1, pwm1, gpiote.Chan(1), ppi.Chan(2), ppi.Chan(3))
 	pwm.SetInvVal(1, 0) // Immediately stop fan 1.
 
-	tach = NewTachometer(
+	tach := NewTachometer(
 		timer.TIMER2, gpiote.Chan(2),
 		ppi.Chan(4), ppi.Chan(5), ppi.Chan(6), ppi.Chan(7),
 		ppi.Group(0), ppi.Group(1), tach0, tach1,
 	)
+
+	fc = NewFanControl(pwm, tach)
 
 	//aux.Setup(gpio.ModeIn)
 
@@ -110,24 +111,18 @@ func init() {
 }
 
 func main() {
-	n := 0
-	max := pwm.Max() * 2
-	disp.WriteDec(4, 7, 2, n/2)
+	g := MakeGauge(0, fc.MaxRPM())
+	disp.WriteDec(4, 7, 4, 0)
 	for ev := range inputCh {
 		switch ev.Src() {
 		case Button:
-			n = 0
+			g.Reset()
 		case Encoder:
-			n += ev.Int()
-			switch {
-			case n < 0:
-				n = 0
-			case n > max:
-				n = max
-			}
+			g.AddCube(ev.Int())
 		}
-		pwm.SetInvVal(1, n/2)
-		disp.WriteDec(4, 7, 2, n/2)
+		rpm := g.Val()
+		fc.SetRPM(1, rpm)
+		disp.WriteDec(4, 7, 4, rpm)
 	}
 }
 
@@ -142,13 +137,13 @@ func qdecISR() {
 func rtcISR() {
 	rtcst.ISR()
 	btn.RTCISR()
-	disp.RTCISR()
+	if disp.RTCISR() == 7 {
+		printRPM(fc.RPM(1))
+	}
 }
 
 func timer2ISR() {
-	if tach.ISR() == 1 {
-		printRPM(tach.RPM(1))
-	}
+	fc.TachISR()
 }
 
 //emgo:const

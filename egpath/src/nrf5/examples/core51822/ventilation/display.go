@@ -55,8 +55,9 @@ func (d *Display) Setup() {
 	p0.Setup(disp.segAll, gpio.ModeOut|gpio.DriveD0H1)
 }
 
-// Refresh display next, not empty, symbol from internal display list.
-func (d *Display) Refresh() {
+// Refresh display next, not empty symbol from internal display list. It returns
+// index of dieplayed element.
+func (d *Display) Refresh() int {
 	var pins gpio.Pins
 	n := int(d.n)
 	for {
@@ -68,12 +69,13 @@ func (d *Display) Refresh() {
 			break
 		}
 	}
-	d.n = byte(n)
 	p0 := gpio.P0
 	p0.SetPins(d.digAll)
 	p0.ClearPins(d.segAll)
 	p0.ClearPins(pins & d.digAll)
 	p0.SetPins(pins & d.segAll)
+	d.n = byte(n)
+	return n
 }
 
 // Clear clears symbol in display list at address addr. Empty element of display
@@ -251,11 +253,13 @@ func (d *Display) UseRTC(rt *rtc.Periph, ccn, periodms int) {
 // RTCISR should be called int RTC interrupt handler. It checks the compare
 // event flag and if set it calls Refresh and updates compare register to
 // generate next event.
-func (d *Display) RTCISR() {
+func (d *Display) RTCISR() int {
 	rt, ccn := d.rtc, int(d.ccn)
 	if ev := rt.Event(rtc.COMPARE(int(ccn))); ev.IsSet() {
 		ev.Clear()
-		d.Refresh()
+		n := d.Refresh()
 		rt.StoreCC(ccn, rt.LoadCOUNTER()+uint32(d.delay))
+		return n
 	}
+	return -1
 }
