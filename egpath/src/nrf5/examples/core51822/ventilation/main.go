@@ -12,6 +12,10 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
+	"debug/semihosting"
+	"fmt"
 	"rtos"
 
 	"nrf5/input"
@@ -108,9 +112,18 @@ func init() {
 
 	rtos.IRQ(irq.QDEC).Enable()
 	rtos.IRQ(irq.TIMER2).Enable()
+
+	// Semihosting console.
+
+	f, err := semihosting.OpenFile(":tt", semihosting.W)
+	for err != nil {
+	}
+	fmt.DefaultWriter = lineWriter{bufio.NewWriterSize(f, 40)}
 }
 
 func main() {
+	fc.Identify()
+
 	g := MakeGauge(0, fc.MaxRPM())
 	disp.WriteDec(4, 7, 4, 0)
 	for ev := range inputCh {
@@ -121,7 +134,7 @@ func main() {
 			g.AddCube(ev.Int())
 		}
 		rpm := g.Val()
-		fc.SetRPM(1, rpm)
+		fc.SetTargetRPM(1, rpm)
 		disp.WriteDec(4, 7, 4, rpm)
 	}
 }
@@ -152,4 +165,19 @@ var ISRs = [...]func(){
 	irq.RTC1:   rtcISR,
 	irq.QDEC:   qdecISR,
 	irq.TIMER2: timer2ISR,
+}
+
+type lineWriter struct {
+	w *bufio.Writer
+}
+
+func (b lineWriter) Write(s []byte) (int, error) {
+	n, err := b.w.Write(s)
+	if err != nil {
+		return n, err
+	}
+	if bytes.IndexByte(s, '\n') >= 0 {
+		err = b.w.Flush()
+	}
+	return n, err
 }

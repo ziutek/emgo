@@ -1,46 +1,49 @@
 package main
 
 import (
+	"delay"
+	"fmt"
 	"sync/atomic"
 
 	"nrf5/ppipwm"
 )
 
-const pwmNum = 128
+const pwmNum = 32
 
 type fan struct {
-	pwm [pwmNum]byte
-	rpm int
+	rpmToPWM  [pwmNum]byte
+	targetRPM int
 }
 
-func (f *fan) RPM() int {
-	return f.rpm
+func (f *fan) TargetRPM() int {
+	return atomic.LoadInt(&f.targetRPM)
 }
 
-func (f *fan) AtomicSetRPM(rpm int) {
-	atomic.StoreInt(&f.rpm, rpm)
+func (f *fan) SetTargetRPM(rpm int) {
+	atomic.StoreInt(&f.targetRPM, rpm)
 }
 
-func (f *fan) PWM() int {
-	r := f.rpm - 400
-	n := r / 16
-	m := r & 15
+func (f *fan) ModelPWM(rpm int) int {
+	r := rpm - 400
+	n := r / 32
+	m := r & 31
 	if n < 0 {
 		return 0
 	}
-	if n >= len(f.pwm)-1 {
-		return int(f.pwm[len(f.pwm)-1])
+	if n >= len(f.rpmToPWM)-1 {
+		return int(f.rpmToPWM[len(f.rpmToPWM)-1])
 	}
-	a := int(f.pwm[n])
-	b := int(f.pwm[n+1])
-	return ((16-m)*a + m*b) / 16
+	a := int(f.rpmToPWM[n])
+	b := int(f.rpmToPWM[n+1])
+	return ((32-m)*a + m*b) / 32
 }
 
 func (f *fan) TestRPM(n int) int {
-	if n >= pwmNum {
-		return -1
-	}
-	return 400 + n*16
+	return 400 + n*32
+}
+
+func (f *fan) SetModelPWM(n, pwm int) {
+	f.rpmToPWM[n] = byte(pwm)
 }
 
 type FanControl struct {
@@ -57,11 +60,15 @@ func NewFanControl(pwm *ppipwm.Toggle, tach *Tachometer) *FanControl {
 }
 
 func (fc *FanControl) MaxRPM() int {
-	return 400 + (pwmNum-1)*16
+	return 400 + (pwmNum-1)*32
 }
 
-func (fc *FanControl) SetRPM(n, rpm int) {
-	fc.fan[n].AtomicSetRPM(rpm)
+func (fc *FanControl) TargetRPM(n int) int {
+	return fc.fan[n].TargetRPM()
+}
+
+func (fc *FanControl) SetTargetRPM(n, rpm int) {
+	fc.fan[n].SetTargetRPM(rpm)
 }
 
 func (fc *FanControl) RPM(n int) int {
@@ -70,8 +77,64 @@ func (fc *FanControl) RPM(n int) int {
 
 func (fc *FanControl) TachISR() {
 	n := fc.tach.ISR()
-	rpm := fc.tach.RPM(n)
-	setrpm := fc.fan[n].RPM()
-	e := setrpm - rpm
-	_ = e
+	fan := &fc.fan[n]
+	targetRPM := fan.TargetRPM()
+	if targetRPM < 0 {
+		return
+	}
+	//rpm := fc.RPM(n)
+	modelPWM := fan.ModelPWM(targetRPM)
+	fc.pwm.SetInvVal(n, modelPWM)
+}
+
+func (fc *FanControl) Identify() {
+	// ppipwm.Toggle cannot be used concurently. Prevent useing by TachISR.
+	for n := range fc.fan {
+		fc.fan[n].SetTargetRPM(-1)
+	}
+	for n := range fc.fan {
+		fc.pwm.SetInvVal(n, 0)
+	}
+	maxPWM := fc.pwm.Max()
+	for n := 1; n < 2; n++ {
+		fan := &fc.fan[n]
+		pwm := 38
+		lastRPM := 0
+		for k := 0; k < pwmNum; k++ {
+			testRPM := fan.TestRPM(k)
+			for {
+				fc.pwm.SetInvVal(n, pwm)
+				delay.Millisec(500)
+				rpm := fc.RPM(n)
+				fmt.Printf(" %d: %d", pwm, rpm)
+				if rpm >= testRPM {
+					if rpm-testRPM < testRPM-lastRPM {
+						fan.SetModelPWM(k, pwm)
+					} else {
+						fan.SetModelPWM(k, pwm-1)
+					}
+					pwm++
+					lastRPM = rpm
+					break
+				}
+				if pwm == maxPWM {
+					for k++; k < pwmNum; k++ {
+						fan.SetModelPWM(k, maxPWM)
+					}
+					break
+				}
+				pwm++
+				lastRPM = rpm
+				fmt.Printf("\n")
+			}
+			fmt.Printf(
+				" (%d) rpmToPWM[%d]=%d\n",
+				testRPM, k, fan.rpmToPWM[k],
+			)
+		}
+		fc.pwm.SetInvVal(n, 0)
+	}
+	for n := range fc.fan {
+		fc.fan[n].SetTargetRPM(0)
+	}
 }
