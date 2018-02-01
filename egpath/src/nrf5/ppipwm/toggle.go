@@ -100,7 +100,8 @@ func (pwm *Toggle) Setup(n int, pin gpio.Pin, gc gpiote.Chan, pc0, pc1 ppi.Chan)
 	pc1.Enable()
 }
 
-// SetVal sets a duty cycle for n-th PWM channel.
+// SetVal sets a duty cycle for n-th PWM channel. If val>0 or val<pwm.Max() it
+// temporarily stops the PWM timer (this affects other two PWM channels too).
 func (pwm *Toggle) SetVal(n, val int) {
 	checkOutput(n)
 	gc := pwm.gc[n]
@@ -128,8 +129,7 @@ func (pwm *Toggle) SetVal(n, val int) {
 	t.Task(timer.START).Trigger()
 }
 
-// SetInvDuty sets a duty cycle for n-th PWM channel. It produces inverted
-// waveform.
+// SetInvVal works like SetVal but produces inverted waveform.
 func (pwm *Toggle) SetInvVal(n, val int) {
 	checkOutput(n)
 	gc := pwm.gc[n]
@@ -154,5 +154,69 @@ func (pwm *Toggle) SetInvVal(n, val int) {
 		gc.Setup(pin, cfg|gpiote.OutInitHigh)
 	}
 	t.StoreCC(n, uint32(val))
+	t.Task(timer.START).Trigger()
+}
+
+// SetVals sets a duty cycle for PWM channels specifid by mask. If used for more
+// than one channel, it minimizes the number of times the PWM timer is stopped
+// and started, so should produce less glitches.
+func (pwm *Toggle) SetVals(mask uint32, val0, val1, val2 int) {
+	t := pwm.t
+	t.Task(timer.STOP).Trigger()
+	for n, val := range [...]int{val0, val1, val2} {
+		if mask&1 != 0 {
+			gc := pwm.gc[n]
+			pin, _ := gc.Config()
+			switch {
+			case val <= 0:
+				pin.Clear()
+				gc.Setup(pin, gpiote.ModeDiscon)
+			case val >= pwm.Max():
+				pin.Set()
+				gc.Setup(pin, gpiote.ModeDiscon)
+			default:
+				t.Task(timer.CAPTURE(n)).Trigger()
+				cfg := gpiote.ModeTask | gpiote.PolarityToggle
+				if int(t.LoadCC(n)) < val {
+					gc.Setup(pin, cfg|gpiote.OutInitHigh)
+				} else {
+					gc.Setup(pin, cfg|gpiote.OutInitLow)
+				}
+				t.StoreCC(n, uint32(val))
+			}
+		}
+		mask >>= 1
+	}
+	t.Task(timer.START).Trigger()
+}
+
+// SetInvVals works like SetVals but produces inverted waveform.
+func (pwm *Toggle) SetInvVals(mask uint32, val0, val1, val2 int) {
+	t := pwm.t
+	t.Task(timer.STOP).Trigger()
+	for n, val := range [...]int{val0, val1, val2} {
+		if mask&1 != 0 {
+			gc := pwm.gc[n]
+			pin, _ := gc.Config()
+			switch {
+			case val <= 0:
+				pin.Set()
+				gc.Setup(pin, gpiote.ModeDiscon)
+			case val >= pwm.Max():
+				pin.Clear()
+				gc.Setup(pin, gpiote.ModeDiscon)
+			default:
+				t.Task(timer.CAPTURE(n)).Trigger()
+				cfg := gpiote.ModeTask | gpiote.PolarityToggle
+				if int(t.LoadCC(n)) < val {
+					gc.Setup(pin, cfg|gpiote.OutInitLow)
+				} else {
+					gc.Setup(pin, cfg|gpiote.OutInitHigh)
+				}
+				t.StoreCC(n, uint32(val))
+			}
+		}
+		mask >>= 1
+	}
 	t.Task(timer.START).Trigger()
 }
