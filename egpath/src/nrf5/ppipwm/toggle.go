@@ -106,7 +106,6 @@ func (pwm *Toggle) SetVal(n, val int) {
 	gc := pwm.gc[n]
 	t := pwm.t
 	pin, _ := gc.Config()
-	t.Task(timer.STOP).Trigger()
 	switch {
 	case val <= 0:
 		pin.Clear()
@@ -117,10 +116,10 @@ func (pwm *Toggle) SetVal(n, val int) {
 		gc.Setup(pin, gpiote.ModeDiscon)
 		return
 	}
-	cfg := gpiote.ModeTask | gpiote.PolarityToggle
+	t.Task(timer.STOP).Trigger()
 	t.Task(timer.CAPTURE(n)).Trigger()
-	cnt := int(t.LoadCC(n))
-	if cnt < val {
+	cfg := gpiote.ModeTask | gpiote.PolarityToggle
+	if int(t.LoadCC(n)) < val {
 		gc.Setup(pin, cfg|gpiote.OutInitHigh)
 	} else {
 		gc.Setup(pin, cfg|gpiote.OutInitLow)
@@ -136,7 +135,6 @@ func (pwm *Toggle) SetInvVal(n, val int) {
 	gc := pwm.gc[n]
 	t := pwm.t
 	pin, _ := gc.Config()
-	t.Task(timer.STOP).Trigger()
 	switch {
 	case val <= 0:
 		pin.Set()
@@ -147,10 +145,10 @@ func (pwm *Toggle) SetInvVal(n, val int) {
 		gc.Setup(pin, gpiote.ModeDiscon)
 		return
 	}
-	cfg := gpiote.ModeTask | gpiote.PolarityToggle
+	t.Task(timer.STOP).Trigger()
 	t.Task(timer.CAPTURE(n)).Trigger()
-	cnt := int(t.LoadCC(n))
-	if cnt < val {
+	cfg := gpiote.ModeTask | gpiote.PolarityToggle
+	if int(t.LoadCC(n)) < val {
 		gc.Setup(pin, cfg|gpiote.OutInitLow)
 	} else {
 		gc.Setup(pin, cfg|gpiote.OutInitHigh)
