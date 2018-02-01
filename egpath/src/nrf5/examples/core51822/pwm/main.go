@@ -52,9 +52,7 @@ func main() {
 	v, a, b, c := 0, 4, 5, 0
 	for {
 		fmt.Printf("%d/%d\r\n", v, max)
-		pwm.SetVal(0, v)
-		pwm.SetVal(1, v)
-		pwm.SetVal(2, v)
+		pwm.SetMany(7, v, v, v)
 		switch {
 		case v == 0:
 			c = a

@@ -106,7 +106,7 @@ func main() {
 		case x > 64:
 			x = 64
 		}
-		pwm.SetVal(0, center+x*(max-min)/128)
+		pwm.Set(0, center+x*(max-min)/128)
 	}
 }
 

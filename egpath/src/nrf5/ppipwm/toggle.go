@@ -77,16 +77,16 @@ func (pwm *Toggle) Max() int {
 	return int(pwm.t.LoadCC(3))
 }
 
-func checkOutput(n int) {
+func checkChan(n int) {
 	if uint(n) > 2 {
-		panic("pwm: bad output")
+		panic("pwm: bad channel")
 	}
 }
 
 // Setup setups n-th of three PWM channels. Each PWM channel uses one GPIOTE
 // channel and two PPI channels.
 func (pwm *Toggle) Setup(n int, pin gpio.Pin, gc gpiote.Chan, pc0, pc1 ppi.Chan) {
-	checkOutput(n)
+	checkChan(n)
 	pin.Clear()
 	pin.Setup(gpio.ModeOut)
 	gc.Setup(pin, gpiote.ModeDiscon)
@@ -100,19 +100,27 @@ func (pwm *Toggle) Setup(n int, pin gpio.Pin, gc gpiote.Chan, pc0, pc1 ppi.Chan)
 	pc1.Enable()
 }
 
-// SetVal sets a duty cycle for n-th PWM channel. If val>0 or val<pwm.Max() it
-// temporarily stops the PWM timer (this affects other two PWM channels too).
-func (pwm *Toggle) SetVal(n, val int) {
-	checkOutput(n)
+// DutyCycle returns the current duty cycle on channel n. There is no way to
+// check does it corresponds straight or inverted waveform.
+func (pwm *Toggle) DutyCycle(n int) int {
+	checkChan(n)
+	return int(pwm.t.LoadCC(n))
+}
+
+// Set sets a duty cycle for n-th PWM channel. If dc > 0 or dc < pwm.Max()
+// it stops the PWM timer and starts it just before return (this can produce
+// glitches and affects all PWM channels).
+func (pwm *Toggle) Set(n, dc int) {
+	checkChan(n)
 	gc := pwm.gc[n]
 	t := pwm.t
 	pin, _ := gc.Config()
 	switch {
-	case val <= 0:
+	case dc <= 0:
 		pin.Clear()
 		gc.Setup(pin, gpiote.ModeDiscon)
 		return
-	case val >= pwm.Max():
+	case dc >= pwm.Max():
 		pin.Set()
 		gc.Setup(pin, gpiote.ModeDiscon)
 		return
@@ -120,27 +128,27 @@ func (pwm *Toggle) SetVal(n, val int) {
 	t.Task(timer.STOP).Trigger()
 	t.Task(timer.CAPTURE(n)).Trigger()
 	cfg := gpiote.ModeTask | gpiote.PolarityToggle
-	if int(t.LoadCC(n)) < val {
+	if int(t.LoadCC(n)) < dc {
 		gc.Setup(pin, cfg|gpiote.OutInitHigh)
 	} else {
 		gc.Setup(pin, cfg|gpiote.OutInitLow)
 	}
-	t.StoreCC(n, uint32(val))
+	t.StoreCC(n, uint32(dc))
 	t.Task(timer.START).Trigger()
 }
 
-// SetInvVal works like SetVal but produces inverted waveform.
-func (pwm *Toggle) SetInvVal(n, val int) {
-	checkOutput(n)
+// SetInv works like Set but produces inverted waveform.
+func (pwm *Toggle) SetInv(n, dc int) {
+	checkChan(n)
 	gc := pwm.gc[n]
 	t := pwm.t
 	pin, _ := gc.Config()
 	switch {
-	case val <= 0:
+	case dc <= 0:
 		pin.Set()
 		gc.Setup(pin, gpiote.ModeDiscon)
 		return
-	case val >= pwm.Max():
+	case dc >= pwm.Max():
 		pin.Clear()
 		gc.Setup(pin, gpiote.ModeDiscon)
 		return
@@ -148,41 +156,41 @@ func (pwm *Toggle) SetInvVal(n, val int) {
 	t.Task(timer.STOP).Trigger()
 	t.Task(timer.CAPTURE(n)).Trigger()
 	cfg := gpiote.ModeTask | gpiote.PolarityToggle
-	if int(t.LoadCC(n)) < val {
+	if int(t.LoadCC(n)) < dc {
 		gc.Setup(pin, cfg|gpiote.OutInitLow)
 	} else {
 		gc.Setup(pin, cfg|gpiote.OutInitHigh)
 	}
-	t.StoreCC(n, uint32(val))
+	t.StoreCC(n, uint32(dc))
 	t.Task(timer.START).Trigger()
 }
 
-// SetVals sets a duty cycle for PWM channels specifid by mask. If used for more
-// than one channel, it minimizes the number of times the PWM timer is stopped
-// and started, so should produce less glitches.
-func (pwm *Toggle) SetVals(mask uint32, val0, val1, val2 int) {
+// SetMany sets a duty cycles for PWM channels specifid by mask. Use it for more
+// than one channel to minimizes the number of times the PWM timer is stopped
+// and started (should produce less glitches than call SetDuty multiple times).
+func (pwm *Toggle) SetMany(mask uint, dc0, dc1, dc2 int) {
 	t := pwm.t
 	t.Task(timer.STOP).Trigger()
-	for n, val := range [...]int{val0, val1, val2} {
+	for n, dc := range [3]int{dc0, dc1, dc2} {
 		if mask&1 != 0 {
 			gc := pwm.gc[n]
 			pin, _ := gc.Config()
 			switch {
-			case val <= 0:
+			case dc <= 0:
 				pin.Clear()
 				gc.Setup(pin, gpiote.ModeDiscon)
-			case val >= pwm.Max():
+			case dc >= pwm.Max():
 				pin.Set()
 				gc.Setup(pin, gpiote.ModeDiscon)
 			default:
 				t.Task(timer.CAPTURE(n)).Trigger()
 				cfg := gpiote.ModeTask | gpiote.PolarityToggle
-				if int(t.LoadCC(n)) < val {
+				if int(t.LoadCC(n)) < dc {
 					gc.Setup(pin, cfg|gpiote.OutInitHigh)
 				} else {
 					gc.Setup(pin, cfg|gpiote.OutInitLow)
 				}
-				t.StoreCC(n, uint32(val))
+				t.StoreCC(n, uint32(dc))
 			}
 		}
 		mask >>= 1
@@ -190,30 +198,30 @@ func (pwm *Toggle) SetVals(mask uint32, val0, val1, val2 int) {
 	t.Task(timer.START).Trigger()
 }
 
-// SetInvVals works like SetVals but produces inverted waveform.
-func (pwm *Toggle) SetInvVals(mask uint32, val0, val1, val2 int) {
+// SetManyInv works like SetMany but produces inverted waveform.
+func (pwm *Toggle) SetManyInv(mask uint, dc0, dc1, dc2 int) {
 	t := pwm.t
 	t.Task(timer.STOP).Trigger()
-	for n, val := range [...]int{val0, val1, val2} {
+	for n, dc := range [3]int{dc0, dc1, dc2} {
 		if mask&1 != 0 {
 			gc := pwm.gc[n]
 			pin, _ := gc.Config()
 			switch {
-			case val <= 0:
+			case dc <= 0:
 				pin.Set()
 				gc.Setup(pin, gpiote.ModeDiscon)
-			case val >= pwm.Max():
+			case dc >= pwm.Max():
 				pin.Clear()
 				gc.Setup(pin, gpiote.ModeDiscon)
 			default:
 				t.Task(timer.CAPTURE(n)).Trigger()
 				cfg := gpiote.ModeTask | gpiote.PolarityToggle
-				if int(t.LoadCC(n)) < val {
+				if int(t.LoadCC(n)) < dc {
 					gc.Setup(pin, cfg|gpiote.OutInitLow)
 				} else {
 					gc.Setup(pin, cfg|gpiote.OutInitHigh)
 				}
-				t.StoreCC(n, uint32(val))
+				t.StoreCC(n, uint32(dc))
 			}
 		}
 		mask >>= 1
