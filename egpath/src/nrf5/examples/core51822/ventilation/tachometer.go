@@ -76,6 +76,7 @@ func (tach *Tachometer) startMeasure() {
 	tach.ppiClear.Enable()
 }
 
+// ISR returns the number of channel that has just been measured.
 func (tach *Tachometer) ISR() int {
 	tach.t.Event(timer.COMPARE(ovrfCC)).Clear()
 	i := int(tach.i)
@@ -83,7 +84,7 @@ func (tach *Tachometer) ISR() int {
 	if cc != 0 {
 		cc = 60 * 16e6 / (1 << presc * ipr) / cc
 	}
-	atomic.StoreUint32(&tach.rpm[i], (cc+tach.rpm[i])/2)
+	atomic.StoreUint32(&tach.rpm[i], tach.rpm[i]<<16|cc)
 	if tach.i = byte(i + 1); tach.i == tach.n {
 		tach.i = 0
 	}
@@ -92,5 +93,6 @@ func (tach *Tachometer) ISR() int {
 }
 
 func (tach *Tachometer) RPM(n int) int {
-	return int(atomic.LoadUint32(&tach.rpm[n]))
+	rpm := atomic.LoadUint32(&tach.rpm[n])
+	return int(rpm>>16+rpm&0xFFFF) / 2 // Avg. from previous and current RPM.
 }
