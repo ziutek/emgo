@@ -83,7 +83,7 @@ func (tach *Tachometer) ISR() int {
 	if cc != 0 {
 		cc = 60 * 16e6 / (1 << presc * ipr) / cc
 	}
-	atomic.StoreUint32(&tach.rpm[i], cc)
+	atomic.StoreUint32(&tach.rpm[i], (cc+tach.rpm[i])/2)
 	if tach.i = byte(i + 1); tach.i == tach.n {
 		tach.i = 0
 	}

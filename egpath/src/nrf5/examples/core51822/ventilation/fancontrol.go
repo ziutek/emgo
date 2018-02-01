@@ -82,9 +82,10 @@ func (fc *FanControl) TachISR() {
 	if targetRPM < 0 {
 		return
 	}
-	//rpm := fc.RPM(n)
 	modelPWM := fan.ModelPWM(targetRPM)
-	fc.pwm.SetInvVal(n, modelPWM)
+	rpm := fc.RPM(n)
+	e := targetRPM - rpm
+	fc.pwm.SetInvVal(n, modelPWM+e/4)
 }
 
 func (fc *FanControl) Identify() {
