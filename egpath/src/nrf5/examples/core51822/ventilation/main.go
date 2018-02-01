@@ -94,9 +94,9 @@ func init() {
 	pwm := ppipwm.NewToggle(timer.TIMER1)
 	pwm.SetFreq(4, 256) // Gives freq. 1/(256 µs) = 3.9 kHz, PWMmax = 255.
 	pwm.Setup(0, pwm0, gpiote.Chan(0), ppi.Chan(0), ppi.Chan(1))
-	pwm.SetInvVal(0, 0) // Immediately stop fan 0.
+	pwm.SetInv(0, 0) // Immediately stop fan 0.
 	pwm.Setup(1, pwm1, gpiote.Chan(1), ppi.Chan(2), ppi.Chan(3))
-	pwm.SetInvVal(1, 0) // Immediately stop fan 1.
+	pwm.SetInv(1, 0) // Immediately stop fan 1.
 
 	tach := NewTachometer(
 		timer.TIMER2, gpiote.Chan(2),
