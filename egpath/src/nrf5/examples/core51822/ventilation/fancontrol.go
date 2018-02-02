@@ -66,10 +66,6 @@ func (f *fan) ModelPWM(rpm int) int {
 	return ((stepRPM-m)*a + m*b) / stepRPM
 }
 
-func (f *fan) TestRPM(n int) int {
-	return minRPM + n*stepRPM
-}
-
 func (f *fan) SetModelPWM(n, pwm int) {
 	f.rpmToPWM[n] = byte(pwm)
 }
@@ -77,7 +73,7 @@ func (f *fan) SetModelPWM(n, pwm int) {
 type FanControl struct {
 	pwm  *ppipwm.Toggle
 	tach *Tachometer
-	fan  [2]fan
+	fans [2]fan
 	maxI int
 }
 
@@ -93,7 +89,7 @@ func (fc *FanControl) MaxRPM() int {
 }
 
 func (fc *FanControl) TargetRPM(n int) int {
-	return fc.fan[n].TargetRPM()
+	return fc.fans[n].TargetRPM()
 }
 
 func (fc *FanControl) SetTargetRPM(n, rpm int) {
@@ -102,7 +98,7 @@ func (fc *FanControl) SetTargetRPM(n, rpm int) {
 	} else if rpm > maxRPM {
 		rpm = maxRPM
 	}
-	fc.fan[n].SetTargetRPM(rpm)
+	fc.fans[n].SetTargetRPM(rpm)
 }
 
 func (fc *FanControl) RPM(n int) int {
@@ -111,7 +107,7 @@ func (fc *FanControl) RPM(n int) int {
 
 func (fc *FanControl) TachISR() {
 	n := fc.tach.ISR()
-	fan := &fc.fan[n]
+	fan := &fc.fans[n]
 	targetRPM := fan.TargetRPM()
 	if targetRPM < 0 {
 		return
@@ -130,50 +126,48 @@ func (fc *FanControl) TachISR() {
 }
 
 func (fc *FanControl) Identify() {
-	for n := range fc.fan {
-		fc.fan[n].SetTargetRPM(-1) // Prevent useing PWM by TachISR.
-	}
-	for n := range fc.fan {
+	for n := range fc.fans {
+		fan := &fc.fans[n]
+		fan.SetTargetRPM(-1) // Prevent useing PWM by TachISR.
 		fc.pwm.SetInv(n, 0)
+		for i := range fan.rpmToPWM {
+			fan.rpmToPWM[i] = 0
+		}
 	}
 	maxPWM := fc.pwm.Max()
+	if maxPWM > 255 {
+		panic("maxPWM>255")
+	}
 	fc.maxI = maxPWM * divI / 2
-	for n := 1; n < 2; n++ {
-		fan := &fc.fan[n]
-		pwm := 33
-		lastRPM := 0
-		for k := 0; k < pwmNum; k++ {
-			testRPM := fan.TestRPM(k)
-			for {
-				fc.pwm.SetInv(n, pwm)
-				delay.Millisec(500)
-				rpm := fc.RPM(n)
-				fmt.Printf(" %d: %d", pwm, rpm)
-				if rpm >= testRPM {
-					if rpm-testRPM < testRPM-lastRPM {
-						fan.SetModelPWM(k, pwm)
-					} else {
-						fan.SetModelPWM(k, pwm-1)
-					}
-					pwm++
-					lastRPM = rpm
-					break
-				}
-				if pwm == maxPWM {
-					for k++; k < pwmNum; k++ {
-						fan.SetModelPWM(k, maxPWM)
-					}
-					break
-				}
-				pwm++
-				lastRPM = rpm
-				fmt.Printf("\n")
+	todo := uint(1<<uint(len(fc.fans)) - 1)
+	for pwm := 33; pwm < maxPWM && todo != 0; pwm++ {
+		fc.pwm.SetManyInv(todo, pwm, pwm, pwm)
+		delay.Millisec(500)
+		for n := range fc.fans {
+			fanMask := uint(1 << uint(n))
+			if todo&fanMask == 0 {
+				continue
 			}
-			fmt.Printf(" (%d) rpmToPWM[%d]=%d\n", testRPM, k, fan.rpmToPWM[k])
+			rpm := fc.RPM(n)
+			fmt.Printf("fan%d: pwm=%d rpm=%d\n", n, pwm, rpm)
+			m := (rpm - minRPM + stepRPM - 1) / stepRPM
+			switch {
+			case m >= pwmNum:
+				todo &^= 1 << uint(n)
+				fc.pwm.SetInv(n, 0)
+			case m >= 0:
+				fc.fans[n].SetModelPWM(m, pwm)
+			}
 		}
-		fc.pwm.SetInv(n, 0)
 	}
-	for n := range fc.fan {
-		fc.fan[n].SetTargetRPM(0)
+	fc.pwm.SetManyInv(todo, 0, 0, 0)
+	for n := range fc.fans {
+		fmt.Printf("fan%d:\n", n)
+		fan := &fc.fans[n]
+		fan.SetTargetRPM(0)
+		for rpm := minRPM; rpm <= maxRPM; rpm += stepRPM / 2 {
+			fmt.Printf("rpm=%d modelPWM=%d\n", rpm, fan.ModelPWM(rpm))
+		}
 	}
+	// TODO: Use ModelPWM and todo to detect broken fan.
 }
