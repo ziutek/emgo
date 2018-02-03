@@ -14,8 +14,8 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"debug/semihosting"
-	"fmt"
+	//"debug/semihosting"
+	//"fmt"
 	"rtos"
 
 	"nrf5/input"
@@ -115,32 +115,79 @@ func init() {
 
 	// Semihosting console.
 
-	f, err := semihosting.OpenFile(":tt", semihosting.W)
-	for err != nil {
-	}
-	fmt.DefaultWriter = lineWriter{bufio.NewWriterSize(f, 40)}
+	/*
+		f, err := semihosting.OpenFile(":tt", semihosting.W)
+		for err != nil {
+		}
+		fmt.DefaultWriter = lineWriter{bufio.NewWriterSize(f, 40)}
+	*/
 }
 
-func main() {
-	fc.Identify()
+type Menu struct {
+	sel byte
+	cnt byte
+}
 
+const (
+	dispOff = iota
+	showRPM
+	setInRPM
+	setOutRPM
+)
+
+func (m *Menu) Next() {
+	m.sel = (m.sel + 1) & 3
+	if m.sel == dispOff {
+		for i := 0; i < 8; i++ {
+			disp.Clear(i)
+		}
+	} else {
+		disp.WriteString(0, 0, 8, "")
+	}
+}
+
+func (m *Menu) Display() {
+	switch m.sel {
+	case showRPM:
+		disp.WriteDec(0, 3, 4, fc.RPM(0))
+		disp.WriteDec(4, 7, 4, fc.RPM(1))
+	case setInRPM:
+		if m.cnt > 80 {
+			disp.WriteDec(0, 3, 4, fc.TargetRPM(0))
+		} else {
+			disp.WriteString(0, 0, 4, "")
+		}
+		disp.WriteDec(4, 7, 4, fc.RPM(1))
+		m.cnt += 8
+	case setOutRPM:
+		if m.cnt > 80 {
+			disp.WriteDec(0, 7, 4, fc.TargetRPM(1))
+		} else {
+			disp.WriteString(0, 4, 4, "")
+		}
+		disp.WriteDec(4, 3, 4, fc.RPM(0))
+		m.cnt += 8
+	}
+}
+
+var menu Menu
+
+func main() {
+	//fc.Identify()
+	menu.Next()
 	g := MakeGauge(0, fc.MaxRPM())
-	disp.WriteDec(4, 7, 4, 0)
 	for ev := range inputCh {
 		switch ev.Src() {
 		case Button:
-			g.Reset()
+			if ev.Pins() != 0 {
+				menu.Next()
+			}
 		case Encoder:
 			g.AddCube(ev.Int())
 		}
 		rpm := g.Val()
 		fc.SetTargetRPM(1, rpm)
-		disp.WriteDec(4, 7, 4, rpm)
 	}
-}
-
-func printRPM(rpm int) {
-	disp.WriteDec(0, 3, 4, rpm)
 }
 
 func qdecISR() {
@@ -151,7 +198,7 @@ func rtcISR() {
 	rtcst.ISR()
 	btn.RTCISR()
 	if disp.RTCISR() == 7 {
-		printRPM(fc.RPM(1))
+		menu.Display()
 	}
 }
 
