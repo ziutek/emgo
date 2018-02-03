@@ -2,14 +2,13 @@ package main
 
 import (
 	"delay"
-	"fmt"
 	"sync/atomic"
 
 	"nrf5/ppipwm"
 )
 
 const (
-	pwmNum  = 35
+	pwmNum  = 50
 	stepRPM = 1 << 5
 	minRPM  = 420
 	maxRPM  = minRPM + (pwmNum-1)*stepRPM
@@ -68,6 +67,33 @@ func (f *fan) ModelPWM(rpm int) int {
 
 func (f *fan) SetModelPWM(n, pwm int) {
 	f.rpmToPWM[n] = byte(pwm)
+}
+
+func (f *fan) FixModel(trouble bool) bool {
+	if trouble {
+		// TODO: If trouble analyze rpmToPWM to detect broken fan.
+
+		return false
+	}
+	// Fix single gaps in rpmToPWM.
+	for i, pwm := range f.rpmToPWM {
+		if pwm != 0 {
+			continue
+		}
+		switch {
+		case i == 0:
+			pwm = f.rpmToPWM[i+1]
+		case i == pwmNum-1:
+			pwm = f.rpmToPWM[i-1]
+		default:
+			pwm = byte((int(f.rpmToPWM[i-1]) + int(f.rpmToPWM[i+1])) / 2)
+		}
+		if pwm == 0 {
+			return false
+		}
+		f.rpmToPWM[i] = pwm
+	}
+	return true
 }
 
 type FanControl struct {
@@ -149,7 +175,6 @@ func (fc *FanControl) Identify() {
 				continue
 			}
 			rpm := fc.RPM(n)
-			fmt.Printf("fan%d: pwm=%d rpm=%d\n", n, pwm, rpm)
 			m := (rpm - minRPM + stepRPM - 1) / stepRPM
 			switch {
 			case m >= pwmNum:
@@ -162,12 +187,9 @@ func (fc *FanControl) Identify() {
 	}
 	fc.pwm.SetManyInv(todo, 0, 0, 0)
 	for n := range fc.fans {
-		fmt.Printf("fan%d:\n", n)
 		fan := &fc.fans[n]
-		fan.SetTargetRPM(0)
-		for rpm := minRPM; rpm <= maxRPM; rpm += stepRPM / 2 {
-			fmt.Printf("rpm=%d modelPWM=%d\n", rpm, fan.ModelPWM(rpm))
+		if fan.FixModel(todo&1<<uint(n) != 0) {
+			fan.SetTargetRPM(0) // Enable fan if OK.
 		}
 	}
-	// TODO: Use ModelPWM and todo to detect broken fan.
 }
