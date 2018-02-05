@@ -8,8 +8,12 @@ type Gauge struct {
 	max  int16
 }
 
-func MakeGauge(min, max int) Gauge {
-	return Gauge{min: int16(min), max: int16(max)}
+func (g *Gauge) SetMin(min int) {
+	g.min = int16(min)
+}
+
+func (g *Gauge) SetMax(max int) {
+	g.max = int16(max)
 }
 
 // HandleHalf treats m as fixed-point number with 1-bit fractional part. It
@@ -31,7 +35,11 @@ func (g *Gauge) handleHalf(m int) int {
 	return m / 2
 }
 
-func (g *Gauge) setN(n int) {
+func (g *Gauge) Val() int {
+	return int(g.n)
+}
+
+func (g *Gauge) SetVal(n int) {
 	switch {
 	case n > int(g.max):
 		n = int(g.max)
@@ -41,20 +49,12 @@ func (g *Gauge) setN(n int) {
 	g.n = int16(n)
 }
 
-func (g *Gauge) Reset() {
-	*g = Gauge{}
-}
-
 func (g *Gauge) Add(m int) {
 	m = g.handleHalf(m)
-	g.setN(int(g.n) + m)
+	g.SetVal(int(g.n) + m)
 }
 
 func (g *Gauge) AddCube(m int) {
 	m = g.handleHalf(m)
-	g.setN(int(g.n) + m*m*m)
-}
-
-func (g *Gauge) Val() int {
-	return int(g.n)
+	g.SetVal(int(g.n) + m*m*m)
 }

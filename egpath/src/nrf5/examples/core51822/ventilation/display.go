@@ -19,7 +19,10 @@ const (
 	Q // Colon
 )
 
-// Two 4-digit 7-segment displays (BW428G-E4, common cathode).
+// Display allows to use two 4-digit 7-segment displays (BW428G-E4, common
+// cathode). It does not uses typical Frame Buffer concept. Instead it uses
+// so-called Display List, which each element specifies light-up segments and
+// their position on display.
 type Display struct {
 	dig    [8]gpio.Pins // 0-3 top display, 4-7 bottom display.
 	seg    [8]gpio.Pins // A B C D E F G :
@@ -32,14 +35,17 @@ type Display struct {
 	n      byte
 }
 
+// SetDigPin configures display to use pin to select digit.
 func (d *Display) SetDigPin(digit int, pin gpio.Pins) {
 	d.dig[digit] = pin
 }
 
+// SetSegPin configures display to use pin to select segment.
 func (d *Display) SetSegPin(segment int, pin gpio.Pins) {
 	d.seg[segment] = pin
 }
 
+// Setup setups all used pins.
 func (d *Display) Setup() {
 	d.digAll = 0
 	d.segAll = 0
@@ -49,14 +55,14 @@ func (d *Display) Setup() {
 	}
 	p0 := gpio.P0
 	// Drive digits with higd drive, open drain (n-channel).
-	p0.SetPins(disp.digAll)
-	p0.Setup(disp.digAll, gpio.ModeOut|gpio.DriveH0D1)
+	p0.SetPins(d.digAll)
+	p0.Setup(d.digAll, gpio.ModeOut|gpio.DriveH0D1)
 	// Drive segments with higd drive, open drain (p-channel).
-	p0.Setup(disp.segAll, gpio.ModeOut|gpio.DriveD0H1)
+	p0.Setup(d.segAll, gpio.ModeOut|gpio.DriveD0H1)
 }
 
-// Refresh display next, not empty symbol from internal display list. It returns
-// index of dieplayed element.
+// Refresh displays next, not empty symbol from internal display list. It
+// returns index of displayed element.
 func (d *Display) Refresh() int {
 	var pins gpio.Pins
 	n := int(d.n)
@@ -79,7 +85,10 @@ func (d *Display) Refresh() int {
 }
 
 // Clear clears symbol in display list at address addr. Empty element of display
-// list is not displayed so it does not consume time during refresh.
+// list is not displayed so it does not consume time during refresh (remaining
+// elements will displayed brighter). Use WriteSym(addr, pos, 0) to set empty
+// symbol (space) at address addr displayed on position pos without affecting
+// display timing.
 func (d *Display) Clear(addr int) {
 	atomic.StoreUint32((*uint32)(&d.dl[addr]), 0)
 }

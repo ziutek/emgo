@@ -40,7 +40,7 @@ const (
 )
 
 var (
-	disp    Display
+	menu    Menu
 	enc     *encoder.Driver
 	btn     *button.PollDrv
 	inputCh = make(chan input.Event, 4)
@@ -52,6 +52,8 @@ func init() {
 	// Initialize system and runtime.
 	system.Setup(clock.XTAL, clock.XTAL, true)
 	rtcst.Setup(rtc.RTC1, 0)
+
+	disp := menu.Display()
 
 	// Allocate pins (always do it in one place to avoid conflicts).
 
@@ -123,59 +125,11 @@ func init() {
 	*/
 }
 
-type Menu struct {
-	sel byte
-	cnt byte
-}
-
-const (
-	dispOff = iota
-	showRPM
-	setInRPM
-	setOutRPM
-)
-
-func (m *Menu) Next() {
-	m.sel = (m.sel + 1) & 3
-	if m.sel == dispOff {
-		for i := 0; i < 8; i++ {
-			disp.Clear(i)
-		}
-	} else {
-		disp.WriteString(0, 0, 8, "")
-	}
-}
-
-func (m *Menu) Display() {
-	switch m.sel {
-	case showRPM:
-		disp.WriteDec(0, 3, 4, fc.RPM(0))
-		disp.WriteDec(4, 7, 4, fc.RPM(1))
-	case setInRPM:
-		if m.cnt > 80 {
-			disp.WriteDec(0, 3, 4, fc.TargetRPM(0))
-		} else {
-			disp.WriteString(0, 0, 4, "")
-		}
-		disp.WriteDec(4, 7, 4, fc.RPM(1))
-		m.cnt += 8
-	case setOutRPM:
-		if m.cnt > 80 {
-			disp.WriteDec(0, 7, 4, fc.TargetRPM(1))
-		} else {
-			disp.WriteString(0, 4, 4, "")
-		}
-		disp.WriteDec(4, 3, 4, fc.RPM(0))
-		m.cnt += 8
-	}
-}
-
-var menu Menu
-
 func main() {
-	//fc.Identify()
-	menu.Next()
-	g := MakeGauge(0, fc.MaxRPM())
+	menu.SetMaxRPM(fc.MaxRPM())
+	menu.Select(Init)
+	fc.Identify()
+	menu.Select(ShowRPM)
 	for ev := range inputCh {
 		switch ev.Src() {
 		case Button:
@@ -183,10 +137,11 @@ func main() {
 				menu.Next()
 			}
 		case Encoder:
-			g.AddCube(ev.Int())
+			n, rpm := menu.HandleEncoder(ev.Int())
+			if n >= 0 {
+				fc.SetTargetRPM(n, rpm)
+			}
 		}
-		rpm := g.Val()
-		fc.SetTargetRPM(1, rpm)
 	}
 }
 
@@ -197,9 +152,7 @@ func qdecISR() {
 func rtcISR() {
 	rtcst.ISR()
 	btn.RTCISR()
-	if disp.RTCISR() == 7 {
-		menu.Display()
-	}
+	menu.RTCISR()
 }
 
 func timer2ISR() {

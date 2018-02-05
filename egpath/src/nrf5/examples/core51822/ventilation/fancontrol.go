@@ -164,9 +164,9 @@ func (fc *FanControl) Identify() {
 	if maxPWM > 255 {
 		panic("maxPWM>255")
 	}
-	fc.maxI = maxPWM * divI / 2
 	todo := uint(1<<uint(len(fc.fans)) - 1)
-	for pwm := 33; pwm < maxPWM && todo != 0; pwm++ {
+	for pwm := 33; pwm <= maxPWM && todo != 0; pwm++ {
+		atomic.StoreInt(&fc.maxI, pwm-maxPWM) // Progress
 		fc.pwm.SetManyInv(todo, pwm, pwm, pwm)
 		delay.Millisec(500)
 		for n := range fc.fans {
@@ -186,10 +186,19 @@ func (fc *FanControl) Identify() {
 		}
 	}
 	fc.pwm.SetManyInv(todo, 0, 0, 0)
+	fc.maxI = maxPWM * divI / 2
 	for n := range fc.fans {
 		fan := &fc.fans[n]
 		if fan.FixModel(todo&1<<uint(n) != 0) {
 			fan.SetTargetRPM(0) // Enable fan if OK.
 		}
 	}
+}
+
+func (fc *FanControl) IdentProgress() int {
+	progress := atomic.LoadInt(&fc.maxI)
+	if progress >= 0 {
+		return 0
+	}
+	return -progress
 }
