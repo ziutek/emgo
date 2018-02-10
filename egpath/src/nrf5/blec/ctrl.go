@@ -333,11 +333,11 @@ func (c *Controller) setupNoReq(timeout uint32) {
 	if timeout > 32e6 {
 		timeout = 32e6 // 32 s
 	}
-	asca := c.sca.MulUp(c.connInterval)
+	widen := c.sca.MulUp(c.connInterval)
 	maxWin := c.connInterval - rxRU - rtcRA
 	noReqMax := timeout / c.connInterval
-	if noReqMax*2*asca >= maxWin {
-		noReqMax = maxWin/(2*asca) - 1
+	if noReqMax*2*widen >= maxWin {
+		noReqMax = maxWin/(2*widen) - 1
 	}
 	c.noReq = 0
 	c.noReqMax = uint16(noReqMax)
@@ -375,10 +375,10 @@ func (c *Controller) connectReqRxDisabledISR() {
 	c.setupNoReq(d.Timeout())
 
 	winOffset := d.WinOffset()
-	asca := c.sca.MulUp(winOffset + c.winSize) // Abs.SCA at end of window (µs).
+	widen := c.sca.MulUp(winOffset + c.winSize) // Widen at end of window (µs).
 
 	// Setup first anchor point.
-	c.setRxTimers(c.tim0.LoadCC(2)+winOffset-asca, c.winSize+2*asca)
+	c.setRxTimers(c.tim0.LoadCC(2)+winOffset-widen, c.winSize+2*widen)
 	c.isr = (*Controller).connRxDisabledISR
 
 	// Reenable ADDRESS time capture. See setRxTimer and connTxDisabledISR.
@@ -411,17 +411,22 @@ func (c *Controller) connRxDisabledISR() {
 				// BUG:
 			}
 		}
-		c.LEDs[2].Set()
+		led := c.LEDs[2]
+		led.Store(^led.Load())
 
 		c.flags &^= ble.MD
 		radioSetChi(r, c.chm.NextChi())
 
-		// TIMER0 still counts. TIMER0.CC0 contains time of previous Rx start.
-		asca := c.sca.MulUp(c.connInterval)
-		c.setRxTimers(
-			c.tim0.LoadCC(0)+c.connInterval-asca,
-			2*(uint32(c.noReq)+1)*asca,
-		)
+		c.tim0.Task(timer.CAPTURE(0)).Trigger()
+		c.setRxTimers(c.tim0.LoadCC(0)+c.connInterval/2, c.connInterval)
+		/*
+			// TIMER0 still counts. TIMER0.CC0 contains time of previous Rx start.
+			widen := c.sca.MulUp(c.connInterval)
+			c.setRxTimers(
+				c.tim0.LoadCC(0)+c.connInterval-widen,
+				2*(uint32(c.noReq)+1)*widen,
+			)
+		*/
 
 		// Need to record time of Rx ADDRESS event. At the same time, this
 		// avoids Rx timeout (sets it to >1h).
@@ -447,11 +452,14 @@ func (c *Controller) connRxDisabledISR() {
 		c.connInterval = c.connUpd.Interval()
 		c.setupNoReq(c.connUpd.Timeout())
 		c.connUpd.SetDone()
-		asca := c.sca.MulUp(winOffset + c.winSize) // Abs. SCA at end o window.
-		c.setRxTimers(c.tim0.LoadCC(1)+winOffset-asca-aaDelay, c.winSize+2*asca)
+		widen := c.sca.MulUp(winOffset + c.winSize) // Abs. SCA at end o window.
+		c.setRxTimers(
+			c.tim0.LoadCC(1)+winOffset-widen-aaDelay,
+			c.winSize+2*widen,
+		)
 	} else {
-		asca := c.sca.MulUp(c.connInterval) // Abs. SCA after connInterval (µs).
-		c.setRxTimers(c.tim0.LoadCC(1)+c.connInterval-asca-aaDelay, 2*asca)
+		widen := c.sca.MulUp(c.connInterval) // Abs. SCA after connInterval (µs).
+		c.setRxTimers(c.tim0.LoadCC(1)+c.connInterval-widen-aaDelay, 2*widen)
 	}
 
 	if r.LoadCRCSTATUS() {
