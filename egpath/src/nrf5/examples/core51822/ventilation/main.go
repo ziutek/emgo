@@ -45,7 +45,12 @@ var (
 	btn     *button.PollDrv
 	inputCh = make(chan input.Event, 4)
 	fc      *FanControl
-	aux     gpio.Pin
+	cr0     gpio.Pin
+	cl0     gpio.Pin
+	cl1     gpio.Pin
+	cl2     gpio.Pin
+	cb0     gpio.Pin
+	cb1     gpio.Pin
 )
 
 func init() {
@@ -64,23 +69,28 @@ func init() {
 	disp.SetSegPin(D, gpio.Pin3)  // Segment D.
 	encBtn := gpio.Pin4           // Encoder push button.
 	encA := p0.Pin(5)             // Encoder A-phase input.
+	cb0 = p0.Pin(6)               // Bottom connector, pin 0.
 	encB := p0.Pin(7)             // Encoder B-phase input.
+	cb1 = p0.Pin(8)               // Bottom connector, pin 1.
 	tach0 := p0.Pin(9)            // Left tach input.
 	pwm0 := p0.Pin(10)            // Left PWM output.
 	disp.SetSegPin(E, gpio.Pin11) // Segment E.
 	pwm1 := p0.Pin(12)            // Right PWM output.
 	disp.SetDigPin(7, gpio.Pin13) // Bottom digit 3.
 	tach1 := p0.Pin(14)           // Right tach input.
-	aux = p0.Pin(15)              // Right AUX.
-	disp.SetDigPin(2, gpio.Pin17) // Top digit 2.
+	cl1 = p0.Pin(15)              // Left connector, pin 1.
+	cr0 = p0.Pin(16)              // Right connector, pin 0.
+	disp.SetDigPin(1, gpio.Pin17) // Top digit 1.
 	disp.SetSegPin(G, gpio.Pin18) // Segment G.
+	cl0 = p0.Pin(19)              // Left connector pin 0.
+	disp.SetDigPin(2, gpio.Pin20) // Top digit 2.
 	disp.SetSegPin(Q, gpio.Pin21) // Segment :.
 	disp.SetSegPin(B, gpio.Pin22) // Segment B.
 	disp.SetSegPin(C, gpio.Pin23) // Segment C.
 	disp.SetDigPin(0, gpio.Pin24) // Top digit 0.
 	disp.SetDigPin(3, gpio.Pin25) // Top digit 3.
 	disp.SetSegPin(A, gpio.Pin28) // Segment A.
-	disp.SetDigPin(1, gpio.Pin29) // Top digit 1.
+	cl2 = p0.Pin(29)              // Left connector, pin 2.
 	disp.SetDigPin(4, gpio.Pin30) // Bottom digit 0.
 
 	// Configure pins.

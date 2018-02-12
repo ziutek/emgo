@@ -50,6 +50,11 @@ func (m *Menu) printDec(row, val int) {
 	m.disp.WriteDec(addr, addr+3, 4, val)
 }
 
+func (m *Menu) printStr(row int, s string) {
+	addr := 4 * row
+	m.disp.WriteString(addr, addr, 4, s)
+}
+
 func (m *Menu) clearRow(row int) {
 	addr := 4 * row
 	m.disp.WriteString(addr, addr, 4, "")
@@ -63,7 +68,11 @@ func (m *Menu) RTCISR() {
 	case m.sel <= SetOutRPM:
 		set := int(m.sel & 1)
 		if m.cnt += 8; m.cnt > 80 {
-			m.printDec(set, fc.TargetRPM(set))
+			if rpm := fc.TargetRPM(set); rpm < 0 {
+				m.printStr(set, "IErr") // Identification error.
+			} else {
+				m.printDec(set, rpm)
+			}
 		} else {
 			m.clearRow(set)
 		}
@@ -74,10 +83,10 @@ func (m *Menu) RTCISR() {
 		m.printDec(1, fc.RPM(1))
 	case m.sel == Init:
 		if m.cnt += 8; m.cnt >= 80 {
-			m.disp.WriteString(0, 0, 4, "Init")
+			m.printStr(0, "Idnt") // Identification.
 			m.printDec(1, fc.IdentProgress())
 		} else {
-			m.clearDisp()
+			m.clearRow(0)
 		}
 	}
 }

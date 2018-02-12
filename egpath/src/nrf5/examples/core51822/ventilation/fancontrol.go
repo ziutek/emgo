@@ -119,12 +119,16 @@ func (fc *FanControl) TargetRPM(n int) int {
 }
 
 func (fc *FanControl) SetTargetRPM(n, rpm int) {
+	fan := &fc.fans[n]
+	if fan.TargetRPM() < 0 {
+		return // Disabled.
+	}
 	if rpm < 0 {
 		rpm = 0
 	} else if rpm > maxRPM {
 		rpm = maxRPM
 	}
-	fc.fans[n].SetTargetRPM(rpm)
+	fan.SetTargetRPM(rpm)
 }
 
 func (fc *FanControl) RPM(n int) int {
