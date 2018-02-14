@@ -191,7 +191,7 @@ func main() {
 
 	ge.DLStart()
 	ge.LoadImageBytes(addr, eve.OPT_RGB565, gopher[:])
-	lcd.Wait(eve.INT_CMDEMPTY) // Ensure free space in RAM_CMD.
+	lcd.Wait(eve.INT_CMDEMPTY) // A lot of data sent. Ensure free space.
 	ge.BitmapHandle(1)
 	ge.BitmapLayout(eve.L1, 216/8, 251)
 	ge.BitmapSize(eve.DEFAULT, 211, 251)
@@ -210,7 +210,7 @@ func main() {
 	ge.Swap()
 	lcd.Wait(eve.INT_CMDEMPTY)
 
-	delay.Millisec(1e5)
+	waitTouch(lcd)
 
 	ge.DLStart()
 	ge.Clear(eve.CST)
