@@ -9,6 +9,7 @@ func instances(r *scanner, pkgs []*Package) {
 		line := strings.TrimSpace(r.Text())
 		if def := doxy(line, "#define"); def != "" {
 			inst, base := split(def)
+			base = strings.TrimSpace(removeComments(base))
 			base = strings.TrimSpace(strings.Trim(base, "()"))
 			n := strings.Index(base, "_TypeDef")
 			if n < 0 {

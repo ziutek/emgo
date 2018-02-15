@@ -49,6 +49,28 @@ func split(s string) (first, rest string) {
 	return s[:i], strings.TrimSpace(s[i+1:])
 }
 
+func removeComments(line string) string {
+	i := strings.Index(line, "//")
+	if i >= 0 {
+		return line[:i]
+	}
+	k := 0
+	for {
+		i := strings.Index(line[k:], "/*")
+		if i < 0 {
+			return line
+		}
+		i += k
+		j := strings.Index(line[i+2:], "*/")
+		if j < 0 {
+			return line[:i] // Comment without end in this line..
+		}
+		j += i + 2
+		line = line[:i] + line[j+2:]
+		k = i
+	}
+}
+
 // cwc wraps io.WriteCloser. It terminates program on any error.
 type cwc struct {
 	c io.WriteCloser

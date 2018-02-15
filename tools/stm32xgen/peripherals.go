@@ -242,7 +242,8 @@ func peripherals(r *scanner) []*Package {
 					BitSiz: bitsiz,
 					Name:   reg,
 					Len:    length,
-					Descr:  descr},
+					Descr:  descr,
+				},
 			)
 			offset += size
 			continue
