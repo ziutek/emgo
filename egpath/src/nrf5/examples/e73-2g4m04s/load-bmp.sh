@@ -1,0 +1,1 @@
+../utils/load-bmp.sh

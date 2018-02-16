@@ -1,0 +1,1 @@
+../utils/debug-bmp.sh
