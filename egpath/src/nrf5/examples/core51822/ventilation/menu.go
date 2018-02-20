@@ -67,13 +67,14 @@ func (m *Menu) RTCISR() {
 	switch {
 	case m.sel <= SetOutRPM:
 		set := int(m.sel & 1)
-		if m.cnt += 8; m.cnt > 80 {
+		switch m.cnt += 8; m.cnt {
+		case 0:
 			if rpm := fc.TargetRPM(set); rpm < 0 {
 				m.printStr(set, "IErr") // Identification error.
 			} else {
 				m.printDec(set, rpm)
 			}
-		} else {
+		case 200:
 			m.clearRow(set)
 		}
 		show := set ^ 1
@@ -82,12 +83,13 @@ func (m *Menu) RTCISR() {
 		m.printDec(0, fc.RPM(0))
 		m.printDec(1, fc.RPM(1))
 	case m.sel == Init:
-		if m.cnt += 8; m.cnt >= 80 {
+		switch m.cnt += 8; m.cnt {
+		case 0:
 			m.printStr(0, "Idnt") // Identification.
-			m.printDec(1, fc.IdentProgress())
-		} else {
+		case 160:
 			m.clearRow(0)
 		}
+		m.printDec(1, fc.IdentProgress())
 	}
 }
 
