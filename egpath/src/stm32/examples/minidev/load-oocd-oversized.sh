@@ -23,7 +23,6 @@ echo CFG: $cfg
 
 echo "Loading at $addr..." >/dev/stderr
 openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg -c "$cfg" \
-	-c 'reset_config srst_only srst_nogate connect_assert_srst' \
 	-c 'set _FLASHNAME oversized.flash' \
 	-c 'flash bank $_FLASHNAME stm32f1x 0 0x20000 0 0 $_TARGETNAME' \
 	-c 'init' \

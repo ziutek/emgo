@@ -23,7 +23,6 @@ echo CFG: $cfg
 
 echo "Loading at $addr..." >/dev/stderr
 openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg -c "$cfg" \
-	-c 'reset_config srst_only srst_nogate connect_assert_srst' \
 	-c 'init' \
 	-c 'reset init' \
 	-c "$load" \
