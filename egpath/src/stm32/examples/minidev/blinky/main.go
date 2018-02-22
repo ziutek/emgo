@@ -29,7 +29,7 @@ func main() {
 		leds.ClearPins(Blue)
 		delay.Millisec(50)
 		leds.SetPins(Blue)
-		delay.Millisec(2950)
+		delay.Millisec(950)
 	}
 }
 
