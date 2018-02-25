@@ -62,8 +62,7 @@ func (pwm *Toggle) SetFreq(log2pre, periodus int) int {
 	}
 	t := pwm.t
 	t.StorePRESCALER(log2pre)
-	div := uint32(1) << uint(log2pre)
-	max := 16*uint32(periodus)/div - 1 // 16 MHz * period / div - 1
+	max := 16*uint32(periodus)>>uint(log2pre) - 1 // 16 MHz * period / pre - 1
 	if max > 0xFFFF {
 		panic("pwm: max>0xFFFF")
 	}
