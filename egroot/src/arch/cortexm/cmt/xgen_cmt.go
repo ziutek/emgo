@@ -9,229 +9,264 @@ import (
 )
 
 type CMT_Periph struct {
-	ICIALLU  ICIALLU
+	ICIALLU  RICIALLU
 	_        uint32
-	ICIMVAU  ICIMVAU
-	DCIMVAC  DCIMVAC
-	DCISW    DCISW
-	DCCMVAU  DCCMVAU
-	DCCMVAC  DCCMVAC
-	DCCSW    DCCSW
-	DCCIMVAC DCCIMVAC
-	DCCISW   DCCISW
+	ICIMVAU  RICIMVAU
+	DCIMVAC  RDCIMVAC
+	DCISW    RDCISW
+	DCCMVAU  RDCCMVAU
+	DCCMVAC  RDCCMVAC
+	DCCSW    RDCCSW
+	DCCIMVAC RDCCIMVAC
+	DCCISW   RDCCISW
 }
 
 func (p *CMT_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var CMT = (*CMT_Periph)(unsafe.Pointer(uintptr(0xE000EF50)))
 
-type ICIALLU_Bits uint32
+type ICIALLU uint32
 
-func (b ICIALLU_Bits) Field(mask ICIALLU_Bits) int {
+func (b ICIALLU) Field(mask ICIALLU) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask ICIALLU_Bits) J(v int) ICIALLU_Bits {
-	return ICIALLU_Bits(bits.Make32(v, uint32(mask)))
+func (mask ICIALLU) J(v int) ICIALLU {
+	return ICIALLU(bits.Make32(v, uint32(mask)))
 }
 
-type ICIALLU struct{ mmio.U32 }
+type RICIALLU struct{ mmio.U32 }
 
-func (r *ICIALLU) Bits(mask ICIALLU_Bits) ICIALLU_Bits { return ICIALLU_Bits(r.U32.Bits(uint32(mask))) }
-func (r *ICIALLU) StoreBits(mask, b ICIALLU_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *ICIALLU) SetBits(mask ICIALLU_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *ICIALLU) ClearBits(mask ICIALLU_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *ICIALLU) Load() ICIALLU_Bits                  { return ICIALLU_Bits(r.U32.Load()) }
-func (r *ICIALLU) Store(b ICIALLU_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RICIALLU) Bits(mask ICIALLU) ICIALLU { return ICIALLU(r.U32.Bits(uint32(mask))) }
+func (r *RICIALLU) StoreBits(mask, b ICIALLU) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RICIALLU) SetBits(mask ICIALLU)      { r.U32.SetBits(uint32(mask)) }
+func (r *RICIALLU) ClearBits(mask ICIALLU)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RICIALLU) Load() ICIALLU             { return ICIALLU(r.U32.Load()) }
+func (r *RICIALLU) Store(b ICIALLU)           { r.U32.Store(uint32(b)) }
 
-type ICIALLU_Mask struct{ mmio.UM32 }
+func (r *RICIALLU) AtomicStoreBits(mask, b ICIALLU) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RICIALLU) AtomicSetBits(mask ICIALLU)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RICIALLU) AtomicClearBits(mask ICIALLU)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm ICIALLU_Mask) Load() ICIALLU_Bits   { return ICIALLU_Bits(rm.UM32.Load()) }
-func (rm ICIALLU_Mask) Store(b ICIALLU_Bits) { rm.UM32.Store(uint32(b)) }
+type RMICIALLU struct{ mmio.UM32 }
 
-type ICIMVAU_Bits uint32
+func (rm RMICIALLU) Load() ICIALLU   { return ICIALLU(rm.UM32.Load()) }
+func (rm RMICIALLU) Store(b ICIALLU) { rm.UM32.Store(uint32(b)) }
 
-func (b ICIMVAU_Bits) Field(mask ICIMVAU_Bits) int {
+type ICIMVAU uint32
+
+func (b ICIMVAU) Field(mask ICIMVAU) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask ICIMVAU_Bits) J(v int) ICIMVAU_Bits {
-	return ICIMVAU_Bits(bits.Make32(v, uint32(mask)))
+func (mask ICIMVAU) J(v int) ICIMVAU {
+	return ICIMVAU(bits.Make32(v, uint32(mask)))
 }
 
-type ICIMVAU struct{ mmio.U32 }
+type RICIMVAU struct{ mmio.U32 }
 
-func (r *ICIMVAU) Bits(mask ICIMVAU_Bits) ICIMVAU_Bits { return ICIMVAU_Bits(r.U32.Bits(uint32(mask))) }
-func (r *ICIMVAU) StoreBits(mask, b ICIMVAU_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *ICIMVAU) SetBits(mask ICIMVAU_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *ICIMVAU) ClearBits(mask ICIMVAU_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *ICIMVAU) Load() ICIMVAU_Bits                  { return ICIMVAU_Bits(r.U32.Load()) }
-func (r *ICIMVAU) Store(b ICIMVAU_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RICIMVAU) Bits(mask ICIMVAU) ICIMVAU { return ICIMVAU(r.U32.Bits(uint32(mask))) }
+func (r *RICIMVAU) StoreBits(mask, b ICIMVAU) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RICIMVAU) SetBits(mask ICIMVAU)      { r.U32.SetBits(uint32(mask)) }
+func (r *RICIMVAU) ClearBits(mask ICIMVAU)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RICIMVAU) Load() ICIMVAU             { return ICIMVAU(r.U32.Load()) }
+func (r *RICIMVAU) Store(b ICIMVAU)           { r.U32.Store(uint32(b)) }
 
-type ICIMVAU_Mask struct{ mmio.UM32 }
+func (r *RICIMVAU) AtomicStoreBits(mask, b ICIMVAU) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RICIMVAU) AtomicSetBits(mask ICIMVAU)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RICIMVAU) AtomicClearBits(mask ICIMVAU)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm ICIMVAU_Mask) Load() ICIMVAU_Bits   { return ICIMVAU_Bits(rm.UM32.Load()) }
-func (rm ICIMVAU_Mask) Store(b ICIMVAU_Bits) { rm.UM32.Store(uint32(b)) }
+type RMICIMVAU struct{ mmio.UM32 }
 
-type DCIMVAC_Bits uint32
+func (rm RMICIMVAU) Load() ICIMVAU   { return ICIMVAU(rm.UM32.Load()) }
+func (rm RMICIMVAU) Store(b ICIMVAU) { rm.UM32.Store(uint32(b)) }
 
-func (b DCIMVAC_Bits) Field(mask DCIMVAC_Bits) int {
+type DCIMVAC uint32
+
+func (b DCIMVAC) Field(mask DCIMVAC) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DCIMVAC_Bits) J(v int) DCIMVAC_Bits {
-	return DCIMVAC_Bits(bits.Make32(v, uint32(mask)))
+func (mask DCIMVAC) J(v int) DCIMVAC {
+	return DCIMVAC(bits.Make32(v, uint32(mask)))
 }
 
-type DCIMVAC struct{ mmio.U32 }
+type RDCIMVAC struct{ mmio.U32 }
 
-func (r *DCIMVAC) Bits(mask DCIMVAC_Bits) DCIMVAC_Bits { return DCIMVAC_Bits(r.U32.Bits(uint32(mask))) }
-func (r *DCIMVAC) StoreBits(mask, b DCIMVAC_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DCIMVAC) SetBits(mask DCIMVAC_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *DCIMVAC) ClearBits(mask DCIMVAC_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *DCIMVAC) Load() DCIMVAC_Bits                  { return DCIMVAC_Bits(r.U32.Load()) }
-func (r *DCIMVAC) Store(b DCIMVAC_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RDCIMVAC) Bits(mask DCIMVAC) DCIMVAC { return DCIMVAC(r.U32.Bits(uint32(mask))) }
+func (r *RDCIMVAC) StoreBits(mask, b DCIMVAC) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDCIMVAC) SetBits(mask DCIMVAC)      { r.U32.SetBits(uint32(mask)) }
+func (r *RDCIMVAC) ClearBits(mask DCIMVAC)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RDCIMVAC) Load() DCIMVAC             { return DCIMVAC(r.U32.Load()) }
+func (r *RDCIMVAC) Store(b DCIMVAC)           { r.U32.Store(uint32(b)) }
 
-type DCIMVAC_Mask struct{ mmio.UM32 }
+func (r *RDCIMVAC) AtomicStoreBits(mask, b DCIMVAC) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDCIMVAC) AtomicSetBits(mask DCIMVAC)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDCIMVAC) AtomicClearBits(mask DCIMVAC)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm DCIMVAC_Mask) Load() DCIMVAC_Bits   { return DCIMVAC_Bits(rm.UM32.Load()) }
-func (rm DCIMVAC_Mask) Store(b DCIMVAC_Bits) { rm.UM32.Store(uint32(b)) }
+type RMDCIMVAC struct{ mmio.UM32 }
 
-type DCISW_Bits uint32
+func (rm RMDCIMVAC) Load() DCIMVAC   { return DCIMVAC(rm.UM32.Load()) }
+func (rm RMDCIMVAC) Store(b DCIMVAC) { rm.UM32.Store(uint32(b)) }
 
-func (b DCISW_Bits) Field(mask DCISW_Bits) int {
+type DCISW uint32
+
+func (b DCISW) Field(mask DCISW) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DCISW_Bits) J(v int) DCISW_Bits {
-	return DCISW_Bits(bits.Make32(v, uint32(mask)))
+func (mask DCISW) J(v int) DCISW {
+	return DCISW(bits.Make32(v, uint32(mask)))
 }
 
-type DCISW struct{ mmio.U32 }
+type RDCISW struct{ mmio.U32 }
 
-func (r *DCISW) Bits(mask DCISW_Bits) DCISW_Bits { return DCISW_Bits(r.U32.Bits(uint32(mask))) }
-func (r *DCISW) StoreBits(mask, b DCISW_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DCISW) SetBits(mask DCISW_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *DCISW) ClearBits(mask DCISW_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *DCISW) Load() DCISW_Bits                { return DCISW_Bits(r.U32.Load()) }
-func (r *DCISW) Store(b DCISW_Bits)              { r.U32.Store(uint32(b)) }
+func (r *RDCISW) Bits(mask DCISW) DCISW   { return DCISW(r.U32.Bits(uint32(mask))) }
+func (r *RDCISW) StoreBits(mask, b DCISW) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDCISW) SetBits(mask DCISW)      { r.U32.SetBits(uint32(mask)) }
+func (r *RDCISW) ClearBits(mask DCISW)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RDCISW) Load() DCISW             { return DCISW(r.U32.Load()) }
+func (r *RDCISW) Store(b DCISW)           { r.U32.Store(uint32(b)) }
 
-type DCISW_Mask struct{ mmio.UM32 }
+func (r *RDCISW) AtomicStoreBits(mask, b DCISW) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDCISW) AtomicSetBits(mask DCISW)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDCISW) AtomicClearBits(mask DCISW)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm DCISW_Mask) Load() DCISW_Bits   { return DCISW_Bits(rm.UM32.Load()) }
-func (rm DCISW_Mask) Store(b DCISW_Bits) { rm.UM32.Store(uint32(b)) }
+type RMDCISW struct{ mmio.UM32 }
 
-type DCCMVAU_Bits uint32
+func (rm RMDCISW) Load() DCISW   { return DCISW(rm.UM32.Load()) }
+func (rm RMDCISW) Store(b DCISW) { rm.UM32.Store(uint32(b)) }
 
-func (b DCCMVAU_Bits) Field(mask DCCMVAU_Bits) int {
+type DCCMVAU uint32
+
+func (b DCCMVAU) Field(mask DCCMVAU) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DCCMVAU_Bits) J(v int) DCCMVAU_Bits {
-	return DCCMVAU_Bits(bits.Make32(v, uint32(mask)))
+func (mask DCCMVAU) J(v int) DCCMVAU {
+	return DCCMVAU(bits.Make32(v, uint32(mask)))
 }
 
-type DCCMVAU struct{ mmio.U32 }
+type RDCCMVAU struct{ mmio.U32 }
 
-func (r *DCCMVAU) Bits(mask DCCMVAU_Bits) DCCMVAU_Bits { return DCCMVAU_Bits(r.U32.Bits(uint32(mask))) }
-func (r *DCCMVAU) StoreBits(mask, b DCCMVAU_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DCCMVAU) SetBits(mask DCCMVAU_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *DCCMVAU) ClearBits(mask DCCMVAU_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *DCCMVAU) Load() DCCMVAU_Bits                  { return DCCMVAU_Bits(r.U32.Load()) }
-func (r *DCCMVAU) Store(b DCCMVAU_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RDCCMVAU) Bits(mask DCCMVAU) DCCMVAU { return DCCMVAU(r.U32.Bits(uint32(mask))) }
+func (r *RDCCMVAU) StoreBits(mask, b DCCMVAU) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDCCMVAU) SetBits(mask DCCMVAU)      { r.U32.SetBits(uint32(mask)) }
+func (r *RDCCMVAU) ClearBits(mask DCCMVAU)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RDCCMVAU) Load() DCCMVAU             { return DCCMVAU(r.U32.Load()) }
+func (r *RDCCMVAU) Store(b DCCMVAU)           { r.U32.Store(uint32(b)) }
 
-type DCCMVAU_Mask struct{ mmio.UM32 }
+func (r *RDCCMVAU) AtomicStoreBits(mask, b DCCMVAU) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDCCMVAU) AtomicSetBits(mask DCCMVAU)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDCCMVAU) AtomicClearBits(mask DCCMVAU)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm DCCMVAU_Mask) Load() DCCMVAU_Bits   { return DCCMVAU_Bits(rm.UM32.Load()) }
-func (rm DCCMVAU_Mask) Store(b DCCMVAU_Bits) { rm.UM32.Store(uint32(b)) }
+type RMDCCMVAU struct{ mmio.UM32 }
 
-type DCCMVAC_Bits uint32
+func (rm RMDCCMVAU) Load() DCCMVAU   { return DCCMVAU(rm.UM32.Load()) }
+func (rm RMDCCMVAU) Store(b DCCMVAU) { rm.UM32.Store(uint32(b)) }
 
-func (b DCCMVAC_Bits) Field(mask DCCMVAC_Bits) int {
+type DCCMVAC uint32
+
+func (b DCCMVAC) Field(mask DCCMVAC) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DCCMVAC_Bits) J(v int) DCCMVAC_Bits {
-	return DCCMVAC_Bits(bits.Make32(v, uint32(mask)))
+func (mask DCCMVAC) J(v int) DCCMVAC {
+	return DCCMVAC(bits.Make32(v, uint32(mask)))
 }
 
-type DCCMVAC struct{ mmio.U32 }
+type RDCCMVAC struct{ mmio.U32 }
 
-func (r *DCCMVAC) Bits(mask DCCMVAC_Bits) DCCMVAC_Bits { return DCCMVAC_Bits(r.U32.Bits(uint32(mask))) }
-func (r *DCCMVAC) StoreBits(mask, b DCCMVAC_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DCCMVAC) SetBits(mask DCCMVAC_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *DCCMVAC) ClearBits(mask DCCMVAC_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *DCCMVAC) Load() DCCMVAC_Bits                  { return DCCMVAC_Bits(r.U32.Load()) }
-func (r *DCCMVAC) Store(b DCCMVAC_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RDCCMVAC) Bits(mask DCCMVAC) DCCMVAC { return DCCMVAC(r.U32.Bits(uint32(mask))) }
+func (r *RDCCMVAC) StoreBits(mask, b DCCMVAC) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDCCMVAC) SetBits(mask DCCMVAC)      { r.U32.SetBits(uint32(mask)) }
+func (r *RDCCMVAC) ClearBits(mask DCCMVAC)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RDCCMVAC) Load() DCCMVAC             { return DCCMVAC(r.U32.Load()) }
+func (r *RDCCMVAC) Store(b DCCMVAC)           { r.U32.Store(uint32(b)) }
 
-type DCCMVAC_Mask struct{ mmio.UM32 }
+func (r *RDCCMVAC) AtomicStoreBits(mask, b DCCMVAC) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDCCMVAC) AtomicSetBits(mask DCCMVAC)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDCCMVAC) AtomicClearBits(mask DCCMVAC)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm DCCMVAC_Mask) Load() DCCMVAC_Bits   { return DCCMVAC_Bits(rm.UM32.Load()) }
-func (rm DCCMVAC_Mask) Store(b DCCMVAC_Bits) { rm.UM32.Store(uint32(b)) }
+type RMDCCMVAC struct{ mmio.UM32 }
 
-type DCCSW_Bits uint32
+func (rm RMDCCMVAC) Load() DCCMVAC   { return DCCMVAC(rm.UM32.Load()) }
+func (rm RMDCCMVAC) Store(b DCCMVAC) { rm.UM32.Store(uint32(b)) }
 
-func (b DCCSW_Bits) Field(mask DCCSW_Bits) int {
+type DCCSW uint32
+
+func (b DCCSW) Field(mask DCCSW) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DCCSW_Bits) J(v int) DCCSW_Bits {
-	return DCCSW_Bits(bits.Make32(v, uint32(mask)))
+func (mask DCCSW) J(v int) DCCSW {
+	return DCCSW(bits.Make32(v, uint32(mask)))
 }
 
-type DCCSW struct{ mmio.U32 }
+type RDCCSW struct{ mmio.U32 }
 
-func (r *DCCSW) Bits(mask DCCSW_Bits) DCCSW_Bits { return DCCSW_Bits(r.U32.Bits(uint32(mask))) }
-func (r *DCCSW) StoreBits(mask, b DCCSW_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DCCSW) SetBits(mask DCCSW_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *DCCSW) ClearBits(mask DCCSW_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *DCCSW) Load() DCCSW_Bits                { return DCCSW_Bits(r.U32.Load()) }
-func (r *DCCSW) Store(b DCCSW_Bits)              { r.U32.Store(uint32(b)) }
+func (r *RDCCSW) Bits(mask DCCSW) DCCSW   { return DCCSW(r.U32.Bits(uint32(mask))) }
+func (r *RDCCSW) StoreBits(mask, b DCCSW) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDCCSW) SetBits(mask DCCSW)      { r.U32.SetBits(uint32(mask)) }
+func (r *RDCCSW) ClearBits(mask DCCSW)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RDCCSW) Load() DCCSW             { return DCCSW(r.U32.Load()) }
+func (r *RDCCSW) Store(b DCCSW)           { r.U32.Store(uint32(b)) }
 
-type DCCSW_Mask struct{ mmio.UM32 }
+func (r *RDCCSW) AtomicStoreBits(mask, b DCCSW) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDCCSW) AtomicSetBits(mask DCCSW)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDCCSW) AtomicClearBits(mask DCCSW)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm DCCSW_Mask) Load() DCCSW_Bits   { return DCCSW_Bits(rm.UM32.Load()) }
-func (rm DCCSW_Mask) Store(b DCCSW_Bits) { rm.UM32.Store(uint32(b)) }
+type RMDCCSW struct{ mmio.UM32 }
 
-type DCCIMVAC_Bits uint32
+func (rm RMDCCSW) Load() DCCSW   { return DCCSW(rm.UM32.Load()) }
+func (rm RMDCCSW) Store(b DCCSW) { rm.UM32.Store(uint32(b)) }
 
-func (b DCCIMVAC_Bits) Field(mask DCCIMVAC_Bits) int {
+type DCCIMVAC uint32
+
+func (b DCCIMVAC) Field(mask DCCIMVAC) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DCCIMVAC_Bits) J(v int) DCCIMVAC_Bits {
-	return DCCIMVAC_Bits(bits.Make32(v, uint32(mask)))
+func (mask DCCIMVAC) J(v int) DCCIMVAC {
+	return DCCIMVAC(bits.Make32(v, uint32(mask)))
 }
 
-type DCCIMVAC struct{ mmio.U32 }
+type RDCCIMVAC struct{ mmio.U32 }
 
-func (r *DCCIMVAC) Bits(mask DCCIMVAC_Bits) DCCIMVAC_Bits {
-	return DCCIMVAC_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *DCCIMVAC) StoreBits(mask, b DCCIMVAC_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DCCIMVAC) SetBits(mask DCCIMVAC_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *DCCIMVAC) ClearBits(mask DCCIMVAC_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *DCCIMVAC) Load() DCCIMVAC_Bits             { return DCCIMVAC_Bits(r.U32.Load()) }
-func (r *DCCIMVAC) Store(b DCCIMVAC_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RDCCIMVAC) Bits(mask DCCIMVAC) DCCIMVAC { return DCCIMVAC(r.U32.Bits(uint32(mask))) }
+func (r *RDCCIMVAC) StoreBits(mask, b DCCIMVAC)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDCCIMVAC) SetBits(mask DCCIMVAC)       { r.U32.SetBits(uint32(mask)) }
+func (r *RDCCIMVAC) ClearBits(mask DCCIMVAC)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RDCCIMVAC) Load() DCCIMVAC              { return DCCIMVAC(r.U32.Load()) }
+func (r *RDCCIMVAC) Store(b DCCIMVAC)            { r.U32.Store(uint32(b)) }
 
-type DCCIMVAC_Mask struct{ mmio.UM32 }
+func (r *RDCCIMVAC) AtomicStoreBits(mask, b DCCIMVAC) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDCCIMVAC) AtomicSetBits(mask DCCIMVAC)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDCCIMVAC) AtomicClearBits(mask DCCIMVAC)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm DCCIMVAC_Mask) Load() DCCIMVAC_Bits   { return DCCIMVAC_Bits(rm.UM32.Load()) }
-func (rm DCCIMVAC_Mask) Store(b DCCIMVAC_Bits) { rm.UM32.Store(uint32(b)) }
+type RMDCCIMVAC struct{ mmio.UM32 }
 
-type DCCISW_Bits uint32
+func (rm RMDCCIMVAC) Load() DCCIMVAC   { return DCCIMVAC(rm.UM32.Load()) }
+func (rm RMDCCIMVAC) Store(b DCCIMVAC) { rm.UM32.Store(uint32(b)) }
 
-func (b DCCISW_Bits) Field(mask DCCISW_Bits) int {
+type DCCISW uint32
+
+func (b DCCISW) Field(mask DCCISW) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DCCISW_Bits) J(v int) DCCISW_Bits {
-	return DCCISW_Bits(bits.Make32(v, uint32(mask)))
+func (mask DCCISW) J(v int) DCCISW {
+	return DCCISW(bits.Make32(v, uint32(mask)))
 }
 
-type DCCISW struct{ mmio.U32 }
+type RDCCISW struct{ mmio.U32 }
 
-func (r *DCCISW) Bits(mask DCCISW_Bits) DCCISW_Bits { return DCCISW_Bits(r.U32.Bits(uint32(mask))) }
-func (r *DCCISW) StoreBits(mask, b DCCISW_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DCCISW) SetBits(mask DCCISW_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *DCCISW) ClearBits(mask DCCISW_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *DCCISW) Load() DCCISW_Bits                 { return DCCISW_Bits(r.U32.Load()) }
-func (r *DCCISW) Store(b DCCISW_Bits)               { r.U32.Store(uint32(b)) }
+func (r *RDCCISW) Bits(mask DCCISW) DCCISW  { return DCCISW(r.U32.Bits(uint32(mask))) }
+func (r *RDCCISW) StoreBits(mask, b DCCISW) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDCCISW) SetBits(mask DCCISW)      { r.U32.SetBits(uint32(mask)) }
+func (r *RDCCISW) ClearBits(mask DCCISW)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RDCCISW) Load() DCCISW             { return DCCISW(r.U32.Load()) }
+func (r *RDCCISW) Store(b DCCISW)           { r.U32.Store(uint32(b)) }
 
-type DCCISW_Mask struct{ mmio.UM32 }
+func (r *RDCCISW) AtomicStoreBits(mask, b DCCISW) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDCCISW) AtomicSetBits(mask DCCISW)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDCCISW) AtomicClearBits(mask DCCISW)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm DCCISW_Mask) Load() DCCISW_Bits   { return DCCISW_Bits(rm.UM32.Load()) }
-func (rm DCCISW_Mask) Store(b DCCISW_Bits) { rm.UM32.Store(uint32(b)) }
+type RMDCCISW struct{ mmio.UM32 }
+
+func (rm RMDCCISW) Load() DCCISW   { return DCCISW(rm.UM32.Load()) }
+func (rm RMDCCISW) Store(b DCCISW) { rm.UM32.Store(uint32(b)) }

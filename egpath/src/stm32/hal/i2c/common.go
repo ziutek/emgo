@@ -57,7 +57,7 @@ func (e Error) Error() string {
 	}
 }
 
-func getError(sr1 i2c.SR1_Bits) Error {
+func getError(sr1 i2c.SR1) Error {
 	return Error(sr1 >> 8)
 }
 

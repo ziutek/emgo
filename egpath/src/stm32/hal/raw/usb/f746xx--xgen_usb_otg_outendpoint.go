@@ -13,220 +13,210 @@ import (
 )
 
 type USB_OTG_OUTEndpoint_Periph struct {
-	DOEPCTL  DOEPCTL
+	DOEPCTL  RDOEPCTL
 	_        uint32
-	DOEPINT  DOEPINT
+	DOEPINT  RDOEPINT
 	_        uint32
-	DOEPTSIZ DOEPTSIZ
-	DOEPDMA  DOEPDMA
+	DOEPTSIZ RDOEPTSIZ
+	DOEPDMA  RDOEPDMA
 }
 
 func (p *USB_OTG_OUTEndpoint_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
-type DOEPCTL_Bits uint32
+type DOEPCTL uint32
 
-func (b DOEPCTL_Bits) Field(mask DOEPCTL_Bits) int {
+func (b DOEPCTL) Field(mask DOEPCTL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DOEPCTL_Bits) J(v int) DOEPCTL_Bits {
-	return DOEPCTL_Bits(bits.Make32(v, uint32(mask)))
+func (mask DOEPCTL) J(v int) DOEPCTL {
+	return DOEPCTL(bits.Make32(v, uint32(mask)))
 }
 
-type DOEPCTL struct{ mmio.U32 }
+type RDOEPCTL struct{ mmio.U32 }
 
-func (r *DOEPCTL) Bits(mask DOEPCTL_Bits) DOEPCTL_Bits { return DOEPCTL_Bits(r.U32.Bits(uint32(mask))) }
-func (r *DOEPCTL) StoreBits(mask, b DOEPCTL_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DOEPCTL) SetBits(mask DOEPCTL_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *DOEPCTL) ClearBits(mask DOEPCTL_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *DOEPCTL) Load() DOEPCTL_Bits                  { return DOEPCTL_Bits(r.U32.Load()) }
-func (r *DOEPCTL) Store(b DOEPCTL_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RDOEPCTL) Bits(mask DOEPCTL) DOEPCTL { return DOEPCTL(r.U32.Bits(uint32(mask))) }
+func (r *RDOEPCTL) StoreBits(mask, b DOEPCTL) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDOEPCTL) SetBits(mask DOEPCTL)      { r.U32.SetBits(uint32(mask)) }
+func (r *RDOEPCTL) ClearBits(mask DOEPCTL)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RDOEPCTL) Load() DOEPCTL             { return DOEPCTL(r.U32.Load()) }
+func (r *RDOEPCTL) Store(b DOEPCTL)           { r.U32.Store(uint32(b)) }
 
-func (r *DOEPCTL) AtomicStoreBits(mask, b DOEPCTL_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *DOEPCTL) AtomicSetBits(mask DOEPCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *DOEPCTL) AtomicClearBits(mask DOEPCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RDOEPCTL) AtomicStoreBits(mask, b DOEPCTL) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDOEPCTL) AtomicSetBits(mask DOEPCTL)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDOEPCTL) AtomicClearBits(mask DOEPCTL)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type DOEPCTL_Mask struct{ mmio.UM32 }
+type RMDOEPCTL struct{ mmio.UM32 }
 
-func (rm DOEPCTL_Mask) Load() DOEPCTL_Bits   { return DOEPCTL_Bits(rm.UM32.Load()) }
-func (rm DOEPCTL_Mask) Store(b DOEPCTL_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMDOEPCTL) Load() DOEPCTL   { return DOEPCTL(rm.UM32.Load()) }
+func (rm RMDOEPCTL) Store(b DOEPCTL) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_OUTEndpoint_Periph) MPSIZ() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(MPSIZ)}}
+func (p *USB_OTG_OUTEndpoint_Periph) MPSIZ() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(MPSIZ)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) USBAEP() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(USBAEP)}}
+func (p *USB_OTG_OUTEndpoint_Periph) USBAEP() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(USBAEP)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) NAKSTS() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(NAKSTS)}}
+func (p *USB_OTG_OUTEndpoint_Periph) NAKSTS() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(NAKSTS)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) SD0PID_SEVNFRM() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(SD0PID_SEVNFRM)}}
+func (p *USB_OTG_OUTEndpoint_Periph) SD0PID_SEVNFRM() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(SD0PID_SEVNFRM)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) SODDFRM() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(SODDFRM)}}
+func (p *USB_OTG_OUTEndpoint_Periph) SODDFRM() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(SODDFRM)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) EPTYP() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(EPTYP)}}
+func (p *USB_OTG_OUTEndpoint_Periph) EPTYP() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(EPTYP)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) SNPM() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(SNPM)}}
+func (p *USB_OTG_OUTEndpoint_Periph) SNPM() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(SNPM)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) STALL() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(STALL)}}
+func (p *USB_OTG_OUTEndpoint_Periph) STALL() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(STALL)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) CNAK() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(CNAK)}}
+func (p *USB_OTG_OUTEndpoint_Periph) CNAK() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(CNAK)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) SNAK() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(SNAK)}}
+func (p *USB_OTG_OUTEndpoint_Periph) SNAK() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(SNAK)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) EPDIS() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(EPDIS)}}
+func (p *USB_OTG_OUTEndpoint_Periph) EPDIS() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(EPDIS)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) EPENA() DOEPCTL_Mask {
-	return DOEPCTL_Mask{mmio.UM32{&p.DOEPCTL.U32, uint32(EPENA)}}
+func (p *USB_OTG_OUTEndpoint_Periph) EPENA() RMDOEPCTL {
+	return RMDOEPCTL{mmio.UM32{&p.DOEPCTL.U32, uint32(EPENA)}}
 }
 
-type DOEPINT_Bits uint32
+type DOEPINT uint32
 
-func (b DOEPINT_Bits) Field(mask DOEPINT_Bits) int {
+func (b DOEPINT) Field(mask DOEPINT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DOEPINT_Bits) J(v int) DOEPINT_Bits {
-	return DOEPINT_Bits(bits.Make32(v, uint32(mask)))
+func (mask DOEPINT) J(v int) DOEPINT {
+	return DOEPINT(bits.Make32(v, uint32(mask)))
 }
 
-type DOEPINT struct{ mmio.U32 }
+type RDOEPINT struct{ mmio.U32 }
 
-func (r *DOEPINT) Bits(mask DOEPINT_Bits) DOEPINT_Bits { return DOEPINT_Bits(r.U32.Bits(uint32(mask))) }
-func (r *DOEPINT) StoreBits(mask, b DOEPINT_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DOEPINT) SetBits(mask DOEPINT_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *DOEPINT) ClearBits(mask DOEPINT_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *DOEPINT) Load() DOEPINT_Bits                  { return DOEPINT_Bits(r.U32.Load()) }
-func (r *DOEPINT) Store(b DOEPINT_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RDOEPINT) Bits(mask DOEPINT) DOEPINT { return DOEPINT(r.U32.Bits(uint32(mask))) }
+func (r *RDOEPINT) StoreBits(mask, b DOEPINT) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDOEPINT) SetBits(mask DOEPINT)      { r.U32.SetBits(uint32(mask)) }
+func (r *RDOEPINT) ClearBits(mask DOEPINT)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RDOEPINT) Load() DOEPINT             { return DOEPINT(r.U32.Load()) }
+func (r *RDOEPINT) Store(b DOEPINT)           { r.U32.Store(uint32(b)) }
 
-func (r *DOEPINT) AtomicStoreBits(mask, b DOEPINT_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *DOEPINT) AtomicSetBits(mask DOEPINT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *DOEPINT) AtomicClearBits(mask DOEPINT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RDOEPINT) AtomicStoreBits(mask, b DOEPINT) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDOEPINT) AtomicSetBits(mask DOEPINT)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDOEPINT) AtomicClearBits(mask DOEPINT)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type DOEPINT_Mask struct{ mmio.UM32 }
+type RMDOEPINT struct{ mmio.UM32 }
 
-func (rm DOEPINT_Mask) Load() DOEPINT_Bits   { return DOEPINT_Bits(rm.UM32.Load()) }
-func (rm DOEPINT_Mask) Store(b DOEPINT_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMDOEPINT) Load() DOEPINT   { return DOEPINT(rm.UM32.Load()) }
+func (rm RMDOEPINT) Store(b DOEPINT) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_OUTEndpoint_Periph) XFRC() DOEPINT_Mask {
-	return DOEPINT_Mask{mmio.UM32{&p.DOEPINT.U32, uint32(XFRC)}}
+func (p *USB_OTG_OUTEndpoint_Periph) XFRC() RMDOEPINT {
+	return RMDOEPINT{mmio.UM32{&p.DOEPINT.U32, uint32(XFRC)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) EPDISD() DOEPINT_Mask {
-	return DOEPINT_Mask{mmio.UM32{&p.DOEPINT.U32, uint32(EPDISD)}}
+func (p *USB_OTG_OUTEndpoint_Periph) EPDISD() RMDOEPINT {
+	return RMDOEPINT{mmio.UM32{&p.DOEPINT.U32, uint32(EPDISD)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) STUP() DOEPINT_Mask {
-	return DOEPINT_Mask{mmio.UM32{&p.DOEPINT.U32, uint32(STUP)}}
+func (p *USB_OTG_OUTEndpoint_Periph) STUP() RMDOEPINT {
+	return RMDOEPINT{mmio.UM32{&p.DOEPINT.U32, uint32(STUP)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) OTEPDIS() DOEPINT_Mask {
-	return DOEPINT_Mask{mmio.UM32{&p.DOEPINT.U32, uint32(OTEPDIS)}}
+func (p *USB_OTG_OUTEndpoint_Periph) OTEPDIS() RMDOEPINT {
+	return RMDOEPINT{mmio.UM32{&p.DOEPINT.U32, uint32(OTEPDIS)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) OTEPSPR() DOEPINT_Mask {
-	return DOEPINT_Mask{mmio.UM32{&p.DOEPINT.U32, uint32(OTEPSPR)}}
+func (p *USB_OTG_OUTEndpoint_Periph) OTEPSPR() RMDOEPINT {
+	return RMDOEPINT{mmio.UM32{&p.DOEPINT.U32, uint32(OTEPSPR)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) B2BSTUP() DOEPINT_Mask {
-	return DOEPINT_Mask{mmio.UM32{&p.DOEPINT.U32, uint32(B2BSTUP)}}
+func (p *USB_OTG_OUTEndpoint_Periph) B2BSTUP() RMDOEPINT {
+	return RMDOEPINT{mmio.UM32{&p.DOEPINT.U32, uint32(B2BSTUP)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) NYET() DOEPINT_Mask {
-	return DOEPINT_Mask{mmio.UM32{&p.DOEPINT.U32, uint32(NYET)}}
+func (p *USB_OTG_OUTEndpoint_Periph) NYET() RMDOEPINT {
+	return RMDOEPINT{mmio.UM32{&p.DOEPINT.U32, uint32(NYET)}}
 }
 
-type DOEPTSIZ_Bits uint32
+type DOEPTSIZ uint32
 
-func (b DOEPTSIZ_Bits) Field(mask DOEPTSIZ_Bits) int {
+func (b DOEPTSIZ) Field(mask DOEPTSIZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DOEPTSIZ_Bits) J(v int) DOEPTSIZ_Bits {
-	return DOEPTSIZ_Bits(bits.Make32(v, uint32(mask)))
+func (mask DOEPTSIZ) J(v int) DOEPTSIZ {
+	return DOEPTSIZ(bits.Make32(v, uint32(mask)))
 }
 
-type DOEPTSIZ struct{ mmio.U32 }
+type RDOEPTSIZ struct{ mmio.U32 }
 
-func (r *DOEPTSIZ) Bits(mask DOEPTSIZ_Bits) DOEPTSIZ_Bits {
-	return DOEPTSIZ_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *DOEPTSIZ) StoreBits(mask, b DOEPTSIZ_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DOEPTSIZ) SetBits(mask DOEPTSIZ_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *DOEPTSIZ) ClearBits(mask DOEPTSIZ_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *DOEPTSIZ) Load() DOEPTSIZ_Bits             { return DOEPTSIZ_Bits(r.U32.Load()) }
-func (r *DOEPTSIZ) Store(b DOEPTSIZ_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RDOEPTSIZ) Bits(mask DOEPTSIZ) DOEPTSIZ { return DOEPTSIZ(r.U32.Bits(uint32(mask))) }
+func (r *RDOEPTSIZ) StoreBits(mask, b DOEPTSIZ)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDOEPTSIZ) SetBits(mask DOEPTSIZ)       { r.U32.SetBits(uint32(mask)) }
+func (r *RDOEPTSIZ) ClearBits(mask DOEPTSIZ)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RDOEPTSIZ) Load() DOEPTSIZ              { return DOEPTSIZ(r.U32.Load()) }
+func (r *RDOEPTSIZ) Store(b DOEPTSIZ)            { r.U32.Store(uint32(b)) }
 
-func (r *DOEPTSIZ) AtomicStoreBits(mask, b DOEPTSIZ_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *DOEPTSIZ) AtomicSetBits(mask DOEPTSIZ_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *DOEPTSIZ) AtomicClearBits(mask DOEPTSIZ_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RDOEPTSIZ) AtomicStoreBits(mask, b DOEPTSIZ) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDOEPTSIZ) AtomicSetBits(mask DOEPTSIZ)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDOEPTSIZ) AtomicClearBits(mask DOEPTSIZ)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type DOEPTSIZ_Mask struct{ mmio.UM32 }
+type RMDOEPTSIZ struct{ mmio.UM32 }
 
-func (rm DOEPTSIZ_Mask) Load() DOEPTSIZ_Bits   { return DOEPTSIZ_Bits(rm.UM32.Load()) }
-func (rm DOEPTSIZ_Mask) Store(b DOEPTSIZ_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMDOEPTSIZ) Load() DOEPTSIZ   { return DOEPTSIZ(rm.UM32.Load()) }
+func (rm RMDOEPTSIZ) Store(b DOEPTSIZ) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_OUTEndpoint_Periph) XFRSIZ() DOEPTSIZ_Mask {
-	return DOEPTSIZ_Mask{mmio.UM32{&p.DOEPTSIZ.U32, uint32(XFRSIZ)}}
+func (p *USB_OTG_OUTEndpoint_Periph) XFRSIZ() RMDOEPTSIZ {
+	return RMDOEPTSIZ{mmio.UM32{&p.DOEPTSIZ.U32, uint32(XFRSIZ)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) PKTCNT() DOEPTSIZ_Mask {
-	return DOEPTSIZ_Mask{mmio.UM32{&p.DOEPTSIZ.U32, uint32(PKTCNT)}}
+func (p *USB_OTG_OUTEndpoint_Periph) PKTCNT() RMDOEPTSIZ {
+	return RMDOEPTSIZ{mmio.UM32{&p.DOEPTSIZ.U32, uint32(PKTCNT)}}
 }
 
-func (p *USB_OTG_OUTEndpoint_Periph) STUPCNT() DOEPTSIZ_Mask {
-	return DOEPTSIZ_Mask{mmio.UM32{&p.DOEPTSIZ.U32, uint32(STUPCNT)}}
+func (p *USB_OTG_OUTEndpoint_Periph) STUPCNT() RMDOEPTSIZ {
+	return RMDOEPTSIZ{mmio.UM32{&p.DOEPTSIZ.U32, uint32(STUPCNT)}}
 }
 
-type DOEPDMA_Bits uint32
+type DOEPDMA uint32
 
-func (b DOEPDMA_Bits) Field(mask DOEPDMA_Bits) int {
+func (b DOEPDMA) Field(mask DOEPDMA) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DOEPDMA_Bits) J(v int) DOEPDMA_Bits {
-	return DOEPDMA_Bits(bits.Make32(v, uint32(mask)))
+func (mask DOEPDMA) J(v int) DOEPDMA {
+	return DOEPDMA(bits.Make32(v, uint32(mask)))
 }
 
-type DOEPDMA struct{ mmio.U32 }
+type RDOEPDMA struct{ mmio.U32 }
 
-func (r *DOEPDMA) Bits(mask DOEPDMA_Bits) DOEPDMA_Bits { return DOEPDMA_Bits(r.U32.Bits(uint32(mask))) }
-func (r *DOEPDMA) StoreBits(mask, b DOEPDMA_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DOEPDMA) SetBits(mask DOEPDMA_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *DOEPDMA) ClearBits(mask DOEPDMA_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *DOEPDMA) Load() DOEPDMA_Bits                  { return DOEPDMA_Bits(r.U32.Load()) }
-func (r *DOEPDMA) Store(b DOEPDMA_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RDOEPDMA) Bits(mask DOEPDMA) DOEPDMA { return DOEPDMA(r.U32.Bits(uint32(mask))) }
+func (r *RDOEPDMA) StoreBits(mask, b DOEPDMA) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDOEPDMA) SetBits(mask DOEPDMA)      { r.U32.SetBits(uint32(mask)) }
+func (r *RDOEPDMA) ClearBits(mask DOEPDMA)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RDOEPDMA) Load() DOEPDMA             { return DOEPDMA(r.U32.Load()) }
+func (r *RDOEPDMA) Store(b DOEPDMA)           { r.U32.Store(uint32(b)) }
 
-func (r *DOEPDMA) AtomicStoreBits(mask, b DOEPDMA_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *DOEPDMA) AtomicSetBits(mask DOEPDMA_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *DOEPDMA) AtomicClearBits(mask DOEPDMA_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RDOEPDMA) AtomicStoreBits(mask, b DOEPDMA) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDOEPDMA) AtomicSetBits(mask DOEPDMA)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDOEPDMA) AtomicClearBits(mask DOEPDMA)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type DOEPDMA_Mask struct{ mmio.UM32 }
+type RMDOEPDMA struct{ mmio.UM32 }
 
-func (rm DOEPDMA_Mask) Load() DOEPDMA_Bits   { return DOEPDMA_Bits(rm.UM32.Load()) }
-func (rm DOEPDMA_Mask) Store(b DOEPDMA_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMDOEPDMA) Load() DOEPDMA   { return DOEPDMA(rm.UM32.Load()) }
+func (rm RMDOEPDMA) Store(b DOEPDMA) { rm.UM32.Store(uint32(b)) }

@@ -99,7 +99,7 @@ func (p *Periph) Conf() Conf {
 
 // SetConf configures p.
 func (p *Periph) SetConf(cfg Conf) {
-	p.raw.CR1.StoreBits(cr1Mask, spi.CR1_Bits(cfg))
+	p.raw.CR1.StoreBits(cr1Mask, spi.CR1(cfg))
 }
 
 // SetWordSize sets size of data word. All families support 8 and 16-bit word, some
@@ -176,28 +176,28 @@ func (p *Periph) Status() (Event, Error) {
 // EnableIRQ enables generating of IRQ by events e.
 func (p *Periph) EnableIRQ(e Event) {
 	if e &= errEventMask; e != 0 {
-		p.raw.CR2.SetBits(spi.CR2_Bits(e) << spi.ERRIEn)
+		p.raw.CR2.SetBits(spi.CR2(e) << spi.ERRIEn)
 	}
 }
 
 // DisableIRQ disables generating of IRQ by events e.
 func (p *Periph) DisableIRQ(e Event) {
 	if e &= errEventMask; e != 0 {
-		p.raw.CR2.ClearBits(spi.CR2_Bits(e) << spi.ERRIEn)
+		p.raw.CR2.ClearBits(spi.CR2(e) << spi.ERRIEn)
 	}
 }
 
 // EnableDMA enables generating of DMA requests by events e.
 func (p *Periph) EnableDMA(e Event) {
 	if e &= realEventMask; e != 0 {
-		p.raw.CR2.SetBits(spi.CR2_Bits(e) >> 1)
+		p.raw.CR2.SetBits(spi.CR2(e) >> 1)
 	}
 }
 
 // DisableDMA disables generating of DMA requests by events e.
 func (p *Periph) DisableDMA(e Event) {
 	if e &= realEventMask; e != 0 {
-		p.raw.CR2.ClearBits(spi.CR2_Bits(e) >> 1)
+		p.raw.CR2.ClearBits(spi.CR2(e) >> 1)
 	}
 }
 
@@ -228,8 +228,8 @@ func (p *Periph) Duplex() Duplex {
 
 func (p *Periph) SetDuplex(duplex Duplex) {
 	cr1 := p.raw.CR1.Load()
-	if cr1&spi.CR1_Bits(HalfOut) != spi.CR1_Bits(duplex) {
-		p.raw.CR1.Store(cr1&^spi.CR1_Bits(HalfOut) | spi.CR1_Bits(duplex))
+	if cr1&spi.CR1(HalfOut) != spi.CR1(duplex) {
+		p.raw.CR1.Store(cr1&^spi.CR1(HalfOut) | spi.CR1(duplex))
 	}
 }
 

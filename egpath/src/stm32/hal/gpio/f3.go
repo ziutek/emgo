@@ -114,8 +114,8 @@ var (
 	H = (*Port)(unsafe.Pointer(mmap.GPIOH_BASE))
 )
 
-func enreg() *rcc.AHBENR   { return &rcc.RCC.AHBENR }
-func rstreg() *rcc.AHBRSTR { return &rcc.RCC.AHBRSTR }
+func enreg() *rcc.RAHBENR   { return &rcc.RCC.AHBENR }
+func rstreg() *rcc.RAHBRSTR { return &rcc.RCC.AHBRSTR }
 
 func lpenaclk(pnum uint) {}
 func lpdisclk(pnum uint) {}

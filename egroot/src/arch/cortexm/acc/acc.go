@@ -16,10 +16,10 @@
 package acc
 
 const (
-	ITCMEN    ITCMCR_Bits = 1 << 0   //+ TCM enable.
-	ITCMRMW   ITCMCR_Bits = 1 << 1   //+ Read-Modify-Write (RMW) enable.
-	ITCMRETEN ITCMCR_Bits = 1 << 2   //+ Retry phase enable.
-	ITCMSZ    ITCMCR_Bits = 0xF << 3 //+ TCM size: 0:0K, 3:4K, 4:8K, ..., 16:16M.
+	ITCMEN    ITCMCR = 1 << 0   //+ TCM enable.
+	ITCMRMW   ITCMCR = 1 << 1   //+ Read-Modify-Write (RMW) enable.
+	ITCMRETEN ITCMCR = 1 << 2   //+ Retry phase enable.
+	ITCMSZ    ITCMCR = 0xF << 3 //+ TCM size: 0:0K, 3:4K, 4:8K, ..., 16:16M.
 )
 
 const (
@@ -30,10 +30,10 @@ const (
 )
 
 const (
-	DTCMEN    DTCMCR_Bits = 1 << 0   //+ TCM enable.
-	DTCMRMW   DTCMCR_Bits = 1 << 1   //+ Read-Modify-Write (RMW) enable.
-	DTCMRETEN DTCMCR_Bits = 1 << 2   //+ Retry phase enable.
-	DTCMSZ    DTCMCR_Bits = 0xF << 3 //+ TCM size. 0:0K, 3:4K, 4:8K, ..., 16:16M.
+	DTCMEN    DTCMCR = 1 << 0   //+ TCM enable.
+	DTCMRMW   DTCMCR = 1 << 1   //+ Read-Modify-Write (RMW) enable.
+	DTCMRETEN DTCMCR = 1 << 2   //+ Retry phase enable.
+	DTCMSZ    DTCMCR = 0xF << 3 //+ TCM size. 0:0K, 3:4K, 4:8K, ..., 16:16M.
 )
 
 const (
@@ -44,8 +44,8 @@ const (
 )
 
 const (
-	AHBPEN AHBPCR_Bits = 1 << 0   //+ AHBP enable.
-	AHBPSZ AHBPCR_Bits = 0x7 << 1 //+ AHBP size. 1:64M, 2:128M, 3:256M, 4:512M.
+	AHBPEN AHBPCR = 1 << 0   //+ AHBP enable.
+	AHBPSZ AHBPCR = 0x7 << 1 //+ AHBP size. 1:64M, 2:128M, 3:256M, 4:512M.
 )
 
 const (
@@ -54,9 +54,9 @@ const (
 )
 
 const (
-	SIWT    CACR_Bits = 1 << 0 //+ Shared cacheable-is-WT for data cache.
-	ECCDIS  CACR_Bits = 1 << 1 //+ ECC in the instruction and data cache.
-	FORCEWT CACR_Bits = 1 << 2 //+ Force Write-Through in the data cache.
+	SIWT    CACR = 1 << 0 //+ Shared cacheable-is-WT for data cache.
+	ECCDIS  CACR = 1 << 1 //+ ECC in the instruction and data cache.
+	FORCEWT CACR = 1 << 2 //+ Force Write-Through in the data cache.
 )
 
 const (
@@ -66,9 +66,9 @@ const (
 )
 
 const (
-	CTL       AHBSCR_Bits = 0x3 << 0   //+ AHBS prioritization control.
-	TPRI      AHBSCR_Bits = 0x1FF << 2 //+ Thresh. exec. prio. for traffic demotion.
-	INITCOUNT AHBSCR_Bits = 0x1F << 11 //+ Fairness counter initialization value.
+	CTL       AHBSCR = 0x3 << 0   //+ AHBS prioritization control.
+	TPRI      AHBSCR = 0x1FF << 2 //+ Thresh. exec. prio. for traffic demotion.
+	INITCOUNT AHBSCR = 0x1F << 11 //+ Fairness counter initialization value.
 )
 
 const (
@@ -78,12 +78,12 @@ const (
 )
 
 const (
-	ITCM     ABFSR_Bits = 1 << 0   //+ Asynchronous fault on ITCM interface
-	DTCM     ABFSR_Bits = 1 << 1   //+ Asynchronous fault on DTCM interface.
-	AHBP     ABFSR_Bits = 1 << 2   //+ Asynchronous fault on AHBP interface.
-	AXIM     ABFSR_Bits = 1 << 3   //+ Asynchronous fault on AXIM interface.
-	EPPB     ABFSR_Bits = 1 << 4   //+ Asynchronous fault on EPPB interface.
-	AXIMTYPE ABFSR_Bits = 0x3 << 8 //+ The type of fault on the AXIM interface.
+	ITCM     ABFSR = 1 << 0   //+ Asynchronous fault on ITCM interface
+	DTCM     ABFSR = 1 << 1   //+ Asynchronous fault on DTCM interface.
+	AHBP     ABFSR = 1 << 2   //+ Asynchronous fault on AHBP interface.
+	AXIM     ABFSR = 1 << 3   //+ Asynchronous fault on AXIM interface.
+	EPPB     ABFSR = 1 << 4   //+ Asynchronous fault on EPPB interface.
+	AXIMTYPE ABFSR = 0x3 << 8 //+ The type of fault on the AXIM interface.
 )
 
 const (

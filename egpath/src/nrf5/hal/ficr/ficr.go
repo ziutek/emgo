@@ -31,6 +31,6 @@
 package ficr
 
 const (
-	NRF_1MBIT_OK OVERRIDDEN_Bits = 1 << 0 //+ Use default values for NRF_1MBIT.
-	BLE_1MBIT_OK OVERRIDDEN_Bits = 1 << 3 //+ Use default values for BLE_1MBIT.
+	NRF_1MBIT_OK OVERRIDDEN = 1 << 0 //+ Use default values for NRF_1MBIT.
+	BLE_1MBIT_OK OVERRIDDEN = 1 << 3 //+ Use default values for BLE_1MBIT.
 )

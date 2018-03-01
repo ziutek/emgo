@@ -13,45 +13,45 @@ import (
 )
 
 type TIM_Periph struct {
-	CR1   CR1
+	CR1   RCR1
 	_     uint16
-	CR2   CR2
+	CR2   RCR2
 	_     uint16
-	SMCR  SMCR
+	SMCR  RSMCR
 	_     uint16
-	DIER  DIER
+	DIER  RDIER
 	_     uint16
-	SR    SR
+	SR    RSR
 	_     uint16
-	EGR   EGR
+	EGR   REGR
 	_     uint16
-	CCMR1 CCMR1
+	CCMR1 RCCMR1
 	_     uint16
-	CCMR2 CCMR2
+	CCMR2 RCCMR2
 	_     uint16
-	CCER  CCER
+	CCER  RCCER
 	_     uint16
-	CNT   CNT
+	CNT   RCNT
 	_     uint16
-	PSC   PSC
+	PSC   RPSC
 	_     uint16
-	ARR   ARR
+	ARR   RARR
 	_     uint16
-	RCR   RCR
+	RCR   RRCR
 	_     uint16
-	CCR1  CCR1
+	CCR1  RCCR1
 	_     uint16
-	CCR2  CCR2
+	CCR2  RCCR2
 	_     uint16
-	CCR3  CCR3
+	CCR3  RCCR3
 	_     uint16
-	CCR4  CCR4
+	CCR4  RCCR4
 	_     uint16
-	BDTR  BDTR
+	BDTR  RBDTR
 	_     uint16
-	DCR   DCR
+	DCR   RDCR
 	_     uint16
-	DMAR  DMAR
+	DMAR  RDMAR
 }
 
 func (p *TIM_Periph) BaseAddr() uintptr {
@@ -109,930 +109,930 @@ var TIM10 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM10_BASE)))
 //emgo:const
 var TIM11 = (*TIM_Periph)(unsafe.Pointer(uintptr(mmap.TIM11_BASE)))
 
-type CR1_Bits uint16
+type CR1 uint16
 
-func (b CR1_Bits) Field(mask CR1_Bits) int {
+func (b CR1) Field(mask CR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CR1_Bits) J(v int) CR1_Bits {
-	return CR1_Bits(bits.Make32(v, uint32(mask)))
+func (mask CR1) J(v int) CR1 {
+	return CR1(bits.Make32(v, uint32(mask)))
 }
 
-type CR1 struct{ mmio.U16 }
+type RCR1 struct{ mmio.U16 }
 
-func (r *CR1) Bits(mask CR1_Bits) CR1_Bits { return CR1_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CR1) StoreBits(mask, b CR1_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CR1) SetBits(mask CR1_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *CR1) ClearBits(mask CR1_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *CR1) Load() CR1_Bits              { return CR1_Bits(r.U16.Load()) }
-func (r *CR1) Store(b CR1_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RCR1) Bits(mask CR1) CR1     { return CR1(r.U16.Bits(uint16(mask))) }
+func (r *RCR1) StoreBits(mask, b CR1) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCR1) SetBits(mask CR1)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCR1) ClearBits(mask CR1)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCR1) Load() CR1             { return CR1(r.U16.Load()) }
+func (r *RCR1) Store(b CR1)           { r.U16.Store(uint16(b)) }
 
-type CR1_Mask struct{ mmio.UM16 }
+type RMCR1 struct{ mmio.UM16 }
 
-func (rm CR1_Mask) Load() CR1_Bits   { return CR1_Bits(rm.UM16.Load()) }
-func (rm CR1_Mask) Store(b CR1_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCR1) Load() CR1   { return CR1(rm.UM16.Load()) }
+func (rm RMCR1) Store(b CR1) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) CEN() CR1_Mask {
-	return CR1_Mask{mmio.UM16{&p.CR1.U16, uint16(CEN)}}
+func (p *TIM_Periph) CEN() RMCR1 {
+	return RMCR1{mmio.UM16{&p.CR1.U16, uint16(CEN)}}
 }
 
-func (p *TIM_Periph) UDIS() CR1_Mask {
-	return CR1_Mask{mmio.UM16{&p.CR1.U16, uint16(UDIS)}}
+func (p *TIM_Periph) UDIS() RMCR1 {
+	return RMCR1{mmio.UM16{&p.CR1.U16, uint16(UDIS)}}
 }
 
-func (p *TIM_Periph) URS() CR1_Mask {
-	return CR1_Mask{mmio.UM16{&p.CR1.U16, uint16(URS)}}
+func (p *TIM_Periph) URS() RMCR1 {
+	return RMCR1{mmio.UM16{&p.CR1.U16, uint16(URS)}}
 }
 
-func (p *TIM_Periph) OPM() CR1_Mask {
-	return CR1_Mask{mmio.UM16{&p.CR1.U16, uint16(OPM)}}
+func (p *TIM_Periph) OPM() RMCR1 {
+	return RMCR1{mmio.UM16{&p.CR1.U16, uint16(OPM)}}
 }
 
-func (p *TIM_Periph) DIR() CR1_Mask {
-	return CR1_Mask{mmio.UM16{&p.CR1.U16, uint16(DIR)}}
+func (p *TIM_Periph) DIR() RMCR1 {
+	return RMCR1{mmio.UM16{&p.CR1.U16, uint16(DIR)}}
 }
 
-func (p *TIM_Periph) CMS() CR1_Mask {
-	return CR1_Mask{mmio.UM16{&p.CR1.U16, uint16(CMS)}}
+func (p *TIM_Periph) CMS() RMCR1 {
+	return RMCR1{mmio.UM16{&p.CR1.U16, uint16(CMS)}}
 }
 
-func (p *TIM_Periph) ARPE() CR1_Mask {
-	return CR1_Mask{mmio.UM16{&p.CR1.U16, uint16(ARPE)}}
+func (p *TIM_Periph) ARPE() RMCR1 {
+	return RMCR1{mmio.UM16{&p.CR1.U16, uint16(ARPE)}}
 }
 
-func (p *TIM_Periph) CKD() CR1_Mask {
-	return CR1_Mask{mmio.UM16{&p.CR1.U16, uint16(CKD)}}
+func (p *TIM_Periph) CKD() RMCR1 {
+	return RMCR1{mmio.UM16{&p.CR1.U16, uint16(CKD)}}
 }
 
-type CR2_Bits uint16
+type CR2 uint16
 
-func (b CR2_Bits) Field(mask CR2_Bits) int {
+func (b CR2) Field(mask CR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CR2_Bits) J(v int) CR2_Bits {
-	return CR2_Bits(bits.Make32(v, uint32(mask)))
+func (mask CR2) J(v int) CR2 {
+	return CR2(bits.Make32(v, uint32(mask)))
 }
 
-type CR2 struct{ mmio.U16 }
+type RCR2 struct{ mmio.U16 }
 
-func (r *CR2) Bits(mask CR2_Bits) CR2_Bits { return CR2_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CR2) StoreBits(mask, b CR2_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CR2) SetBits(mask CR2_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *CR2) ClearBits(mask CR2_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *CR2) Load() CR2_Bits              { return CR2_Bits(r.U16.Load()) }
-func (r *CR2) Store(b CR2_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RCR2) Bits(mask CR2) CR2     { return CR2(r.U16.Bits(uint16(mask))) }
+func (r *RCR2) StoreBits(mask, b CR2) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCR2) SetBits(mask CR2)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCR2) ClearBits(mask CR2)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCR2) Load() CR2             { return CR2(r.U16.Load()) }
+func (r *RCR2) Store(b CR2)           { r.U16.Store(uint16(b)) }
 
-type CR2_Mask struct{ mmio.UM16 }
+type RMCR2 struct{ mmio.UM16 }
 
-func (rm CR2_Mask) Load() CR2_Bits   { return CR2_Bits(rm.UM16.Load()) }
-func (rm CR2_Mask) Store(b CR2_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCR2) Load() CR2   { return CR2(rm.UM16.Load()) }
+func (rm RMCR2) Store(b CR2) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) CCPC() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(CCPC)}}
+func (p *TIM_Periph) CCPC() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(CCPC)}}
 }
 
-func (p *TIM_Periph) CCUS() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(CCUS)}}
+func (p *TIM_Periph) CCUS() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(CCUS)}}
 }
 
-func (p *TIM_Periph) CCDS() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(CCDS)}}
+func (p *TIM_Periph) CCDS() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(CCDS)}}
 }
 
-func (p *TIM_Periph) MMS() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(MMS)}}
+func (p *TIM_Periph) MMS() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(MMS)}}
 }
 
-func (p *TIM_Periph) TI1S() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(TI1S)}}
+func (p *TIM_Periph) TI1S() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(TI1S)}}
 }
 
-func (p *TIM_Periph) OIS1() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(OIS1)}}
+func (p *TIM_Periph) OIS1() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(OIS1)}}
 }
 
-func (p *TIM_Periph) OIS1N() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(OIS1N)}}
+func (p *TIM_Periph) OIS1N() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(OIS1N)}}
 }
 
-func (p *TIM_Periph) OIS2() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(OIS2)}}
+func (p *TIM_Periph) OIS2() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(OIS2)}}
 }
 
-func (p *TIM_Periph) OIS2N() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(OIS2N)}}
+func (p *TIM_Periph) OIS2N() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(OIS2N)}}
 }
 
-func (p *TIM_Periph) OIS3() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(OIS3)}}
+func (p *TIM_Periph) OIS3() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(OIS3)}}
 }
 
-func (p *TIM_Periph) OIS3N() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(OIS3N)}}
+func (p *TIM_Periph) OIS3N() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(OIS3N)}}
 }
 
-func (p *TIM_Periph) OIS4() CR2_Mask {
-	return CR2_Mask{mmio.UM16{&p.CR2.U16, uint16(OIS4)}}
+func (p *TIM_Periph) OIS4() RMCR2 {
+	return RMCR2{mmio.UM16{&p.CR2.U16, uint16(OIS4)}}
 }
 
-type SMCR_Bits uint16
+type SMCR uint16
 
-func (b SMCR_Bits) Field(mask SMCR_Bits) int {
+func (b SMCR) Field(mask SMCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask SMCR_Bits) J(v int) SMCR_Bits {
-	return SMCR_Bits(bits.Make32(v, uint32(mask)))
+func (mask SMCR) J(v int) SMCR {
+	return SMCR(bits.Make32(v, uint32(mask)))
 }
 
-type SMCR struct{ mmio.U16 }
+type RSMCR struct{ mmio.U16 }
 
-func (r *SMCR) Bits(mask SMCR_Bits) SMCR_Bits { return SMCR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *SMCR) StoreBits(mask, b SMCR_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *SMCR) SetBits(mask SMCR_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *SMCR) ClearBits(mask SMCR_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *SMCR) Load() SMCR_Bits               { return SMCR_Bits(r.U16.Load()) }
-func (r *SMCR) Store(b SMCR_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RSMCR) Bits(mask SMCR) SMCR    { return SMCR(r.U16.Bits(uint16(mask))) }
+func (r *RSMCR) StoreBits(mask, b SMCR) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RSMCR) SetBits(mask SMCR)      { r.U16.SetBits(uint16(mask)) }
+func (r *RSMCR) ClearBits(mask SMCR)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RSMCR) Load() SMCR             { return SMCR(r.U16.Load()) }
+func (r *RSMCR) Store(b SMCR)           { r.U16.Store(uint16(b)) }
 
-type SMCR_Mask struct{ mmio.UM16 }
+type RMSMCR struct{ mmio.UM16 }
 
-func (rm SMCR_Mask) Load() SMCR_Bits   { return SMCR_Bits(rm.UM16.Load()) }
-func (rm SMCR_Mask) Store(b SMCR_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMSMCR) Load() SMCR   { return SMCR(rm.UM16.Load()) }
+func (rm RMSMCR) Store(b SMCR) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) SMS() SMCR_Mask {
-	return SMCR_Mask{mmio.UM16{&p.SMCR.U16, uint16(SMS)}}
+func (p *TIM_Periph) SMS() RMSMCR {
+	return RMSMCR{mmio.UM16{&p.SMCR.U16, uint16(SMS)}}
 }
 
-func (p *TIM_Periph) TS() SMCR_Mask {
-	return SMCR_Mask{mmio.UM16{&p.SMCR.U16, uint16(TS)}}
+func (p *TIM_Periph) TS() RMSMCR {
+	return RMSMCR{mmio.UM16{&p.SMCR.U16, uint16(TS)}}
 }
 
-func (p *TIM_Periph) MSM() SMCR_Mask {
-	return SMCR_Mask{mmio.UM16{&p.SMCR.U16, uint16(MSM)}}
+func (p *TIM_Periph) MSM() RMSMCR {
+	return RMSMCR{mmio.UM16{&p.SMCR.U16, uint16(MSM)}}
 }
 
-func (p *TIM_Periph) ETF() SMCR_Mask {
-	return SMCR_Mask{mmio.UM16{&p.SMCR.U16, uint16(ETF)}}
+func (p *TIM_Periph) ETF() RMSMCR {
+	return RMSMCR{mmio.UM16{&p.SMCR.U16, uint16(ETF)}}
 }
 
-func (p *TIM_Periph) ETPS() SMCR_Mask {
-	return SMCR_Mask{mmio.UM16{&p.SMCR.U16, uint16(ETPS)}}
+func (p *TIM_Periph) ETPS() RMSMCR {
+	return RMSMCR{mmio.UM16{&p.SMCR.U16, uint16(ETPS)}}
 }
 
-func (p *TIM_Periph) ECE() SMCR_Mask {
-	return SMCR_Mask{mmio.UM16{&p.SMCR.U16, uint16(ECE)}}
+func (p *TIM_Periph) ECE() RMSMCR {
+	return RMSMCR{mmio.UM16{&p.SMCR.U16, uint16(ECE)}}
 }
 
-func (p *TIM_Periph) ETP() SMCR_Mask {
-	return SMCR_Mask{mmio.UM16{&p.SMCR.U16, uint16(ETP)}}
+func (p *TIM_Periph) ETP() RMSMCR {
+	return RMSMCR{mmio.UM16{&p.SMCR.U16, uint16(ETP)}}
 }
 
-type DIER_Bits uint16
+type DIER uint16
 
-func (b DIER_Bits) Field(mask DIER_Bits) int {
+func (b DIER) Field(mask DIER) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DIER_Bits) J(v int) DIER_Bits {
-	return DIER_Bits(bits.Make32(v, uint32(mask)))
+func (mask DIER) J(v int) DIER {
+	return DIER(bits.Make32(v, uint32(mask)))
 }
 
-type DIER struct{ mmio.U16 }
+type RDIER struct{ mmio.U16 }
 
-func (r *DIER) Bits(mask DIER_Bits) DIER_Bits { return DIER_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DIER) StoreBits(mask, b DIER_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DIER) SetBits(mask DIER_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DIER) ClearBits(mask DIER_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DIER) Load() DIER_Bits               { return DIER_Bits(r.U16.Load()) }
-func (r *DIER) Store(b DIER_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDIER) Bits(mask DIER) DIER    { return DIER(r.U16.Bits(uint16(mask))) }
+func (r *RDIER) StoreBits(mask, b DIER) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDIER) SetBits(mask DIER)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDIER) ClearBits(mask DIER)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDIER) Load() DIER             { return DIER(r.U16.Load()) }
+func (r *RDIER) Store(b DIER)           { r.U16.Store(uint16(b)) }
 
-type DIER_Mask struct{ mmio.UM16 }
+type RMDIER struct{ mmio.UM16 }
 
-func (rm DIER_Mask) Load() DIER_Bits   { return DIER_Bits(rm.UM16.Load()) }
-func (rm DIER_Mask) Store(b DIER_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDIER) Load() DIER   { return DIER(rm.UM16.Load()) }
+func (rm RMDIER) Store(b DIER) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) UIE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(UIE)}}
+func (p *TIM_Periph) UIE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(UIE)}}
 }
 
-func (p *TIM_Periph) CC1IE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(CC1IE)}}
+func (p *TIM_Periph) CC1IE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(CC1IE)}}
 }
 
-func (p *TIM_Periph) CC2IE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(CC2IE)}}
+func (p *TIM_Periph) CC2IE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(CC2IE)}}
 }
 
-func (p *TIM_Periph) CC3IE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(CC3IE)}}
+func (p *TIM_Periph) CC3IE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(CC3IE)}}
 }
 
-func (p *TIM_Periph) CC4IE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(CC4IE)}}
+func (p *TIM_Periph) CC4IE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(CC4IE)}}
 }
 
-func (p *TIM_Periph) COMIE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(COMIE)}}
+func (p *TIM_Periph) COMIE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(COMIE)}}
 }
 
-func (p *TIM_Periph) TIE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(TIE)}}
+func (p *TIM_Periph) TIE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(TIE)}}
 }
 
-func (p *TIM_Periph) BIE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(BIE)}}
+func (p *TIM_Periph) BIE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(BIE)}}
 }
 
-func (p *TIM_Periph) UDE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(UDE)}}
+func (p *TIM_Periph) UDE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(UDE)}}
 }
 
-func (p *TIM_Periph) CC1DE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(CC1DE)}}
+func (p *TIM_Periph) CC1DE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(CC1DE)}}
 }
 
-func (p *TIM_Periph) CC2DE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(CC2DE)}}
+func (p *TIM_Periph) CC2DE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(CC2DE)}}
 }
 
-func (p *TIM_Periph) CC3DE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(CC3DE)}}
+func (p *TIM_Periph) CC3DE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(CC3DE)}}
 }
 
-func (p *TIM_Periph) CC4DE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(CC4DE)}}
+func (p *TIM_Periph) CC4DE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(CC4DE)}}
 }
 
-func (p *TIM_Periph) COMDE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(COMDE)}}
+func (p *TIM_Periph) COMDE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(COMDE)}}
 }
 
-func (p *TIM_Periph) TDE() DIER_Mask {
-	return DIER_Mask{mmio.UM16{&p.DIER.U16, uint16(TDE)}}
+func (p *TIM_Periph) TDE() RMDIER {
+	return RMDIER{mmio.UM16{&p.DIER.U16, uint16(TDE)}}
 }
 
-type SR_Bits uint16
+type SR uint16
 
-func (b SR_Bits) Field(mask SR_Bits) int {
+func (b SR) Field(mask SR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask SR_Bits) J(v int) SR_Bits {
-	return SR_Bits(bits.Make32(v, uint32(mask)))
+func (mask SR) J(v int) SR {
+	return SR(bits.Make32(v, uint32(mask)))
 }
 
-type SR struct{ mmio.U16 }
+type RSR struct{ mmio.U16 }
 
-func (r *SR) Bits(mask SR_Bits) SR_Bits { return SR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *SR) StoreBits(mask, b SR_Bits) { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *SR) SetBits(mask SR_Bits)      { r.U16.SetBits(uint16(mask)) }
-func (r *SR) ClearBits(mask SR_Bits)    { r.U16.ClearBits(uint16(mask)) }
-func (r *SR) Load() SR_Bits             { return SR_Bits(r.U16.Load()) }
-func (r *SR) Store(b SR_Bits)           { r.U16.Store(uint16(b)) }
+func (r *RSR) Bits(mask SR) SR      { return SR(r.U16.Bits(uint16(mask))) }
+func (r *RSR) StoreBits(mask, b SR) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RSR) SetBits(mask SR)      { r.U16.SetBits(uint16(mask)) }
+func (r *RSR) ClearBits(mask SR)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RSR) Load() SR             { return SR(r.U16.Load()) }
+func (r *RSR) Store(b SR)           { r.U16.Store(uint16(b)) }
 
-type SR_Mask struct{ mmio.UM16 }
+type RMSR struct{ mmio.UM16 }
 
-func (rm SR_Mask) Load() SR_Bits   { return SR_Bits(rm.UM16.Load()) }
-func (rm SR_Mask) Store(b SR_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMSR) Load() SR   { return SR(rm.UM16.Load()) }
+func (rm RMSR) Store(b SR) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) UIF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(UIF)}}
+func (p *TIM_Periph) UIF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(UIF)}}
 }
 
-func (p *TIM_Periph) CC1IF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(CC1IF)}}
+func (p *TIM_Periph) CC1IF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(CC1IF)}}
 }
 
-func (p *TIM_Periph) CC2IF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(CC2IF)}}
+func (p *TIM_Periph) CC2IF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(CC2IF)}}
 }
 
-func (p *TIM_Periph) CC3IF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(CC3IF)}}
+func (p *TIM_Periph) CC3IF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(CC3IF)}}
 }
 
-func (p *TIM_Periph) CC4IF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(CC4IF)}}
+func (p *TIM_Periph) CC4IF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(CC4IF)}}
 }
 
-func (p *TIM_Periph) COMIF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(COMIF)}}
+func (p *TIM_Periph) COMIF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(COMIF)}}
 }
 
-func (p *TIM_Periph) TIF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(TIF)}}
+func (p *TIM_Periph) TIF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(TIF)}}
 }
 
-func (p *TIM_Periph) BIF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(BIF)}}
+func (p *TIM_Periph) BIF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(BIF)}}
 }
 
-func (p *TIM_Periph) CC1OF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(CC1OF)}}
+func (p *TIM_Periph) CC1OF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(CC1OF)}}
 }
 
-func (p *TIM_Periph) CC2OF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(CC2OF)}}
+func (p *TIM_Periph) CC2OF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(CC2OF)}}
 }
 
-func (p *TIM_Periph) CC3OF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(CC3OF)}}
+func (p *TIM_Periph) CC3OF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(CC3OF)}}
 }
 
-func (p *TIM_Periph) CC4OF() SR_Mask {
-	return SR_Mask{mmio.UM16{&p.SR.U16, uint16(CC4OF)}}
+func (p *TIM_Periph) CC4OF() RMSR {
+	return RMSR{mmio.UM16{&p.SR.U16, uint16(CC4OF)}}
 }
 
-type EGR_Bits uint16
+type EGR uint16
 
-func (b EGR_Bits) Field(mask EGR_Bits) int {
+func (b EGR) Field(mask EGR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask EGR_Bits) J(v int) EGR_Bits {
-	return EGR_Bits(bits.Make32(v, uint32(mask)))
+func (mask EGR) J(v int) EGR {
+	return EGR(bits.Make32(v, uint32(mask)))
 }
 
-type EGR struct{ mmio.U16 }
+type REGR struct{ mmio.U16 }
 
-func (r *EGR) Bits(mask EGR_Bits) EGR_Bits { return EGR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *EGR) StoreBits(mask, b EGR_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *EGR) SetBits(mask EGR_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *EGR) ClearBits(mask EGR_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *EGR) Load() EGR_Bits              { return EGR_Bits(r.U16.Load()) }
-func (r *EGR) Store(b EGR_Bits)            { r.U16.Store(uint16(b)) }
+func (r *REGR) Bits(mask EGR) EGR     { return EGR(r.U16.Bits(uint16(mask))) }
+func (r *REGR) StoreBits(mask, b EGR) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *REGR) SetBits(mask EGR)      { r.U16.SetBits(uint16(mask)) }
+func (r *REGR) ClearBits(mask EGR)    { r.U16.ClearBits(uint16(mask)) }
+func (r *REGR) Load() EGR             { return EGR(r.U16.Load()) }
+func (r *REGR) Store(b EGR)           { r.U16.Store(uint16(b)) }
 
-type EGR_Mask struct{ mmio.UM16 }
+type RMEGR struct{ mmio.UM16 }
 
-func (rm EGR_Mask) Load() EGR_Bits   { return EGR_Bits(rm.UM16.Load()) }
-func (rm EGR_Mask) Store(b EGR_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMEGR) Load() EGR   { return EGR(rm.UM16.Load()) }
+func (rm RMEGR) Store(b EGR) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) UG() EGR_Mask {
-	return EGR_Mask{mmio.UM16{&p.EGR.U16, uint16(UG)}}
+func (p *TIM_Periph) UG() RMEGR {
+	return RMEGR{mmio.UM16{&p.EGR.U16, uint16(UG)}}
 }
 
-func (p *TIM_Periph) CC1G() EGR_Mask {
-	return EGR_Mask{mmio.UM16{&p.EGR.U16, uint16(CC1G)}}
+func (p *TIM_Periph) CC1G() RMEGR {
+	return RMEGR{mmio.UM16{&p.EGR.U16, uint16(CC1G)}}
 }
 
-func (p *TIM_Periph) CC2G() EGR_Mask {
-	return EGR_Mask{mmio.UM16{&p.EGR.U16, uint16(CC2G)}}
+func (p *TIM_Periph) CC2G() RMEGR {
+	return RMEGR{mmio.UM16{&p.EGR.U16, uint16(CC2G)}}
 }
 
-func (p *TIM_Periph) CC3G() EGR_Mask {
-	return EGR_Mask{mmio.UM16{&p.EGR.U16, uint16(CC3G)}}
+func (p *TIM_Periph) CC3G() RMEGR {
+	return RMEGR{mmio.UM16{&p.EGR.U16, uint16(CC3G)}}
 }
 
-func (p *TIM_Periph) CC4G() EGR_Mask {
-	return EGR_Mask{mmio.UM16{&p.EGR.U16, uint16(CC4G)}}
+func (p *TIM_Periph) CC4G() RMEGR {
+	return RMEGR{mmio.UM16{&p.EGR.U16, uint16(CC4G)}}
 }
 
-func (p *TIM_Periph) COMG() EGR_Mask {
-	return EGR_Mask{mmio.UM16{&p.EGR.U16, uint16(COMG)}}
+func (p *TIM_Periph) COMG() RMEGR {
+	return RMEGR{mmio.UM16{&p.EGR.U16, uint16(COMG)}}
 }
 
-func (p *TIM_Periph) TG() EGR_Mask {
-	return EGR_Mask{mmio.UM16{&p.EGR.U16, uint16(TG)}}
+func (p *TIM_Periph) TG() RMEGR {
+	return RMEGR{mmio.UM16{&p.EGR.U16, uint16(TG)}}
 }
 
-func (p *TIM_Periph) BG() EGR_Mask {
-	return EGR_Mask{mmio.UM16{&p.EGR.U16, uint16(BG)}}
+func (p *TIM_Periph) BG() RMEGR {
+	return RMEGR{mmio.UM16{&p.EGR.U16, uint16(BG)}}
 }
 
-type CCMR1_Bits uint16
+type CCMR1 uint16
 
-func (b CCMR1_Bits) Field(mask CCMR1_Bits) int {
+func (b CCMR1) Field(mask CCMR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CCMR1_Bits) J(v int) CCMR1_Bits {
-	return CCMR1_Bits(bits.Make32(v, uint32(mask)))
+func (mask CCMR1) J(v int) CCMR1 {
+	return CCMR1(bits.Make32(v, uint32(mask)))
 }
 
-type CCMR1 struct{ mmio.U16 }
+type RCCMR1 struct{ mmio.U16 }
 
-func (r *CCMR1) Bits(mask CCMR1_Bits) CCMR1_Bits { return CCMR1_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CCMR1) StoreBits(mask, b CCMR1_Bits)    { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CCMR1) SetBits(mask CCMR1_Bits)         { r.U16.SetBits(uint16(mask)) }
-func (r *CCMR1) ClearBits(mask CCMR1_Bits)       { r.U16.ClearBits(uint16(mask)) }
-func (r *CCMR1) Load() CCMR1_Bits                { return CCMR1_Bits(r.U16.Load()) }
-func (r *CCMR1) Store(b CCMR1_Bits)              { r.U16.Store(uint16(b)) }
+func (r *RCCMR1) Bits(mask CCMR1) CCMR1   { return CCMR1(r.U16.Bits(uint16(mask))) }
+func (r *RCCMR1) StoreBits(mask, b CCMR1) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCCMR1) SetBits(mask CCMR1)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCCMR1) ClearBits(mask CCMR1)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCCMR1) Load() CCMR1             { return CCMR1(r.U16.Load()) }
+func (r *RCCMR1) Store(b CCMR1)           { r.U16.Store(uint16(b)) }
 
-type CCMR1_Mask struct{ mmio.UM16 }
+type RMCCMR1 struct{ mmio.UM16 }
 
-func (rm CCMR1_Mask) Load() CCMR1_Bits   { return CCMR1_Bits(rm.UM16.Load()) }
-func (rm CCMR1_Mask) Store(b CCMR1_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCCMR1) Load() CCMR1   { return CCMR1(rm.UM16.Load()) }
+func (rm RMCCMR1) Store(b CCMR1) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) CC1S() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(CC1S)}}
+func (p *TIM_Periph) CC1S() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(CC1S)}}
 }
 
-func (p *TIM_Periph) OC1FE() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(OC1FE)}}
+func (p *TIM_Periph) OC1FE() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(OC1FE)}}
 }
 
-func (p *TIM_Periph) OC1PE() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(OC1PE)}}
+func (p *TIM_Periph) OC1PE() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(OC1PE)}}
 }
 
-func (p *TIM_Periph) OC1M() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(OC1M)}}
+func (p *TIM_Periph) OC1M() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(OC1M)}}
 }
 
-func (p *TIM_Periph) OC1CE() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(OC1CE)}}
+func (p *TIM_Periph) OC1CE() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(OC1CE)}}
 }
 
-func (p *TIM_Periph) CC2S() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(CC2S)}}
+func (p *TIM_Periph) CC2S() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(CC2S)}}
 }
 
-func (p *TIM_Periph) OC2FE() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(OC2FE)}}
+func (p *TIM_Periph) OC2FE() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(OC2FE)}}
 }
 
-func (p *TIM_Periph) OC2PE() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(OC2PE)}}
+func (p *TIM_Periph) OC2PE() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(OC2PE)}}
 }
 
-func (p *TIM_Periph) OC2M() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(OC2M)}}
+func (p *TIM_Periph) OC2M() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(OC2M)}}
 }
 
-func (p *TIM_Periph) OC2CE() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(OC2CE)}}
+func (p *TIM_Periph) OC2CE() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(OC2CE)}}
 }
 
-func (p *TIM_Periph) IC1PSC() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(IC1PSC)}}
+func (p *TIM_Periph) IC1PSC() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(IC1PSC)}}
 }
 
-func (p *TIM_Periph) IC1F() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(IC1F)}}
+func (p *TIM_Periph) IC1F() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(IC1F)}}
 }
 
-func (p *TIM_Periph) IC2PSC() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(IC2PSC)}}
+func (p *TIM_Periph) IC2PSC() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(IC2PSC)}}
 }
 
-func (p *TIM_Periph) IC2F() CCMR1_Mask {
-	return CCMR1_Mask{mmio.UM16{&p.CCMR1.U16, uint16(IC2F)}}
+func (p *TIM_Periph) IC2F() RMCCMR1 {
+	return RMCCMR1{mmio.UM16{&p.CCMR1.U16, uint16(IC2F)}}
 }
 
-type CCMR2_Bits uint16
+type CCMR2 uint16
 
-func (b CCMR2_Bits) Field(mask CCMR2_Bits) int {
+func (b CCMR2) Field(mask CCMR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CCMR2_Bits) J(v int) CCMR2_Bits {
-	return CCMR2_Bits(bits.Make32(v, uint32(mask)))
+func (mask CCMR2) J(v int) CCMR2 {
+	return CCMR2(bits.Make32(v, uint32(mask)))
 }
 
-type CCMR2 struct{ mmio.U16 }
+type RCCMR2 struct{ mmio.U16 }
 
-func (r *CCMR2) Bits(mask CCMR2_Bits) CCMR2_Bits { return CCMR2_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CCMR2) StoreBits(mask, b CCMR2_Bits)    { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CCMR2) SetBits(mask CCMR2_Bits)         { r.U16.SetBits(uint16(mask)) }
-func (r *CCMR2) ClearBits(mask CCMR2_Bits)       { r.U16.ClearBits(uint16(mask)) }
-func (r *CCMR2) Load() CCMR2_Bits                { return CCMR2_Bits(r.U16.Load()) }
-func (r *CCMR2) Store(b CCMR2_Bits)              { r.U16.Store(uint16(b)) }
+func (r *RCCMR2) Bits(mask CCMR2) CCMR2   { return CCMR2(r.U16.Bits(uint16(mask))) }
+func (r *RCCMR2) StoreBits(mask, b CCMR2) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCCMR2) SetBits(mask CCMR2)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCCMR2) ClearBits(mask CCMR2)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCCMR2) Load() CCMR2             { return CCMR2(r.U16.Load()) }
+func (r *RCCMR2) Store(b CCMR2)           { r.U16.Store(uint16(b)) }
 
-type CCMR2_Mask struct{ mmio.UM16 }
+type RMCCMR2 struct{ mmio.UM16 }
 
-func (rm CCMR2_Mask) Load() CCMR2_Bits   { return CCMR2_Bits(rm.UM16.Load()) }
-func (rm CCMR2_Mask) Store(b CCMR2_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCCMR2) Load() CCMR2   { return CCMR2(rm.UM16.Load()) }
+func (rm RMCCMR2) Store(b CCMR2) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) CC3S() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(CC3S)}}
+func (p *TIM_Periph) CC3S() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(CC3S)}}
 }
 
-func (p *TIM_Periph) OC3FE() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(OC3FE)}}
+func (p *TIM_Periph) OC3FE() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(OC3FE)}}
 }
 
-func (p *TIM_Periph) OC3PE() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(OC3PE)}}
+func (p *TIM_Periph) OC3PE() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(OC3PE)}}
 }
 
-func (p *TIM_Periph) OC3M() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(OC3M)}}
+func (p *TIM_Periph) OC3M() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(OC3M)}}
 }
 
-func (p *TIM_Periph) OC3CE() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(OC3CE)}}
+func (p *TIM_Periph) OC3CE() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(OC3CE)}}
 }
 
-func (p *TIM_Periph) CC4S() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(CC4S)}}
+func (p *TIM_Periph) CC4S() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(CC4S)}}
 }
 
-func (p *TIM_Periph) OC4FE() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(OC4FE)}}
+func (p *TIM_Periph) OC4FE() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(OC4FE)}}
 }
 
-func (p *TIM_Periph) OC4PE() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(OC4PE)}}
+func (p *TIM_Periph) OC4PE() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(OC4PE)}}
 }
 
-func (p *TIM_Periph) OC4M() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(OC4M)}}
+func (p *TIM_Periph) OC4M() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(OC4M)}}
 }
 
-func (p *TIM_Periph) OC4CE() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(OC4CE)}}
+func (p *TIM_Periph) OC4CE() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(OC4CE)}}
 }
 
-func (p *TIM_Periph) IC3PSC() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(IC3PSC)}}
+func (p *TIM_Periph) IC3PSC() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(IC3PSC)}}
 }
 
-func (p *TIM_Periph) IC3F() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(IC3F)}}
+func (p *TIM_Periph) IC3F() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(IC3F)}}
 }
 
-func (p *TIM_Periph) IC4PSC() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(IC4PSC)}}
+func (p *TIM_Periph) IC4PSC() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(IC4PSC)}}
 }
 
-func (p *TIM_Periph) IC4F() CCMR2_Mask {
-	return CCMR2_Mask{mmio.UM16{&p.CCMR2.U16, uint16(IC4F)}}
+func (p *TIM_Periph) IC4F() RMCCMR2 {
+	return RMCCMR2{mmio.UM16{&p.CCMR2.U16, uint16(IC4F)}}
 }
 
-type CCER_Bits uint16
+type CCER uint16
 
-func (b CCER_Bits) Field(mask CCER_Bits) int {
+func (b CCER) Field(mask CCER) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CCER_Bits) J(v int) CCER_Bits {
-	return CCER_Bits(bits.Make32(v, uint32(mask)))
+func (mask CCER) J(v int) CCER {
+	return CCER(bits.Make32(v, uint32(mask)))
 }
 
-type CCER struct{ mmio.U16 }
+type RCCER struct{ mmio.U16 }
 
-func (r *CCER) Bits(mask CCER_Bits) CCER_Bits { return CCER_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CCER) StoreBits(mask, b CCER_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CCER) SetBits(mask CCER_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *CCER) ClearBits(mask CCER_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *CCER) Load() CCER_Bits               { return CCER_Bits(r.U16.Load()) }
-func (r *CCER) Store(b CCER_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RCCER) Bits(mask CCER) CCER    { return CCER(r.U16.Bits(uint16(mask))) }
+func (r *RCCER) StoreBits(mask, b CCER) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCCER) SetBits(mask CCER)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCCER) ClearBits(mask CCER)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCCER) Load() CCER             { return CCER(r.U16.Load()) }
+func (r *RCCER) Store(b CCER)           { r.U16.Store(uint16(b)) }
 
-type CCER_Mask struct{ mmio.UM16 }
+type RMCCER struct{ mmio.UM16 }
 
-func (rm CCER_Mask) Load() CCER_Bits   { return CCER_Bits(rm.UM16.Load()) }
-func (rm CCER_Mask) Store(b CCER_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCCER) Load() CCER   { return CCER(rm.UM16.Load()) }
+func (rm RMCCER) Store(b CCER) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) CC1E() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC1E)}}
+func (p *TIM_Periph) CC1E() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC1E)}}
 }
 
-func (p *TIM_Periph) CC1P() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC1P)}}
+func (p *TIM_Periph) CC1P() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC1P)}}
 }
 
-func (p *TIM_Periph) CC1NE() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC1NE)}}
+func (p *TIM_Periph) CC1NE() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC1NE)}}
 }
 
-func (p *TIM_Periph) CC1NP() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC1NP)}}
+func (p *TIM_Periph) CC1NP() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC1NP)}}
 }
 
-func (p *TIM_Periph) CC2E() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC2E)}}
+func (p *TIM_Periph) CC2E() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC2E)}}
 }
 
-func (p *TIM_Periph) CC2P() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC2P)}}
+func (p *TIM_Periph) CC2P() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC2P)}}
 }
 
-func (p *TIM_Periph) CC2NE() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC2NE)}}
+func (p *TIM_Periph) CC2NE() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC2NE)}}
 }
 
-func (p *TIM_Periph) CC2NP() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC2NP)}}
+func (p *TIM_Periph) CC2NP() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC2NP)}}
 }
 
-func (p *TIM_Periph) CC3E() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC3E)}}
+func (p *TIM_Periph) CC3E() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC3E)}}
 }
 
-func (p *TIM_Periph) CC3P() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC3P)}}
+func (p *TIM_Periph) CC3P() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC3P)}}
 }
 
-func (p *TIM_Periph) CC3NE() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC3NE)}}
+func (p *TIM_Periph) CC3NE() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC3NE)}}
 }
 
-func (p *TIM_Periph) CC3NP() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC3NP)}}
+func (p *TIM_Periph) CC3NP() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC3NP)}}
 }
 
-func (p *TIM_Periph) CC4E() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC4E)}}
+func (p *TIM_Periph) CC4E() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC4E)}}
 }
 
-func (p *TIM_Periph) CC4P() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC4P)}}
+func (p *TIM_Periph) CC4P() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC4P)}}
 }
 
-func (p *TIM_Periph) CC4NP() CCER_Mask {
-	return CCER_Mask{mmio.UM16{&p.CCER.U16, uint16(CC4NP)}}
+func (p *TIM_Periph) CC4NP() RMCCER {
+	return RMCCER{mmio.UM16{&p.CCER.U16, uint16(CC4NP)}}
 }
 
-type CNT_Bits uint16
+type CNT uint16
 
-func (b CNT_Bits) Field(mask CNT_Bits) int {
+func (b CNT) Field(mask CNT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CNT_Bits) J(v int) CNT_Bits {
-	return CNT_Bits(bits.Make32(v, uint32(mask)))
+func (mask CNT) J(v int) CNT {
+	return CNT(bits.Make32(v, uint32(mask)))
 }
 
-type CNT struct{ mmio.U16 }
+type RCNT struct{ mmio.U16 }
 
-func (r *CNT) Bits(mask CNT_Bits) CNT_Bits { return CNT_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CNT) StoreBits(mask, b CNT_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CNT) SetBits(mask CNT_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *CNT) ClearBits(mask CNT_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *CNT) Load() CNT_Bits              { return CNT_Bits(r.U16.Load()) }
-func (r *CNT) Store(b CNT_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RCNT) Bits(mask CNT) CNT     { return CNT(r.U16.Bits(uint16(mask))) }
+func (r *RCNT) StoreBits(mask, b CNT) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCNT) SetBits(mask CNT)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCNT) ClearBits(mask CNT)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCNT) Load() CNT             { return CNT(r.U16.Load()) }
+func (r *RCNT) Store(b CNT)           { r.U16.Store(uint16(b)) }
 
-type CNT_Mask struct{ mmio.UM16 }
+type RMCNT struct{ mmio.UM16 }
 
-func (rm CNT_Mask) Load() CNT_Bits   { return CNT_Bits(rm.UM16.Load()) }
-func (rm CNT_Mask) Store(b CNT_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCNT) Load() CNT   { return CNT(rm.UM16.Load()) }
+func (rm RMCNT) Store(b CNT) { rm.UM16.Store(uint16(b)) }
 
-type PSC_Bits uint16
+type PSC uint16
 
-func (b PSC_Bits) Field(mask PSC_Bits) int {
+func (b PSC) Field(mask PSC) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask PSC_Bits) J(v int) PSC_Bits {
-	return PSC_Bits(bits.Make32(v, uint32(mask)))
+func (mask PSC) J(v int) PSC {
+	return PSC(bits.Make32(v, uint32(mask)))
 }
 
-type PSC struct{ mmio.U16 }
+type RPSC struct{ mmio.U16 }
 
-func (r *PSC) Bits(mask PSC_Bits) PSC_Bits { return PSC_Bits(r.U16.Bits(uint16(mask))) }
-func (r *PSC) StoreBits(mask, b PSC_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *PSC) SetBits(mask PSC_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *PSC) ClearBits(mask PSC_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *PSC) Load() PSC_Bits              { return PSC_Bits(r.U16.Load()) }
-func (r *PSC) Store(b PSC_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RPSC) Bits(mask PSC) PSC     { return PSC(r.U16.Bits(uint16(mask))) }
+func (r *RPSC) StoreBits(mask, b PSC) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RPSC) SetBits(mask PSC)      { r.U16.SetBits(uint16(mask)) }
+func (r *RPSC) ClearBits(mask PSC)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RPSC) Load() PSC             { return PSC(r.U16.Load()) }
+func (r *RPSC) Store(b PSC)           { r.U16.Store(uint16(b)) }
 
-type PSC_Mask struct{ mmio.UM16 }
+type RMPSC struct{ mmio.UM16 }
 
-func (rm PSC_Mask) Load() PSC_Bits   { return PSC_Bits(rm.UM16.Load()) }
-func (rm PSC_Mask) Store(b PSC_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMPSC) Load() PSC   { return PSC(rm.UM16.Load()) }
+func (rm RMPSC) Store(b PSC) { rm.UM16.Store(uint16(b)) }
 
-type ARR_Bits uint16
+type ARR uint16
 
-func (b ARR_Bits) Field(mask ARR_Bits) int {
+func (b ARR) Field(mask ARR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask ARR_Bits) J(v int) ARR_Bits {
-	return ARR_Bits(bits.Make32(v, uint32(mask)))
+func (mask ARR) J(v int) ARR {
+	return ARR(bits.Make32(v, uint32(mask)))
 }
 
-type ARR struct{ mmio.U16 }
+type RARR struct{ mmio.U16 }
 
-func (r *ARR) Bits(mask ARR_Bits) ARR_Bits { return ARR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *ARR) StoreBits(mask, b ARR_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *ARR) SetBits(mask ARR_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *ARR) ClearBits(mask ARR_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *ARR) Load() ARR_Bits              { return ARR_Bits(r.U16.Load()) }
-func (r *ARR) Store(b ARR_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RARR) Bits(mask ARR) ARR     { return ARR(r.U16.Bits(uint16(mask))) }
+func (r *RARR) StoreBits(mask, b ARR) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RARR) SetBits(mask ARR)      { r.U16.SetBits(uint16(mask)) }
+func (r *RARR) ClearBits(mask ARR)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RARR) Load() ARR             { return ARR(r.U16.Load()) }
+func (r *RARR) Store(b ARR)           { r.U16.Store(uint16(b)) }
 
-type ARR_Mask struct{ mmio.UM16 }
+type RMARR struct{ mmio.UM16 }
 
-func (rm ARR_Mask) Load() ARR_Bits   { return ARR_Bits(rm.UM16.Load()) }
-func (rm ARR_Mask) Store(b ARR_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMARR) Load() ARR   { return ARR(rm.UM16.Load()) }
+func (rm RMARR) Store(b ARR) { rm.UM16.Store(uint16(b)) }
 
-type RCR_Bits uint16
+type RCR uint16
 
-func (b RCR_Bits) Field(mask RCR_Bits) int {
+func (b RCR) Field(mask RCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask RCR_Bits) J(v int) RCR_Bits {
-	return RCR_Bits(bits.Make32(v, uint32(mask)))
+func (mask RCR) J(v int) RCR {
+	return RCR(bits.Make32(v, uint32(mask)))
 }
 
-type RCR struct{ mmio.U16 }
+type RRCR struct{ mmio.U16 }
 
-func (r *RCR) Bits(mask RCR_Bits) RCR_Bits { return RCR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *RCR) StoreBits(mask, b RCR_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *RCR) SetBits(mask RCR_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *RCR) ClearBits(mask RCR_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *RCR) Load() RCR_Bits              { return RCR_Bits(r.U16.Load()) }
-func (r *RCR) Store(b RCR_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RRCR) Bits(mask RCR) RCR     { return RCR(r.U16.Bits(uint16(mask))) }
+func (r *RRCR) StoreBits(mask, b RCR) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RRCR) SetBits(mask RCR)      { r.U16.SetBits(uint16(mask)) }
+func (r *RRCR) ClearBits(mask RCR)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RRCR) Load() RCR             { return RCR(r.U16.Load()) }
+func (r *RRCR) Store(b RCR)           { r.U16.Store(uint16(b)) }
 
-type RCR_Mask struct{ mmio.UM16 }
+type RMRCR struct{ mmio.UM16 }
 
-func (rm RCR_Mask) Load() RCR_Bits   { return RCR_Bits(rm.UM16.Load()) }
-func (rm RCR_Mask) Store(b RCR_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMRCR) Load() RCR   { return RCR(rm.UM16.Load()) }
+func (rm RMRCR) Store(b RCR) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) REP() RCR_Mask {
-	return RCR_Mask{mmio.UM16{&p.RCR.U16, uint16(REP)}}
+func (p *TIM_Periph) REP() RMRCR {
+	return RMRCR{mmio.UM16{&p.RCR.U16, uint16(REP)}}
 }
 
-type CCR1_Bits uint16
+type CCR1 uint16
 
-func (b CCR1_Bits) Field(mask CCR1_Bits) int {
+func (b CCR1) Field(mask CCR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CCR1_Bits) J(v int) CCR1_Bits {
-	return CCR1_Bits(bits.Make32(v, uint32(mask)))
+func (mask CCR1) J(v int) CCR1 {
+	return CCR1(bits.Make32(v, uint32(mask)))
 }
 
-type CCR1 struct{ mmio.U16 }
+type RCCR1 struct{ mmio.U16 }
 
-func (r *CCR1) Bits(mask CCR1_Bits) CCR1_Bits { return CCR1_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CCR1) StoreBits(mask, b CCR1_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CCR1) SetBits(mask CCR1_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *CCR1) ClearBits(mask CCR1_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *CCR1) Load() CCR1_Bits               { return CCR1_Bits(r.U16.Load()) }
-func (r *CCR1) Store(b CCR1_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RCCR1) Bits(mask CCR1) CCR1    { return CCR1(r.U16.Bits(uint16(mask))) }
+func (r *RCCR1) StoreBits(mask, b CCR1) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCCR1) SetBits(mask CCR1)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCCR1) ClearBits(mask CCR1)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCCR1) Load() CCR1             { return CCR1(r.U16.Load()) }
+func (r *RCCR1) Store(b CCR1)           { r.U16.Store(uint16(b)) }
 
-type CCR1_Mask struct{ mmio.UM16 }
+type RMCCR1 struct{ mmio.UM16 }
 
-func (rm CCR1_Mask) Load() CCR1_Bits   { return CCR1_Bits(rm.UM16.Load()) }
-func (rm CCR1_Mask) Store(b CCR1_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCCR1) Load() CCR1   { return CCR1(rm.UM16.Load()) }
+func (rm RMCCR1) Store(b CCR1) { rm.UM16.Store(uint16(b)) }
 
-type CCR2_Bits uint16
+type CCR2 uint16
 
-func (b CCR2_Bits) Field(mask CCR2_Bits) int {
+func (b CCR2) Field(mask CCR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CCR2_Bits) J(v int) CCR2_Bits {
-	return CCR2_Bits(bits.Make32(v, uint32(mask)))
+func (mask CCR2) J(v int) CCR2 {
+	return CCR2(bits.Make32(v, uint32(mask)))
 }
 
-type CCR2 struct{ mmio.U16 }
+type RCCR2 struct{ mmio.U16 }
 
-func (r *CCR2) Bits(mask CCR2_Bits) CCR2_Bits { return CCR2_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CCR2) StoreBits(mask, b CCR2_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CCR2) SetBits(mask CCR2_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *CCR2) ClearBits(mask CCR2_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *CCR2) Load() CCR2_Bits               { return CCR2_Bits(r.U16.Load()) }
-func (r *CCR2) Store(b CCR2_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RCCR2) Bits(mask CCR2) CCR2    { return CCR2(r.U16.Bits(uint16(mask))) }
+func (r *RCCR2) StoreBits(mask, b CCR2) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCCR2) SetBits(mask CCR2)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCCR2) ClearBits(mask CCR2)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCCR2) Load() CCR2             { return CCR2(r.U16.Load()) }
+func (r *RCCR2) Store(b CCR2)           { r.U16.Store(uint16(b)) }
 
-type CCR2_Mask struct{ mmio.UM16 }
+type RMCCR2 struct{ mmio.UM16 }
 
-func (rm CCR2_Mask) Load() CCR2_Bits   { return CCR2_Bits(rm.UM16.Load()) }
-func (rm CCR2_Mask) Store(b CCR2_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCCR2) Load() CCR2   { return CCR2(rm.UM16.Load()) }
+func (rm RMCCR2) Store(b CCR2) { rm.UM16.Store(uint16(b)) }
 
-type CCR3_Bits uint16
+type CCR3 uint16
 
-func (b CCR3_Bits) Field(mask CCR3_Bits) int {
+func (b CCR3) Field(mask CCR3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CCR3_Bits) J(v int) CCR3_Bits {
-	return CCR3_Bits(bits.Make32(v, uint32(mask)))
+func (mask CCR3) J(v int) CCR3 {
+	return CCR3(bits.Make32(v, uint32(mask)))
 }
 
-type CCR3 struct{ mmio.U16 }
+type RCCR3 struct{ mmio.U16 }
 
-func (r *CCR3) Bits(mask CCR3_Bits) CCR3_Bits { return CCR3_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CCR3) StoreBits(mask, b CCR3_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CCR3) SetBits(mask CCR3_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *CCR3) ClearBits(mask CCR3_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *CCR3) Load() CCR3_Bits               { return CCR3_Bits(r.U16.Load()) }
-func (r *CCR3) Store(b CCR3_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RCCR3) Bits(mask CCR3) CCR3    { return CCR3(r.U16.Bits(uint16(mask))) }
+func (r *RCCR3) StoreBits(mask, b CCR3) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCCR3) SetBits(mask CCR3)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCCR3) ClearBits(mask CCR3)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCCR3) Load() CCR3             { return CCR3(r.U16.Load()) }
+func (r *RCCR3) Store(b CCR3)           { r.U16.Store(uint16(b)) }
 
-type CCR3_Mask struct{ mmio.UM16 }
+type RMCCR3 struct{ mmio.UM16 }
 
-func (rm CCR3_Mask) Load() CCR3_Bits   { return CCR3_Bits(rm.UM16.Load()) }
-func (rm CCR3_Mask) Store(b CCR3_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCCR3) Load() CCR3   { return CCR3(rm.UM16.Load()) }
+func (rm RMCCR3) Store(b CCR3) { rm.UM16.Store(uint16(b)) }
 
-type CCR4_Bits uint16
+type CCR4 uint16
 
-func (b CCR4_Bits) Field(mask CCR4_Bits) int {
+func (b CCR4) Field(mask CCR4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CCR4_Bits) J(v int) CCR4_Bits {
-	return CCR4_Bits(bits.Make32(v, uint32(mask)))
+func (mask CCR4) J(v int) CCR4 {
+	return CCR4(bits.Make32(v, uint32(mask)))
 }
 
-type CCR4 struct{ mmio.U16 }
+type RCCR4 struct{ mmio.U16 }
 
-func (r *CCR4) Bits(mask CCR4_Bits) CCR4_Bits { return CCR4_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CCR4) StoreBits(mask, b CCR4_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CCR4) SetBits(mask CCR4_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *CCR4) ClearBits(mask CCR4_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *CCR4) Load() CCR4_Bits               { return CCR4_Bits(r.U16.Load()) }
-func (r *CCR4) Store(b CCR4_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RCCR4) Bits(mask CCR4) CCR4    { return CCR4(r.U16.Bits(uint16(mask))) }
+func (r *RCCR4) StoreBits(mask, b CCR4) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCCR4) SetBits(mask CCR4)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCCR4) ClearBits(mask CCR4)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCCR4) Load() CCR4             { return CCR4(r.U16.Load()) }
+func (r *RCCR4) Store(b CCR4)           { r.U16.Store(uint16(b)) }
 
-type CCR4_Mask struct{ mmio.UM16 }
+type RMCCR4 struct{ mmio.UM16 }
 
-func (rm CCR4_Mask) Load() CCR4_Bits   { return CCR4_Bits(rm.UM16.Load()) }
-func (rm CCR4_Mask) Store(b CCR4_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCCR4) Load() CCR4   { return CCR4(rm.UM16.Load()) }
+func (rm RMCCR4) Store(b CCR4) { rm.UM16.Store(uint16(b)) }
 
-type BDTR_Bits uint16
+type BDTR uint16
 
-func (b BDTR_Bits) Field(mask BDTR_Bits) int {
+func (b BDTR) Field(mask BDTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask BDTR_Bits) J(v int) BDTR_Bits {
-	return BDTR_Bits(bits.Make32(v, uint32(mask)))
+func (mask BDTR) J(v int) BDTR {
+	return BDTR(bits.Make32(v, uint32(mask)))
 }
 
-type BDTR struct{ mmio.U16 }
+type RBDTR struct{ mmio.U16 }
 
-func (r *BDTR) Bits(mask BDTR_Bits) BDTR_Bits { return BDTR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *BDTR) StoreBits(mask, b BDTR_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *BDTR) SetBits(mask BDTR_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *BDTR) ClearBits(mask BDTR_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *BDTR) Load() BDTR_Bits               { return BDTR_Bits(r.U16.Load()) }
-func (r *BDTR) Store(b BDTR_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RBDTR) Bits(mask BDTR) BDTR    { return BDTR(r.U16.Bits(uint16(mask))) }
+func (r *RBDTR) StoreBits(mask, b BDTR) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RBDTR) SetBits(mask BDTR)      { r.U16.SetBits(uint16(mask)) }
+func (r *RBDTR) ClearBits(mask BDTR)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RBDTR) Load() BDTR             { return BDTR(r.U16.Load()) }
+func (r *RBDTR) Store(b BDTR)           { r.U16.Store(uint16(b)) }
 
-type BDTR_Mask struct{ mmio.UM16 }
+type RMBDTR struct{ mmio.UM16 }
 
-func (rm BDTR_Mask) Load() BDTR_Bits   { return BDTR_Bits(rm.UM16.Load()) }
-func (rm BDTR_Mask) Store(b BDTR_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMBDTR) Load() BDTR   { return BDTR(rm.UM16.Load()) }
+func (rm RMBDTR) Store(b BDTR) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) DTG() BDTR_Mask {
-	return BDTR_Mask{mmio.UM16{&p.BDTR.U16, uint16(DTG)}}
+func (p *TIM_Periph) DTG() RMBDTR {
+	return RMBDTR{mmio.UM16{&p.BDTR.U16, uint16(DTG)}}
 }
 
-func (p *TIM_Periph) LOCK() BDTR_Mask {
-	return BDTR_Mask{mmio.UM16{&p.BDTR.U16, uint16(LOCK)}}
+func (p *TIM_Periph) LOCK() RMBDTR {
+	return RMBDTR{mmio.UM16{&p.BDTR.U16, uint16(LOCK)}}
 }
 
-func (p *TIM_Periph) OSSI() BDTR_Mask {
-	return BDTR_Mask{mmio.UM16{&p.BDTR.U16, uint16(OSSI)}}
+func (p *TIM_Periph) OSSI() RMBDTR {
+	return RMBDTR{mmio.UM16{&p.BDTR.U16, uint16(OSSI)}}
 }
 
-func (p *TIM_Periph) OSSR() BDTR_Mask {
-	return BDTR_Mask{mmio.UM16{&p.BDTR.U16, uint16(OSSR)}}
+func (p *TIM_Periph) OSSR() RMBDTR {
+	return RMBDTR{mmio.UM16{&p.BDTR.U16, uint16(OSSR)}}
 }
 
-func (p *TIM_Periph) BKE() BDTR_Mask {
-	return BDTR_Mask{mmio.UM16{&p.BDTR.U16, uint16(BKE)}}
+func (p *TIM_Periph) BKE() RMBDTR {
+	return RMBDTR{mmio.UM16{&p.BDTR.U16, uint16(BKE)}}
 }
 
-func (p *TIM_Periph) BKP() BDTR_Mask {
-	return BDTR_Mask{mmio.UM16{&p.BDTR.U16, uint16(BKP)}}
+func (p *TIM_Periph) BKP() RMBDTR {
+	return RMBDTR{mmio.UM16{&p.BDTR.U16, uint16(BKP)}}
 }
 
-func (p *TIM_Periph) AOE() BDTR_Mask {
-	return BDTR_Mask{mmio.UM16{&p.BDTR.U16, uint16(AOE)}}
+func (p *TIM_Periph) AOE() RMBDTR {
+	return RMBDTR{mmio.UM16{&p.BDTR.U16, uint16(AOE)}}
 }
 
-func (p *TIM_Periph) MOE() BDTR_Mask {
-	return BDTR_Mask{mmio.UM16{&p.BDTR.U16, uint16(MOE)}}
+func (p *TIM_Periph) MOE() RMBDTR {
+	return RMBDTR{mmio.UM16{&p.BDTR.U16, uint16(MOE)}}
 }
 
-type DCR_Bits uint16
+type DCR uint16
 
-func (b DCR_Bits) Field(mask DCR_Bits) int {
+func (b DCR) Field(mask DCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DCR_Bits) J(v int) DCR_Bits {
-	return DCR_Bits(bits.Make32(v, uint32(mask)))
+func (mask DCR) J(v int) DCR {
+	return DCR(bits.Make32(v, uint32(mask)))
 }
 
-type DCR struct{ mmio.U16 }
+type RDCR struct{ mmio.U16 }
 
-func (r *DCR) Bits(mask DCR_Bits) DCR_Bits { return DCR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DCR) StoreBits(mask, b DCR_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DCR) SetBits(mask DCR_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *DCR) ClearBits(mask DCR_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *DCR) Load() DCR_Bits              { return DCR_Bits(r.U16.Load()) }
-func (r *DCR) Store(b DCR_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RDCR) Bits(mask DCR) DCR     { return DCR(r.U16.Bits(uint16(mask))) }
+func (r *RDCR) StoreBits(mask, b DCR) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDCR) SetBits(mask DCR)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDCR) ClearBits(mask DCR)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDCR) Load() DCR             { return DCR(r.U16.Load()) }
+func (r *RDCR) Store(b DCR)           { r.U16.Store(uint16(b)) }
 
-type DCR_Mask struct{ mmio.UM16 }
+type RMDCR struct{ mmio.UM16 }
 
-func (rm DCR_Mask) Load() DCR_Bits   { return DCR_Bits(rm.UM16.Load()) }
-func (rm DCR_Mask) Store(b DCR_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDCR) Load() DCR   { return DCR(rm.UM16.Load()) }
+func (rm RMDCR) Store(b DCR) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) DBA() DCR_Mask {
-	return DCR_Mask{mmio.UM16{&p.DCR.U16, uint16(DBA)}}
+func (p *TIM_Periph) DBA() RMDCR {
+	return RMDCR{mmio.UM16{&p.DCR.U16, uint16(DBA)}}
 }
 
-func (p *TIM_Periph) DBL() DCR_Mask {
-	return DCR_Mask{mmio.UM16{&p.DCR.U16, uint16(DBL)}}
+func (p *TIM_Periph) DBL() RMDCR {
+	return RMDCR{mmio.UM16{&p.DCR.U16, uint16(DBL)}}
 }
 
-type DMAR_Bits uint16
+type DMAR uint16
 
-func (b DMAR_Bits) Field(mask DMAR_Bits) int {
+func (b DMAR) Field(mask DMAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DMAR_Bits) J(v int) DMAR_Bits {
-	return DMAR_Bits(bits.Make32(v, uint32(mask)))
+func (mask DMAR) J(v int) DMAR {
+	return DMAR(bits.Make32(v, uint32(mask)))
 }
 
-type DMAR struct{ mmio.U16 }
+type RDMAR struct{ mmio.U16 }
 
-func (r *DMAR) Bits(mask DMAR_Bits) DMAR_Bits { return DMAR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DMAR) StoreBits(mask, b DMAR_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DMAR) SetBits(mask DMAR_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DMAR) ClearBits(mask DMAR_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DMAR) Load() DMAR_Bits               { return DMAR_Bits(r.U16.Load()) }
-func (r *DMAR) Store(b DMAR_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDMAR) Bits(mask DMAR) DMAR    { return DMAR(r.U16.Bits(uint16(mask))) }
+func (r *RDMAR) StoreBits(mask, b DMAR) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDMAR) SetBits(mask DMAR)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDMAR) ClearBits(mask DMAR)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDMAR) Load() DMAR             { return DMAR(r.U16.Load()) }
+func (r *RDMAR) Store(b DMAR)           { r.U16.Store(uint16(b)) }
 
-type DMAR_Mask struct{ mmio.UM16 }
+type RMDMAR struct{ mmio.UM16 }
 
-func (rm DMAR_Mask) Load() DMAR_Bits   { return DMAR_Bits(rm.UM16.Load()) }
-func (rm DMAR_Mask) Store(b DMAR_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDMAR) Load() DMAR   { return DMAR(rm.UM16.Load()) }
+func (rm RMDMAR) Store(b DMAR) { rm.UM16.Store(uint16(b)) }
 
-func (p *TIM_Periph) DMAB() DMAR_Mask {
-	return DMAR_Mask{mmio.UM16{&p.DMAR.U16, uint16(DMAB)}}
+func (p *TIM_Periph) DMAB() RMDMAR {
+	return RMDMAR{mmio.UM16{&p.DMAR.U16, uint16(DMAB)}}
 }

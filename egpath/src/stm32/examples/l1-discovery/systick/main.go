@@ -41,7 +41,7 @@ func main() {
 	leds.Setup(Blue|Green, &cfg)
 
 	st := systick.SYSTICK
-	onesec := systick.RVR_Bits(system.AHB.Clock() / 8)
+	onesec := systick.RVR(system.AHB.Clock() / 8)
 	st.RELOAD().Store(onesec/2 - 1) // Period 0.5 s.
 	st.CURRENT().Clear()
 	st.CSR.SetBits(systick.ENABLE | systick.TICKINT)

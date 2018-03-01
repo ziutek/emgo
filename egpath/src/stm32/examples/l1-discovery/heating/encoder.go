@@ -80,8 +80,8 @@ func (e *Encoder) ISR() {
 			return
 		}
 		if cnt != e.lastCnt {
-			e.t.CCR3.Store(tim.CCR3_Bits(cnt - 1))
-			e.t.CCR4.Store(tim.CCR4_Bits(cnt + 1))
+			e.t.CCR3.Store(tim.CCR3(cnt - 1))
+			e.t.CCR4.Store(tim.CCR4(cnt + 1))
 		}
 		e.lastCnt = cnt
 		e.lastBtn = btn

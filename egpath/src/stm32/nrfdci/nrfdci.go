@@ -49,12 +49,12 @@ func NewDCI(spidrv *spi.Driver, csn gpio.Pin, pclk uint, cet *tim.TIM_Periph, ch
 	// ARR=(pclk+1e5-1)/1e5 corresponds to the shortest posible pulse but
 	// not less than 10 us. CE will be asserted after 1/pclk (CCRn=1) for
 	// ARR/pclk seconds.
-	cet.ARR.Store(tim.ARR_Bits(uint32(pclk+1e5-1) / 1e5))
+	cet.ARR.Store(tim.ARR(uint32(pclk+1e5-1) / 1e5))
 
 	// Reset CNT and transfer PSC, ARR to the corresponding shadow registers.
 	cet.EGR.Store(tim.UG)
 
-	var cce tim.CCER_Bits
+	var cce tim.CCER
 	switch ch {
 	case 1:
 		cet.CCR1.Store(1)

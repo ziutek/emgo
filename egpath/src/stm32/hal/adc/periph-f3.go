@@ -136,7 +136,7 @@ const (
 )
 
 func (p *Periph) SetClockMode(ckmode ClockMode) {
-	p.common().CKMODE().Store(adc.CCR_Bits(ckmode) << adc.CKMODEn)
+	p.common().CKMODE().Store(adc.CCR(ckmode) << adc.CKMODEn)
 }
 
 func (p *Periph) ClockMode() ClockMode {
@@ -190,7 +190,7 @@ const (
 )
 
 func (p *Periph) SetResolution(res Resolution) {
-	p.raw.RES().Store(adc.CFGR_Bits(res) << adc.RESn)
+	p.raw.RES().Store(adc.CFGR(res) << adc.RESn)
 }
 
 //emgo:const
@@ -215,10 +215,10 @@ func (p *Periph) setSamplTime(ch int, st SamplTime) {
 	checkCh(ch)
 	if ch < 10 {
 		n := uint(ch) * 3
-		p.raw.SMPR1.StoreBits(adc.SMPR1_Bits(7)<<n, adc.SMPR1_Bits(st)<<n)
+		p.raw.SMPR1.StoreBits(adc.SMPR1(7)<<n, adc.SMPR1(st)<<n)
 	} else {
 		n := uint(ch-10) * 3
-		p.raw.SMPR2.StoreBits(adc.SMPR2_Bits(7)<<n, adc.SMPR2_Bits(st)<<n)
+		p.raw.SMPR2.StoreBits(adc.SMPR2(7)<<n, adc.SMPR2(st)<<n)
 	}
 }
 
@@ -227,7 +227,7 @@ func (p *Periph) setSequence(ch []int) {
 		panicSeq()
 	}
 	raw := &p.raw
-	sqr1 := adc.SQR1_Bits(len(ch)-1) << adc.Ln
+	sqr1 := adc.SQR1(len(ch)-1) << adc.Ln
 	sq := ch
 	ch = nil
 	if len(sq) > 4 {
@@ -236,7 +236,7 @@ func (p *Periph) setSequence(ch []int) {
 	}
 	for i, c := range sq {
 		checkCh(c)
-		sqr1 |= adc.SQR1_Bits(c) << (uint(i+1) * 6)
+		sqr1 |= adc.SQR1(c) << (uint(i+1) * 6)
 	}
 	raw.SQR1.Store(sqr1)
 	sq = ch
@@ -245,10 +245,10 @@ func (p *Periph) setSequence(ch []int) {
 		ch = sq[5:]
 		sq = sq[:5]
 	}
-	var sqr2 adc.SQR2_Bits
+	var sqr2 adc.SQR2
 	for i, c := range sq {
 		checkCh(c)
-		sqr2 |= adc.SQR2_Bits(c) << (uint(i) * 6)
+		sqr2 |= adc.SQR2(c) << (uint(i) * 6)
 	}
 	raw.SQR2.Store(sqr2)
 	sq = ch
@@ -257,26 +257,26 @@ func (p *Periph) setSequence(ch []int) {
 		ch = sq[5:]
 		sq = sq[:5]
 	}
-	var sqr3 adc.SQR3_Bits
+	var sqr3 adc.SQR3
 	for i, c := range sq {
 		checkCh(c)
-		sqr3 |= adc.SQR3_Bits(c) << (uint(i) * 6)
+		sqr3 |= adc.SQR3(c) << (uint(i) * 6)
 	}
 	raw.SQR3.Store(sqr3)
-	var sqr4 adc.SQR4_Bits
+	var sqr4 adc.SQR4
 	for i, c := range ch {
 		checkCh(c)
-		sqr4 |= adc.SQR4_Bits(c) << (uint(i) * 6)
+		sqr4 |= adc.SQR4(c) << (uint(i) * 6)
 	}
 	raw.SQR4.Store(sqr4)
 }
 
 func (p *Periph) setTrigSrc(src TrigSrc) {
-	p.raw.EXTSEL().Store(adc.CFGR_Bits(src) << adc.EXTSELn)
+	p.raw.EXTSEL().Store(adc.CFGR(src) << adc.EXTSELn)
 }
 
 func (p *Periph) setTrigEdge(edge TrigEdge) {
-	p.raw.EXTEN().Store(adc.CFGR_Bits(edge) << adc.EXTENn)
+	p.raw.EXTEN().Store(adc.CFGR(edge) << adc.EXTENn)
 }
 
 func (p *Periph) status() (Event, Error) {
@@ -285,11 +285,11 @@ func (p *Periph) status() (Event, Error) {
 }
 
 func (p *Periph) clear(ev Event, err Error) {
-	p.raw.ISR.Store(adc.ISR_Bits(ev) | adc.ISR_Bits(err))
+	p.raw.ISR.Store(adc.ISR(ev) | adc.ISR(err))
 }
 
 func (p *Periph) enableIRQ(ev Event, err Error) {
-	p.raw.IER.SetBits(adc.IER_Bits(ev) | adc.IER_Bits(err))
+	p.raw.IER.SetBits(adc.IER(ev) | adc.IER(err))
 }
 
 func (p *Periph) irqEnabled() (ev Event, err Error) {
@@ -302,14 +302,14 @@ func (p *Periph) disableIRQ(ev Event, err Error) {
 	if v == int(EvAll)|int(ErrAll) {
 		p.raw.IER.Store(0)
 	} else {
-		p.raw.IER.ClearBits(adc.IER_Bits(v))
+		p.raw.IER.ClearBits(adc.IER(v))
 	}
 }
 
 func (p *Periph) enableDMA(circural bool) {
 	p.raw.CFGR.StoreBits(
 		adc.DMAEN|adc.DMACFG,
-		adc.DMAEN|adc.CFGR_Bits(bits.One(circural)<<adc.DMACFGn),
+		adc.DMAEN|adc.CFGR(bits.One(circural)<<adc.DMACFGn),
 	)
 }
 

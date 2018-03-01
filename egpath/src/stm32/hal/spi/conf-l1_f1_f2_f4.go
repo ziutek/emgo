@@ -6,7 +6,7 @@ import (
 	"stm32/hal/raw/spi"
 )
 
-const cr1Mask = ^spi.CR1_Bits(spi.DFF | spi.SPE | spi.BIDIMODE | spi.BIDIOE)
+const cr1Mask = ^spi.CR1(spi.DFF | spi.SPE | spi.BIDIMODE | spi.BIDIOE)
 
 func (p *Periph) setWordSize(size int) {
 	if size == 16 {

@@ -11,1291 +11,1243 @@ import (
 )
 
 type USB_OTG_Global_Periph struct {
-	GOTGCTL            GOTGCTL
-	GOTGINT            GOTGINT
-	GAHBCFG            GAHBCFG
-	GUSBCFG            GUSBCFG
-	GRSTCTL            GRSTCTL
-	GINTSTS            GINTSTS
-	GINTMSK            GINTMSK
-	GRXSTSR            GRXSTSR
-	GRXSTSP            GRXSTSP
-	GRXFSIZ            GRXFSIZ
-	DIEPTXF0_HNPTXFSIZ DIEPTXF0_HNPTXFSIZ
-	HNPTXSTS           HNPTXSTS
+	GOTGCTL            RGOTGCTL
+	GOTGINT            RGOTGINT
+	GAHBCFG            RGAHBCFG
+	GUSBCFG            RGUSBCFG
+	GRSTCTL            RGRSTCTL
+	GINTSTS            RGINTSTS
+	GINTMSK            RGINTMSK
+	GRXSTSR            RGRXSTSR
+	GRXSTSP            RGRXSTSP
+	GRXFSIZ            RGRXFSIZ
+	DIEPTXF0_HNPTXFSIZ RDIEPTXF0_HNPTXFSIZ
+	HNPTXSTS           RHNPTXSTS
 	_                  [2]uint32
-	GCCFG              GCCFG
-	CID                CID
-	GSNPSID            GSNPSID
-	GHWCFG1            GHWCFG1
-	GHWCFG2            GHWCFG2
-	GHWCFG3            GHWCFG3
+	GCCFG              RGCCFG
+	CID                RCID
+	GSNPSID            RGSNPSID
+	GHWCFG1            RGHWCFG1
+	GHWCFG2            RGHWCFG2
+	GHWCFG3            RGHWCFG3
 	_                  uint32
-	GLPMCFG            GLPMCFG
-	GPWRDN             GPWRDN
-	GDFIFOCFG          GDFIFOCFG
-	GADPCTL            GADPCTL
+	GLPMCFG            RGLPMCFG
+	GPWRDN             RGPWRDN
+	GDFIFOCFG          RGDFIFOCFG
+	GADPCTL            RGADPCTL
 	_                  [39]uint32
-	HPTXFSIZ           HPTXFSIZ
-	DIEPTXF            [15]DIEPTXF
+	HPTXFSIZ           RHPTXFSIZ
+	DIEPTXF            [15]RDIEPTXF
 }
 
 func (p *USB_OTG_Global_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
-type GOTGCTL_Bits uint32
+type GOTGCTL uint32
 
-func (b GOTGCTL_Bits) Field(mask GOTGCTL_Bits) int {
+func (b GOTGCTL) Field(mask GOTGCTL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GOTGCTL_Bits) J(v int) GOTGCTL_Bits {
-	return GOTGCTL_Bits(bits.Make32(v, uint32(mask)))
+func (mask GOTGCTL) J(v int) GOTGCTL {
+	return GOTGCTL(bits.Make32(v, uint32(mask)))
 }
 
-type GOTGCTL struct{ mmio.U32 }
+type RGOTGCTL struct{ mmio.U32 }
 
-func (r *GOTGCTL) Bits(mask GOTGCTL_Bits) GOTGCTL_Bits { return GOTGCTL_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GOTGCTL) StoreBits(mask, b GOTGCTL_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GOTGCTL) SetBits(mask GOTGCTL_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GOTGCTL) ClearBits(mask GOTGCTL_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GOTGCTL) Load() GOTGCTL_Bits                  { return GOTGCTL_Bits(r.U32.Load()) }
-func (r *GOTGCTL) Store(b GOTGCTL_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RGOTGCTL) Bits(mask GOTGCTL) GOTGCTL { return GOTGCTL(r.U32.Bits(uint32(mask))) }
+func (r *RGOTGCTL) StoreBits(mask, b GOTGCTL) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGOTGCTL) SetBits(mask GOTGCTL)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGOTGCTL) ClearBits(mask GOTGCTL)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGOTGCTL) Load() GOTGCTL             { return GOTGCTL(r.U32.Load()) }
+func (r *RGOTGCTL) Store(b GOTGCTL)           { r.U32.Store(uint32(b)) }
 
-func (r *GOTGCTL) AtomicStoreBits(mask, b GOTGCTL_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GOTGCTL) AtomicSetBits(mask GOTGCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GOTGCTL) AtomicClearBits(mask GOTGCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGOTGCTL) AtomicStoreBits(mask, b GOTGCTL) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGOTGCTL) AtomicSetBits(mask GOTGCTL)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGOTGCTL) AtomicClearBits(mask GOTGCTL)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GOTGCTL_Mask struct{ mmio.UM32 }
+type RMGOTGCTL struct{ mmio.UM32 }
 
-func (rm GOTGCTL_Mask) Load() GOTGCTL_Bits   { return GOTGCTL_Bits(rm.UM32.Load()) }
-func (rm GOTGCTL_Mask) Store(b GOTGCTL_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGOTGCTL) Load() GOTGCTL   { return GOTGCTL(rm.UM32.Load()) }
+func (rm RMGOTGCTL) Store(b GOTGCTL) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_Global_Periph) SRQSCS() GOTGCTL_Mask {
-	return GOTGCTL_Mask{mmio.UM32{&p.GOTGCTL.U32, uint32(SRQSCS)}}
+func (p *USB_OTG_Global_Periph) SRQSCS() RMGOTGCTL {
+	return RMGOTGCTL{mmio.UM32{&p.GOTGCTL.U32, uint32(SRQSCS)}}
 }
 
-func (p *USB_OTG_Global_Periph) SRQ() GOTGCTL_Mask {
-	return GOTGCTL_Mask{mmio.UM32{&p.GOTGCTL.U32, uint32(SRQ)}}
+func (p *USB_OTG_Global_Periph) SRQ() RMGOTGCTL {
+	return RMGOTGCTL{mmio.UM32{&p.GOTGCTL.U32, uint32(SRQ)}}
 }
 
-func (p *USB_OTG_Global_Periph) VBVALOEN() GOTGCTL_Mask {
-	return GOTGCTL_Mask{mmio.UM32{&p.GOTGCTL.U32, uint32(VBVALOEN)}}
+func (p *USB_OTG_Global_Periph) VBVALOEN() RMGOTGCTL {
+	return RMGOTGCTL{mmio.UM32{&p.GOTGCTL.U32, uint32(VBVALOEN)}}
 }
 
-func (p *USB_OTG_Global_Periph) VBVALOVAL() GOTGCTL_Mask {
-	return GOTGCTL_Mask{mmio.UM32{&p.GOTGCTL.U32, uint32(VBVALOVAL)}}
+func (p *USB_OTG_Global_Periph) VBVALOVAL() RMGOTGCTL {
+	return RMGOTGCTL{mmio.UM32{&p.GOTGCTL.U32, uint32(VBVALOVAL)}}
 }
 
-func (p *USB_OTG_Global_Periph) AVALOEN() GOTGCTL_Mask {
-	return GOTGCTL_Mask{mmio.UM32{&p.GOTGCTL.U32, uint32(AVALOEN)}}
+func (p *USB_OTG_Global_Periph) AVALOEN() RMGOTGCTL {
+	return RMGOTGCTL{mmio.UM32{&p.GOTGCTL.U32, uint32(AVALOEN)}}
 }
 
-func (p *USB_OTG_Global_Periph) AVALOVAL() GOTGCTL_Mask {
-	return GOTGCTL_Mask{mmio.UM32{&p.GOTGCTL.U32, uint32(AVALOVAL)}}
+func (p *USB_OTG_Global_Periph) AVALOVAL() RMGOTGCTL {
+	return RMGOTGCTL{mmio.UM32{&p.GOTGCTL.U32, uint32(AVALOVAL)}}
 }
 
-func (p *USB_OTG_Global_Periph) BVALOEN() GOTGCTL_Mask {
-	return GOTGCTL_Mask{mmio.UM32{&p.GOTGCTL.U32, uint32(BVALOEN)}}
+func (p *USB_OTG_Global_Periph) BVALOEN() RMGOTGCTL {
+	return RMGOTGCTL{mmio.UM32{&p.GOTGCTL.U32, uint32(BVALOEN)}}
 }
 
-func (p *USB_OTG_Global_Periph) BVALOVAL() GOTGCTL_Mask {
-	return GOTGCTL_Mask{mmio.UM32{&p.GOTGCTL.U32, uint32(BVALOVAL)}}
+func (p *USB_OTG_Global_Periph) BVALOVAL() RMGOTGCTL {
+	return RMGOTGCTL{mmio.UM32{&p.GOTGCTL.U32, uint32(BVALOVAL)}}
 }
 
-func (p *USB_OTG_Global_Periph) BSESVLD() GOTGCTL_Mask {
-	return GOTGCTL_Mask{mmio.UM32{&p.GOTGCTL.U32, uint32(BSESVLD)}}
+func (p *USB_OTG_Global_Periph) BSESVLD() RMGOTGCTL {
+	return RMGOTGCTL{mmio.UM32{&p.GOTGCTL.U32, uint32(BSESVLD)}}
 }
 
-type GOTGINT_Bits uint32
+type GOTGINT uint32
 
-func (b GOTGINT_Bits) Field(mask GOTGINT_Bits) int {
+func (b GOTGINT) Field(mask GOTGINT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GOTGINT_Bits) J(v int) GOTGINT_Bits {
-	return GOTGINT_Bits(bits.Make32(v, uint32(mask)))
+func (mask GOTGINT) J(v int) GOTGINT {
+	return GOTGINT(bits.Make32(v, uint32(mask)))
 }
 
-type GOTGINT struct{ mmio.U32 }
+type RGOTGINT struct{ mmio.U32 }
 
-func (r *GOTGINT) Bits(mask GOTGINT_Bits) GOTGINT_Bits { return GOTGINT_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GOTGINT) StoreBits(mask, b GOTGINT_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GOTGINT) SetBits(mask GOTGINT_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GOTGINT) ClearBits(mask GOTGINT_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GOTGINT) Load() GOTGINT_Bits                  { return GOTGINT_Bits(r.U32.Load()) }
-func (r *GOTGINT) Store(b GOTGINT_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RGOTGINT) Bits(mask GOTGINT) GOTGINT { return GOTGINT(r.U32.Bits(uint32(mask))) }
+func (r *RGOTGINT) StoreBits(mask, b GOTGINT) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGOTGINT) SetBits(mask GOTGINT)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGOTGINT) ClearBits(mask GOTGINT)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGOTGINT) Load() GOTGINT             { return GOTGINT(r.U32.Load()) }
+func (r *RGOTGINT) Store(b GOTGINT)           { r.U32.Store(uint32(b)) }
 
-func (r *GOTGINT) AtomicStoreBits(mask, b GOTGINT_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GOTGINT) AtomicSetBits(mask GOTGINT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GOTGINT) AtomicClearBits(mask GOTGINT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGOTGINT) AtomicStoreBits(mask, b GOTGINT) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGOTGINT) AtomicSetBits(mask GOTGINT)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGOTGINT) AtomicClearBits(mask GOTGINT)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GOTGINT_Mask struct{ mmio.UM32 }
+type RMGOTGINT struct{ mmio.UM32 }
 
-func (rm GOTGINT_Mask) Load() GOTGINT_Bits   { return GOTGINT_Bits(rm.UM32.Load()) }
-func (rm GOTGINT_Mask) Store(b GOTGINT_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGOTGINT) Load() GOTGINT   { return GOTGINT(rm.UM32.Load()) }
+func (rm RMGOTGINT) Store(b GOTGINT) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_Global_Periph) SEDET() GOTGINT_Mask {
-	return GOTGINT_Mask{mmio.UM32{&p.GOTGINT.U32, uint32(SEDET)}}
+func (p *USB_OTG_Global_Periph) SEDET() RMGOTGINT {
+	return RMGOTGINT{mmio.UM32{&p.GOTGINT.U32, uint32(SEDET)}}
 }
 
-func (p *USB_OTG_Global_Periph) SRSSCHG() GOTGINT_Mask {
-	return GOTGINT_Mask{mmio.UM32{&p.GOTGINT.U32, uint32(SRSSCHG)}}
+func (p *USB_OTG_Global_Periph) SRSSCHG() RMGOTGINT {
+	return RMGOTGINT{mmio.UM32{&p.GOTGINT.U32, uint32(SRSSCHG)}}
 }
 
-func (p *USB_OTG_Global_Periph) HNSSCHG() GOTGINT_Mask {
-	return GOTGINT_Mask{mmio.UM32{&p.GOTGINT.U32, uint32(HNSSCHG)}}
+func (p *USB_OTG_Global_Periph) HNSSCHG() RMGOTGINT {
+	return RMGOTGINT{mmio.UM32{&p.GOTGINT.U32, uint32(HNSSCHG)}}
 }
 
-func (p *USB_OTG_Global_Periph) HNGDET() GOTGINT_Mask {
-	return GOTGINT_Mask{mmio.UM32{&p.GOTGINT.U32, uint32(HNGDET)}}
+func (p *USB_OTG_Global_Periph) HNGDET() RMGOTGINT {
+	return RMGOTGINT{mmio.UM32{&p.GOTGINT.U32, uint32(HNGDET)}}
 }
 
-func (p *USB_OTG_Global_Periph) ADTOCHG() GOTGINT_Mask {
-	return GOTGINT_Mask{mmio.UM32{&p.GOTGINT.U32, uint32(ADTOCHG)}}
+func (p *USB_OTG_Global_Periph) ADTOCHG() RMGOTGINT {
+	return RMGOTGINT{mmio.UM32{&p.GOTGINT.U32, uint32(ADTOCHG)}}
 }
 
-func (p *USB_OTG_Global_Periph) DBCDNE() GOTGINT_Mask {
-	return GOTGINT_Mask{mmio.UM32{&p.GOTGINT.U32, uint32(DBCDNE)}}
+func (p *USB_OTG_Global_Periph) DBCDNE() RMGOTGINT {
+	return RMGOTGINT{mmio.UM32{&p.GOTGINT.U32, uint32(DBCDNE)}}
 }
 
-type GAHBCFG_Bits uint32
+type GAHBCFG uint32
 
-func (b GAHBCFG_Bits) Field(mask GAHBCFG_Bits) int {
+func (b GAHBCFG) Field(mask GAHBCFG) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GAHBCFG_Bits) J(v int) GAHBCFG_Bits {
-	return GAHBCFG_Bits(bits.Make32(v, uint32(mask)))
+func (mask GAHBCFG) J(v int) GAHBCFG {
+	return GAHBCFG(bits.Make32(v, uint32(mask)))
 }
 
-type GAHBCFG struct{ mmio.U32 }
+type RGAHBCFG struct{ mmio.U32 }
 
-func (r *GAHBCFG) Bits(mask GAHBCFG_Bits) GAHBCFG_Bits { return GAHBCFG_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GAHBCFG) StoreBits(mask, b GAHBCFG_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GAHBCFG) SetBits(mask GAHBCFG_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GAHBCFG) ClearBits(mask GAHBCFG_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GAHBCFG) Load() GAHBCFG_Bits                  { return GAHBCFG_Bits(r.U32.Load()) }
-func (r *GAHBCFG) Store(b GAHBCFG_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RGAHBCFG) Bits(mask GAHBCFG) GAHBCFG { return GAHBCFG(r.U32.Bits(uint32(mask))) }
+func (r *RGAHBCFG) StoreBits(mask, b GAHBCFG) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGAHBCFG) SetBits(mask GAHBCFG)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGAHBCFG) ClearBits(mask GAHBCFG)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGAHBCFG) Load() GAHBCFG             { return GAHBCFG(r.U32.Load()) }
+func (r *RGAHBCFG) Store(b GAHBCFG)           { r.U32.Store(uint32(b)) }
 
-func (r *GAHBCFG) AtomicStoreBits(mask, b GAHBCFG_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GAHBCFG) AtomicSetBits(mask GAHBCFG_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GAHBCFG) AtomicClearBits(mask GAHBCFG_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGAHBCFG) AtomicStoreBits(mask, b GAHBCFG) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGAHBCFG) AtomicSetBits(mask GAHBCFG)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGAHBCFG) AtomicClearBits(mask GAHBCFG)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GAHBCFG_Mask struct{ mmio.UM32 }
+type RMGAHBCFG struct{ mmio.UM32 }
 
-func (rm GAHBCFG_Mask) Load() GAHBCFG_Bits   { return GAHBCFG_Bits(rm.UM32.Load()) }
-func (rm GAHBCFG_Mask) Store(b GAHBCFG_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGAHBCFG) Load() GAHBCFG   { return GAHBCFG(rm.UM32.Load()) }
+func (rm RMGAHBCFG) Store(b GAHBCFG) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_Global_Periph) GINT() GAHBCFG_Mask {
-	return GAHBCFG_Mask{mmio.UM32{&p.GAHBCFG.U32, uint32(GINT)}}
+func (p *USB_OTG_Global_Periph) GINT() RMGAHBCFG {
+	return RMGAHBCFG{mmio.UM32{&p.GAHBCFG.U32, uint32(GINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) HBSTLEN() GAHBCFG_Mask {
-	return GAHBCFG_Mask{mmio.UM32{&p.GAHBCFG.U32, uint32(HBSTLEN)}}
+func (p *USB_OTG_Global_Periph) HBSTLEN() RMGAHBCFG {
+	return RMGAHBCFG{mmio.UM32{&p.GAHBCFG.U32, uint32(HBSTLEN)}}
 }
 
-func (p *USB_OTG_Global_Periph) DMAEN() GAHBCFG_Mask {
-	return GAHBCFG_Mask{mmio.UM32{&p.GAHBCFG.U32, uint32(DMAEN)}}
+func (p *USB_OTG_Global_Periph) DMAEN() RMGAHBCFG {
+	return RMGAHBCFG{mmio.UM32{&p.GAHBCFG.U32, uint32(DMAEN)}}
 }
 
-func (p *USB_OTG_Global_Periph) TXFELVL() GAHBCFG_Mask {
-	return GAHBCFG_Mask{mmio.UM32{&p.GAHBCFG.U32, uint32(TXFELVL)}}
+func (p *USB_OTG_Global_Periph) TXFELVL() RMGAHBCFG {
+	return RMGAHBCFG{mmio.UM32{&p.GAHBCFG.U32, uint32(TXFELVL)}}
 }
 
-func (p *USB_OTG_Global_Periph) PTXFELVL() GAHBCFG_Mask {
-	return GAHBCFG_Mask{mmio.UM32{&p.GAHBCFG.U32, uint32(PTXFELVL)}}
+func (p *USB_OTG_Global_Periph) PTXFELVL() RMGAHBCFG {
+	return RMGAHBCFG{mmio.UM32{&p.GAHBCFG.U32, uint32(PTXFELVL)}}
 }
 
-type GUSBCFG_Bits uint32
+type GUSBCFG uint32
 
-func (b GUSBCFG_Bits) Field(mask GUSBCFG_Bits) int {
+func (b GUSBCFG) Field(mask GUSBCFG) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GUSBCFG_Bits) J(v int) GUSBCFG_Bits {
-	return GUSBCFG_Bits(bits.Make32(v, uint32(mask)))
+func (mask GUSBCFG) J(v int) GUSBCFG {
+	return GUSBCFG(bits.Make32(v, uint32(mask)))
 }
 
-type GUSBCFG struct{ mmio.U32 }
+type RGUSBCFG struct{ mmio.U32 }
 
-func (r *GUSBCFG) Bits(mask GUSBCFG_Bits) GUSBCFG_Bits { return GUSBCFG_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GUSBCFG) StoreBits(mask, b GUSBCFG_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GUSBCFG) SetBits(mask GUSBCFG_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GUSBCFG) ClearBits(mask GUSBCFG_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GUSBCFG) Load() GUSBCFG_Bits                  { return GUSBCFG_Bits(r.U32.Load()) }
-func (r *GUSBCFG) Store(b GUSBCFG_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RGUSBCFG) Bits(mask GUSBCFG) GUSBCFG { return GUSBCFG(r.U32.Bits(uint32(mask))) }
+func (r *RGUSBCFG) StoreBits(mask, b GUSBCFG) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGUSBCFG) SetBits(mask GUSBCFG)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGUSBCFG) ClearBits(mask GUSBCFG)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGUSBCFG) Load() GUSBCFG             { return GUSBCFG(r.U32.Load()) }
+func (r *RGUSBCFG) Store(b GUSBCFG)           { r.U32.Store(uint32(b)) }
 
-func (r *GUSBCFG) AtomicStoreBits(mask, b GUSBCFG_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GUSBCFG) AtomicSetBits(mask GUSBCFG_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GUSBCFG) AtomicClearBits(mask GUSBCFG_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGUSBCFG) AtomicStoreBits(mask, b GUSBCFG) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGUSBCFG) AtomicSetBits(mask GUSBCFG)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGUSBCFG) AtomicClearBits(mask GUSBCFG)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GUSBCFG_Mask struct{ mmio.UM32 }
+type RMGUSBCFG struct{ mmio.UM32 }
 
-func (rm GUSBCFG_Mask) Load() GUSBCFG_Bits   { return GUSBCFG_Bits(rm.UM32.Load()) }
-func (rm GUSBCFG_Mask) Store(b GUSBCFG_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGUSBCFG) Load() GUSBCFG   { return GUSBCFG(rm.UM32.Load()) }
+func (rm RMGUSBCFG) Store(b GUSBCFG) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_Global_Periph) TOCAL() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(TOCAL)}}
+func (p *USB_OTG_Global_Periph) TOCAL() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(TOCAL)}}
 }
 
-func (p *USB_OTG_Global_Periph) PHYSEL() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(PHYSEL)}}
+func (p *USB_OTG_Global_Periph) PHYSEL() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(PHYSEL)}}
 }
 
-func (p *USB_OTG_Global_Periph) SRPCAP() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(SRPCAP)}}
+func (p *USB_OTG_Global_Periph) SRPCAP() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(SRPCAP)}}
 }
 
-func (p *USB_OTG_Global_Periph) HNPCAP() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(HNPCAP)}}
+func (p *USB_OTG_Global_Periph) HNPCAP() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(HNPCAP)}}
 }
 
-func (p *USB_OTG_Global_Periph) TRDT() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(TRDT)}}
+func (p *USB_OTG_Global_Periph) TRDT() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(TRDT)}}
 }
 
-func (p *USB_OTG_Global_Periph) PHYLPCS() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(PHYLPCS)}}
+func (p *USB_OTG_Global_Periph) PHYLPCS() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(PHYLPCS)}}
 }
 
-func (p *USB_OTG_Global_Periph) ULPIFSLS() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPIFSLS)}}
+func (p *USB_OTG_Global_Periph) ULPIFSLS() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPIFSLS)}}
 }
 
-func (p *USB_OTG_Global_Periph) ULPIAR() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPIAR)}}
+func (p *USB_OTG_Global_Periph) ULPIAR() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPIAR)}}
 }
 
-func (p *USB_OTG_Global_Periph) ULPICSM() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPICSM)}}
+func (p *USB_OTG_Global_Periph) ULPICSM() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPICSM)}}
 }
 
-func (p *USB_OTG_Global_Periph) ULPIEVBUSD() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPIEVBUSD)}}
+func (p *USB_OTG_Global_Periph) ULPIEVBUSD() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPIEVBUSD)}}
 }
 
-func (p *USB_OTG_Global_Periph) ULPIEVBUSI() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPIEVBUSI)}}
+func (p *USB_OTG_Global_Periph) ULPIEVBUSI() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPIEVBUSI)}}
 }
 
-func (p *USB_OTG_Global_Periph) TSDPS() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(TSDPS)}}
+func (p *USB_OTG_Global_Periph) TSDPS() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(TSDPS)}}
 }
 
-func (p *USB_OTG_Global_Periph) PCCI() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(PCCI)}}
+func (p *USB_OTG_Global_Periph) PCCI() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(PCCI)}}
 }
 
-func (p *USB_OTG_Global_Periph) PTCI() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(PTCI)}}
+func (p *USB_OTG_Global_Periph) PTCI() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(PTCI)}}
 }
 
-func (p *USB_OTG_Global_Periph) ULPIIPD() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPIIPD)}}
+func (p *USB_OTG_Global_Periph) ULPIIPD() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(ULPIIPD)}}
 }
 
-func (p *USB_OTG_Global_Periph) FHMOD() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(FHMOD)}}
+func (p *USB_OTG_Global_Periph) FHMOD() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(FHMOD)}}
 }
 
-func (p *USB_OTG_Global_Periph) FDMOD() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(FDMOD)}}
+func (p *USB_OTG_Global_Periph) FDMOD() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(FDMOD)}}
 }
 
-func (p *USB_OTG_Global_Periph) CTXPKT() GUSBCFG_Mask {
-	return GUSBCFG_Mask{mmio.UM32{&p.GUSBCFG.U32, uint32(CTXPKT)}}
+func (p *USB_OTG_Global_Periph) CTXPKT() RMGUSBCFG {
+	return RMGUSBCFG{mmio.UM32{&p.GUSBCFG.U32, uint32(CTXPKT)}}
 }
 
-type GRSTCTL_Bits uint32
+type GRSTCTL uint32
 
-func (b GRSTCTL_Bits) Field(mask GRSTCTL_Bits) int {
+func (b GRSTCTL) Field(mask GRSTCTL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GRSTCTL_Bits) J(v int) GRSTCTL_Bits {
-	return GRSTCTL_Bits(bits.Make32(v, uint32(mask)))
+func (mask GRSTCTL) J(v int) GRSTCTL {
+	return GRSTCTL(bits.Make32(v, uint32(mask)))
 }
 
-type GRSTCTL struct{ mmio.U32 }
+type RGRSTCTL struct{ mmio.U32 }
 
-func (r *GRSTCTL) Bits(mask GRSTCTL_Bits) GRSTCTL_Bits { return GRSTCTL_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GRSTCTL) StoreBits(mask, b GRSTCTL_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GRSTCTL) SetBits(mask GRSTCTL_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GRSTCTL) ClearBits(mask GRSTCTL_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GRSTCTL) Load() GRSTCTL_Bits                  { return GRSTCTL_Bits(r.U32.Load()) }
-func (r *GRSTCTL) Store(b GRSTCTL_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RGRSTCTL) Bits(mask GRSTCTL) GRSTCTL { return GRSTCTL(r.U32.Bits(uint32(mask))) }
+func (r *RGRSTCTL) StoreBits(mask, b GRSTCTL) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGRSTCTL) SetBits(mask GRSTCTL)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGRSTCTL) ClearBits(mask GRSTCTL)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGRSTCTL) Load() GRSTCTL             { return GRSTCTL(r.U32.Load()) }
+func (r *RGRSTCTL) Store(b GRSTCTL)           { r.U32.Store(uint32(b)) }
 
-func (r *GRSTCTL) AtomicStoreBits(mask, b GRSTCTL_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GRSTCTL) AtomicSetBits(mask GRSTCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GRSTCTL) AtomicClearBits(mask GRSTCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGRSTCTL) AtomicStoreBits(mask, b GRSTCTL) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGRSTCTL) AtomicSetBits(mask GRSTCTL)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGRSTCTL) AtomicClearBits(mask GRSTCTL)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GRSTCTL_Mask struct{ mmio.UM32 }
+type RMGRSTCTL struct{ mmio.UM32 }
 
-func (rm GRSTCTL_Mask) Load() GRSTCTL_Bits   { return GRSTCTL_Bits(rm.UM32.Load()) }
-func (rm GRSTCTL_Mask) Store(b GRSTCTL_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGRSTCTL) Load() GRSTCTL   { return GRSTCTL(rm.UM32.Load()) }
+func (rm RMGRSTCTL) Store(b GRSTCTL) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_Global_Periph) CSRST() GRSTCTL_Mask {
-	return GRSTCTL_Mask{mmio.UM32{&p.GRSTCTL.U32, uint32(CSRST)}}
+func (p *USB_OTG_Global_Periph) CSRST() RMGRSTCTL {
+	return RMGRSTCTL{mmio.UM32{&p.GRSTCTL.U32, uint32(CSRST)}}
 }
 
-func (p *USB_OTG_Global_Periph) HSRST() GRSTCTL_Mask {
-	return GRSTCTL_Mask{mmio.UM32{&p.GRSTCTL.U32, uint32(HSRST)}}
+func (p *USB_OTG_Global_Periph) HSRST() RMGRSTCTL {
+	return RMGRSTCTL{mmio.UM32{&p.GRSTCTL.U32, uint32(HSRST)}}
 }
 
-func (p *USB_OTG_Global_Periph) FCRST() GRSTCTL_Mask {
-	return GRSTCTL_Mask{mmio.UM32{&p.GRSTCTL.U32, uint32(FCRST)}}
+func (p *USB_OTG_Global_Periph) FCRST() RMGRSTCTL {
+	return RMGRSTCTL{mmio.UM32{&p.GRSTCTL.U32, uint32(FCRST)}}
 }
 
-func (p *USB_OTG_Global_Periph) RXFFLSH() GRSTCTL_Mask {
-	return GRSTCTL_Mask{mmio.UM32{&p.GRSTCTL.U32, uint32(RXFFLSH)}}
+func (p *USB_OTG_Global_Periph) RXFFLSH() RMGRSTCTL {
+	return RMGRSTCTL{mmio.UM32{&p.GRSTCTL.U32, uint32(RXFFLSH)}}
 }
 
-func (p *USB_OTG_Global_Periph) TXFFLSH() GRSTCTL_Mask {
-	return GRSTCTL_Mask{mmio.UM32{&p.GRSTCTL.U32, uint32(TXFFLSH)}}
+func (p *USB_OTG_Global_Periph) TXFFLSH() RMGRSTCTL {
+	return RMGRSTCTL{mmio.UM32{&p.GRSTCTL.U32, uint32(TXFFLSH)}}
 }
 
-func (p *USB_OTG_Global_Periph) TXFNUM() GRSTCTL_Mask {
-	return GRSTCTL_Mask{mmio.UM32{&p.GRSTCTL.U32, uint32(TXFNUM)}}
+func (p *USB_OTG_Global_Periph) TXFNUM() RMGRSTCTL {
+	return RMGRSTCTL{mmio.UM32{&p.GRSTCTL.U32, uint32(TXFNUM)}}
 }
 
-func (p *USB_OTG_Global_Periph) DMAREQ() GRSTCTL_Mask {
-	return GRSTCTL_Mask{mmio.UM32{&p.GRSTCTL.U32, uint32(DMAREQ)}}
+func (p *USB_OTG_Global_Periph) DMAREQ() RMGRSTCTL {
+	return RMGRSTCTL{mmio.UM32{&p.GRSTCTL.U32, uint32(DMAREQ)}}
 }
 
-func (p *USB_OTG_Global_Periph) AHBIDL() GRSTCTL_Mask {
-	return GRSTCTL_Mask{mmio.UM32{&p.GRSTCTL.U32, uint32(AHBIDL)}}
+func (p *USB_OTG_Global_Periph) AHBIDL() RMGRSTCTL {
+	return RMGRSTCTL{mmio.UM32{&p.GRSTCTL.U32, uint32(AHBIDL)}}
 }
 
-type GINTSTS_Bits uint32
+type GINTSTS uint32
 
-func (b GINTSTS_Bits) Field(mask GINTSTS_Bits) int {
+func (b GINTSTS) Field(mask GINTSTS) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GINTSTS_Bits) J(v int) GINTSTS_Bits {
-	return GINTSTS_Bits(bits.Make32(v, uint32(mask)))
+func (mask GINTSTS) J(v int) GINTSTS {
+	return GINTSTS(bits.Make32(v, uint32(mask)))
 }
 
-type GINTSTS struct{ mmio.U32 }
+type RGINTSTS struct{ mmio.U32 }
 
-func (r *GINTSTS) Bits(mask GINTSTS_Bits) GINTSTS_Bits { return GINTSTS_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GINTSTS) StoreBits(mask, b GINTSTS_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GINTSTS) SetBits(mask GINTSTS_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GINTSTS) ClearBits(mask GINTSTS_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GINTSTS) Load() GINTSTS_Bits                  { return GINTSTS_Bits(r.U32.Load()) }
-func (r *GINTSTS) Store(b GINTSTS_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RGINTSTS) Bits(mask GINTSTS) GINTSTS { return GINTSTS(r.U32.Bits(uint32(mask))) }
+func (r *RGINTSTS) StoreBits(mask, b GINTSTS) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGINTSTS) SetBits(mask GINTSTS)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGINTSTS) ClearBits(mask GINTSTS)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGINTSTS) Load() GINTSTS             { return GINTSTS(r.U32.Load()) }
+func (r *RGINTSTS) Store(b GINTSTS)           { r.U32.Store(uint32(b)) }
 
-func (r *GINTSTS) AtomicStoreBits(mask, b GINTSTS_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GINTSTS) AtomicSetBits(mask GINTSTS_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GINTSTS) AtomicClearBits(mask GINTSTS_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGINTSTS) AtomicStoreBits(mask, b GINTSTS) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGINTSTS) AtomicSetBits(mask GINTSTS)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGINTSTS) AtomicClearBits(mask GINTSTS)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GINTSTS_Mask struct{ mmio.UM32 }
+type RMGINTSTS struct{ mmio.UM32 }
 
-func (rm GINTSTS_Mask) Load() GINTSTS_Bits   { return GINTSTS_Bits(rm.UM32.Load()) }
-func (rm GINTSTS_Mask) Store(b GINTSTS_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGINTSTS) Load() GINTSTS   { return GINTSTS(rm.UM32.Load()) }
+func (rm RMGINTSTS) Store(b GINTSTS) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_Global_Periph) CMOD() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(CMOD)}}
+func (p *USB_OTG_Global_Periph) CMOD() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(CMOD)}}
 }
 
-func (p *USB_OTG_Global_Periph) MMIS() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(MMIS)}}
+func (p *USB_OTG_Global_Periph) MMIS() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(MMIS)}}
 }
 
-func (p *USB_OTG_Global_Periph) OTGINT() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(OTGINT)}}
+func (p *USB_OTG_Global_Periph) OTGINT() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(OTGINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) SOF() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(SOF)}}
+func (p *USB_OTG_Global_Periph) SOF() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(SOF)}}
 }
 
-func (p *USB_OTG_Global_Periph) RXFLVL() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(RXFLVL)}}
+func (p *USB_OTG_Global_Periph) RXFLVL() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(RXFLVL)}}
 }
 
-func (p *USB_OTG_Global_Periph) NPTXFE() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(NPTXFE)}}
+func (p *USB_OTG_Global_Periph) NPTXFE() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(NPTXFE)}}
 }
 
-func (p *USB_OTG_Global_Periph) GINAKEFF() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(GINAKEFF)}}
+func (p *USB_OTG_Global_Periph) GINAKEFF() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(GINAKEFF)}}
 }
 
-func (p *USB_OTG_Global_Periph) BOUTNAKEFF() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(BOUTNAKEFF)}}
+func (p *USB_OTG_Global_Periph) BOUTNAKEFF() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(BOUTNAKEFF)}}
 }
 
-func (p *USB_OTG_Global_Periph) ESUSP() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(ESUSP)}}
+func (p *USB_OTG_Global_Periph) ESUSP() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(ESUSP)}}
 }
 
-func (p *USB_OTG_Global_Periph) USBSUSP() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(USBSUSP)}}
+func (p *USB_OTG_Global_Periph) USBSUSP() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(USBSUSP)}}
 }
 
-func (p *USB_OTG_Global_Periph) USBRST() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(USBRST)}}
+func (p *USB_OTG_Global_Periph) USBRST() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(USBRST)}}
 }
 
-func (p *USB_OTG_Global_Periph) ENUMDNE() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(ENUMDNE)}}
+func (p *USB_OTG_Global_Periph) ENUMDNE() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(ENUMDNE)}}
 }
 
-func (p *USB_OTG_Global_Periph) ISOODRP() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(ISOODRP)}}
+func (p *USB_OTG_Global_Periph) ISOODRP() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(ISOODRP)}}
 }
 
-func (p *USB_OTG_Global_Periph) EOPF() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(EOPF)}}
+func (p *USB_OTG_Global_Periph) EOPF() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(EOPF)}}
 }
 
-func (p *USB_OTG_Global_Periph) IEPINT() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(IEPINT)}}
+func (p *USB_OTG_Global_Periph) IEPINT() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(IEPINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) OEPINT() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(OEPINT)}}
+func (p *USB_OTG_Global_Periph) OEPINT() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(OEPINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) IISOIXFR() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(IISOIXFR)}}
+func (p *USB_OTG_Global_Periph) IISOIXFR() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(IISOIXFR)}}
 }
 
-func (p *USB_OTG_Global_Periph) PXFR_INCOMPISOOUT() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(PXFR_INCOMPISOOUT)}}
+func (p *USB_OTG_Global_Periph) PXFR_INCOMPISOOUT() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(PXFR_INCOMPISOOUT)}}
 }
 
-func (p *USB_OTG_Global_Periph) DATAFSUSP() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(DATAFSUSP)}}
+func (p *USB_OTG_Global_Periph) DATAFSUSP() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(DATAFSUSP)}}
 }
 
-func (p *USB_OTG_Global_Periph) HPRTINT() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(HPRTINT)}}
+func (p *USB_OTG_Global_Periph) HPRTINT() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(HPRTINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) HCINT() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(HCINT)}}
+func (p *USB_OTG_Global_Periph) HCINT() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(HCINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) PTXFE() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(PTXFE)}}
+func (p *USB_OTG_Global_Periph) PTXFE() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(PTXFE)}}
 }
 
-func (p *USB_OTG_Global_Periph) LPMINT() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(LPMINT)}}
+func (p *USB_OTG_Global_Periph) LPMINT() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(LPMINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) CIDSCHG() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(CIDSCHG)}}
+func (p *USB_OTG_Global_Periph) CIDSCHG() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(CIDSCHG)}}
 }
 
-func (p *USB_OTG_Global_Periph) DISCINT() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(DISCINT)}}
+func (p *USB_OTG_Global_Periph) DISCINT() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(DISCINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) SRQINT() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(SRQINT)}}
+func (p *USB_OTG_Global_Periph) SRQINT() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(SRQINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) WKUINT() GINTSTS_Mask {
-	return GINTSTS_Mask{mmio.UM32{&p.GINTSTS.U32, uint32(WKUINT)}}
+func (p *USB_OTG_Global_Periph) WKUINT() RMGINTSTS {
+	return RMGINTSTS{mmio.UM32{&p.GINTSTS.U32, uint32(WKUINT)}}
 }
 
-type GINTMSK_Bits uint32
+type GINTMSK uint32
 
-func (b GINTMSK_Bits) Field(mask GINTMSK_Bits) int {
+func (b GINTMSK) Field(mask GINTMSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GINTMSK_Bits) J(v int) GINTMSK_Bits {
-	return GINTMSK_Bits(bits.Make32(v, uint32(mask)))
+func (mask GINTMSK) J(v int) GINTMSK {
+	return GINTMSK(bits.Make32(v, uint32(mask)))
 }
 
-type GINTMSK struct{ mmio.U32 }
+type RGINTMSK struct{ mmio.U32 }
 
-func (r *GINTMSK) Bits(mask GINTMSK_Bits) GINTMSK_Bits { return GINTMSK_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GINTMSK) StoreBits(mask, b GINTMSK_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GINTMSK) SetBits(mask GINTMSK_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GINTMSK) ClearBits(mask GINTMSK_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GINTMSK) Load() GINTMSK_Bits                  { return GINTMSK_Bits(r.U32.Load()) }
-func (r *GINTMSK) Store(b GINTMSK_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RGINTMSK) Bits(mask GINTMSK) GINTMSK { return GINTMSK(r.U32.Bits(uint32(mask))) }
+func (r *RGINTMSK) StoreBits(mask, b GINTMSK) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGINTMSK) SetBits(mask GINTMSK)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGINTMSK) ClearBits(mask GINTMSK)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGINTMSK) Load() GINTMSK             { return GINTMSK(r.U32.Load()) }
+func (r *RGINTMSK) Store(b GINTMSK)           { r.U32.Store(uint32(b)) }
 
-func (r *GINTMSK) AtomicStoreBits(mask, b GINTMSK_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GINTMSK) AtomicSetBits(mask GINTMSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GINTMSK) AtomicClearBits(mask GINTMSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGINTMSK) AtomicStoreBits(mask, b GINTMSK) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGINTMSK) AtomicSetBits(mask GINTMSK)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGINTMSK) AtomicClearBits(mask GINTMSK)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GINTMSK_Mask struct{ mmio.UM32 }
+type RMGINTMSK struct{ mmio.UM32 }
 
-func (rm GINTMSK_Mask) Load() GINTMSK_Bits   { return GINTMSK_Bits(rm.UM32.Load()) }
-func (rm GINTMSK_Mask) Store(b GINTMSK_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGINTMSK) Load() GINTMSK   { return GINTMSK(rm.UM32.Load()) }
+func (rm RMGINTMSK) Store(b GINTMSK) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_Global_Periph) MMISM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(MMISM)}}
+func (p *USB_OTG_Global_Periph) MMISM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(MMISM)}}
 }
 
-func (p *USB_OTG_Global_Periph) OTGINT() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(OTGINT)}}
+func (p *USB_OTG_Global_Periph) OTGINT() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(OTGINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) SOFM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(SOFM)}}
+func (p *USB_OTG_Global_Periph) SOFM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(SOFM)}}
 }
 
-func (p *USB_OTG_Global_Periph) RXFLVLM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(RXFLVLM)}}
+func (p *USB_OTG_Global_Periph) RXFLVLM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(RXFLVLM)}}
 }
 
-func (p *USB_OTG_Global_Periph) NPTXFEM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(NPTXFEM)}}
+func (p *USB_OTG_Global_Periph) NPTXFEM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(NPTXFEM)}}
 }
 
-func (p *USB_OTG_Global_Periph) GINAKEFFM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(GINAKEFFM)}}
+func (p *USB_OTG_Global_Periph) GINAKEFFM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(GINAKEFFM)}}
 }
 
-func (p *USB_OTG_Global_Periph) GONAKEFFM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(GONAKEFFM)}}
+func (p *USB_OTG_Global_Periph) GONAKEFFM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(GONAKEFFM)}}
 }
 
-func (p *USB_OTG_Global_Periph) ESUSPM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(ESUSPM)}}
+func (p *USB_OTG_Global_Periph) ESUSPM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(ESUSPM)}}
 }
 
-func (p *USB_OTG_Global_Periph) USBSUSPM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(USBSUSPM)}}
+func (p *USB_OTG_Global_Periph) USBSUSPM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(USBSUSPM)}}
 }
 
-func (p *USB_OTG_Global_Periph) USBRST() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(USBRST)}}
+func (p *USB_OTG_Global_Periph) USBRST() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(USBRST)}}
 }
 
-func (p *USB_OTG_Global_Periph) ENUMDNEM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(ENUMDNEM)}}
+func (p *USB_OTG_Global_Periph) ENUMDNEM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(ENUMDNEM)}}
 }
 
-func (p *USB_OTG_Global_Periph) ISOODRPM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(ISOODRPM)}}
+func (p *USB_OTG_Global_Periph) ISOODRPM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(ISOODRPM)}}
 }
 
-func (p *USB_OTG_Global_Periph) EOPFM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(EOPFM)}}
+func (p *USB_OTG_Global_Periph) EOPFM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(EOPFM)}}
 }
 
-func (p *USB_OTG_Global_Periph) EPMISM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(EPMISM)}}
+func (p *USB_OTG_Global_Periph) EPMISM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(EPMISM)}}
 }
 
-func (p *USB_OTG_Global_Periph) IEPINT() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(IEPINT)}}
+func (p *USB_OTG_Global_Periph) IEPINT() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(IEPINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) OEPINT() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(OEPINT)}}
+func (p *USB_OTG_Global_Periph) OEPINT() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(OEPINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) IISOIXFRM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(IISOIXFRM)}}
+func (p *USB_OTG_Global_Periph) IISOIXFRM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(IISOIXFRM)}}
 }
 
-func (p *USB_OTG_Global_Periph) PXFRM_IISOOXFRM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(PXFRM_IISOOXFRM)}}
+func (p *USB_OTG_Global_Periph) PXFRM_IISOOXFRM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(PXFRM_IISOOXFRM)}}
 }
 
-func (p *USB_OTG_Global_Periph) FSUSPM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(FSUSPM)}}
+func (p *USB_OTG_Global_Periph) FSUSPM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(FSUSPM)}}
 }
 
-func (p *USB_OTG_Global_Periph) PRTIM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(PRTIM)}}
+func (p *USB_OTG_Global_Periph) PRTIM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(PRTIM)}}
 }
 
-func (p *USB_OTG_Global_Periph) HCIM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(HCIM)}}
+func (p *USB_OTG_Global_Periph) HCIM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(HCIM)}}
 }
 
-func (p *USB_OTG_Global_Periph) PTXFEM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(PTXFEM)}}
+func (p *USB_OTG_Global_Periph) PTXFEM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(PTXFEM)}}
 }
 
-func (p *USB_OTG_Global_Periph) LPMINTM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(LPMINTM)}}
+func (p *USB_OTG_Global_Periph) LPMINTM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(LPMINTM)}}
 }
 
-func (p *USB_OTG_Global_Periph) CIDSCHGM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(CIDSCHGM)}}
+func (p *USB_OTG_Global_Periph) CIDSCHGM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(CIDSCHGM)}}
 }
 
-func (p *USB_OTG_Global_Periph) DISCINT() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(DISCINT)}}
+func (p *USB_OTG_Global_Periph) DISCINT() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(DISCINT)}}
 }
 
-func (p *USB_OTG_Global_Periph) SRQIM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(SRQIM)}}
+func (p *USB_OTG_Global_Periph) SRQIM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(SRQIM)}}
 }
 
-func (p *USB_OTG_Global_Periph) WUIM() GINTMSK_Mask {
-	return GINTMSK_Mask{mmio.UM32{&p.GINTMSK.U32, uint32(WUIM)}}
+func (p *USB_OTG_Global_Periph) WUIM() RMGINTMSK {
+	return RMGINTMSK{mmio.UM32{&p.GINTMSK.U32, uint32(WUIM)}}
 }
 
-type GRXSTSR_Bits uint32
+type GRXSTSR uint32
 
-func (b GRXSTSR_Bits) Field(mask GRXSTSR_Bits) int {
+func (b GRXSTSR) Field(mask GRXSTSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GRXSTSR_Bits) J(v int) GRXSTSR_Bits {
-	return GRXSTSR_Bits(bits.Make32(v, uint32(mask)))
+func (mask GRXSTSR) J(v int) GRXSTSR {
+	return GRXSTSR(bits.Make32(v, uint32(mask)))
 }
 
-type GRXSTSR struct{ mmio.U32 }
+type RGRXSTSR struct{ mmio.U32 }
 
-func (r *GRXSTSR) Bits(mask GRXSTSR_Bits) GRXSTSR_Bits { return GRXSTSR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GRXSTSR) StoreBits(mask, b GRXSTSR_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GRXSTSR) SetBits(mask GRXSTSR_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GRXSTSR) ClearBits(mask GRXSTSR_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GRXSTSR) Load() GRXSTSR_Bits                  { return GRXSTSR_Bits(r.U32.Load()) }
-func (r *GRXSTSR) Store(b GRXSTSR_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RGRXSTSR) Bits(mask GRXSTSR) GRXSTSR { return GRXSTSR(r.U32.Bits(uint32(mask))) }
+func (r *RGRXSTSR) StoreBits(mask, b GRXSTSR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGRXSTSR) SetBits(mask GRXSTSR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGRXSTSR) ClearBits(mask GRXSTSR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGRXSTSR) Load() GRXSTSR             { return GRXSTSR(r.U32.Load()) }
+func (r *RGRXSTSR) Store(b GRXSTSR)           { r.U32.Store(uint32(b)) }
 
-func (r *GRXSTSR) AtomicStoreBits(mask, b GRXSTSR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GRXSTSR) AtomicSetBits(mask GRXSTSR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GRXSTSR) AtomicClearBits(mask GRXSTSR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGRXSTSR) AtomicStoreBits(mask, b GRXSTSR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGRXSTSR) AtomicSetBits(mask GRXSTSR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGRXSTSR) AtomicClearBits(mask GRXSTSR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GRXSTSR_Mask struct{ mmio.UM32 }
+type RMGRXSTSR struct{ mmio.UM32 }
 
-func (rm GRXSTSR_Mask) Load() GRXSTSR_Bits   { return GRXSTSR_Bits(rm.UM32.Load()) }
-func (rm GRXSTSR_Mask) Store(b GRXSTSR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGRXSTSR) Load() GRXSTSR   { return GRXSTSR(rm.UM32.Load()) }
+func (rm RMGRXSTSR) Store(b GRXSTSR) { rm.UM32.Store(uint32(b)) }
 
-type GRXSTSP_Bits uint32
+type GRXSTSP uint32
 
-func (b GRXSTSP_Bits) Field(mask GRXSTSP_Bits) int {
+func (b GRXSTSP) Field(mask GRXSTSP) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GRXSTSP_Bits) J(v int) GRXSTSP_Bits {
-	return GRXSTSP_Bits(bits.Make32(v, uint32(mask)))
+func (mask GRXSTSP) J(v int) GRXSTSP {
+	return GRXSTSP(bits.Make32(v, uint32(mask)))
 }
 
-type GRXSTSP struct{ mmio.U32 }
+type RGRXSTSP struct{ mmio.U32 }
 
-func (r *GRXSTSP) Bits(mask GRXSTSP_Bits) GRXSTSP_Bits { return GRXSTSP_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GRXSTSP) StoreBits(mask, b GRXSTSP_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GRXSTSP) SetBits(mask GRXSTSP_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GRXSTSP) ClearBits(mask GRXSTSP_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GRXSTSP) Load() GRXSTSP_Bits                  { return GRXSTSP_Bits(r.U32.Load()) }
-func (r *GRXSTSP) Store(b GRXSTSP_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RGRXSTSP) Bits(mask GRXSTSP) GRXSTSP { return GRXSTSP(r.U32.Bits(uint32(mask))) }
+func (r *RGRXSTSP) StoreBits(mask, b GRXSTSP) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGRXSTSP) SetBits(mask GRXSTSP)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGRXSTSP) ClearBits(mask GRXSTSP)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGRXSTSP) Load() GRXSTSP             { return GRXSTSP(r.U32.Load()) }
+func (r *RGRXSTSP) Store(b GRXSTSP)           { r.U32.Store(uint32(b)) }
 
-func (r *GRXSTSP) AtomicStoreBits(mask, b GRXSTSP_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GRXSTSP) AtomicSetBits(mask GRXSTSP_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GRXSTSP) AtomicClearBits(mask GRXSTSP_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGRXSTSP) AtomicStoreBits(mask, b GRXSTSP) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGRXSTSP) AtomicSetBits(mask GRXSTSP)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGRXSTSP) AtomicClearBits(mask GRXSTSP)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GRXSTSP_Mask struct{ mmio.UM32 }
+type RMGRXSTSP struct{ mmio.UM32 }
 
-func (rm GRXSTSP_Mask) Load() GRXSTSP_Bits   { return GRXSTSP_Bits(rm.UM32.Load()) }
-func (rm GRXSTSP_Mask) Store(b GRXSTSP_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGRXSTSP) Load() GRXSTSP   { return GRXSTSP(rm.UM32.Load()) }
+func (rm RMGRXSTSP) Store(b GRXSTSP) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_Global_Periph) EPNUM() GRXSTSP_Mask {
-	return GRXSTSP_Mask{mmio.UM32{&p.GRXSTSP.U32, uint32(EPNUM)}}
+func (p *USB_OTG_Global_Periph) EPNUM() RMGRXSTSP {
+	return RMGRXSTSP{mmio.UM32{&p.GRXSTSP.U32, uint32(EPNUM)}}
 }
 
-func (p *USB_OTG_Global_Periph) BCNT() GRXSTSP_Mask {
-	return GRXSTSP_Mask{mmio.UM32{&p.GRXSTSP.U32, uint32(BCNT)}}
+func (p *USB_OTG_Global_Periph) BCNT() RMGRXSTSP {
+	return RMGRXSTSP{mmio.UM32{&p.GRXSTSP.U32, uint32(BCNT)}}
 }
 
-func (p *USB_OTG_Global_Periph) DPID() GRXSTSP_Mask {
-	return GRXSTSP_Mask{mmio.UM32{&p.GRXSTSP.U32, uint32(DPID)}}
+func (p *USB_OTG_Global_Periph) DPID() RMGRXSTSP {
+	return RMGRXSTSP{mmio.UM32{&p.GRXSTSP.U32, uint32(DPID)}}
 }
 
-func (p *USB_OTG_Global_Periph) PKTSTS() GRXSTSP_Mask {
-	return GRXSTSP_Mask{mmio.UM32{&p.GRXSTSP.U32, uint32(PKTSTS)}}
+func (p *USB_OTG_Global_Periph) PKTSTS() RMGRXSTSP {
+	return RMGRXSTSP{mmio.UM32{&p.GRXSTSP.U32, uint32(PKTSTS)}}
 }
 
-type GRXFSIZ_Bits uint32
+type GRXFSIZ uint32
 
-func (b GRXFSIZ_Bits) Field(mask GRXFSIZ_Bits) int {
+func (b GRXFSIZ) Field(mask GRXFSIZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GRXFSIZ_Bits) J(v int) GRXFSIZ_Bits {
-	return GRXFSIZ_Bits(bits.Make32(v, uint32(mask)))
+func (mask GRXFSIZ) J(v int) GRXFSIZ {
+	return GRXFSIZ(bits.Make32(v, uint32(mask)))
 }
 
-type GRXFSIZ struct{ mmio.U32 }
+type RGRXFSIZ struct{ mmio.U32 }
 
-func (r *GRXFSIZ) Bits(mask GRXFSIZ_Bits) GRXFSIZ_Bits { return GRXFSIZ_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GRXFSIZ) StoreBits(mask, b GRXFSIZ_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GRXFSIZ) SetBits(mask GRXFSIZ_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GRXFSIZ) ClearBits(mask GRXFSIZ_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GRXFSIZ) Load() GRXFSIZ_Bits                  { return GRXFSIZ_Bits(r.U32.Load()) }
-func (r *GRXFSIZ) Store(b GRXFSIZ_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RGRXFSIZ) Bits(mask GRXFSIZ) GRXFSIZ { return GRXFSIZ(r.U32.Bits(uint32(mask))) }
+func (r *RGRXFSIZ) StoreBits(mask, b GRXFSIZ) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGRXFSIZ) SetBits(mask GRXFSIZ)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGRXFSIZ) ClearBits(mask GRXFSIZ)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGRXFSIZ) Load() GRXFSIZ             { return GRXFSIZ(r.U32.Load()) }
+func (r *RGRXFSIZ) Store(b GRXFSIZ)           { r.U32.Store(uint32(b)) }
 
-func (r *GRXFSIZ) AtomicStoreBits(mask, b GRXFSIZ_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GRXFSIZ) AtomicSetBits(mask GRXFSIZ_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GRXFSIZ) AtomicClearBits(mask GRXFSIZ_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGRXFSIZ) AtomicStoreBits(mask, b GRXFSIZ) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGRXFSIZ) AtomicSetBits(mask GRXFSIZ)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGRXFSIZ) AtomicClearBits(mask GRXFSIZ)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GRXFSIZ_Mask struct{ mmio.UM32 }
+type RMGRXFSIZ struct{ mmio.UM32 }
 
-func (rm GRXFSIZ_Mask) Load() GRXFSIZ_Bits   { return GRXFSIZ_Bits(rm.UM32.Load()) }
-func (rm GRXFSIZ_Mask) Store(b GRXFSIZ_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGRXFSIZ) Load() GRXFSIZ   { return GRXFSIZ(rm.UM32.Load()) }
+func (rm RMGRXFSIZ) Store(b GRXFSIZ) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_Global_Periph) RXFD() GRXFSIZ_Mask {
-	return GRXFSIZ_Mask{mmio.UM32{&p.GRXFSIZ.U32, uint32(RXFD)}}
+func (p *USB_OTG_Global_Periph) RXFD() RMGRXFSIZ {
+	return RMGRXFSIZ{mmio.UM32{&p.GRXFSIZ.U32, uint32(RXFD)}}
 }
 
-type DIEPTXF0_HNPTXFSIZ_Bits uint32
+type DIEPTXF0_HNPTXFSIZ uint32
 
-func (b DIEPTXF0_HNPTXFSIZ_Bits) Field(mask DIEPTXF0_HNPTXFSIZ_Bits) int {
+func (b DIEPTXF0_HNPTXFSIZ) Field(mask DIEPTXF0_HNPTXFSIZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DIEPTXF0_HNPTXFSIZ_Bits) J(v int) DIEPTXF0_HNPTXFSIZ_Bits {
-	return DIEPTXF0_HNPTXFSIZ_Bits(bits.Make32(v, uint32(mask)))
+func (mask DIEPTXF0_HNPTXFSIZ) J(v int) DIEPTXF0_HNPTXFSIZ {
+	return DIEPTXF0_HNPTXFSIZ(bits.Make32(v, uint32(mask)))
 }
 
-type DIEPTXF0_HNPTXFSIZ struct{ mmio.U32 }
+type RDIEPTXF0_HNPTXFSIZ struct{ mmio.U32 }
 
-func (r *DIEPTXF0_HNPTXFSIZ) Bits(mask DIEPTXF0_HNPTXFSIZ_Bits) DIEPTXF0_HNPTXFSIZ_Bits {
-	return DIEPTXF0_HNPTXFSIZ_Bits(r.U32.Bits(uint32(mask)))
+func (r *RDIEPTXF0_HNPTXFSIZ) Bits(mask DIEPTXF0_HNPTXFSIZ) DIEPTXF0_HNPTXFSIZ {
+	return DIEPTXF0_HNPTXFSIZ(r.U32.Bits(uint32(mask)))
 }
-func (r *DIEPTXF0_HNPTXFSIZ) StoreBits(mask, b DIEPTXF0_HNPTXFSIZ_Bits) {
+func (r *RDIEPTXF0_HNPTXFSIZ) StoreBits(mask, b DIEPTXF0_HNPTXFSIZ) {
 	r.U32.StoreBits(uint32(mask), uint32(b))
 }
-func (r *DIEPTXF0_HNPTXFSIZ) SetBits(mask DIEPTXF0_HNPTXFSIZ_Bits)   { r.U32.SetBits(uint32(mask)) }
-func (r *DIEPTXF0_HNPTXFSIZ) ClearBits(mask DIEPTXF0_HNPTXFSIZ_Bits) { r.U32.ClearBits(uint32(mask)) }
-func (r *DIEPTXF0_HNPTXFSIZ) Load() DIEPTXF0_HNPTXFSIZ_Bits {
-	return DIEPTXF0_HNPTXFSIZ_Bits(r.U32.Load())
-}
-func (r *DIEPTXF0_HNPTXFSIZ) Store(b DIEPTXF0_HNPTXFSIZ_Bits) { r.U32.Store(uint32(b)) }
+func (r *RDIEPTXF0_HNPTXFSIZ) SetBits(mask DIEPTXF0_HNPTXFSIZ)   { r.U32.SetBits(uint32(mask)) }
+func (r *RDIEPTXF0_HNPTXFSIZ) ClearBits(mask DIEPTXF0_HNPTXFSIZ) { r.U32.ClearBits(uint32(mask)) }
+func (r *RDIEPTXF0_HNPTXFSIZ) Load() DIEPTXF0_HNPTXFSIZ          { return DIEPTXF0_HNPTXFSIZ(r.U32.Load()) }
+func (r *RDIEPTXF0_HNPTXFSIZ) Store(b DIEPTXF0_HNPTXFSIZ)        { r.U32.Store(uint32(b)) }
 
-func (r *DIEPTXF0_HNPTXFSIZ) AtomicStoreBits(mask, b DIEPTXF0_HNPTXFSIZ_Bits) {
+func (r *RDIEPTXF0_HNPTXFSIZ) AtomicStoreBits(mask, b DIEPTXF0_HNPTXFSIZ) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *DIEPTXF0_HNPTXFSIZ) AtomicSetBits(mask DIEPTXF0_HNPTXFSIZ_Bits) {
+func (r *RDIEPTXF0_HNPTXFSIZ) AtomicSetBits(mask DIEPTXF0_HNPTXFSIZ) {
 	r.U32.AtomicSetBits(uint32(mask))
 }
-func (r *DIEPTXF0_HNPTXFSIZ) AtomicClearBits(mask DIEPTXF0_HNPTXFSIZ_Bits) {
+func (r *RDIEPTXF0_HNPTXFSIZ) AtomicClearBits(mask DIEPTXF0_HNPTXFSIZ) {
 	r.U32.AtomicClearBits(uint32(mask))
 }
 
-type DIEPTXF0_HNPTXFSIZ_Mask struct{ mmio.UM32 }
+type RMDIEPTXF0_HNPTXFSIZ struct{ mmio.UM32 }
 
-func (rm DIEPTXF0_HNPTXFSIZ_Mask) Load() DIEPTXF0_HNPTXFSIZ_Bits {
-	return DIEPTXF0_HNPTXFSIZ_Bits(rm.UM32.Load())
-}
-func (rm DIEPTXF0_HNPTXFSIZ_Mask) Store(b DIEPTXF0_HNPTXFSIZ_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMDIEPTXF0_HNPTXFSIZ) Load() DIEPTXF0_HNPTXFSIZ   { return DIEPTXF0_HNPTXFSIZ(rm.UM32.Load()) }
+func (rm RMDIEPTXF0_HNPTXFSIZ) Store(b DIEPTXF0_HNPTXFSIZ) { rm.UM32.Store(uint32(b)) }
 
-type HNPTXSTS_Bits uint32
+type HNPTXSTS uint32
 
-func (b HNPTXSTS_Bits) Field(mask HNPTXSTS_Bits) int {
+func (b HNPTXSTS) Field(mask HNPTXSTS) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask HNPTXSTS_Bits) J(v int) HNPTXSTS_Bits {
-	return HNPTXSTS_Bits(bits.Make32(v, uint32(mask)))
+func (mask HNPTXSTS) J(v int) HNPTXSTS {
+	return HNPTXSTS(bits.Make32(v, uint32(mask)))
 }
 
-type HNPTXSTS struct{ mmio.U32 }
+type RHNPTXSTS struct{ mmio.U32 }
 
-func (r *HNPTXSTS) Bits(mask HNPTXSTS_Bits) HNPTXSTS_Bits {
-	return HNPTXSTS_Bits(r.U32.Bits(uint32(mask)))
+func (r *RHNPTXSTS) Bits(mask HNPTXSTS) HNPTXSTS { return HNPTXSTS(r.U32.Bits(uint32(mask))) }
+func (r *RHNPTXSTS) StoreBits(mask, b HNPTXSTS)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RHNPTXSTS) SetBits(mask HNPTXSTS)       { r.U32.SetBits(uint32(mask)) }
+func (r *RHNPTXSTS) ClearBits(mask HNPTXSTS)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RHNPTXSTS) Load() HNPTXSTS              { return HNPTXSTS(r.U32.Load()) }
+func (r *RHNPTXSTS) Store(b HNPTXSTS)            { r.U32.Store(uint32(b)) }
+
+func (r *RHNPTXSTS) AtomicStoreBits(mask, b HNPTXSTS) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RHNPTXSTS) AtomicSetBits(mask HNPTXSTS)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RHNPTXSTS) AtomicClearBits(mask HNPTXSTS)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMHNPTXSTS struct{ mmio.UM32 }
+
+func (rm RMHNPTXSTS) Load() HNPTXSTS   { return HNPTXSTS(rm.UM32.Load()) }
+func (rm RMHNPTXSTS) Store(b HNPTXSTS) { rm.UM32.Store(uint32(b)) }
+
+type GCCFG uint32
+
+func (b GCCFG) Field(mask GCCFG) int {
+	return bits.Field32(uint32(b), uint32(mask))
 }
-func (r *HNPTXSTS) StoreBits(mask, b HNPTXSTS_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *HNPTXSTS) SetBits(mask HNPTXSTS_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *HNPTXSTS) ClearBits(mask HNPTXSTS_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *HNPTXSTS) Load() HNPTXSTS_Bits             { return HNPTXSTS_Bits(r.U32.Load()) }
-func (r *HNPTXSTS) Store(b HNPTXSTS_Bits)           { r.U32.Store(uint32(b)) }
+func (mask GCCFG) J(v int) GCCFG {
+	return GCCFG(bits.Make32(v, uint32(mask)))
+}
 
-func (r *HNPTXSTS) AtomicStoreBits(mask, b HNPTXSTS_Bits) {
+type RGCCFG struct{ mmio.U32 }
+
+func (r *RGCCFG) Bits(mask GCCFG) GCCFG   { return GCCFG(r.U32.Bits(uint32(mask))) }
+func (r *RGCCFG) StoreBits(mask, b GCCFG) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGCCFG) SetBits(mask GCCFG)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGCCFG) ClearBits(mask GCCFG)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGCCFG) Load() GCCFG             { return GCCFG(r.U32.Load()) }
+func (r *RGCCFG) Store(b GCCFG)           { r.U32.Store(uint32(b)) }
+
+func (r *RGCCFG) AtomicStoreBits(mask, b GCCFG) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGCCFG) AtomicSetBits(mask GCCFG)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGCCFG) AtomicClearBits(mask GCCFG)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMGCCFG struct{ mmio.UM32 }
+
+func (rm RMGCCFG) Load() GCCFG   { return GCCFG(rm.UM32.Load()) }
+func (rm RMGCCFG) Store(b GCCFG) { rm.UM32.Store(uint32(b)) }
+
+func (p *USB_OTG_Global_Periph) DCDET() RMGCCFG {
+	return RMGCCFG{mmio.UM32{&p.GCCFG.U32, uint32(DCDET)}}
+}
+
+func (p *USB_OTG_Global_Periph) PDET() RMGCCFG {
+	return RMGCCFG{mmio.UM32{&p.GCCFG.U32, uint32(PDET)}}
+}
+
+func (p *USB_OTG_Global_Periph) SDET() RMGCCFG {
+	return RMGCCFG{mmio.UM32{&p.GCCFG.U32, uint32(SDET)}}
+}
+
+func (p *USB_OTG_Global_Periph) PS2DET() RMGCCFG {
+	return RMGCCFG{mmio.UM32{&p.GCCFG.U32, uint32(PS2DET)}}
+}
+
+func (p *USB_OTG_Global_Periph) PWRDWN() RMGCCFG {
+	return RMGCCFG{mmio.UM32{&p.GCCFG.U32, uint32(PWRDWN)}}
+}
+
+func (p *USB_OTG_Global_Periph) BCDEN() RMGCCFG {
+	return RMGCCFG{mmio.UM32{&p.GCCFG.U32, uint32(BCDEN)}}
+}
+
+func (p *USB_OTG_Global_Periph) DCDEN() RMGCCFG {
+	return RMGCCFG{mmio.UM32{&p.GCCFG.U32, uint32(DCDEN)}}
+}
+
+func (p *USB_OTG_Global_Periph) PDEN() RMGCCFG {
+	return RMGCCFG{mmio.UM32{&p.GCCFG.U32, uint32(PDEN)}}
+}
+
+func (p *USB_OTG_Global_Periph) SDEN() RMGCCFG {
+	return RMGCCFG{mmio.UM32{&p.GCCFG.U32, uint32(SDEN)}}
+}
+
+func (p *USB_OTG_Global_Periph) VBDEN() RMGCCFG {
+	return RMGCCFG{mmio.UM32{&p.GCCFG.U32, uint32(VBDEN)}}
+}
+
+type CID uint32
+
+func (b CID) Field(mask CID) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask CID) J(v int) CID {
+	return CID(bits.Make32(v, uint32(mask)))
+}
+
+type RCID struct{ mmio.U32 }
+
+func (r *RCID) Bits(mask CID) CID     { return CID(r.U32.Bits(uint32(mask))) }
+func (r *RCID) StoreBits(mask, b CID) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCID) SetBits(mask CID)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCID) ClearBits(mask CID)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCID) Load() CID             { return CID(r.U32.Load()) }
+func (r *RCID) Store(b CID)           { r.U32.Store(uint32(b)) }
+
+func (r *RCID) AtomicStoreBits(mask, b CID) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCID) AtomicSetBits(mask CID)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCID) AtomicClearBits(mask CID)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMCID struct{ mmio.UM32 }
+
+func (rm RMCID) Load() CID   { return CID(rm.UM32.Load()) }
+func (rm RMCID) Store(b CID) { rm.UM32.Store(uint32(b)) }
+
+func (p *USB_OTG_Global_Periph) PRODUCT_ID() RMCID {
+	return RMCID{mmio.UM32{&p.CID.U32, uint32(PRODUCT_ID)}}
+}
+
+type GSNPSID uint32
+
+func (b GSNPSID) Field(mask GSNPSID) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask GSNPSID) J(v int) GSNPSID {
+	return GSNPSID(bits.Make32(v, uint32(mask)))
+}
+
+type RGSNPSID struct{ mmio.U32 }
+
+func (r *RGSNPSID) Bits(mask GSNPSID) GSNPSID { return GSNPSID(r.U32.Bits(uint32(mask))) }
+func (r *RGSNPSID) StoreBits(mask, b GSNPSID) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGSNPSID) SetBits(mask GSNPSID)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGSNPSID) ClearBits(mask GSNPSID)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGSNPSID) Load() GSNPSID             { return GSNPSID(r.U32.Load()) }
+func (r *RGSNPSID) Store(b GSNPSID)           { r.U32.Store(uint32(b)) }
+
+func (r *RGSNPSID) AtomicStoreBits(mask, b GSNPSID) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGSNPSID) AtomicSetBits(mask GSNPSID)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGSNPSID) AtomicClearBits(mask GSNPSID)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMGSNPSID struct{ mmio.UM32 }
+
+func (rm RMGSNPSID) Load() GSNPSID   { return GSNPSID(rm.UM32.Load()) }
+func (rm RMGSNPSID) Store(b GSNPSID) { rm.UM32.Store(uint32(b)) }
+
+type GHWCFG1 uint32
+
+func (b GHWCFG1) Field(mask GHWCFG1) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask GHWCFG1) J(v int) GHWCFG1 {
+	return GHWCFG1(bits.Make32(v, uint32(mask)))
+}
+
+type RGHWCFG1 struct{ mmio.U32 }
+
+func (r *RGHWCFG1) Bits(mask GHWCFG1) GHWCFG1 { return GHWCFG1(r.U32.Bits(uint32(mask))) }
+func (r *RGHWCFG1) StoreBits(mask, b GHWCFG1) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGHWCFG1) SetBits(mask GHWCFG1)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGHWCFG1) ClearBits(mask GHWCFG1)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGHWCFG1) Load() GHWCFG1             { return GHWCFG1(r.U32.Load()) }
+func (r *RGHWCFG1) Store(b GHWCFG1)           { r.U32.Store(uint32(b)) }
+
+func (r *RGHWCFG1) AtomicStoreBits(mask, b GHWCFG1) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGHWCFG1) AtomicSetBits(mask GHWCFG1)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGHWCFG1) AtomicClearBits(mask GHWCFG1)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMGHWCFG1 struct{ mmio.UM32 }
+
+func (rm RMGHWCFG1) Load() GHWCFG1   { return GHWCFG1(rm.UM32.Load()) }
+func (rm RMGHWCFG1) Store(b GHWCFG1) { rm.UM32.Store(uint32(b)) }
+
+type GHWCFG2 uint32
+
+func (b GHWCFG2) Field(mask GHWCFG2) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask GHWCFG2) J(v int) GHWCFG2 {
+	return GHWCFG2(bits.Make32(v, uint32(mask)))
+}
+
+type RGHWCFG2 struct{ mmio.U32 }
+
+func (r *RGHWCFG2) Bits(mask GHWCFG2) GHWCFG2 { return GHWCFG2(r.U32.Bits(uint32(mask))) }
+func (r *RGHWCFG2) StoreBits(mask, b GHWCFG2) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGHWCFG2) SetBits(mask GHWCFG2)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGHWCFG2) ClearBits(mask GHWCFG2)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGHWCFG2) Load() GHWCFG2             { return GHWCFG2(r.U32.Load()) }
+func (r *RGHWCFG2) Store(b GHWCFG2)           { r.U32.Store(uint32(b)) }
+
+func (r *RGHWCFG2) AtomicStoreBits(mask, b GHWCFG2) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGHWCFG2) AtomicSetBits(mask GHWCFG2)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGHWCFG2) AtomicClearBits(mask GHWCFG2)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMGHWCFG2 struct{ mmio.UM32 }
+
+func (rm RMGHWCFG2) Load() GHWCFG2   { return GHWCFG2(rm.UM32.Load()) }
+func (rm RMGHWCFG2) Store(b GHWCFG2) { rm.UM32.Store(uint32(b)) }
+
+type GHWCFG3 uint32
+
+func (b GHWCFG3) Field(mask GHWCFG3) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask GHWCFG3) J(v int) GHWCFG3 {
+	return GHWCFG3(bits.Make32(v, uint32(mask)))
+}
+
+type RGHWCFG3 struct{ mmio.U32 }
+
+func (r *RGHWCFG3) Bits(mask GHWCFG3) GHWCFG3 { return GHWCFG3(r.U32.Bits(uint32(mask))) }
+func (r *RGHWCFG3) StoreBits(mask, b GHWCFG3) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGHWCFG3) SetBits(mask GHWCFG3)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGHWCFG3) ClearBits(mask GHWCFG3)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGHWCFG3) Load() GHWCFG3             { return GHWCFG3(r.U32.Load()) }
+func (r *RGHWCFG3) Store(b GHWCFG3)           { r.U32.Store(uint32(b)) }
+
+func (r *RGHWCFG3) AtomicStoreBits(mask, b GHWCFG3) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGHWCFG3) AtomicSetBits(mask GHWCFG3)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGHWCFG3) AtomicClearBits(mask GHWCFG3)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMGHWCFG3 struct{ mmio.UM32 }
+
+func (rm RMGHWCFG3) Load() GHWCFG3   { return GHWCFG3(rm.UM32.Load()) }
+func (rm RMGHWCFG3) Store(b GHWCFG3) { rm.UM32.Store(uint32(b)) }
+
+func (p *USB_OTG_Global_Periph) LPMMode() RMGHWCFG3 {
+	return RMGHWCFG3{mmio.UM32{&p.GHWCFG3.U32, uint32(LPMMode)}}
+}
+
+type GLPMCFG uint32
+
+func (b GLPMCFG) Field(mask GLPMCFG) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask GLPMCFG) J(v int) GLPMCFG {
+	return GLPMCFG(bits.Make32(v, uint32(mask)))
+}
+
+type RGLPMCFG struct{ mmio.U32 }
+
+func (r *RGLPMCFG) Bits(mask GLPMCFG) GLPMCFG { return GLPMCFG(r.U32.Bits(uint32(mask))) }
+func (r *RGLPMCFG) StoreBits(mask, b GLPMCFG) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGLPMCFG) SetBits(mask GLPMCFG)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGLPMCFG) ClearBits(mask GLPMCFG)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGLPMCFG) Load() GLPMCFG             { return GLPMCFG(r.U32.Load()) }
+func (r *RGLPMCFG) Store(b GLPMCFG)           { r.U32.Store(uint32(b)) }
+
+func (r *RGLPMCFG) AtomicStoreBits(mask, b GLPMCFG) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGLPMCFG) AtomicSetBits(mask GLPMCFG)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGLPMCFG) AtomicClearBits(mask GLPMCFG)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMGLPMCFG struct{ mmio.UM32 }
+
+func (rm RMGLPMCFG) Load() GLPMCFG   { return GLPMCFG(rm.UM32.Load()) }
+func (rm RMGLPMCFG) Store(b GLPMCFG) { rm.UM32.Store(uint32(b)) }
+
+func (p *USB_OTG_Global_Periph) ENBESL() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(ENBESL)}}
+}
+
+func (p *USB_OTG_Global_Periph) LPMRCNTSTS() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMRCNTSTS)}}
+}
+
+func (p *USB_OTG_Global_Periph) SNDLPM() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(SNDLPM)}}
+}
+
+func (p *USB_OTG_Global_Periph) LPMRCNT() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMRCNT)}}
+}
+
+func (p *USB_OTG_Global_Periph) LPMCHIDX() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMCHIDX)}}
+}
+
+func (p *USB_OTG_Global_Periph) L1ResumeOK() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(L1ResumeOK)}}
+}
+
+func (p *USB_OTG_Global_Periph) SLPSTS() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(SLPSTS)}}
+}
+
+func (p *USB_OTG_Global_Periph) LPMRSP() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMRSP)}}
+}
+
+func (p *USB_OTG_Global_Periph) L1DSEN() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(L1DSEN)}}
+}
+
+func (p *USB_OTG_Global_Periph) BESLTHRS() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(BESLTHRS)}}
+}
+
+func (p *USB_OTG_Global_Periph) L1SSEN() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(L1SSEN)}}
+}
+
+func (p *USB_OTG_Global_Periph) REMWAKE() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(REMWAKE)}}
+}
+
+func (p *USB_OTG_Global_Periph) BESL() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(BESL)}}
+}
+
+func (p *USB_OTG_Global_Periph) LPMACK() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMACK)}}
+}
+
+func (p *USB_OTG_Global_Periph) LPMEN() RMGLPMCFG {
+	return RMGLPMCFG{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMEN)}}
+}
+
+type GPWRDN uint32
+
+func (b GPWRDN) Field(mask GPWRDN) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask GPWRDN) J(v int) GPWRDN {
+	return GPWRDN(bits.Make32(v, uint32(mask)))
+}
+
+type RGPWRDN struct{ mmio.U32 }
+
+func (r *RGPWRDN) Bits(mask GPWRDN) GPWRDN  { return GPWRDN(r.U32.Bits(uint32(mask))) }
+func (r *RGPWRDN) StoreBits(mask, b GPWRDN) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGPWRDN) SetBits(mask GPWRDN)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGPWRDN) ClearBits(mask GPWRDN)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGPWRDN) Load() GPWRDN             { return GPWRDN(r.U32.Load()) }
+func (r *RGPWRDN) Store(b GPWRDN)           { r.U32.Store(uint32(b)) }
+
+func (r *RGPWRDN) AtomicStoreBits(mask, b GPWRDN) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGPWRDN) AtomicSetBits(mask GPWRDN)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGPWRDN) AtomicClearBits(mask GPWRDN)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMGPWRDN struct{ mmio.UM32 }
+
+func (rm RMGPWRDN) Load() GPWRDN   { return GPWRDN(rm.UM32.Load()) }
+func (rm RMGPWRDN) Store(b GPWRDN) { rm.UM32.Store(uint32(b)) }
+
+func (p *USB_OTG_Global_Periph) DISABLEVBUS() RMGPWRDN {
+	return RMGPWRDN{mmio.UM32{&p.GPWRDN.U32, uint32(DISABLEVBUS)}}
+}
+
+type GDFIFOCFG uint32
+
+func (b GDFIFOCFG) Field(mask GDFIFOCFG) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask GDFIFOCFG) J(v int) GDFIFOCFG {
+	return GDFIFOCFG(bits.Make32(v, uint32(mask)))
+}
+
+type RGDFIFOCFG struct{ mmio.U32 }
+
+func (r *RGDFIFOCFG) Bits(mask GDFIFOCFG) GDFIFOCFG { return GDFIFOCFG(r.U32.Bits(uint32(mask))) }
+func (r *RGDFIFOCFG) StoreBits(mask, b GDFIFOCFG)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGDFIFOCFG) SetBits(mask GDFIFOCFG)        { r.U32.SetBits(uint32(mask)) }
+func (r *RGDFIFOCFG) ClearBits(mask GDFIFOCFG)      { r.U32.ClearBits(uint32(mask)) }
+func (r *RGDFIFOCFG) Load() GDFIFOCFG               { return GDFIFOCFG(r.U32.Load()) }
+func (r *RGDFIFOCFG) Store(b GDFIFOCFG)             { r.U32.Store(uint32(b)) }
+
+func (r *RGDFIFOCFG) AtomicStoreBits(mask, b GDFIFOCFG) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *HNPTXSTS) AtomicSetBits(mask HNPTXSTS_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *HNPTXSTS) AtomicClearBits(mask HNPTXSTS_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGDFIFOCFG) AtomicSetBits(mask GDFIFOCFG)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGDFIFOCFG) AtomicClearBits(mask GDFIFOCFG) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type HNPTXSTS_Mask struct{ mmio.UM32 }
+type RMGDFIFOCFG struct{ mmio.UM32 }
 
-func (rm HNPTXSTS_Mask) Load() HNPTXSTS_Bits   { return HNPTXSTS_Bits(rm.UM32.Load()) }
-func (rm HNPTXSTS_Mask) Store(b HNPTXSTS_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGDFIFOCFG) Load() GDFIFOCFG   { return GDFIFOCFG(rm.UM32.Load()) }
+func (rm RMGDFIFOCFG) Store(b GDFIFOCFG) { rm.UM32.Store(uint32(b)) }
 
-type GCCFG_Bits uint32
+type GADPCTL uint32
 
-func (b GCCFG_Bits) Field(mask GCCFG_Bits) int {
+func (b GADPCTL) Field(mask GADPCTL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GCCFG_Bits) J(v int) GCCFG_Bits {
-	return GCCFG_Bits(bits.Make32(v, uint32(mask)))
+func (mask GADPCTL) J(v int) GADPCTL {
+	return GADPCTL(bits.Make32(v, uint32(mask)))
 }
 
-type GCCFG struct{ mmio.U32 }
+type RGADPCTL struct{ mmio.U32 }
 
-func (r *GCCFG) Bits(mask GCCFG_Bits) GCCFG_Bits { return GCCFG_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GCCFG) StoreBits(mask, b GCCFG_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GCCFG) SetBits(mask GCCFG_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *GCCFG) ClearBits(mask GCCFG_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *GCCFG) Load() GCCFG_Bits                { return GCCFG_Bits(r.U32.Load()) }
-func (r *GCCFG) Store(b GCCFG_Bits)              { r.U32.Store(uint32(b)) }
+func (r *RGADPCTL) Bits(mask GADPCTL) GADPCTL { return GADPCTL(r.U32.Bits(uint32(mask))) }
+func (r *RGADPCTL) StoreBits(mask, b GADPCTL) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RGADPCTL) SetBits(mask GADPCTL)      { r.U32.SetBits(uint32(mask)) }
+func (r *RGADPCTL) ClearBits(mask GADPCTL)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RGADPCTL) Load() GADPCTL             { return GADPCTL(r.U32.Load()) }
+func (r *RGADPCTL) Store(b GADPCTL)           { r.U32.Store(uint32(b)) }
 
-func (r *GCCFG) AtomicStoreBits(mask, b GCCFG_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *GCCFG) AtomicSetBits(mask GCCFG_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GCCFG) AtomicClearBits(mask GCCFG_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RGADPCTL) AtomicStoreBits(mask, b GADPCTL) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RGADPCTL) AtomicSetBits(mask GADPCTL)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RGADPCTL) AtomicClearBits(mask GADPCTL)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GCCFG_Mask struct{ mmio.UM32 }
+type RMGADPCTL struct{ mmio.UM32 }
 
-func (rm GCCFG_Mask) Load() GCCFG_Bits   { return GCCFG_Bits(rm.UM32.Load()) }
-func (rm GCCFG_Mask) Store(b GCCFG_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMGADPCTL) Load() GADPCTL   { return GADPCTL(rm.UM32.Load()) }
+func (rm RMGADPCTL) Store(b GADPCTL) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_Global_Periph) DCDET() GCCFG_Mask {
-	return GCCFG_Mask{mmio.UM32{&p.GCCFG.U32, uint32(DCDET)}}
-}
+type HPTXFSIZ uint32
 
-func (p *USB_OTG_Global_Periph) PDET() GCCFG_Mask {
-	return GCCFG_Mask{mmio.UM32{&p.GCCFG.U32, uint32(PDET)}}
-}
-
-func (p *USB_OTG_Global_Periph) SDET() GCCFG_Mask {
-	return GCCFG_Mask{mmio.UM32{&p.GCCFG.U32, uint32(SDET)}}
-}
-
-func (p *USB_OTG_Global_Periph) PS2DET() GCCFG_Mask {
-	return GCCFG_Mask{mmio.UM32{&p.GCCFG.U32, uint32(PS2DET)}}
-}
-
-func (p *USB_OTG_Global_Periph) PWRDWN() GCCFG_Mask {
-	return GCCFG_Mask{mmio.UM32{&p.GCCFG.U32, uint32(PWRDWN)}}
-}
-
-func (p *USB_OTG_Global_Periph) BCDEN() GCCFG_Mask {
-	return GCCFG_Mask{mmio.UM32{&p.GCCFG.U32, uint32(BCDEN)}}
-}
-
-func (p *USB_OTG_Global_Periph) DCDEN() GCCFG_Mask {
-	return GCCFG_Mask{mmio.UM32{&p.GCCFG.U32, uint32(DCDEN)}}
-}
-
-func (p *USB_OTG_Global_Periph) PDEN() GCCFG_Mask {
-	return GCCFG_Mask{mmio.UM32{&p.GCCFG.U32, uint32(PDEN)}}
-}
-
-func (p *USB_OTG_Global_Periph) SDEN() GCCFG_Mask {
-	return GCCFG_Mask{mmio.UM32{&p.GCCFG.U32, uint32(SDEN)}}
-}
-
-func (p *USB_OTG_Global_Periph) VBDEN() GCCFG_Mask {
-	return GCCFG_Mask{mmio.UM32{&p.GCCFG.U32, uint32(VBDEN)}}
-}
-
-type CID_Bits uint32
-
-func (b CID_Bits) Field(mask CID_Bits) int {
+func (b HPTXFSIZ) Field(mask HPTXFSIZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CID_Bits) J(v int) CID_Bits {
-	return CID_Bits(bits.Make32(v, uint32(mask)))
+func (mask HPTXFSIZ) J(v int) HPTXFSIZ {
+	return HPTXFSIZ(bits.Make32(v, uint32(mask)))
 }
 
-type CID struct{ mmio.U32 }
+type RHPTXFSIZ struct{ mmio.U32 }
 
-func (r *CID) Bits(mask CID_Bits) CID_Bits { return CID_Bits(r.U32.Bits(uint32(mask))) }
-func (r *CID) StoreBits(mask, b CID_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CID) SetBits(mask CID_Bits)       { r.U32.SetBits(uint32(mask)) }
-func (r *CID) ClearBits(mask CID_Bits)     { r.U32.ClearBits(uint32(mask)) }
-func (r *CID) Load() CID_Bits              { return CID_Bits(r.U32.Load()) }
-func (r *CID) Store(b CID_Bits)            { r.U32.Store(uint32(b)) }
+func (r *RHPTXFSIZ) Bits(mask HPTXFSIZ) HPTXFSIZ { return HPTXFSIZ(r.U32.Bits(uint32(mask))) }
+func (r *RHPTXFSIZ) StoreBits(mask, b HPTXFSIZ)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RHPTXFSIZ) SetBits(mask HPTXFSIZ)       { r.U32.SetBits(uint32(mask)) }
+func (r *RHPTXFSIZ) ClearBits(mask HPTXFSIZ)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RHPTXFSIZ) Load() HPTXFSIZ              { return HPTXFSIZ(r.U32.Load()) }
+func (r *RHPTXFSIZ) Store(b HPTXFSIZ)            { r.U32.Store(uint32(b)) }
 
-func (r *CID) AtomicStoreBits(mask, b CID_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *CID) AtomicSetBits(mask CID_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CID) AtomicClearBits(mask CID_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RHPTXFSIZ) AtomicStoreBits(mask, b HPTXFSIZ) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RHPTXFSIZ) AtomicSetBits(mask HPTXFSIZ)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RHPTXFSIZ) AtomicClearBits(mask HPTXFSIZ)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CID_Mask struct{ mmio.UM32 }
+type RMHPTXFSIZ struct{ mmio.UM32 }
 
-func (rm CID_Mask) Load() CID_Bits   { return CID_Bits(rm.UM32.Load()) }
-func (rm CID_Mask) Store(b CID_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMHPTXFSIZ) Load() HPTXFSIZ   { return HPTXFSIZ(rm.UM32.Load()) }
+func (rm RMHPTXFSIZ) Store(b HPTXFSIZ) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_Global_Periph) PRODUCT_ID() CID_Mask {
-	return CID_Mask{mmio.UM32{&p.CID.U32, uint32(PRODUCT_ID)}}
+func (p *USB_OTG_Global_Periph) PTXSA() RMHPTXFSIZ {
+	return RMHPTXFSIZ{mmio.UM32{&p.HPTXFSIZ.U32, uint32(PTXSA)}}
 }
 
-type GSNPSID_Bits uint32
+func (p *USB_OTG_Global_Periph) PTXFD() RMHPTXFSIZ {
+	return RMHPTXFSIZ{mmio.UM32{&p.HPTXFSIZ.U32, uint32(PTXFD)}}
+}
 
-func (b GSNPSID_Bits) Field(mask GSNPSID_Bits) int {
+type DIEPTXF uint32
+
+func (b DIEPTXF) Field(mask DIEPTXF) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask GSNPSID_Bits) J(v int) GSNPSID_Bits {
-	return GSNPSID_Bits(bits.Make32(v, uint32(mask)))
+func (mask DIEPTXF) J(v int) DIEPTXF {
+	return DIEPTXF(bits.Make32(v, uint32(mask)))
 }
 
-type GSNPSID struct{ mmio.U32 }
+type RDIEPTXF struct{ mmio.U32 }
 
-func (r *GSNPSID) Bits(mask GSNPSID_Bits) GSNPSID_Bits { return GSNPSID_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GSNPSID) StoreBits(mask, b GSNPSID_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GSNPSID) SetBits(mask GSNPSID_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GSNPSID) ClearBits(mask GSNPSID_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GSNPSID) Load() GSNPSID_Bits                  { return GSNPSID_Bits(r.U32.Load()) }
-func (r *GSNPSID) Store(b GSNPSID_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RDIEPTXF) Bits(mask DIEPTXF) DIEPTXF { return DIEPTXF(r.U32.Bits(uint32(mask))) }
+func (r *RDIEPTXF) StoreBits(mask, b DIEPTXF) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDIEPTXF) SetBits(mask DIEPTXF)      { r.U32.SetBits(uint32(mask)) }
+func (r *RDIEPTXF) ClearBits(mask DIEPTXF)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RDIEPTXF) Load() DIEPTXF             { return DIEPTXF(r.U32.Load()) }
+func (r *RDIEPTXF) Store(b DIEPTXF)           { r.U32.Store(uint32(b)) }
 
-func (r *GSNPSID) AtomicStoreBits(mask, b GSNPSID_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GSNPSID) AtomicSetBits(mask GSNPSID_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GSNPSID) AtomicClearBits(mask GSNPSID_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RDIEPTXF) AtomicStoreBits(mask, b DIEPTXF) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDIEPTXF) AtomicSetBits(mask DIEPTXF)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDIEPTXF) AtomicClearBits(mask DIEPTXF)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type GSNPSID_Mask struct{ mmio.UM32 }
+type RMDIEPTXF struct{ mmio.UM32 }
 
-func (rm GSNPSID_Mask) Load() GSNPSID_Bits   { return GSNPSID_Bits(rm.UM32.Load()) }
-func (rm GSNPSID_Mask) Store(b GSNPSID_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMDIEPTXF) Load() DIEPTXF   { return DIEPTXF(rm.UM32.Load()) }
+func (rm RMDIEPTXF) Store(b DIEPTXF) { rm.UM32.Store(uint32(b)) }
 
-type GHWCFG1_Bits uint32
-
-func (b GHWCFG1_Bits) Field(mask GHWCFG1_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask GHWCFG1_Bits) J(v int) GHWCFG1_Bits {
-	return GHWCFG1_Bits(bits.Make32(v, uint32(mask)))
+func (p *USB_OTG_Global_Periph) INEPTXSA(n int) RMDIEPTXF {
+	return RMDIEPTXF{mmio.UM32{&p.DIEPTXF[n].U32, uint32(INEPTXSA)}}
 }
 
-type GHWCFG1 struct{ mmio.U32 }
-
-func (r *GHWCFG1) Bits(mask GHWCFG1_Bits) GHWCFG1_Bits { return GHWCFG1_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GHWCFG1) StoreBits(mask, b GHWCFG1_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GHWCFG1) SetBits(mask GHWCFG1_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GHWCFG1) ClearBits(mask GHWCFG1_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GHWCFG1) Load() GHWCFG1_Bits                  { return GHWCFG1_Bits(r.U32.Load()) }
-func (r *GHWCFG1) Store(b GHWCFG1_Bits)                { r.U32.Store(uint32(b)) }
-
-func (r *GHWCFG1) AtomicStoreBits(mask, b GHWCFG1_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GHWCFG1) AtomicSetBits(mask GHWCFG1_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GHWCFG1) AtomicClearBits(mask GHWCFG1_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type GHWCFG1_Mask struct{ mmio.UM32 }
-
-func (rm GHWCFG1_Mask) Load() GHWCFG1_Bits   { return GHWCFG1_Bits(rm.UM32.Load()) }
-func (rm GHWCFG1_Mask) Store(b GHWCFG1_Bits) { rm.UM32.Store(uint32(b)) }
-
-type GHWCFG2_Bits uint32
-
-func (b GHWCFG2_Bits) Field(mask GHWCFG2_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask GHWCFG2_Bits) J(v int) GHWCFG2_Bits {
-	return GHWCFG2_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type GHWCFG2 struct{ mmio.U32 }
-
-func (r *GHWCFG2) Bits(mask GHWCFG2_Bits) GHWCFG2_Bits { return GHWCFG2_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GHWCFG2) StoreBits(mask, b GHWCFG2_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GHWCFG2) SetBits(mask GHWCFG2_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GHWCFG2) ClearBits(mask GHWCFG2_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GHWCFG2) Load() GHWCFG2_Bits                  { return GHWCFG2_Bits(r.U32.Load()) }
-func (r *GHWCFG2) Store(b GHWCFG2_Bits)                { r.U32.Store(uint32(b)) }
-
-func (r *GHWCFG2) AtomicStoreBits(mask, b GHWCFG2_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GHWCFG2) AtomicSetBits(mask GHWCFG2_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GHWCFG2) AtomicClearBits(mask GHWCFG2_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type GHWCFG2_Mask struct{ mmio.UM32 }
-
-func (rm GHWCFG2_Mask) Load() GHWCFG2_Bits   { return GHWCFG2_Bits(rm.UM32.Load()) }
-func (rm GHWCFG2_Mask) Store(b GHWCFG2_Bits) { rm.UM32.Store(uint32(b)) }
-
-type GHWCFG3_Bits uint32
-
-func (b GHWCFG3_Bits) Field(mask GHWCFG3_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask GHWCFG3_Bits) J(v int) GHWCFG3_Bits {
-	return GHWCFG3_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type GHWCFG3 struct{ mmio.U32 }
-
-func (r *GHWCFG3) Bits(mask GHWCFG3_Bits) GHWCFG3_Bits { return GHWCFG3_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GHWCFG3) StoreBits(mask, b GHWCFG3_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GHWCFG3) SetBits(mask GHWCFG3_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GHWCFG3) ClearBits(mask GHWCFG3_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GHWCFG3) Load() GHWCFG3_Bits                  { return GHWCFG3_Bits(r.U32.Load()) }
-func (r *GHWCFG3) Store(b GHWCFG3_Bits)                { r.U32.Store(uint32(b)) }
-
-func (r *GHWCFG3) AtomicStoreBits(mask, b GHWCFG3_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GHWCFG3) AtomicSetBits(mask GHWCFG3_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GHWCFG3) AtomicClearBits(mask GHWCFG3_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type GHWCFG3_Mask struct{ mmio.UM32 }
-
-func (rm GHWCFG3_Mask) Load() GHWCFG3_Bits   { return GHWCFG3_Bits(rm.UM32.Load()) }
-func (rm GHWCFG3_Mask) Store(b GHWCFG3_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *USB_OTG_Global_Periph) LPMMode() GHWCFG3_Mask {
-	return GHWCFG3_Mask{mmio.UM32{&p.GHWCFG3.U32, uint32(LPMMode)}}
-}
-
-type GLPMCFG_Bits uint32
-
-func (b GLPMCFG_Bits) Field(mask GLPMCFG_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask GLPMCFG_Bits) J(v int) GLPMCFG_Bits {
-	return GLPMCFG_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type GLPMCFG struct{ mmio.U32 }
-
-func (r *GLPMCFG) Bits(mask GLPMCFG_Bits) GLPMCFG_Bits { return GLPMCFG_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GLPMCFG) StoreBits(mask, b GLPMCFG_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GLPMCFG) SetBits(mask GLPMCFG_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GLPMCFG) ClearBits(mask GLPMCFG_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GLPMCFG) Load() GLPMCFG_Bits                  { return GLPMCFG_Bits(r.U32.Load()) }
-func (r *GLPMCFG) Store(b GLPMCFG_Bits)                { r.U32.Store(uint32(b)) }
-
-func (r *GLPMCFG) AtomicStoreBits(mask, b GLPMCFG_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GLPMCFG) AtomicSetBits(mask GLPMCFG_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GLPMCFG) AtomicClearBits(mask GLPMCFG_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type GLPMCFG_Mask struct{ mmio.UM32 }
-
-func (rm GLPMCFG_Mask) Load() GLPMCFG_Bits   { return GLPMCFG_Bits(rm.UM32.Load()) }
-func (rm GLPMCFG_Mask) Store(b GLPMCFG_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *USB_OTG_Global_Periph) ENBESL() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(ENBESL)}}
-}
-
-func (p *USB_OTG_Global_Periph) LPMRCNTSTS() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMRCNTSTS)}}
-}
-
-func (p *USB_OTG_Global_Periph) SNDLPM() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(SNDLPM)}}
-}
-
-func (p *USB_OTG_Global_Periph) LPMRCNT() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMRCNT)}}
-}
-
-func (p *USB_OTG_Global_Periph) LPMCHIDX() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMCHIDX)}}
-}
-
-func (p *USB_OTG_Global_Periph) L1ResumeOK() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(L1ResumeOK)}}
-}
-
-func (p *USB_OTG_Global_Periph) SLPSTS() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(SLPSTS)}}
-}
-
-func (p *USB_OTG_Global_Periph) LPMRSP() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMRSP)}}
-}
-
-func (p *USB_OTG_Global_Periph) L1DSEN() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(L1DSEN)}}
-}
-
-func (p *USB_OTG_Global_Periph) BESLTHRS() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(BESLTHRS)}}
-}
-
-func (p *USB_OTG_Global_Periph) L1SSEN() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(L1SSEN)}}
-}
-
-func (p *USB_OTG_Global_Periph) REMWAKE() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(REMWAKE)}}
-}
-
-func (p *USB_OTG_Global_Periph) BESL() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(BESL)}}
-}
-
-func (p *USB_OTG_Global_Periph) LPMACK() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMACK)}}
-}
-
-func (p *USB_OTG_Global_Periph) LPMEN() GLPMCFG_Mask {
-	return GLPMCFG_Mask{mmio.UM32{&p.GLPMCFG.U32, uint32(LPMEN)}}
-}
-
-type GPWRDN_Bits uint32
-
-func (b GPWRDN_Bits) Field(mask GPWRDN_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask GPWRDN_Bits) J(v int) GPWRDN_Bits {
-	return GPWRDN_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type GPWRDN struct{ mmio.U32 }
-
-func (r *GPWRDN) Bits(mask GPWRDN_Bits) GPWRDN_Bits { return GPWRDN_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GPWRDN) StoreBits(mask, b GPWRDN_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GPWRDN) SetBits(mask GPWRDN_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *GPWRDN) ClearBits(mask GPWRDN_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *GPWRDN) Load() GPWRDN_Bits                 { return GPWRDN_Bits(r.U32.Load()) }
-func (r *GPWRDN) Store(b GPWRDN_Bits)               { r.U32.Store(uint32(b)) }
-
-func (r *GPWRDN) AtomicStoreBits(mask, b GPWRDN_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *GPWRDN) AtomicSetBits(mask GPWRDN_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GPWRDN) AtomicClearBits(mask GPWRDN_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type GPWRDN_Mask struct{ mmio.UM32 }
-
-func (rm GPWRDN_Mask) Load() GPWRDN_Bits   { return GPWRDN_Bits(rm.UM32.Load()) }
-func (rm GPWRDN_Mask) Store(b GPWRDN_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *USB_OTG_Global_Periph) DISABLEVBUS() GPWRDN_Mask {
-	return GPWRDN_Mask{mmio.UM32{&p.GPWRDN.U32, uint32(DISABLEVBUS)}}
-}
-
-type GDFIFOCFG_Bits uint32
-
-func (b GDFIFOCFG_Bits) Field(mask GDFIFOCFG_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask GDFIFOCFG_Bits) J(v int) GDFIFOCFG_Bits {
-	return GDFIFOCFG_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type GDFIFOCFG struct{ mmio.U32 }
-
-func (r *GDFIFOCFG) Bits(mask GDFIFOCFG_Bits) GDFIFOCFG_Bits {
-	return GDFIFOCFG_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *GDFIFOCFG) StoreBits(mask, b GDFIFOCFG_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GDFIFOCFG) SetBits(mask GDFIFOCFG_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *GDFIFOCFG) ClearBits(mask GDFIFOCFG_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *GDFIFOCFG) Load() GDFIFOCFG_Bits             { return GDFIFOCFG_Bits(r.U32.Load()) }
-func (r *GDFIFOCFG) Store(b GDFIFOCFG_Bits)           { r.U32.Store(uint32(b)) }
-
-func (r *GDFIFOCFG) AtomicStoreBits(mask, b GDFIFOCFG_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GDFIFOCFG) AtomicSetBits(mask GDFIFOCFG_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GDFIFOCFG) AtomicClearBits(mask GDFIFOCFG_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type GDFIFOCFG_Mask struct{ mmio.UM32 }
-
-func (rm GDFIFOCFG_Mask) Load() GDFIFOCFG_Bits   { return GDFIFOCFG_Bits(rm.UM32.Load()) }
-func (rm GDFIFOCFG_Mask) Store(b GDFIFOCFG_Bits) { rm.UM32.Store(uint32(b)) }
-
-type GADPCTL_Bits uint32
-
-func (b GADPCTL_Bits) Field(mask GADPCTL_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask GADPCTL_Bits) J(v int) GADPCTL_Bits {
-	return GADPCTL_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type GADPCTL struct{ mmio.U32 }
-
-func (r *GADPCTL) Bits(mask GADPCTL_Bits) GADPCTL_Bits { return GADPCTL_Bits(r.U32.Bits(uint32(mask))) }
-func (r *GADPCTL) StoreBits(mask, b GADPCTL_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *GADPCTL) SetBits(mask GADPCTL_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *GADPCTL) ClearBits(mask GADPCTL_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *GADPCTL) Load() GADPCTL_Bits                  { return GADPCTL_Bits(r.U32.Load()) }
-func (r *GADPCTL) Store(b GADPCTL_Bits)                { r.U32.Store(uint32(b)) }
-
-func (r *GADPCTL) AtomicStoreBits(mask, b GADPCTL_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *GADPCTL) AtomicSetBits(mask GADPCTL_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *GADPCTL) AtomicClearBits(mask GADPCTL_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type GADPCTL_Mask struct{ mmio.UM32 }
-
-func (rm GADPCTL_Mask) Load() GADPCTL_Bits   { return GADPCTL_Bits(rm.UM32.Load()) }
-func (rm GADPCTL_Mask) Store(b GADPCTL_Bits) { rm.UM32.Store(uint32(b)) }
-
-type HPTXFSIZ_Bits uint32
-
-func (b HPTXFSIZ_Bits) Field(mask HPTXFSIZ_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask HPTXFSIZ_Bits) J(v int) HPTXFSIZ_Bits {
-	return HPTXFSIZ_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type HPTXFSIZ struct{ mmio.U32 }
-
-func (r *HPTXFSIZ) Bits(mask HPTXFSIZ_Bits) HPTXFSIZ_Bits {
-	return HPTXFSIZ_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *HPTXFSIZ) StoreBits(mask, b HPTXFSIZ_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *HPTXFSIZ) SetBits(mask HPTXFSIZ_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *HPTXFSIZ) ClearBits(mask HPTXFSIZ_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *HPTXFSIZ) Load() HPTXFSIZ_Bits             { return HPTXFSIZ_Bits(r.U32.Load()) }
-func (r *HPTXFSIZ) Store(b HPTXFSIZ_Bits)           { r.U32.Store(uint32(b)) }
-
-func (r *HPTXFSIZ) AtomicStoreBits(mask, b HPTXFSIZ_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *HPTXFSIZ) AtomicSetBits(mask HPTXFSIZ_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *HPTXFSIZ) AtomicClearBits(mask HPTXFSIZ_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type HPTXFSIZ_Mask struct{ mmio.UM32 }
-
-func (rm HPTXFSIZ_Mask) Load() HPTXFSIZ_Bits   { return HPTXFSIZ_Bits(rm.UM32.Load()) }
-func (rm HPTXFSIZ_Mask) Store(b HPTXFSIZ_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *USB_OTG_Global_Periph) PTXSA() HPTXFSIZ_Mask {
-	return HPTXFSIZ_Mask{mmio.UM32{&p.HPTXFSIZ.U32, uint32(PTXSA)}}
-}
-
-func (p *USB_OTG_Global_Periph) PTXFD() HPTXFSIZ_Mask {
-	return HPTXFSIZ_Mask{mmio.UM32{&p.HPTXFSIZ.U32, uint32(PTXFD)}}
-}
-
-type DIEPTXF_Bits uint32
-
-func (b DIEPTXF_Bits) Field(mask DIEPTXF_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask DIEPTXF_Bits) J(v int) DIEPTXF_Bits {
-	return DIEPTXF_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type DIEPTXF struct{ mmio.U32 }
-
-func (r *DIEPTXF) Bits(mask DIEPTXF_Bits) DIEPTXF_Bits { return DIEPTXF_Bits(r.U32.Bits(uint32(mask))) }
-func (r *DIEPTXF) StoreBits(mask, b DIEPTXF_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DIEPTXF) SetBits(mask DIEPTXF_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *DIEPTXF) ClearBits(mask DIEPTXF_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *DIEPTXF) Load() DIEPTXF_Bits                  { return DIEPTXF_Bits(r.U32.Load()) }
-func (r *DIEPTXF) Store(b DIEPTXF_Bits)                { r.U32.Store(uint32(b)) }
-
-func (r *DIEPTXF) AtomicStoreBits(mask, b DIEPTXF_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *DIEPTXF) AtomicSetBits(mask DIEPTXF_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *DIEPTXF) AtomicClearBits(mask DIEPTXF_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type DIEPTXF_Mask struct{ mmio.UM32 }
-
-func (rm DIEPTXF_Mask) Load() DIEPTXF_Bits   { return DIEPTXF_Bits(rm.UM32.Load()) }
-func (rm DIEPTXF_Mask) Store(b DIEPTXF_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *USB_OTG_Global_Periph) INEPTXSA(n int) DIEPTXF_Mask {
-	return DIEPTXF_Mask{mmio.UM32{&p.DIEPTXF[n].U32, uint32(INEPTXSA)}}
-}
-
-func (p *USB_OTG_Global_Periph) INEPTXFD(n int) DIEPTXF_Mask {
-	return DIEPTXF_Mask{mmio.UM32{&p.DIEPTXF[n].U32, uint32(INEPTXFD)}}
+func (p *USB_OTG_Global_Periph) INEPTXFD(n int) RMDIEPTXF {
+	return RMDIEPTXF{mmio.UM32{&p.DIEPTXF[n].U32, uint32(INEPTXFD)}}
 }

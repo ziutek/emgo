@@ -105,7 +105,7 @@ func saveBits(w io.Writer, regs []*Register) {
 		fmt.Fprintln(w, "\nconst (")
 		for _, b := range r.Bits {
 			fmt.Fprintf(
-				w, "\t%s %s_Bits = 0x%02X << %d",
+				w, "\t%s %s = 0x%02X << %d",
 				b.Name, r.Name, b.Mask, b.LSL,
 			)
 			switch {

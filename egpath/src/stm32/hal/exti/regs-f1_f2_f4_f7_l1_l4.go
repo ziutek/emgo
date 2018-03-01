@@ -13,11 +13,11 @@ func risiTrigEnabled() Lines {
 }
 
 func (li Lines) enableRisiTrig() {
-	exti.EXTI.RTSR.AtomicSetBits(exti.RTSR_Bits(li))
+	exti.EXTI.RTSR.AtomicSetBits(exti.RTSR(li))
 }
 
 func (li Lines) disableRisiTrig() {
-	exti.EXTI.RTSR.AtomicClearBits(exti.RTSR_Bits(li))
+	exti.EXTI.RTSR.AtomicClearBits(exti.RTSR(li))
 }
 
 func fallTrigEnabled() Lines {
@@ -25,15 +25,15 @@ func fallTrigEnabled() Lines {
 }
 
 func (li Lines) enableFallTrig() {
-	exti.EXTI.FTSR.AtomicSetBits(exti.FTSR_Bits(li))
+	exti.EXTI.FTSR.AtomicSetBits(exti.FTSR(li))
 }
 
 func (li Lines) disableFallTrig() {
-	exti.EXTI.FTSR.AtomicClearBits(exti.FTSR_Bits(li))
+	exti.EXTI.FTSR.AtomicClearBits(exti.FTSR(li))
 }
 
 func (li Lines) trigger() {
-	exti.EXTI.SWIER.Store(exti.SWIER_Bits(li))
+	exti.EXTI.SWIER.Store(exti.SWIER(li))
 }
 
 func irqEnabled() Lines {
@@ -41,11 +41,11 @@ func irqEnabled() Lines {
 }
 
 func (li Lines) enableIRQ() {
-	exti.EXTI.IMR.AtomicSetBits(exti.IMR_Bits(li))
+	exti.EXTI.IMR.AtomicSetBits(exti.IMR(li))
 }
 
 func (li Lines) disableIRQ() {
-	exti.EXTI.IMR.AtomicClearBits(exti.IMR_Bits(li))
+	exti.EXTI.IMR.AtomicClearBits(exti.IMR(li))
 }
 
 func eventEnabled() Lines {
@@ -53,11 +53,11 @@ func eventEnabled() Lines {
 }
 
 func (li Lines) enableEvent() {
-	exti.EXTI.EMR.AtomicSetBits(exti.EMR_Bits(li))
+	exti.EXTI.EMR.AtomicSetBits(exti.EMR(li))
 }
 
 func (li Lines) disableEvent() {
-	exti.EXTI.EMR.AtomicClearBits(exti.EMR_Bits(li))
+	exti.EXTI.EMR.AtomicClearBits(exti.EMR(li))
 }
 
 func pending() Lines {
@@ -65,5 +65,5 @@ func pending() Lines {
 }
 
 func (li Lines) clearPending() {
-	exti.EXTI.PR.Store(exti.PR_Bits(li))
+	exti.EXTI.PR.Store(exti.PR(li))
 }

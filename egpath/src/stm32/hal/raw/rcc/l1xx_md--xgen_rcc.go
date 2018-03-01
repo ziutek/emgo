@@ -13,20 +13,20 @@ import (
 )
 
 type RCC_Periph struct {
-	CR        CR
-	ICSCR     ICSCR
-	CFGR      CFGR
-	CIR       CIR
-	AHBRSTR   AHBRSTR
-	APB2RSTR  APB2RSTR
-	APB1RSTR  APB1RSTR
-	AHBENR    AHBENR
-	APB2ENR   APB2ENR
-	APB1ENR   APB1ENR
-	AHBLPENR  AHBLPENR
-	APB2LPENR APB2LPENR
-	APB1LPENR APB1LPENR
-	CSR       CSR
+	CR        RCR
+	ICSCR     RICSCR
+	CFGR      RCFGR
+	CIR       RCIR
+	AHBRSTR   RAHBRSTR
+	APB2RSTR  RAPB2RSTR
+	APB1RSTR  RAPB1RSTR
+	AHBENR    RAHBENR
+	APB2ENR   RAPB2ENR
+	APB1ENR   RAPB1ENR
+	AHBLPENR  RAHBLPENR
+	APB2LPENR RAPB2LPENR
+	APB1LPENR RAPB1LPENR
+	CSR       RCSR
 }
 
 func (p *RCC_Periph) BaseAddr() uintptr {
@@ -36,1182 +36,1160 @@ func (p *RCC_Periph) BaseAddr() uintptr {
 //emgo:const
 var RCC = (*RCC_Periph)(unsafe.Pointer(uintptr(mmap.RCC_BASE)))
 
-type CR_Bits uint32
+type CR uint32
 
-func (b CR_Bits) Field(mask CR_Bits) int {
+func (b CR) Field(mask CR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CR_Bits) J(v int) CR_Bits {
-	return CR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CR) J(v int) CR {
+	return CR(bits.Make32(v, uint32(mask)))
 }
 
-type CR struct{ mmio.U32 }
+type RCR struct{ mmio.U32 }
 
-func (r *CR) Bits(mask CR_Bits) CR_Bits { return CR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *CR) StoreBits(mask, b CR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CR) SetBits(mask CR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *CR) ClearBits(mask CR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *CR) Load() CR_Bits             { return CR_Bits(r.U32.Load()) }
-func (r *CR) Store(b CR_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RCR) Bits(mask CR) CR      { return CR(r.U32.Bits(uint32(mask))) }
+func (r *RCR) StoreBits(mask, b CR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCR) SetBits(mask CR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCR) ClearBits(mask CR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCR) Load() CR             { return CR(r.U32.Load()) }
+func (r *RCR) Store(b CR)           { r.U32.Store(uint32(b)) }
 
-func (r *CR) AtomicStoreBits(mask, b CR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *CR) AtomicSetBits(mask CR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CR) AtomicClearBits(mask CR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCR) AtomicStoreBits(mask, b CR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCR) AtomicSetBits(mask CR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCR) AtomicClearBits(mask CR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CR_Mask struct{ mmio.UM32 }
+type RMCR struct{ mmio.UM32 }
 
-func (rm CR_Mask) Load() CR_Bits   { return CR_Bits(rm.UM32.Load()) }
-func (rm CR_Mask) Store(b CR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCR) Load() CR   { return CR(rm.UM32.Load()) }
+func (rm RMCR) Store(b CR) { rm.UM32.Store(uint32(b)) }
 
-func (p *RCC_Periph) HSION() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(HSION)}}
+func (p *RCC_Periph) HSION() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(HSION)}}
 }
 
-func (p *RCC_Periph) HSIRDY() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(HSIRDY)}}
+func (p *RCC_Periph) HSIRDY() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(HSIRDY)}}
 }
 
-func (p *RCC_Periph) MSION() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(MSION)}}
+func (p *RCC_Periph) MSION() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(MSION)}}
 }
 
-func (p *RCC_Periph) MSIRDY() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(MSIRDY)}}
+func (p *RCC_Periph) MSIRDY() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(MSIRDY)}}
 }
 
-func (p *RCC_Periph) HSEON() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(HSEON)}}
+func (p *RCC_Periph) HSEON() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(HSEON)}}
 }
 
-func (p *RCC_Periph) HSERDY() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(HSERDY)}}
+func (p *RCC_Periph) HSERDY() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(HSERDY)}}
 }
 
-func (p *RCC_Periph) HSEBYP() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(HSEBYP)}}
+func (p *RCC_Periph) HSEBYP() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(HSEBYP)}}
 }
 
-func (p *RCC_Periph) PLLON() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(PLLON)}}
+func (p *RCC_Periph) PLLON() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(PLLON)}}
 }
 
-func (p *RCC_Periph) PLLRDY() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(PLLRDY)}}
+func (p *RCC_Periph) PLLRDY() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(PLLRDY)}}
 }
 
-func (p *RCC_Periph) CSSON() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(CSSON)}}
+func (p *RCC_Periph) CSSON() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(CSSON)}}
 }
 
-func (p *RCC_Periph) RTCPRE() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(RTCPRE)}}
+func (p *RCC_Periph) RTCPRE() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(RTCPRE)}}
 }
 
-type ICSCR_Bits uint32
+type ICSCR uint32
 
-func (b ICSCR_Bits) Field(mask ICSCR_Bits) int {
+func (b ICSCR) Field(mask ICSCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask ICSCR_Bits) J(v int) ICSCR_Bits {
-	return ICSCR_Bits(bits.Make32(v, uint32(mask)))
+func (mask ICSCR) J(v int) ICSCR {
+	return ICSCR(bits.Make32(v, uint32(mask)))
 }
 
-type ICSCR struct{ mmio.U32 }
+type RICSCR struct{ mmio.U32 }
 
-func (r *ICSCR) Bits(mask ICSCR_Bits) ICSCR_Bits { return ICSCR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *ICSCR) StoreBits(mask, b ICSCR_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *ICSCR) SetBits(mask ICSCR_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *ICSCR) ClearBits(mask ICSCR_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *ICSCR) Load() ICSCR_Bits                { return ICSCR_Bits(r.U32.Load()) }
-func (r *ICSCR) Store(b ICSCR_Bits)              { r.U32.Store(uint32(b)) }
+func (r *RICSCR) Bits(mask ICSCR) ICSCR   { return ICSCR(r.U32.Bits(uint32(mask))) }
+func (r *RICSCR) StoreBits(mask, b ICSCR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RICSCR) SetBits(mask ICSCR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RICSCR) ClearBits(mask ICSCR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RICSCR) Load() ICSCR             { return ICSCR(r.U32.Load()) }
+func (r *RICSCR) Store(b ICSCR)           { r.U32.Store(uint32(b)) }
 
-func (r *ICSCR) AtomicStoreBits(mask, b ICSCR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *ICSCR) AtomicSetBits(mask ICSCR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *ICSCR) AtomicClearBits(mask ICSCR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RICSCR) AtomicStoreBits(mask, b ICSCR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RICSCR) AtomicSetBits(mask ICSCR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RICSCR) AtomicClearBits(mask ICSCR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type ICSCR_Mask struct{ mmio.UM32 }
+type RMICSCR struct{ mmio.UM32 }
 
-func (rm ICSCR_Mask) Load() ICSCR_Bits   { return ICSCR_Bits(rm.UM32.Load()) }
-func (rm ICSCR_Mask) Store(b ICSCR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMICSCR) Load() ICSCR   { return ICSCR(rm.UM32.Load()) }
+func (rm RMICSCR) Store(b ICSCR) { rm.UM32.Store(uint32(b)) }
 
-func (p *RCC_Periph) HSICAL() ICSCR_Mask {
-	return ICSCR_Mask{mmio.UM32{&p.ICSCR.U32, uint32(HSICAL)}}
+func (p *RCC_Periph) HSICAL() RMICSCR {
+	return RMICSCR{mmio.UM32{&p.ICSCR.U32, uint32(HSICAL)}}
 }
 
-func (p *RCC_Periph) HSITRIM() ICSCR_Mask {
-	return ICSCR_Mask{mmio.UM32{&p.ICSCR.U32, uint32(HSITRIM)}}
+func (p *RCC_Periph) HSITRIM() RMICSCR {
+	return RMICSCR{mmio.UM32{&p.ICSCR.U32, uint32(HSITRIM)}}
 }
 
-func (p *RCC_Periph) MSIRANGE() ICSCR_Mask {
-	return ICSCR_Mask{mmio.UM32{&p.ICSCR.U32, uint32(MSIRANGE)}}
+func (p *RCC_Periph) MSIRANGE() RMICSCR {
+	return RMICSCR{mmio.UM32{&p.ICSCR.U32, uint32(MSIRANGE)}}
 }
 
-func (p *RCC_Periph) MSICAL() ICSCR_Mask {
-	return ICSCR_Mask{mmio.UM32{&p.ICSCR.U32, uint32(MSICAL)}}
+func (p *RCC_Periph) MSICAL() RMICSCR {
+	return RMICSCR{mmio.UM32{&p.ICSCR.U32, uint32(MSICAL)}}
 }
 
-func (p *RCC_Periph) MSITRIM() ICSCR_Mask {
-	return ICSCR_Mask{mmio.UM32{&p.ICSCR.U32, uint32(MSITRIM)}}
+func (p *RCC_Periph) MSITRIM() RMICSCR {
+	return RMICSCR{mmio.UM32{&p.ICSCR.U32, uint32(MSITRIM)}}
 }
 
-type CFGR_Bits uint32
+type CFGR uint32
 
-func (b CFGR_Bits) Field(mask CFGR_Bits) int {
+func (b CFGR) Field(mask CFGR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CFGR_Bits) J(v int) CFGR_Bits {
-	return CFGR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CFGR) J(v int) CFGR {
+	return CFGR(bits.Make32(v, uint32(mask)))
 }
 
-type CFGR struct{ mmio.U32 }
+type RCFGR struct{ mmio.U32 }
 
-func (r *CFGR) Bits(mask CFGR_Bits) CFGR_Bits { return CFGR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *CFGR) StoreBits(mask, b CFGR_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CFGR) SetBits(mask CFGR_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *CFGR) ClearBits(mask CFGR_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *CFGR) Load() CFGR_Bits               { return CFGR_Bits(r.U32.Load()) }
-func (r *CFGR) Store(b CFGR_Bits)             { r.U32.Store(uint32(b)) }
+func (r *RCFGR) Bits(mask CFGR) CFGR    { return CFGR(r.U32.Bits(uint32(mask))) }
+func (r *RCFGR) StoreBits(mask, b CFGR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCFGR) SetBits(mask CFGR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCFGR) ClearBits(mask CFGR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCFGR) Load() CFGR             { return CFGR(r.U32.Load()) }
+func (r *RCFGR) Store(b CFGR)           { r.U32.Store(uint32(b)) }
 
-func (r *CFGR) AtomicStoreBits(mask, b CFGR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *CFGR) AtomicSetBits(mask CFGR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CFGR) AtomicClearBits(mask CFGR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCFGR) AtomicStoreBits(mask, b CFGR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCFGR) AtomicSetBits(mask CFGR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCFGR) AtomicClearBits(mask CFGR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CFGR_Mask struct{ mmio.UM32 }
+type RMCFGR struct{ mmio.UM32 }
 
-func (rm CFGR_Mask) Load() CFGR_Bits   { return CFGR_Bits(rm.UM32.Load()) }
-func (rm CFGR_Mask) Store(b CFGR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCFGR) Load() CFGR   { return CFGR(rm.UM32.Load()) }
+func (rm RMCFGR) Store(b CFGR) { rm.UM32.Store(uint32(b)) }
 
-func (p *RCC_Periph) SW() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(SW)}}
+func (p *RCC_Periph) SW() RMCFGR {
+	return RMCFGR{mmio.UM32{&p.CFGR.U32, uint32(SW)}}
 }
 
-func (p *RCC_Periph) SWS() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(SWS)}}
+func (p *RCC_Periph) SWS() RMCFGR {
+	return RMCFGR{mmio.UM32{&p.CFGR.U32, uint32(SWS)}}
 }
 
-func (p *RCC_Periph) HPRE() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(HPRE)}}
+func (p *RCC_Periph) HPRE() RMCFGR {
+	return RMCFGR{mmio.UM32{&p.CFGR.U32, uint32(HPRE)}}
 }
 
-func (p *RCC_Periph) PPRE1() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(PPRE1)}}
+func (p *RCC_Periph) PPRE1() RMCFGR {
+	return RMCFGR{mmio.UM32{&p.CFGR.U32, uint32(PPRE1)}}
 }
 
-func (p *RCC_Periph) PPRE2() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(PPRE2)}}
+func (p *RCC_Periph) PPRE2() RMCFGR {
+	return RMCFGR{mmio.UM32{&p.CFGR.U32, uint32(PPRE2)}}
 }
 
-func (p *RCC_Periph) PLLSRC() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(PLLSRC)}}
+func (p *RCC_Periph) PLLSRC() RMCFGR {
+	return RMCFGR{mmio.UM32{&p.CFGR.U32, uint32(PLLSRC)}}
 }
 
-func (p *RCC_Periph) PLLMUL() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(PLLMUL)}}
+func (p *RCC_Periph) PLLMUL() RMCFGR {
+	return RMCFGR{mmio.UM32{&p.CFGR.U32, uint32(PLLMUL)}}
 }
 
-func (p *RCC_Periph) PLLDIV() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(PLLDIV)}}
+func (p *RCC_Periph) PLLDIV() RMCFGR {
+	return RMCFGR{mmio.UM32{&p.CFGR.U32, uint32(PLLDIV)}}
 }
 
-func (p *RCC_Periph) MCOSEL() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(MCOSEL)}}
+func (p *RCC_Periph) MCOSEL() RMCFGR {
+	return RMCFGR{mmio.UM32{&p.CFGR.U32, uint32(MCOSEL)}}
 }
 
-func (p *RCC_Periph) MCOPRE() CFGR_Mask {
-	return CFGR_Mask{mmio.UM32{&p.CFGR.U32, uint32(MCOPRE)}}
+func (p *RCC_Periph) MCOPRE() RMCFGR {
+	return RMCFGR{mmio.UM32{&p.CFGR.U32, uint32(MCOPRE)}}
 }
 
-type CIR_Bits uint32
+type CIR uint32
 
-func (b CIR_Bits) Field(mask CIR_Bits) int {
+func (b CIR) Field(mask CIR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CIR_Bits) J(v int) CIR_Bits {
-	return CIR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CIR) J(v int) CIR {
+	return CIR(bits.Make32(v, uint32(mask)))
 }
 
-type CIR struct{ mmio.U32 }
+type RCIR struct{ mmio.U32 }
 
-func (r *CIR) Bits(mask CIR_Bits) CIR_Bits { return CIR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *CIR) StoreBits(mask, b CIR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CIR) SetBits(mask CIR_Bits)       { r.U32.SetBits(uint32(mask)) }
-func (r *CIR) ClearBits(mask CIR_Bits)     { r.U32.ClearBits(uint32(mask)) }
-func (r *CIR) Load() CIR_Bits              { return CIR_Bits(r.U32.Load()) }
-func (r *CIR) Store(b CIR_Bits)            { r.U32.Store(uint32(b)) }
+func (r *RCIR) Bits(mask CIR) CIR     { return CIR(r.U32.Bits(uint32(mask))) }
+func (r *RCIR) StoreBits(mask, b CIR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCIR) SetBits(mask CIR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCIR) ClearBits(mask CIR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCIR) Load() CIR             { return CIR(r.U32.Load()) }
+func (r *RCIR) Store(b CIR)           { r.U32.Store(uint32(b)) }
 
-func (r *CIR) AtomicStoreBits(mask, b CIR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *CIR) AtomicSetBits(mask CIR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CIR) AtomicClearBits(mask CIR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCIR) AtomicStoreBits(mask, b CIR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCIR) AtomicSetBits(mask CIR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCIR) AtomicClearBits(mask CIR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CIR_Mask struct{ mmio.UM32 }
+type RMCIR struct{ mmio.UM32 }
 
-func (rm CIR_Mask) Load() CIR_Bits   { return CIR_Bits(rm.UM32.Load()) }
-func (rm CIR_Mask) Store(b CIR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCIR) Load() CIR   { return CIR(rm.UM32.Load()) }
+func (rm RMCIR) Store(b CIR) { rm.UM32.Store(uint32(b)) }
 
-func (p *RCC_Periph) LSIRDYF() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(LSIRDYF)}}
+func (p *RCC_Periph) LSIRDYF() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(LSIRDYF)}}
 }
 
-func (p *RCC_Periph) LSERDYF() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(LSERDYF)}}
+func (p *RCC_Periph) LSERDYF() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(LSERDYF)}}
 }
 
-func (p *RCC_Periph) HSIRDYF() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(HSIRDYF)}}
+func (p *RCC_Periph) HSIRDYF() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(HSIRDYF)}}
 }
 
-func (p *RCC_Periph) HSERDYF() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(HSERDYF)}}
+func (p *RCC_Periph) HSERDYF() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(HSERDYF)}}
 }
 
-func (p *RCC_Periph) PLLRDYF() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(PLLRDYF)}}
+func (p *RCC_Periph) PLLRDYF() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(PLLRDYF)}}
 }
 
-func (p *RCC_Periph) MSIRDYF() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(MSIRDYF)}}
+func (p *RCC_Periph) MSIRDYF() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(MSIRDYF)}}
 }
 
-func (p *RCC_Periph) LSECSS() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(LSECSS)}}
+func (p *RCC_Periph) LSECSS() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(LSECSS)}}
 }
 
-func (p *RCC_Periph) CSSF() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(CSSF)}}
+func (p *RCC_Periph) CSSF() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(CSSF)}}
 }
 
-func (p *RCC_Periph) LSIRDYIE() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(LSIRDYIE)}}
+func (p *RCC_Periph) LSIRDYIE() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(LSIRDYIE)}}
 }
 
-func (p *RCC_Periph) LSERDYIE() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(LSERDYIE)}}
+func (p *RCC_Periph) LSERDYIE() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(LSERDYIE)}}
 }
 
-func (p *RCC_Periph) HSIRDYIE() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(HSIRDYIE)}}
+func (p *RCC_Periph) HSIRDYIE() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(HSIRDYIE)}}
 }
 
-func (p *RCC_Periph) HSERDYIE() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(HSERDYIE)}}
+func (p *RCC_Periph) HSERDYIE() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(HSERDYIE)}}
 }
 
-func (p *RCC_Periph) PLLRDYIE() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(PLLRDYIE)}}
+func (p *RCC_Periph) PLLRDYIE() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(PLLRDYIE)}}
 }
 
-func (p *RCC_Periph) MSIRDYIE() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(MSIRDYIE)}}
+func (p *RCC_Periph) MSIRDYIE() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(MSIRDYIE)}}
 }
 
-func (p *RCC_Periph) LSECSSIE() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(LSECSSIE)}}
+func (p *RCC_Periph) LSECSSIE() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(LSECSSIE)}}
 }
 
-func (p *RCC_Periph) LSIRDYC() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(LSIRDYC)}}
+func (p *RCC_Periph) LSIRDYC() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(LSIRDYC)}}
 }
 
-func (p *RCC_Periph) LSERDYC() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(LSERDYC)}}
+func (p *RCC_Periph) LSERDYC() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(LSERDYC)}}
 }
 
-func (p *RCC_Periph) HSIRDYC() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(HSIRDYC)}}
+func (p *RCC_Periph) HSIRDYC() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(HSIRDYC)}}
 }
 
-func (p *RCC_Periph) HSERDYC() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(HSERDYC)}}
+func (p *RCC_Periph) HSERDYC() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(HSERDYC)}}
 }
 
-func (p *RCC_Periph) PLLRDYC() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(PLLRDYC)}}
+func (p *RCC_Periph) PLLRDYC() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(PLLRDYC)}}
 }
 
-func (p *RCC_Periph) MSIRDYC() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(MSIRDYC)}}
+func (p *RCC_Periph) MSIRDYC() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(MSIRDYC)}}
 }
 
-func (p *RCC_Periph) LSECSSC() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(LSECSSC)}}
+func (p *RCC_Periph) LSECSSC() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(LSECSSC)}}
 }
 
-func (p *RCC_Periph) CSSC() CIR_Mask {
-	return CIR_Mask{mmio.UM32{&p.CIR.U32, uint32(CSSC)}}
+func (p *RCC_Periph) CSSC() RMCIR {
+	return RMCIR{mmio.UM32{&p.CIR.U32, uint32(CSSC)}}
 }
 
-type AHBRSTR_Bits uint32
+type AHBRSTR uint32
 
-func (b AHBRSTR_Bits) Field(mask AHBRSTR_Bits) int {
+func (b AHBRSTR) Field(mask AHBRSTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask AHBRSTR_Bits) J(v int) AHBRSTR_Bits {
-	return AHBRSTR_Bits(bits.Make32(v, uint32(mask)))
+func (mask AHBRSTR) J(v int) AHBRSTR {
+	return AHBRSTR(bits.Make32(v, uint32(mask)))
 }
 
-type AHBRSTR struct{ mmio.U32 }
+type RAHBRSTR struct{ mmio.U32 }
 
-func (r *AHBRSTR) Bits(mask AHBRSTR_Bits) AHBRSTR_Bits { return AHBRSTR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *AHBRSTR) StoreBits(mask, b AHBRSTR_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *AHBRSTR) SetBits(mask AHBRSTR_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *AHBRSTR) ClearBits(mask AHBRSTR_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *AHBRSTR) Load() AHBRSTR_Bits                  { return AHBRSTR_Bits(r.U32.Load()) }
-func (r *AHBRSTR) Store(b AHBRSTR_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RAHBRSTR) Bits(mask AHBRSTR) AHBRSTR { return AHBRSTR(r.U32.Bits(uint32(mask))) }
+func (r *RAHBRSTR) StoreBits(mask, b AHBRSTR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RAHBRSTR) SetBits(mask AHBRSTR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RAHBRSTR) ClearBits(mask AHBRSTR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RAHBRSTR) Load() AHBRSTR             { return AHBRSTR(r.U32.Load()) }
+func (r *RAHBRSTR) Store(b AHBRSTR)           { r.U32.Store(uint32(b)) }
 
-func (r *AHBRSTR) AtomicStoreBits(mask, b AHBRSTR_Bits) {
+func (r *RAHBRSTR) AtomicStoreBits(mask, b AHBRSTR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RAHBRSTR) AtomicSetBits(mask AHBRSTR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RAHBRSTR) AtomicClearBits(mask AHBRSTR)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMAHBRSTR struct{ mmio.UM32 }
+
+func (rm RMAHBRSTR) Load() AHBRSTR   { return AHBRSTR(rm.UM32.Load()) }
+func (rm RMAHBRSTR) Store(b AHBRSTR) { rm.UM32.Store(uint32(b)) }
+
+func (p *RCC_Periph) GPIOARST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOARST)}}
+}
+
+func (p *RCC_Periph) GPIOBRST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOBRST)}}
+}
+
+func (p *RCC_Periph) GPIOCRST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOCRST)}}
+}
+
+func (p *RCC_Periph) GPIODRST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIODRST)}}
+}
+
+func (p *RCC_Periph) GPIOERST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOERST)}}
+}
+
+func (p *RCC_Periph) GPIOHRST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOHRST)}}
+}
+
+func (p *RCC_Periph) GPIOFRST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOFRST)}}
+}
+
+func (p *RCC_Periph) GPIOGRST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOGRST)}}
+}
+
+func (p *RCC_Periph) CRCRST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(CRCRST)}}
+}
+
+func (p *RCC_Periph) FLITFRST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(FLITFRST)}}
+}
+
+func (p *RCC_Periph) DMA1RST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(DMA1RST)}}
+}
+
+func (p *RCC_Periph) DMA2RST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(DMA2RST)}}
+}
+
+func (p *RCC_Periph) AESRST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(AESRST)}}
+}
+
+func (p *RCC_Periph) FSMCRST() RMAHBRSTR {
+	return RMAHBRSTR{mmio.UM32{&p.AHBRSTR.U32, uint32(FSMCRST)}}
+}
+
+type APB2RSTR uint32
+
+func (b APB2RSTR) Field(mask APB2RSTR) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask APB2RSTR) J(v int) APB2RSTR {
+	return APB2RSTR(bits.Make32(v, uint32(mask)))
+}
+
+type RAPB2RSTR struct{ mmio.U32 }
+
+func (r *RAPB2RSTR) Bits(mask APB2RSTR) APB2RSTR { return APB2RSTR(r.U32.Bits(uint32(mask))) }
+func (r *RAPB2RSTR) StoreBits(mask, b APB2RSTR)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RAPB2RSTR) SetBits(mask APB2RSTR)       { r.U32.SetBits(uint32(mask)) }
+func (r *RAPB2RSTR) ClearBits(mask APB2RSTR)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RAPB2RSTR) Load() APB2RSTR              { return APB2RSTR(r.U32.Load()) }
+func (r *RAPB2RSTR) Store(b APB2RSTR)            { r.U32.Store(uint32(b)) }
+
+func (r *RAPB2RSTR) AtomicStoreBits(mask, b APB2RSTR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RAPB2RSTR) AtomicSetBits(mask APB2RSTR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RAPB2RSTR) AtomicClearBits(mask APB2RSTR)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMAPB2RSTR struct{ mmio.UM32 }
+
+func (rm RMAPB2RSTR) Load() APB2RSTR   { return APB2RSTR(rm.UM32.Load()) }
+func (rm RMAPB2RSTR) Store(b APB2RSTR) { rm.UM32.Store(uint32(b)) }
+
+func (p *RCC_Periph) SYSCFGRST() RMAPB2RSTR {
+	return RMAPB2RSTR{mmio.UM32{&p.APB2RSTR.U32, uint32(SYSCFGRST)}}
+}
+
+func (p *RCC_Periph) TIM9RST() RMAPB2RSTR {
+	return RMAPB2RSTR{mmio.UM32{&p.APB2RSTR.U32, uint32(TIM9RST)}}
+}
+
+func (p *RCC_Periph) TIM10RST() RMAPB2RSTR {
+	return RMAPB2RSTR{mmio.UM32{&p.APB2RSTR.U32, uint32(TIM10RST)}}
+}
+
+func (p *RCC_Periph) TIM11RST() RMAPB2RSTR {
+	return RMAPB2RSTR{mmio.UM32{&p.APB2RSTR.U32, uint32(TIM11RST)}}
+}
+
+func (p *RCC_Periph) ADC1RST() RMAPB2RSTR {
+	return RMAPB2RSTR{mmio.UM32{&p.APB2RSTR.U32, uint32(ADC1RST)}}
+}
+
+func (p *RCC_Periph) SDIORST() RMAPB2RSTR {
+	return RMAPB2RSTR{mmio.UM32{&p.APB2RSTR.U32, uint32(SDIORST)}}
+}
+
+func (p *RCC_Periph) SPI1RST() RMAPB2RSTR {
+	return RMAPB2RSTR{mmio.UM32{&p.APB2RSTR.U32, uint32(SPI1RST)}}
+}
+
+func (p *RCC_Periph) USART1RST() RMAPB2RSTR {
+	return RMAPB2RSTR{mmio.UM32{&p.APB2RSTR.U32, uint32(USART1RST)}}
+}
+
+type APB1RSTR uint32
+
+func (b APB1RSTR) Field(mask APB1RSTR) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask APB1RSTR) J(v int) APB1RSTR {
+	return APB1RSTR(bits.Make32(v, uint32(mask)))
+}
+
+type RAPB1RSTR struct{ mmio.U32 }
+
+func (r *RAPB1RSTR) Bits(mask APB1RSTR) APB1RSTR { return APB1RSTR(r.U32.Bits(uint32(mask))) }
+func (r *RAPB1RSTR) StoreBits(mask, b APB1RSTR)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RAPB1RSTR) SetBits(mask APB1RSTR)       { r.U32.SetBits(uint32(mask)) }
+func (r *RAPB1RSTR) ClearBits(mask APB1RSTR)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RAPB1RSTR) Load() APB1RSTR              { return APB1RSTR(r.U32.Load()) }
+func (r *RAPB1RSTR) Store(b APB1RSTR)            { r.U32.Store(uint32(b)) }
+
+func (r *RAPB1RSTR) AtomicStoreBits(mask, b APB1RSTR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RAPB1RSTR) AtomicSetBits(mask APB1RSTR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RAPB1RSTR) AtomicClearBits(mask APB1RSTR)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMAPB1RSTR struct{ mmio.UM32 }
+
+func (rm RMAPB1RSTR) Load() APB1RSTR   { return APB1RSTR(rm.UM32.Load()) }
+func (rm RMAPB1RSTR) Store(b APB1RSTR) { rm.UM32.Store(uint32(b)) }
+
+func (p *RCC_Periph) TIM2RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM2RST)}}
+}
+
+func (p *RCC_Periph) TIM3RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM3RST)}}
+}
+
+func (p *RCC_Periph) TIM4RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM4RST)}}
+}
+
+func (p *RCC_Periph) TIM5RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM5RST)}}
+}
+
+func (p *RCC_Periph) TIM6RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM6RST)}}
+}
+
+func (p *RCC_Periph) TIM7RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM7RST)}}
+}
+
+func (p *RCC_Periph) LCDRST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(LCDRST)}}
+}
+
+func (p *RCC_Periph) WWDGRST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(WWDGRST)}}
+}
+
+func (p *RCC_Periph) SPI2RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(SPI2RST)}}
+}
+
+func (p *RCC_Periph) SPI3RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(SPI3RST)}}
+}
+
+func (p *RCC_Periph) USART2RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(USART2RST)}}
+}
+
+func (p *RCC_Periph) USART3RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(USART3RST)}}
+}
+
+func (p *RCC_Periph) UART4RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(UART4RST)}}
+}
+
+func (p *RCC_Periph) UART5RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(UART5RST)}}
+}
+
+func (p *RCC_Periph) I2C1RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(I2C1RST)}}
+}
+
+func (p *RCC_Periph) I2C2RST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(I2C2RST)}}
+}
+
+func (p *RCC_Periph) USBRST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(USBRST)}}
+}
+
+func (p *RCC_Periph) PWRRST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(PWRRST)}}
+}
+
+func (p *RCC_Periph) DACRST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(DACRST)}}
+}
+
+func (p *RCC_Periph) COMPRST() RMAPB1RSTR {
+	return RMAPB1RSTR{mmio.UM32{&p.APB1RSTR.U32, uint32(COMPRST)}}
+}
+
+type AHBENR uint32
+
+func (b AHBENR) Field(mask AHBENR) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask AHBENR) J(v int) AHBENR {
+	return AHBENR(bits.Make32(v, uint32(mask)))
+}
+
+type RAHBENR struct{ mmio.U32 }
+
+func (r *RAHBENR) Bits(mask AHBENR) AHBENR  { return AHBENR(r.U32.Bits(uint32(mask))) }
+func (r *RAHBENR) StoreBits(mask, b AHBENR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RAHBENR) SetBits(mask AHBENR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RAHBENR) ClearBits(mask AHBENR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RAHBENR) Load() AHBENR             { return AHBENR(r.U32.Load()) }
+func (r *RAHBENR) Store(b AHBENR)           { r.U32.Store(uint32(b)) }
+
+func (r *RAHBENR) AtomicStoreBits(mask, b AHBENR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RAHBENR) AtomicSetBits(mask AHBENR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RAHBENR) AtomicClearBits(mask AHBENR)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMAHBENR struct{ mmio.UM32 }
+
+func (rm RMAHBENR) Load() AHBENR   { return AHBENR(rm.UM32.Load()) }
+func (rm RMAHBENR) Store(b AHBENR) { rm.UM32.Store(uint32(b)) }
+
+func (p *RCC_Periph) GPIOAEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(GPIOAEN)}}
+}
+
+func (p *RCC_Periph) GPIOBEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(GPIOBEN)}}
+}
+
+func (p *RCC_Periph) GPIOCEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(GPIOCEN)}}
+}
+
+func (p *RCC_Periph) GPIODEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(GPIODEN)}}
+}
+
+func (p *RCC_Periph) GPIOEEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(GPIOEEN)}}
+}
+
+func (p *RCC_Periph) GPIOHEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(GPIOHEN)}}
+}
+
+func (p *RCC_Periph) GPIOFEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(GPIOFEN)}}
+}
+
+func (p *RCC_Periph) GPIOGEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(GPIOGEN)}}
+}
+
+func (p *RCC_Periph) CRCEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(CRCEN)}}
+}
+
+func (p *RCC_Periph) FLITFEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(FLITFEN)}}
+}
+
+func (p *RCC_Periph) DMA1EN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(DMA1EN)}}
+}
+
+func (p *RCC_Periph) DMA2EN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(DMA2EN)}}
+}
+
+func (p *RCC_Periph) AESEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(AESEN)}}
+}
+
+func (p *RCC_Periph) FSMCEN() RMAHBENR {
+	return RMAHBENR{mmio.UM32{&p.AHBENR.U32, uint32(FSMCEN)}}
+}
+
+type APB2ENR uint32
+
+func (b APB2ENR) Field(mask APB2ENR) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask APB2ENR) J(v int) APB2ENR {
+	return APB2ENR(bits.Make32(v, uint32(mask)))
+}
+
+type RAPB2ENR struct{ mmio.U32 }
+
+func (r *RAPB2ENR) Bits(mask APB2ENR) APB2ENR { return APB2ENR(r.U32.Bits(uint32(mask))) }
+func (r *RAPB2ENR) StoreBits(mask, b APB2ENR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RAPB2ENR) SetBits(mask APB2ENR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RAPB2ENR) ClearBits(mask APB2ENR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RAPB2ENR) Load() APB2ENR             { return APB2ENR(r.U32.Load()) }
+func (r *RAPB2ENR) Store(b APB2ENR)           { r.U32.Store(uint32(b)) }
+
+func (r *RAPB2ENR) AtomicStoreBits(mask, b APB2ENR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RAPB2ENR) AtomicSetBits(mask APB2ENR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RAPB2ENR) AtomicClearBits(mask APB2ENR)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMAPB2ENR struct{ mmio.UM32 }
+
+func (rm RMAPB2ENR) Load() APB2ENR   { return APB2ENR(rm.UM32.Load()) }
+func (rm RMAPB2ENR) Store(b APB2ENR) { rm.UM32.Store(uint32(b)) }
+
+func (p *RCC_Periph) SYSCFGEN() RMAPB2ENR {
+	return RMAPB2ENR{mmio.UM32{&p.APB2ENR.U32, uint32(SYSCFGEN)}}
+}
+
+func (p *RCC_Periph) TIM9EN() RMAPB2ENR {
+	return RMAPB2ENR{mmio.UM32{&p.APB2ENR.U32, uint32(TIM9EN)}}
+}
+
+func (p *RCC_Periph) TIM10EN() RMAPB2ENR {
+	return RMAPB2ENR{mmio.UM32{&p.APB2ENR.U32, uint32(TIM10EN)}}
+}
+
+func (p *RCC_Periph) TIM11EN() RMAPB2ENR {
+	return RMAPB2ENR{mmio.UM32{&p.APB2ENR.U32, uint32(TIM11EN)}}
+}
+
+func (p *RCC_Periph) ADC1EN() RMAPB2ENR {
+	return RMAPB2ENR{mmio.UM32{&p.APB2ENR.U32, uint32(ADC1EN)}}
+}
+
+func (p *RCC_Periph) SDIOEN() RMAPB2ENR {
+	return RMAPB2ENR{mmio.UM32{&p.APB2ENR.U32, uint32(SDIOEN)}}
+}
+
+func (p *RCC_Periph) SPI1EN() RMAPB2ENR {
+	return RMAPB2ENR{mmio.UM32{&p.APB2ENR.U32, uint32(SPI1EN)}}
+}
+
+func (p *RCC_Periph) USART1EN() RMAPB2ENR {
+	return RMAPB2ENR{mmio.UM32{&p.APB2ENR.U32, uint32(USART1EN)}}
+}
+
+type APB1ENR uint32
+
+func (b APB1ENR) Field(mask APB1ENR) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask APB1ENR) J(v int) APB1ENR {
+	return APB1ENR(bits.Make32(v, uint32(mask)))
+}
+
+type RAPB1ENR struct{ mmio.U32 }
+
+func (r *RAPB1ENR) Bits(mask APB1ENR) APB1ENR { return APB1ENR(r.U32.Bits(uint32(mask))) }
+func (r *RAPB1ENR) StoreBits(mask, b APB1ENR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RAPB1ENR) SetBits(mask APB1ENR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RAPB1ENR) ClearBits(mask APB1ENR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RAPB1ENR) Load() APB1ENR             { return APB1ENR(r.U32.Load()) }
+func (r *RAPB1ENR) Store(b APB1ENR)           { r.U32.Store(uint32(b)) }
+
+func (r *RAPB1ENR) AtomicStoreBits(mask, b APB1ENR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RAPB1ENR) AtomicSetBits(mask APB1ENR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RAPB1ENR) AtomicClearBits(mask APB1ENR)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMAPB1ENR struct{ mmio.UM32 }
+
+func (rm RMAPB1ENR) Load() APB1ENR   { return APB1ENR(rm.UM32.Load()) }
+func (rm RMAPB1ENR) Store(b APB1ENR) { rm.UM32.Store(uint32(b)) }
+
+func (p *RCC_Periph) TIM2EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(TIM2EN)}}
+}
+
+func (p *RCC_Periph) TIM3EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(TIM3EN)}}
+}
+
+func (p *RCC_Periph) TIM4EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(TIM4EN)}}
+}
+
+func (p *RCC_Periph) TIM5EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(TIM5EN)}}
+}
+
+func (p *RCC_Periph) TIM6EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(TIM6EN)}}
+}
+
+func (p *RCC_Periph) TIM7EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(TIM7EN)}}
+}
+
+func (p *RCC_Periph) LCDEN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(LCDEN)}}
+}
+
+func (p *RCC_Periph) WWDGEN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(WWDGEN)}}
+}
+
+func (p *RCC_Periph) SPI2EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(SPI2EN)}}
+}
+
+func (p *RCC_Periph) SPI3EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(SPI3EN)}}
+}
+
+func (p *RCC_Periph) USART2EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(USART2EN)}}
+}
+
+func (p *RCC_Periph) USART3EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(USART3EN)}}
+}
+
+func (p *RCC_Periph) UART4EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(UART4EN)}}
+}
+
+func (p *RCC_Periph) UART5EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(UART5EN)}}
+}
+
+func (p *RCC_Periph) I2C1EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(I2C1EN)}}
+}
+
+func (p *RCC_Periph) I2C2EN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(I2C2EN)}}
+}
+
+func (p *RCC_Periph) USBEN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(USBEN)}}
+}
+
+func (p *RCC_Periph) PWREN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(PWREN)}}
+}
+
+func (p *RCC_Periph) DACEN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(DACEN)}}
+}
+
+func (p *RCC_Periph) COMPEN() RMAPB1ENR {
+	return RMAPB1ENR{mmio.UM32{&p.APB1ENR.U32, uint32(COMPEN)}}
+}
+
+type AHBLPENR uint32
+
+func (b AHBLPENR) Field(mask AHBLPENR) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask AHBLPENR) J(v int) AHBLPENR {
+	return AHBLPENR(bits.Make32(v, uint32(mask)))
+}
+
+type RAHBLPENR struct{ mmio.U32 }
+
+func (r *RAHBLPENR) Bits(mask AHBLPENR) AHBLPENR { return AHBLPENR(r.U32.Bits(uint32(mask))) }
+func (r *RAHBLPENR) StoreBits(mask, b AHBLPENR)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RAHBLPENR) SetBits(mask AHBLPENR)       { r.U32.SetBits(uint32(mask)) }
+func (r *RAHBLPENR) ClearBits(mask AHBLPENR)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RAHBLPENR) Load() AHBLPENR              { return AHBLPENR(r.U32.Load()) }
+func (r *RAHBLPENR) Store(b AHBLPENR)            { r.U32.Store(uint32(b)) }
+
+func (r *RAHBLPENR) AtomicStoreBits(mask, b AHBLPENR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RAHBLPENR) AtomicSetBits(mask AHBLPENR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RAHBLPENR) AtomicClearBits(mask AHBLPENR)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMAHBLPENR struct{ mmio.UM32 }
+
+func (rm RMAHBLPENR) Load() AHBLPENR   { return AHBLPENR(rm.UM32.Load()) }
+func (rm RMAHBLPENR) Store(b AHBLPENR) { rm.UM32.Store(uint32(b)) }
+
+func (p *RCC_Periph) GPIOALPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOALPEN)}}
+}
+
+func (p *RCC_Periph) GPIOBLPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOBLPEN)}}
+}
+
+func (p *RCC_Periph) GPIOCLPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOCLPEN)}}
+}
+
+func (p *RCC_Periph) GPIODLPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIODLPEN)}}
+}
+
+func (p *RCC_Periph) GPIOELPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOELPEN)}}
+}
+
+func (p *RCC_Periph) GPIOHLPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOHLPEN)}}
+}
+
+func (p *RCC_Periph) GPIOFLPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOFLPEN)}}
+}
+
+func (p *RCC_Periph) GPIOGLPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOGLPEN)}}
+}
+
+func (p *RCC_Periph) CRCLPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(CRCLPEN)}}
+}
+
+func (p *RCC_Periph) FLITFLPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(FLITFLPEN)}}
+}
+
+func (p *RCC_Periph) SRAMLPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(SRAMLPEN)}}
+}
+
+func (p *RCC_Periph) DMA1LPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(DMA1LPEN)}}
+}
+
+func (p *RCC_Periph) DMA2LPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(DMA2LPEN)}}
+}
+
+func (p *RCC_Periph) AESLPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(AESLPEN)}}
+}
+
+func (p *RCC_Periph) FSMCLPEN() RMAHBLPENR {
+	return RMAHBLPENR{mmio.UM32{&p.AHBLPENR.U32, uint32(FSMCLPEN)}}
+}
+
+type APB2LPENR uint32
+
+func (b APB2LPENR) Field(mask APB2LPENR) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask APB2LPENR) J(v int) APB2LPENR {
+	return APB2LPENR(bits.Make32(v, uint32(mask)))
+}
+
+type RAPB2LPENR struct{ mmio.U32 }
+
+func (r *RAPB2LPENR) Bits(mask APB2LPENR) APB2LPENR { return APB2LPENR(r.U32.Bits(uint32(mask))) }
+func (r *RAPB2LPENR) StoreBits(mask, b APB2LPENR)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RAPB2LPENR) SetBits(mask APB2LPENR)        { r.U32.SetBits(uint32(mask)) }
+func (r *RAPB2LPENR) ClearBits(mask APB2LPENR)      { r.U32.ClearBits(uint32(mask)) }
+func (r *RAPB2LPENR) Load() APB2LPENR               { return APB2LPENR(r.U32.Load()) }
+func (r *RAPB2LPENR) Store(b APB2LPENR)             { r.U32.Store(uint32(b)) }
+
+func (r *RAPB2LPENR) AtomicStoreBits(mask, b APB2LPENR) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *AHBRSTR) AtomicSetBits(mask AHBRSTR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *AHBRSTR) AtomicClearBits(mask AHBRSTR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RAPB2LPENR) AtomicSetBits(mask APB2LPENR)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RAPB2LPENR) AtomicClearBits(mask APB2LPENR) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type AHBRSTR_Mask struct{ mmio.UM32 }
+type RMAPB2LPENR struct{ mmio.UM32 }
 
-func (rm AHBRSTR_Mask) Load() AHBRSTR_Bits   { return AHBRSTR_Bits(rm.UM32.Load()) }
-func (rm AHBRSTR_Mask) Store(b AHBRSTR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMAPB2LPENR) Load() APB2LPENR   { return APB2LPENR(rm.UM32.Load()) }
+func (rm RMAPB2LPENR) Store(b APB2LPENR) { rm.UM32.Store(uint32(b)) }
 
-func (p *RCC_Periph) GPIOARST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOARST)}}
+func (p *RCC_Periph) SYSCFGLPEN() RMAPB2LPENR {
+	return RMAPB2LPENR{mmio.UM32{&p.APB2LPENR.U32, uint32(SYSCFGLPEN)}}
 }
 
-func (p *RCC_Periph) GPIOBRST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOBRST)}}
+func (p *RCC_Periph) TIM9LPEN() RMAPB2LPENR {
+	return RMAPB2LPENR{mmio.UM32{&p.APB2LPENR.U32, uint32(TIM9LPEN)}}
 }
 
-func (p *RCC_Periph) GPIOCRST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOCRST)}}
+func (p *RCC_Periph) TIM10LPEN() RMAPB2LPENR {
+	return RMAPB2LPENR{mmio.UM32{&p.APB2LPENR.U32, uint32(TIM10LPEN)}}
 }
 
-func (p *RCC_Periph) GPIODRST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIODRST)}}
+func (p *RCC_Periph) TIM11LPEN() RMAPB2LPENR {
+	return RMAPB2LPENR{mmio.UM32{&p.APB2LPENR.U32, uint32(TIM11LPEN)}}
 }
 
-func (p *RCC_Periph) GPIOERST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOERST)}}
+func (p *RCC_Periph) ADC1LPEN() RMAPB2LPENR {
+	return RMAPB2LPENR{mmio.UM32{&p.APB2LPENR.U32, uint32(ADC1LPEN)}}
 }
 
-func (p *RCC_Periph) GPIOHRST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOHRST)}}
+func (p *RCC_Periph) SDIOLPEN() RMAPB2LPENR {
+	return RMAPB2LPENR{mmio.UM32{&p.APB2LPENR.U32, uint32(SDIOLPEN)}}
 }
 
-func (p *RCC_Periph) GPIOFRST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOFRST)}}
+func (p *RCC_Periph) SPI1LPEN() RMAPB2LPENR {
+	return RMAPB2LPENR{mmio.UM32{&p.APB2LPENR.U32, uint32(SPI1LPEN)}}
 }
 
-func (p *RCC_Periph) GPIOGRST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(GPIOGRST)}}
+func (p *RCC_Periph) USART1LPEN() RMAPB2LPENR {
+	return RMAPB2LPENR{mmio.UM32{&p.APB2LPENR.U32, uint32(USART1LPEN)}}
 }
 
-func (p *RCC_Periph) CRCRST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(CRCRST)}}
-}
+type APB1LPENR uint32
 
-func (p *RCC_Periph) FLITFRST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(FLITFRST)}}
-}
-
-func (p *RCC_Periph) DMA1RST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(DMA1RST)}}
-}
-
-func (p *RCC_Periph) DMA2RST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(DMA2RST)}}
-}
-
-func (p *RCC_Periph) AESRST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(AESRST)}}
-}
-
-func (p *RCC_Periph) FSMCRST() AHBRSTR_Mask {
-	return AHBRSTR_Mask{mmio.UM32{&p.AHBRSTR.U32, uint32(FSMCRST)}}
-}
-
-type APB2RSTR_Bits uint32
-
-func (b APB2RSTR_Bits) Field(mask APB2RSTR_Bits) int {
+func (b APB1LPENR) Field(mask APB1LPENR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask APB2RSTR_Bits) J(v int) APB2RSTR_Bits {
-	return APB2RSTR_Bits(bits.Make32(v, uint32(mask)))
+func (mask APB1LPENR) J(v int) APB1LPENR {
+	return APB1LPENR(bits.Make32(v, uint32(mask)))
 }
 
-type APB2RSTR struct{ mmio.U32 }
+type RAPB1LPENR struct{ mmio.U32 }
 
-func (r *APB2RSTR) Bits(mask APB2RSTR_Bits) APB2RSTR_Bits {
-	return APB2RSTR_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *APB2RSTR) StoreBits(mask, b APB2RSTR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *APB2RSTR) SetBits(mask APB2RSTR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *APB2RSTR) ClearBits(mask APB2RSTR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *APB2RSTR) Load() APB2RSTR_Bits             { return APB2RSTR_Bits(r.U32.Load()) }
-func (r *APB2RSTR) Store(b APB2RSTR_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RAPB1LPENR) Bits(mask APB1LPENR) APB1LPENR { return APB1LPENR(r.U32.Bits(uint32(mask))) }
+func (r *RAPB1LPENR) StoreBits(mask, b APB1LPENR)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RAPB1LPENR) SetBits(mask APB1LPENR)        { r.U32.SetBits(uint32(mask)) }
+func (r *RAPB1LPENR) ClearBits(mask APB1LPENR)      { r.U32.ClearBits(uint32(mask)) }
+func (r *RAPB1LPENR) Load() APB1LPENR               { return APB1LPENR(r.U32.Load()) }
+func (r *RAPB1LPENR) Store(b APB1LPENR)             { r.U32.Store(uint32(b)) }
 
-func (r *APB2RSTR) AtomicStoreBits(mask, b APB2RSTR_Bits) {
+func (r *RAPB1LPENR) AtomicStoreBits(mask, b APB1LPENR) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *APB2RSTR) AtomicSetBits(mask APB2RSTR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *APB2RSTR) AtomicClearBits(mask APB2RSTR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RAPB1LPENR) AtomicSetBits(mask APB1LPENR)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RAPB1LPENR) AtomicClearBits(mask APB1LPENR) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type APB2RSTR_Mask struct{ mmio.UM32 }
+type RMAPB1LPENR struct{ mmio.UM32 }
 
-func (rm APB2RSTR_Mask) Load() APB2RSTR_Bits   { return APB2RSTR_Bits(rm.UM32.Load()) }
-func (rm APB2RSTR_Mask) Store(b APB2RSTR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMAPB1LPENR) Load() APB1LPENR   { return APB1LPENR(rm.UM32.Load()) }
+func (rm RMAPB1LPENR) Store(b APB1LPENR) { rm.UM32.Store(uint32(b)) }
 
-func (p *RCC_Periph) SYSCFGRST() APB2RSTR_Mask {
-	return APB2RSTR_Mask{mmio.UM32{&p.APB2RSTR.U32, uint32(SYSCFGRST)}}
+func (p *RCC_Periph) TIM2LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM2LPEN)}}
 }
 
-func (p *RCC_Periph) TIM9RST() APB2RSTR_Mask {
-	return APB2RSTR_Mask{mmio.UM32{&p.APB2RSTR.U32, uint32(TIM9RST)}}
+func (p *RCC_Periph) TIM3LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM3LPEN)}}
 }
 
-func (p *RCC_Periph) TIM10RST() APB2RSTR_Mask {
-	return APB2RSTR_Mask{mmio.UM32{&p.APB2RSTR.U32, uint32(TIM10RST)}}
+func (p *RCC_Periph) TIM4LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM4LPEN)}}
 }
 
-func (p *RCC_Periph) TIM11RST() APB2RSTR_Mask {
-	return APB2RSTR_Mask{mmio.UM32{&p.APB2RSTR.U32, uint32(TIM11RST)}}
+func (p *RCC_Periph) TIM5LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM5LPEN)}}
 }
 
-func (p *RCC_Periph) ADC1RST() APB2RSTR_Mask {
-	return APB2RSTR_Mask{mmio.UM32{&p.APB2RSTR.U32, uint32(ADC1RST)}}
+func (p *RCC_Periph) TIM6LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM6LPEN)}}
 }
 
-func (p *RCC_Periph) SDIORST() APB2RSTR_Mask {
-	return APB2RSTR_Mask{mmio.UM32{&p.APB2RSTR.U32, uint32(SDIORST)}}
+func (p *RCC_Periph) TIM7LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM7LPEN)}}
 }
 
-func (p *RCC_Periph) SPI1RST() APB2RSTR_Mask {
-	return APB2RSTR_Mask{mmio.UM32{&p.APB2RSTR.U32, uint32(SPI1RST)}}
+func (p *RCC_Periph) LCDLPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(LCDLPEN)}}
 }
 
-func (p *RCC_Periph) USART1RST() APB2RSTR_Mask {
-	return APB2RSTR_Mask{mmio.UM32{&p.APB2RSTR.U32, uint32(USART1RST)}}
+func (p *RCC_Periph) WWDGLPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(WWDGLPEN)}}
 }
 
-type APB1RSTR_Bits uint32
+func (p *RCC_Periph) SPI2LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(SPI2LPEN)}}
+}
 
-func (b APB1RSTR_Bits) Field(mask APB1RSTR_Bits) int {
+func (p *RCC_Periph) SPI3LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(SPI3LPEN)}}
+}
+
+func (p *RCC_Periph) USART2LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(USART2LPEN)}}
+}
+
+func (p *RCC_Periph) USART3LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(USART3LPEN)}}
+}
+
+func (p *RCC_Periph) UART4LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(UART4LPEN)}}
+}
+
+func (p *RCC_Periph) UART5LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(UART5LPEN)}}
+}
+
+func (p *RCC_Periph) I2C1LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(I2C1LPEN)}}
+}
+
+func (p *RCC_Periph) I2C2LPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(I2C2LPEN)}}
+}
+
+func (p *RCC_Periph) USBLPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(USBLPEN)}}
+}
+
+func (p *RCC_Periph) PWRLPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(PWRLPEN)}}
+}
+
+func (p *RCC_Periph) DACLPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(DACLPEN)}}
+}
+
+func (p *RCC_Periph) COMPLPEN() RMAPB1LPENR {
+	return RMAPB1LPENR{mmio.UM32{&p.APB1LPENR.U32, uint32(COMPLPEN)}}
+}
+
+type CSR uint32
+
+func (b CSR) Field(mask CSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask APB1RSTR_Bits) J(v int) APB1RSTR_Bits {
-	return APB1RSTR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CSR) J(v int) CSR {
+	return CSR(bits.Make32(v, uint32(mask)))
 }
 
-type APB1RSTR struct{ mmio.U32 }
+type RCSR struct{ mmio.U32 }
 
-func (r *APB1RSTR) Bits(mask APB1RSTR_Bits) APB1RSTR_Bits {
-	return APB1RSTR_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *APB1RSTR) StoreBits(mask, b APB1RSTR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *APB1RSTR) SetBits(mask APB1RSTR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *APB1RSTR) ClearBits(mask APB1RSTR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *APB1RSTR) Load() APB1RSTR_Bits             { return APB1RSTR_Bits(r.U32.Load()) }
-func (r *APB1RSTR) Store(b APB1RSTR_Bits)           { r.U32.Store(uint32(b)) }
-
-func (r *APB1RSTR) AtomicStoreBits(mask, b APB1RSTR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *APB1RSTR) AtomicSetBits(mask APB1RSTR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *APB1RSTR) AtomicClearBits(mask APB1RSTR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type APB1RSTR_Mask struct{ mmio.UM32 }
-
-func (rm APB1RSTR_Mask) Load() APB1RSTR_Bits   { return APB1RSTR_Bits(rm.UM32.Load()) }
-func (rm APB1RSTR_Mask) Store(b APB1RSTR_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *RCC_Periph) TIM2RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM2RST)}}
-}
-
-func (p *RCC_Periph) TIM3RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM3RST)}}
-}
-
-func (p *RCC_Periph) TIM4RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM4RST)}}
-}
-
-func (p *RCC_Periph) TIM5RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM5RST)}}
-}
-
-func (p *RCC_Periph) TIM6RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM6RST)}}
-}
-
-func (p *RCC_Periph) TIM7RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(TIM7RST)}}
-}
-
-func (p *RCC_Periph) LCDRST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(LCDRST)}}
-}
-
-func (p *RCC_Periph) WWDGRST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(WWDGRST)}}
-}
-
-func (p *RCC_Periph) SPI2RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(SPI2RST)}}
-}
-
-func (p *RCC_Periph) SPI3RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(SPI3RST)}}
-}
-
-func (p *RCC_Periph) USART2RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(USART2RST)}}
-}
-
-func (p *RCC_Periph) USART3RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(USART3RST)}}
-}
-
-func (p *RCC_Periph) UART4RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(UART4RST)}}
-}
-
-func (p *RCC_Periph) UART5RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(UART5RST)}}
-}
-
-func (p *RCC_Periph) I2C1RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(I2C1RST)}}
-}
-
-func (p *RCC_Periph) I2C2RST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(I2C2RST)}}
-}
-
-func (p *RCC_Periph) USBRST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(USBRST)}}
-}
-
-func (p *RCC_Periph) PWRRST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(PWRRST)}}
-}
-
-func (p *RCC_Periph) DACRST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(DACRST)}}
-}
-
-func (p *RCC_Periph) COMPRST() APB1RSTR_Mask {
-	return APB1RSTR_Mask{mmio.UM32{&p.APB1RSTR.U32, uint32(COMPRST)}}
-}
-
-type AHBENR_Bits uint32
-
-func (b AHBENR_Bits) Field(mask AHBENR_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask AHBENR_Bits) J(v int) AHBENR_Bits {
-	return AHBENR_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type AHBENR struct{ mmio.U32 }
-
-func (r *AHBENR) Bits(mask AHBENR_Bits) AHBENR_Bits { return AHBENR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *AHBENR) StoreBits(mask, b AHBENR_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *AHBENR) SetBits(mask AHBENR_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *AHBENR) ClearBits(mask AHBENR_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *AHBENR) Load() AHBENR_Bits                 { return AHBENR_Bits(r.U32.Load()) }
-func (r *AHBENR) Store(b AHBENR_Bits)               { r.U32.Store(uint32(b)) }
-
-func (r *AHBENR) AtomicStoreBits(mask, b AHBENR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *AHBENR) AtomicSetBits(mask AHBENR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *AHBENR) AtomicClearBits(mask AHBENR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type AHBENR_Mask struct{ mmio.UM32 }
-
-func (rm AHBENR_Mask) Load() AHBENR_Bits   { return AHBENR_Bits(rm.UM32.Load()) }
-func (rm AHBENR_Mask) Store(b AHBENR_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *RCC_Periph) GPIOAEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(GPIOAEN)}}
-}
-
-func (p *RCC_Periph) GPIOBEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(GPIOBEN)}}
-}
-
-func (p *RCC_Periph) GPIOCEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(GPIOCEN)}}
-}
-
-func (p *RCC_Periph) GPIODEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(GPIODEN)}}
-}
-
-func (p *RCC_Periph) GPIOEEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(GPIOEEN)}}
-}
-
-func (p *RCC_Periph) GPIOHEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(GPIOHEN)}}
-}
-
-func (p *RCC_Periph) GPIOFEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(GPIOFEN)}}
-}
-
-func (p *RCC_Periph) GPIOGEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(GPIOGEN)}}
-}
-
-func (p *RCC_Periph) CRCEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(CRCEN)}}
-}
-
-func (p *RCC_Periph) FLITFEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(FLITFEN)}}
-}
-
-func (p *RCC_Periph) DMA1EN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(DMA1EN)}}
-}
-
-func (p *RCC_Periph) DMA2EN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(DMA2EN)}}
-}
-
-func (p *RCC_Periph) AESEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(AESEN)}}
-}
-
-func (p *RCC_Periph) FSMCEN() AHBENR_Mask {
-	return AHBENR_Mask{mmio.UM32{&p.AHBENR.U32, uint32(FSMCEN)}}
-}
-
-type APB2ENR_Bits uint32
-
-func (b APB2ENR_Bits) Field(mask APB2ENR_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask APB2ENR_Bits) J(v int) APB2ENR_Bits {
-	return APB2ENR_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type APB2ENR struct{ mmio.U32 }
-
-func (r *APB2ENR) Bits(mask APB2ENR_Bits) APB2ENR_Bits { return APB2ENR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *APB2ENR) StoreBits(mask, b APB2ENR_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *APB2ENR) SetBits(mask APB2ENR_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *APB2ENR) ClearBits(mask APB2ENR_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *APB2ENR) Load() APB2ENR_Bits                  { return APB2ENR_Bits(r.U32.Load()) }
-func (r *APB2ENR) Store(b APB2ENR_Bits)                { r.U32.Store(uint32(b)) }
-
-func (r *APB2ENR) AtomicStoreBits(mask, b APB2ENR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *APB2ENR) AtomicSetBits(mask APB2ENR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *APB2ENR) AtomicClearBits(mask APB2ENR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type APB2ENR_Mask struct{ mmio.UM32 }
-
-func (rm APB2ENR_Mask) Load() APB2ENR_Bits   { return APB2ENR_Bits(rm.UM32.Load()) }
-func (rm APB2ENR_Mask) Store(b APB2ENR_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *RCC_Periph) SYSCFGEN() APB2ENR_Mask {
-	return APB2ENR_Mask{mmio.UM32{&p.APB2ENR.U32, uint32(SYSCFGEN)}}
-}
-
-func (p *RCC_Periph) TIM9EN() APB2ENR_Mask {
-	return APB2ENR_Mask{mmio.UM32{&p.APB2ENR.U32, uint32(TIM9EN)}}
-}
-
-func (p *RCC_Periph) TIM10EN() APB2ENR_Mask {
-	return APB2ENR_Mask{mmio.UM32{&p.APB2ENR.U32, uint32(TIM10EN)}}
-}
-
-func (p *RCC_Periph) TIM11EN() APB2ENR_Mask {
-	return APB2ENR_Mask{mmio.UM32{&p.APB2ENR.U32, uint32(TIM11EN)}}
-}
-
-func (p *RCC_Periph) ADC1EN() APB2ENR_Mask {
-	return APB2ENR_Mask{mmio.UM32{&p.APB2ENR.U32, uint32(ADC1EN)}}
-}
-
-func (p *RCC_Periph) SDIOEN() APB2ENR_Mask {
-	return APB2ENR_Mask{mmio.UM32{&p.APB2ENR.U32, uint32(SDIOEN)}}
-}
-
-func (p *RCC_Periph) SPI1EN() APB2ENR_Mask {
-	return APB2ENR_Mask{mmio.UM32{&p.APB2ENR.U32, uint32(SPI1EN)}}
-}
-
-func (p *RCC_Periph) USART1EN() APB2ENR_Mask {
-	return APB2ENR_Mask{mmio.UM32{&p.APB2ENR.U32, uint32(USART1EN)}}
-}
-
-type APB1ENR_Bits uint32
-
-func (b APB1ENR_Bits) Field(mask APB1ENR_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask APB1ENR_Bits) J(v int) APB1ENR_Bits {
-	return APB1ENR_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type APB1ENR struct{ mmio.U32 }
-
-func (r *APB1ENR) Bits(mask APB1ENR_Bits) APB1ENR_Bits { return APB1ENR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *APB1ENR) StoreBits(mask, b APB1ENR_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *APB1ENR) SetBits(mask APB1ENR_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *APB1ENR) ClearBits(mask APB1ENR_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *APB1ENR) Load() APB1ENR_Bits                  { return APB1ENR_Bits(r.U32.Load()) }
-func (r *APB1ENR) Store(b APB1ENR_Bits)                { r.U32.Store(uint32(b)) }
-
-func (r *APB1ENR) AtomicStoreBits(mask, b APB1ENR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *APB1ENR) AtomicSetBits(mask APB1ENR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *APB1ENR) AtomicClearBits(mask APB1ENR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type APB1ENR_Mask struct{ mmio.UM32 }
-
-func (rm APB1ENR_Mask) Load() APB1ENR_Bits   { return APB1ENR_Bits(rm.UM32.Load()) }
-func (rm APB1ENR_Mask) Store(b APB1ENR_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *RCC_Periph) TIM2EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(TIM2EN)}}
-}
-
-func (p *RCC_Periph) TIM3EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(TIM3EN)}}
-}
-
-func (p *RCC_Periph) TIM4EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(TIM4EN)}}
-}
-
-func (p *RCC_Periph) TIM5EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(TIM5EN)}}
-}
-
-func (p *RCC_Periph) TIM6EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(TIM6EN)}}
-}
-
-func (p *RCC_Periph) TIM7EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(TIM7EN)}}
-}
-
-func (p *RCC_Periph) LCDEN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(LCDEN)}}
-}
-
-func (p *RCC_Periph) WWDGEN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(WWDGEN)}}
-}
-
-func (p *RCC_Periph) SPI2EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(SPI2EN)}}
-}
-
-func (p *RCC_Periph) SPI3EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(SPI3EN)}}
-}
-
-func (p *RCC_Periph) USART2EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(USART2EN)}}
-}
-
-func (p *RCC_Periph) USART3EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(USART3EN)}}
-}
-
-func (p *RCC_Periph) UART4EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(UART4EN)}}
-}
-
-func (p *RCC_Periph) UART5EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(UART5EN)}}
-}
-
-func (p *RCC_Periph) I2C1EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(I2C1EN)}}
-}
-
-func (p *RCC_Periph) I2C2EN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(I2C2EN)}}
-}
-
-func (p *RCC_Periph) USBEN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(USBEN)}}
-}
-
-func (p *RCC_Periph) PWREN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(PWREN)}}
-}
-
-func (p *RCC_Periph) DACEN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(DACEN)}}
-}
-
-func (p *RCC_Periph) COMPEN() APB1ENR_Mask {
-	return APB1ENR_Mask{mmio.UM32{&p.APB1ENR.U32, uint32(COMPEN)}}
-}
-
-type AHBLPENR_Bits uint32
-
-func (b AHBLPENR_Bits) Field(mask AHBLPENR_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask AHBLPENR_Bits) J(v int) AHBLPENR_Bits {
-	return AHBLPENR_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type AHBLPENR struct{ mmio.U32 }
-
-func (r *AHBLPENR) Bits(mask AHBLPENR_Bits) AHBLPENR_Bits {
-	return AHBLPENR_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *AHBLPENR) StoreBits(mask, b AHBLPENR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *AHBLPENR) SetBits(mask AHBLPENR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *AHBLPENR) ClearBits(mask AHBLPENR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *AHBLPENR) Load() AHBLPENR_Bits             { return AHBLPENR_Bits(r.U32.Load()) }
-func (r *AHBLPENR) Store(b AHBLPENR_Bits)           { r.U32.Store(uint32(b)) }
-
-func (r *AHBLPENR) AtomicStoreBits(mask, b AHBLPENR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *AHBLPENR) AtomicSetBits(mask AHBLPENR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *AHBLPENR) AtomicClearBits(mask AHBLPENR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type AHBLPENR_Mask struct{ mmio.UM32 }
-
-func (rm AHBLPENR_Mask) Load() AHBLPENR_Bits   { return AHBLPENR_Bits(rm.UM32.Load()) }
-func (rm AHBLPENR_Mask) Store(b AHBLPENR_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *RCC_Periph) GPIOALPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOALPEN)}}
-}
-
-func (p *RCC_Periph) GPIOBLPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOBLPEN)}}
-}
-
-func (p *RCC_Periph) GPIOCLPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOCLPEN)}}
-}
-
-func (p *RCC_Periph) GPIODLPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIODLPEN)}}
-}
-
-func (p *RCC_Periph) GPIOELPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOELPEN)}}
-}
-
-func (p *RCC_Periph) GPIOHLPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOHLPEN)}}
-}
-
-func (p *RCC_Periph) GPIOFLPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOFLPEN)}}
-}
-
-func (p *RCC_Periph) GPIOGLPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(GPIOGLPEN)}}
-}
-
-func (p *RCC_Periph) CRCLPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(CRCLPEN)}}
-}
-
-func (p *RCC_Periph) FLITFLPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(FLITFLPEN)}}
-}
-
-func (p *RCC_Periph) SRAMLPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(SRAMLPEN)}}
-}
-
-func (p *RCC_Periph) DMA1LPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(DMA1LPEN)}}
-}
-
-func (p *RCC_Periph) DMA2LPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(DMA2LPEN)}}
-}
-
-func (p *RCC_Periph) AESLPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(AESLPEN)}}
-}
-
-func (p *RCC_Periph) FSMCLPEN() AHBLPENR_Mask {
-	return AHBLPENR_Mask{mmio.UM32{&p.AHBLPENR.U32, uint32(FSMCLPEN)}}
-}
-
-type APB2LPENR_Bits uint32
-
-func (b APB2LPENR_Bits) Field(mask APB2LPENR_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask APB2LPENR_Bits) J(v int) APB2LPENR_Bits {
-	return APB2LPENR_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type APB2LPENR struct{ mmio.U32 }
-
-func (r *APB2LPENR) Bits(mask APB2LPENR_Bits) APB2LPENR_Bits {
-	return APB2LPENR_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *APB2LPENR) StoreBits(mask, b APB2LPENR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *APB2LPENR) SetBits(mask APB2LPENR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *APB2LPENR) ClearBits(mask APB2LPENR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *APB2LPENR) Load() APB2LPENR_Bits             { return APB2LPENR_Bits(r.U32.Load()) }
-func (r *APB2LPENR) Store(b APB2LPENR_Bits)           { r.U32.Store(uint32(b)) }
-
-func (r *APB2LPENR) AtomicStoreBits(mask, b APB2LPENR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *APB2LPENR) AtomicSetBits(mask APB2LPENR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *APB2LPENR) AtomicClearBits(mask APB2LPENR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type APB2LPENR_Mask struct{ mmio.UM32 }
-
-func (rm APB2LPENR_Mask) Load() APB2LPENR_Bits   { return APB2LPENR_Bits(rm.UM32.Load()) }
-func (rm APB2LPENR_Mask) Store(b APB2LPENR_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *RCC_Periph) SYSCFGLPEN() APB2LPENR_Mask {
-	return APB2LPENR_Mask{mmio.UM32{&p.APB2LPENR.U32, uint32(SYSCFGLPEN)}}
-}
-
-func (p *RCC_Periph) TIM9LPEN() APB2LPENR_Mask {
-	return APB2LPENR_Mask{mmio.UM32{&p.APB2LPENR.U32, uint32(TIM9LPEN)}}
-}
-
-func (p *RCC_Periph) TIM10LPEN() APB2LPENR_Mask {
-	return APB2LPENR_Mask{mmio.UM32{&p.APB2LPENR.U32, uint32(TIM10LPEN)}}
-}
-
-func (p *RCC_Periph) TIM11LPEN() APB2LPENR_Mask {
-	return APB2LPENR_Mask{mmio.UM32{&p.APB2LPENR.U32, uint32(TIM11LPEN)}}
-}
-
-func (p *RCC_Periph) ADC1LPEN() APB2LPENR_Mask {
-	return APB2LPENR_Mask{mmio.UM32{&p.APB2LPENR.U32, uint32(ADC1LPEN)}}
-}
-
-func (p *RCC_Periph) SDIOLPEN() APB2LPENR_Mask {
-	return APB2LPENR_Mask{mmio.UM32{&p.APB2LPENR.U32, uint32(SDIOLPEN)}}
-}
-
-func (p *RCC_Periph) SPI1LPEN() APB2LPENR_Mask {
-	return APB2LPENR_Mask{mmio.UM32{&p.APB2LPENR.U32, uint32(SPI1LPEN)}}
-}
-
-func (p *RCC_Periph) USART1LPEN() APB2LPENR_Mask {
-	return APB2LPENR_Mask{mmio.UM32{&p.APB2LPENR.U32, uint32(USART1LPEN)}}
-}
-
-type APB1LPENR_Bits uint32
-
-func (b APB1LPENR_Bits) Field(mask APB1LPENR_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask APB1LPENR_Bits) J(v int) APB1LPENR_Bits {
-	return APB1LPENR_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type APB1LPENR struct{ mmio.U32 }
-
-func (r *APB1LPENR) Bits(mask APB1LPENR_Bits) APB1LPENR_Bits {
-	return APB1LPENR_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *APB1LPENR) StoreBits(mask, b APB1LPENR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *APB1LPENR) SetBits(mask APB1LPENR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *APB1LPENR) ClearBits(mask APB1LPENR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *APB1LPENR) Load() APB1LPENR_Bits             { return APB1LPENR_Bits(r.U32.Load()) }
-func (r *APB1LPENR) Store(b APB1LPENR_Bits)           { r.U32.Store(uint32(b)) }
-
-func (r *APB1LPENR) AtomicStoreBits(mask, b APB1LPENR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *APB1LPENR) AtomicSetBits(mask APB1LPENR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *APB1LPENR) AtomicClearBits(mask APB1LPENR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type APB1LPENR_Mask struct{ mmio.UM32 }
-
-func (rm APB1LPENR_Mask) Load() APB1LPENR_Bits   { return APB1LPENR_Bits(rm.UM32.Load()) }
-func (rm APB1LPENR_Mask) Store(b APB1LPENR_Bits) { rm.UM32.Store(uint32(b)) }
-
-func (p *RCC_Periph) TIM2LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM2LPEN)}}
-}
-
-func (p *RCC_Periph) TIM3LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM3LPEN)}}
-}
-
-func (p *RCC_Periph) TIM4LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM4LPEN)}}
-}
-
-func (p *RCC_Periph) TIM5LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM5LPEN)}}
-}
-
-func (p *RCC_Periph) TIM6LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM6LPEN)}}
-}
-
-func (p *RCC_Periph) TIM7LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(TIM7LPEN)}}
-}
-
-func (p *RCC_Periph) LCDLPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(LCDLPEN)}}
-}
-
-func (p *RCC_Periph) WWDGLPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(WWDGLPEN)}}
-}
-
-func (p *RCC_Periph) SPI2LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(SPI2LPEN)}}
-}
-
-func (p *RCC_Periph) SPI3LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(SPI3LPEN)}}
-}
-
-func (p *RCC_Periph) USART2LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(USART2LPEN)}}
-}
-
-func (p *RCC_Periph) USART3LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(USART3LPEN)}}
-}
-
-func (p *RCC_Periph) UART4LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(UART4LPEN)}}
-}
-
-func (p *RCC_Periph) UART5LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(UART5LPEN)}}
-}
-
-func (p *RCC_Periph) I2C1LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(I2C1LPEN)}}
-}
-
-func (p *RCC_Periph) I2C2LPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(I2C2LPEN)}}
-}
-
-func (p *RCC_Periph) USBLPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(USBLPEN)}}
-}
-
-func (p *RCC_Periph) PWRLPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(PWRLPEN)}}
-}
-
-func (p *RCC_Periph) DACLPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(DACLPEN)}}
-}
-
-func (p *RCC_Periph) COMPLPEN() APB1LPENR_Mask {
-	return APB1LPENR_Mask{mmio.UM32{&p.APB1LPENR.U32, uint32(COMPLPEN)}}
-}
-
-type CSR_Bits uint32
-
-func (b CSR_Bits) Field(mask CSR_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask CSR_Bits) J(v int) CSR_Bits {
-	return CSR_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type CSR struct{ mmio.U32 }
-
-func (r *CSR) Bits(mask CSR_Bits) CSR_Bits { return CSR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *CSR) StoreBits(mask, b CSR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CSR) SetBits(mask CSR_Bits)       { r.U32.SetBits(uint32(mask)) }
-func (r *CSR) ClearBits(mask CSR_Bits)     { r.U32.ClearBits(uint32(mask)) }
-func (r *CSR) Load() CSR_Bits              { return CSR_Bits(r.U32.Load()) }
-func (r *CSR) Store(b CSR_Bits)            { r.U32.Store(uint32(b)) }
+func (r *RCSR) Bits(mask CSR) CSR     { return CSR(r.U32.Bits(uint32(mask))) }
+func (r *RCSR) StoreBits(mask, b CSR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCSR) SetBits(mask CSR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCSR) ClearBits(mask CSR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCSR) Load() CSR             { return CSR(r.U32.Load()) }
+func (r *RCSR) Store(b CSR)           { r.U32.Store(uint32(b)) }
 
-func (r *CSR) AtomicStoreBits(mask, b CSR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *CSR) AtomicSetBits(mask CSR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CSR) AtomicClearBits(mask CSR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCSR) AtomicStoreBits(mask, b CSR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCSR) AtomicSetBits(mask CSR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCSR) AtomicClearBits(mask CSR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CSR_Mask struct{ mmio.UM32 }
+type RMCSR struct{ mmio.UM32 }
 
-func (rm CSR_Mask) Load() CSR_Bits   { return CSR_Bits(rm.UM32.Load()) }
-func (rm CSR_Mask) Store(b CSR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCSR) Load() CSR   { return CSR(rm.UM32.Load()) }
+func (rm RMCSR) Store(b CSR) { rm.UM32.Store(uint32(b)) }
 
-func (p *RCC_Periph) LSION() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(LSION)}}
+func (p *RCC_Periph) LSION() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(LSION)}}
 }
 
-func (p *RCC_Periph) LSIRDY() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(LSIRDY)}}
+func (p *RCC_Periph) LSIRDY() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(LSIRDY)}}
 }
 
-func (p *RCC_Periph) LSEON() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(LSEON)}}
+func (p *RCC_Periph) LSEON() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(LSEON)}}
 }
 
-func (p *RCC_Periph) LSERDY() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(LSERDY)}}
+func (p *RCC_Periph) LSERDY() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(LSERDY)}}
 }
 
-func (p *RCC_Periph) LSEBYP() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(LSEBYP)}}
+func (p *RCC_Periph) LSEBYP() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(LSEBYP)}}
 }
 
-func (p *RCC_Periph) LSECSSON() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(LSECSSON)}}
+func (p *RCC_Periph) LSECSSON() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(LSECSSON)}}
 }
 
-func (p *RCC_Periph) LSECSSD() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(LSECSSD)}}
+func (p *RCC_Periph) LSECSSD() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(LSECSSD)}}
 }
 
-func (p *RCC_Periph) RTCSEL() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(RTCSEL)}}
+func (p *RCC_Periph) RTCSEL() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(RTCSEL)}}
 }
 
-func (p *RCC_Periph) RTCEN() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(RTCEN)}}
+func (p *RCC_Periph) RTCEN() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(RTCEN)}}
 }
 
-func (p *RCC_Periph) RTCRST() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(RTCRST)}}
+func (p *RCC_Periph) RTCRST() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(RTCRST)}}
 }
 
-func (p *RCC_Periph) RMVF() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(RMVF)}}
+func (p *RCC_Periph) RMVF() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(RMVF)}}
 }
 
-func (p *RCC_Periph) OBLRSTF() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(OBLRSTF)}}
+func (p *RCC_Periph) OBLRSTF() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(OBLRSTF)}}
 }
 
-func (p *RCC_Periph) PINRSTF() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(PINRSTF)}}
+func (p *RCC_Periph) PINRSTF() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(PINRSTF)}}
 }
 
-func (p *RCC_Periph) PORRSTF() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(PORRSTF)}}
+func (p *RCC_Periph) PORRSTF() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(PORRSTF)}}
 }
 
-func (p *RCC_Periph) SFTRSTF() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(SFTRSTF)}}
+func (p *RCC_Periph) SFTRSTF() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(SFTRSTF)}}
 }
 
-func (p *RCC_Periph) IWDGRSTF() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(IWDGRSTF)}}
+func (p *RCC_Periph) IWDGRSTF() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(IWDGRSTF)}}
 }
 
-func (p *RCC_Periph) WWDGRSTF() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(WWDGRSTF)}}
+func (p *RCC_Periph) WWDGRSTF() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(WWDGRSTF)}}
 }
 
-func (p *RCC_Periph) LPWRRSTF() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(LPWRRSTF)}}
+func (p *RCC_Periph) LPWRRSTF() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(LPWRRSTF)}}
 }

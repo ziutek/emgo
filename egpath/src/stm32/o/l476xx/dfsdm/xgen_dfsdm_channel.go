@@ -11,11 +11,11 @@ import (
 )
 
 type DFSDM_Channel_Periph struct {
-	CHCFGR1  CHCFGR1
-	CHCFGR2  CHCFGR2
-	CHAWSCDR CHAWSCDR
-	CHWDATAR CHWDATAR
-	CHDATINR CHDATINR
+	CHCFGR1  RCHCFGR1
+	CHCFGR2  RCHCFGR2
+	CHAWSCDR RCHAWSCDR
+	CHWDATAR RCHWDATAR
+	CHDATINR RCHDATINR
 }
 
 func (p *DFSDM_Channel_Periph) BaseAddr() uintptr {
@@ -46,229 +46,213 @@ var DFSDM1_Channel6 = (*DFSDM_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1
 //emgo:const
 var DFSDM1_Channel7 = (*DFSDM_Channel_Periph)(unsafe.Pointer(uintptr(mmap.DFSDM1_Channel7_BASE)))
 
-type CHCFGR1_Bits uint32
+type CHCFGR1 uint32
 
-func (b CHCFGR1_Bits) Field(mask CHCFGR1_Bits) int {
+func (b CHCFGR1) Field(mask CHCFGR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CHCFGR1_Bits) J(v int) CHCFGR1_Bits {
-	return CHCFGR1_Bits(bits.Make32(v, uint32(mask)))
+func (mask CHCFGR1) J(v int) CHCFGR1 {
+	return CHCFGR1(bits.Make32(v, uint32(mask)))
 }
 
-type CHCFGR1 struct{ mmio.U32 }
+type RCHCFGR1 struct{ mmio.U32 }
 
-func (r *CHCFGR1) Bits(mask CHCFGR1_Bits) CHCFGR1_Bits { return CHCFGR1_Bits(r.U32.Bits(uint32(mask))) }
-func (r *CHCFGR1) StoreBits(mask, b CHCFGR1_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CHCFGR1) SetBits(mask CHCFGR1_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *CHCFGR1) ClearBits(mask CHCFGR1_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *CHCFGR1) Load() CHCFGR1_Bits                  { return CHCFGR1_Bits(r.U32.Load()) }
-func (r *CHCFGR1) Store(b CHCFGR1_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RCHCFGR1) Bits(mask CHCFGR1) CHCFGR1 { return CHCFGR1(r.U32.Bits(uint32(mask))) }
+func (r *RCHCFGR1) StoreBits(mask, b CHCFGR1) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCHCFGR1) SetBits(mask CHCFGR1)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCHCFGR1) ClearBits(mask CHCFGR1)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCHCFGR1) Load() CHCFGR1             { return CHCFGR1(r.U32.Load()) }
+func (r *RCHCFGR1) Store(b CHCFGR1)           { r.U32.Store(uint32(b)) }
 
-func (r *CHCFGR1) AtomicStoreBits(mask, b CHCFGR1_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *CHCFGR1) AtomicSetBits(mask CHCFGR1_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CHCFGR1) AtomicClearBits(mask CHCFGR1_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCHCFGR1) AtomicStoreBits(mask, b CHCFGR1) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCHCFGR1) AtomicSetBits(mask CHCFGR1)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCHCFGR1) AtomicClearBits(mask CHCFGR1)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CHCFGR1_Mask struct{ mmio.UM32 }
+type RMCHCFGR1 struct{ mmio.UM32 }
 
-func (rm CHCFGR1_Mask) Load() CHCFGR1_Bits   { return CHCFGR1_Bits(rm.UM32.Load()) }
-func (rm CHCFGR1_Mask) Store(b CHCFGR1_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCHCFGR1) Load() CHCFGR1   { return CHCFGR1(rm.UM32.Load()) }
+func (rm RMCHCFGR1) Store(b CHCFGR1) { rm.UM32.Store(uint32(b)) }
 
-func (p *DFSDM_Channel_Periph) DFSDMEN() CHCFGR1_Mask {
-	return CHCFGR1_Mask{mmio.UM32{&p.CHCFGR1.U32, uint32(DFSDMEN)}}
+func (p *DFSDM_Channel_Periph) DFSDMEN() RMCHCFGR1 {
+	return RMCHCFGR1{mmio.UM32{&p.CHCFGR1.U32, uint32(DFSDMEN)}}
 }
 
-func (p *DFSDM_Channel_Periph) CKOUTSRC() CHCFGR1_Mask {
-	return CHCFGR1_Mask{mmio.UM32{&p.CHCFGR1.U32, uint32(CKOUTSRC)}}
+func (p *DFSDM_Channel_Periph) CKOUTSRC() RMCHCFGR1 {
+	return RMCHCFGR1{mmio.UM32{&p.CHCFGR1.U32, uint32(CKOUTSRC)}}
 }
 
-func (p *DFSDM_Channel_Periph) CKOUTDIV() CHCFGR1_Mask {
-	return CHCFGR1_Mask{mmio.UM32{&p.CHCFGR1.U32, uint32(CKOUTDIV)}}
+func (p *DFSDM_Channel_Periph) CKOUTDIV() RMCHCFGR1 {
+	return RMCHCFGR1{mmio.UM32{&p.CHCFGR1.U32, uint32(CKOUTDIV)}}
 }
 
-func (p *DFSDM_Channel_Periph) DATPACK() CHCFGR1_Mask {
-	return CHCFGR1_Mask{mmio.UM32{&p.CHCFGR1.U32, uint32(DATPACK)}}
+func (p *DFSDM_Channel_Periph) DATPACK() RMCHCFGR1 {
+	return RMCHCFGR1{mmio.UM32{&p.CHCFGR1.U32, uint32(DATPACK)}}
 }
 
-func (p *DFSDM_Channel_Periph) DATMPX() CHCFGR1_Mask {
-	return CHCFGR1_Mask{mmio.UM32{&p.CHCFGR1.U32, uint32(DATMPX)}}
+func (p *DFSDM_Channel_Periph) DATMPX() RMCHCFGR1 {
+	return RMCHCFGR1{mmio.UM32{&p.CHCFGR1.U32, uint32(DATMPX)}}
 }
 
-func (p *DFSDM_Channel_Periph) CHINSEL() CHCFGR1_Mask {
-	return CHCFGR1_Mask{mmio.UM32{&p.CHCFGR1.U32, uint32(CHINSEL)}}
+func (p *DFSDM_Channel_Periph) CHINSEL() RMCHCFGR1 {
+	return RMCHCFGR1{mmio.UM32{&p.CHCFGR1.U32, uint32(CHINSEL)}}
 }
 
-func (p *DFSDM_Channel_Periph) CHEN() CHCFGR1_Mask {
-	return CHCFGR1_Mask{mmio.UM32{&p.CHCFGR1.U32, uint32(CHEN)}}
+func (p *DFSDM_Channel_Periph) CHEN() RMCHCFGR1 {
+	return RMCHCFGR1{mmio.UM32{&p.CHCFGR1.U32, uint32(CHEN)}}
 }
 
-func (p *DFSDM_Channel_Periph) CKABEN() CHCFGR1_Mask {
-	return CHCFGR1_Mask{mmio.UM32{&p.CHCFGR1.U32, uint32(CKABEN)}}
+func (p *DFSDM_Channel_Periph) CKABEN() RMCHCFGR1 {
+	return RMCHCFGR1{mmio.UM32{&p.CHCFGR1.U32, uint32(CKABEN)}}
 }
 
-func (p *DFSDM_Channel_Periph) SCDEN() CHCFGR1_Mask {
-	return CHCFGR1_Mask{mmio.UM32{&p.CHCFGR1.U32, uint32(SCDEN)}}
+func (p *DFSDM_Channel_Periph) SCDEN() RMCHCFGR1 {
+	return RMCHCFGR1{mmio.UM32{&p.CHCFGR1.U32, uint32(SCDEN)}}
 }
 
-func (p *DFSDM_Channel_Periph) SPICKSEL() CHCFGR1_Mask {
-	return CHCFGR1_Mask{mmio.UM32{&p.CHCFGR1.U32, uint32(SPICKSEL)}}
+func (p *DFSDM_Channel_Periph) SPICKSEL() RMCHCFGR1 {
+	return RMCHCFGR1{mmio.UM32{&p.CHCFGR1.U32, uint32(SPICKSEL)}}
 }
 
-func (p *DFSDM_Channel_Periph) SITP() CHCFGR1_Mask {
-	return CHCFGR1_Mask{mmio.UM32{&p.CHCFGR1.U32, uint32(SITP)}}
+func (p *DFSDM_Channel_Periph) SITP() RMCHCFGR1 {
+	return RMCHCFGR1{mmio.UM32{&p.CHCFGR1.U32, uint32(SITP)}}
 }
 
-type CHCFGR2_Bits uint32
+type CHCFGR2 uint32
 
-func (b CHCFGR2_Bits) Field(mask CHCFGR2_Bits) int {
+func (b CHCFGR2) Field(mask CHCFGR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CHCFGR2_Bits) J(v int) CHCFGR2_Bits {
-	return CHCFGR2_Bits(bits.Make32(v, uint32(mask)))
+func (mask CHCFGR2) J(v int) CHCFGR2 {
+	return CHCFGR2(bits.Make32(v, uint32(mask)))
 }
 
-type CHCFGR2 struct{ mmio.U32 }
+type RCHCFGR2 struct{ mmio.U32 }
 
-func (r *CHCFGR2) Bits(mask CHCFGR2_Bits) CHCFGR2_Bits { return CHCFGR2_Bits(r.U32.Bits(uint32(mask))) }
-func (r *CHCFGR2) StoreBits(mask, b CHCFGR2_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CHCFGR2) SetBits(mask CHCFGR2_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *CHCFGR2) ClearBits(mask CHCFGR2_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *CHCFGR2) Load() CHCFGR2_Bits                  { return CHCFGR2_Bits(r.U32.Load()) }
-func (r *CHCFGR2) Store(b CHCFGR2_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RCHCFGR2) Bits(mask CHCFGR2) CHCFGR2 { return CHCFGR2(r.U32.Bits(uint32(mask))) }
+func (r *RCHCFGR2) StoreBits(mask, b CHCFGR2) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCHCFGR2) SetBits(mask CHCFGR2)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCHCFGR2) ClearBits(mask CHCFGR2)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCHCFGR2) Load() CHCFGR2             { return CHCFGR2(r.U32.Load()) }
+func (r *RCHCFGR2) Store(b CHCFGR2)           { r.U32.Store(uint32(b)) }
 
-func (r *CHCFGR2) AtomicStoreBits(mask, b CHCFGR2_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *CHCFGR2) AtomicSetBits(mask CHCFGR2_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CHCFGR2) AtomicClearBits(mask CHCFGR2_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCHCFGR2) AtomicStoreBits(mask, b CHCFGR2) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCHCFGR2) AtomicSetBits(mask CHCFGR2)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCHCFGR2) AtomicClearBits(mask CHCFGR2)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CHCFGR2_Mask struct{ mmio.UM32 }
+type RMCHCFGR2 struct{ mmio.UM32 }
 
-func (rm CHCFGR2_Mask) Load() CHCFGR2_Bits   { return CHCFGR2_Bits(rm.UM32.Load()) }
-func (rm CHCFGR2_Mask) Store(b CHCFGR2_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCHCFGR2) Load() CHCFGR2   { return CHCFGR2(rm.UM32.Load()) }
+func (rm RMCHCFGR2) Store(b CHCFGR2) { rm.UM32.Store(uint32(b)) }
 
-func (p *DFSDM_Channel_Periph) OFFSET() CHCFGR2_Mask {
-	return CHCFGR2_Mask{mmio.UM32{&p.CHCFGR2.U32, uint32(OFFSET)}}
+func (p *DFSDM_Channel_Periph) OFFSET() RMCHCFGR2 {
+	return RMCHCFGR2{mmio.UM32{&p.CHCFGR2.U32, uint32(OFFSET)}}
 }
 
-func (p *DFSDM_Channel_Periph) DTRBS() CHCFGR2_Mask {
-	return CHCFGR2_Mask{mmio.UM32{&p.CHCFGR2.U32, uint32(DTRBS)}}
+func (p *DFSDM_Channel_Periph) DTRBS() RMCHCFGR2 {
+	return RMCHCFGR2{mmio.UM32{&p.CHCFGR2.U32, uint32(DTRBS)}}
 }
 
-type CHAWSCDR_Bits uint32
+type CHAWSCDR uint32
 
-func (b CHAWSCDR_Bits) Field(mask CHAWSCDR_Bits) int {
+func (b CHAWSCDR) Field(mask CHAWSCDR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CHAWSCDR_Bits) J(v int) CHAWSCDR_Bits {
-	return CHAWSCDR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CHAWSCDR) J(v int) CHAWSCDR {
+	return CHAWSCDR(bits.Make32(v, uint32(mask)))
 }
 
-type CHAWSCDR struct{ mmio.U32 }
+type RCHAWSCDR struct{ mmio.U32 }
 
-func (r *CHAWSCDR) Bits(mask CHAWSCDR_Bits) CHAWSCDR_Bits {
-	return CHAWSCDR_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *CHAWSCDR) StoreBits(mask, b CHAWSCDR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CHAWSCDR) SetBits(mask CHAWSCDR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *CHAWSCDR) ClearBits(mask CHAWSCDR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *CHAWSCDR) Load() CHAWSCDR_Bits             { return CHAWSCDR_Bits(r.U32.Load()) }
-func (r *CHAWSCDR) Store(b CHAWSCDR_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RCHAWSCDR) Bits(mask CHAWSCDR) CHAWSCDR { return CHAWSCDR(r.U32.Bits(uint32(mask))) }
+func (r *RCHAWSCDR) StoreBits(mask, b CHAWSCDR)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCHAWSCDR) SetBits(mask CHAWSCDR)       { r.U32.SetBits(uint32(mask)) }
+func (r *RCHAWSCDR) ClearBits(mask CHAWSCDR)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RCHAWSCDR) Load() CHAWSCDR              { return CHAWSCDR(r.U32.Load()) }
+func (r *RCHAWSCDR) Store(b CHAWSCDR)            { r.U32.Store(uint32(b)) }
 
-func (r *CHAWSCDR) AtomicStoreBits(mask, b CHAWSCDR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *CHAWSCDR) AtomicSetBits(mask CHAWSCDR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CHAWSCDR) AtomicClearBits(mask CHAWSCDR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCHAWSCDR) AtomicStoreBits(mask, b CHAWSCDR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCHAWSCDR) AtomicSetBits(mask CHAWSCDR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCHAWSCDR) AtomicClearBits(mask CHAWSCDR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CHAWSCDR_Mask struct{ mmio.UM32 }
+type RMCHAWSCDR struct{ mmio.UM32 }
 
-func (rm CHAWSCDR_Mask) Load() CHAWSCDR_Bits   { return CHAWSCDR_Bits(rm.UM32.Load()) }
-func (rm CHAWSCDR_Mask) Store(b CHAWSCDR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCHAWSCDR) Load() CHAWSCDR   { return CHAWSCDR(rm.UM32.Load()) }
+func (rm RMCHAWSCDR) Store(b CHAWSCDR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DFSDM_Channel_Periph) AWFORD() CHAWSCDR_Mask {
-	return CHAWSCDR_Mask{mmio.UM32{&p.CHAWSCDR.U32, uint32(AWFORD)}}
+func (p *DFSDM_Channel_Periph) AWFORD() RMCHAWSCDR {
+	return RMCHAWSCDR{mmio.UM32{&p.CHAWSCDR.U32, uint32(AWFORD)}}
 }
 
-func (p *DFSDM_Channel_Periph) AWFOSR() CHAWSCDR_Mask {
-	return CHAWSCDR_Mask{mmio.UM32{&p.CHAWSCDR.U32, uint32(AWFOSR)}}
+func (p *DFSDM_Channel_Periph) AWFOSR() RMCHAWSCDR {
+	return RMCHAWSCDR{mmio.UM32{&p.CHAWSCDR.U32, uint32(AWFOSR)}}
 }
 
-func (p *DFSDM_Channel_Periph) BKSCD() CHAWSCDR_Mask {
-	return CHAWSCDR_Mask{mmio.UM32{&p.CHAWSCDR.U32, uint32(BKSCD)}}
+func (p *DFSDM_Channel_Periph) BKSCD() RMCHAWSCDR {
+	return RMCHAWSCDR{mmio.UM32{&p.CHAWSCDR.U32, uint32(BKSCD)}}
 }
 
-func (p *DFSDM_Channel_Periph) SCDT() CHAWSCDR_Mask {
-	return CHAWSCDR_Mask{mmio.UM32{&p.CHAWSCDR.U32, uint32(SCDT)}}
+func (p *DFSDM_Channel_Periph) SCDT() RMCHAWSCDR {
+	return RMCHAWSCDR{mmio.UM32{&p.CHAWSCDR.U32, uint32(SCDT)}}
 }
 
-type CHWDATAR_Bits uint32
+type CHWDATAR uint32
 
-func (b CHWDATAR_Bits) Field(mask CHWDATAR_Bits) int {
+func (b CHWDATAR) Field(mask CHWDATAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CHWDATAR_Bits) J(v int) CHWDATAR_Bits {
-	return CHWDATAR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CHWDATAR) J(v int) CHWDATAR {
+	return CHWDATAR(bits.Make32(v, uint32(mask)))
 }
 
-type CHWDATAR struct{ mmio.U32 }
+type RCHWDATAR struct{ mmio.U32 }
 
-func (r *CHWDATAR) Bits(mask CHWDATAR_Bits) CHWDATAR_Bits {
-	return CHWDATAR_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *CHWDATAR) StoreBits(mask, b CHWDATAR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CHWDATAR) SetBits(mask CHWDATAR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *CHWDATAR) ClearBits(mask CHWDATAR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *CHWDATAR) Load() CHWDATAR_Bits             { return CHWDATAR_Bits(r.U32.Load()) }
-func (r *CHWDATAR) Store(b CHWDATAR_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RCHWDATAR) Bits(mask CHWDATAR) CHWDATAR { return CHWDATAR(r.U32.Bits(uint32(mask))) }
+func (r *RCHWDATAR) StoreBits(mask, b CHWDATAR)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCHWDATAR) SetBits(mask CHWDATAR)       { r.U32.SetBits(uint32(mask)) }
+func (r *RCHWDATAR) ClearBits(mask CHWDATAR)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RCHWDATAR) Load() CHWDATAR              { return CHWDATAR(r.U32.Load()) }
+func (r *RCHWDATAR) Store(b CHWDATAR)            { r.U32.Store(uint32(b)) }
 
-func (r *CHWDATAR) AtomicStoreBits(mask, b CHWDATAR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *CHWDATAR) AtomicSetBits(mask CHWDATAR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CHWDATAR) AtomicClearBits(mask CHWDATAR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCHWDATAR) AtomicStoreBits(mask, b CHWDATAR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCHWDATAR) AtomicSetBits(mask CHWDATAR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCHWDATAR) AtomicClearBits(mask CHWDATAR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CHWDATAR_Mask struct{ mmio.UM32 }
+type RMCHWDATAR struct{ mmio.UM32 }
 
-func (rm CHWDATAR_Mask) Load() CHWDATAR_Bits   { return CHWDATAR_Bits(rm.UM32.Load()) }
-func (rm CHWDATAR_Mask) Store(b CHWDATAR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCHWDATAR) Load() CHWDATAR   { return CHWDATAR(rm.UM32.Load()) }
+func (rm RMCHWDATAR) Store(b CHWDATAR) { rm.UM32.Store(uint32(b)) }
 
-type CHDATINR_Bits uint32
+type CHDATINR uint32
 
-func (b CHDATINR_Bits) Field(mask CHDATINR_Bits) int {
+func (b CHDATINR) Field(mask CHDATINR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CHDATINR_Bits) J(v int) CHDATINR_Bits {
-	return CHDATINR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CHDATINR) J(v int) CHDATINR {
+	return CHDATINR(bits.Make32(v, uint32(mask)))
 }
 
-type CHDATINR struct{ mmio.U32 }
+type RCHDATINR struct{ mmio.U32 }
 
-func (r *CHDATINR) Bits(mask CHDATINR_Bits) CHDATINR_Bits {
-	return CHDATINR_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *CHDATINR) StoreBits(mask, b CHDATINR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CHDATINR) SetBits(mask CHDATINR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *CHDATINR) ClearBits(mask CHDATINR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *CHDATINR) Load() CHDATINR_Bits             { return CHDATINR_Bits(r.U32.Load()) }
-func (r *CHDATINR) Store(b CHDATINR_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RCHDATINR) Bits(mask CHDATINR) CHDATINR { return CHDATINR(r.U32.Bits(uint32(mask))) }
+func (r *RCHDATINR) StoreBits(mask, b CHDATINR)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCHDATINR) SetBits(mask CHDATINR)       { r.U32.SetBits(uint32(mask)) }
+func (r *RCHDATINR) ClearBits(mask CHDATINR)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RCHDATINR) Load() CHDATINR              { return CHDATINR(r.U32.Load()) }
+func (r *RCHDATINR) Store(b CHDATINR)            { r.U32.Store(uint32(b)) }
 
-func (r *CHDATINR) AtomicStoreBits(mask, b CHDATINR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *CHDATINR) AtomicSetBits(mask CHDATINR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CHDATINR) AtomicClearBits(mask CHDATINR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCHDATINR) AtomicStoreBits(mask, b CHDATINR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCHDATINR) AtomicSetBits(mask CHDATINR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCHDATINR) AtomicClearBits(mask CHDATINR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CHDATINR_Mask struct{ mmio.UM32 }
+type RMCHDATINR struct{ mmio.UM32 }
 
-func (rm CHDATINR_Mask) Load() CHDATINR_Bits   { return CHDATINR_Bits(rm.UM32.Load()) }
-func (rm CHDATINR_Mask) Store(b CHDATINR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCHDATINR) Load() CHDATINR   { return CHDATINR(rm.UM32.Load()) }
+func (rm RMCHDATINR) Store(b CHDATINR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DFSDM_Channel_Periph) INDAT0() CHDATINR_Mask {
-	return CHDATINR_Mask{mmio.UM32{&p.CHDATINR.U32, uint32(INDAT0)}}
+func (p *DFSDM_Channel_Periph) INDAT0() RMCHDATINR {
+	return RMCHDATINR{mmio.UM32{&p.CHDATINR.U32, uint32(INDAT0)}}
 }
 
-func (p *DFSDM_Channel_Periph) INDAT1() CHDATINR_Mask {
-	return CHDATINR_Mask{mmio.UM32{&p.CHDATINR.U32, uint32(INDAT1)}}
+func (p *DFSDM_Channel_Periph) INDAT1() RMCHDATINR {
+	return RMCHDATINR{mmio.UM32{&p.CHDATINR.U32, uint32(INDAT1)}}
 }

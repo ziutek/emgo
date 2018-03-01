@@ -1,4 +1,4 @@
-// stm32xgen generates STM32 peripheral filex in xgen format.
+// stm32xgen generates STM32 peripheral files in xgen format.
 //
 // stm32xgen is usually used this wahy:
 //  unifdef -k -f undef.h -D STM32TARGET stm32f4xx.h |stm32xgen PKGPATH

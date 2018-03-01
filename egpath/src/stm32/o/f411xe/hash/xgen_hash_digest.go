@@ -11,7 +11,7 @@ import (
 )
 
 type HASH_DIGEST_Periph struct {
-	HR [8]HR
+	HR [8]RHR
 }
 
 func (p *HASH_DIGEST_Periph) BaseAddr() uintptr {
@@ -21,29 +21,29 @@ func (p *HASH_DIGEST_Periph) BaseAddr() uintptr {
 //emgo:const
 var HASH_DIGEST = (*HASH_DIGEST_Periph)(unsafe.Pointer(uintptr(mmap.HASH_DIGEST_BASE)))
 
-type HR_Bits uint32
+type HR uint32
 
-func (b HR_Bits) Field(mask HR_Bits) int {
+func (b HR) Field(mask HR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask HR_Bits) J(v int) HR_Bits {
-	return HR_Bits(bits.Make32(v, uint32(mask)))
+func (mask HR) J(v int) HR {
+	return HR(bits.Make32(v, uint32(mask)))
 }
 
-type HR struct{ mmio.U32 }
+type RHR struct{ mmio.U32 }
 
-func (r *HR) Bits(mask HR_Bits) HR_Bits { return HR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *HR) StoreBits(mask, b HR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *HR) SetBits(mask HR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *HR) ClearBits(mask HR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *HR) Load() HR_Bits             { return HR_Bits(r.U32.Load()) }
-func (r *HR) Store(b HR_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RHR) Bits(mask HR) HR      { return HR(r.U32.Bits(uint32(mask))) }
+func (r *RHR) StoreBits(mask, b HR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RHR) SetBits(mask HR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RHR) ClearBits(mask HR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RHR) Load() HR             { return HR(r.U32.Load()) }
+func (r *RHR) Store(b HR)           { r.U32.Store(uint32(b)) }
 
-func (r *HR) AtomicStoreBits(mask, b HR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *HR) AtomicSetBits(mask HR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *HR) AtomicClearBits(mask HR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RHR) AtomicStoreBits(mask, b HR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RHR) AtomicSetBits(mask HR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RHR) AtomicClearBits(mask HR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type HR_Mask struct{ mmio.UM32 }
+type RMHR struct{ mmio.UM32 }
 
-func (rm HR_Mask) Load() HR_Bits   { return HR_Bits(rm.UM32.Load()) }
-func (rm HR_Mask) Store(b HR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMHR) Load() HR   { return HR(rm.UM32.Load()) }
+func (rm RMHR) Store(b HR) { rm.UM32.Store(uint32(b)) }

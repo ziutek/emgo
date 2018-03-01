@@ -13,7 +13,7 @@ import (
 )
 
 type FMC_Bank1_Periph struct {
-	BTCR [4]BTCR
+	BTCR [4]RBTCR
 }
 
 func (p *FMC_Bank1_Periph) BaseAddr() uintptr {
@@ -23,157 +23,157 @@ func (p *FMC_Bank1_Periph) BaseAddr() uintptr {
 //emgo:const
 var FMC_Bank1 = (*FMC_Bank1_Periph)(unsafe.Pointer(uintptr(mmap.FMC_Bank1_R_BASE)))
 
-type BTCR struct {
-	BCR BCR
-	BTR BTR
+type RBTCR struct {
+	BCR RBCR
+	BTR RBTR
 }
 
-type BCR_Bits uint32
+type BCR uint32
 
-func (b BCR_Bits) Field(mask BCR_Bits) int {
+func (b BCR) Field(mask BCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask BCR_Bits) J(v int) BCR_Bits {
-	return BCR_Bits(bits.Make32(v, uint32(mask)))
+func (mask BCR) J(v int) BCR {
+	return BCR(bits.Make32(v, uint32(mask)))
 }
 
-type BCR struct{ mmio.U32 }
+type RBCR struct{ mmio.U32 }
 
-func (r *BCR) Bits(mask BCR_Bits) BCR_Bits { return BCR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *BCR) StoreBits(mask, b BCR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *BCR) SetBits(mask BCR_Bits)       { r.U32.SetBits(uint32(mask)) }
-func (r *BCR) ClearBits(mask BCR_Bits)     { r.U32.ClearBits(uint32(mask)) }
-func (r *BCR) Load() BCR_Bits              { return BCR_Bits(r.U32.Load()) }
-func (r *BCR) Store(b BCR_Bits)            { r.U32.Store(uint32(b)) }
+func (r *RBCR) Bits(mask BCR) BCR     { return BCR(r.U32.Bits(uint32(mask))) }
+func (r *RBCR) StoreBits(mask, b BCR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RBCR) SetBits(mask BCR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RBCR) ClearBits(mask BCR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RBCR) Load() BCR             { return BCR(r.U32.Load()) }
+func (r *RBCR) Store(b BCR)           { r.U32.Store(uint32(b)) }
 
-func (r *BCR) AtomicStoreBits(mask, b BCR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *BCR) AtomicSetBits(mask BCR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *BCR) AtomicClearBits(mask BCR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RBCR) AtomicStoreBits(mask, b BCR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RBCR) AtomicSetBits(mask BCR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RBCR) AtomicClearBits(mask BCR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type BCR_Mask struct{ mmio.UM32 }
+type RMBCR struct{ mmio.UM32 }
 
-func (rm BCR_Mask) Load() BCR_Bits   { return BCR_Bits(rm.UM32.Load()) }
-func (rm BCR_Mask) Store(b BCR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMBCR) Load() BCR   { return BCR(rm.UM32.Load()) }
+func (rm RMBCR) Store(b BCR) { rm.UM32.Store(uint32(b)) }
 
-func (p *FMC_Bank1_Periph) MBKEN(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(MBKEN)}}
+func (p *FMC_Bank1_Periph) MBKEN(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(MBKEN)}}
 }
 
-func (p *FMC_Bank1_Periph) MUXEN(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(MUXEN)}}
+func (p *FMC_Bank1_Periph) MUXEN(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(MUXEN)}}
 }
 
-func (p *FMC_Bank1_Periph) MTYP(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(MTYP)}}
+func (p *FMC_Bank1_Periph) MTYP(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(MTYP)}}
 }
 
-func (p *FMC_Bank1_Periph) MWID(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(MWID)}}
+func (p *FMC_Bank1_Periph) MWID(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(MWID)}}
 }
 
-func (p *FMC_Bank1_Periph) FACCEN(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(FACCEN)}}
+func (p *FMC_Bank1_Periph) FACCEN(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(FACCEN)}}
 }
 
-func (p *FMC_Bank1_Periph) BURSTEN(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(BURSTEN)}}
+func (p *FMC_Bank1_Periph) BURSTEN(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(BURSTEN)}}
 }
 
-func (p *FMC_Bank1_Periph) WAITPOL(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WAITPOL)}}
+func (p *FMC_Bank1_Periph) WAITPOL(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WAITPOL)}}
 }
 
-func (p *FMC_Bank1_Periph) WRAPMOD(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WRAPMOD)}}
+func (p *FMC_Bank1_Periph) WRAPMOD(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WRAPMOD)}}
 }
 
-func (p *FMC_Bank1_Periph) WAITCFG(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WAITCFG)}}
+func (p *FMC_Bank1_Periph) WAITCFG(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WAITCFG)}}
 }
 
-func (p *FMC_Bank1_Periph) WREN(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WREN)}}
+func (p *FMC_Bank1_Periph) WREN(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WREN)}}
 }
 
-func (p *FMC_Bank1_Periph) WAITEN(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WAITEN)}}
+func (p *FMC_Bank1_Periph) WAITEN(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WAITEN)}}
 }
 
-func (p *FMC_Bank1_Periph) EXTMOD(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(EXTMOD)}}
+func (p *FMC_Bank1_Periph) EXTMOD(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(EXTMOD)}}
 }
 
-func (p *FMC_Bank1_Periph) ASYNCWAIT(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(ASYNCWAIT)}}
+func (p *FMC_Bank1_Periph) ASYNCWAIT(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(ASYNCWAIT)}}
 }
 
-func (p *FMC_Bank1_Periph) CPSIZE(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(CPSIZE)}}
+func (p *FMC_Bank1_Periph) CPSIZE(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(CPSIZE)}}
 }
 
-func (p *FMC_Bank1_Periph) CBURSTRW(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(CBURSTRW)}}
+func (p *FMC_Bank1_Periph) CBURSTRW(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(CBURSTRW)}}
 }
 
-func (p *FMC_Bank1_Periph) CCLKEN(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(CCLKEN)}}
+func (p *FMC_Bank1_Periph) CCLKEN(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(CCLKEN)}}
 }
 
-func (p *FMC_Bank1_Periph) WFDIS(n int) BCR_Mask {
-	return BCR_Mask{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WFDIS)}}
+func (p *FMC_Bank1_Periph) WFDIS(n int) RMBCR {
+	return RMBCR{mmio.UM32{&p.BTCR[n].BCR.U32, uint32(WFDIS)}}
 }
 
-type BTR_Bits uint32
+type BTR uint32
 
-func (b BTR_Bits) Field(mask BTR_Bits) int {
+func (b BTR) Field(mask BTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask BTR_Bits) J(v int) BTR_Bits {
-	return BTR_Bits(bits.Make32(v, uint32(mask)))
+func (mask BTR) J(v int) BTR {
+	return BTR(bits.Make32(v, uint32(mask)))
 }
 
-type BTR struct{ mmio.U32 }
+type RBTR struct{ mmio.U32 }
 
-func (r *BTR) Bits(mask BTR_Bits) BTR_Bits { return BTR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *BTR) StoreBits(mask, b BTR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *BTR) SetBits(mask BTR_Bits)       { r.U32.SetBits(uint32(mask)) }
-func (r *BTR) ClearBits(mask BTR_Bits)     { r.U32.ClearBits(uint32(mask)) }
-func (r *BTR) Load() BTR_Bits              { return BTR_Bits(r.U32.Load()) }
-func (r *BTR) Store(b BTR_Bits)            { r.U32.Store(uint32(b)) }
+func (r *RBTR) Bits(mask BTR) BTR     { return BTR(r.U32.Bits(uint32(mask))) }
+func (r *RBTR) StoreBits(mask, b BTR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RBTR) SetBits(mask BTR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RBTR) ClearBits(mask BTR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RBTR) Load() BTR             { return BTR(r.U32.Load()) }
+func (r *RBTR) Store(b BTR)           { r.U32.Store(uint32(b)) }
 
-func (r *BTR) AtomicStoreBits(mask, b BTR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *BTR) AtomicSetBits(mask BTR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *BTR) AtomicClearBits(mask BTR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RBTR) AtomicStoreBits(mask, b BTR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RBTR) AtomicSetBits(mask BTR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RBTR) AtomicClearBits(mask BTR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type BTR_Mask struct{ mmio.UM32 }
+type RMBTR struct{ mmio.UM32 }
 
-func (rm BTR_Mask) Load() BTR_Bits   { return BTR_Bits(rm.UM32.Load()) }
-func (rm BTR_Mask) Store(b BTR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMBTR) Load() BTR   { return BTR(rm.UM32.Load()) }
+func (rm RMBTR) Store(b BTR) { rm.UM32.Store(uint32(b)) }
 
-func (p *FMC_Bank1_Periph) ADDSET(n int) BTR_Mask {
-	return BTR_Mask{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(ADDSET)}}
+func (p *FMC_Bank1_Periph) ADDSET(n int) RMBTR {
+	return RMBTR{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(ADDSET)}}
 }
 
-func (p *FMC_Bank1_Periph) ADDHLD(n int) BTR_Mask {
-	return BTR_Mask{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(ADDHLD)}}
+func (p *FMC_Bank1_Periph) ADDHLD(n int) RMBTR {
+	return RMBTR{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(ADDHLD)}}
 }
 
-func (p *FMC_Bank1_Periph) DATAST(n int) BTR_Mask {
-	return BTR_Mask{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(DATAST)}}
+func (p *FMC_Bank1_Periph) DATAST(n int) RMBTR {
+	return RMBTR{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(DATAST)}}
 }
 
-func (p *FMC_Bank1_Periph) BUSTURN(n int) BTR_Mask {
-	return BTR_Mask{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(BUSTURN)}}
+func (p *FMC_Bank1_Periph) BUSTURN(n int) RMBTR {
+	return RMBTR{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(BUSTURN)}}
 }
 
-func (p *FMC_Bank1_Periph) CLKDIV(n int) BTR_Mask {
-	return BTR_Mask{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(CLKDIV)}}
+func (p *FMC_Bank1_Periph) CLKDIV(n int) RMBTR {
+	return RMBTR{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(CLKDIV)}}
 }
 
-func (p *FMC_Bank1_Periph) DATLAT(n int) BTR_Mask {
-	return BTR_Mask{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(DATLAT)}}
+func (p *FMC_Bank1_Periph) DATLAT(n int) RMBTR {
+	return RMBTR{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(DATLAT)}}
 }
 
-func (p *FMC_Bank1_Periph) ACCMOD(n int) BTR_Mask {
-	return BTR_Mask{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(ACCMOD)}}
+func (p *FMC_Bank1_Periph) ACCMOD(n int) RMBTR {
+	return RMBTR{mmio.UM32{&p.BTCR[n].BTR.U32, uint32(ACCMOD)}}
 }

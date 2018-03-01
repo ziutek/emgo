@@ -101,10 +101,10 @@ func (p *Periph) setSamplTime(ch int, st SamplTime) {
 	checkCh(ch)
 	if ch < 10 {
 		n := uint(ch) * 3
-		p.raw.SMPR2.StoreBits(adc.SMPR2_Bits(7)<<n, adc.SMPR2_Bits(st)<<n)
+		p.raw.SMPR2.StoreBits(adc.SMPR2(7)<<n, adc.SMPR2(st)<<n)
 	} else {
 		n := uint(ch-10) * 3
-		p.raw.SMPR1.StoreBits(adc.SMPR1_Bits(7)<<n, adc.SMPR1_Bits(st)<<n)
+		p.raw.SMPR1.StoreBits(adc.SMPR1(7)<<n, adc.SMPR1(st)<<n)
 	}
 }
 
@@ -112,9 +112,9 @@ func (p *Periph) setSequence(ch []int) {
 	if len(ch) > 17 {
 		panicSeq()
 	}
-	sqr1 := adc.SQR1_Bits(len(ch)-1) << adc.Ln
+	sqr1 := adc.SQR1(len(ch)-1) << adc.Ln
 	raw := &p.raw
-	var sqr3 adc.SQR3_Bits
+	var sqr3 adc.SQR3
 	sq := ch
 	ch = nil
 	if len(sq) > 6 {
@@ -123,10 +123,10 @@ func (p *Periph) setSequence(ch []int) {
 	}
 	for i, c := range sq {
 		checkCh(c)
-		sqr3 |= adc.SQR3_Bits(c) << (uint(i) * 5)
+		sqr3 |= adc.SQR3(c) << (uint(i) * 5)
 	}
 	raw.SQR3.Store(sqr3)
-	var sqr2 adc.SQR2_Bits
+	var sqr2 adc.SQR2
 	sq = ch
 	ch = nil
 	if len(sq) > 6 {
@@ -135,22 +135,22 @@ func (p *Periph) setSequence(ch []int) {
 	}
 	for i, c := range sq {
 		checkCh(c)
-		sqr2 |= adc.SQR2_Bits(c) << (uint(i) * 5)
+		sqr2 |= adc.SQR2(c) << (uint(i) * 5)
 	}
 	raw.SQR2.Store(sqr2)
 	for i, c := range ch {
 		checkCh(c)
-		sqr1 |= adc.SQR1_Bits(c) << (uint(i) * 5)
+		sqr1 |= adc.SQR1(c) << (uint(i) * 5)
 	}
 	raw.SQR1.Store(sqr1)
 }
 
 func (p *Periph) setTrigSrc(src TrigSrc) {
-	p.raw.EXTSEL().Store(adc.CR2_Bits(src) << adc.EXTSELn)
+	p.raw.EXTSEL().Store(adc.CR2(src) << adc.EXTSELn)
 }
 
 func (p *Periph) setTrigEdge(edge TrigEdge) {
-	p.raw.EXTTRIG().Store(adc.CR2_Bits(edge) << adc.EXTTRIGn)
+	p.raw.EXTTRIG().Store(adc.CR2(edge) << adc.EXTTRIGn)
 }
 
 func (p *Periph) status() (Event, Error) {
@@ -158,21 +158,21 @@ func (p *Periph) status() (Event, Error) {
 }
 
 func (p *Periph) clear(ev Event, _ Error) {
-	p.raw.SR.Store(adc.SR_Bits(EvAll &^ ev))
+	p.raw.SR.Store(adc.SR(EvAll &^ ev))
 }
 
 func (p *Periph) enableIRQ(ev Event, _ Error) {
 	cr1 := ev&ConvEnd<<(adc.EOCIEn-adc.EOCn) |
 		ev&InjConvEnd<<(adc.JEOCIEn-adc.JEOCn) |
 		ev&Watchdog<<(adc.AWDIEn-adc.AWDn)
-	p.raw.CR1.SetBits(adc.CR1_Bits(cr1))
+	p.raw.CR1.SetBits(adc.CR1(cr1))
 }
 
 func (p *Periph) disableIRQ(ev Event, _ Error) {
 	cr1 := ev&ConvEnd<<(adc.EOCIEn-adc.EOCn) |
 		ev&InjConvEnd<<(adc.JEOCIEn-adc.JEOCn) |
 		ev&Watchdog<<(adc.AWDIEn-adc.AWDn)
-	p.raw.CR1.ClearBits(adc.CR1_Bits(cr1))
+	p.raw.CR1.ClearBits(adc.CR1(cr1))
 }
 
 func (p *Periph) enableDMA(_ bool) {

@@ -12,37 +12,37 @@ import (
 
 type Periph struct {
 	_              [4]uint32
-	CODEPAGESIZE   CODEPAGESIZE
-	CODESIZE       CODESIZE
+	CODEPAGESIZE   RCODEPAGESIZE
+	CODESIZE       RCODESIZE
 	_              [4]uint32
-	CLENR0         CLENR0
-	PPFC           PPFC
+	CLENR0         RCLENR0
+	PPFC           RPPFC
 	_              uint32
-	NUMRAMBLOCK    NUMRAMBLOCK
-	SIZERAMBLOCK   [4]SIZERAMBLOCK
+	NUMRAMBLOCK    RNUMRAMBLOCK
+	SIZERAMBLOCK   [4]RSIZERAMBLOCK
 	_              [5]uint32
-	CONFIGID       CONFIGID
-	DEVICEID       [2]DEVICEID
+	CONFIGID       RCONFIGID
+	DEVICEID       [2]RDEVICEID
 	_              [6]uint32
-	ER             [4]ER
-	IR             [4]IR
-	DEVICEADDRTYPE DEVICEADDRTYPE
-	DEVICEADDR     [2]DEVICEADDR
-	OVERRIDDEN     OVERRIDDEN
-	NRF_1MBIT      [5]NRF_1MBIT
+	ER             [4]RER
+	IR             [4]RIR
+	DEVICEADDRTYPE RDEVICEADDRTYPE
+	DEVICEADDR     [2]RDEVICEADDR
+	OVERRIDDEN     ROVERRIDDEN
+	NRF_1MBIT      [5]RNRF_1MBIT
 	_              [10]uint32
-	BLE_1MBIT      [5]BLE_1MBIT
-	INFO_PART      INFO_PART
-	INFO_VARIANT   INFO_VARIANT
-	INFO_PACKAGE   INFO_PACKAGE
-	INFO_RAM       INFO_RAM
-	INFO_FLASH     INFO_FLASH
+	BLE_1MBIT      [5]RBLE_1MBIT
+	INFO_PART      RINFO_PART
+	INFO_VARIANT   RINFO_VARIANT
+	INFO_PACKAGE   RINFO_PACKAGE
+	INFO_RAM       RINFO_RAM
+	INFO_FLASH     RINFO_FLASH
 	_              [188]uint32
-	TEMP_A         [6]TEMP_A
-	TEMP_B         [6]TEMP_B
-	TEMP_T         [5]TEMP_T
+	TEMP_A         [6]RTEMP_A
+	TEMP_B         [6]RTEMP_B
+	TEMP_T         [5]RTEMP_T
 	_              [2]uint32
-	NFC_TAGHEADER  [4]NFC_TAGHEADER
+	NFC_TAGHEADER  [4]RNFC_TAGHEADER
 }
 
 func (p *Periph) BaseAddr() uintptr {
@@ -52,732 +52,698 @@ func (p *Periph) BaseAddr() uintptr {
 //emgo:const
 var FICR = (*Periph)(unsafe.Pointer(uintptr(mmap.FICR_BASE)))
 
-type CODEPAGESIZE_Bits uint32
+type CODEPAGESIZE uint32
 
-func (b CODEPAGESIZE_Bits) Field(mask CODEPAGESIZE_Bits) int {
+func (b CODEPAGESIZE) Field(mask CODEPAGESIZE) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CODEPAGESIZE_Bits) J(v int) CODEPAGESIZE_Bits {
-	return CODEPAGESIZE_Bits(bits.Make32(v, uint32(mask)))
+func (mask CODEPAGESIZE) J(v int) CODEPAGESIZE {
+	return CODEPAGESIZE(bits.Make32(v, uint32(mask)))
 }
 
-type CODEPAGESIZE struct{ mmio.U32 }
+type RCODEPAGESIZE struct{ mmio.U32 }
 
-func (r *CODEPAGESIZE) Bits(mask CODEPAGESIZE_Bits) CODEPAGESIZE_Bits {
-	return CODEPAGESIZE_Bits(r.U32.Bits(uint32(mask)))
+func (r *RCODEPAGESIZE) Bits(mask CODEPAGESIZE) CODEPAGESIZE {
+	return CODEPAGESIZE(r.U32.Bits(uint32(mask)))
 }
-func (r *CODEPAGESIZE) StoreBits(mask, b CODEPAGESIZE_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CODEPAGESIZE) SetBits(mask CODEPAGESIZE_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *CODEPAGESIZE) ClearBits(mask CODEPAGESIZE_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *CODEPAGESIZE) Load() CODEPAGESIZE_Bits             { return CODEPAGESIZE_Bits(r.U32.Load()) }
-func (r *CODEPAGESIZE) Store(b CODEPAGESIZE_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RCODEPAGESIZE) StoreBits(mask, b CODEPAGESIZE) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCODEPAGESIZE) SetBits(mask CODEPAGESIZE)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCODEPAGESIZE) ClearBits(mask CODEPAGESIZE)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCODEPAGESIZE) Load() CODEPAGESIZE             { return CODEPAGESIZE(r.U32.Load()) }
+func (r *RCODEPAGESIZE) Store(b CODEPAGESIZE)           { r.U32.Store(uint32(b)) }
 
-func (r *CODEPAGESIZE) AtomicStoreBits(mask, b CODEPAGESIZE_Bits) {
+func (r *RCODEPAGESIZE) AtomicStoreBits(mask, b CODEPAGESIZE) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *CODEPAGESIZE) AtomicSetBits(mask CODEPAGESIZE_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CODEPAGESIZE) AtomicClearBits(mask CODEPAGESIZE_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCODEPAGESIZE) AtomicSetBits(mask CODEPAGESIZE)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCODEPAGESIZE) AtomicClearBits(mask CODEPAGESIZE) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CODEPAGESIZE_Mask struct{ mmio.UM32 }
+type RMCODEPAGESIZE struct{ mmio.UM32 }
 
-func (rm CODEPAGESIZE_Mask) Load() CODEPAGESIZE_Bits   { return CODEPAGESIZE_Bits(rm.UM32.Load()) }
-func (rm CODEPAGESIZE_Mask) Store(b CODEPAGESIZE_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCODEPAGESIZE) Load() CODEPAGESIZE   { return CODEPAGESIZE(rm.UM32.Load()) }
+func (rm RMCODEPAGESIZE) Store(b CODEPAGESIZE) { rm.UM32.Store(uint32(b)) }
 
-type CODESIZE_Bits uint32
+type CODESIZE uint32
 
-func (b CODESIZE_Bits) Field(mask CODESIZE_Bits) int {
+func (b CODESIZE) Field(mask CODESIZE) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CODESIZE_Bits) J(v int) CODESIZE_Bits {
-	return CODESIZE_Bits(bits.Make32(v, uint32(mask)))
+func (mask CODESIZE) J(v int) CODESIZE {
+	return CODESIZE(bits.Make32(v, uint32(mask)))
 }
 
-type CODESIZE struct{ mmio.U32 }
+type RCODESIZE struct{ mmio.U32 }
 
-func (r *CODESIZE) Bits(mask CODESIZE_Bits) CODESIZE_Bits {
-	return CODESIZE_Bits(r.U32.Bits(uint32(mask)))
+func (r *RCODESIZE) Bits(mask CODESIZE) CODESIZE { return CODESIZE(r.U32.Bits(uint32(mask))) }
+func (r *RCODESIZE) StoreBits(mask, b CODESIZE)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCODESIZE) SetBits(mask CODESIZE)       { r.U32.SetBits(uint32(mask)) }
+func (r *RCODESIZE) ClearBits(mask CODESIZE)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RCODESIZE) Load() CODESIZE              { return CODESIZE(r.U32.Load()) }
+func (r *RCODESIZE) Store(b CODESIZE)            { r.U32.Store(uint32(b)) }
+
+func (r *RCODESIZE) AtomicStoreBits(mask, b CODESIZE) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCODESIZE) AtomicSetBits(mask CODESIZE)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCODESIZE) AtomicClearBits(mask CODESIZE)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMCODESIZE struct{ mmio.UM32 }
+
+func (rm RMCODESIZE) Load() CODESIZE   { return CODESIZE(rm.UM32.Load()) }
+func (rm RMCODESIZE) Store(b CODESIZE) { rm.UM32.Store(uint32(b)) }
+
+type CLENR0 uint32
+
+func (b CLENR0) Field(mask CLENR0) int {
+	return bits.Field32(uint32(b), uint32(mask))
 }
-func (r *CODESIZE) StoreBits(mask, b CODESIZE_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CODESIZE) SetBits(mask CODESIZE_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *CODESIZE) ClearBits(mask CODESIZE_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *CODESIZE) Load() CODESIZE_Bits             { return CODESIZE_Bits(r.U32.Load()) }
-func (r *CODESIZE) Store(b CODESIZE_Bits)           { r.U32.Store(uint32(b)) }
+func (mask CLENR0) J(v int) CLENR0 {
+	return CLENR0(bits.Make32(v, uint32(mask)))
+}
 
-func (r *CODESIZE) AtomicStoreBits(mask, b CODESIZE_Bits) {
+type RCLENR0 struct{ mmio.U32 }
+
+func (r *RCLENR0) Bits(mask CLENR0) CLENR0  { return CLENR0(r.U32.Bits(uint32(mask))) }
+func (r *RCLENR0) StoreBits(mask, b CLENR0) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCLENR0) SetBits(mask CLENR0)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCLENR0) ClearBits(mask CLENR0)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCLENR0) Load() CLENR0             { return CLENR0(r.U32.Load()) }
+func (r *RCLENR0) Store(b CLENR0)           { r.U32.Store(uint32(b)) }
+
+func (r *RCLENR0) AtomicStoreBits(mask, b CLENR0) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCLENR0) AtomicSetBits(mask CLENR0)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCLENR0) AtomicClearBits(mask CLENR0)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMCLENR0 struct{ mmio.UM32 }
+
+func (rm RMCLENR0) Load() CLENR0   { return CLENR0(rm.UM32.Load()) }
+func (rm RMCLENR0) Store(b CLENR0) { rm.UM32.Store(uint32(b)) }
+
+type PPFC uint32
+
+func (b PPFC) Field(mask PPFC) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask PPFC) J(v int) PPFC {
+	return PPFC(bits.Make32(v, uint32(mask)))
+}
+
+type RPPFC struct{ mmio.U32 }
+
+func (r *RPPFC) Bits(mask PPFC) PPFC    { return PPFC(r.U32.Bits(uint32(mask))) }
+func (r *RPPFC) StoreBits(mask, b PPFC) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RPPFC) SetBits(mask PPFC)      { r.U32.SetBits(uint32(mask)) }
+func (r *RPPFC) ClearBits(mask PPFC)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RPPFC) Load() PPFC             { return PPFC(r.U32.Load()) }
+func (r *RPPFC) Store(b PPFC)           { r.U32.Store(uint32(b)) }
+
+func (r *RPPFC) AtomicStoreBits(mask, b PPFC) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RPPFC) AtomicSetBits(mask PPFC)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RPPFC) AtomicClearBits(mask PPFC)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMPPFC struct{ mmio.UM32 }
+
+func (rm RMPPFC) Load() PPFC   { return PPFC(rm.UM32.Load()) }
+func (rm RMPPFC) Store(b PPFC) { rm.UM32.Store(uint32(b)) }
+
+type NUMRAMBLOCK uint32
+
+func (b NUMRAMBLOCK) Field(mask NUMRAMBLOCK) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask NUMRAMBLOCK) J(v int) NUMRAMBLOCK {
+	return NUMRAMBLOCK(bits.Make32(v, uint32(mask)))
+}
+
+type RNUMRAMBLOCK struct{ mmio.U32 }
+
+func (r *RNUMRAMBLOCK) Bits(mask NUMRAMBLOCK) NUMRAMBLOCK {
+	return NUMRAMBLOCK(r.U32.Bits(uint32(mask)))
+}
+func (r *RNUMRAMBLOCK) StoreBits(mask, b NUMRAMBLOCK) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RNUMRAMBLOCK) SetBits(mask NUMRAMBLOCK)      { r.U32.SetBits(uint32(mask)) }
+func (r *RNUMRAMBLOCK) ClearBits(mask NUMRAMBLOCK)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RNUMRAMBLOCK) Load() NUMRAMBLOCK             { return NUMRAMBLOCK(r.U32.Load()) }
+func (r *RNUMRAMBLOCK) Store(b NUMRAMBLOCK)           { r.U32.Store(uint32(b)) }
+
+func (r *RNUMRAMBLOCK) AtomicStoreBits(mask, b NUMRAMBLOCK) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *CODESIZE) AtomicSetBits(mask CODESIZE_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CODESIZE) AtomicClearBits(mask CODESIZE_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RNUMRAMBLOCK) AtomicSetBits(mask NUMRAMBLOCK)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RNUMRAMBLOCK) AtomicClearBits(mask NUMRAMBLOCK) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CODESIZE_Mask struct{ mmio.UM32 }
+type RMNUMRAMBLOCK struct{ mmio.UM32 }
 
-func (rm CODESIZE_Mask) Load() CODESIZE_Bits   { return CODESIZE_Bits(rm.UM32.Load()) }
-func (rm CODESIZE_Mask) Store(b CODESIZE_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMNUMRAMBLOCK) Load() NUMRAMBLOCK   { return NUMRAMBLOCK(rm.UM32.Load()) }
+func (rm RMNUMRAMBLOCK) Store(b NUMRAMBLOCK) { rm.UM32.Store(uint32(b)) }
 
-type CLENR0_Bits uint32
+type SIZERAMBLOCK uint32
 
-func (b CLENR0_Bits) Field(mask CLENR0_Bits) int {
+func (b SIZERAMBLOCK) Field(mask SIZERAMBLOCK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CLENR0_Bits) J(v int) CLENR0_Bits {
-	return CLENR0_Bits(bits.Make32(v, uint32(mask)))
+func (mask SIZERAMBLOCK) J(v int) SIZERAMBLOCK {
+	return SIZERAMBLOCK(bits.Make32(v, uint32(mask)))
 }
 
-type CLENR0 struct{ mmio.U32 }
+type RSIZERAMBLOCK struct{ mmio.U32 }
 
-func (r *CLENR0) Bits(mask CLENR0_Bits) CLENR0_Bits { return CLENR0_Bits(r.U32.Bits(uint32(mask))) }
-func (r *CLENR0) StoreBits(mask, b CLENR0_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CLENR0) SetBits(mask CLENR0_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *CLENR0) ClearBits(mask CLENR0_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *CLENR0) Load() CLENR0_Bits                 { return CLENR0_Bits(r.U32.Load()) }
-func (r *CLENR0) Store(b CLENR0_Bits)               { r.U32.Store(uint32(b)) }
-
-func (r *CLENR0) AtomicStoreBits(mask, b CLENR0_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *CLENR0) AtomicSetBits(mask CLENR0_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CLENR0) AtomicClearBits(mask CLENR0_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type CLENR0_Mask struct{ mmio.UM32 }
-
-func (rm CLENR0_Mask) Load() CLENR0_Bits   { return CLENR0_Bits(rm.UM32.Load()) }
-func (rm CLENR0_Mask) Store(b CLENR0_Bits) { rm.UM32.Store(uint32(b)) }
-
-type PPFC_Bits uint32
-
-func (b PPFC_Bits) Field(mask PPFC_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
+func (r *RSIZERAMBLOCK) Bits(mask SIZERAMBLOCK) SIZERAMBLOCK {
+	return SIZERAMBLOCK(r.U32.Bits(uint32(mask)))
 }
-func (mask PPFC_Bits) J(v int) PPFC_Bits {
-	return PPFC_Bits(bits.Make32(v, uint32(mask)))
-}
+func (r *RSIZERAMBLOCK) StoreBits(mask, b SIZERAMBLOCK) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RSIZERAMBLOCK) SetBits(mask SIZERAMBLOCK)      { r.U32.SetBits(uint32(mask)) }
+func (r *RSIZERAMBLOCK) ClearBits(mask SIZERAMBLOCK)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RSIZERAMBLOCK) Load() SIZERAMBLOCK             { return SIZERAMBLOCK(r.U32.Load()) }
+func (r *RSIZERAMBLOCK) Store(b SIZERAMBLOCK)           { r.U32.Store(uint32(b)) }
 
-type PPFC struct{ mmio.U32 }
-
-func (r *PPFC) Bits(mask PPFC_Bits) PPFC_Bits { return PPFC_Bits(r.U32.Bits(uint32(mask))) }
-func (r *PPFC) StoreBits(mask, b PPFC_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *PPFC) SetBits(mask PPFC_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *PPFC) ClearBits(mask PPFC_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *PPFC) Load() PPFC_Bits               { return PPFC_Bits(r.U32.Load()) }
-func (r *PPFC) Store(b PPFC_Bits)             { r.U32.Store(uint32(b)) }
-
-func (r *PPFC) AtomicStoreBits(mask, b PPFC_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *PPFC) AtomicSetBits(mask PPFC_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *PPFC) AtomicClearBits(mask PPFC_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type PPFC_Mask struct{ mmio.UM32 }
-
-func (rm PPFC_Mask) Load() PPFC_Bits   { return PPFC_Bits(rm.UM32.Load()) }
-func (rm PPFC_Mask) Store(b PPFC_Bits) { rm.UM32.Store(uint32(b)) }
-
-type NUMRAMBLOCK_Bits uint32
-
-func (b NUMRAMBLOCK_Bits) Field(mask NUMRAMBLOCK_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask NUMRAMBLOCK_Bits) J(v int) NUMRAMBLOCK_Bits {
-	return NUMRAMBLOCK_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type NUMRAMBLOCK struct{ mmio.U32 }
-
-func (r *NUMRAMBLOCK) Bits(mask NUMRAMBLOCK_Bits) NUMRAMBLOCK_Bits {
-	return NUMRAMBLOCK_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *NUMRAMBLOCK) StoreBits(mask, b NUMRAMBLOCK_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *NUMRAMBLOCK) SetBits(mask NUMRAMBLOCK_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *NUMRAMBLOCK) ClearBits(mask NUMRAMBLOCK_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *NUMRAMBLOCK) Load() NUMRAMBLOCK_Bits             { return NUMRAMBLOCK_Bits(r.U32.Load()) }
-func (r *NUMRAMBLOCK) Store(b NUMRAMBLOCK_Bits)           { r.U32.Store(uint32(b)) }
-
-func (r *NUMRAMBLOCK) AtomicStoreBits(mask, b NUMRAMBLOCK_Bits) {
+func (r *RSIZERAMBLOCK) AtomicStoreBits(mask, b SIZERAMBLOCK) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *NUMRAMBLOCK) AtomicSetBits(mask NUMRAMBLOCK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *NUMRAMBLOCK) AtomicClearBits(mask NUMRAMBLOCK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RSIZERAMBLOCK) AtomicSetBits(mask SIZERAMBLOCK)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RSIZERAMBLOCK) AtomicClearBits(mask SIZERAMBLOCK) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type NUMRAMBLOCK_Mask struct{ mmio.UM32 }
+type RMSIZERAMBLOCK struct{ mmio.UM32 }
 
-func (rm NUMRAMBLOCK_Mask) Load() NUMRAMBLOCK_Bits   { return NUMRAMBLOCK_Bits(rm.UM32.Load()) }
-func (rm NUMRAMBLOCK_Mask) Store(b NUMRAMBLOCK_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMSIZERAMBLOCK) Load() SIZERAMBLOCK   { return SIZERAMBLOCK(rm.UM32.Load()) }
+func (rm RMSIZERAMBLOCK) Store(b SIZERAMBLOCK) { rm.UM32.Store(uint32(b)) }
 
-type SIZERAMBLOCK_Bits uint32
+type CONFIGID uint32
 
-func (b SIZERAMBLOCK_Bits) Field(mask SIZERAMBLOCK_Bits) int {
+func (b CONFIGID) Field(mask CONFIGID) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask SIZERAMBLOCK_Bits) J(v int) SIZERAMBLOCK_Bits {
-	return SIZERAMBLOCK_Bits(bits.Make32(v, uint32(mask)))
+func (mask CONFIGID) J(v int) CONFIGID {
+	return CONFIGID(bits.Make32(v, uint32(mask)))
 }
 
-type SIZERAMBLOCK struct{ mmio.U32 }
+type RCONFIGID struct{ mmio.U32 }
 
-func (r *SIZERAMBLOCK) Bits(mask SIZERAMBLOCK_Bits) SIZERAMBLOCK_Bits {
-	return SIZERAMBLOCK_Bits(r.U32.Bits(uint32(mask)))
+func (r *RCONFIGID) Bits(mask CONFIGID) CONFIGID { return CONFIGID(r.U32.Bits(uint32(mask))) }
+func (r *RCONFIGID) StoreBits(mask, b CONFIGID)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCONFIGID) SetBits(mask CONFIGID)       { r.U32.SetBits(uint32(mask)) }
+func (r *RCONFIGID) ClearBits(mask CONFIGID)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RCONFIGID) Load() CONFIGID              { return CONFIGID(r.U32.Load()) }
+func (r *RCONFIGID) Store(b CONFIGID)            { r.U32.Store(uint32(b)) }
+
+func (r *RCONFIGID) AtomicStoreBits(mask, b CONFIGID) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCONFIGID) AtomicSetBits(mask CONFIGID)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCONFIGID) AtomicClearBits(mask CONFIGID)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMCONFIGID struct{ mmio.UM32 }
+
+func (rm RMCONFIGID) Load() CONFIGID   { return CONFIGID(rm.UM32.Load()) }
+func (rm RMCONFIGID) Store(b CONFIGID) { rm.UM32.Store(uint32(b)) }
+
+type DEVICEID uint32
+
+func (b DEVICEID) Field(mask DEVICEID) int {
+	return bits.Field32(uint32(b), uint32(mask))
 }
-func (r *SIZERAMBLOCK) StoreBits(mask, b SIZERAMBLOCK_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *SIZERAMBLOCK) SetBits(mask SIZERAMBLOCK_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *SIZERAMBLOCK) ClearBits(mask SIZERAMBLOCK_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *SIZERAMBLOCK) Load() SIZERAMBLOCK_Bits             { return SIZERAMBLOCK_Bits(r.U32.Load()) }
-func (r *SIZERAMBLOCK) Store(b SIZERAMBLOCK_Bits)           { r.U32.Store(uint32(b)) }
+func (mask DEVICEID) J(v int) DEVICEID {
+	return DEVICEID(bits.Make32(v, uint32(mask)))
+}
 
-func (r *SIZERAMBLOCK) AtomicStoreBits(mask, b SIZERAMBLOCK_Bits) {
+type RDEVICEID struct{ mmio.U32 }
+
+func (r *RDEVICEID) Bits(mask DEVICEID) DEVICEID { return DEVICEID(r.U32.Bits(uint32(mask))) }
+func (r *RDEVICEID) StoreBits(mask, b DEVICEID)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDEVICEID) SetBits(mask DEVICEID)       { r.U32.SetBits(uint32(mask)) }
+func (r *RDEVICEID) ClearBits(mask DEVICEID)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RDEVICEID) Load() DEVICEID              { return DEVICEID(r.U32.Load()) }
+func (r *RDEVICEID) Store(b DEVICEID)            { r.U32.Store(uint32(b)) }
+
+func (r *RDEVICEID) AtomicStoreBits(mask, b DEVICEID) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RDEVICEID) AtomicSetBits(mask DEVICEID)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDEVICEID) AtomicClearBits(mask DEVICEID)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMDEVICEID struct{ mmio.UM32 }
+
+func (rm RMDEVICEID) Load() DEVICEID   { return DEVICEID(rm.UM32.Load()) }
+func (rm RMDEVICEID) Store(b DEVICEID) { rm.UM32.Store(uint32(b)) }
+
+type ER uint32
+
+func (b ER) Field(mask ER) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask ER) J(v int) ER {
+	return ER(bits.Make32(v, uint32(mask)))
+}
+
+type RER struct{ mmio.U32 }
+
+func (r *RER) Bits(mask ER) ER      { return ER(r.U32.Bits(uint32(mask))) }
+func (r *RER) StoreBits(mask, b ER) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RER) SetBits(mask ER)      { r.U32.SetBits(uint32(mask)) }
+func (r *RER) ClearBits(mask ER)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RER) Load() ER             { return ER(r.U32.Load()) }
+func (r *RER) Store(b ER)           { r.U32.Store(uint32(b)) }
+
+func (r *RER) AtomicStoreBits(mask, b ER) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RER) AtomicSetBits(mask ER)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RER) AtomicClearBits(mask ER)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMER struct{ mmio.UM32 }
+
+func (rm RMER) Load() ER   { return ER(rm.UM32.Load()) }
+func (rm RMER) Store(b ER) { rm.UM32.Store(uint32(b)) }
+
+type IR uint32
+
+func (b IR) Field(mask IR) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask IR) J(v int) IR {
+	return IR(bits.Make32(v, uint32(mask)))
+}
+
+type RIR struct{ mmio.U32 }
+
+func (r *RIR) Bits(mask IR) IR      { return IR(r.U32.Bits(uint32(mask))) }
+func (r *RIR) StoreBits(mask, b IR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RIR) SetBits(mask IR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RIR) ClearBits(mask IR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RIR) Load() IR             { return IR(r.U32.Load()) }
+func (r *RIR) Store(b IR)           { r.U32.Store(uint32(b)) }
+
+func (r *RIR) AtomicStoreBits(mask, b IR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RIR) AtomicSetBits(mask IR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RIR) AtomicClearBits(mask IR)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMIR struct{ mmio.UM32 }
+
+func (rm RMIR) Load() IR   { return IR(rm.UM32.Load()) }
+func (rm RMIR) Store(b IR) { rm.UM32.Store(uint32(b)) }
+
+type DEVICEADDRTYPE uint32
+
+func (b DEVICEADDRTYPE) Field(mask DEVICEADDRTYPE) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask DEVICEADDRTYPE) J(v int) DEVICEADDRTYPE {
+	return DEVICEADDRTYPE(bits.Make32(v, uint32(mask)))
+}
+
+type RDEVICEADDRTYPE struct{ mmio.U32 }
+
+func (r *RDEVICEADDRTYPE) Bits(mask DEVICEADDRTYPE) DEVICEADDRTYPE {
+	return DEVICEADDRTYPE(r.U32.Bits(uint32(mask)))
+}
+func (r *RDEVICEADDRTYPE) StoreBits(mask, b DEVICEADDRTYPE) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDEVICEADDRTYPE) SetBits(mask DEVICEADDRTYPE)      { r.U32.SetBits(uint32(mask)) }
+func (r *RDEVICEADDRTYPE) ClearBits(mask DEVICEADDRTYPE)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RDEVICEADDRTYPE) Load() DEVICEADDRTYPE             { return DEVICEADDRTYPE(r.U32.Load()) }
+func (r *RDEVICEADDRTYPE) Store(b DEVICEADDRTYPE)           { r.U32.Store(uint32(b)) }
+
+func (r *RDEVICEADDRTYPE) AtomicStoreBits(mask, b DEVICEADDRTYPE) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *SIZERAMBLOCK) AtomicSetBits(mask SIZERAMBLOCK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *SIZERAMBLOCK) AtomicClearBits(mask SIZERAMBLOCK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RDEVICEADDRTYPE) AtomicSetBits(mask DEVICEADDRTYPE)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDEVICEADDRTYPE) AtomicClearBits(mask DEVICEADDRTYPE) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type SIZERAMBLOCK_Mask struct{ mmio.UM32 }
+type RMDEVICEADDRTYPE struct{ mmio.UM32 }
 
-func (rm SIZERAMBLOCK_Mask) Load() SIZERAMBLOCK_Bits   { return SIZERAMBLOCK_Bits(rm.UM32.Load()) }
-func (rm SIZERAMBLOCK_Mask) Store(b SIZERAMBLOCK_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMDEVICEADDRTYPE) Load() DEVICEADDRTYPE   { return DEVICEADDRTYPE(rm.UM32.Load()) }
+func (rm RMDEVICEADDRTYPE) Store(b DEVICEADDRTYPE) { rm.UM32.Store(uint32(b)) }
 
-type CONFIGID_Bits uint32
+type DEVICEADDR uint32
 
-func (b CONFIGID_Bits) Field(mask CONFIGID_Bits) int {
+func (b DEVICEADDR) Field(mask DEVICEADDR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CONFIGID_Bits) J(v int) CONFIGID_Bits {
-	return CONFIGID_Bits(bits.Make32(v, uint32(mask)))
+func (mask DEVICEADDR) J(v int) DEVICEADDR {
+	return DEVICEADDR(bits.Make32(v, uint32(mask)))
 }
 
-type CONFIGID struct{ mmio.U32 }
+type RDEVICEADDR struct{ mmio.U32 }
 
-func (r *CONFIGID) Bits(mask CONFIGID_Bits) CONFIGID_Bits {
-	return CONFIGID_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *CONFIGID) StoreBits(mask, b CONFIGID_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CONFIGID) SetBits(mask CONFIGID_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *CONFIGID) ClearBits(mask CONFIGID_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *CONFIGID) Load() CONFIGID_Bits             { return CONFIGID_Bits(r.U32.Load()) }
-func (r *CONFIGID) Store(b CONFIGID_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RDEVICEADDR) Bits(mask DEVICEADDR) DEVICEADDR { return DEVICEADDR(r.U32.Bits(uint32(mask))) }
+func (r *RDEVICEADDR) StoreBits(mask, b DEVICEADDR)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RDEVICEADDR) SetBits(mask DEVICEADDR)         { r.U32.SetBits(uint32(mask)) }
+func (r *RDEVICEADDR) ClearBits(mask DEVICEADDR)       { r.U32.ClearBits(uint32(mask)) }
+func (r *RDEVICEADDR) Load() DEVICEADDR                { return DEVICEADDR(r.U32.Load()) }
+func (r *RDEVICEADDR) Store(b DEVICEADDR)              { r.U32.Store(uint32(b)) }
 
-func (r *CONFIGID) AtomicStoreBits(mask, b CONFIGID_Bits) {
+func (r *RDEVICEADDR) AtomicStoreBits(mask, b DEVICEADDR) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *CONFIGID) AtomicSetBits(mask CONFIGID_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CONFIGID) AtomicClearBits(mask CONFIGID_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RDEVICEADDR) AtomicSetBits(mask DEVICEADDR)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RDEVICEADDR) AtomicClearBits(mask DEVICEADDR) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CONFIGID_Mask struct{ mmio.UM32 }
+type RMDEVICEADDR struct{ mmio.UM32 }
 
-func (rm CONFIGID_Mask) Load() CONFIGID_Bits   { return CONFIGID_Bits(rm.UM32.Load()) }
-func (rm CONFIGID_Mask) Store(b CONFIGID_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMDEVICEADDR) Load() DEVICEADDR   { return DEVICEADDR(rm.UM32.Load()) }
+func (rm RMDEVICEADDR) Store(b DEVICEADDR) { rm.UM32.Store(uint32(b)) }
 
-type DEVICEID_Bits uint32
+type OVERRIDDEN uint32
 
-func (b DEVICEID_Bits) Field(mask DEVICEID_Bits) int {
+func (b OVERRIDDEN) Field(mask OVERRIDDEN) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DEVICEID_Bits) J(v int) DEVICEID_Bits {
-	return DEVICEID_Bits(bits.Make32(v, uint32(mask)))
+func (mask OVERRIDDEN) J(v int) OVERRIDDEN {
+	return OVERRIDDEN(bits.Make32(v, uint32(mask)))
 }
 
-type DEVICEID struct{ mmio.U32 }
+type ROVERRIDDEN struct{ mmio.U32 }
 
-func (r *DEVICEID) Bits(mask DEVICEID_Bits) DEVICEID_Bits {
-	return DEVICEID_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *DEVICEID) StoreBits(mask, b DEVICEID_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DEVICEID) SetBits(mask DEVICEID_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *DEVICEID) ClearBits(mask DEVICEID_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *DEVICEID) Load() DEVICEID_Bits             { return DEVICEID_Bits(r.U32.Load()) }
-func (r *DEVICEID) Store(b DEVICEID_Bits)           { r.U32.Store(uint32(b)) }
+func (r *ROVERRIDDEN) Bits(mask OVERRIDDEN) OVERRIDDEN { return OVERRIDDEN(r.U32.Bits(uint32(mask))) }
+func (r *ROVERRIDDEN) StoreBits(mask, b OVERRIDDEN)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *ROVERRIDDEN) SetBits(mask OVERRIDDEN)         { r.U32.SetBits(uint32(mask)) }
+func (r *ROVERRIDDEN) ClearBits(mask OVERRIDDEN)       { r.U32.ClearBits(uint32(mask)) }
+func (r *ROVERRIDDEN) Load() OVERRIDDEN                { return OVERRIDDEN(r.U32.Load()) }
+func (r *ROVERRIDDEN) Store(b OVERRIDDEN)              { r.U32.Store(uint32(b)) }
 
-func (r *DEVICEID) AtomicStoreBits(mask, b DEVICEID_Bits) {
+func (r *ROVERRIDDEN) AtomicStoreBits(mask, b OVERRIDDEN) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *DEVICEID) AtomicSetBits(mask DEVICEID_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *DEVICEID) AtomicClearBits(mask DEVICEID_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *ROVERRIDDEN) AtomicSetBits(mask OVERRIDDEN)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *ROVERRIDDEN) AtomicClearBits(mask OVERRIDDEN) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type DEVICEID_Mask struct{ mmio.UM32 }
+type RMOVERRIDDEN struct{ mmio.UM32 }
 
-func (rm DEVICEID_Mask) Load() DEVICEID_Bits   { return DEVICEID_Bits(rm.UM32.Load()) }
-func (rm DEVICEID_Mask) Store(b DEVICEID_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMOVERRIDDEN) Load() OVERRIDDEN   { return OVERRIDDEN(rm.UM32.Load()) }
+func (rm RMOVERRIDDEN) Store(b OVERRIDDEN) { rm.UM32.Store(uint32(b)) }
 
-type ER_Bits uint32
+func (p *Periph) NRF_1MBIT_OK() RMOVERRIDDEN {
+	return RMOVERRIDDEN{mmio.UM32{&p.OVERRIDDEN.U32, uint32(NRF_1MBIT_OK)}}
+}
 
-func (b ER_Bits) Field(mask ER_Bits) int {
+func (p *Periph) BLE_1MBIT_OK() RMOVERRIDDEN {
+	return RMOVERRIDDEN{mmio.UM32{&p.OVERRIDDEN.U32, uint32(BLE_1MBIT_OK)}}
+}
+
+type NRF_1MBIT uint32
+
+func (b NRF_1MBIT) Field(mask NRF_1MBIT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask ER_Bits) J(v int) ER_Bits {
-	return ER_Bits(bits.Make32(v, uint32(mask)))
+func (mask NRF_1MBIT) J(v int) NRF_1MBIT {
+	return NRF_1MBIT(bits.Make32(v, uint32(mask)))
 }
 
-type ER struct{ mmio.U32 }
+type RNRF_1MBIT struct{ mmio.U32 }
 
-func (r *ER) Bits(mask ER_Bits) ER_Bits { return ER_Bits(r.U32.Bits(uint32(mask))) }
-func (r *ER) StoreBits(mask, b ER_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *ER) SetBits(mask ER_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *ER) ClearBits(mask ER_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *ER) Load() ER_Bits             { return ER_Bits(r.U32.Load()) }
-func (r *ER) Store(b ER_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RNRF_1MBIT) Bits(mask NRF_1MBIT) NRF_1MBIT { return NRF_1MBIT(r.U32.Bits(uint32(mask))) }
+func (r *RNRF_1MBIT) StoreBits(mask, b NRF_1MBIT)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RNRF_1MBIT) SetBits(mask NRF_1MBIT)        { r.U32.SetBits(uint32(mask)) }
+func (r *RNRF_1MBIT) ClearBits(mask NRF_1MBIT)      { r.U32.ClearBits(uint32(mask)) }
+func (r *RNRF_1MBIT) Load() NRF_1MBIT               { return NRF_1MBIT(r.U32.Load()) }
+func (r *RNRF_1MBIT) Store(b NRF_1MBIT)             { r.U32.Store(uint32(b)) }
 
-func (r *ER) AtomicStoreBits(mask, b ER_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *ER) AtomicSetBits(mask ER_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *ER) AtomicClearBits(mask ER_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type ER_Mask struct{ mmio.UM32 }
-
-func (rm ER_Mask) Load() ER_Bits   { return ER_Bits(rm.UM32.Load()) }
-func (rm ER_Mask) Store(b ER_Bits) { rm.UM32.Store(uint32(b)) }
-
-type IR_Bits uint32
-
-func (b IR_Bits) Field(mask IR_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask IR_Bits) J(v int) IR_Bits {
-	return IR_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type IR struct{ mmio.U32 }
-
-func (r *IR) Bits(mask IR_Bits) IR_Bits { return IR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *IR) StoreBits(mask, b IR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *IR) SetBits(mask IR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *IR) ClearBits(mask IR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *IR) Load() IR_Bits             { return IR_Bits(r.U32.Load()) }
-func (r *IR) Store(b IR_Bits)           { r.U32.Store(uint32(b)) }
-
-func (r *IR) AtomicStoreBits(mask, b IR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *IR) AtomicSetBits(mask IR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *IR) AtomicClearBits(mask IR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type IR_Mask struct{ mmio.UM32 }
-
-func (rm IR_Mask) Load() IR_Bits   { return IR_Bits(rm.UM32.Load()) }
-func (rm IR_Mask) Store(b IR_Bits) { rm.UM32.Store(uint32(b)) }
-
-type DEVICEADDRTYPE_Bits uint32
-
-func (b DEVICEADDRTYPE_Bits) Field(mask DEVICEADDRTYPE_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask DEVICEADDRTYPE_Bits) J(v int) DEVICEADDRTYPE_Bits {
-	return DEVICEADDRTYPE_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type DEVICEADDRTYPE struct{ mmio.U32 }
-
-func (r *DEVICEADDRTYPE) Bits(mask DEVICEADDRTYPE_Bits) DEVICEADDRTYPE_Bits {
-	return DEVICEADDRTYPE_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *DEVICEADDRTYPE) StoreBits(mask, b DEVICEADDRTYPE_Bits) {
-	r.U32.StoreBits(uint32(mask), uint32(b))
-}
-func (r *DEVICEADDRTYPE) SetBits(mask DEVICEADDRTYPE_Bits)   { r.U32.SetBits(uint32(mask)) }
-func (r *DEVICEADDRTYPE) ClearBits(mask DEVICEADDRTYPE_Bits) { r.U32.ClearBits(uint32(mask)) }
-func (r *DEVICEADDRTYPE) Load() DEVICEADDRTYPE_Bits          { return DEVICEADDRTYPE_Bits(r.U32.Load()) }
-func (r *DEVICEADDRTYPE) Store(b DEVICEADDRTYPE_Bits)        { r.U32.Store(uint32(b)) }
-
-func (r *DEVICEADDRTYPE) AtomicStoreBits(mask, b DEVICEADDRTYPE_Bits) {
+func (r *RNRF_1MBIT) AtomicStoreBits(mask, b NRF_1MBIT) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *DEVICEADDRTYPE) AtomicSetBits(mask DEVICEADDRTYPE_Bits) { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *DEVICEADDRTYPE) AtomicClearBits(mask DEVICEADDRTYPE_Bits) {
-	r.U32.AtomicClearBits(uint32(mask))
-}
+func (r *RNRF_1MBIT) AtomicSetBits(mask NRF_1MBIT)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RNRF_1MBIT) AtomicClearBits(mask NRF_1MBIT) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type DEVICEADDRTYPE_Mask struct{ mmio.UM32 }
+type RMNRF_1MBIT struct{ mmio.UM32 }
 
-func (rm DEVICEADDRTYPE_Mask) Load() DEVICEADDRTYPE_Bits   { return DEVICEADDRTYPE_Bits(rm.UM32.Load()) }
-func (rm DEVICEADDRTYPE_Mask) Store(b DEVICEADDRTYPE_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMNRF_1MBIT) Load() NRF_1MBIT   { return NRF_1MBIT(rm.UM32.Load()) }
+func (rm RMNRF_1MBIT) Store(b NRF_1MBIT) { rm.UM32.Store(uint32(b)) }
 
-type DEVICEADDR_Bits uint32
+type BLE_1MBIT uint32
 
-func (b DEVICEADDR_Bits) Field(mask DEVICEADDR_Bits) int {
+func (b BLE_1MBIT) Field(mask BLE_1MBIT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DEVICEADDR_Bits) J(v int) DEVICEADDR_Bits {
-	return DEVICEADDR_Bits(bits.Make32(v, uint32(mask)))
+func (mask BLE_1MBIT) J(v int) BLE_1MBIT {
+	return BLE_1MBIT(bits.Make32(v, uint32(mask)))
 }
 
-type DEVICEADDR struct{ mmio.U32 }
+type RBLE_1MBIT struct{ mmio.U32 }
 
-func (r *DEVICEADDR) Bits(mask DEVICEADDR_Bits) DEVICEADDR_Bits {
-	return DEVICEADDR_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *DEVICEADDR) StoreBits(mask, b DEVICEADDR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *DEVICEADDR) SetBits(mask DEVICEADDR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *DEVICEADDR) ClearBits(mask DEVICEADDR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *DEVICEADDR) Load() DEVICEADDR_Bits             { return DEVICEADDR_Bits(r.U32.Load()) }
-func (r *DEVICEADDR) Store(b DEVICEADDR_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RBLE_1MBIT) Bits(mask BLE_1MBIT) BLE_1MBIT { return BLE_1MBIT(r.U32.Bits(uint32(mask))) }
+func (r *RBLE_1MBIT) StoreBits(mask, b BLE_1MBIT)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RBLE_1MBIT) SetBits(mask BLE_1MBIT)        { r.U32.SetBits(uint32(mask)) }
+func (r *RBLE_1MBIT) ClearBits(mask BLE_1MBIT)      { r.U32.ClearBits(uint32(mask)) }
+func (r *RBLE_1MBIT) Load() BLE_1MBIT               { return BLE_1MBIT(r.U32.Load()) }
+func (r *RBLE_1MBIT) Store(b BLE_1MBIT)             { r.U32.Store(uint32(b)) }
 
-func (r *DEVICEADDR) AtomicStoreBits(mask, b DEVICEADDR_Bits) {
+func (r *RBLE_1MBIT) AtomicStoreBits(mask, b BLE_1MBIT) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *DEVICEADDR) AtomicSetBits(mask DEVICEADDR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *DEVICEADDR) AtomicClearBits(mask DEVICEADDR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RBLE_1MBIT) AtomicSetBits(mask BLE_1MBIT)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RBLE_1MBIT) AtomicClearBits(mask BLE_1MBIT) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type DEVICEADDR_Mask struct{ mmio.UM32 }
+type RMBLE_1MBIT struct{ mmio.UM32 }
 
-func (rm DEVICEADDR_Mask) Load() DEVICEADDR_Bits   { return DEVICEADDR_Bits(rm.UM32.Load()) }
-func (rm DEVICEADDR_Mask) Store(b DEVICEADDR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMBLE_1MBIT) Load() BLE_1MBIT   { return BLE_1MBIT(rm.UM32.Load()) }
+func (rm RMBLE_1MBIT) Store(b BLE_1MBIT) { rm.UM32.Store(uint32(b)) }
 
-type OVERRIDDEN_Bits uint32
+type INFO_PART uint32
 
-func (b OVERRIDDEN_Bits) Field(mask OVERRIDDEN_Bits) int {
+func (b INFO_PART) Field(mask INFO_PART) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask OVERRIDDEN_Bits) J(v int) OVERRIDDEN_Bits {
-	return OVERRIDDEN_Bits(bits.Make32(v, uint32(mask)))
+func (mask INFO_PART) J(v int) INFO_PART {
+	return INFO_PART(bits.Make32(v, uint32(mask)))
 }
 
-type OVERRIDDEN struct{ mmio.U32 }
+type RINFO_PART struct{ mmio.U32 }
 
-func (r *OVERRIDDEN) Bits(mask OVERRIDDEN_Bits) OVERRIDDEN_Bits {
-	return OVERRIDDEN_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *OVERRIDDEN) StoreBits(mask, b OVERRIDDEN_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *OVERRIDDEN) SetBits(mask OVERRIDDEN_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *OVERRIDDEN) ClearBits(mask OVERRIDDEN_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *OVERRIDDEN) Load() OVERRIDDEN_Bits             { return OVERRIDDEN_Bits(r.U32.Load()) }
-func (r *OVERRIDDEN) Store(b OVERRIDDEN_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RINFO_PART) Bits(mask INFO_PART) INFO_PART { return INFO_PART(r.U32.Bits(uint32(mask))) }
+func (r *RINFO_PART) StoreBits(mask, b INFO_PART)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RINFO_PART) SetBits(mask INFO_PART)        { r.U32.SetBits(uint32(mask)) }
+func (r *RINFO_PART) ClearBits(mask INFO_PART)      { r.U32.ClearBits(uint32(mask)) }
+func (r *RINFO_PART) Load() INFO_PART               { return INFO_PART(r.U32.Load()) }
+func (r *RINFO_PART) Store(b INFO_PART)             { r.U32.Store(uint32(b)) }
 
-func (r *OVERRIDDEN) AtomicStoreBits(mask, b OVERRIDDEN_Bits) {
+func (r *RINFO_PART) AtomicStoreBits(mask, b INFO_PART) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *OVERRIDDEN) AtomicSetBits(mask OVERRIDDEN_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *OVERRIDDEN) AtomicClearBits(mask OVERRIDDEN_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RINFO_PART) AtomicSetBits(mask INFO_PART)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RINFO_PART) AtomicClearBits(mask INFO_PART) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type OVERRIDDEN_Mask struct{ mmio.UM32 }
+type RMINFO_PART struct{ mmio.UM32 }
 
-func (rm OVERRIDDEN_Mask) Load() OVERRIDDEN_Bits   { return OVERRIDDEN_Bits(rm.UM32.Load()) }
-func (rm OVERRIDDEN_Mask) Store(b OVERRIDDEN_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMINFO_PART) Load() INFO_PART   { return INFO_PART(rm.UM32.Load()) }
+func (rm RMINFO_PART) Store(b INFO_PART) { rm.UM32.Store(uint32(b)) }
 
-func (p *Periph) NRF_1MBIT_OK() OVERRIDDEN_Mask {
-	return OVERRIDDEN_Mask{mmio.UM32{&p.OVERRIDDEN.U32, uint32(NRF_1MBIT_OK)}}
-}
+type INFO_VARIANT uint32
 
-func (p *Periph) BLE_1MBIT_OK() OVERRIDDEN_Mask {
-	return OVERRIDDEN_Mask{mmio.UM32{&p.OVERRIDDEN.U32, uint32(BLE_1MBIT_OK)}}
-}
-
-type NRF_1MBIT_Bits uint32
-
-func (b NRF_1MBIT_Bits) Field(mask NRF_1MBIT_Bits) int {
+func (b INFO_VARIANT) Field(mask INFO_VARIANT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask NRF_1MBIT_Bits) J(v int) NRF_1MBIT_Bits {
-	return NRF_1MBIT_Bits(bits.Make32(v, uint32(mask)))
+func (mask INFO_VARIANT) J(v int) INFO_VARIANT {
+	return INFO_VARIANT(bits.Make32(v, uint32(mask)))
 }
 
-type NRF_1MBIT struct{ mmio.U32 }
+type RINFO_VARIANT struct{ mmio.U32 }
 
-func (r *NRF_1MBIT) Bits(mask NRF_1MBIT_Bits) NRF_1MBIT_Bits {
-	return NRF_1MBIT_Bits(r.U32.Bits(uint32(mask)))
+func (r *RINFO_VARIANT) Bits(mask INFO_VARIANT) INFO_VARIANT {
+	return INFO_VARIANT(r.U32.Bits(uint32(mask)))
 }
-func (r *NRF_1MBIT) StoreBits(mask, b NRF_1MBIT_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *NRF_1MBIT) SetBits(mask NRF_1MBIT_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *NRF_1MBIT) ClearBits(mask NRF_1MBIT_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *NRF_1MBIT) Load() NRF_1MBIT_Bits             { return NRF_1MBIT_Bits(r.U32.Load()) }
-func (r *NRF_1MBIT) Store(b NRF_1MBIT_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RINFO_VARIANT) StoreBits(mask, b INFO_VARIANT) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RINFO_VARIANT) SetBits(mask INFO_VARIANT)      { r.U32.SetBits(uint32(mask)) }
+func (r *RINFO_VARIANT) ClearBits(mask INFO_VARIANT)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RINFO_VARIANT) Load() INFO_VARIANT             { return INFO_VARIANT(r.U32.Load()) }
+func (r *RINFO_VARIANT) Store(b INFO_VARIANT)           { r.U32.Store(uint32(b)) }
 
-func (r *NRF_1MBIT) AtomicStoreBits(mask, b NRF_1MBIT_Bits) {
+func (r *RINFO_VARIANT) AtomicStoreBits(mask, b INFO_VARIANT) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *NRF_1MBIT) AtomicSetBits(mask NRF_1MBIT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *NRF_1MBIT) AtomicClearBits(mask NRF_1MBIT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RINFO_VARIANT) AtomicSetBits(mask INFO_VARIANT)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RINFO_VARIANT) AtomicClearBits(mask INFO_VARIANT) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type NRF_1MBIT_Mask struct{ mmio.UM32 }
+type RMINFO_VARIANT struct{ mmio.UM32 }
 
-func (rm NRF_1MBIT_Mask) Load() NRF_1MBIT_Bits   { return NRF_1MBIT_Bits(rm.UM32.Load()) }
-func (rm NRF_1MBIT_Mask) Store(b NRF_1MBIT_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMINFO_VARIANT) Load() INFO_VARIANT   { return INFO_VARIANT(rm.UM32.Load()) }
+func (rm RMINFO_VARIANT) Store(b INFO_VARIANT) { rm.UM32.Store(uint32(b)) }
 
-type BLE_1MBIT_Bits uint32
+type INFO_PACKAGE uint32
 
-func (b BLE_1MBIT_Bits) Field(mask BLE_1MBIT_Bits) int {
+func (b INFO_PACKAGE) Field(mask INFO_PACKAGE) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask BLE_1MBIT_Bits) J(v int) BLE_1MBIT_Bits {
-	return BLE_1MBIT_Bits(bits.Make32(v, uint32(mask)))
+func (mask INFO_PACKAGE) J(v int) INFO_PACKAGE {
+	return INFO_PACKAGE(bits.Make32(v, uint32(mask)))
 }
 
-type BLE_1MBIT struct{ mmio.U32 }
+type RINFO_PACKAGE struct{ mmio.U32 }
 
-func (r *BLE_1MBIT) Bits(mask BLE_1MBIT_Bits) BLE_1MBIT_Bits {
-	return BLE_1MBIT_Bits(r.U32.Bits(uint32(mask)))
+func (r *RINFO_PACKAGE) Bits(mask INFO_PACKAGE) INFO_PACKAGE {
+	return INFO_PACKAGE(r.U32.Bits(uint32(mask)))
 }
-func (r *BLE_1MBIT) StoreBits(mask, b BLE_1MBIT_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *BLE_1MBIT) SetBits(mask BLE_1MBIT_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *BLE_1MBIT) ClearBits(mask BLE_1MBIT_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *BLE_1MBIT) Load() BLE_1MBIT_Bits             { return BLE_1MBIT_Bits(r.U32.Load()) }
-func (r *BLE_1MBIT) Store(b BLE_1MBIT_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RINFO_PACKAGE) StoreBits(mask, b INFO_PACKAGE) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RINFO_PACKAGE) SetBits(mask INFO_PACKAGE)      { r.U32.SetBits(uint32(mask)) }
+func (r *RINFO_PACKAGE) ClearBits(mask INFO_PACKAGE)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RINFO_PACKAGE) Load() INFO_PACKAGE             { return INFO_PACKAGE(r.U32.Load()) }
+func (r *RINFO_PACKAGE) Store(b INFO_PACKAGE)           { r.U32.Store(uint32(b)) }
 
-func (r *BLE_1MBIT) AtomicStoreBits(mask, b BLE_1MBIT_Bits) {
+func (r *RINFO_PACKAGE) AtomicStoreBits(mask, b INFO_PACKAGE) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *BLE_1MBIT) AtomicSetBits(mask BLE_1MBIT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *BLE_1MBIT) AtomicClearBits(mask BLE_1MBIT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RINFO_PACKAGE) AtomicSetBits(mask INFO_PACKAGE)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RINFO_PACKAGE) AtomicClearBits(mask INFO_PACKAGE) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type BLE_1MBIT_Mask struct{ mmio.UM32 }
+type RMINFO_PACKAGE struct{ mmio.UM32 }
 
-func (rm BLE_1MBIT_Mask) Load() BLE_1MBIT_Bits   { return BLE_1MBIT_Bits(rm.UM32.Load()) }
-func (rm BLE_1MBIT_Mask) Store(b BLE_1MBIT_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMINFO_PACKAGE) Load() INFO_PACKAGE   { return INFO_PACKAGE(rm.UM32.Load()) }
+func (rm RMINFO_PACKAGE) Store(b INFO_PACKAGE) { rm.UM32.Store(uint32(b)) }
 
-type INFO_PART_Bits uint32
+type INFO_RAM uint32
 
-func (b INFO_PART_Bits) Field(mask INFO_PART_Bits) int {
+func (b INFO_RAM) Field(mask INFO_RAM) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask INFO_PART_Bits) J(v int) INFO_PART_Bits {
-	return INFO_PART_Bits(bits.Make32(v, uint32(mask)))
+func (mask INFO_RAM) J(v int) INFO_RAM {
+	return INFO_RAM(bits.Make32(v, uint32(mask)))
 }
 
-type INFO_PART struct{ mmio.U32 }
+type RINFO_RAM struct{ mmio.U32 }
 
-func (r *INFO_PART) Bits(mask INFO_PART_Bits) INFO_PART_Bits {
-	return INFO_PART_Bits(r.U32.Bits(uint32(mask)))
+func (r *RINFO_RAM) Bits(mask INFO_RAM) INFO_RAM { return INFO_RAM(r.U32.Bits(uint32(mask))) }
+func (r *RINFO_RAM) StoreBits(mask, b INFO_RAM)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RINFO_RAM) SetBits(mask INFO_RAM)       { r.U32.SetBits(uint32(mask)) }
+func (r *RINFO_RAM) ClearBits(mask INFO_RAM)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RINFO_RAM) Load() INFO_RAM              { return INFO_RAM(r.U32.Load()) }
+func (r *RINFO_RAM) Store(b INFO_RAM)            { r.U32.Store(uint32(b)) }
+
+func (r *RINFO_RAM) AtomicStoreBits(mask, b INFO_RAM) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RINFO_RAM) AtomicSetBits(mask INFO_RAM)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RINFO_RAM) AtomicClearBits(mask INFO_RAM)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMINFO_RAM struct{ mmio.UM32 }
+
+func (rm RMINFO_RAM) Load() INFO_RAM   { return INFO_RAM(rm.UM32.Load()) }
+func (rm RMINFO_RAM) Store(b INFO_RAM) { rm.UM32.Store(uint32(b)) }
+
+type INFO_FLASH uint32
+
+func (b INFO_FLASH) Field(mask INFO_FLASH) int {
+	return bits.Field32(uint32(b), uint32(mask))
 }
-func (r *INFO_PART) StoreBits(mask, b INFO_PART_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *INFO_PART) SetBits(mask INFO_PART_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *INFO_PART) ClearBits(mask INFO_PART_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *INFO_PART) Load() INFO_PART_Bits             { return INFO_PART_Bits(r.U32.Load()) }
-func (r *INFO_PART) Store(b INFO_PART_Bits)           { r.U32.Store(uint32(b)) }
+func (mask INFO_FLASH) J(v int) INFO_FLASH {
+	return INFO_FLASH(bits.Make32(v, uint32(mask)))
+}
 
-func (r *INFO_PART) AtomicStoreBits(mask, b INFO_PART_Bits) {
+type RINFO_FLASH struct{ mmio.U32 }
+
+func (r *RINFO_FLASH) Bits(mask INFO_FLASH) INFO_FLASH { return INFO_FLASH(r.U32.Bits(uint32(mask))) }
+func (r *RINFO_FLASH) StoreBits(mask, b INFO_FLASH)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RINFO_FLASH) SetBits(mask INFO_FLASH)         { r.U32.SetBits(uint32(mask)) }
+func (r *RINFO_FLASH) ClearBits(mask INFO_FLASH)       { r.U32.ClearBits(uint32(mask)) }
+func (r *RINFO_FLASH) Load() INFO_FLASH                { return INFO_FLASH(r.U32.Load()) }
+func (r *RINFO_FLASH) Store(b INFO_FLASH)              { r.U32.Store(uint32(b)) }
+
+func (r *RINFO_FLASH) AtomicStoreBits(mask, b INFO_FLASH) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *INFO_PART) AtomicSetBits(mask INFO_PART_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *INFO_PART) AtomicClearBits(mask INFO_PART_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RINFO_FLASH) AtomicSetBits(mask INFO_FLASH)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RINFO_FLASH) AtomicClearBits(mask INFO_FLASH) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type INFO_PART_Mask struct{ mmio.UM32 }
+type RMINFO_FLASH struct{ mmio.UM32 }
 
-func (rm INFO_PART_Mask) Load() INFO_PART_Bits   { return INFO_PART_Bits(rm.UM32.Load()) }
-func (rm INFO_PART_Mask) Store(b INFO_PART_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMINFO_FLASH) Load() INFO_FLASH   { return INFO_FLASH(rm.UM32.Load()) }
+func (rm RMINFO_FLASH) Store(b INFO_FLASH) { rm.UM32.Store(uint32(b)) }
 
-type INFO_VARIANT_Bits uint32
+type TEMP_A uint32
 
-func (b INFO_VARIANT_Bits) Field(mask INFO_VARIANT_Bits) int {
+func (b TEMP_A) Field(mask TEMP_A) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask INFO_VARIANT_Bits) J(v int) INFO_VARIANT_Bits {
-	return INFO_VARIANT_Bits(bits.Make32(v, uint32(mask)))
+func (mask TEMP_A) J(v int) TEMP_A {
+	return TEMP_A(bits.Make32(v, uint32(mask)))
 }
 
-type INFO_VARIANT struct{ mmio.U32 }
+type RTEMP_A struct{ mmio.U32 }
 
-func (r *INFO_VARIANT) Bits(mask INFO_VARIANT_Bits) INFO_VARIANT_Bits {
-	return INFO_VARIANT_Bits(r.U32.Bits(uint32(mask)))
+func (r *RTEMP_A) Bits(mask TEMP_A) TEMP_A  { return TEMP_A(r.U32.Bits(uint32(mask))) }
+func (r *RTEMP_A) StoreBits(mask, b TEMP_A) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RTEMP_A) SetBits(mask TEMP_A)      { r.U32.SetBits(uint32(mask)) }
+func (r *RTEMP_A) ClearBits(mask TEMP_A)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RTEMP_A) Load() TEMP_A             { return TEMP_A(r.U32.Load()) }
+func (r *RTEMP_A) Store(b TEMP_A)           { r.U32.Store(uint32(b)) }
+
+func (r *RTEMP_A) AtomicStoreBits(mask, b TEMP_A) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RTEMP_A) AtomicSetBits(mask TEMP_A)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RTEMP_A) AtomicClearBits(mask TEMP_A)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMTEMP_A struct{ mmio.UM32 }
+
+func (rm RMTEMP_A) Load() TEMP_A   { return TEMP_A(rm.UM32.Load()) }
+func (rm RMTEMP_A) Store(b TEMP_A) { rm.UM32.Store(uint32(b)) }
+
+type TEMP_B uint32
+
+func (b TEMP_B) Field(mask TEMP_B) int {
+	return bits.Field32(uint32(b), uint32(mask))
 }
-func (r *INFO_VARIANT) StoreBits(mask, b INFO_VARIANT_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *INFO_VARIANT) SetBits(mask INFO_VARIANT_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *INFO_VARIANT) ClearBits(mask INFO_VARIANT_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *INFO_VARIANT) Load() INFO_VARIANT_Bits             { return INFO_VARIANT_Bits(r.U32.Load()) }
-func (r *INFO_VARIANT) Store(b INFO_VARIANT_Bits)           { r.U32.Store(uint32(b)) }
+func (mask TEMP_B) J(v int) TEMP_B {
+	return TEMP_B(bits.Make32(v, uint32(mask)))
+}
 
-func (r *INFO_VARIANT) AtomicStoreBits(mask, b INFO_VARIANT_Bits) {
+type RTEMP_B struct{ mmio.U32 }
+
+func (r *RTEMP_B) Bits(mask TEMP_B) TEMP_B  { return TEMP_B(r.U32.Bits(uint32(mask))) }
+func (r *RTEMP_B) StoreBits(mask, b TEMP_B) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RTEMP_B) SetBits(mask TEMP_B)      { r.U32.SetBits(uint32(mask)) }
+func (r *RTEMP_B) ClearBits(mask TEMP_B)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RTEMP_B) Load() TEMP_B             { return TEMP_B(r.U32.Load()) }
+func (r *RTEMP_B) Store(b TEMP_B)           { r.U32.Store(uint32(b)) }
+
+func (r *RTEMP_B) AtomicStoreBits(mask, b TEMP_B) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RTEMP_B) AtomicSetBits(mask TEMP_B)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RTEMP_B) AtomicClearBits(mask TEMP_B)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMTEMP_B struct{ mmio.UM32 }
+
+func (rm RMTEMP_B) Load() TEMP_B   { return TEMP_B(rm.UM32.Load()) }
+func (rm RMTEMP_B) Store(b TEMP_B) { rm.UM32.Store(uint32(b)) }
+
+type TEMP_T uint32
+
+func (b TEMP_T) Field(mask TEMP_T) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask TEMP_T) J(v int) TEMP_T {
+	return TEMP_T(bits.Make32(v, uint32(mask)))
+}
+
+type RTEMP_T struct{ mmio.U32 }
+
+func (r *RTEMP_T) Bits(mask TEMP_T) TEMP_T  { return TEMP_T(r.U32.Bits(uint32(mask))) }
+func (r *RTEMP_T) StoreBits(mask, b TEMP_T) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RTEMP_T) SetBits(mask TEMP_T)      { r.U32.SetBits(uint32(mask)) }
+func (r *RTEMP_T) ClearBits(mask TEMP_T)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RTEMP_T) Load() TEMP_T             { return TEMP_T(r.U32.Load()) }
+func (r *RTEMP_T) Store(b TEMP_T)           { r.U32.Store(uint32(b)) }
+
+func (r *RTEMP_T) AtomicStoreBits(mask, b TEMP_T) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RTEMP_T) AtomicSetBits(mask TEMP_T)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RTEMP_T) AtomicClearBits(mask TEMP_T)    { r.U32.AtomicClearBits(uint32(mask)) }
+
+type RMTEMP_T struct{ mmio.UM32 }
+
+func (rm RMTEMP_T) Load() TEMP_T   { return TEMP_T(rm.UM32.Load()) }
+func (rm RMTEMP_T) Store(b TEMP_T) { rm.UM32.Store(uint32(b)) }
+
+type NFC_TAGHEADER uint32
+
+func (b NFC_TAGHEADER) Field(mask NFC_TAGHEADER) int {
+	return bits.Field32(uint32(b), uint32(mask))
+}
+func (mask NFC_TAGHEADER) J(v int) NFC_TAGHEADER {
+	return NFC_TAGHEADER(bits.Make32(v, uint32(mask)))
+}
+
+type RNFC_TAGHEADER struct{ mmio.U32 }
+
+func (r *RNFC_TAGHEADER) Bits(mask NFC_TAGHEADER) NFC_TAGHEADER {
+	return NFC_TAGHEADER(r.U32.Bits(uint32(mask)))
+}
+func (r *RNFC_TAGHEADER) StoreBits(mask, b NFC_TAGHEADER) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RNFC_TAGHEADER) SetBits(mask NFC_TAGHEADER)      { r.U32.SetBits(uint32(mask)) }
+func (r *RNFC_TAGHEADER) ClearBits(mask NFC_TAGHEADER)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RNFC_TAGHEADER) Load() NFC_TAGHEADER             { return NFC_TAGHEADER(r.U32.Load()) }
+func (r *RNFC_TAGHEADER) Store(b NFC_TAGHEADER)           { r.U32.Store(uint32(b)) }
+
+func (r *RNFC_TAGHEADER) AtomicStoreBits(mask, b NFC_TAGHEADER) {
 	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
 }
-func (r *INFO_VARIANT) AtomicSetBits(mask INFO_VARIANT_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *INFO_VARIANT) AtomicClearBits(mask INFO_VARIANT_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RNFC_TAGHEADER) AtomicSetBits(mask NFC_TAGHEADER)   { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RNFC_TAGHEADER) AtomicClearBits(mask NFC_TAGHEADER) { r.U32.AtomicClearBits(uint32(mask)) }
 
-type INFO_VARIANT_Mask struct{ mmio.UM32 }
+type RMNFC_TAGHEADER struct{ mmio.UM32 }
 
-func (rm INFO_VARIANT_Mask) Load() INFO_VARIANT_Bits   { return INFO_VARIANT_Bits(rm.UM32.Load()) }
-func (rm INFO_VARIANT_Mask) Store(b INFO_VARIANT_Bits) { rm.UM32.Store(uint32(b)) }
-
-type INFO_PACKAGE_Bits uint32
-
-func (b INFO_PACKAGE_Bits) Field(mask INFO_PACKAGE_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask INFO_PACKAGE_Bits) J(v int) INFO_PACKAGE_Bits {
-	return INFO_PACKAGE_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type INFO_PACKAGE struct{ mmio.U32 }
-
-func (r *INFO_PACKAGE) Bits(mask INFO_PACKAGE_Bits) INFO_PACKAGE_Bits {
-	return INFO_PACKAGE_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *INFO_PACKAGE) StoreBits(mask, b INFO_PACKAGE_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *INFO_PACKAGE) SetBits(mask INFO_PACKAGE_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *INFO_PACKAGE) ClearBits(mask INFO_PACKAGE_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *INFO_PACKAGE) Load() INFO_PACKAGE_Bits             { return INFO_PACKAGE_Bits(r.U32.Load()) }
-func (r *INFO_PACKAGE) Store(b INFO_PACKAGE_Bits)           { r.U32.Store(uint32(b)) }
-
-func (r *INFO_PACKAGE) AtomicStoreBits(mask, b INFO_PACKAGE_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *INFO_PACKAGE) AtomicSetBits(mask INFO_PACKAGE_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *INFO_PACKAGE) AtomicClearBits(mask INFO_PACKAGE_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type INFO_PACKAGE_Mask struct{ mmio.UM32 }
-
-func (rm INFO_PACKAGE_Mask) Load() INFO_PACKAGE_Bits   { return INFO_PACKAGE_Bits(rm.UM32.Load()) }
-func (rm INFO_PACKAGE_Mask) Store(b INFO_PACKAGE_Bits) { rm.UM32.Store(uint32(b)) }
-
-type INFO_RAM_Bits uint32
-
-func (b INFO_RAM_Bits) Field(mask INFO_RAM_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask INFO_RAM_Bits) J(v int) INFO_RAM_Bits {
-	return INFO_RAM_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type INFO_RAM struct{ mmio.U32 }
-
-func (r *INFO_RAM) Bits(mask INFO_RAM_Bits) INFO_RAM_Bits {
-	return INFO_RAM_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *INFO_RAM) StoreBits(mask, b INFO_RAM_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *INFO_RAM) SetBits(mask INFO_RAM_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *INFO_RAM) ClearBits(mask INFO_RAM_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *INFO_RAM) Load() INFO_RAM_Bits             { return INFO_RAM_Bits(r.U32.Load()) }
-func (r *INFO_RAM) Store(b INFO_RAM_Bits)           { r.U32.Store(uint32(b)) }
-
-func (r *INFO_RAM) AtomicStoreBits(mask, b INFO_RAM_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *INFO_RAM) AtomicSetBits(mask INFO_RAM_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *INFO_RAM) AtomicClearBits(mask INFO_RAM_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type INFO_RAM_Mask struct{ mmio.UM32 }
-
-func (rm INFO_RAM_Mask) Load() INFO_RAM_Bits   { return INFO_RAM_Bits(rm.UM32.Load()) }
-func (rm INFO_RAM_Mask) Store(b INFO_RAM_Bits) { rm.UM32.Store(uint32(b)) }
-
-type INFO_FLASH_Bits uint32
-
-func (b INFO_FLASH_Bits) Field(mask INFO_FLASH_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask INFO_FLASH_Bits) J(v int) INFO_FLASH_Bits {
-	return INFO_FLASH_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type INFO_FLASH struct{ mmio.U32 }
-
-func (r *INFO_FLASH) Bits(mask INFO_FLASH_Bits) INFO_FLASH_Bits {
-	return INFO_FLASH_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *INFO_FLASH) StoreBits(mask, b INFO_FLASH_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *INFO_FLASH) SetBits(mask INFO_FLASH_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *INFO_FLASH) ClearBits(mask INFO_FLASH_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *INFO_FLASH) Load() INFO_FLASH_Bits             { return INFO_FLASH_Bits(r.U32.Load()) }
-func (r *INFO_FLASH) Store(b INFO_FLASH_Bits)           { r.U32.Store(uint32(b)) }
-
-func (r *INFO_FLASH) AtomicStoreBits(mask, b INFO_FLASH_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *INFO_FLASH) AtomicSetBits(mask INFO_FLASH_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *INFO_FLASH) AtomicClearBits(mask INFO_FLASH_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type INFO_FLASH_Mask struct{ mmio.UM32 }
-
-func (rm INFO_FLASH_Mask) Load() INFO_FLASH_Bits   { return INFO_FLASH_Bits(rm.UM32.Load()) }
-func (rm INFO_FLASH_Mask) Store(b INFO_FLASH_Bits) { rm.UM32.Store(uint32(b)) }
-
-type TEMP_A_Bits uint32
-
-func (b TEMP_A_Bits) Field(mask TEMP_A_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask TEMP_A_Bits) J(v int) TEMP_A_Bits {
-	return TEMP_A_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type TEMP_A struct{ mmio.U32 }
-
-func (r *TEMP_A) Bits(mask TEMP_A_Bits) TEMP_A_Bits { return TEMP_A_Bits(r.U32.Bits(uint32(mask))) }
-func (r *TEMP_A) StoreBits(mask, b TEMP_A_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *TEMP_A) SetBits(mask TEMP_A_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *TEMP_A) ClearBits(mask TEMP_A_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *TEMP_A) Load() TEMP_A_Bits                 { return TEMP_A_Bits(r.U32.Load()) }
-func (r *TEMP_A) Store(b TEMP_A_Bits)               { r.U32.Store(uint32(b)) }
-
-func (r *TEMP_A) AtomicStoreBits(mask, b TEMP_A_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *TEMP_A) AtomicSetBits(mask TEMP_A_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *TEMP_A) AtomicClearBits(mask TEMP_A_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type TEMP_A_Mask struct{ mmio.UM32 }
-
-func (rm TEMP_A_Mask) Load() TEMP_A_Bits   { return TEMP_A_Bits(rm.UM32.Load()) }
-func (rm TEMP_A_Mask) Store(b TEMP_A_Bits) { rm.UM32.Store(uint32(b)) }
-
-type TEMP_B_Bits uint32
-
-func (b TEMP_B_Bits) Field(mask TEMP_B_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask TEMP_B_Bits) J(v int) TEMP_B_Bits {
-	return TEMP_B_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type TEMP_B struct{ mmio.U32 }
-
-func (r *TEMP_B) Bits(mask TEMP_B_Bits) TEMP_B_Bits { return TEMP_B_Bits(r.U32.Bits(uint32(mask))) }
-func (r *TEMP_B) StoreBits(mask, b TEMP_B_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *TEMP_B) SetBits(mask TEMP_B_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *TEMP_B) ClearBits(mask TEMP_B_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *TEMP_B) Load() TEMP_B_Bits                 { return TEMP_B_Bits(r.U32.Load()) }
-func (r *TEMP_B) Store(b TEMP_B_Bits)               { r.U32.Store(uint32(b)) }
-
-func (r *TEMP_B) AtomicStoreBits(mask, b TEMP_B_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *TEMP_B) AtomicSetBits(mask TEMP_B_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *TEMP_B) AtomicClearBits(mask TEMP_B_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type TEMP_B_Mask struct{ mmio.UM32 }
-
-func (rm TEMP_B_Mask) Load() TEMP_B_Bits   { return TEMP_B_Bits(rm.UM32.Load()) }
-func (rm TEMP_B_Mask) Store(b TEMP_B_Bits) { rm.UM32.Store(uint32(b)) }
-
-type TEMP_T_Bits uint32
-
-func (b TEMP_T_Bits) Field(mask TEMP_T_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask TEMP_T_Bits) J(v int) TEMP_T_Bits {
-	return TEMP_T_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type TEMP_T struct{ mmio.U32 }
-
-func (r *TEMP_T) Bits(mask TEMP_T_Bits) TEMP_T_Bits { return TEMP_T_Bits(r.U32.Bits(uint32(mask))) }
-func (r *TEMP_T) StoreBits(mask, b TEMP_T_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *TEMP_T) SetBits(mask TEMP_T_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *TEMP_T) ClearBits(mask TEMP_T_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *TEMP_T) Load() TEMP_T_Bits                 { return TEMP_T_Bits(r.U32.Load()) }
-func (r *TEMP_T) Store(b TEMP_T_Bits)               { r.U32.Store(uint32(b)) }
-
-func (r *TEMP_T) AtomicStoreBits(mask, b TEMP_T_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *TEMP_T) AtomicSetBits(mask TEMP_T_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *TEMP_T) AtomicClearBits(mask TEMP_T_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type TEMP_T_Mask struct{ mmio.UM32 }
-
-func (rm TEMP_T_Mask) Load() TEMP_T_Bits   { return TEMP_T_Bits(rm.UM32.Load()) }
-func (rm TEMP_T_Mask) Store(b TEMP_T_Bits) { rm.UM32.Store(uint32(b)) }
-
-type NFC_TAGHEADER_Bits uint32
-
-func (b NFC_TAGHEADER_Bits) Field(mask NFC_TAGHEADER_Bits) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask NFC_TAGHEADER_Bits) J(v int) NFC_TAGHEADER_Bits {
-	return NFC_TAGHEADER_Bits(bits.Make32(v, uint32(mask)))
-}
-
-type NFC_TAGHEADER struct{ mmio.U32 }
-
-func (r *NFC_TAGHEADER) Bits(mask NFC_TAGHEADER_Bits) NFC_TAGHEADER_Bits {
-	return NFC_TAGHEADER_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *NFC_TAGHEADER) StoreBits(mask, b NFC_TAGHEADER_Bits) {
-	r.U32.StoreBits(uint32(mask), uint32(b))
-}
-func (r *NFC_TAGHEADER) SetBits(mask NFC_TAGHEADER_Bits)   { r.U32.SetBits(uint32(mask)) }
-func (r *NFC_TAGHEADER) ClearBits(mask NFC_TAGHEADER_Bits) { r.U32.ClearBits(uint32(mask)) }
-func (r *NFC_TAGHEADER) Load() NFC_TAGHEADER_Bits          { return NFC_TAGHEADER_Bits(r.U32.Load()) }
-func (r *NFC_TAGHEADER) Store(b NFC_TAGHEADER_Bits)        { r.U32.Store(uint32(b)) }
-
-func (r *NFC_TAGHEADER) AtomicStoreBits(mask, b NFC_TAGHEADER_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *NFC_TAGHEADER) AtomicSetBits(mask NFC_TAGHEADER_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *NFC_TAGHEADER) AtomicClearBits(mask NFC_TAGHEADER_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
-
-type NFC_TAGHEADER_Mask struct{ mmio.UM32 }
-
-func (rm NFC_TAGHEADER_Mask) Load() NFC_TAGHEADER_Bits   { return NFC_TAGHEADER_Bits(rm.UM32.Load()) }
-func (rm NFC_TAGHEADER_Mask) Store(b NFC_TAGHEADER_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMNFC_TAGHEADER) Load() NFC_TAGHEADER   { return NFC_TAGHEADER(rm.UM32.Load()) }
+func (rm RMNFC_TAGHEADER) Store(b NFC_TAGHEADER) { rm.UM32.Store(uint32(b)) }

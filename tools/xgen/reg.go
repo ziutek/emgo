@@ -147,14 +147,7 @@ loop:
 			if !ok {
 				continue
 			}
-			i := strings.LastIndexByte(t.Name, '_')
-			if i < 0 {
-				continue
-			}
-			if t.Name[i+1:] != "Bits" {
-				continue
-			}
-			r := regmap[t.Name[:i]]
+			r := regmap[t.Name]
 			if r == nil {
 				continue
 			}

@@ -20,11 +20,11 @@
 package scb
 
 const (
-	Revision    CPUID_Bits = 0xf << 0   //+
-	PartNo      CPUID_Bits = 0xfff << 4 //+
-	Constant    CPUID_Bits = 0xf << 16  //+
-	Variant     CPUID_Bits = 0xf << 20  //+
-	Implementer CPUID_Bits = 0xff << 24 //+
+	Revision    CPUID = 0xf << 0   //+
+	PartNo      CPUID = 0xfff << 4 //+
+	Constant    CPUID = 0xf << 16  //+
+	Variant     CPUID = 0xf << 20  //+
+	Implementer CPUID = 0xff << 24 //+
 )
 
 const (
@@ -36,15 +36,15 @@ const (
 )
 
 const (
-	VECTACTIVE  ICSR_Bits = 0x1ff << 0  //+
-	RETTOBASE   ICSR_Bits = 1 << 11     //+
-	VECTPENDING ICSR_Bits = 0x3ff << 12 //+
-	ISRPENDING  ICSR_Bits = 1 << 22     //+
-	PENDSTCLR   ICSR_Bits = 1 << 25     //+
-	PENDSTSET   ICSR_Bits = 1 << 26     //+
-	PENDSVCLR   ICSR_Bits = 1 << 27     //+
-	PENDSVSET   ICSR_Bits = 1 << 28     //+
-	NMIPENDSET  ICSR_Bits = 1 << 31     //+
+	VECTACTIVE  ICSR = 0x1ff << 0  //+
+	RETTOBASE   ICSR = 1 << 11     //+
+	VECTPENDING ICSR = 0x3ff << 12 //+
+	ISRPENDING  ICSR = 1 << 22     //+
+	PENDSTCLR   ICSR = 1 << 25     //+
+	PENDSTSET   ICSR = 1 << 26     //+
+	PENDSVCLR   ICSR = 1 << 27     //+
+	PENDSVSET   ICSR = 1 << 28     //+
+	NMIPENDSET  ICSR = 1 << 31     //+
 )
 
 const (
@@ -53,16 +53,16 @@ const (
 )
 
 const (
-	TBLOFF VTOR_Bits = 0x1ffffff << 7 //+
+	TBLOFF VTOR = 0x1ffffff << 7 //+
 )
 
 const (
-	VECTRESET     AIRCR_Bits = 1 << 0       //+
-	VECTCLRACTIVE AIRCR_Bits = 1 << 1       //+
-	SYSRESETREQ   AIRCR_Bits = 1 << 2       //+
-	PRIGROUP      AIRCR_Bits = 7 << 8       //+
-	ENDIANNESS    AIRCR_Bits = 1 << 15      //+
-	VECTKEY       AIRCR_Bits = 0xffff << 16 //+
+	VECTRESET     AIRCR = 1 << 0       //+
+	VECTCLRACTIVE AIRCR = 1 << 1       //+
+	SYSRESETREQ   AIRCR = 1 << 2       //+
+	PRIGROUP      AIRCR = 7 << 8       //+
+	ENDIANNESS    AIRCR = 1 << 15      //+
+	VECTKEY       AIRCR = 0xffff << 16 //+
 )
 
 const (
@@ -75,27 +75,27 @@ const (
 )
 
 const (
-	SLEEPONEXIT SCR_Bits = 1 << 1 //+
-	SLEEPDEEP   SCR_Bits = 1 << 2 //+
-	SEVONPEND   SCR_Bits = 1 << 4 //+
+	SLEEPONEXIT SCR = 1 << 1 //+
+	SLEEPDEEP   SCR = 1 << 2 //+
+	SEVONPEND   SCR = 1 << 4 //+
 )
 
 const (
-	NONBASETHRDENA CCR_Bits = 1 << 0  //+
-	USERSETMPEND   CCR_Bits = 1 << 1  //+
-	UNALIGN_TRP    CCR_Bits = 1 << 3  //+
-	DIV_0_TRP      CCR_Bits = 1 << 4  //+
-	BFHFNMIGN      CCR_Bits = 1 << 8  //+
-	STKALIGN       CCR_Bits = 1 << 9  //+ Stack 8 B aligned on exception entry.
-	DC             CCR_Bits = 1 << 16 //+ Enable data cache.
-	IC             CCR_Bits = 1 << 17 //+ Enable instruction cache.
-	BP             CCR_Bits = 1 << 18 //+ Branch prediction is enabled.
+	NONBASETHRDENA CCR = 1 << 0  //+
+	USERSETMPEND   CCR = 1 << 1  //+
+	UNALIGN_TRP    CCR = 1 << 3  //+
+	DIV_0_TRP      CCR = 1 << 4  //+
+	BFHFNMIGN      CCR = 1 << 8  //+
+	STKALIGN       CCR = 1 << 9  //+ Stack 8 B aligned on exception entry.
+	DC             CCR = 1 << 16 //+ Enable data cache.
+	IC             CCR = 1 << 17 //+ Enable instruction cache.
+	BP             CCR = 1 << 18 //+ Branch prediction is enabled.
 )
 
 const (
-	PRI_MemManage  SHPR1_Bits = 0xff << 0  //+
-	PRI_BusFault   SHPR1_Bits = 0xff << 8  //+
-	PRI_UsageFault SHPR1_Bits = 0xff << 16 //+
+	PRI_MemManage  SHPR1 = 0xff << 0  //+
+	PRI_BusFault   SHPR1 = 0xff << 8  //+
+	PRI_UsageFault SHPR1 = 0xff << 16 //+
 )
 
 const (
@@ -105,7 +105,7 @@ const (
 )
 
 const (
-	PRI_SVCall SHPR2_Bits = 0xff << 24 //+
+	PRI_SVCall SHPR2 = 0xff << 24 //+
 )
 
 const (
@@ -113,8 +113,8 @@ const (
 )
 
 const (
-	PRI_PendSV  SHPR3_Bits = 0xff << 16 //+
-	PRI_SysTick SHPR3_Bits = 0xff << 24 //+
+	PRI_PendSV  SHPR3 = 0xff << 16 //+
+	PRI_SysTick SHPR3 = 0xff << 24 //+
 )
 
 const (
@@ -123,51 +123,51 @@ const (
 )
 
 const (
-	MEMFAULTACT    SHCSR_Bits = 1 << 0  //+
-	BUSFAULTACT    SHCSR_Bits = 1 << 1  //+
-	USGFAULTACT    SHCSR_Bits = 1 << 3  //+
-	SVCALLACT      SHCSR_Bits = 1 << 7  //+
-	MONITORACT     SHCSR_Bits = 1 << 8  //+
-	PENDSVACT      SHCSR_Bits = 1 << 10 //+
-	SYSTICKACT     SHCSR_Bits = 1 << 11 //+
-	USGFAULTPENDED SHCSR_Bits = 1 << 12 //+
-	MEMFAULTPENDED SHCSR_Bits = 1 << 13 //+
-	BUSFAULTPENDED SHCSR_Bits = 1 << 14 //+
-	SVCALLPENDED   SHCSR_Bits = 1 << 15 //+
-	MEMFAULTENA    SHCSR_Bits = 1 << 16 //+
-	BUSFAULTENA    SHCSR_Bits = 1 << 17 //+
-	USGFAULTENA    SHCSR_Bits = 1 << 18 //+
+	MEMFAULTACT    SHCSR = 1 << 0  //+
+	BUSFAULTACT    SHCSR = 1 << 1  //+
+	USGFAULTACT    SHCSR = 1 << 3  //+
+	SVCALLACT      SHCSR = 1 << 7  //+
+	MONITORACT     SHCSR = 1 << 8  //+
+	PENDSVACT      SHCSR = 1 << 10 //+
+	SYSTICKACT     SHCSR = 1 << 11 //+
+	USGFAULTPENDED SHCSR = 1 << 12 //+
+	MEMFAULTPENDED SHCSR = 1 << 13 //+
+	BUSFAULTPENDED SHCSR = 1 << 14 //+
+	SVCALLPENDED   SHCSR = 1 << 15 //+
+	MEMFAULTENA    SHCSR = 1 << 16 //+
+	BUSFAULTENA    SHCSR = 1 << 17 //+
+	USGFAULTENA    SHCSR = 1 << 18 //+
 )
 
 const (
 	// MFSR
-	IACCVIOL  CFSR_Bits = 1 << 0 //+
-	DACCVIOL  CFSR_Bits = 1 << 1 //+
-	MUNSTKERR CFSR_Bits = 1 << 3 //+
-	MSTKERR   CFSR_Bits = 1 << 4 //+
-	MLSPERR   CFSR_Bits = 1 << 5 //+
-	MMARVALID CFSR_Bits = 1 << 7 //+
+	IACCVIOL  CFSR = 1 << 0 //+
+	DACCVIOL  CFSR = 1 << 1 //+
+	MUNSTKERR CFSR = 1 << 3 //+
+	MSTKERR   CFSR = 1 << 4 //+
+	MLSPERR   CFSR = 1 << 5 //+
+	MMARVALID CFSR = 1 << 7 //+
 
 	// BFSR
-	IBUSERR     CFSR_Bits = 1 << 8  //+
-	PRECISERR   CFSR_Bits = 1 << 9  //+
-	IMPRECISERR CFSR_Bits = 1 << 10 //+
-	UNSTKERR    CFSR_Bits = 1 << 11 //+
-	STKERR      CFSR_Bits = 1 << 12 //+
-	LSPERR      CFSR_Bits = 1 << 13 //+
-	BFARVALID   CFSR_Bits = 1 << 15 //+
+	IBUSERR     CFSR = 1 << 8  //+
+	PRECISERR   CFSR = 1 << 9  //+
+	IMPRECISERR CFSR = 1 << 10 //+
+	UNSTKERR    CFSR = 1 << 11 //+
+	STKERR      CFSR = 1 << 12 //+
+	LSPERR      CFSR = 1 << 13 //+
+	BFARVALID   CFSR = 1 << 15 //+
 
 	// UFSR
-	UNDEFINSTR CFSR_Bits = 1 << 16 //+
-	INVSTATE   CFSR_Bits = 1 << 17 //+
-	INVPC      CFSR_Bits = 1 << 18 //+
-	NOCP       CFSR_Bits = 1 << 19 //+
-	UNALIGNED  CFSR_Bits = 1 << 24 //+
-	DIVBYZERO  CFSR_Bits = 1 << 25 //+
+	UNDEFINSTR CFSR = 1 << 16 //+
+	INVSTATE   CFSR = 1 << 17 //+
+	INVPC      CFSR = 1 << 18 //+
+	NOCP       CFSR = 1 << 19 //+
+	UNALIGNED  CFSR = 1 << 24 //+
+	DIVBYZERO  CFSR = 1 << 25 //+
 )
 
 const (
-	VECTTBL  HFSR_Bits = 1 << 1  //+
-	FORCED   HFSR_Bits = 1 << 30 //+
-	DEBUGEVT HFSR_Bits = 1 << 31 //+
+	VECTTBL  HFSR = 1 << 1  //+
+	FORCED   HFSR = 1 << 30 //+
+	DEBUGEVT HFSR = 1 << 31 //+
 )

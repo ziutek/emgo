@@ -42,9 +42,9 @@ func Setup(periodns, hz uint, external bool) {
 		return
 	}
 	g.periodTicks = uint32((uint64(periodns)*uint64(hz) + 5e8) / 1e9)
-	st.RELOAD().Store(systick.RVR_Bits(g.periodTicks - 1))
+	st.RELOAD().Store(systick.RVR(g.periodTicks - 1))
 	st.CURRENT().Store(0)
-	var clksrc systick.CSR_Bits
+	var clksrc systick.CSR
 	if !external {
 		clksrc = systick.CLKSOURCE
 	}

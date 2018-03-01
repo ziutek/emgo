@@ -92,8 +92,8 @@ var (
 	H = (*Port)(unsafe.Pointer(mmap.GPIOH_BASE))
 )
 
-func enreg() *rcc.AHB2ENR   { return &rcc.RCC.AHB2ENR }
-func rstreg() *rcc.AHB2RSTR { return &rcc.RCC.AHB2RSTR }
+func enreg() *rcc.RAHB2ENR   { return &rcc.RCC.AHB2ENR }
+func rstreg() *rcc.RAHB2RSTR { return &rcc.RCC.AHB2RSTR }
 
 func lpenaclk(pnum uint) {
 	rcc.RCC.AHB2SMENR.AtomicSetBits(rcc.GPIOASMEN << pnum)

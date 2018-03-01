@@ -59,7 +59,7 @@ func (d *AltDriver) NewMasterConn(addr int16, stopm StopMode) *AltMasterConn {
 	return mc
 }
 
-func (d *AltDriver) waitEvent(ev i2c.SR1_Bits) Error {
+func (d *AltDriver) waitEvent(ev i2c.SR1) Error {
 	p := &d.P.raw
 	deadline := rtos.Nanosec() + byteTimeout
 	if d.i2cint {

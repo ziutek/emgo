@@ -11,7 +11,7 @@ import (
 )
 
 type OPAMP_Periph struct {
-	CSR CSR
+	CSR RCSR
 }
 
 func (p *OPAMP_Periph) BaseAddr() uintptr {
@@ -33,93 +33,93 @@ var OPAMP3 = (*OPAMP_Periph)(unsafe.Pointer(uintptr(mmap.OPAMP3_BASE)))
 //emgo:const
 var OPAMP4 = (*OPAMP_Periph)(unsafe.Pointer(uintptr(mmap.OPAMP4_BASE)))
 
-type CSR_Bits uint32
+type CSR uint32
 
-func (b CSR_Bits) Field(mask CSR_Bits) int {
+func (b CSR) Field(mask CSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CSR_Bits) J(v int) CSR_Bits {
-	return CSR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CSR) J(v int) CSR {
+	return CSR(bits.Make32(v, uint32(mask)))
 }
 
-type CSR struct{ mmio.U32 }
+type RCSR struct{ mmio.U32 }
 
-func (r *CSR) Bits(mask CSR_Bits) CSR_Bits { return CSR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *CSR) StoreBits(mask, b CSR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CSR) SetBits(mask CSR_Bits)       { r.U32.SetBits(uint32(mask)) }
-func (r *CSR) ClearBits(mask CSR_Bits)     { r.U32.ClearBits(uint32(mask)) }
-func (r *CSR) Load() CSR_Bits              { return CSR_Bits(r.U32.Load()) }
-func (r *CSR) Store(b CSR_Bits)            { r.U32.Store(uint32(b)) }
+func (r *RCSR) Bits(mask CSR) CSR     { return CSR(r.U32.Bits(uint32(mask))) }
+func (r *RCSR) StoreBits(mask, b CSR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCSR) SetBits(mask CSR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCSR) ClearBits(mask CSR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCSR) Load() CSR             { return CSR(r.U32.Load()) }
+func (r *RCSR) Store(b CSR)           { r.U32.Store(uint32(b)) }
 
-func (r *CSR) AtomicStoreBits(mask, b CSR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *CSR) AtomicSetBits(mask CSR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CSR) AtomicClearBits(mask CSR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCSR) AtomicStoreBits(mask, b CSR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCSR) AtomicSetBits(mask CSR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCSR) AtomicClearBits(mask CSR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CSR_Mask struct{ mmio.UM32 }
+type RMCSR struct{ mmio.UM32 }
 
-func (rm CSR_Mask) Load() CSR_Bits   { return CSR_Bits(rm.UM32.Load()) }
-func (rm CSR_Mask) Store(b CSR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCSR) Load() CSR   { return CSR(rm.UM32.Load()) }
+func (rm RMCSR) Store(b CSR) { rm.UM32.Store(uint32(b)) }
 
-func (p *OPAMP_Periph) OPAMPxEN() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(OPAMPxEN)}}
+func (p *OPAMP_Periph) OPAMPxEN() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(OPAMPxEN)}}
 }
 
-func (p *OPAMP_Periph) FORCEVP() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(FORCEVP)}}
+func (p *OPAMP_Periph) FORCEVP() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(FORCEVP)}}
 }
 
-func (p *OPAMP_Periph) VPSEL() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(VPSEL)}}
+func (p *OPAMP_Periph) VPSEL() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(VPSEL)}}
 }
 
-func (p *OPAMP_Periph) VMSEL() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(VMSEL)}}
+func (p *OPAMP_Periph) VMSEL() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(VMSEL)}}
 }
 
-func (p *OPAMP_Periph) TCMEN() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(TCMEN)}}
+func (p *OPAMP_Periph) TCMEN() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(TCMEN)}}
 }
 
-func (p *OPAMP_Periph) VMSSEL() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(VMSSEL)}}
+func (p *OPAMP_Periph) VMSSEL() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(VMSSEL)}}
 }
 
-func (p *OPAMP_Periph) VPSSEL() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(VPSSEL)}}
+func (p *OPAMP_Periph) VPSSEL() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(VPSSEL)}}
 }
 
-func (p *OPAMP_Periph) CALON() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(CALON)}}
+func (p *OPAMP_Periph) CALON() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(CALON)}}
 }
 
-func (p *OPAMP_Periph) CALSEL() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(CALSEL)}}
+func (p *OPAMP_Periph) CALSEL() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(CALSEL)}}
 }
 
-func (p *OPAMP_Periph) PGGAIN() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(PGGAIN)}}
+func (p *OPAMP_Periph) PGGAIN() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(PGGAIN)}}
 }
 
-func (p *OPAMP_Periph) USERTRIM() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(USERTRIM)}}
+func (p *OPAMP_Periph) USERTRIM() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(USERTRIM)}}
 }
 
-func (p *OPAMP_Periph) TRIMOFFSETP() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(TRIMOFFSETP)}}
+func (p *OPAMP_Periph) TRIMOFFSETP() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(TRIMOFFSETP)}}
 }
 
-func (p *OPAMP_Periph) TRIMOFFSETN() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(TRIMOFFSETN)}}
+func (p *OPAMP_Periph) TRIMOFFSETN() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(TRIMOFFSETN)}}
 }
 
-func (p *OPAMP_Periph) TSTREF() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(TSTREF)}}
+func (p *OPAMP_Periph) TSTREF() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(TSTREF)}}
 }
 
-func (p *OPAMP_Periph) OUTCAL() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(OUTCAL)}}
+func (p *OPAMP_Periph) OUTCAL() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(OUTCAL)}}
 }
 
-func (p *OPAMP_Periph) LOCK() CSR_Mask {
-	return CSR_Mask{mmio.UM32{&p.CSR.U32, uint32(LOCK)}}
+func (p *OPAMP_Periph) LOCK() RMCSR {
+	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(LOCK)}}
 }

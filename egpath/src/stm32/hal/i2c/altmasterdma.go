@@ -72,7 +72,7 @@ func (c *AltMasterConnDMA) Write(buf []byte) (int, error) {
 			break
 		}
 		if m == 1 {
-			p.DR.Store(i2c.DR_Bits(buf[n]))
+			p.DR.Store(i2c.DR(buf[n]))
 		} else {
 			if m > 0xffff {
 				m = 0xffff
@@ -140,7 +140,7 @@ func (c *AltMasterConnDMA) Read(buf []byte) (int, error) {
 		if e = d.waitEvent(i2c.SB); e != 0 {
 			goto end
 		}
-		p.DR.Store(i2c.DR_Bits(c.addr | 1)) // BUG: 10-bit addr not supported.
+		p.DR.Store(i2c.DR(c.addr | 1)) // BUG: 10-bit addr not supported.
 		if e = d.waitEvent(i2c.ADDR); e != 0 {
 			goto end
 		}

@@ -11,29 +11,29 @@ import (
 )
 
 type DMA2D_Periph struct {
-	CR      CR
-	ISR     ISR
-	IFCR    IFCR
-	FGMAR   FGMAR
-	FGOR    FGOR
-	BGMAR   BGMAR
-	BGOR    BGOR
-	FGPFCCR FGPFCCR
-	FGCOLR  FGCOLR
-	BGPFCCR BGPFCCR
-	BGCOLR  BGCOLR
-	FGCMAR  FGCMAR
-	BGCMAR  BGCMAR
-	OPFCCR  OPFCCR
-	OCOLR   OCOLR
-	OMAR    OMAR
-	OOR     OOR
-	NLR     NLR
-	LWR     LWR
-	AMTCR   AMTCR
+	CR      RCR
+	ISR     RISR
+	IFCR    RIFCR
+	FGMAR   RFGMAR
+	FGOR    RFGOR
+	BGMAR   RBGMAR
+	BGOR    RBGOR
+	FGPFCCR RFGPFCCR
+	FGCOLR  RFGCOLR
+	BGPFCCR RBGPFCCR
+	BGCOLR  RBGCOLR
+	FGCMAR  RFGCMAR
+	BGCMAR  RBGCMAR
+	OPFCCR  ROPFCCR
+	OCOLR   ROCOLR
+	OMAR    ROMAR
+	OOR     ROOR
+	NLR     RNLR
+	LWR     RLWR
+	AMTCR   RAMTCR
 	_       [236]uint32
-	FGCLUT  [256]FGCLUT
-	BGCLUT  [256]BGCLUT
+	FGCLUT  [256]RFGCLUT
+	BGCLUT  [256]RBGCLUT
 }
 
 func (p *DMA2D_Periph) BaseAddr() uintptr {
@@ -43,832 +43,828 @@ func (p *DMA2D_Periph) BaseAddr() uintptr {
 //emgo:const
 var DMA2D = (*DMA2D_Periph)(unsafe.Pointer(uintptr(mmap.DMA2D_BASE)))
 
-type CR_Bits uint32
+type CR uint32
 
-func (b CR_Bits) Field(mask CR_Bits) int {
+func (b CR) Field(mask CR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CR_Bits) J(v int) CR_Bits {
-	return CR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CR) J(v int) CR {
+	return CR(bits.Make32(v, uint32(mask)))
 }
 
-type CR struct{ mmio.U32 }
+type RCR struct{ mmio.U32 }
 
-func (r *CR) Bits(mask CR_Bits) CR_Bits { return CR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *CR) StoreBits(mask, b CR_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CR) SetBits(mask CR_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *CR) ClearBits(mask CR_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *CR) Load() CR_Bits             { return CR_Bits(r.U32.Load()) }
-func (r *CR) Store(b CR_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RCR) Bits(mask CR) CR      { return CR(r.U32.Bits(uint32(mask))) }
+func (r *RCR) StoreBits(mask, b CR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCR) SetBits(mask CR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCR) ClearBits(mask CR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCR) Load() CR             { return CR(r.U32.Load()) }
+func (r *RCR) Store(b CR)           { r.U32.Store(uint32(b)) }
 
-func (r *CR) AtomicStoreBits(mask, b CR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *CR) AtomicSetBits(mask CR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CR) AtomicClearBits(mask CR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCR) AtomicStoreBits(mask, b CR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCR) AtomicSetBits(mask CR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCR) AtomicClearBits(mask CR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CR_Mask struct{ mmio.UM32 }
+type RMCR struct{ mmio.UM32 }
 
-func (rm CR_Mask) Load() CR_Bits   { return CR_Bits(rm.UM32.Load()) }
-func (rm CR_Mask) Store(b CR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCR) Load() CR   { return CR(rm.UM32.Load()) }
+func (rm RMCR) Store(b CR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) START() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(START)}}
+func (p *DMA2D_Periph) START() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(START)}}
 }
 
-func (p *DMA2D_Periph) SUSP() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(SUSP)}}
+func (p *DMA2D_Periph) SUSP() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(SUSP)}}
 }
 
-func (p *DMA2D_Periph) ABORT() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(ABORT)}}
+func (p *DMA2D_Periph) ABORT() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(ABORT)}}
 }
 
-func (p *DMA2D_Periph) TEIE() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(TEIE)}}
+func (p *DMA2D_Periph) TEIE() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(TEIE)}}
 }
 
-func (p *DMA2D_Periph) TCIE() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(TCIE)}}
+func (p *DMA2D_Periph) TCIE() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(TCIE)}}
 }
 
-func (p *DMA2D_Periph) TWIE() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(TWIE)}}
+func (p *DMA2D_Periph) TWIE() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(TWIE)}}
 }
 
-func (p *DMA2D_Periph) CAEIE() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(CAEIE)}}
+func (p *DMA2D_Periph) CAEIE() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(CAEIE)}}
 }
 
-func (p *DMA2D_Periph) CTCIE() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(CTCIE)}}
+func (p *DMA2D_Periph) CTCIE() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(CTCIE)}}
 }
 
-func (p *DMA2D_Periph) CEIE() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(CEIE)}}
+func (p *DMA2D_Periph) CEIE() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(CEIE)}}
 }
 
-func (p *DMA2D_Periph) MODE() CR_Mask {
-	return CR_Mask{mmio.UM32{&p.CR.U32, uint32(MODE)}}
+func (p *DMA2D_Periph) MODE() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(MODE)}}
 }
 
-type ISR_Bits uint32
+type ISR uint32
 
-func (b ISR_Bits) Field(mask ISR_Bits) int {
+func (b ISR) Field(mask ISR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask ISR_Bits) J(v int) ISR_Bits {
-	return ISR_Bits(bits.Make32(v, uint32(mask)))
+func (mask ISR) J(v int) ISR {
+	return ISR(bits.Make32(v, uint32(mask)))
 }
 
-type ISR struct{ mmio.U32 }
+type RISR struct{ mmio.U32 }
 
-func (r *ISR) Bits(mask ISR_Bits) ISR_Bits { return ISR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *ISR) StoreBits(mask, b ISR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *ISR) SetBits(mask ISR_Bits)       { r.U32.SetBits(uint32(mask)) }
-func (r *ISR) ClearBits(mask ISR_Bits)     { r.U32.ClearBits(uint32(mask)) }
-func (r *ISR) Load() ISR_Bits              { return ISR_Bits(r.U32.Load()) }
-func (r *ISR) Store(b ISR_Bits)            { r.U32.Store(uint32(b)) }
+func (r *RISR) Bits(mask ISR) ISR     { return ISR(r.U32.Bits(uint32(mask))) }
+func (r *RISR) StoreBits(mask, b ISR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RISR) SetBits(mask ISR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RISR) ClearBits(mask ISR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RISR) Load() ISR             { return ISR(r.U32.Load()) }
+func (r *RISR) Store(b ISR)           { r.U32.Store(uint32(b)) }
 
-func (r *ISR) AtomicStoreBits(mask, b ISR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *ISR) AtomicSetBits(mask ISR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *ISR) AtomicClearBits(mask ISR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RISR) AtomicStoreBits(mask, b ISR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RISR) AtomicSetBits(mask ISR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RISR) AtomicClearBits(mask ISR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type ISR_Mask struct{ mmio.UM32 }
+type RMISR struct{ mmio.UM32 }
 
-func (rm ISR_Mask) Load() ISR_Bits   { return ISR_Bits(rm.UM32.Load()) }
-func (rm ISR_Mask) Store(b ISR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMISR) Load() ISR   { return ISR(rm.UM32.Load()) }
+func (rm RMISR) Store(b ISR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) TEIF() ISR_Mask {
-	return ISR_Mask{mmio.UM32{&p.ISR.U32, uint32(TEIF)}}
+func (p *DMA2D_Periph) TEIF() RMISR {
+	return RMISR{mmio.UM32{&p.ISR.U32, uint32(TEIF)}}
 }
 
-func (p *DMA2D_Periph) TCIF() ISR_Mask {
-	return ISR_Mask{mmio.UM32{&p.ISR.U32, uint32(TCIF)}}
+func (p *DMA2D_Periph) TCIF() RMISR {
+	return RMISR{mmio.UM32{&p.ISR.U32, uint32(TCIF)}}
 }
 
-func (p *DMA2D_Periph) TWIF() ISR_Mask {
-	return ISR_Mask{mmio.UM32{&p.ISR.U32, uint32(TWIF)}}
+func (p *DMA2D_Periph) TWIF() RMISR {
+	return RMISR{mmio.UM32{&p.ISR.U32, uint32(TWIF)}}
 }
 
-func (p *DMA2D_Periph) CAEIF() ISR_Mask {
-	return ISR_Mask{mmio.UM32{&p.ISR.U32, uint32(CAEIF)}}
+func (p *DMA2D_Periph) CAEIF() RMISR {
+	return RMISR{mmio.UM32{&p.ISR.U32, uint32(CAEIF)}}
 }
 
-func (p *DMA2D_Periph) CTCIF() ISR_Mask {
-	return ISR_Mask{mmio.UM32{&p.ISR.U32, uint32(CTCIF)}}
+func (p *DMA2D_Periph) CTCIF() RMISR {
+	return RMISR{mmio.UM32{&p.ISR.U32, uint32(CTCIF)}}
 }
 
-func (p *DMA2D_Periph) CEIF() ISR_Mask {
-	return ISR_Mask{mmio.UM32{&p.ISR.U32, uint32(CEIF)}}
+func (p *DMA2D_Periph) CEIF() RMISR {
+	return RMISR{mmio.UM32{&p.ISR.U32, uint32(CEIF)}}
 }
 
-type IFCR_Bits uint32
+type IFCR uint32
 
-func (b IFCR_Bits) Field(mask IFCR_Bits) int {
+func (b IFCR) Field(mask IFCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask IFCR_Bits) J(v int) IFCR_Bits {
-	return IFCR_Bits(bits.Make32(v, uint32(mask)))
+func (mask IFCR) J(v int) IFCR {
+	return IFCR(bits.Make32(v, uint32(mask)))
 }
 
-type IFCR struct{ mmio.U32 }
+type RIFCR struct{ mmio.U32 }
 
-func (r *IFCR) Bits(mask IFCR_Bits) IFCR_Bits { return IFCR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *IFCR) StoreBits(mask, b IFCR_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *IFCR) SetBits(mask IFCR_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *IFCR) ClearBits(mask IFCR_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *IFCR) Load() IFCR_Bits               { return IFCR_Bits(r.U32.Load()) }
-func (r *IFCR) Store(b IFCR_Bits)             { r.U32.Store(uint32(b)) }
+func (r *RIFCR) Bits(mask IFCR) IFCR    { return IFCR(r.U32.Bits(uint32(mask))) }
+func (r *RIFCR) StoreBits(mask, b IFCR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RIFCR) SetBits(mask IFCR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RIFCR) ClearBits(mask IFCR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RIFCR) Load() IFCR             { return IFCR(r.U32.Load()) }
+func (r *RIFCR) Store(b IFCR)           { r.U32.Store(uint32(b)) }
 
-func (r *IFCR) AtomicStoreBits(mask, b IFCR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *IFCR) AtomicSetBits(mask IFCR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *IFCR) AtomicClearBits(mask IFCR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RIFCR) AtomicStoreBits(mask, b IFCR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RIFCR) AtomicSetBits(mask IFCR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RIFCR) AtomicClearBits(mask IFCR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type IFCR_Mask struct{ mmio.UM32 }
+type RMIFCR struct{ mmio.UM32 }
 
-func (rm IFCR_Mask) Load() IFCR_Bits   { return IFCR_Bits(rm.UM32.Load()) }
-func (rm IFCR_Mask) Store(b IFCR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMIFCR) Load() IFCR   { return IFCR(rm.UM32.Load()) }
+func (rm RMIFCR) Store(b IFCR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) CTEIF() IFCR_Mask {
-	return IFCR_Mask{mmio.UM32{&p.IFCR.U32, uint32(CTEIF)}}
+func (p *DMA2D_Periph) CTEIF() RMIFCR {
+	return RMIFCR{mmio.UM32{&p.IFCR.U32, uint32(CTEIF)}}
 }
 
-func (p *DMA2D_Periph) CTCIF() IFCR_Mask {
-	return IFCR_Mask{mmio.UM32{&p.IFCR.U32, uint32(CTCIF)}}
+func (p *DMA2D_Periph) CTCIF() RMIFCR {
+	return RMIFCR{mmio.UM32{&p.IFCR.U32, uint32(CTCIF)}}
 }
 
-func (p *DMA2D_Periph) CTWIF() IFCR_Mask {
-	return IFCR_Mask{mmio.UM32{&p.IFCR.U32, uint32(CTWIF)}}
+func (p *DMA2D_Periph) CTWIF() RMIFCR {
+	return RMIFCR{mmio.UM32{&p.IFCR.U32, uint32(CTWIF)}}
 }
 
-func (p *DMA2D_Periph) CAECIF() IFCR_Mask {
-	return IFCR_Mask{mmio.UM32{&p.IFCR.U32, uint32(CAECIF)}}
+func (p *DMA2D_Periph) CAECIF() RMIFCR {
+	return RMIFCR{mmio.UM32{&p.IFCR.U32, uint32(CAECIF)}}
 }
 
-func (p *DMA2D_Periph) CCTCIF() IFCR_Mask {
-	return IFCR_Mask{mmio.UM32{&p.IFCR.U32, uint32(CCTCIF)}}
+func (p *DMA2D_Periph) CCTCIF() RMIFCR {
+	return RMIFCR{mmio.UM32{&p.IFCR.U32, uint32(CCTCIF)}}
 }
 
-func (p *DMA2D_Periph) CCEIF() IFCR_Mask {
-	return IFCR_Mask{mmio.UM32{&p.IFCR.U32, uint32(CCEIF)}}
+func (p *DMA2D_Periph) CCEIF() RMIFCR {
+	return RMIFCR{mmio.UM32{&p.IFCR.U32, uint32(CCEIF)}}
 }
 
-type FGMAR_Bits uint32
+type FGMAR uint32
 
-func (b FGMAR_Bits) Field(mask FGMAR_Bits) int {
+func (b FGMAR) Field(mask FGMAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask FGMAR_Bits) J(v int) FGMAR_Bits {
-	return FGMAR_Bits(bits.Make32(v, uint32(mask)))
+func (mask FGMAR) J(v int) FGMAR {
+	return FGMAR(bits.Make32(v, uint32(mask)))
 }
 
-type FGMAR struct{ mmio.U32 }
+type RFGMAR struct{ mmio.U32 }
 
-func (r *FGMAR) Bits(mask FGMAR_Bits) FGMAR_Bits { return FGMAR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *FGMAR) StoreBits(mask, b FGMAR_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *FGMAR) SetBits(mask FGMAR_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *FGMAR) ClearBits(mask FGMAR_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *FGMAR) Load() FGMAR_Bits                { return FGMAR_Bits(r.U32.Load()) }
-func (r *FGMAR) Store(b FGMAR_Bits)              { r.U32.Store(uint32(b)) }
+func (r *RFGMAR) Bits(mask FGMAR) FGMAR   { return FGMAR(r.U32.Bits(uint32(mask))) }
+func (r *RFGMAR) StoreBits(mask, b FGMAR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RFGMAR) SetBits(mask FGMAR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RFGMAR) ClearBits(mask FGMAR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RFGMAR) Load() FGMAR             { return FGMAR(r.U32.Load()) }
+func (r *RFGMAR) Store(b FGMAR)           { r.U32.Store(uint32(b)) }
 
-func (r *FGMAR) AtomicStoreBits(mask, b FGMAR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *FGMAR) AtomicSetBits(mask FGMAR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *FGMAR) AtomicClearBits(mask FGMAR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RFGMAR) AtomicStoreBits(mask, b FGMAR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RFGMAR) AtomicSetBits(mask FGMAR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RFGMAR) AtomicClearBits(mask FGMAR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type FGMAR_Mask struct{ mmio.UM32 }
+type RMFGMAR struct{ mmio.UM32 }
 
-func (rm FGMAR_Mask) Load() FGMAR_Bits   { return FGMAR_Bits(rm.UM32.Load()) }
-func (rm FGMAR_Mask) Store(b FGMAR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMFGMAR) Load() FGMAR   { return FGMAR(rm.UM32.Load()) }
+func (rm RMFGMAR) Store(b FGMAR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) MA() FGMAR_Mask {
-	return FGMAR_Mask{mmio.UM32{&p.FGMAR.U32, uint32(MA)}}
+func (p *DMA2D_Periph) MA() RMFGMAR {
+	return RMFGMAR{mmio.UM32{&p.FGMAR.U32, uint32(MA)}}
 }
 
-type FGOR_Bits uint32
+type FGOR uint32
 
-func (b FGOR_Bits) Field(mask FGOR_Bits) int {
+func (b FGOR) Field(mask FGOR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask FGOR_Bits) J(v int) FGOR_Bits {
-	return FGOR_Bits(bits.Make32(v, uint32(mask)))
+func (mask FGOR) J(v int) FGOR {
+	return FGOR(bits.Make32(v, uint32(mask)))
 }
 
-type FGOR struct{ mmio.U32 }
+type RFGOR struct{ mmio.U32 }
 
-func (r *FGOR) Bits(mask FGOR_Bits) FGOR_Bits { return FGOR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *FGOR) StoreBits(mask, b FGOR_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *FGOR) SetBits(mask FGOR_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *FGOR) ClearBits(mask FGOR_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *FGOR) Load() FGOR_Bits               { return FGOR_Bits(r.U32.Load()) }
-func (r *FGOR) Store(b FGOR_Bits)             { r.U32.Store(uint32(b)) }
+func (r *RFGOR) Bits(mask FGOR) FGOR    { return FGOR(r.U32.Bits(uint32(mask))) }
+func (r *RFGOR) StoreBits(mask, b FGOR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RFGOR) SetBits(mask FGOR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RFGOR) ClearBits(mask FGOR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RFGOR) Load() FGOR             { return FGOR(r.U32.Load()) }
+func (r *RFGOR) Store(b FGOR)           { r.U32.Store(uint32(b)) }
 
-func (r *FGOR) AtomicStoreBits(mask, b FGOR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *FGOR) AtomicSetBits(mask FGOR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *FGOR) AtomicClearBits(mask FGOR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RFGOR) AtomicStoreBits(mask, b FGOR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RFGOR) AtomicSetBits(mask FGOR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RFGOR) AtomicClearBits(mask FGOR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type FGOR_Mask struct{ mmio.UM32 }
+type RMFGOR struct{ mmio.UM32 }
 
-func (rm FGOR_Mask) Load() FGOR_Bits   { return FGOR_Bits(rm.UM32.Load()) }
-func (rm FGOR_Mask) Store(b FGOR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMFGOR) Load() FGOR   { return FGOR(rm.UM32.Load()) }
+func (rm RMFGOR) Store(b FGOR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) LO() FGOR_Mask {
-	return FGOR_Mask{mmio.UM32{&p.FGOR.U32, uint32(LO)}}
+func (p *DMA2D_Periph) LO() RMFGOR {
+	return RMFGOR{mmio.UM32{&p.FGOR.U32, uint32(LO)}}
 }
 
-type BGMAR_Bits uint32
+type BGMAR uint32
 
-func (b BGMAR_Bits) Field(mask BGMAR_Bits) int {
+func (b BGMAR) Field(mask BGMAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask BGMAR_Bits) J(v int) BGMAR_Bits {
-	return BGMAR_Bits(bits.Make32(v, uint32(mask)))
+func (mask BGMAR) J(v int) BGMAR {
+	return BGMAR(bits.Make32(v, uint32(mask)))
 }
 
-type BGMAR struct{ mmio.U32 }
+type RBGMAR struct{ mmio.U32 }
 
-func (r *BGMAR) Bits(mask BGMAR_Bits) BGMAR_Bits { return BGMAR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *BGMAR) StoreBits(mask, b BGMAR_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *BGMAR) SetBits(mask BGMAR_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *BGMAR) ClearBits(mask BGMAR_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *BGMAR) Load() BGMAR_Bits                { return BGMAR_Bits(r.U32.Load()) }
-func (r *BGMAR) Store(b BGMAR_Bits)              { r.U32.Store(uint32(b)) }
+func (r *RBGMAR) Bits(mask BGMAR) BGMAR   { return BGMAR(r.U32.Bits(uint32(mask))) }
+func (r *RBGMAR) StoreBits(mask, b BGMAR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RBGMAR) SetBits(mask BGMAR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RBGMAR) ClearBits(mask BGMAR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RBGMAR) Load() BGMAR             { return BGMAR(r.U32.Load()) }
+func (r *RBGMAR) Store(b BGMAR)           { r.U32.Store(uint32(b)) }
 
-func (r *BGMAR) AtomicStoreBits(mask, b BGMAR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *BGMAR) AtomicSetBits(mask BGMAR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *BGMAR) AtomicClearBits(mask BGMAR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RBGMAR) AtomicStoreBits(mask, b BGMAR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RBGMAR) AtomicSetBits(mask BGMAR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RBGMAR) AtomicClearBits(mask BGMAR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type BGMAR_Mask struct{ mmio.UM32 }
+type RMBGMAR struct{ mmio.UM32 }
 
-func (rm BGMAR_Mask) Load() BGMAR_Bits   { return BGMAR_Bits(rm.UM32.Load()) }
-func (rm BGMAR_Mask) Store(b BGMAR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMBGMAR) Load() BGMAR   { return BGMAR(rm.UM32.Load()) }
+func (rm RMBGMAR) Store(b BGMAR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) MA() BGMAR_Mask {
-	return BGMAR_Mask{mmio.UM32{&p.BGMAR.U32, uint32(MA)}}
+func (p *DMA2D_Periph) MA() RMBGMAR {
+	return RMBGMAR{mmio.UM32{&p.BGMAR.U32, uint32(MA)}}
 }
 
-type BGOR_Bits uint32
+type BGOR uint32
 
-func (b BGOR_Bits) Field(mask BGOR_Bits) int {
+func (b BGOR) Field(mask BGOR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask BGOR_Bits) J(v int) BGOR_Bits {
-	return BGOR_Bits(bits.Make32(v, uint32(mask)))
+func (mask BGOR) J(v int) BGOR {
+	return BGOR(bits.Make32(v, uint32(mask)))
 }
 
-type BGOR struct{ mmio.U32 }
+type RBGOR struct{ mmio.U32 }
 
-func (r *BGOR) Bits(mask BGOR_Bits) BGOR_Bits { return BGOR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *BGOR) StoreBits(mask, b BGOR_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *BGOR) SetBits(mask BGOR_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *BGOR) ClearBits(mask BGOR_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *BGOR) Load() BGOR_Bits               { return BGOR_Bits(r.U32.Load()) }
-func (r *BGOR) Store(b BGOR_Bits)             { r.U32.Store(uint32(b)) }
+func (r *RBGOR) Bits(mask BGOR) BGOR    { return BGOR(r.U32.Bits(uint32(mask))) }
+func (r *RBGOR) StoreBits(mask, b BGOR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RBGOR) SetBits(mask BGOR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RBGOR) ClearBits(mask BGOR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RBGOR) Load() BGOR             { return BGOR(r.U32.Load()) }
+func (r *RBGOR) Store(b BGOR)           { r.U32.Store(uint32(b)) }
 
-func (r *BGOR) AtomicStoreBits(mask, b BGOR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *BGOR) AtomicSetBits(mask BGOR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *BGOR) AtomicClearBits(mask BGOR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RBGOR) AtomicStoreBits(mask, b BGOR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RBGOR) AtomicSetBits(mask BGOR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RBGOR) AtomicClearBits(mask BGOR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type BGOR_Mask struct{ mmio.UM32 }
+type RMBGOR struct{ mmio.UM32 }
 
-func (rm BGOR_Mask) Load() BGOR_Bits   { return BGOR_Bits(rm.UM32.Load()) }
-func (rm BGOR_Mask) Store(b BGOR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMBGOR) Load() BGOR   { return BGOR(rm.UM32.Load()) }
+func (rm RMBGOR) Store(b BGOR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) LO() BGOR_Mask {
-	return BGOR_Mask{mmio.UM32{&p.BGOR.U32, uint32(LO)}}
+func (p *DMA2D_Periph) LO() RMBGOR {
+	return RMBGOR{mmio.UM32{&p.BGOR.U32, uint32(LO)}}
 }
 
-type FGPFCCR_Bits uint32
+type FGPFCCR uint32
 
-func (b FGPFCCR_Bits) Field(mask FGPFCCR_Bits) int {
+func (b FGPFCCR) Field(mask FGPFCCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask FGPFCCR_Bits) J(v int) FGPFCCR_Bits {
-	return FGPFCCR_Bits(bits.Make32(v, uint32(mask)))
+func (mask FGPFCCR) J(v int) FGPFCCR {
+	return FGPFCCR(bits.Make32(v, uint32(mask)))
 }
 
-type FGPFCCR struct{ mmio.U32 }
+type RFGPFCCR struct{ mmio.U32 }
 
-func (r *FGPFCCR) Bits(mask FGPFCCR_Bits) FGPFCCR_Bits { return FGPFCCR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *FGPFCCR) StoreBits(mask, b FGPFCCR_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *FGPFCCR) SetBits(mask FGPFCCR_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *FGPFCCR) ClearBits(mask FGPFCCR_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *FGPFCCR) Load() FGPFCCR_Bits                  { return FGPFCCR_Bits(r.U32.Load()) }
-func (r *FGPFCCR) Store(b FGPFCCR_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RFGPFCCR) Bits(mask FGPFCCR) FGPFCCR { return FGPFCCR(r.U32.Bits(uint32(mask))) }
+func (r *RFGPFCCR) StoreBits(mask, b FGPFCCR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RFGPFCCR) SetBits(mask FGPFCCR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RFGPFCCR) ClearBits(mask FGPFCCR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RFGPFCCR) Load() FGPFCCR             { return FGPFCCR(r.U32.Load()) }
+func (r *RFGPFCCR) Store(b FGPFCCR)           { r.U32.Store(uint32(b)) }
 
-func (r *FGPFCCR) AtomicStoreBits(mask, b FGPFCCR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *FGPFCCR) AtomicSetBits(mask FGPFCCR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *FGPFCCR) AtomicClearBits(mask FGPFCCR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RFGPFCCR) AtomicStoreBits(mask, b FGPFCCR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RFGPFCCR) AtomicSetBits(mask FGPFCCR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RFGPFCCR) AtomicClearBits(mask FGPFCCR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type FGPFCCR_Mask struct{ mmio.UM32 }
+type RMFGPFCCR struct{ mmio.UM32 }
 
-func (rm FGPFCCR_Mask) Load() FGPFCCR_Bits   { return FGPFCCR_Bits(rm.UM32.Load()) }
-func (rm FGPFCCR_Mask) Store(b FGPFCCR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMFGPFCCR) Load() FGPFCCR   { return FGPFCCR(rm.UM32.Load()) }
+func (rm RMFGPFCCR) Store(b FGPFCCR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) CM() FGPFCCR_Mask {
-	return FGPFCCR_Mask{mmio.UM32{&p.FGPFCCR.U32, uint32(CM)}}
+func (p *DMA2D_Periph) CM() RMFGPFCCR {
+	return RMFGPFCCR{mmio.UM32{&p.FGPFCCR.U32, uint32(CM)}}
 }
 
-func (p *DMA2D_Periph) CCM() FGPFCCR_Mask {
-	return FGPFCCR_Mask{mmio.UM32{&p.FGPFCCR.U32, uint32(CCM)}}
+func (p *DMA2D_Periph) CCM() RMFGPFCCR {
+	return RMFGPFCCR{mmio.UM32{&p.FGPFCCR.U32, uint32(CCM)}}
 }
 
-func (p *DMA2D_Periph) START() FGPFCCR_Mask {
-	return FGPFCCR_Mask{mmio.UM32{&p.FGPFCCR.U32, uint32(START)}}
+func (p *DMA2D_Periph) START() RMFGPFCCR {
+	return RMFGPFCCR{mmio.UM32{&p.FGPFCCR.U32, uint32(START)}}
 }
 
-func (p *DMA2D_Periph) CS() FGPFCCR_Mask {
-	return FGPFCCR_Mask{mmio.UM32{&p.FGPFCCR.U32, uint32(CS)}}
+func (p *DMA2D_Periph) CS() RMFGPFCCR {
+	return RMFGPFCCR{mmio.UM32{&p.FGPFCCR.U32, uint32(CS)}}
 }
 
-func (p *DMA2D_Periph) AM() FGPFCCR_Mask {
-	return FGPFCCR_Mask{mmio.UM32{&p.FGPFCCR.U32, uint32(AM)}}
+func (p *DMA2D_Periph) AM() RMFGPFCCR {
+	return RMFGPFCCR{mmio.UM32{&p.FGPFCCR.U32, uint32(AM)}}
 }
 
-func (p *DMA2D_Periph) ALPHA() FGPFCCR_Mask {
-	return FGPFCCR_Mask{mmio.UM32{&p.FGPFCCR.U32, uint32(ALPHA)}}
+func (p *DMA2D_Periph) ALPHA() RMFGPFCCR {
+	return RMFGPFCCR{mmio.UM32{&p.FGPFCCR.U32, uint32(ALPHA)}}
 }
 
-type FGCOLR_Bits uint32
+type FGCOLR uint32
 
-func (b FGCOLR_Bits) Field(mask FGCOLR_Bits) int {
+func (b FGCOLR) Field(mask FGCOLR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask FGCOLR_Bits) J(v int) FGCOLR_Bits {
-	return FGCOLR_Bits(bits.Make32(v, uint32(mask)))
+func (mask FGCOLR) J(v int) FGCOLR {
+	return FGCOLR(bits.Make32(v, uint32(mask)))
 }
 
-type FGCOLR struct{ mmio.U32 }
+type RFGCOLR struct{ mmio.U32 }
 
-func (r *FGCOLR) Bits(mask FGCOLR_Bits) FGCOLR_Bits { return FGCOLR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *FGCOLR) StoreBits(mask, b FGCOLR_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *FGCOLR) SetBits(mask FGCOLR_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *FGCOLR) ClearBits(mask FGCOLR_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *FGCOLR) Load() FGCOLR_Bits                 { return FGCOLR_Bits(r.U32.Load()) }
-func (r *FGCOLR) Store(b FGCOLR_Bits)               { r.U32.Store(uint32(b)) }
+func (r *RFGCOLR) Bits(mask FGCOLR) FGCOLR  { return FGCOLR(r.U32.Bits(uint32(mask))) }
+func (r *RFGCOLR) StoreBits(mask, b FGCOLR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RFGCOLR) SetBits(mask FGCOLR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RFGCOLR) ClearBits(mask FGCOLR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RFGCOLR) Load() FGCOLR             { return FGCOLR(r.U32.Load()) }
+func (r *RFGCOLR) Store(b FGCOLR)           { r.U32.Store(uint32(b)) }
 
-func (r *FGCOLR) AtomicStoreBits(mask, b FGCOLR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *FGCOLR) AtomicSetBits(mask FGCOLR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *FGCOLR) AtomicClearBits(mask FGCOLR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RFGCOLR) AtomicStoreBits(mask, b FGCOLR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RFGCOLR) AtomicSetBits(mask FGCOLR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RFGCOLR) AtomicClearBits(mask FGCOLR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type FGCOLR_Mask struct{ mmio.UM32 }
+type RMFGCOLR struct{ mmio.UM32 }
 
-func (rm FGCOLR_Mask) Load() FGCOLR_Bits   { return FGCOLR_Bits(rm.UM32.Load()) }
-func (rm FGCOLR_Mask) Store(b FGCOLR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMFGCOLR) Load() FGCOLR   { return FGCOLR(rm.UM32.Load()) }
+func (rm RMFGCOLR) Store(b FGCOLR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) BLUE() FGCOLR_Mask {
-	return FGCOLR_Mask{mmio.UM32{&p.FGCOLR.U32, uint32(BLUE)}}
+func (p *DMA2D_Periph) BLUE() RMFGCOLR {
+	return RMFGCOLR{mmio.UM32{&p.FGCOLR.U32, uint32(BLUE)}}
 }
 
-func (p *DMA2D_Periph) GREEN() FGCOLR_Mask {
-	return FGCOLR_Mask{mmio.UM32{&p.FGCOLR.U32, uint32(GREEN)}}
+func (p *DMA2D_Periph) GREEN() RMFGCOLR {
+	return RMFGCOLR{mmio.UM32{&p.FGCOLR.U32, uint32(GREEN)}}
 }
 
-func (p *DMA2D_Periph) RED() FGCOLR_Mask {
-	return FGCOLR_Mask{mmio.UM32{&p.FGCOLR.U32, uint32(RED)}}
+func (p *DMA2D_Periph) RED() RMFGCOLR {
+	return RMFGCOLR{mmio.UM32{&p.FGCOLR.U32, uint32(RED)}}
 }
 
-type BGPFCCR_Bits uint32
+type BGPFCCR uint32
 
-func (b BGPFCCR_Bits) Field(mask BGPFCCR_Bits) int {
+func (b BGPFCCR) Field(mask BGPFCCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask BGPFCCR_Bits) J(v int) BGPFCCR_Bits {
-	return BGPFCCR_Bits(bits.Make32(v, uint32(mask)))
+func (mask BGPFCCR) J(v int) BGPFCCR {
+	return BGPFCCR(bits.Make32(v, uint32(mask)))
 }
 
-type BGPFCCR struct{ mmio.U32 }
+type RBGPFCCR struct{ mmio.U32 }
 
-func (r *BGPFCCR) Bits(mask BGPFCCR_Bits) BGPFCCR_Bits { return BGPFCCR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *BGPFCCR) StoreBits(mask, b BGPFCCR_Bits)      { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *BGPFCCR) SetBits(mask BGPFCCR_Bits)           { r.U32.SetBits(uint32(mask)) }
-func (r *BGPFCCR) ClearBits(mask BGPFCCR_Bits)         { r.U32.ClearBits(uint32(mask)) }
-func (r *BGPFCCR) Load() BGPFCCR_Bits                  { return BGPFCCR_Bits(r.U32.Load()) }
-func (r *BGPFCCR) Store(b BGPFCCR_Bits)                { r.U32.Store(uint32(b)) }
+func (r *RBGPFCCR) Bits(mask BGPFCCR) BGPFCCR { return BGPFCCR(r.U32.Bits(uint32(mask))) }
+func (r *RBGPFCCR) StoreBits(mask, b BGPFCCR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RBGPFCCR) SetBits(mask BGPFCCR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RBGPFCCR) ClearBits(mask BGPFCCR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RBGPFCCR) Load() BGPFCCR             { return BGPFCCR(r.U32.Load()) }
+func (r *RBGPFCCR) Store(b BGPFCCR)           { r.U32.Store(uint32(b)) }
 
-func (r *BGPFCCR) AtomicStoreBits(mask, b BGPFCCR_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *BGPFCCR) AtomicSetBits(mask BGPFCCR_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *BGPFCCR) AtomicClearBits(mask BGPFCCR_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RBGPFCCR) AtomicStoreBits(mask, b BGPFCCR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RBGPFCCR) AtomicSetBits(mask BGPFCCR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RBGPFCCR) AtomicClearBits(mask BGPFCCR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type BGPFCCR_Mask struct{ mmio.UM32 }
+type RMBGPFCCR struct{ mmio.UM32 }
 
-func (rm BGPFCCR_Mask) Load() BGPFCCR_Bits   { return BGPFCCR_Bits(rm.UM32.Load()) }
-func (rm BGPFCCR_Mask) Store(b BGPFCCR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMBGPFCCR) Load() BGPFCCR   { return BGPFCCR(rm.UM32.Load()) }
+func (rm RMBGPFCCR) Store(b BGPFCCR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) CM() BGPFCCR_Mask {
-	return BGPFCCR_Mask{mmio.UM32{&p.BGPFCCR.U32, uint32(CM)}}
+func (p *DMA2D_Periph) CM() RMBGPFCCR {
+	return RMBGPFCCR{mmio.UM32{&p.BGPFCCR.U32, uint32(CM)}}
 }
 
-func (p *DMA2D_Periph) CCM() BGPFCCR_Mask {
-	return BGPFCCR_Mask{mmio.UM32{&p.BGPFCCR.U32, uint32(CCM)}}
+func (p *DMA2D_Periph) CCM() RMBGPFCCR {
+	return RMBGPFCCR{mmio.UM32{&p.BGPFCCR.U32, uint32(CCM)}}
 }
 
-func (p *DMA2D_Periph) START() BGPFCCR_Mask {
-	return BGPFCCR_Mask{mmio.UM32{&p.BGPFCCR.U32, uint32(START)}}
+func (p *DMA2D_Periph) START() RMBGPFCCR {
+	return RMBGPFCCR{mmio.UM32{&p.BGPFCCR.U32, uint32(START)}}
 }
 
-func (p *DMA2D_Periph) CS() BGPFCCR_Mask {
-	return BGPFCCR_Mask{mmio.UM32{&p.BGPFCCR.U32, uint32(CS)}}
+func (p *DMA2D_Periph) CS() RMBGPFCCR {
+	return RMBGPFCCR{mmio.UM32{&p.BGPFCCR.U32, uint32(CS)}}
 }
 
-func (p *DMA2D_Periph) AM() BGPFCCR_Mask {
-	return BGPFCCR_Mask{mmio.UM32{&p.BGPFCCR.U32, uint32(AM)}}
+func (p *DMA2D_Periph) AM() RMBGPFCCR {
+	return RMBGPFCCR{mmio.UM32{&p.BGPFCCR.U32, uint32(AM)}}
 }
 
-func (p *DMA2D_Periph) ALPHA() BGPFCCR_Mask {
-	return BGPFCCR_Mask{mmio.UM32{&p.BGPFCCR.U32, uint32(ALPHA)}}
+func (p *DMA2D_Periph) ALPHA() RMBGPFCCR {
+	return RMBGPFCCR{mmio.UM32{&p.BGPFCCR.U32, uint32(ALPHA)}}
 }
 
-type BGCOLR_Bits uint32
+type BGCOLR uint32
 
-func (b BGCOLR_Bits) Field(mask BGCOLR_Bits) int {
+func (b BGCOLR) Field(mask BGCOLR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask BGCOLR_Bits) J(v int) BGCOLR_Bits {
-	return BGCOLR_Bits(bits.Make32(v, uint32(mask)))
+func (mask BGCOLR) J(v int) BGCOLR {
+	return BGCOLR(bits.Make32(v, uint32(mask)))
 }
 
-type BGCOLR struct{ mmio.U32 }
+type RBGCOLR struct{ mmio.U32 }
 
-func (r *BGCOLR) Bits(mask BGCOLR_Bits) BGCOLR_Bits { return BGCOLR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *BGCOLR) StoreBits(mask, b BGCOLR_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *BGCOLR) SetBits(mask BGCOLR_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *BGCOLR) ClearBits(mask BGCOLR_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *BGCOLR) Load() BGCOLR_Bits                 { return BGCOLR_Bits(r.U32.Load()) }
-func (r *BGCOLR) Store(b BGCOLR_Bits)               { r.U32.Store(uint32(b)) }
+func (r *RBGCOLR) Bits(mask BGCOLR) BGCOLR  { return BGCOLR(r.U32.Bits(uint32(mask))) }
+func (r *RBGCOLR) StoreBits(mask, b BGCOLR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RBGCOLR) SetBits(mask BGCOLR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RBGCOLR) ClearBits(mask BGCOLR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RBGCOLR) Load() BGCOLR             { return BGCOLR(r.U32.Load()) }
+func (r *RBGCOLR) Store(b BGCOLR)           { r.U32.Store(uint32(b)) }
 
-func (r *BGCOLR) AtomicStoreBits(mask, b BGCOLR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *BGCOLR) AtomicSetBits(mask BGCOLR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *BGCOLR) AtomicClearBits(mask BGCOLR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RBGCOLR) AtomicStoreBits(mask, b BGCOLR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RBGCOLR) AtomicSetBits(mask BGCOLR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RBGCOLR) AtomicClearBits(mask BGCOLR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type BGCOLR_Mask struct{ mmio.UM32 }
+type RMBGCOLR struct{ mmio.UM32 }
 
-func (rm BGCOLR_Mask) Load() BGCOLR_Bits   { return BGCOLR_Bits(rm.UM32.Load()) }
-func (rm BGCOLR_Mask) Store(b BGCOLR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMBGCOLR) Load() BGCOLR   { return BGCOLR(rm.UM32.Load()) }
+func (rm RMBGCOLR) Store(b BGCOLR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) BLUE() BGCOLR_Mask {
-	return BGCOLR_Mask{mmio.UM32{&p.BGCOLR.U32, uint32(BLUE)}}
+func (p *DMA2D_Periph) BLUE() RMBGCOLR {
+	return RMBGCOLR{mmio.UM32{&p.BGCOLR.U32, uint32(BLUE)}}
 }
 
-func (p *DMA2D_Periph) GREEN() BGCOLR_Mask {
-	return BGCOLR_Mask{mmio.UM32{&p.BGCOLR.U32, uint32(GREEN)}}
+func (p *DMA2D_Periph) GREEN() RMBGCOLR {
+	return RMBGCOLR{mmio.UM32{&p.BGCOLR.U32, uint32(GREEN)}}
 }
 
-func (p *DMA2D_Periph) RED() BGCOLR_Mask {
-	return BGCOLR_Mask{mmio.UM32{&p.BGCOLR.U32, uint32(RED)}}
+func (p *DMA2D_Periph) RED() RMBGCOLR {
+	return RMBGCOLR{mmio.UM32{&p.BGCOLR.U32, uint32(RED)}}
 }
 
-type FGCMAR_Bits uint32
+type FGCMAR uint32
 
-func (b FGCMAR_Bits) Field(mask FGCMAR_Bits) int {
+func (b FGCMAR) Field(mask FGCMAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask FGCMAR_Bits) J(v int) FGCMAR_Bits {
-	return FGCMAR_Bits(bits.Make32(v, uint32(mask)))
+func (mask FGCMAR) J(v int) FGCMAR {
+	return FGCMAR(bits.Make32(v, uint32(mask)))
 }
 
-type FGCMAR struct{ mmio.U32 }
+type RFGCMAR struct{ mmio.U32 }
 
-func (r *FGCMAR) Bits(mask FGCMAR_Bits) FGCMAR_Bits { return FGCMAR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *FGCMAR) StoreBits(mask, b FGCMAR_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *FGCMAR) SetBits(mask FGCMAR_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *FGCMAR) ClearBits(mask FGCMAR_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *FGCMAR) Load() FGCMAR_Bits                 { return FGCMAR_Bits(r.U32.Load()) }
-func (r *FGCMAR) Store(b FGCMAR_Bits)               { r.U32.Store(uint32(b)) }
+func (r *RFGCMAR) Bits(mask FGCMAR) FGCMAR  { return FGCMAR(r.U32.Bits(uint32(mask))) }
+func (r *RFGCMAR) StoreBits(mask, b FGCMAR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RFGCMAR) SetBits(mask FGCMAR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RFGCMAR) ClearBits(mask FGCMAR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RFGCMAR) Load() FGCMAR             { return FGCMAR(r.U32.Load()) }
+func (r *RFGCMAR) Store(b FGCMAR)           { r.U32.Store(uint32(b)) }
 
-func (r *FGCMAR) AtomicStoreBits(mask, b FGCMAR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *FGCMAR) AtomicSetBits(mask FGCMAR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *FGCMAR) AtomicClearBits(mask FGCMAR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RFGCMAR) AtomicStoreBits(mask, b FGCMAR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RFGCMAR) AtomicSetBits(mask FGCMAR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RFGCMAR) AtomicClearBits(mask FGCMAR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type FGCMAR_Mask struct{ mmio.UM32 }
+type RMFGCMAR struct{ mmio.UM32 }
 
-func (rm FGCMAR_Mask) Load() FGCMAR_Bits   { return FGCMAR_Bits(rm.UM32.Load()) }
-func (rm FGCMAR_Mask) Store(b FGCMAR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMFGCMAR) Load() FGCMAR   { return FGCMAR(rm.UM32.Load()) }
+func (rm RMFGCMAR) Store(b FGCMAR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) MA() FGCMAR_Mask {
-	return FGCMAR_Mask{mmio.UM32{&p.FGCMAR.U32, uint32(MA)}}
+func (p *DMA2D_Periph) MA() RMFGCMAR {
+	return RMFGCMAR{mmio.UM32{&p.FGCMAR.U32, uint32(MA)}}
 }
 
-type BGCMAR_Bits uint32
+type BGCMAR uint32
 
-func (b BGCMAR_Bits) Field(mask BGCMAR_Bits) int {
+func (b BGCMAR) Field(mask BGCMAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask BGCMAR_Bits) J(v int) BGCMAR_Bits {
-	return BGCMAR_Bits(bits.Make32(v, uint32(mask)))
+func (mask BGCMAR) J(v int) BGCMAR {
+	return BGCMAR(bits.Make32(v, uint32(mask)))
 }
 
-type BGCMAR struct{ mmio.U32 }
+type RBGCMAR struct{ mmio.U32 }
 
-func (r *BGCMAR) Bits(mask BGCMAR_Bits) BGCMAR_Bits { return BGCMAR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *BGCMAR) StoreBits(mask, b BGCMAR_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *BGCMAR) SetBits(mask BGCMAR_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *BGCMAR) ClearBits(mask BGCMAR_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *BGCMAR) Load() BGCMAR_Bits                 { return BGCMAR_Bits(r.U32.Load()) }
-func (r *BGCMAR) Store(b BGCMAR_Bits)               { r.U32.Store(uint32(b)) }
+func (r *RBGCMAR) Bits(mask BGCMAR) BGCMAR  { return BGCMAR(r.U32.Bits(uint32(mask))) }
+func (r *RBGCMAR) StoreBits(mask, b BGCMAR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RBGCMAR) SetBits(mask BGCMAR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RBGCMAR) ClearBits(mask BGCMAR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RBGCMAR) Load() BGCMAR             { return BGCMAR(r.U32.Load()) }
+func (r *RBGCMAR) Store(b BGCMAR)           { r.U32.Store(uint32(b)) }
 
-func (r *BGCMAR) AtomicStoreBits(mask, b BGCMAR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *BGCMAR) AtomicSetBits(mask BGCMAR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *BGCMAR) AtomicClearBits(mask BGCMAR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RBGCMAR) AtomicStoreBits(mask, b BGCMAR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RBGCMAR) AtomicSetBits(mask BGCMAR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RBGCMAR) AtomicClearBits(mask BGCMAR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type BGCMAR_Mask struct{ mmio.UM32 }
+type RMBGCMAR struct{ mmio.UM32 }
 
-func (rm BGCMAR_Mask) Load() BGCMAR_Bits   { return BGCMAR_Bits(rm.UM32.Load()) }
-func (rm BGCMAR_Mask) Store(b BGCMAR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMBGCMAR) Load() BGCMAR   { return BGCMAR(rm.UM32.Load()) }
+func (rm RMBGCMAR) Store(b BGCMAR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) MA() BGCMAR_Mask {
-	return BGCMAR_Mask{mmio.UM32{&p.BGCMAR.U32, uint32(MA)}}
+func (p *DMA2D_Periph) MA() RMBGCMAR {
+	return RMBGCMAR{mmio.UM32{&p.BGCMAR.U32, uint32(MA)}}
 }
 
-type OPFCCR_Bits uint32
+type OPFCCR uint32
 
-func (b OPFCCR_Bits) Field(mask OPFCCR_Bits) int {
+func (b OPFCCR) Field(mask OPFCCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask OPFCCR_Bits) J(v int) OPFCCR_Bits {
-	return OPFCCR_Bits(bits.Make32(v, uint32(mask)))
+func (mask OPFCCR) J(v int) OPFCCR {
+	return OPFCCR(bits.Make32(v, uint32(mask)))
 }
 
-type OPFCCR struct{ mmio.U32 }
+type ROPFCCR struct{ mmio.U32 }
 
-func (r *OPFCCR) Bits(mask OPFCCR_Bits) OPFCCR_Bits { return OPFCCR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *OPFCCR) StoreBits(mask, b OPFCCR_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *OPFCCR) SetBits(mask OPFCCR_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *OPFCCR) ClearBits(mask OPFCCR_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *OPFCCR) Load() OPFCCR_Bits                 { return OPFCCR_Bits(r.U32.Load()) }
-func (r *OPFCCR) Store(b OPFCCR_Bits)               { r.U32.Store(uint32(b)) }
+func (r *ROPFCCR) Bits(mask OPFCCR) OPFCCR  { return OPFCCR(r.U32.Bits(uint32(mask))) }
+func (r *ROPFCCR) StoreBits(mask, b OPFCCR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *ROPFCCR) SetBits(mask OPFCCR)      { r.U32.SetBits(uint32(mask)) }
+func (r *ROPFCCR) ClearBits(mask OPFCCR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *ROPFCCR) Load() OPFCCR             { return OPFCCR(r.U32.Load()) }
+func (r *ROPFCCR) Store(b OPFCCR)           { r.U32.Store(uint32(b)) }
 
-func (r *OPFCCR) AtomicStoreBits(mask, b OPFCCR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *OPFCCR) AtomicSetBits(mask OPFCCR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *OPFCCR) AtomicClearBits(mask OPFCCR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *ROPFCCR) AtomicStoreBits(mask, b OPFCCR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *ROPFCCR) AtomicSetBits(mask OPFCCR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *ROPFCCR) AtomicClearBits(mask OPFCCR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type OPFCCR_Mask struct{ mmio.UM32 }
+type RMOPFCCR struct{ mmio.UM32 }
 
-func (rm OPFCCR_Mask) Load() OPFCCR_Bits   { return OPFCCR_Bits(rm.UM32.Load()) }
-func (rm OPFCCR_Mask) Store(b OPFCCR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMOPFCCR) Load() OPFCCR   { return OPFCCR(rm.UM32.Load()) }
+func (rm RMOPFCCR) Store(b OPFCCR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) CM() OPFCCR_Mask {
-	return OPFCCR_Mask{mmio.UM32{&p.OPFCCR.U32, uint32(CM)}}
+func (p *DMA2D_Periph) CM() RMOPFCCR {
+	return RMOPFCCR{mmio.UM32{&p.OPFCCR.U32, uint32(CM)}}
 }
 
-type OCOLR_Bits uint32
+type OCOLR uint32
 
-func (b OCOLR_Bits) Field(mask OCOLR_Bits) int {
+func (b OCOLR) Field(mask OCOLR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask OCOLR_Bits) J(v int) OCOLR_Bits {
-	return OCOLR_Bits(bits.Make32(v, uint32(mask)))
+func (mask OCOLR) J(v int) OCOLR {
+	return OCOLR(bits.Make32(v, uint32(mask)))
 }
 
-type OCOLR struct{ mmio.U32 }
+type ROCOLR struct{ mmio.U32 }
 
-func (r *OCOLR) Bits(mask OCOLR_Bits) OCOLR_Bits { return OCOLR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *OCOLR) StoreBits(mask, b OCOLR_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *OCOLR) SetBits(mask OCOLR_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *OCOLR) ClearBits(mask OCOLR_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *OCOLR) Load() OCOLR_Bits                { return OCOLR_Bits(r.U32.Load()) }
-func (r *OCOLR) Store(b OCOLR_Bits)              { r.U32.Store(uint32(b)) }
+func (r *ROCOLR) Bits(mask OCOLR) OCOLR   { return OCOLR(r.U32.Bits(uint32(mask))) }
+func (r *ROCOLR) StoreBits(mask, b OCOLR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *ROCOLR) SetBits(mask OCOLR)      { r.U32.SetBits(uint32(mask)) }
+func (r *ROCOLR) ClearBits(mask OCOLR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *ROCOLR) Load() OCOLR             { return OCOLR(r.U32.Load()) }
+func (r *ROCOLR) Store(b OCOLR)           { r.U32.Store(uint32(b)) }
 
-func (r *OCOLR) AtomicStoreBits(mask, b OCOLR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *OCOLR) AtomicSetBits(mask OCOLR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *OCOLR) AtomicClearBits(mask OCOLR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *ROCOLR) AtomicStoreBits(mask, b OCOLR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *ROCOLR) AtomicSetBits(mask OCOLR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *ROCOLR) AtomicClearBits(mask OCOLR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type OCOLR_Mask struct{ mmio.UM32 }
+type RMOCOLR struct{ mmio.UM32 }
 
-func (rm OCOLR_Mask) Load() OCOLR_Bits   { return OCOLR_Bits(rm.UM32.Load()) }
-func (rm OCOLR_Mask) Store(b OCOLR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMOCOLR) Load() OCOLR   { return OCOLR(rm.UM32.Load()) }
+func (rm RMOCOLR) Store(b OCOLR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) BLUE_1() OCOLR_Mask {
-	return OCOLR_Mask{mmio.UM32{&p.OCOLR.U32, uint32(BLUE_1)}}
+func (p *DMA2D_Periph) BLUE_1() RMOCOLR {
+	return RMOCOLR{mmio.UM32{&p.OCOLR.U32, uint32(BLUE_1)}}
 }
 
-func (p *DMA2D_Periph) GREEN_1() OCOLR_Mask {
-	return OCOLR_Mask{mmio.UM32{&p.OCOLR.U32, uint32(GREEN_1)}}
+func (p *DMA2D_Periph) GREEN_1() RMOCOLR {
+	return RMOCOLR{mmio.UM32{&p.OCOLR.U32, uint32(GREEN_1)}}
 }
 
-func (p *DMA2D_Periph) RED_1() OCOLR_Mask {
-	return OCOLR_Mask{mmio.UM32{&p.OCOLR.U32, uint32(RED_1)}}
+func (p *DMA2D_Periph) RED_1() RMOCOLR {
+	return RMOCOLR{mmio.UM32{&p.OCOLR.U32, uint32(RED_1)}}
 }
 
-func (p *DMA2D_Periph) ALPHA_1() OCOLR_Mask {
-	return OCOLR_Mask{mmio.UM32{&p.OCOLR.U32, uint32(ALPHA_1)}}
+func (p *DMA2D_Periph) ALPHA_1() RMOCOLR {
+	return RMOCOLR{mmio.UM32{&p.OCOLR.U32, uint32(ALPHA_1)}}
 }
 
-type OMAR_Bits uint32
+type OMAR uint32
 
-func (b OMAR_Bits) Field(mask OMAR_Bits) int {
+func (b OMAR) Field(mask OMAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask OMAR_Bits) J(v int) OMAR_Bits {
-	return OMAR_Bits(bits.Make32(v, uint32(mask)))
+func (mask OMAR) J(v int) OMAR {
+	return OMAR(bits.Make32(v, uint32(mask)))
 }
 
-type OMAR struct{ mmio.U32 }
+type ROMAR struct{ mmio.U32 }
 
-func (r *OMAR) Bits(mask OMAR_Bits) OMAR_Bits { return OMAR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *OMAR) StoreBits(mask, b OMAR_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *OMAR) SetBits(mask OMAR_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *OMAR) ClearBits(mask OMAR_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *OMAR) Load() OMAR_Bits               { return OMAR_Bits(r.U32.Load()) }
-func (r *OMAR) Store(b OMAR_Bits)             { r.U32.Store(uint32(b)) }
+func (r *ROMAR) Bits(mask OMAR) OMAR    { return OMAR(r.U32.Bits(uint32(mask))) }
+func (r *ROMAR) StoreBits(mask, b OMAR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *ROMAR) SetBits(mask OMAR)      { r.U32.SetBits(uint32(mask)) }
+func (r *ROMAR) ClearBits(mask OMAR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *ROMAR) Load() OMAR             { return OMAR(r.U32.Load()) }
+func (r *ROMAR) Store(b OMAR)           { r.U32.Store(uint32(b)) }
 
-func (r *OMAR) AtomicStoreBits(mask, b OMAR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *OMAR) AtomicSetBits(mask OMAR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *OMAR) AtomicClearBits(mask OMAR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *ROMAR) AtomicStoreBits(mask, b OMAR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *ROMAR) AtomicSetBits(mask OMAR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *ROMAR) AtomicClearBits(mask OMAR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type OMAR_Mask struct{ mmio.UM32 }
+type RMOMAR struct{ mmio.UM32 }
 
-func (rm OMAR_Mask) Load() OMAR_Bits   { return OMAR_Bits(rm.UM32.Load()) }
-func (rm OMAR_Mask) Store(b OMAR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMOMAR) Load() OMAR   { return OMAR(rm.UM32.Load()) }
+func (rm RMOMAR) Store(b OMAR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) MA() OMAR_Mask {
-	return OMAR_Mask{mmio.UM32{&p.OMAR.U32, uint32(MA)}}
+func (p *DMA2D_Periph) MA() RMOMAR {
+	return RMOMAR{mmio.UM32{&p.OMAR.U32, uint32(MA)}}
 }
 
-type OOR_Bits uint32
+type OOR uint32
 
-func (b OOR_Bits) Field(mask OOR_Bits) int {
+func (b OOR) Field(mask OOR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask OOR_Bits) J(v int) OOR_Bits {
-	return OOR_Bits(bits.Make32(v, uint32(mask)))
+func (mask OOR) J(v int) OOR {
+	return OOR(bits.Make32(v, uint32(mask)))
 }
 
-type OOR struct{ mmio.U32 }
+type ROOR struct{ mmio.U32 }
 
-func (r *OOR) Bits(mask OOR_Bits) OOR_Bits { return OOR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *OOR) StoreBits(mask, b OOR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *OOR) SetBits(mask OOR_Bits)       { r.U32.SetBits(uint32(mask)) }
-func (r *OOR) ClearBits(mask OOR_Bits)     { r.U32.ClearBits(uint32(mask)) }
-func (r *OOR) Load() OOR_Bits              { return OOR_Bits(r.U32.Load()) }
-func (r *OOR) Store(b OOR_Bits)            { r.U32.Store(uint32(b)) }
+func (r *ROOR) Bits(mask OOR) OOR     { return OOR(r.U32.Bits(uint32(mask))) }
+func (r *ROOR) StoreBits(mask, b OOR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *ROOR) SetBits(mask OOR)      { r.U32.SetBits(uint32(mask)) }
+func (r *ROOR) ClearBits(mask OOR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *ROOR) Load() OOR             { return OOR(r.U32.Load()) }
+func (r *ROOR) Store(b OOR)           { r.U32.Store(uint32(b)) }
 
-func (r *OOR) AtomicStoreBits(mask, b OOR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *OOR) AtomicSetBits(mask OOR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *OOR) AtomicClearBits(mask OOR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *ROOR) AtomicStoreBits(mask, b OOR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *ROOR) AtomicSetBits(mask OOR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *ROOR) AtomicClearBits(mask OOR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type OOR_Mask struct{ mmio.UM32 }
+type RMOOR struct{ mmio.UM32 }
 
-func (rm OOR_Mask) Load() OOR_Bits   { return OOR_Bits(rm.UM32.Load()) }
-func (rm OOR_Mask) Store(b OOR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMOOR) Load() OOR   { return OOR(rm.UM32.Load()) }
+func (rm RMOOR) Store(b OOR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) LO() OOR_Mask {
-	return OOR_Mask{mmio.UM32{&p.OOR.U32, uint32(LO)}}
+func (p *DMA2D_Periph) LO() RMOOR {
+	return RMOOR{mmio.UM32{&p.OOR.U32, uint32(LO)}}
 }
 
-type NLR_Bits uint32
+type NLR uint32
 
-func (b NLR_Bits) Field(mask NLR_Bits) int {
+func (b NLR) Field(mask NLR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask NLR_Bits) J(v int) NLR_Bits {
-	return NLR_Bits(bits.Make32(v, uint32(mask)))
+func (mask NLR) J(v int) NLR {
+	return NLR(bits.Make32(v, uint32(mask)))
 }
 
-type NLR struct{ mmio.U32 }
+type RNLR struct{ mmio.U32 }
 
-func (r *NLR) Bits(mask NLR_Bits) NLR_Bits { return NLR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *NLR) StoreBits(mask, b NLR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *NLR) SetBits(mask NLR_Bits)       { r.U32.SetBits(uint32(mask)) }
-func (r *NLR) ClearBits(mask NLR_Bits)     { r.U32.ClearBits(uint32(mask)) }
-func (r *NLR) Load() NLR_Bits              { return NLR_Bits(r.U32.Load()) }
-func (r *NLR) Store(b NLR_Bits)            { r.U32.Store(uint32(b)) }
+func (r *RNLR) Bits(mask NLR) NLR     { return NLR(r.U32.Bits(uint32(mask))) }
+func (r *RNLR) StoreBits(mask, b NLR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RNLR) SetBits(mask NLR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RNLR) ClearBits(mask NLR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RNLR) Load() NLR             { return NLR(r.U32.Load()) }
+func (r *RNLR) Store(b NLR)           { r.U32.Store(uint32(b)) }
 
-func (r *NLR) AtomicStoreBits(mask, b NLR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *NLR) AtomicSetBits(mask NLR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *NLR) AtomicClearBits(mask NLR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RNLR) AtomicStoreBits(mask, b NLR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RNLR) AtomicSetBits(mask NLR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RNLR) AtomicClearBits(mask NLR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type NLR_Mask struct{ mmio.UM32 }
+type RMNLR struct{ mmio.UM32 }
 
-func (rm NLR_Mask) Load() NLR_Bits   { return NLR_Bits(rm.UM32.Load()) }
-func (rm NLR_Mask) Store(b NLR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMNLR) Load() NLR   { return NLR(rm.UM32.Load()) }
+func (rm RMNLR) Store(b NLR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) NL() NLR_Mask {
-	return NLR_Mask{mmio.UM32{&p.NLR.U32, uint32(NL)}}
+func (p *DMA2D_Periph) NL() RMNLR {
+	return RMNLR{mmio.UM32{&p.NLR.U32, uint32(NL)}}
 }
 
-func (p *DMA2D_Periph) PL() NLR_Mask {
-	return NLR_Mask{mmio.UM32{&p.NLR.U32, uint32(PL)}}
+func (p *DMA2D_Periph) PL() RMNLR {
+	return RMNLR{mmio.UM32{&p.NLR.U32, uint32(PL)}}
 }
 
-type LWR_Bits uint32
+type LWR uint32
 
-func (b LWR_Bits) Field(mask LWR_Bits) int {
+func (b LWR) Field(mask LWR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask LWR_Bits) J(v int) LWR_Bits {
-	return LWR_Bits(bits.Make32(v, uint32(mask)))
+func (mask LWR) J(v int) LWR {
+	return LWR(bits.Make32(v, uint32(mask)))
 }
 
-type LWR struct{ mmio.U32 }
+type RLWR struct{ mmio.U32 }
 
-func (r *LWR) Bits(mask LWR_Bits) LWR_Bits { return LWR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *LWR) StoreBits(mask, b LWR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *LWR) SetBits(mask LWR_Bits)       { r.U32.SetBits(uint32(mask)) }
-func (r *LWR) ClearBits(mask LWR_Bits)     { r.U32.ClearBits(uint32(mask)) }
-func (r *LWR) Load() LWR_Bits              { return LWR_Bits(r.U32.Load()) }
-func (r *LWR) Store(b LWR_Bits)            { r.U32.Store(uint32(b)) }
+func (r *RLWR) Bits(mask LWR) LWR     { return LWR(r.U32.Bits(uint32(mask))) }
+func (r *RLWR) StoreBits(mask, b LWR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RLWR) SetBits(mask LWR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RLWR) ClearBits(mask LWR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RLWR) Load() LWR             { return LWR(r.U32.Load()) }
+func (r *RLWR) Store(b LWR)           { r.U32.Store(uint32(b)) }
 
-func (r *LWR) AtomicStoreBits(mask, b LWR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *LWR) AtomicSetBits(mask LWR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *LWR) AtomicClearBits(mask LWR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RLWR) AtomicStoreBits(mask, b LWR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RLWR) AtomicSetBits(mask LWR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RLWR) AtomicClearBits(mask LWR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type LWR_Mask struct{ mmio.UM32 }
+type RMLWR struct{ mmio.UM32 }
 
-func (rm LWR_Mask) Load() LWR_Bits   { return LWR_Bits(rm.UM32.Load()) }
-func (rm LWR_Mask) Store(b LWR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMLWR) Load() LWR   { return LWR(rm.UM32.Load()) }
+func (rm RMLWR) Store(b LWR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) LW() LWR_Mask {
-	return LWR_Mask{mmio.UM32{&p.LWR.U32, uint32(LW)}}
+func (p *DMA2D_Periph) LW() RMLWR {
+	return RMLWR{mmio.UM32{&p.LWR.U32, uint32(LW)}}
 }
 
-type AMTCR_Bits uint32
+type AMTCR uint32
 
-func (b AMTCR_Bits) Field(mask AMTCR_Bits) int {
+func (b AMTCR) Field(mask AMTCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask AMTCR_Bits) J(v int) AMTCR_Bits {
-	return AMTCR_Bits(bits.Make32(v, uint32(mask)))
+func (mask AMTCR) J(v int) AMTCR {
+	return AMTCR(bits.Make32(v, uint32(mask)))
 }
 
-type AMTCR struct{ mmio.U32 }
+type RAMTCR struct{ mmio.U32 }
 
-func (r *AMTCR) Bits(mask AMTCR_Bits) AMTCR_Bits { return AMTCR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *AMTCR) StoreBits(mask, b AMTCR_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *AMTCR) SetBits(mask AMTCR_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *AMTCR) ClearBits(mask AMTCR_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *AMTCR) Load() AMTCR_Bits                { return AMTCR_Bits(r.U32.Load()) }
-func (r *AMTCR) Store(b AMTCR_Bits)              { r.U32.Store(uint32(b)) }
+func (r *RAMTCR) Bits(mask AMTCR) AMTCR   { return AMTCR(r.U32.Bits(uint32(mask))) }
+func (r *RAMTCR) StoreBits(mask, b AMTCR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RAMTCR) SetBits(mask AMTCR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RAMTCR) ClearBits(mask AMTCR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RAMTCR) Load() AMTCR             { return AMTCR(r.U32.Load()) }
+func (r *RAMTCR) Store(b AMTCR)           { r.U32.Store(uint32(b)) }
 
-func (r *AMTCR) AtomicStoreBits(mask, b AMTCR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *AMTCR) AtomicSetBits(mask AMTCR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *AMTCR) AtomicClearBits(mask AMTCR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RAMTCR) AtomicStoreBits(mask, b AMTCR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RAMTCR) AtomicSetBits(mask AMTCR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RAMTCR) AtomicClearBits(mask AMTCR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type AMTCR_Mask struct{ mmio.UM32 }
+type RMAMTCR struct{ mmio.UM32 }
 
-func (rm AMTCR_Mask) Load() AMTCR_Bits   { return AMTCR_Bits(rm.UM32.Load()) }
-func (rm AMTCR_Mask) Store(b AMTCR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMAMTCR) Load() AMTCR   { return AMTCR(rm.UM32.Load()) }
+func (rm RMAMTCR) Store(b AMTCR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA2D_Periph) EN() AMTCR_Mask {
-	return AMTCR_Mask{mmio.UM32{&p.AMTCR.U32, uint32(EN)}}
+func (p *DMA2D_Periph) EN() RMAMTCR {
+	return RMAMTCR{mmio.UM32{&p.AMTCR.U32, uint32(EN)}}
 }
 
-func (p *DMA2D_Periph) DT() AMTCR_Mask {
-	return AMTCR_Mask{mmio.UM32{&p.AMTCR.U32, uint32(DT)}}
+func (p *DMA2D_Periph) DT() RMAMTCR {
+	return RMAMTCR{mmio.UM32{&p.AMTCR.U32, uint32(DT)}}
 }
 
-type FGCLUT_Bits uint32
+type FGCLUT uint32
 
-func (b FGCLUT_Bits) Field(mask FGCLUT_Bits) int {
+func (b FGCLUT) Field(mask FGCLUT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask FGCLUT_Bits) J(v int) FGCLUT_Bits {
-	return FGCLUT_Bits(bits.Make32(v, uint32(mask)))
+func (mask FGCLUT) J(v int) FGCLUT {
+	return FGCLUT(bits.Make32(v, uint32(mask)))
 }
 
-type FGCLUT struct{ mmio.U32 }
+type RFGCLUT struct{ mmio.U32 }
 
-func (r *FGCLUT) Bits(mask FGCLUT_Bits) FGCLUT_Bits { return FGCLUT_Bits(r.U32.Bits(uint32(mask))) }
-func (r *FGCLUT) StoreBits(mask, b FGCLUT_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *FGCLUT) SetBits(mask FGCLUT_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *FGCLUT) ClearBits(mask FGCLUT_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *FGCLUT) Load() FGCLUT_Bits                 { return FGCLUT_Bits(r.U32.Load()) }
-func (r *FGCLUT) Store(b FGCLUT_Bits)               { r.U32.Store(uint32(b)) }
+func (r *RFGCLUT) Bits(mask FGCLUT) FGCLUT  { return FGCLUT(r.U32.Bits(uint32(mask))) }
+func (r *RFGCLUT) StoreBits(mask, b FGCLUT) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RFGCLUT) SetBits(mask FGCLUT)      { r.U32.SetBits(uint32(mask)) }
+func (r *RFGCLUT) ClearBits(mask FGCLUT)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RFGCLUT) Load() FGCLUT             { return FGCLUT(r.U32.Load()) }
+func (r *RFGCLUT) Store(b FGCLUT)           { r.U32.Store(uint32(b)) }
 
-func (r *FGCLUT) AtomicStoreBits(mask, b FGCLUT_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *FGCLUT) AtomicSetBits(mask FGCLUT_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *FGCLUT) AtomicClearBits(mask FGCLUT_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RFGCLUT) AtomicStoreBits(mask, b FGCLUT) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RFGCLUT) AtomicSetBits(mask FGCLUT)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RFGCLUT) AtomicClearBits(mask FGCLUT)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type FGCLUT_Mask struct{ mmio.UM32 }
+type RMFGCLUT struct{ mmio.UM32 }
 
-func (rm FGCLUT_Mask) Load() FGCLUT_Bits   { return FGCLUT_Bits(rm.UM32.Load()) }
-func (rm FGCLUT_Mask) Store(b FGCLUT_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMFGCLUT) Load() FGCLUT   { return FGCLUT(rm.UM32.Load()) }
+func (rm RMFGCLUT) Store(b FGCLUT) { rm.UM32.Store(uint32(b)) }
 
-type BGCLUT_Bits uint32
+type BGCLUT uint32
 
-func (b BGCLUT_Bits) Field(mask BGCLUT_Bits) int {
+func (b BGCLUT) Field(mask BGCLUT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask BGCLUT_Bits) J(v int) BGCLUT_Bits {
-	return BGCLUT_Bits(bits.Make32(v, uint32(mask)))
+func (mask BGCLUT) J(v int) BGCLUT {
+	return BGCLUT(bits.Make32(v, uint32(mask)))
 }
 
-type BGCLUT struct{ mmio.U32 }
+type RBGCLUT struct{ mmio.U32 }
 
-func (r *BGCLUT) Bits(mask BGCLUT_Bits) BGCLUT_Bits { return BGCLUT_Bits(r.U32.Bits(uint32(mask))) }
-func (r *BGCLUT) StoreBits(mask, b BGCLUT_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *BGCLUT) SetBits(mask BGCLUT_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *BGCLUT) ClearBits(mask BGCLUT_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *BGCLUT) Load() BGCLUT_Bits                 { return BGCLUT_Bits(r.U32.Load()) }
-func (r *BGCLUT) Store(b BGCLUT_Bits)               { r.U32.Store(uint32(b)) }
+func (r *RBGCLUT) Bits(mask BGCLUT) BGCLUT  { return BGCLUT(r.U32.Bits(uint32(mask))) }
+func (r *RBGCLUT) StoreBits(mask, b BGCLUT) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RBGCLUT) SetBits(mask BGCLUT)      { r.U32.SetBits(uint32(mask)) }
+func (r *RBGCLUT) ClearBits(mask BGCLUT)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RBGCLUT) Load() BGCLUT             { return BGCLUT(r.U32.Load()) }
+func (r *RBGCLUT) Store(b BGCLUT)           { r.U32.Store(uint32(b)) }
 
-func (r *BGCLUT) AtomicStoreBits(mask, b BGCLUT_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *BGCLUT) AtomicSetBits(mask BGCLUT_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *BGCLUT) AtomicClearBits(mask BGCLUT_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RBGCLUT) AtomicStoreBits(mask, b BGCLUT) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RBGCLUT) AtomicSetBits(mask BGCLUT)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RBGCLUT) AtomicClearBits(mask BGCLUT)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type BGCLUT_Mask struct{ mmio.UM32 }
+type RMBGCLUT struct{ mmio.UM32 }
 
-func (rm BGCLUT_Mask) Load() BGCLUT_Bits   { return BGCLUT_Bits(rm.UM32.Load()) }
-func (rm BGCLUT_Mask) Store(b BGCLUT_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMBGCLUT) Load() BGCLUT   { return BGCLUT(rm.UM32.Load()) }
+func (rm RMBGCLUT) Store(b BGCLUT) { rm.UM32.Store(uint32(b)) }

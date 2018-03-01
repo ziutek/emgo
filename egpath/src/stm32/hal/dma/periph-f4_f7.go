@@ -141,11 +141,11 @@ const (
 )
 
 func (ch *Channel) setup(m Mode) {
-	cr := dma.CR_Bits(cnum(ch))<<dma.CHSELn | dma.CR_Bits(m)
+	cr := dma.CR(cnum(ch))<<dma.CHSELn | dma.CR(m)
 	mask := dma.CHSEL | dma.PL | dma.MINC | dma.PINC | dma.CIRC | dma.DIR
 	st := sraw(ch)
 	st.CR.StoreBits(mask, cr)
-	st.FCR.StoreBits(dma.DMDIS|dma.FTH, dma.FCR_Bits(m))
+	st.FCR.StoreBits(dma.DMDIS|dma.FTH, dma.FCR(m))
 }
 
 const (
@@ -155,7 +155,7 @@ const (
 )
 
 func (ch *Channel) setPrio(prio Prio) {
-	sraw(ch).PL().Store(dma.CR_Bits(prio) << dma.PLn)
+	sraw(ch).PL().Store(dma.CR(prio) << dma.PLn)
 }
 
 func (ch *Channel) prio() Prio {

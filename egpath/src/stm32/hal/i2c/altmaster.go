@@ -73,7 +73,7 @@ func (c *AltMasterConn) Write(buf []byte) (int, error) {
 		p.SR2.Load()
 	}
 	for m, b := range buf {
-		p.DR.Store(i2c.DR_Bits(b))
+		p.DR.Store(i2c.DR(b))
 		if e = d.waitEvent(i2c.BTF); e != 0 {
 			n = m
 			goto err

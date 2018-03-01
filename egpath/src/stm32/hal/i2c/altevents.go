@@ -9,7 +9,7 @@ import (
 	"stm32/hal/raw/i2c"
 )
 
-func i2cPollEvent(p *i2c.I2C_Periph, ev i2c.SR1_Bits, deadline int64) Error {
+func i2cPollEvent(p *i2c.I2C_Periph, ev i2c.SR1, deadline int64) Error {
 	for {
 		sr1 := p.SR1.Load()
 		if e := getError(sr1); e != 0 {
@@ -24,7 +24,7 @@ func i2cPollEvent(p *i2c.I2C_Periph, ev i2c.SR1_Bits, deadline int64) Error {
 	}
 }
 
-func i2cWaitIRQ(p *i2c.I2C_Periph, evflag *rtos.EventFlag, ev i2c.SR1_Bits, deadline int64) Error {
+func i2cWaitIRQ(p *i2c.I2C_Periph, evflag *rtos.EventFlag, ev i2c.SR1, deadline int64) Error {
 	irqen := i2c.ITEVTEN | i2c.ITERREN
 	if ev&(i2c.RXNE|i2c.TXE) != 0 {
 		irqen |= i2c.ITBUFEN

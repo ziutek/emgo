@@ -11,7 +11,7 @@ import (
 )
 
 type DMA_Request_Periph struct {
-	CSELR CSELR
+	CSELR RCSELR
 }
 
 func (p *DMA_Request_Periph) BaseAddr() uintptr {
@@ -24,57 +24,57 @@ var DMA1_Request = (*DMA_Request_Periph)(unsafe.Pointer(uintptr(mmap.DMA1_CSELR_
 //emgo:const
 var DMA2_Request = (*DMA_Request_Periph)(unsafe.Pointer(uintptr(mmap.DMA2_CSELR_BASE)))
 
-type CSELR_Bits uint32
+type CSELR uint32
 
-func (b CSELR_Bits) Field(mask CSELR_Bits) int {
+func (b CSELR) Field(mask CSELR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CSELR_Bits) J(v int) CSELR_Bits {
-	return CSELR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CSELR) J(v int) CSELR {
+	return CSELR(bits.Make32(v, uint32(mask)))
 }
 
-type CSELR struct{ mmio.U32 }
+type RCSELR struct{ mmio.U32 }
 
-func (r *CSELR) Bits(mask CSELR_Bits) CSELR_Bits { return CSELR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *CSELR) StoreBits(mask, b CSELR_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *CSELR) SetBits(mask CSELR_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *CSELR) ClearBits(mask CSELR_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *CSELR) Load() CSELR_Bits                { return CSELR_Bits(r.U32.Load()) }
-func (r *CSELR) Store(b CSELR_Bits)              { r.U32.Store(uint32(b)) }
+func (r *RCSELR) Bits(mask CSELR) CSELR   { return CSELR(r.U32.Bits(uint32(mask))) }
+func (r *RCSELR) StoreBits(mask, b CSELR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RCSELR) SetBits(mask CSELR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RCSELR) ClearBits(mask CSELR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RCSELR) Load() CSELR             { return CSELR(r.U32.Load()) }
+func (r *RCSELR) Store(b CSELR)           { r.U32.Store(uint32(b)) }
 
-func (r *CSELR) AtomicStoreBits(mask, b CSELR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *CSELR) AtomicSetBits(mask CSELR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *CSELR) AtomicClearBits(mask CSELR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RCSELR) AtomicStoreBits(mask, b CSELR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RCSELR) AtomicSetBits(mask CSELR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RCSELR) AtomicClearBits(mask CSELR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type CSELR_Mask struct{ mmio.UM32 }
+type RMCSELR struct{ mmio.UM32 }
 
-func (rm CSELR_Mask) Load() CSELR_Bits   { return CSELR_Bits(rm.UM32.Load()) }
-func (rm CSELR_Mask) Store(b CSELR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMCSELR) Load() CSELR   { return CSELR(rm.UM32.Load()) }
+func (rm RMCSELR) Store(b CSELR) { rm.UM32.Store(uint32(b)) }
 
-func (p *DMA_Request_Periph) C1S() CSELR_Mask {
-	return CSELR_Mask{mmio.UM32{&p.CSELR.U32, uint32(C1S)}}
+func (p *DMA_Request_Periph) C1S() RMCSELR {
+	return RMCSELR{mmio.UM32{&p.CSELR.U32, uint32(C1S)}}
 }
 
-func (p *DMA_Request_Periph) C2S() CSELR_Mask {
-	return CSELR_Mask{mmio.UM32{&p.CSELR.U32, uint32(C2S)}}
+func (p *DMA_Request_Periph) C2S() RMCSELR {
+	return RMCSELR{mmio.UM32{&p.CSELR.U32, uint32(C2S)}}
 }
 
-func (p *DMA_Request_Periph) C3S() CSELR_Mask {
-	return CSELR_Mask{mmio.UM32{&p.CSELR.U32, uint32(C3S)}}
+func (p *DMA_Request_Periph) C3S() RMCSELR {
+	return RMCSELR{mmio.UM32{&p.CSELR.U32, uint32(C3S)}}
 }
 
-func (p *DMA_Request_Periph) C4S() CSELR_Mask {
-	return CSELR_Mask{mmio.UM32{&p.CSELR.U32, uint32(C4S)}}
+func (p *DMA_Request_Periph) C4S() RMCSELR {
+	return RMCSELR{mmio.UM32{&p.CSELR.U32, uint32(C4S)}}
 }
 
-func (p *DMA_Request_Periph) C5S() CSELR_Mask {
-	return CSELR_Mask{mmio.UM32{&p.CSELR.U32, uint32(C5S)}}
+func (p *DMA_Request_Periph) C5S() RMCSELR {
+	return RMCSELR{mmio.UM32{&p.CSELR.U32, uint32(C5S)}}
 }
 
-func (p *DMA_Request_Periph) C6S() CSELR_Mask {
-	return CSELR_Mask{mmio.UM32{&p.CSELR.U32, uint32(C6S)}}
+func (p *DMA_Request_Periph) C6S() RMCSELR {
+	return RMCSELR{mmio.UM32{&p.CSELR.U32, uint32(C6S)}}
 }
 
-func (p *DMA_Request_Periph) C7S() CSELR_Mask {
-	return CSELR_Mask{mmio.UM32{&p.CSELR.U32, uint32(C7S)}}
+func (p *DMA_Request_Periph) C7S() RMCSELR {
+	return RMCSELR{mmio.UM32{&p.CSELR.U32, uint32(C7S)}}
 }

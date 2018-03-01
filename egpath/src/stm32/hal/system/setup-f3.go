@@ -61,7 +61,7 @@ func SetupPLL(osc, div, mul int) {
 		sysclk = uint(osc) * 1e6 / uint(div) * uint(mul) // Hz
 	}
 	ahbclk := sysclk
-	cfgr := rcc.CFGR_Bits(mul-2) << rcc.PLLMULn
+	cfgr := rcc.CFGR(mul-2) << rcc.PLLMULn
 	var apb1clk uint
 	switch {
 	case ahbclk <= 1*maxAPB1Clk:
@@ -89,7 +89,7 @@ func SetupPLL(osc, div, mul int) {
 	}
 	// Setup Flash.
 	FLASH := flash.FLASH
-	latency := flash.ACR_Bits((sysclk-1)/24e6) << flash.LATENCYn
+	latency := flash.ACR((sysclk-1)/24e6) << flash.LATENCYn
 	FLASH.ACR.SetBits(flash.PRFTBE | latency)
 	// Setup PLL.
 	if osc == 0 {
@@ -104,7 +104,7 @@ func SetupPLL(osc, div, mul int) {
 		}
 	}
 	RCC.CFGR.Store(cfgr)
-	RCC.CFGR2.Store(rcc.CFGR2_Bits(div-1) << rcc.PREDIVn) // Must be after CFGR.
+	RCC.CFGR2.Store(rcc.CFGR2(div-1) << rcc.PREDIVn) // Must be after CFGR.
 	RCC.PLLON().Set()
 	for RCC.PLLRDY().Load() == 0 {
 		// Wait for PLL...

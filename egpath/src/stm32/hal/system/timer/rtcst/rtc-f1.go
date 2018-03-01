@@ -146,9 +146,9 @@ func setup(freqHz uint) {
 func loadVCNT() int64 {
 	RTC := rtc.RTC
 	var (
-		ch rtc.CNTH_Bits
-		cl rtc.CNTL_Bits
-		dl rtc.DIVL_Bits
+		ch rtc.CNTH
+		cl rtc.CNTL
+		dl rtc.DIVL
 	)
 	ch = RTC.CNTH.Load()
 	for {
@@ -242,8 +242,8 @@ func setWakeup(ns int64) {
 	RTC := rtc.RTC
 	waitForWrite(RTC)
 	setCNF(RTC)
-	RTC.ALRH.Store(rtc.ALRH_Bits(alrcnt >> 16))
-	RTC.ALRL.Store(rtc.ALRL_Bits(alrcnt))
+	RTC.ALRH.Store(rtc.ALRH(alrcnt >> 16))
+	RTC.ALRL.Store(rtc.ALRL(alrcnt))
 	clearCNF(RTC)
 
 	fence.RW() // Ensure finish all normal memory accesses before enable IRQ..

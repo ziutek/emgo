@@ -6,10 +6,10 @@ import (
 	"stm32/hal/raw/spi"
 )
 
-const cr1Mask = ^spi.CR1_Bits(spi.SPE | spi.BIDIMODE | spi.BIDIOE)
+const cr1Mask = ^spi.CR1(spi.SPE | spi.BIDIMODE | spi.BIDIOE)
 
 func (p *Periph) setWordSize(size int) {
-	ds := spi.CR2_Bits((size - 1) & 0xf << spi.DSn)
+	ds := spi.CR2((size - 1) & 0xf << spi.DSn)
 	if size <= 8 {
 		ds |= spi.FRXTH
 	}

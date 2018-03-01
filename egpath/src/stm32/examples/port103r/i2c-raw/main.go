@@ -45,21 +45,21 @@ func init() {
 	rcc.RCC.I2C2RST().Clear()
 	twi = i2c.I2C2
 	freq := system.APB1.Clock() / 1e6 // MHz
-	twi.FREQ().Store(i2c.CR2_Bits(freq))
+	twi.FREQ().Store(i2c.CR2(freq))
 	twi.PE().Clear()
-	twi.TRISE.Store(i2c.TRISE_Bits(freq + 1))
+	twi.TRISE.Store(i2c.TRISE(freq + 1))
 	speed := 4400 // Hz
 	ccr := system.APB1.Clock() / uint(speed*2)
 	if ccr < 4 {
 		ccr = 4
 	}
-	twi.CCR.Store(i2c.CCR_Bits(ccr))
+	twi.CCR.Store(i2c.CCR(ccr))
 	twi.PE().Set()
 }
 
 func main() {
 	leds.SetPins(LED1)
-	addr := i2c.DR_Bits(0x4e)
+	addr := i2c.DR(0x4e)
 	twi.START().Set()
 	for twi.SB().Load() == 0 {
 	}
@@ -69,7 +69,7 @@ func main() {
 	twi.SR2.Load()
 	n := 0
 	for {
-		twi.DR.Store(i2c.DR_Bits(n << 4))
+		twi.DR.Store(i2c.DR(n << 4))
 		for twi.BTF().Load() == 0 {
 		}
 		delay.Millisec(100)

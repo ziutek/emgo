@@ -103,7 +103,7 @@ func SetupPLL(osc, N, P int) {
 
 	// Setup Flash.
 	FLASH := flash.FLASH
-	latency := flash.ACR_Bits((sysclk-1)/30e6) * flash.LATENCY_1WS
+	latency := flash.ACR((sysclk-1)/30e6) * flash.LATENCY_1WS
 	const dcen = 1 << 10 // F7 has no DCEN.
 	const icen = 1 << 9  // ICEN in F4, ARTEN in F7.
 	FLASH.ACR.Store(dcen | icen | flash.PRFTEN | latency)
@@ -152,13 +152,13 @@ func SetupPLL(osc, N, P int) {
 	clock[APB2] = apb2clk
 
 	// Setup PLL.
-	var src rcc.PLLCFGR_Bits
-	mnpq := rcc.PLLCFGR_Bits(N)<<rcc.PLLNn | // PLL multiler.
-		rcc.PLLCFGR_Bits(P/2-1)<<rcc.PLLPn | // SysClk divider.
-		rcc.PLLCFGR_Bits(2*N+47)/48<<rcc.PLLQn // USB 48MHz divider.
+	var src rcc.PLLCFGR
+	mnpq := rcc.PLLCFGR(N)<<rcc.PLLNn | // PLL multiler.
+		rcc.PLLCFGR(P/2-1)<<rcc.PLLPn | // SysClk divider.
+		rcc.PLLCFGR(2*N+47)/48<<rcc.PLLQn // USB 48MHz divider.
 	if osc != 0 {
 		src = rcc.PLLSRC_HSE
-		mnpq |= rcc.PLLCFGR_Bits(osc/2) << rcc.PLLMn
+		mnpq |= rcc.PLLCFGR(osc/2) << rcc.PLLMn
 		for RCC.HSERDY().Load() == 0 {
 		}
 	} else {

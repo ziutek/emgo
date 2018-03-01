@@ -64,44 +64,44 @@ type Conf struct {
 	Banks [2]BankConf
 }
 
-func nsclk(ns int8, kHz uint) fmc.SDTR_Bits {
+func nsclk(ns int8, kHz uint) fmc.SDTR {
 	// Rounding up by adding 999424. It is slightly less than 999999 but fits in
 	// the ADD instruction.
-	return fmc.SDTR_Bits(uint(ns)*kHz+999424) / 1e6
+	return fmc.SDTR(uint(ns)*kHz+999424) / 1e6
 }
 
-func nsSDTR(ns int8, kHz uint, shift uint) fmc.SDTR_Bits {
+func nsSDTR(ns int8, kHz uint, shift uint) fmc.SDTR {
 	return (nsclk(ns, kHz) - 1) & 15 << shift
 }
 
 func Setup(c *Conf) {
 	var (
-		sdcr [2]fmc.SDCR_Bits
-		sdtr [2]fmc.SDTR_Bits
+		sdcr [2]fmc.SDCR
+		sdtr [2]fmc.SDTR
 	)
 
 	kHz := system.AHB.Clock() / (1e3 * uint(c.ClkDiv)) // SDRAM clock
 
-	sdcr[0] = fmc.SDCR_Bits(c.ClkDiv&3) << fmc.SDCLKn
+	sdcr[0] = fmc.SDCR(c.ClkDiv&3) << fmc.SDCLKn
 	if c.ReadPipe >= 0 {
-		sdcr[0] |= fmc.RBURST | fmc.SDCR_Bits(c.ReadPipe)&3<<fmc.RPIPEn
+		sdcr[0] |= fmc.RBURST | fmc.SDCR(c.ReadPipe)&3<<fmc.RPIPEn
 	}
 	sdtr[0] = nsSDTR(c.TRPns, kHz, fmc.TRPn) | nsSDTR(c.TRCns, kHz, fmc.TRCn)
 
 	for i := 0; i < 2; i++ {
 		b := &c.Banks[i]
-		sdcr[i] |= fmc.SDCR_Bits(bits.One(b.WP)) << fmc.WPn
-		sdcr[i] |= fmc.SDCR_Bits(b.BankNum/4) & 1 << fmc.NBn
-		sdcr[i] |= fmc.SDCR_Bits(b.RowAddr-11) & 3 << fmc.NRn
-		sdcr[i] |= fmc.SDCR_Bits(b.ColAddr-8) & 3 << fmc.NCn
-		sdcr[i] |= fmc.SDCR_Bits(b.Bits/16) & 3 << fmc.MWIDn
-		sdcr[i] |= fmc.SDCR_Bits(b.CASL) & 3 << fmc.CASn
+		sdcr[i] |= fmc.SDCR(bits.One(b.WP)) << fmc.WPn
+		sdcr[i] |= fmc.SDCR(b.BankNum/4) & 1 << fmc.NBn
+		sdcr[i] |= fmc.SDCR(b.RowAddr-11) & 3 << fmc.NRn
+		sdcr[i] |= fmc.SDCR(b.ColAddr-8) & 3 << fmc.NCn
+		sdcr[i] |= fmc.SDCR(b.Bits/16) & 3 << fmc.MWIDn
+		sdcr[i] |= fmc.SDCR(b.CASL) & 3 << fmc.CASn
 
 		sdtr[i] |= nsSDTR(b.TRCDns, kHz, fmc.TRCDn)
-		sdtr[i] |= (fmc.SDTR_Bits(b.TWR) + nsclk(b.TWRns, kHz) - 1) & 15 << fmc.TWRn
+		sdtr[i] |= (fmc.SDTR(b.TWR) + nsclk(b.TWRns, kHz) - 1) & 15 << fmc.TWRn
 		sdtr[i] |= nsSDTR(b.TRASns, kHz, fmc.TRASn)
 		sdtr[i] |= nsSDTR(b.TXSRns, kHz, fmc.TXSRn)
-		sdtr[i] |= fmc.SDTR_Bits(b.TMRD-1) & 15 << fmc.TMRDn
+		sdtr[i] |= fmc.SDTR(b.TMRD-1) & 15 << fmc.TMRDn
 
 		fmc.FMC_Bank5_6.SDCR[i].Store(sdcr[i])
 		fmc.FMC_Bank5_6.SDTR[i].Store(sdtr[i])
@@ -111,7 +111,7 @@ func Setup(c *Conf) {
 		maxra = ra
 	}
 	refclk := uint(c.TREFms)*kHz/1e3>>maxra - 20
-	fmc.FMC_Bank5_6.SDRTR.Store(fmc.SDRTR_Bits(refclk-1) & 8191 << fmc.COUNTn)
+	fmc.FMC_Bank5_6.SDRTR.Store(fmc.SDRTR(refclk-1) & 8191 << fmc.COUNTn)
 }
 
 type Banks byte
@@ -171,7 +171,7 @@ func LoadModeReg(banks Banks, mr ModeReg) {
 }
 
 type ModeState struct {
-	r fmc.SDSR_Bits
+	r fmc.SDSR
 }
 
 func (ms ModeState) Mode(bank int) Mode {

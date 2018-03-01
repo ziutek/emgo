@@ -13,30 +13,30 @@
 package pft
 
 const (
-	CL1I  CLIDR_Bits = 1 << 0    //+ Instruction L1 cache implemented.
-	CL1D  CLIDR_Bits = 1 << 1    //+ Data cache L1 implemented.
-	CL1U  CLIDR_Bits = 1 << 2    //+ Unified L1 cache.
-	CL2I  CLIDR_Bits = 1 << 3    //+ Instruction L2 cache implemented.
-	CL2D  CLIDR_Bits = 1 << 4    //+ Data cache L2 implemented.
-	CL2U  CLIDR_Bits = 1 << 5    //+ Unified L2 cache.
-	CL3I  CLIDR_Bits = 1 << 6    //+ Instruction L3 cache implemented.
-	CL3D  CLIDR_Bits = 1 << 7    //+ Data cache L3 implemented.
-	CL3U  CLIDR_Bits = 1 << 8    //+ Unified L3 cache.
-	CL4I  CLIDR_Bits = 1 << 9    //+ Instruction L4 cache implemented.
-	CL4D  CLIDR_Bits = 1 << 10   //+ Data cache L4 implemented.
-	CL4U  CLIDR_Bits = 1 << 11   //+ Unified L4 cache.
-	CL5I  CLIDR_Bits = 1 << 12   //+ Instruction L5 cache implemented.
-	CL5D  CLIDR_Bits = 1 << 13   //+ Data cache L5 implemented.
-	CL5U  CLIDR_Bits = 1 << 14   //+ Unified L5 cache.
-	CL6I  CLIDR_Bits = 1 << 15   //+ Instruction L6 cache implemented.
-	CL6D  CLIDR_Bits = 1 << 16   //+ Data cache L6 implemented.
-	CL6U  CLIDR_Bits = 1 << 17   //+ Unified L6 cache.
-	CL7I  CLIDR_Bits = 1 << 18   //+ Instruction L7 cache implemented.
-	CL7D  CLIDR_Bits = 1 << 19   //+ Data cache L7 implemented.
-	CL7U  CLIDR_Bits = 1 << 20   //+ Unified L7 cache.
-	LoUIS CLIDR_Bits = 0x7 << 21 //+
-	LoC   CLIDR_Bits = 0x7 << 24 //+ Level of Coherency.
-	LoU   CLIDR_Bits = 0x7 << 27 //+ Level of Unification.
+	CL1I  CLIDR = 1 << 0    //+ Instruction L1 cache implemented.
+	CL1D  CLIDR = 1 << 1    //+ Data cache L1 implemented.
+	CL1U  CLIDR = 1 << 2    //+ Unified L1 cache.
+	CL2I  CLIDR = 1 << 3    //+ Instruction L2 cache implemented.
+	CL2D  CLIDR = 1 << 4    //+ Data cache L2 implemented.
+	CL2U  CLIDR = 1 << 5    //+ Unified L2 cache.
+	CL3I  CLIDR = 1 << 6    //+ Instruction L3 cache implemented.
+	CL3D  CLIDR = 1 << 7    //+ Data cache L3 implemented.
+	CL3U  CLIDR = 1 << 8    //+ Unified L3 cache.
+	CL4I  CLIDR = 1 << 9    //+ Instruction L4 cache implemented.
+	CL4D  CLIDR = 1 << 10   //+ Data cache L4 implemented.
+	CL4U  CLIDR = 1 << 11   //+ Unified L4 cache.
+	CL5I  CLIDR = 1 << 12   //+ Instruction L5 cache implemented.
+	CL5D  CLIDR = 1 << 13   //+ Data cache L5 implemented.
+	CL5U  CLIDR = 1 << 14   //+ Unified L5 cache.
+	CL6I  CLIDR = 1 << 15   //+ Instruction L6 cache implemented.
+	CL6D  CLIDR = 1 << 16   //+ Data cache L6 implemented.
+	CL6U  CLIDR = 1 << 17   //+ Unified L6 cache.
+	CL7I  CLIDR = 1 << 18   //+ Instruction L7 cache implemented.
+	CL7D  CLIDR = 1 << 19   //+ Data cache L7 implemented.
+	CL7U  CLIDR = 1 << 20   //+ Unified L7 cache.
+	LoUIS CLIDR = 0x7 << 21 //+
+	LoC   CLIDR = 0x7 << 24 //+ Level of Coherency.
+	LoU   CLIDR = 0x7 << 27 //+ Level of Unification.
 )
 
 const (
@@ -67,11 +67,11 @@ const (
 )
 
 const (
-	IMinLine CTR_Bits = 0xf << 0  //+ Smallest cache line of all the I-caches.
-	DMinLine CTR_Bits = 0xf << 16 //+ Smallest cache line of all the D/U-caches.
-	ERG      CTR_Bits = 0xf << 20 //+ Exclusives Reservation Granule.
-	CWG      CTR_Bits = 0xf << 24 //+ Cache Writeback Granule.
-	Format   CTR_Bits = 0x7 << 29 //+ Register format (4: ARMv7 format).
+	IMinLine CTR = 0xf << 0  //+ Smallest cache line of all the I-caches.
+	DMinLine CTR = 0xf << 16 //+ Smallest cache line of all the D/U-caches.
+	ERG      CTR = 0xf << 20 //+ Exclusives Reservation Granule.
+	CWG      CTR = 0xf << 24 //+ Cache Writeback Granule.
+	Format   CTR = 0x7 << 29 //+ Register format (4: ARMv7 format).
 )
 
 const (
@@ -83,13 +83,13 @@ const (
 )
 
 const (
-	LineSize      CCSIDR_Bits = 0x7 << 0     //+ Number of words in cache line (log2(n)-2).
-	Associativity CCSIDR_Bits = 0x3ff << 3   //+ Number of ways - 1.
-	NumSets       CCSIDR_Bits = 0x7fff << 13 //+ Number of sets - 1.
-	WA            CCSIDR_Bits = 1 << 28      //+ Write allocation support.
-	RA            CCSIDR_Bits = 1 << 29      //+ Read allocation support.
-	WB            CCSIDR_Bits = 1 << 30      //+ Write-Back support.
-	WT            CCSIDR_Bits = 1 << 31      //+ Write-Through support.
+	LineSize      CCSIDR = 0x7 << 0     //+ Number of words in cache line (log2(n)-2).
+	Associativity CCSIDR = 0x3ff << 3   //+ Number of ways - 1.
+	NumSets       CCSIDR = 0x7fff << 13 //+ Number of sets - 1.
+	WA            CCSIDR = 1 << 28      //+ Write allocation support.
+	RA            CCSIDR = 1 << 29      //+ Read allocation support.
+	WB            CCSIDR = 1 << 30      //+ Write-Back support.
+	WT            CCSIDR = 1 << 31      //+ Write-Through support.
 )
 
 const (
@@ -103,8 +103,8 @@ const (
 )
 
 const (
-	InD   CSSELR_Bits = 1 << 0   //+ Selection of 1:instruction or 0:data cache.
-	Level CSSELR_Bits = 0x7 << 1 //+ Cache level selected (0: level1).
+	InD   CSSELR = 1 << 0   //+ Selection of 1:instruction or 0:data cache.
+	Level CSSELR = 0x7 << 1 //+ Cache level selected (0: level1).
 )
 
 const (

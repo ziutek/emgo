@@ -13,348 +13,344 @@ import (
 )
 
 type USB_OTG_HostChannel_Periph struct {
-	HCCHAR   HCCHAR
-	HCSPLT   HCSPLT
-	HCINT    HCINT
-	HCINTMSK HCINTMSK
-	HCTSIZ   HCTSIZ
-	HCDMA    HCDMA
+	HCCHAR   RHCCHAR
+	HCSPLT   RHCSPLT
+	HCINT    RHCINT
+	HCINTMSK RHCINTMSK
+	HCTSIZ   RHCTSIZ
+	HCDMA    RHCDMA
 }
 
 func (p *USB_OTG_HostChannel_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
-type HCCHAR_Bits uint32
+type HCCHAR uint32
 
-func (b HCCHAR_Bits) Field(mask HCCHAR_Bits) int {
+func (b HCCHAR) Field(mask HCCHAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask HCCHAR_Bits) J(v int) HCCHAR_Bits {
-	return HCCHAR_Bits(bits.Make32(v, uint32(mask)))
+func (mask HCCHAR) J(v int) HCCHAR {
+	return HCCHAR(bits.Make32(v, uint32(mask)))
 }
 
-type HCCHAR struct{ mmio.U32 }
+type RHCCHAR struct{ mmio.U32 }
 
-func (r *HCCHAR) Bits(mask HCCHAR_Bits) HCCHAR_Bits { return HCCHAR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *HCCHAR) StoreBits(mask, b HCCHAR_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *HCCHAR) SetBits(mask HCCHAR_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *HCCHAR) ClearBits(mask HCCHAR_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *HCCHAR) Load() HCCHAR_Bits                 { return HCCHAR_Bits(r.U32.Load()) }
-func (r *HCCHAR) Store(b HCCHAR_Bits)               { r.U32.Store(uint32(b)) }
+func (r *RHCCHAR) Bits(mask HCCHAR) HCCHAR  { return HCCHAR(r.U32.Bits(uint32(mask))) }
+func (r *RHCCHAR) StoreBits(mask, b HCCHAR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RHCCHAR) SetBits(mask HCCHAR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RHCCHAR) ClearBits(mask HCCHAR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RHCCHAR) Load() HCCHAR             { return HCCHAR(r.U32.Load()) }
+func (r *RHCCHAR) Store(b HCCHAR)           { r.U32.Store(uint32(b)) }
 
-func (r *HCCHAR) AtomicStoreBits(mask, b HCCHAR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *HCCHAR) AtomicSetBits(mask HCCHAR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *HCCHAR) AtomicClearBits(mask HCCHAR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RHCCHAR) AtomicStoreBits(mask, b HCCHAR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RHCCHAR) AtomicSetBits(mask HCCHAR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RHCCHAR) AtomicClearBits(mask HCCHAR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type HCCHAR_Mask struct{ mmio.UM32 }
+type RMHCCHAR struct{ mmio.UM32 }
 
-func (rm HCCHAR_Mask) Load() HCCHAR_Bits   { return HCCHAR_Bits(rm.UM32.Load()) }
-func (rm HCCHAR_Mask) Store(b HCCHAR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMHCCHAR) Load() HCCHAR   { return HCCHAR(rm.UM32.Load()) }
+func (rm RMHCCHAR) Store(b HCCHAR) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_HostChannel_Periph) MPSIZ() HCCHAR_Mask {
-	return HCCHAR_Mask{mmio.UM32{&p.HCCHAR.U32, uint32(MPSIZ)}}
+func (p *USB_OTG_HostChannel_Periph) MPSIZ() RMHCCHAR {
+	return RMHCCHAR{mmio.UM32{&p.HCCHAR.U32, uint32(MPSIZ)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) EPNUM() HCCHAR_Mask {
-	return HCCHAR_Mask{mmio.UM32{&p.HCCHAR.U32, uint32(EPNUM)}}
+func (p *USB_OTG_HostChannel_Periph) EPNUM() RMHCCHAR {
+	return RMHCCHAR{mmio.UM32{&p.HCCHAR.U32, uint32(EPNUM)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) EPDIR() HCCHAR_Mask {
-	return HCCHAR_Mask{mmio.UM32{&p.HCCHAR.U32, uint32(EPDIR)}}
+func (p *USB_OTG_HostChannel_Periph) EPDIR() RMHCCHAR {
+	return RMHCCHAR{mmio.UM32{&p.HCCHAR.U32, uint32(EPDIR)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) LSDEV() HCCHAR_Mask {
-	return HCCHAR_Mask{mmio.UM32{&p.HCCHAR.U32, uint32(LSDEV)}}
+func (p *USB_OTG_HostChannel_Periph) LSDEV() RMHCCHAR {
+	return RMHCCHAR{mmio.UM32{&p.HCCHAR.U32, uint32(LSDEV)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) EPTYP() HCCHAR_Mask {
-	return HCCHAR_Mask{mmio.UM32{&p.HCCHAR.U32, uint32(EPTYP)}}
+func (p *USB_OTG_HostChannel_Periph) EPTYP() RMHCCHAR {
+	return RMHCCHAR{mmio.UM32{&p.HCCHAR.U32, uint32(EPTYP)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) MC() HCCHAR_Mask {
-	return HCCHAR_Mask{mmio.UM32{&p.HCCHAR.U32, uint32(MC)}}
+func (p *USB_OTG_HostChannel_Periph) MC() RMHCCHAR {
+	return RMHCCHAR{mmio.UM32{&p.HCCHAR.U32, uint32(MC)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) DAD() HCCHAR_Mask {
-	return HCCHAR_Mask{mmio.UM32{&p.HCCHAR.U32, uint32(DAD)}}
+func (p *USB_OTG_HostChannel_Periph) DAD() RMHCCHAR {
+	return RMHCCHAR{mmio.UM32{&p.HCCHAR.U32, uint32(DAD)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) ODDFRM() HCCHAR_Mask {
-	return HCCHAR_Mask{mmio.UM32{&p.HCCHAR.U32, uint32(ODDFRM)}}
+func (p *USB_OTG_HostChannel_Periph) ODDFRM() RMHCCHAR {
+	return RMHCCHAR{mmio.UM32{&p.HCCHAR.U32, uint32(ODDFRM)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) CHDIS() HCCHAR_Mask {
-	return HCCHAR_Mask{mmio.UM32{&p.HCCHAR.U32, uint32(CHDIS)}}
+func (p *USB_OTG_HostChannel_Periph) CHDIS() RMHCCHAR {
+	return RMHCCHAR{mmio.UM32{&p.HCCHAR.U32, uint32(CHDIS)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) CHENA() HCCHAR_Mask {
-	return HCCHAR_Mask{mmio.UM32{&p.HCCHAR.U32, uint32(CHENA)}}
+func (p *USB_OTG_HostChannel_Periph) CHENA() RMHCCHAR {
+	return RMHCCHAR{mmio.UM32{&p.HCCHAR.U32, uint32(CHENA)}}
 }
 
-type HCSPLT_Bits uint32
+type HCSPLT uint32
 
-func (b HCSPLT_Bits) Field(mask HCSPLT_Bits) int {
+func (b HCSPLT) Field(mask HCSPLT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask HCSPLT_Bits) J(v int) HCSPLT_Bits {
-	return HCSPLT_Bits(bits.Make32(v, uint32(mask)))
+func (mask HCSPLT) J(v int) HCSPLT {
+	return HCSPLT(bits.Make32(v, uint32(mask)))
 }
 
-type HCSPLT struct{ mmio.U32 }
+type RHCSPLT struct{ mmio.U32 }
 
-func (r *HCSPLT) Bits(mask HCSPLT_Bits) HCSPLT_Bits { return HCSPLT_Bits(r.U32.Bits(uint32(mask))) }
-func (r *HCSPLT) StoreBits(mask, b HCSPLT_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *HCSPLT) SetBits(mask HCSPLT_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *HCSPLT) ClearBits(mask HCSPLT_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *HCSPLT) Load() HCSPLT_Bits                 { return HCSPLT_Bits(r.U32.Load()) }
-func (r *HCSPLT) Store(b HCSPLT_Bits)               { r.U32.Store(uint32(b)) }
+func (r *RHCSPLT) Bits(mask HCSPLT) HCSPLT  { return HCSPLT(r.U32.Bits(uint32(mask))) }
+func (r *RHCSPLT) StoreBits(mask, b HCSPLT) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RHCSPLT) SetBits(mask HCSPLT)      { r.U32.SetBits(uint32(mask)) }
+func (r *RHCSPLT) ClearBits(mask HCSPLT)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RHCSPLT) Load() HCSPLT             { return HCSPLT(r.U32.Load()) }
+func (r *RHCSPLT) Store(b HCSPLT)           { r.U32.Store(uint32(b)) }
 
-func (r *HCSPLT) AtomicStoreBits(mask, b HCSPLT_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *HCSPLT) AtomicSetBits(mask HCSPLT_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *HCSPLT) AtomicClearBits(mask HCSPLT_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RHCSPLT) AtomicStoreBits(mask, b HCSPLT) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RHCSPLT) AtomicSetBits(mask HCSPLT)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RHCSPLT) AtomicClearBits(mask HCSPLT)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type HCSPLT_Mask struct{ mmio.UM32 }
+type RMHCSPLT struct{ mmio.UM32 }
 
-func (rm HCSPLT_Mask) Load() HCSPLT_Bits   { return HCSPLT_Bits(rm.UM32.Load()) }
-func (rm HCSPLT_Mask) Store(b HCSPLT_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMHCSPLT) Load() HCSPLT   { return HCSPLT(rm.UM32.Load()) }
+func (rm RMHCSPLT) Store(b HCSPLT) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_HostChannel_Periph) PRTADDR() HCSPLT_Mask {
-	return HCSPLT_Mask{mmio.UM32{&p.HCSPLT.U32, uint32(PRTADDR)}}
+func (p *USB_OTG_HostChannel_Periph) PRTADDR() RMHCSPLT {
+	return RMHCSPLT{mmio.UM32{&p.HCSPLT.U32, uint32(PRTADDR)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) HUBADDR() HCSPLT_Mask {
-	return HCSPLT_Mask{mmio.UM32{&p.HCSPLT.U32, uint32(HUBADDR)}}
+func (p *USB_OTG_HostChannel_Periph) HUBADDR() RMHCSPLT {
+	return RMHCSPLT{mmio.UM32{&p.HCSPLT.U32, uint32(HUBADDR)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) XACTPOS() HCSPLT_Mask {
-	return HCSPLT_Mask{mmio.UM32{&p.HCSPLT.U32, uint32(XACTPOS)}}
+func (p *USB_OTG_HostChannel_Periph) XACTPOS() RMHCSPLT {
+	return RMHCSPLT{mmio.UM32{&p.HCSPLT.U32, uint32(XACTPOS)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) COMPLSPLT() HCSPLT_Mask {
-	return HCSPLT_Mask{mmio.UM32{&p.HCSPLT.U32, uint32(COMPLSPLT)}}
+func (p *USB_OTG_HostChannel_Periph) COMPLSPLT() RMHCSPLT {
+	return RMHCSPLT{mmio.UM32{&p.HCSPLT.U32, uint32(COMPLSPLT)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) SPLITEN() HCSPLT_Mask {
-	return HCSPLT_Mask{mmio.UM32{&p.HCSPLT.U32, uint32(SPLITEN)}}
+func (p *USB_OTG_HostChannel_Periph) SPLITEN() RMHCSPLT {
+	return RMHCSPLT{mmio.UM32{&p.HCSPLT.U32, uint32(SPLITEN)}}
 }
 
-type HCINT_Bits uint32
+type HCINT uint32
 
-func (b HCINT_Bits) Field(mask HCINT_Bits) int {
+func (b HCINT) Field(mask HCINT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask HCINT_Bits) J(v int) HCINT_Bits {
-	return HCINT_Bits(bits.Make32(v, uint32(mask)))
+func (mask HCINT) J(v int) HCINT {
+	return HCINT(bits.Make32(v, uint32(mask)))
 }
 
-type HCINT struct{ mmio.U32 }
+type RHCINT struct{ mmio.U32 }
 
-func (r *HCINT) Bits(mask HCINT_Bits) HCINT_Bits { return HCINT_Bits(r.U32.Bits(uint32(mask))) }
-func (r *HCINT) StoreBits(mask, b HCINT_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *HCINT) SetBits(mask HCINT_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *HCINT) ClearBits(mask HCINT_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *HCINT) Load() HCINT_Bits                { return HCINT_Bits(r.U32.Load()) }
-func (r *HCINT) Store(b HCINT_Bits)              { r.U32.Store(uint32(b)) }
+func (r *RHCINT) Bits(mask HCINT) HCINT   { return HCINT(r.U32.Bits(uint32(mask))) }
+func (r *RHCINT) StoreBits(mask, b HCINT) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RHCINT) SetBits(mask HCINT)      { r.U32.SetBits(uint32(mask)) }
+func (r *RHCINT) ClearBits(mask HCINT)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RHCINT) Load() HCINT             { return HCINT(r.U32.Load()) }
+func (r *RHCINT) Store(b HCINT)           { r.U32.Store(uint32(b)) }
 
-func (r *HCINT) AtomicStoreBits(mask, b HCINT_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *HCINT) AtomicSetBits(mask HCINT_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *HCINT) AtomicClearBits(mask HCINT_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RHCINT) AtomicStoreBits(mask, b HCINT) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RHCINT) AtomicSetBits(mask HCINT)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RHCINT) AtomicClearBits(mask HCINT)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type HCINT_Mask struct{ mmio.UM32 }
+type RMHCINT struct{ mmio.UM32 }
 
-func (rm HCINT_Mask) Load() HCINT_Bits   { return HCINT_Bits(rm.UM32.Load()) }
-func (rm HCINT_Mask) Store(b HCINT_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMHCINT) Load() HCINT   { return HCINT(rm.UM32.Load()) }
+func (rm RMHCINT) Store(b HCINT) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_HostChannel_Periph) XFRC() HCINT_Mask {
-	return HCINT_Mask{mmio.UM32{&p.HCINT.U32, uint32(XFRC)}}
+func (p *USB_OTG_HostChannel_Periph) XFRC() RMHCINT {
+	return RMHCINT{mmio.UM32{&p.HCINT.U32, uint32(XFRC)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) CHH() HCINT_Mask {
-	return HCINT_Mask{mmio.UM32{&p.HCINT.U32, uint32(CHH)}}
+func (p *USB_OTG_HostChannel_Periph) CHH() RMHCINT {
+	return RMHCINT{mmio.UM32{&p.HCINT.U32, uint32(CHH)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) AHBERR() HCINT_Mask {
-	return HCINT_Mask{mmio.UM32{&p.HCINT.U32, uint32(AHBERR)}}
+func (p *USB_OTG_HostChannel_Periph) AHBERR() RMHCINT {
+	return RMHCINT{mmio.UM32{&p.HCINT.U32, uint32(AHBERR)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) STALL() HCINT_Mask {
-	return HCINT_Mask{mmio.UM32{&p.HCINT.U32, uint32(STALL)}}
+func (p *USB_OTG_HostChannel_Periph) STALL() RMHCINT {
+	return RMHCINT{mmio.UM32{&p.HCINT.U32, uint32(STALL)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) NAK() HCINT_Mask {
-	return HCINT_Mask{mmio.UM32{&p.HCINT.U32, uint32(NAK)}}
+func (p *USB_OTG_HostChannel_Periph) NAK() RMHCINT {
+	return RMHCINT{mmio.UM32{&p.HCINT.U32, uint32(NAK)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) ACK() HCINT_Mask {
-	return HCINT_Mask{mmio.UM32{&p.HCINT.U32, uint32(ACK)}}
+func (p *USB_OTG_HostChannel_Periph) ACK() RMHCINT {
+	return RMHCINT{mmio.UM32{&p.HCINT.U32, uint32(ACK)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) NYET() HCINT_Mask {
-	return HCINT_Mask{mmio.UM32{&p.HCINT.U32, uint32(NYET)}}
+func (p *USB_OTG_HostChannel_Periph) NYET() RMHCINT {
+	return RMHCINT{mmio.UM32{&p.HCINT.U32, uint32(NYET)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) TXERR() HCINT_Mask {
-	return HCINT_Mask{mmio.UM32{&p.HCINT.U32, uint32(TXERR)}}
+func (p *USB_OTG_HostChannel_Periph) TXERR() RMHCINT {
+	return RMHCINT{mmio.UM32{&p.HCINT.U32, uint32(TXERR)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) BBERR() HCINT_Mask {
-	return HCINT_Mask{mmio.UM32{&p.HCINT.U32, uint32(BBERR)}}
+func (p *USB_OTG_HostChannel_Periph) BBERR() RMHCINT {
+	return RMHCINT{mmio.UM32{&p.HCINT.U32, uint32(BBERR)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) FRMOR() HCINT_Mask {
-	return HCINT_Mask{mmio.UM32{&p.HCINT.U32, uint32(FRMOR)}}
+func (p *USB_OTG_HostChannel_Periph) FRMOR() RMHCINT {
+	return RMHCINT{mmio.UM32{&p.HCINT.U32, uint32(FRMOR)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) DTERR() HCINT_Mask {
-	return HCINT_Mask{mmio.UM32{&p.HCINT.U32, uint32(DTERR)}}
+func (p *USB_OTG_HostChannel_Periph) DTERR() RMHCINT {
+	return RMHCINT{mmio.UM32{&p.HCINT.U32, uint32(DTERR)}}
 }
 
-type HCINTMSK_Bits uint32
+type HCINTMSK uint32
 
-func (b HCINTMSK_Bits) Field(mask HCINTMSK_Bits) int {
+func (b HCINTMSK) Field(mask HCINTMSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask HCINTMSK_Bits) J(v int) HCINTMSK_Bits {
-	return HCINTMSK_Bits(bits.Make32(v, uint32(mask)))
+func (mask HCINTMSK) J(v int) HCINTMSK {
+	return HCINTMSK(bits.Make32(v, uint32(mask)))
 }
 
-type HCINTMSK struct{ mmio.U32 }
+type RHCINTMSK struct{ mmio.U32 }
 
-func (r *HCINTMSK) Bits(mask HCINTMSK_Bits) HCINTMSK_Bits {
-	return HCINTMSK_Bits(r.U32.Bits(uint32(mask)))
-}
-func (r *HCINTMSK) StoreBits(mask, b HCINTMSK_Bits) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *HCINTMSK) SetBits(mask HCINTMSK_Bits)      { r.U32.SetBits(uint32(mask)) }
-func (r *HCINTMSK) ClearBits(mask HCINTMSK_Bits)    { r.U32.ClearBits(uint32(mask)) }
-func (r *HCINTMSK) Load() HCINTMSK_Bits             { return HCINTMSK_Bits(r.U32.Load()) }
-func (r *HCINTMSK) Store(b HCINTMSK_Bits)           { r.U32.Store(uint32(b)) }
+func (r *RHCINTMSK) Bits(mask HCINTMSK) HCINTMSK { return HCINTMSK(r.U32.Bits(uint32(mask))) }
+func (r *RHCINTMSK) StoreBits(mask, b HCINTMSK)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RHCINTMSK) SetBits(mask HCINTMSK)       { r.U32.SetBits(uint32(mask)) }
+func (r *RHCINTMSK) ClearBits(mask HCINTMSK)     { r.U32.ClearBits(uint32(mask)) }
+func (r *RHCINTMSK) Load() HCINTMSK              { return HCINTMSK(r.U32.Load()) }
+func (r *RHCINTMSK) Store(b HCINTMSK)            { r.U32.Store(uint32(b)) }
 
-func (r *HCINTMSK) AtomicStoreBits(mask, b HCINTMSK_Bits) {
-	r.U32.AtomicStoreBits(uint32(mask), uint32(b))
-}
-func (r *HCINTMSK) AtomicSetBits(mask HCINTMSK_Bits)   { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *HCINTMSK) AtomicClearBits(mask HCINTMSK_Bits) { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RHCINTMSK) AtomicStoreBits(mask, b HCINTMSK) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RHCINTMSK) AtomicSetBits(mask HCINTMSK)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RHCINTMSK) AtomicClearBits(mask HCINTMSK)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type HCINTMSK_Mask struct{ mmio.UM32 }
+type RMHCINTMSK struct{ mmio.UM32 }
 
-func (rm HCINTMSK_Mask) Load() HCINTMSK_Bits   { return HCINTMSK_Bits(rm.UM32.Load()) }
-func (rm HCINTMSK_Mask) Store(b HCINTMSK_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMHCINTMSK) Load() HCINTMSK   { return HCINTMSK(rm.UM32.Load()) }
+func (rm RMHCINTMSK) Store(b HCINTMSK) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_HostChannel_Periph) XFRCM() HCINTMSK_Mask {
-	return HCINTMSK_Mask{mmio.UM32{&p.HCINTMSK.U32, uint32(XFRCM)}}
+func (p *USB_OTG_HostChannel_Periph) XFRCM() RMHCINTMSK {
+	return RMHCINTMSK{mmio.UM32{&p.HCINTMSK.U32, uint32(XFRCM)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) CHHM() HCINTMSK_Mask {
-	return HCINTMSK_Mask{mmio.UM32{&p.HCINTMSK.U32, uint32(CHHM)}}
+func (p *USB_OTG_HostChannel_Periph) CHHM() RMHCINTMSK {
+	return RMHCINTMSK{mmio.UM32{&p.HCINTMSK.U32, uint32(CHHM)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) AHBERR() HCINTMSK_Mask {
-	return HCINTMSK_Mask{mmio.UM32{&p.HCINTMSK.U32, uint32(AHBERR)}}
+func (p *USB_OTG_HostChannel_Periph) AHBERR() RMHCINTMSK {
+	return RMHCINTMSK{mmio.UM32{&p.HCINTMSK.U32, uint32(AHBERR)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) STALLM() HCINTMSK_Mask {
-	return HCINTMSK_Mask{mmio.UM32{&p.HCINTMSK.U32, uint32(STALLM)}}
+func (p *USB_OTG_HostChannel_Periph) STALLM() RMHCINTMSK {
+	return RMHCINTMSK{mmio.UM32{&p.HCINTMSK.U32, uint32(STALLM)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) NAKM() HCINTMSK_Mask {
-	return HCINTMSK_Mask{mmio.UM32{&p.HCINTMSK.U32, uint32(NAKM)}}
+func (p *USB_OTG_HostChannel_Periph) NAKM() RMHCINTMSK {
+	return RMHCINTMSK{mmio.UM32{&p.HCINTMSK.U32, uint32(NAKM)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) ACKM() HCINTMSK_Mask {
-	return HCINTMSK_Mask{mmio.UM32{&p.HCINTMSK.U32, uint32(ACKM)}}
+func (p *USB_OTG_HostChannel_Periph) ACKM() RMHCINTMSK {
+	return RMHCINTMSK{mmio.UM32{&p.HCINTMSK.U32, uint32(ACKM)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) NYET() HCINTMSK_Mask {
-	return HCINTMSK_Mask{mmio.UM32{&p.HCINTMSK.U32, uint32(NYET)}}
+func (p *USB_OTG_HostChannel_Periph) NYET() RMHCINTMSK {
+	return RMHCINTMSK{mmio.UM32{&p.HCINTMSK.U32, uint32(NYET)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) TXERRM() HCINTMSK_Mask {
-	return HCINTMSK_Mask{mmio.UM32{&p.HCINTMSK.U32, uint32(TXERRM)}}
+func (p *USB_OTG_HostChannel_Periph) TXERRM() RMHCINTMSK {
+	return RMHCINTMSK{mmio.UM32{&p.HCINTMSK.U32, uint32(TXERRM)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) BBERRM() HCINTMSK_Mask {
-	return HCINTMSK_Mask{mmio.UM32{&p.HCINTMSK.U32, uint32(BBERRM)}}
+func (p *USB_OTG_HostChannel_Periph) BBERRM() RMHCINTMSK {
+	return RMHCINTMSK{mmio.UM32{&p.HCINTMSK.U32, uint32(BBERRM)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) FRMORM() HCINTMSK_Mask {
-	return HCINTMSK_Mask{mmio.UM32{&p.HCINTMSK.U32, uint32(FRMORM)}}
+func (p *USB_OTG_HostChannel_Periph) FRMORM() RMHCINTMSK {
+	return RMHCINTMSK{mmio.UM32{&p.HCINTMSK.U32, uint32(FRMORM)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) DTERRM() HCINTMSK_Mask {
-	return HCINTMSK_Mask{mmio.UM32{&p.HCINTMSK.U32, uint32(DTERRM)}}
+func (p *USB_OTG_HostChannel_Periph) DTERRM() RMHCINTMSK {
+	return RMHCINTMSK{mmio.UM32{&p.HCINTMSK.U32, uint32(DTERRM)}}
 }
 
-type HCTSIZ_Bits uint32
+type HCTSIZ uint32
 
-func (b HCTSIZ_Bits) Field(mask HCTSIZ_Bits) int {
+func (b HCTSIZ) Field(mask HCTSIZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask HCTSIZ_Bits) J(v int) HCTSIZ_Bits {
-	return HCTSIZ_Bits(bits.Make32(v, uint32(mask)))
+func (mask HCTSIZ) J(v int) HCTSIZ {
+	return HCTSIZ(bits.Make32(v, uint32(mask)))
 }
 
-type HCTSIZ struct{ mmio.U32 }
+type RHCTSIZ struct{ mmio.U32 }
 
-func (r *HCTSIZ) Bits(mask HCTSIZ_Bits) HCTSIZ_Bits { return HCTSIZ_Bits(r.U32.Bits(uint32(mask))) }
-func (r *HCTSIZ) StoreBits(mask, b HCTSIZ_Bits)     { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *HCTSIZ) SetBits(mask HCTSIZ_Bits)          { r.U32.SetBits(uint32(mask)) }
-func (r *HCTSIZ) ClearBits(mask HCTSIZ_Bits)        { r.U32.ClearBits(uint32(mask)) }
-func (r *HCTSIZ) Load() HCTSIZ_Bits                 { return HCTSIZ_Bits(r.U32.Load()) }
-func (r *HCTSIZ) Store(b HCTSIZ_Bits)               { r.U32.Store(uint32(b)) }
+func (r *RHCTSIZ) Bits(mask HCTSIZ) HCTSIZ  { return HCTSIZ(r.U32.Bits(uint32(mask))) }
+func (r *RHCTSIZ) StoreBits(mask, b HCTSIZ) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RHCTSIZ) SetBits(mask HCTSIZ)      { r.U32.SetBits(uint32(mask)) }
+func (r *RHCTSIZ) ClearBits(mask HCTSIZ)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RHCTSIZ) Load() HCTSIZ             { return HCTSIZ(r.U32.Load()) }
+func (r *RHCTSIZ) Store(b HCTSIZ)           { r.U32.Store(uint32(b)) }
 
-func (r *HCTSIZ) AtomicStoreBits(mask, b HCTSIZ_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *HCTSIZ) AtomicSetBits(mask HCTSIZ_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *HCTSIZ) AtomicClearBits(mask HCTSIZ_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RHCTSIZ) AtomicStoreBits(mask, b HCTSIZ) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RHCTSIZ) AtomicSetBits(mask HCTSIZ)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RHCTSIZ) AtomicClearBits(mask HCTSIZ)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type HCTSIZ_Mask struct{ mmio.UM32 }
+type RMHCTSIZ struct{ mmio.UM32 }
 
-func (rm HCTSIZ_Mask) Load() HCTSIZ_Bits   { return HCTSIZ_Bits(rm.UM32.Load()) }
-func (rm HCTSIZ_Mask) Store(b HCTSIZ_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMHCTSIZ) Load() HCTSIZ   { return HCTSIZ(rm.UM32.Load()) }
+func (rm RMHCTSIZ) Store(b HCTSIZ) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_HostChannel_Periph) XFRSIZ() HCTSIZ_Mask {
-	return HCTSIZ_Mask{mmio.UM32{&p.HCTSIZ.U32, uint32(XFRSIZ)}}
+func (p *USB_OTG_HostChannel_Periph) XFRSIZ() RMHCTSIZ {
+	return RMHCTSIZ{mmio.UM32{&p.HCTSIZ.U32, uint32(XFRSIZ)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) PKTCNT() HCTSIZ_Mask {
-	return HCTSIZ_Mask{mmio.UM32{&p.HCTSIZ.U32, uint32(PKTCNT)}}
+func (p *USB_OTG_HostChannel_Periph) PKTCNT() RMHCTSIZ {
+	return RMHCTSIZ{mmio.UM32{&p.HCTSIZ.U32, uint32(PKTCNT)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) DOPING() HCTSIZ_Mask {
-	return HCTSIZ_Mask{mmio.UM32{&p.HCTSIZ.U32, uint32(DOPING)}}
+func (p *USB_OTG_HostChannel_Periph) DOPING() RMHCTSIZ {
+	return RMHCTSIZ{mmio.UM32{&p.HCTSIZ.U32, uint32(DOPING)}}
 }
 
-func (p *USB_OTG_HostChannel_Periph) DPID() HCTSIZ_Mask {
-	return HCTSIZ_Mask{mmio.UM32{&p.HCTSIZ.U32, uint32(DPID)}}
+func (p *USB_OTG_HostChannel_Periph) DPID() RMHCTSIZ {
+	return RMHCTSIZ{mmio.UM32{&p.HCTSIZ.U32, uint32(DPID)}}
 }
 
-type HCDMA_Bits uint32
+type HCDMA uint32
 
-func (b HCDMA_Bits) Field(mask HCDMA_Bits) int {
+func (b HCDMA) Field(mask HCDMA) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask HCDMA_Bits) J(v int) HCDMA_Bits {
-	return HCDMA_Bits(bits.Make32(v, uint32(mask)))
+func (mask HCDMA) J(v int) HCDMA {
+	return HCDMA(bits.Make32(v, uint32(mask)))
 }
 
-type HCDMA struct{ mmio.U32 }
+type RHCDMA struct{ mmio.U32 }
 
-func (r *HCDMA) Bits(mask HCDMA_Bits) HCDMA_Bits { return HCDMA_Bits(r.U32.Bits(uint32(mask))) }
-func (r *HCDMA) StoreBits(mask, b HCDMA_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *HCDMA) SetBits(mask HCDMA_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *HCDMA) ClearBits(mask HCDMA_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *HCDMA) Load() HCDMA_Bits                { return HCDMA_Bits(r.U32.Load()) }
-func (r *HCDMA) Store(b HCDMA_Bits)              { r.U32.Store(uint32(b)) }
+func (r *RHCDMA) Bits(mask HCDMA) HCDMA   { return HCDMA(r.U32.Bits(uint32(mask))) }
+func (r *RHCDMA) StoreBits(mask, b HCDMA) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RHCDMA) SetBits(mask HCDMA)      { r.U32.SetBits(uint32(mask)) }
+func (r *RHCDMA) ClearBits(mask HCDMA)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RHCDMA) Load() HCDMA             { return HCDMA(r.U32.Load()) }
+func (r *RHCDMA) Store(b HCDMA)           { r.U32.Store(uint32(b)) }
 
-func (r *HCDMA) AtomicStoreBits(mask, b HCDMA_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *HCDMA) AtomicSetBits(mask HCDMA_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *HCDMA) AtomicClearBits(mask HCDMA_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RHCDMA) AtomicStoreBits(mask, b HCDMA) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RHCDMA) AtomicSetBits(mask HCDMA)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RHCDMA) AtomicClearBits(mask HCDMA)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type HCDMA_Mask struct{ mmio.UM32 }
+type RMHCDMA struct{ mmio.UM32 }
 
-func (rm HCDMA_Mask) Load() HCDMA_Bits   { return HCDMA_Bits(rm.UM32.Load()) }
-func (rm HCDMA_Mask) Store(b HCDMA_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMHCDMA) Load() HCDMA   { return HCDMA(rm.UM32.Load()) }
+func (rm RMHCDMA) Store(b HCDMA) { rm.UM32.Store(uint32(b)) }
 
-func (p *USB_OTG_HostChannel_Periph) DMAADDR() HCDMA_Mask {
-	return HCDMA_Mask{mmio.UM32{&p.HCDMA.U32, uint32(DMAADDR)}}
+func (p *USB_OTG_HostChannel_Periph) DMAADDR() RMHCDMA {
+	return RMHCDMA{mmio.UM32{&p.HCDMA.U32, uint32(DMAADDR)}}
 }

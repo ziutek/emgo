@@ -9,54 +9,59 @@ import (
 )
 
 type AUX_Periph struct {
-	ACTLR ACTLR
+	ACTLR RACTLR
 }
 
 func (p *AUX_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
+//emgo:const
 var AUX = (*AUX_Periph)(unsafe.Pointer(uintptr(0xe000e008)))
 
-type ACTLR_Bits uint32
+type ACTLR uint32
 
-func (b ACTLR_Bits) Field(mask ACTLR_Bits) int {
+func (b ACTLR) Field(mask ACTLR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask ACTLR_Bits) J(v int) ACTLR_Bits {
-	return ACTLR_Bits(bits.Make32(v, uint32(mask)))
+func (mask ACTLR) J(v int) ACTLR {
+	return ACTLR(bits.Make32(v, uint32(mask)))
 }
 
-type ACTLR struct{ mmio.U32 }
+type RACTLR struct{ mmio.U32 }
 
-func (r *ACTLR) Bits(mask ACTLR_Bits) ACTLR_Bits { return ACTLR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *ACTLR) StoreBits(mask, b ACTLR_Bits)    { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *ACTLR) SetBits(mask ACTLR_Bits)         { r.U32.SetBits(uint32(mask)) }
-func (r *ACTLR) ClearBits(mask ACTLR_Bits)       { r.U32.ClearBits(uint32(mask)) }
-func (r *ACTLR) Load() ACTLR_Bits                { return ACTLR_Bits(r.U32.Load()) }
-func (r *ACTLR) Store(b ACTLR_Bits)              { r.U32.Store(uint32(b)) }
+func (r *RACTLR) Bits(mask ACTLR) ACTLR   { return ACTLR(r.U32.Bits(uint32(mask))) }
+func (r *RACTLR) StoreBits(mask, b ACTLR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RACTLR) SetBits(mask ACTLR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RACTLR) ClearBits(mask ACTLR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RACTLR) Load() ACTLR             { return ACTLR(r.U32.Load()) }
+func (r *RACTLR) Store(b ACTLR)           { r.U32.Store(uint32(b)) }
 
-type ACTLR_Mask struct{ mmio.UM32 }
+func (r *RACTLR) AtomicStoreBits(mask, b ACTLR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RACTLR) AtomicSetBits(mask ACTLR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RACTLR) AtomicClearBits(mask ACTLR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-func (rm ACTLR_Mask) Load() ACTLR_Bits   { return ACTLR_Bits(rm.UM32.Load()) }
-func (rm ACTLR_Mask) Store(b ACTLR_Bits) { rm.UM32.Store(uint32(b)) }
+type RMACTLR struct{ mmio.UM32 }
 
-func (p *AUX_Periph) DISMCYCINT() ACTLR_Mask {
-	return ACTLR_Mask{mmio.UM32{&p.ACTLR.U32, uint32(DISMCYCINT)}}
+func (rm RMACTLR) Load() ACTLR   { return ACTLR(rm.UM32.Load()) }
+func (rm RMACTLR) Store(b ACTLR) { rm.UM32.Store(uint32(b)) }
+
+func (p *AUX_Periph) DISMCYCINT() RMACTLR {
+	return RMACTLR{mmio.UM32{&p.ACTLR.U32, uint32(DISMCYCINT)}}
 }
 
-func (p *AUX_Periph) DISDEFWBUF() ACTLR_Mask {
-	return ACTLR_Mask{mmio.UM32{&p.ACTLR.U32, uint32(DISDEFWBUF)}}
+func (p *AUX_Periph) DISDEFWBUF() RMACTLR {
+	return RMACTLR{mmio.UM32{&p.ACTLR.U32, uint32(DISDEFWBUF)}}
 }
 
-func (p *AUX_Periph) DISFOLD() ACTLR_Mask {
-	return ACTLR_Mask{mmio.UM32{&p.ACTLR.U32, uint32(DISFOLD)}}
+func (p *AUX_Periph) DISFOLD() RMACTLR {
+	return RMACTLR{mmio.UM32{&p.ACTLR.U32, uint32(DISFOLD)}}
 }
 
-func (p *AUX_Periph) DISFPCA() ACTLR_Mask {
-	return ACTLR_Mask{mmio.UM32{&p.ACTLR.U32, uint32(DISFPCA)}}
+func (p *AUX_Periph) DISFPCA() RMACTLR {
+	return RMACTLR{mmio.UM32{&p.ACTLR.U32, uint32(DISFPCA)}}
 }
 
-func (p *AUX_Periph) DISOOFP() ACTLR_Mask {
-	return ACTLR_Mask{mmio.UM32{&p.ACTLR.U32, uint32(DISOOFP)}}
+func (p *AUX_Periph) DISOOFP() RMACTLR {
+	return RMACTLR{mmio.UM32{&p.ACTLR.U32, uint32(DISOOFP)}}
 }

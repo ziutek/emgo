@@ -11,14 +11,14 @@ import (
 )
 
 type OB_Periph struct {
-	RDP   RDP
-	USER  USER
-	Data0 Data0
-	Data1 Data1
-	WRP0  WRP0
-	WRP1  WRP1
-	WRP2  WRP2
-	WRP3  WRP3
+	RDP   RRDP
+	USER  RUSER
+	Data0 RData0
+	Data1 RData1
+	WRP0  RWRP0
+	WRP1  RWRP1
+	WRP2  RWRP2
+	WRP3  RWRP3
 }
 
 func (p *OB_Periph) BaseAddr() uintptr {
@@ -28,186 +28,186 @@ func (p *OB_Periph) BaseAddr() uintptr {
 //emgo:const
 var OB = (*OB_Periph)(unsafe.Pointer(uintptr(mmap.OB_BASE)))
 
-type RDP_Bits uint16
+type RDP uint16
 
-func (b RDP_Bits) Field(mask RDP_Bits) int {
+func (b RDP) Field(mask RDP) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask RDP_Bits) J(v int) RDP_Bits {
-	return RDP_Bits(bits.Make32(v, uint32(mask)))
+func (mask RDP) J(v int) RDP {
+	return RDP(bits.Make32(v, uint32(mask)))
 }
 
-type RDP struct{ mmio.U16 }
+type RRDP struct{ mmio.U16 }
 
-func (r *RDP) Bits(mask RDP_Bits) RDP_Bits { return RDP_Bits(r.U16.Bits(uint16(mask))) }
-func (r *RDP) StoreBits(mask, b RDP_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *RDP) SetBits(mask RDP_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *RDP) ClearBits(mask RDP_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *RDP) Load() RDP_Bits              { return RDP_Bits(r.U16.Load()) }
-func (r *RDP) Store(b RDP_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RRDP) Bits(mask RDP) RDP     { return RDP(r.U16.Bits(uint16(mask))) }
+func (r *RRDP) StoreBits(mask, b RDP) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RRDP) SetBits(mask RDP)      { r.U16.SetBits(uint16(mask)) }
+func (r *RRDP) ClearBits(mask RDP)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RRDP) Load() RDP             { return RDP(r.U16.Load()) }
+func (r *RRDP) Store(b RDP)           { r.U16.Store(uint16(b)) }
 
-type RDP_Mask struct{ mmio.UM16 }
+type RMRDP struct{ mmio.UM16 }
 
-func (rm RDP_Mask) Load() RDP_Bits   { return RDP_Bits(rm.UM16.Load()) }
-func (rm RDP_Mask) Store(b RDP_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMRDP) Load() RDP   { return RDP(rm.UM16.Load()) }
+func (rm RMRDP) Store(b RDP) { rm.UM16.Store(uint16(b)) }
 
-type USER_Bits uint16
+type USER uint16
 
-func (b USER_Bits) Field(mask USER_Bits) int {
+func (b USER) Field(mask USER) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask USER_Bits) J(v int) USER_Bits {
-	return USER_Bits(bits.Make32(v, uint32(mask)))
+func (mask USER) J(v int) USER {
+	return USER(bits.Make32(v, uint32(mask)))
 }
 
-type USER struct{ mmio.U16 }
+type RUSER struct{ mmio.U16 }
 
-func (r *USER) Bits(mask USER_Bits) USER_Bits { return USER_Bits(r.U16.Bits(uint16(mask))) }
-func (r *USER) StoreBits(mask, b USER_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *USER) SetBits(mask USER_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *USER) ClearBits(mask USER_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *USER) Load() USER_Bits               { return USER_Bits(r.U16.Load()) }
-func (r *USER) Store(b USER_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RUSER) Bits(mask USER) USER    { return USER(r.U16.Bits(uint16(mask))) }
+func (r *RUSER) StoreBits(mask, b USER) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RUSER) SetBits(mask USER)      { r.U16.SetBits(uint16(mask)) }
+func (r *RUSER) ClearBits(mask USER)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RUSER) Load() USER             { return USER(r.U16.Load()) }
+func (r *RUSER) Store(b USER)           { r.U16.Store(uint16(b)) }
 
-type USER_Mask struct{ mmio.UM16 }
+type RMUSER struct{ mmio.UM16 }
 
-func (rm USER_Mask) Load() USER_Bits   { return USER_Bits(rm.UM16.Load()) }
-func (rm USER_Mask) Store(b USER_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMUSER) Load() USER   { return USER(rm.UM16.Load()) }
+func (rm RMUSER) Store(b USER) { rm.UM16.Store(uint16(b)) }
 
-type Data0_Bits uint16
+type Data0 uint16
 
-func (b Data0_Bits) Field(mask Data0_Bits) int {
+func (b Data0) Field(mask Data0) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask Data0_Bits) J(v int) Data0_Bits {
-	return Data0_Bits(bits.Make32(v, uint32(mask)))
+func (mask Data0) J(v int) Data0 {
+	return Data0(bits.Make32(v, uint32(mask)))
 }
 
-type Data0 struct{ mmio.U16 }
+type RData0 struct{ mmio.U16 }
 
-func (r *Data0) Bits(mask Data0_Bits) Data0_Bits { return Data0_Bits(r.U16.Bits(uint16(mask))) }
-func (r *Data0) StoreBits(mask, b Data0_Bits)    { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *Data0) SetBits(mask Data0_Bits)         { r.U16.SetBits(uint16(mask)) }
-func (r *Data0) ClearBits(mask Data0_Bits)       { r.U16.ClearBits(uint16(mask)) }
-func (r *Data0) Load() Data0_Bits                { return Data0_Bits(r.U16.Load()) }
-func (r *Data0) Store(b Data0_Bits)              { r.U16.Store(uint16(b)) }
+func (r *RData0) Bits(mask Data0) Data0   { return Data0(r.U16.Bits(uint16(mask))) }
+func (r *RData0) StoreBits(mask, b Data0) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RData0) SetBits(mask Data0)      { r.U16.SetBits(uint16(mask)) }
+func (r *RData0) ClearBits(mask Data0)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RData0) Load() Data0             { return Data0(r.U16.Load()) }
+func (r *RData0) Store(b Data0)           { r.U16.Store(uint16(b)) }
 
-type Data0_Mask struct{ mmio.UM16 }
+type RMData0 struct{ mmio.UM16 }
 
-func (rm Data0_Mask) Load() Data0_Bits   { return Data0_Bits(rm.UM16.Load()) }
-func (rm Data0_Mask) Store(b Data0_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMData0) Load() Data0   { return Data0(rm.UM16.Load()) }
+func (rm RMData0) Store(b Data0) { rm.UM16.Store(uint16(b)) }
 
-type Data1_Bits uint16
+type Data1 uint16
 
-func (b Data1_Bits) Field(mask Data1_Bits) int {
+func (b Data1) Field(mask Data1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask Data1_Bits) J(v int) Data1_Bits {
-	return Data1_Bits(bits.Make32(v, uint32(mask)))
+func (mask Data1) J(v int) Data1 {
+	return Data1(bits.Make32(v, uint32(mask)))
 }
 
-type Data1 struct{ mmio.U16 }
+type RData1 struct{ mmio.U16 }
 
-func (r *Data1) Bits(mask Data1_Bits) Data1_Bits { return Data1_Bits(r.U16.Bits(uint16(mask))) }
-func (r *Data1) StoreBits(mask, b Data1_Bits)    { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *Data1) SetBits(mask Data1_Bits)         { r.U16.SetBits(uint16(mask)) }
-func (r *Data1) ClearBits(mask Data1_Bits)       { r.U16.ClearBits(uint16(mask)) }
-func (r *Data1) Load() Data1_Bits                { return Data1_Bits(r.U16.Load()) }
-func (r *Data1) Store(b Data1_Bits)              { r.U16.Store(uint16(b)) }
+func (r *RData1) Bits(mask Data1) Data1   { return Data1(r.U16.Bits(uint16(mask))) }
+func (r *RData1) StoreBits(mask, b Data1) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RData1) SetBits(mask Data1)      { r.U16.SetBits(uint16(mask)) }
+func (r *RData1) ClearBits(mask Data1)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RData1) Load() Data1             { return Data1(r.U16.Load()) }
+func (r *RData1) Store(b Data1)           { r.U16.Store(uint16(b)) }
 
-type Data1_Mask struct{ mmio.UM16 }
+type RMData1 struct{ mmio.UM16 }
 
-func (rm Data1_Mask) Load() Data1_Bits   { return Data1_Bits(rm.UM16.Load()) }
-func (rm Data1_Mask) Store(b Data1_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMData1) Load() Data1   { return Data1(rm.UM16.Load()) }
+func (rm RMData1) Store(b Data1) { rm.UM16.Store(uint16(b)) }
 
-type WRP0_Bits uint16
+type WRP0 uint16
 
-func (b WRP0_Bits) Field(mask WRP0_Bits) int {
+func (b WRP0) Field(mask WRP0) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask WRP0_Bits) J(v int) WRP0_Bits {
-	return WRP0_Bits(bits.Make32(v, uint32(mask)))
+func (mask WRP0) J(v int) WRP0 {
+	return WRP0(bits.Make32(v, uint32(mask)))
 }
 
-type WRP0 struct{ mmio.U16 }
+type RWRP0 struct{ mmio.U16 }
 
-func (r *WRP0) Bits(mask WRP0_Bits) WRP0_Bits { return WRP0_Bits(r.U16.Bits(uint16(mask))) }
-func (r *WRP0) StoreBits(mask, b WRP0_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *WRP0) SetBits(mask WRP0_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *WRP0) ClearBits(mask WRP0_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *WRP0) Load() WRP0_Bits               { return WRP0_Bits(r.U16.Load()) }
-func (r *WRP0) Store(b WRP0_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RWRP0) Bits(mask WRP0) WRP0    { return WRP0(r.U16.Bits(uint16(mask))) }
+func (r *RWRP0) StoreBits(mask, b WRP0) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RWRP0) SetBits(mask WRP0)      { r.U16.SetBits(uint16(mask)) }
+func (r *RWRP0) ClearBits(mask WRP0)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RWRP0) Load() WRP0             { return WRP0(r.U16.Load()) }
+func (r *RWRP0) Store(b WRP0)           { r.U16.Store(uint16(b)) }
 
-type WRP0_Mask struct{ mmio.UM16 }
+type RMWRP0 struct{ mmio.UM16 }
 
-func (rm WRP0_Mask) Load() WRP0_Bits   { return WRP0_Bits(rm.UM16.Load()) }
-func (rm WRP0_Mask) Store(b WRP0_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMWRP0) Load() WRP0   { return WRP0(rm.UM16.Load()) }
+func (rm RMWRP0) Store(b WRP0) { rm.UM16.Store(uint16(b)) }
 
-type WRP1_Bits uint16
+type WRP1 uint16
 
-func (b WRP1_Bits) Field(mask WRP1_Bits) int {
+func (b WRP1) Field(mask WRP1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask WRP1_Bits) J(v int) WRP1_Bits {
-	return WRP1_Bits(bits.Make32(v, uint32(mask)))
+func (mask WRP1) J(v int) WRP1 {
+	return WRP1(bits.Make32(v, uint32(mask)))
 }
 
-type WRP1 struct{ mmio.U16 }
+type RWRP1 struct{ mmio.U16 }
 
-func (r *WRP1) Bits(mask WRP1_Bits) WRP1_Bits { return WRP1_Bits(r.U16.Bits(uint16(mask))) }
-func (r *WRP1) StoreBits(mask, b WRP1_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *WRP1) SetBits(mask WRP1_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *WRP1) ClearBits(mask WRP1_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *WRP1) Load() WRP1_Bits               { return WRP1_Bits(r.U16.Load()) }
-func (r *WRP1) Store(b WRP1_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RWRP1) Bits(mask WRP1) WRP1    { return WRP1(r.U16.Bits(uint16(mask))) }
+func (r *RWRP1) StoreBits(mask, b WRP1) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RWRP1) SetBits(mask WRP1)      { r.U16.SetBits(uint16(mask)) }
+func (r *RWRP1) ClearBits(mask WRP1)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RWRP1) Load() WRP1             { return WRP1(r.U16.Load()) }
+func (r *RWRP1) Store(b WRP1)           { r.U16.Store(uint16(b)) }
 
-type WRP1_Mask struct{ mmio.UM16 }
+type RMWRP1 struct{ mmio.UM16 }
 
-func (rm WRP1_Mask) Load() WRP1_Bits   { return WRP1_Bits(rm.UM16.Load()) }
-func (rm WRP1_Mask) Store(b WRP1_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMWRP1) Load() WRP1   { return WRP1(rm.UM16.Load()) }
+func (rm RMWRP1) Store(b WRP1) { rm.UM16.Store(uint16(b)) }
 
-type WRP2_Bits uint16
+type WRP2 uint16
 
-func (b WRP2_Bits) Field(mask WRP2_Bits) int {
+func (b WRP2) Field(mask WRP2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask WRP2_Bits) J(v int) WRP2_Bits {
-	return WRP2_Bits(bits.Make32(v, uint32(mask)))
+func (mask WRP2) J(v int) WRP2 {
+	return WRP2(bits.Make32(v, uint32(mask)))
 }
 
-type WRP2 struct{ mmio.U16 }
+type RWRP2 struct{ mmio.U16 }
 
-func (r *WRP2) Bits(mask WRP2_Bits) WRP2_Bits { return WRP2_Bits(r.U16.Bits(uint16(mask))) }
-func (r *WRP2) StoreBits(mask, b WRP2_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *WRP2) SetBits(mask WRP2_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *WRP2) ClearBits(mask WRP2_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *WRP2) Load() WRP2_Bits               { return WRP2_Bits(r.U16.Load()) }
-func (r *WRP2) Store(b WRP2_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RWRP2) Bits(mask WRP2) WRP2    { return WRP2(r.U16.Bits(uint16(mask))) }
+func (r *RWRP2) StoreBits(mask, b WRP2) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RWRP2) SetBits(mask WRP2)      { r.U16.SetBits(uint16(mask)) }
+func (r *RWRP2) ClearBits(mask WRP2)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RWRP2) Load() WRP2             { return WRP2(r.U16.Load()) }
+func (r *RWRP2) Store(b WRP2)           { r.U16.Store(uint16(b)) }
 
-type WRP2_Mask struct{ mmio.UM16 }
+type RMWRP2 struct{ mmio.UM16 }
 
-func (rm WRP2_Mask) Load() WRP2_Bits   { return WRP2_Bits(rm.UM16.Load()) }
-func (rm WRP2_Mask) Store(b WRP2_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMWRP2) Load() WRP2   { return WRP2(rm.UM16.Load()) }
+func (rm RMWRP2) Store(b WRP2) { rm.UM16.Store(uint16(b)) }
 
-type WRP3_Bits uint16
+type WRP3 uint16
 
-func (b WRP3_Bits) Field(mask WRP3_Bits) int {
+func (b WRP3) Field(mask WRP3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask WRP3_Bits) J(v int) WRP3_Bits {
-	return WRP3_Bits(bits.Make32(v, uint32(mask)))
+func (mask WRP3) J(v int) WRP3 {
+	return WRP3(bits.Make32(v, uint32(mask)))
 }
 
-type WRP3 struct{ mmio.U16 }
+type RWRP3 struct{ mmio.U16 }
 
-func (r *WRP3) Bits(mask WRP3_Bits) WRP3_Bits { return WRP3_Bits(r.U16.Bits(uint16(mask))) }
-func (r *WRP3) StoreBits(mask, b WRP3_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *WRP3) SetBits(mask WRP3_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *WRP3) ClearBits(mask WRP3_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *WRP3) Load() WRP3_Bits               { return WRP3_Bits(r.U16.Load()) }
-func (r *WRP3) Store(b WRP3_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RWRP3) Bits(mask WRP3) WRP3    { return WRP3(r.U16.Bits(uint16(mask))) }
+func (r *RWRP3) StoreBits(mask, b WRP3) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RWRP3) SetBits(mask WRP3)      { r.U16.SetBits(uint16(mask)) }
+func (r *RWRP3) ClearBits(mask WRP3)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RWRP3) Load() WRP3             { return WRP3(r.U16.Load()) }
+func (r *RWRP3) Store(b WRP3)           { r.U16.Store(uint16(b)) }
 
-type WRP3_Mask struct{ mmio.UM16 }
+type RMWRP3 struct{ mmio.UM16 }
 
-func (rm WRP3_Mask) Load() WRP3_Bits   { return WRP3_Bits(rm.UM16.Load()) }
-func (rm WRP3_Mask) Store(b WRP3_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMWRP3) Load() WRP3   { return WRP3(rm.UM16.Load()) }
+func (rm RMWRP3) Store(b WRP3) { rm.UM16.Store(uint16(b)) }

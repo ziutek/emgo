@@ -105,7 +105,7 @@ func (p *Periph) Clear(ev Event, err Error) {
 // EnableIRQ enables generating of IRQ by events e.
 func (p *Periph) EnableIRQ(e Event) {
 	if cr1e := e & (Idle | RxNotEmpty | TxDone | TxEmpty); cr1e != 0 {
-		p.raw.CR1.SetBits(usart.CR1_Bits(cr1e) << 4)
+		p.raw.CR1.SetBits(usart.CR1(cr1e) << 4)
 	}
 	if e&LINBreak != 0 {
 		p.raw.LBDIE().Set()
@@ -118,7 +118,7 @@ func (p *Periph) EnableIRQ(e Event) {
 // DisableIRQ disables generating of IRQ by events e.
 func (p *Periph) DisableIRQ(e Event) {
 	if cr1e := e & (Idle | RxNotEmpty | TxDone | TxEmpty); cr1e != 0 {
-		p.raw.CR1.ClearBits(usart.CR1_Bits(cr1e) << 4)
+		p.raw.CR1.ClearBits(usart.CR1(cr1e) << 4)
 	}
 	if e&LINBreak != 0 {
 		p.raw.LBDIE().Clear()
@@ -152,7 +152,7 @@ func (p *Periph) SetBaudRate(baudrate int) {
 		// Oversampling = 16
 		p.raw.OVER8().Clear()
 	}
-	p.raw.BRR.Store(usart.BRR_Bits(usartdiv))
+	p.raw.BRR.Store(usart.BRR(usartdiv))
 }
 
 // Enable enables p.
@@ -179,13 +179,13 @@ const (
 )
 
 func (p *Periph) Conf() Conf {
-	return Conf(p.raw.CR1.Bits(usart.CR1_Bits(RxEna|TxEna|ParOdd))) |
-		Conf(p.raw.CR2.Bits(usart.CR2_Bits(Stop1b5>>16))<<16)
+	return Conf(p.raw.CR1.Bits(usart.CR1(RxEna|TxEna|ParOdd))) |
+		Conf(p.raw.CR2.Bits(usart.CR2(Stop1b5>>16))<<16)
 }
 
 func (p *Periph) SetConf(cfg Conf) {
-	p.raw.CR1.StoreBits(usart.CR1_Bits(RxEna|TxEna|ParOdd), usart.CR1_Bits(cfg))
-	p.raw.CR2.StoreBits(usart.CR2_Bits(Stop1b5>>16), usart.CR2_Bits(cfg>>16))
+	p.raw.CR1.StoreBits(usart.CR1(RxEna|TxEna|ParOdd), usart.CR1(cfg))
+	p.raw.CR2.StoreBits(usart.CR2(Stop1b5>>16), usart.CR2(cfg>>16))
 }
 
 type Mode uint32
@@ -200,10 +200,10 @@ const (
 )
 
 func (p *Periph) SetMode(mode Mode) {
-	//p.raw.CR2.StoreBits(mask, usart.CR2_Bits(mode))
+	//p.raw.CR2.StoreBits(mask, usart.CR2(mode))
 	p.raw.CR3.StoreBits(
-		usart.CR3_Bits((HalfDuplex|OneBit)>>16),
-		usart.CR3_Bits(mode>>16),
+		usart.CR3((HalfDuplex|OneBit)>>16),
+		usart.CR3(mode>>16),
 	)
 }
 

@@ -28,8 +28,8 @@ func (a *Audio) Setup(t *tim.TIM_Periph, pclk uint, sr, max int) {
 	max *= 2 // [-max, max]
 	sr *= 2  // x2 oversampling.
 	div := uint(sr * max)
-	t.PSC.Store(tim.PSC_Bits((pclk+div/2)/div - 1))
-	t.ARR.Store(tim.ARR_Bits(max - 1)) // CCR=0: PWM=0%, CCR=max: PWM=100%.
+	t.PSC.Store(tim.PSC((pclk+div/2)/div - 1))
+	t.ARR.Store(tim.ARR(max - 1)) // CCR=0: PWM=0%, CCR=max: PWM=100%.
 	t.CCMR2.Store(6<<tim.OC3Mn | tim.OC3PE | 6<<tim.OC4Mn | tim.OC4PE)
 	t.CCR3.Store(0)
 	t.CCR4.Store(0)
@@ -62,8 +62,8 @@ func (a *Audio) ISR() {
 	}
 	v >>= 16 - 1 // 16 bit fixed-point precision used, x2 gain.
 	// Differential output.
-	a.t.CCR3.Store(tim.CCR3_Bits(a.zero + v))
-	a.t.CCR4.Store(tim.CCR4_Bits(a.zero - v))
+	a.t.CCR3.Store(tim.CCR3(a.zero + v))
+	a.t.CCR4.Store(tim.CCR4(a.zero - v))
 	a.n++
 }
 

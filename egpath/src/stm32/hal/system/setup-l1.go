@@ -47,7 +47,7 @@ func SetupPLL(osc, sdiv int) {
 	default:
 		panic("bad PLL divider")
 	}
-	cfgr := rcc.CFGR_Bits(sdiv-1) * rcc.PLLDIV_0
+	cfgr := rcc.CFGR(sdiv-1) * rcc.PLLDIV_0
 	// Set mul to obtain PLLCLK = 96 MHz (need by USB).
 	switch osc {
 	case 2:

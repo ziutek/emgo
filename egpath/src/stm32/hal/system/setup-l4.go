@@ -148,8 +148,8 @@ func SetupPLL(clksrc, M, N, P, Q, R int) {
 
 	// Setup PWR and Flash.
 	var (
-		vos     pwr.CR1_Bits
-		latency flash.ACR_Bits
+		vos     pwr.CR1
+		latency flash.ACR
 	)
 	if sysclk > 26e6 || vco > 128e6 {
 		// Range 1: High-performance.
@@ -232,7 +232,7 @@ func SetupPLL(clksrc, M, N, P, Q, R int) {
 	for PWR.VOSF().Load() != 0 {
 	}
 	RCC.PWREN().Clear()
-	var src rcc.PLLCFGR_Bits
+	var src rcc.PLLCFGR
 	if clksrc == 0 {
 		src = rcc.PLLSRC_HSI
 		for RCC.HSIRDY().Load() == 0 {
@@ -243,14 +243,14 @@ func SetupPLL(clksrc, M, N, P, Q, R int) {
 		}
 	} else {
 		src = rcc.PLLSRC_MSI
-		var msirange rcc.CR_Bits
+		var msirange rcc.CR
 		switch clksrc {
 		case -4:
 			// Current freq.
 		case -48:
 			msirange = 11
 		default:
-			msirange = rcc.CR_Bits(-clksrc/8 + 6)
+			msirange = rcc.CR(-clksrc/8 + 6)
 		}
 		if msirange != 0 {
 			RCC.MSIRANGE().Store(msirange << rcc.MSIRANGEn)
@@ -258,7 +258,7 @@ func SetupPLL(clksrc, M, N, P, Q, R int) {
 			}
 		}
 	}
-	mnpqr := rcc.PLLCFGR_Bits(M-1)<<rcc.PLLMn | rcc.PLLCFGR_Bits(N)<<rcc.PLLNn
+	mnpqr := rcc.PLLCFGR(M-1)<<rcc.PLLMn | rcc.PLLCFGR(N)<<rcc.PLLNn
 	if P != 0 {
 		mnpqr |= rcc.PLLPEN
 		if P == 17 {
@@ -266,9 +266,9 @@ func SetupPLL(clksrc, M, N, P, Q, R int) {
 		}
 	}
 	if Q != 0 {
-		mnpqr |= rcc.PLLQEN | rcc.PLLCFGR_Bits(Q/2-1)
+		mnpqr |= rcc.PLLQEN | rcc.PLLCFGR(Q/2-1)
 	}
-	mnpqr |= rcc.PLLREN | rcc.PLLCFGR_Bits(R/2-1)
+	mnpqr |= rcc.PLLREN | rcc.PLLCFGR(R/2-1)
 	RCC.PLLCFGR.Store(mnpqr | src)
 	RCC.PLLON().Set()
 	for RCC.PLLRDY().Load() == 0 {
@@ -308,7 +308,7 @@ func SetupMSI(msikHz int) {
 	RCC.CIER.Store(0) // Disable clock interrupts.
 
 	// Calculate system clock.
-	var msirange rcc.CR_Bits
+	var msirange rcc.CR
 	for int(msirange) < len(msiRanges) {
 		if int(msiRanges[msirange]) == msikHz {
 			break
@@ -322,8 +322,8 @@ func SetupMSI(msikHz int) {
 
 	// Setup PWR and Flash.
 	var (
-		vos     pwr.CR1_Bits
-		latency flash.ACR_Bits
+		vos     pwr.CR1
+		latency flash.ACR
 	)
 	if sysclk > 26e6 {
 		// Range 1: High-performance.

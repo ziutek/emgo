@@ -14,96 +14,96 @@ import (
 
 type BKP_Periph struct {
 	_     uint32
-	DR1   DR1
+	DR1   RDR1
 	_     uint16
-	DR2   DR2
+	DR2   RDR2
 	_     uint16
-	DR3   DR3
+	DR3   RDR3
 	_     uint16
-	DR4   DR4
+	DR4   RDR4
 	_     uint16
-	DR5   DR5
+	DR5   RDR5
 	_     uint16
-	DR6   DR6
+	DR6   RDR6
 	_     uint16
-	DR7   DR7
+	DR7   RDR7
 	_     uint16
-	DR8   DR8
+	DR8   RDR8
 	_     uint16
-	DR9   DR9
+	DR9   RDR9
 	_     uint16
-	DR10  DR10
+	DR10  RDR10
 	_     uint16
-	RTCCR RTCCR
+	RTCCR RRTCCR
 	_     uint16
-	CR    CR
+	CR    RCR
 	_     uint16
-	CSR   CSR
+	CSR   RCSR
 	_     uint16
 	_     [2]uint32
-	DR11  DR11
+	DR11  RDR11
 	_     uint16
-	DR12  DR12
+	DR12  RDR12
 	_     uint16
-	DR13  DR13
+	DR13  RDR13
 	_     uint16
-	DR14  DR14
+	DR14  RDR14
 	_     uint16
-	DR15  DR15
+	DR15  RDR15
 	_     uint16
-	DR16  DR16
+	DR16  RDR16
 	_     uint16
-	DR17  DR17
+	DR17  RDR17
 	_     uint16
-	DR18  DR18
+	DR18  RDR18
 	_     uint16
-	DR19  DR19
+	DR19  RDR19
 	_     uint16
-	DR20  DR20
+	DR20  RDR20
 	_     uint16
-	DR21  DR21
+	DR21  RDR21
 	_     uint16
-	DR22  DR22
+	DR22  RDR22
 	_     uint16
-	DR23  DR23
+	DR23  RDR23
 	_     uint16
-	DR24  DR24
+	DR24  RDR24
 	_     uint16
-	DR25  DR25
+	DR25  RDR25
 	_     uint16
-	DR26  DR26
+	DR26  RDR26
 	_     uint16
-	DR27  DR27
+	DR27  RDR27
 	_     uint16
-	DR28  DR28
+	DR28  RDR28
 	_     uint16
-	DR29  DR29
+	DR29  RDR29
 	_     uint16
-	DR30  DR30
+	DR30  RDR30
 	_     uint16
-	DR31  DR31
+	DR31  RDR31
 	_     uint16
-	DR32  DR32
+	DR32  RDR32
 	_     uint16
-	DR33  DR33
+	DR33  RDR33
 	_     uint16
-	DR34  DR34
+	DR34  RDR34
 	_     uint16
-	DR35  DR35
+	DR35  RDR35
 	_     uint16
-	DR36  DR36
+	DR36  RDR36
 	_     uint16
-	DR37  DR37
+	DR37  RDR37
 	_     uint16
-	DR38  DR38
+	DR38  RDR38
 	_     uint16
-	DR39  DR39
+	DR39  RDR39
 	_     uint16
-	DR40  DR40
+	DR40  RDR40
 	_     uint16
-	DR41  DR41
+	DR41  RDR41
 	_     uint16
-	DR42  DR42
+	DR42  RDR42
 }
 
 func (p *BKP_Periph) BaseAddr() uintptr {
@@ -113,1081 +113,1081 @@ func (p *BKP_Periph) BaseAddr() uintptr {
 //emgo:const
 var BKP = (*BKP_Periph)(unsafe.Pointer(uintptr(mmap.BKP_BASE)))
 
-type DR1_Bits uint16
+type DR1 uint16
 
-func (b DR1_Bits) Field(mask DR1_Bits) int {
+func (b DR1) Field(mask DR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR1_Bits) J(v int) DR1_Bits {
-	return DR1_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR1) J(v int) DR1 {
+	return DR1(bits.Make32(v, uint32(mask)))
 }
 
-type DR1 struct{ mmio.U16 }
+type RDR1 struct{ mmio.U16 }
 
-func (r *DR1) Bits(mask DR1_Bits) DR1_Bits { return DR1_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR1) StoreBits(mask, b DR1_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR1) SetBits(mask DR1_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *DR1) ClearBits(mask DR1_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *DR1) Load() DR1_Bits              { return DR1_Bits(r.U16.Load()) }
-func (r *DR1) Store(b DR1_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RDR1) Bits(mask DR1) DR1     { return DR1(r.U16.Bits(uint16(mask))) }
+func (r *RDR1) StoreBits(mask, b DR1) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR1) SetBits(mask DR1)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR1) ClearBits(mask DR1)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR1) Load() DR1             { return DR1(r.U16.Load()) }
+func (r *RDR1) Store(b DR1)           { r.U16.Store(uint16(b)) }
 
-type DR1_Mask struct{ mmio.UM16 }
+type RMDR1 struct{ mmio.UM16 }
 
-func (rm DR1_Mask) Load() DR1_Bits   { return DR1_Bits(rm.UM16.Load()) }
-func (rm DR1_Mask) Store(b DR1_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR1) Load() DR1   { return DR1(rm.UM16.Load()) }
+func (rm RMDR1) Store(b DR1) { rm.UM16.Store(uint16(b)) }
 
-type DR2_Bits uint16
+type DR2 uint16
 
-func (b DR2_Bits) Field(mask DR2_Bits) int {
+func (b DR2) Field(mask DR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR2_Bits) J(v int) DR2_Bits {
-	return DR2_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR2) J(v int) DR2 {
+	return DR2(bits.Make32(v, uint32(mask)))
 }
 
-type DR2 struct{ mmio.U16 }
+type RDR2 struct{ mmio.U16 }
 
-func (r *DR2) Bits(mask DR2_Bits) DR2_Bits { return DR2_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR2) StoreBits(mask, b DR2_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR2) SetBits(mask DR2_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *DR2) ClearBits(mask DR2_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *DR2) Load() DR2_Bits              { return DR2_Bits(r.U16.Load()) }
-func (r *DR2) Store(b DR2_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RDR2) Bits(mask DR2) DR2     { return DR2(r.U16.Bits(uint16(mask))) }
+func (r *RDR2) StoreBits(mask, b DR2) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR2) SetBits(mask DR2)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR2) ClearBits(mask DR2)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR2) Load() DR2             { return DR2(r.U16.Load()) }
+func (r *RDR2) Store(b DR2)           { r.U16.Store(uint16(b)) }
 
-type DR2_Mask struct{ mmio.UM16 }
+type RMDR2 struct{ mmio.UM16 }
 
-func (rm DR2_Mask) Load() DR2_Bits   { return DR2_Bits(rm.UM16.Load()) }
-func (rm DR2_Mask) Store(b DR2_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR2) Load() DR2   { return DR2(rm.UM16.Load()) }
+func (rm RMDR2) Store(b DR2) { rm.UM16.Store(uint16(b)) }
 
-type DR3_Bits uint16
+type DR3 uint16
 
-func (b DR3_Bits) Field(mask DR3_Bits) int {
+func (b DR3) Field(mask DR3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR3_Bits) J(v int) DR3_Bits {
-	return DR3_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR3) J(v int) DR3 {
+	return DR3(bits.Make32(v, uint32(mask)))
 }
 
-type DR3 struct{ mmio.U16 }
+type RDR3 struct{ mmio.U16 }
 
-func (r *DR3) Bits(mask DR3_Bits) DR3_Bits { return DR3_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR3) StoreBits(mask, b DR3_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR3) SetBits(mask DR3_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *DR3) ClearBits(mask DR3_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *DR3) Load() DR3_Bits              { return DR3_Bits(r.U16.Load()) }
-func (r *DR3) Store(b DR3_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RDR3) Bits(mask DR3) DR3     { return DR3(r.U16.Bits(uint16(mask))) }
+func (r *RDR3) StoreBits(mask, b DR3) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR3) SetBits(mask DR3)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR3) ClearBits(mask DR3)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR3) Load() DR3             { return DR3(r.U16.Load()) }
+func (r *RDR3) Store(b DR3)           { r.U16.Store(uint16(b)) }
 
-type DR3_Mask struct{ mmio.UM16 }
+type RMDR3 struct{ mmio.UM16 }
 
-func (rm DR3_Mask) Load() DR3_Bits   { return DR3_Bits(rm.UM16.Load()) }
-func (rm DR3_Mask) Store(b DR3_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR3) Load() DR3   { return DR3(rm.UM16.Load()) }
+func (rm RMDR3) Store(b DR3) { rm.UM16.Store(uint16(b)) }
 
-type DR4_Bits uint16
+type DR4 uint16
 
-func (b DR4_Bits) Field(mask DR4_Bits) int {
+func (b DR4) Field(mask DR4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR4_Bits) J(v int) DR4_Bits {
-	return DR4_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR4) J(v int) DR4 {
+	return DR4(bits.Make32(v, uint32(mask)))
 }
 
-type DR4 struct{ mmio.U16 }
+type RDR4 struct{ mmio.U16 }
 
-func (r *DR4) Bits(mask DR4_Bits) DR4_Bits { return DR4_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR4) StoreBits(mask, b DR4_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR4) SetBits(mask DR4_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *DR4) ClearBits(mask DR4_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *DR4) Load() DR4_Bits              { return DR4_Bits(r.U16.Load()) }
-func (r *DR4) Store(b DR4_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RDR4) Bits(mask DR4) DR4     { return DR4(r.U16.Bits(uint16(mask))) }
+func (r *RDR4) StoreBits(mask, b DR4) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR4) SetBits(mask DR4)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR4) ClearBits(mask DR4)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR4) Load() DR4             { return DR4(r.U16.Load()) }
+func (r *RDR4) Store(b DR4)           { r.U16.Store(uint16(b)) }
 
-type DR4_Mask struct{ mmio.UM16 }
+type RMDR4 struct{ mmio.UM16 }
 
-func (rm DR4_Mask) Load() DR4_Bits   { return DR4_Bits(rm.UM16.Load()) }
-func (rm DR4_Mask) Store(b DR4_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR4) Load() DR4   { return DR4(rm.UM16.Load()) }
+func (rm RMDR4) Store(b DR4) { rm.UM16.Store(uint16(b)) }
 
-type DR5_Bits uint16
+type DR5 uint16
 
-func (b DR5_Bits) Field(mask DR5_Bits) int {
+func (b DR5) Field(mask DR5) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR5_Bits) J(v int) DR5_Bits {
-	return DR5_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR5) J(v int) DR5 {
+	return DR5(bits.Make32(v, uint32(mask)))
 }
 
-type DR5 struct{ mmio.U16 }
+type RDR5 struct{ mmio.U16 }
 
-func (r *DR5) Bits(mask DR5_Bits) DR5_Bits { return DR5_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR5) StoreBits(mask, b DR5_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR5) SetBits(mask DR5_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *DR5) ClearBits(mask DR5_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *DR5) Load() DR5_Bits              { return DR5_Bits(r.U16.Load()) }
-func (r *DR5) Store(b DR5_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RDR5) Bits(mask DR5) DR5     { return DR5(r.U16.Bits(uint16(mask))) }
+func (r *RDR5) StoreBits(mask, b DR5) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR5) SetBits(mask DR5)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR5) ClearBits(mask DR5)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR5) Load() DR5             { return DR5(r.U16.Load()) }
+func (r *RDR5) Store(b DR5)           { r.U16.Store(uint16(b)) }
 
-type DR5_Mask struct{ mmio.UM16 }
+type RMDR5 struct{ mmio.UM16 }
 
-func (rm DR5_Mask) Load() DR5_Bits   { return DR5_Bits(rm.UM16.Load()) }
-func (rm DR5_Mask) Store(b DR5_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR5) Load() DR5   { return DR5(rm.UM16.Load()) }
+func (rm RMDR5) Store(b DR5) { rm.UM16.Store(uint16(b)) }
 
-type DR6_Bits uint16
+type DR6 uint16
 
-func (b DR6_Bits) Field(mask DR6_Bits) int {
+func (b DR6) Field(mask DR6) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR6_Bits) J(v int) DR6_Bits {
-	return DR6_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR6) J(v int) DR6 {
+	return DR6(bits.Make32(v, uint32(mask)))
 }
 
-type DR6 struct{ mmio.U16 }
+type RDR6 struct{ mmio.U16 }
 
-func (r *DR6) Bits(mask DR6_Bits) DR6_Bits { return DR6_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR6) StoreBits(mask, b DR6_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR6) SetBits(mask DR6_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *DR6) ClearBits(mask DR6_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *DR6) Load() DR6_Bits              { return DR6_Bits(r.U16.Load()) }
-func (r *DR6) Store(b DR6_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RDR6) Bits(mask DR6) DR6     { return DR6(r.U16.Bits(uint16(mask))) }
+func (r *RDR6) StoreBits(mask, b DR6) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR6) SetBits(mask DR6)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR6) ClearBits(mask DR6)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR6) Load() DR6             { return DR6(r.U16.Load()) }
+func (r *RDR6) Store(b DR6)           { r.U16.Store(uint16(b)) }
 
-type DR6_Mask struct{ mmio.UM16 }
+type RMDR6 struct{ mmio.UM16 }
 
-func (rm DR6_Mask) Load() DR6_Bits   { return DR6_Bits(rm.UM16.Load()) }
-func (rm DR6_Mask) Store(b DR6_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR6) Load() DR6   { return DR6(rm.UM16.Load()) }
+func (rm RMDR6) Store(b DR6) { rm.UM16.Store(uint16(b)) }
 
-type DR7_Bits uint16
+type DR7 uint16
 
-func (b DR7_Bits) Field(mask DR7_Bits) int {
+func (b DR7) Field(mask DR7) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR7_Bits) J(v int) DR7_Bits {
-	return DR7_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR7) J(v int) DR7 {
+	return DR7(bits.Make32(v, uint32(mask)))
 }
 
-type DR7 struct{ mmio.U16 }
+type RDR7 struct{ mmio.U16 }
 
-func (r *DR7) Bits(mask DR7_Bits) DR7_Bits { return DR7_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR7) StoreBits(mask, b DR7_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR7) SetBits(mask DR7_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *DR7) ClearBits(mask DR7_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *DR7) Load() DR7_Bits              { return DR7_Bits(r.U16.Load()) }
-func (r *DR7) Store(b DR7_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RDR7) Bits(mask DR7) DR7     { return DR7(r.U16.Bits(uint16(mask))) }
+func (r *RDR7) StoreBits(mask, b DR7) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR7) SetBits(mask DR7)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR7) ClearBits(mask DR7)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR7) Load() DR7             { return DR7(r.U16.Load()) }
+func (r *RDR7) Store(b DR7)           { r.U16.Store(uint16(b)) }
 
-type DR7_Mask struct{ mmio.UM16 }
+type RMDR7 struct{ mmio.UM16 }
 
-func (rm DR7_Mask) Load() DR7_Bits   { return DR7_Bits(rm.UM16.Load()) }
-func (rm DR7_Mask) Store(b DR7_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR7) Load() DR7   { return DR7(rm.UM16.Load()) }
+func (rm RMDR7) Store(b DR7) { rm.UM16.Store(uint16(b)) }
 
-type DR8_Bits uint16
+type DR8 uint16
 
-func (b DR8_Bits) Field(mask DR8_Bits) int {
+func (b DR8) Field(mask DR8) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR8_Bits) J(v int) DR8_Bits {
-	return DR8_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR8) J(v int) DR8 {
+	return DR8(bits.Make32(v, uint32(mask)))
 }
 
-type DR8 struct{ mmio.U16 }
+type RDR8 struct{ mmio.U16 }
 
-func (r *DR8) Bits(mask DR8_Bits) DR8_Bits { return DR8_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR8) StoreBits(mask, b DR8_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR8) SetBits(mask DR8_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *DR8) ClearBits(mask DR8_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *DR8) Load() DR8_Bits              { return DR8_Bits(r.U16.Load()) }
-func (r *DR8) Store(b DR8_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RDR8) Bits(mask DR8) DR8     { return DR8(r.U16.Bits(uint16(mask))) }
+func (r *RDR8) StoreBits(mask, b DR8) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR8) SetBits(mask DR8)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR8) ClearBits(mask DR8)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR8) Load() DR8             { return DR8(r.U16.Load()) }
+func (r *RDR8) Store(b DR8)           { r.U16.Store(uint16(b)) }
 
-type DR8_Mask struct{ mmio.UM16 }
+type RMDR8 struct{ mmio.UM16 }
 
-func (rm DR8_Mask) Load() DR8_Bits   { return DR8_Bits(rm.UM16.Load()) }
-func (rm DR8_Mask) Store(b DR8_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR8) Load() DR8   { return DR8(rm.UM16.Load()) }
+func (rm RMDR8) Store(b DR8) { rm.UM16.Store(uint16(b)) }
 
-type DR9_Bits uint16
+type DR9 uint16
 
-func (b DR9_Bits) Field(mask DR9_Bits) int {
+func (b DR9) Field(mask DR9) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR9_Bits) J(v int) DR9_Bits {
-	return DR9_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR9) J(v int) DR9 {
+	return DR9(bits.Make32(v, uint32(mask)))
 }
 
-type DR9 struct{ mmio.U16 }
+type RDR9 struct{ mmio.U16 }
 
-func (r *DR9) Bits(mask DR9_Bits) DR9_Bits { return DR9_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR9) StoreBits(mask, b DR9_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR9) SetBits(mask DR9_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *DR9) ClearBits(mask DR9_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *DR9) Load() DR9_Bits              { return DR9_Bits(r.U16.Load()) }
-func (r *DR9) Store(b DR9_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RDR9) Bits(mask DR9) DR9     { return DR9(r.U16.Bits(uint16(mask))) }
+func (r *RDR9) StoreBits(mask, b DR9) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR9) SetBits(mask DR9)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR9) ClearBits(mask DR9)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR9) Load() DR9             { return DR9(r.U16.Load()) }
+func (r *RDR9) Store(b DR9)           { r.U16.Store(uint16(b)) }
 
-type DR9_Mask struct{ mmio.UM16 }
+type RMDR9 struct{ mmio.UM16 }
 
-func (rm DR9_Mask) Load() DR9_Bits   { return DR9_Bits(rm.UM16.Load()) }
-func (rm DR9_Mask) Store(b DR9_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR9) Load() DR9   { return DR9(rm.UM16.Load()) }
+func (rm RMDR9) Store(b DR9) { rm.UM16.Store(uint16(b)) }
 
-type DR10_Bits uint16
+type DR10 uint16
 
-func (b DR10_Bits) Field(mask DR10_Bits) int {
+func (b DR10) Field(mask DR10) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR10_Bits) J(v int) DR10_Bits {
-	return DR10_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR10) J(v int) DR10 {
+	return DR10(bits.Make32(v, uint32(mask)))
 }
 
-type DR10 struct{ mmio.U16 }
+type RDR10 struct{ mmio.U16 }
 
-func (r *DR10) Bits(mask DR10_Bits) DR10_Bits { return DR10_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR10) StoreBits(mask, b DR10_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR10) SetBits(mask DR10_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR10) ClearBits(mask DR10_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR10) Load() DR10_Bits               { return DR10_Bits(r.U16.Load()) }
-func (r *DR10) Store(b DR10_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR10) Bits(mask DR10) DR10    { return DR10(r.U16.Bits(uint16(mask))) }
+func (r *RDR10) StoreBits(mask, b DR10) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR10) SetBits(mask DR10)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR10) ClearBits(mask DR10)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR10) Load() DR10             { return DR10(r.U16.Load()) }
+func (r *RDR10) Store(b DR10)           { r.U16.Store(uint16(b)) }
 
-type DR10_Mask struct{ mmio.UM16 }
+type RMDR10 struct{ mmio.UM16 }
 
-func (rm DR10_Mask) Load() DR10_Bits   { return DR10_Bits(rm.UM16.Load()) }
-func (rm DR10_Mask) Store(b DR10_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR10) Load() DR10   { return DR10(rm.UM16.Load()) }
+func (rm RMDR10) Store(b DR10) { rm.UM16.Store(uint16(b)) }
 
-type RTCCR_Bits uint16
+type RTCCR uint16
 
-func (b RTCCR_Bits) Field(mask RTCCR_Bits) int {
+func (b RTCCR) Field(mask RTCCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask RTCCR_Bits) J(v int) RTCCR_Bits {
-	return RTCCR_Bits(bits.Make32(v, uint32(mask)))
+func (mask RTCCR) J(v int) RTCCR {
+	return RTCCR(bits.Make32(v, uint32(mask)))
 }
 
-type RTCCR struct{ mmio.U16 }
+type RRTCCR struct{ mmio.U16 }
 
-func (r *RTCCR) Bits(mask RTCCR_Bits) RTCCR_Bits { return RTCCR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *RTCCR) StoreBits(mask, b RTCCR_Bits)    { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *RTCCR) SetBits(mask RTCCR_Bits)         { r.U16.SetBits(uint16(mask)) }
-func (r *RTCCR) ClearBits(mask RTCCR_Bits)       { r.U16.ClearBits(uint16(mask)) }
-func (r *RTCCR) Load() RTCCR_Bits                { return RTCCR_Bits(r.U16.Load()) }
-func (r *RTCCR) Store(b RTCCR_Bits)              { r.U16.Store(uint16(b)) }
+func (r *RRTCCR) Bits(mask RTCCR) RTCCR   { return RTCCR(r.U16.Bits(uint16(mask))) }
+func (r *RRTCCR) StoreBits(mask, b RTCCR) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RRTCCR) SetBits(mask RTCCR)      { r.U16.SetBits(uint16(mask)) }
+func (r *RRTCCR) ClearBits(mask RTCCR)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RRTCCR) Load() RTCCR             { return RTCCR(r.U16.Load()) }
+func (r *RRTCCR) Store(b RTCCR)           { r.U16.Store(uint16(b)) }
 
-type RTCCR_Mask struct{ mmio.UM16 }
+type RMRTCCR struct{ mmio.UM16 }
 
-func (rm RTCCR_Mask) Load() RTCCR_Bits   { return RTCCR_Bits(rm.UM16.Load()) }
-func (rm RTCCR_Mask) Store(b RTCCR_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMRTCCR) Load() RTCCR   { return RTCCR(rm.UM16.Load()) }
+func (rm RMRTCCR) Store(b RTCCR) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) CAL() RTCCR_Mask {
-	return RTCCR_Mask{mmio.UM16{&p.RTCCR.U16, uint16(CAL)}}
+func (p *BKP_Periph) CAL() RMRTCCR {
+	return RMRTCCR{mmio.UM16{&p.RTCCR.U16, uint16(CAL)}}
 }
 
-func (p *BKP_Periph) CCO() RTCCR_Mask {
-	return RTCCR_Mask{mmio.UM16{&p.RTCCR.U16, uint16(CCO)}}
+func (p *BKP_Periph) CCO() RMRTCCR {
+	return RMRTCCR{mmio.UM16{&p.RTCCR.U16, uint16(CCO)}}
 }
 
-func (p *BKP_Periph) ASOE() RTCCR_Mask {
-	return RTCCR_Mask{mmio.UM16{&p.RTCCR.U16, uint16(ASOE)}}
+func (p *BKP_Periph) ASOE() RMRTCCR {
+	return RMRTCCR{mmio.UM16{&p.RTCCR.U16, uint16(ASOE)}}
 }
 
-func (p *BKP_Periph) ASOS() RTCCR_Mask {
-	return RTCCR_Mask{mmio.UM16{&p.RTCCR.U16, uint16(ASOS)}}
+func (p *BKP_Periph) ASOS() RMRTCCR {
+	return RMRTCCR{mmio.UM16{&p.RTCCR.U16, uint16(ASOS)}}
 }
 
-type CR_Bits uint16
+type CR uint16
 
-func (b CR_Bits) Field(mask CR_Bits) int {
+func (b CR) Field(mask CR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CR_Bits) J(v int) CR_Bits {
-	return CR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CR) J(v int) CR {
+	return CR(bits.Make32(v, uint32(mask)))
 }
 
-type CR struct{ mmio.U16 }
+type RCR struct{ mmio.U16 }
 
-func (r *CR) Bits(mask CR_Bits) CR_Bits { return CR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CR) StoreBits(mask, b CR_Bits) { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CR) SetBits(mask CR_Bits)      { r.U16.SetBits(uint16(mask)) }
-func (r *CR) ClearBits(mask CR_Bits)    { r.U16.ClearBits(uint16(mask)) }
-func (r *CR) Load() CR_Bits             { return CR_Bits(r.U16.Load()) }
-func (r *CR) Store(b CR_Bits)           { r.U16.Store(uint16(b)) }
+func (r *RCR) Bits(mask CR) CR      { return CR(r.U16.Bits(uint16(mask))) }
+func (r *RCR) StoreBits(mask, b CR) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCR) SetBits(mask CR)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCR) ClearBits(mask CR)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCR) Load() CR             { return CR(r.U16.Load()) }
+func (r *RCR) Store(b CR)           { r.U16.Store(uint16(b)) }
 
-type CR_Mask struct{ mmio.UM16 }
+type RMCR struct{ mmio.UM16 }
 
-func (rm CR_Mask) Load() CR_Bits   { return CR_Bits(rm.UM16.Load()) }
-func (rm CR_Mask) Store(b CR_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCR) Load() CR   { return CR(rm.UM16.Load()) }
+func (rm RMCR) Store(b CR) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) TPE() CR_Mask {
-	return CR_Mask{mmio.UM16{&p.CR.U16, uint16(TPE)}}
+func (p *BKP_Periph) TPE() RMCR {
+	return RMCR{mmio.UM16{&p.CR.U16, uint16(TPE)}}
 }
 
-func (p *BKP_Periph) TPAL() CR_Mask {
-	return CR_Mask{mmio.UM16{&p.CR.U16, uint16(TPAL)}}
+func (p *BKP_Periph) TPAL() RMCR {
+	return RMCR{mmio.UM16{&p.CR.U16, uint16(TPAL)}}
 }
 
-type CSR_Bits uint16
+type CSR uint16
 
-func (b CSR_Bits) Field(mask CSR_Bits) int {
+func (b CSR) Field(mask CSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask CSR_Bits) J(v int) CSR_Bits {
-	return CSR_Bits(bits.Make32(v, uint32(mask)))
+func (mask CSR) J(v int) CSR {
+	return CSR(bits.Make32(v, uint32(mask)))
 }
 
-type CSR struct{ mmio.U16 }
+type RCSR struct{ mmio.U16 }
 
-func (r *CSR) Bits(mask CSR_Bits) CSR_Bits { return CSR_Bits(r.U16.Bits(uint16(mask))) }
-func (r *CSR) StoreBits(mask, b CSR_Bits)  { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *CSR) SetBits(mask CSR_Bits)       { r.U16.SetBits(uint16(mask)) }
-func (r *CSR) ClearBits(mask CSR_Bits)     { r.U16.ClearBits(uint16(mask)) }
-func (r *CSR) Load() CSR_Bits              { return CSR_Bits(r.U16.Load()) }
-func (r *CSR) Store(b CSR_Bits)            { r.U16.Store(uint16(b)) }
+func (r *RCSR) Bits(mask CSR) CSR     { return CSR(r.U16.Bits(uint16(mask))) }
+func (r *RCSR) StoreBits(mask, b CSR) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RCSR) SetBits(mask CSR)      { r.U16.SetBits(uint16(mask)) }
+func (r *RCSR) ClearBits(mask CSR)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RCSR) Load() CSR             { return CSR(r.U16.Load()) }
+func (r *RCSR) Store(b CSR)           { r.U16.Store(uint16(b)) }
 
-type CSR_Mask struct{ mmio.UM16 }
+type RMCSR struct{ mmio.UM16 }
 
-func (rm CSR_Mask) Load() CSR_Bits   { return CSR_Bits(rm.UM16.Load()) }
-func (rm CSR_Mask) Store(b CSR_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMCSR) Load() CSR   { return CSR(rm.UM16.Load()) }
+func (rm RMCSR) Store(b CSR) { rm.UM16.Store(uint16(b)) }
 
-func (p *BKP_Periph) CTE() CSR_Mask {
-	return CSR_Mask{mmio.UM16{&p.CSR.U16, uint16(CTE)}}
+func (p *BKP_Periph) CTE() RMCSR {
+	return RMCSR{mmio.UM16{&p.CSR.U16, uint16(CTE)}}
 }
 
-func (p *BKP_Periph) CTI() CSR_Mask {
-	return CSR_Mask{mmio.UM16{&p.CSR.U16, uint16(CTI)}}
+func (p *BKP_Periph) CTI() RMCSR {
+	return RMCSR{mmio.UM16{&p.CSR.U16, uint16(CTI)}}
 }
 
-func (p *BKP_Periph) TPIE() CSR_Mask {
-	return CSR_Mask{mmio.UM16{&p.CSR.U16, uint16(TPIE)}}
+func (p *BKP_Periph) TPIE() RMCSR {
+	return RMCSR{mmio.UM16{&p.CSR.U16, uint16(TPIE)}}
 }
 
-func (p *BKP_Periph) TEF() CSR_Mask {
-	return CSR_Mask{mmio.UM16{&p.CSR.U16, uint16(TEF)}}
+func (p *BKP_Periph) TEF() RMCSR {
+	return RMCSR{mmio.UM16{&p.CSR.U16, uint16(TEF)}}
 }
 
-func (p *BKP_Periph) TIF() CSR_Mask {
-	return CSR_Mask{mmio.UM16{&p.CSR.U16, uint16(TIF)}}
+func (p *BKP_Periph) TIF() RMCSR {
+	return RMCSR{mmio.UM16{&p.CSR.U16, uint16(TIF)}}
 }
 
-type DR11_Bits uint16
+type DR11 uint16
 
-func (b DR11_Bits) Field(mask DR11_Bits) int {
+func (b DR11) Field(mask DR11) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR11_Bits) J(v int) DR11_Bits {
-	return DR11_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR11) J(v int) DR11 {
+	return DR11(bits.Make32(v, uint32(mask)))
 }
 
-type DR11 struct{ mmio.U16 }
+type RDR11 struct{ mmio.U16 }
 
-func (r *DR11) Bits(mask DR11_Bits) DR11_Bits { return DR11_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR11) StoreBits(mask, b DR11_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR11) SetBits(mask DR11_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR11) ClearBits(mask DR11_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR11) Load() DR11_Bits               { return DR11_Bits(r.U16.Load()) }
-func (r *DR11) Store(b DR11_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR11) Bits(mask DR11) DR11    { return DR11(r.U16.Bits(uint16(mask))) }
+func (r *RDR11) StoreBits(mask, b DR11) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR11) SetBits(mask DR11)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR11) ClearBits(mask DR11)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR11) Load() DR11             { return DR11(r.U16.Load()) }
+func (r *RDR11) Store(b DR11)           { r.U16.Store(uint16(b)) }
 
-type DR11_Mask struct{ mmio.UM16 }
+type RMDR11 struct{ mmio.UM16 }
 
-func (rm DR11_Mask) Load() DR11_Bits   { return DR11_Bits(rm.UM16.Load()) }
-func (rm DR11_Mask) Store(b DR11_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR11) Load() DR11   { return DR11(rm.UM16.Load()) }
+func (rm RMDR11) Store(b DR11) { rm.UM16.Store(uint16(b)) }
 
-type DR12_Bits uint16
+type DR12 uint16
 
-func (b DR12_Bits) Field(mask DR12_Bits) int {
+func (b DR12) Field(mask DR12) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR12_Bits) J(v int) DR12_Bits {
-	return DR12_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR12) J(v int) DR12 {
+	return DR12(bits.Make32(v, uint32(mask)))
 }
 
-type DR12 struct{ mmio.U16 }
+type RDR12 struct{ mmio.U16 }
 
-func (r *DR12) Bits(mask DR12_Bits) DR12_Bits { return DR12_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR12) StoreBits(mask, b DR12_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR12) SetBits(mask DR12_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR12) ClearBits(mask DR12_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR12) Load() DR12_Bits               { return DR12_Bits(r.U16.Load()) }
-func (r *DR12) Store(b DR12_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR12) Bits(mask DR12) DR12    { return DR12(r.U16.Bits(uint16(mask))) }
+func (r *RDR12) StoreBits(mask, b DR12) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR12) SetBits(mask DR12)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR12) ClearBits(mask DR12)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR12) Load() DR12             { return DR12(r.U16.Load()) }
+func (r *RDR12) Store(b DR12)           { r.U16.Store(uint16(b)) }
 
-type DR12_Mask struct{ mmio.UM16 }
+type RMDR12 struct{ mmio.UM16 }
 
-func (rm DR12_Mask) Load() DR12_Bits   { return DR12_Bits(rm.UM16.Load()) }
-func (rm DR12_Mask) Store(b DR12_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR12) Load() DR12   { return DR12(rm.UM16.Load()) }
+func (rm RMDR12) Store(b DR12) { rm.UM16.Store(uint16(b)) }
 
-type DR13_Bits uint16
+type DR13 uint16
 
-func (b DR13_Bits) Field(mask DR13_Bits) int {
+func (b DR13) Field(mask DR13) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR13_Bits) J(v int) DR13_Bits {
-	return DR13_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR13) J(v int) DR13 {
+	return DR13(bits.Make32(v, uint32(mask)))
 }
 
-type DR13 struct{ mmio.U16 }
+type RDR13 struct{ mmio.U16 }
 
-func (r *DR13) Bits(mask DR13_Bits) DR13_Bits { return DR13_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR13) StoreBits(mask, b DR13_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR13) SetBits(mask DR13_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR13) ClearBits(mask DR13_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR13) Load() DR13_Bits               { return DR13_Bits(r.U16.Load()) }
-func (r *DR13) Store(b DR13_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR13) Bits(mask DR13) DR13    { return DR13(r.U16.Bits(uint16(mask))) }
+func (r *RDR13) StoreBits(mask, b DR13) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR13) SetBits(mask DR13)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR13) ClearBits(mask DR13)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR13) Load() DR13             { return DR13(r.U16.Load()) }
+func (r *RDR13) Store(b DR13)           { r.U16.Store(uint16(b)) }
 
-type DR13_Mask struct{ mmio.UM16 }
+type RMDR13 struct{ mmio.UM16 }
 
-func (rm DR13_Mask) Load() DR13_Bits   { return DR13_Bits(rm.UM16.Load()) }
-func (rm DR13_Mask) Store(b DR13_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR13) Load() DR13   { return DR13(rm.UM16.Load()) }
+func (rm RMDR13) Store(b DR13) { rm.UM16.Store(uint16(b)) }
 
-type DR14_Bits uint16
+type DR14 uint16
 
-func (b DR14_Bits) Field(mask DR14_Bits) int {
+func (b DR14) Field(mask DR14) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR14_Bits) J(v int) DR14_Bits {
-	return DR14_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR14) J(v int) DR14 {
+	return DR14(bits.Make32(v, uint32(mask)))
 }
 
-type DR14 struct{ mmio.U16 }
+type RDR14 struct{ mmio.U16 }
 
-func (r *DR14) Bits(mask DR14_Bits) DR14_Bits { return DR14_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR14) StoreBits(mask, b DR14_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR14) SetBits(mask DR14_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR14) ClearBits(mask DR14_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR14) Load() DR14_Bits               { return DR14_Bits(r.U16.Load()) }
-func (r *DR14) Store(b DR14_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR14) Bits(mask DR14) DR14    { return DR14(r.U16.Bits(uint16(mask))) }
+func (r *RDR14) StoreBits(mask, b DR14) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR14) SetBits(mask DR14)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR14) ClearBits(mask DR14)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR14) Load() DR14             { return DR14(r.U16.Load()) }
+func (r *RDR14) Store(b DR14)           { r.U16.Store(uint16(b)) }
 
-type DR14_Mask struct{ mmio.UM16 }
+type RMDR14 struct{ mmio.UM16 }
 
-func (rm DR14_Mask) Load() DR14_Bits   { return DR14_Bits(rm.UM16.Load()) }
-func (rm DR14_Mask) Store(b DR14_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR14) Load() DR14   { return DR14(rm.UM16.Load()) }
+func (rm RMDR14) Store(b DR14) { rm.UM16.Store(uint16(b)) }
 
-type DR15_Bits uint16
+type DR15 uint16
 
-func (b DR15_Bits) Field(mask DR15_Bits) int {
+func (b DR15) Field(mask DR15) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR15_Bits) J(v int) DR15_Bits {
-	return DR15_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR15) J(v int) DR15 {
+	return DR15(bits.Make32(v, uint32(mask)))
 }
 
-type DR15 struct{ mmio.U16 }
+type RDR15 struct{ mmio.U16 }
 
-func (r *DR15) Bits(mask DR15_Bits) DR15_Bits { return DR15_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR15) StoreBits(mask, b DR15_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR15) SetBits(mask DR15_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR15) ClearBits(mask DR15_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR15) Load() DR15_Bits               { return DR15_Bits(r.U16.Load()) }
-func (r *DR15) Store(b DR15_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR15) Bits(mask DR15) DR15    { return DR15(r.U16.Bits(uint16(mask))) }
+func (r *RDR15) StoreBits(mask, b DR15) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR15) SetBits(mask DR15)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR15) ClearBits(mask DR15)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR15) Load() DR15             { return DR15(r.U16.Load()) }
+func (r *RDR15) Store(b DR15)           { r.U16.Store(uint16(b)) }
 
-type DR15_Mask struct{ mmio.UM16 }
+type RMDR15 struct{ mmio.UM16 }
 
-func (rm DR15_Mask) Load() DR15_Bits   { return DR15_Bits(rm.UM16.Load()) }
-func (rm DR15_Mask) Store(b DR15_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR15) Load() DR15   { return DR15(rm.UM16.Load()) }
+func (rm RMDR15) Store(b DR15) { rm.UM16.Store(uint16(b)) }
 
-type DR16_Bits uint16
+type DR16 uint16
 
-func (b DR16_Bits) Field(mask DR16_Bits) int {
+func (b DR16) Field(mask DR16) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR16_Bits) J(v int) DR16_Bits {
-	return DR16_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR16) J(v int) DR16 {
+	return DR16(bits.Make32(v, uint32(mask)))
 }
 
-type DR16 struct{ mmio.U16 }
+type RDR16 struct{ mmio.U16 }
 
-func (r *DR16) Bits(mask DR16_Bits) DR16_Bits { return DR16_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR16) StoreBits(mask, b DR16_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR16) SetBits(mask DR16_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR16) ClearBits(mask DR16_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR16) Load() DR16_Bits               { return DR16_Bits(r.U16.Load()) }
-func (r *DR16) Store(b DR16_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR16) Bits(mask DR16) DR16    { return DR16(r.U16.Bits(uint16(mask))) }
+func (r *RDR16) StoreBits(mask, b DR16) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR16) SetBits(mask DR16)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR16) ClearBits(mask DR16)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR16) Load() DR16             { return DR16(r.U16.Load()) }
+func (r *RDR16) Store(b DR16)           { r.U16.Store(uint16(b)) }
 
-type DR16_Mask struct{ mmio.UM16 }
+type RMDR16 struct{ mmio.UM16 }
 
-func (rm DR16_Mask) Load() DR16_Bits   { return DR16_Bits(rm.UM16.Load()) }
-func (rm DR16_Mask) Store(b DR16_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR16) Load() DR16   { return DR16(rm.UM16.Load()) }
+func (rm RMDR16) Store(b DR16) { rm.UM16.Store(uint16(b)) }
 
-type DR17_Bits uint16
+type DR17 uint16
 
-func (b DR17_Bits) Field(mask DR17_Bits) int {
+func (b DR17) Field(mask DR17) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR17_Bits) J(v int) DR17_Bits {
-	return DR17_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR17) J(v int) DR17 {
+	return DR17(bits.Make32(v, uint32(mask)))
 }
 
-type DR17 struct{ mmio.U16 }
+type RDR17 struct{ mmio.U16 }
 
-func (r *DR17) Bits(mask DR17_Bits) DR17_Bits { return DR17_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR17) StoreBits(mask, b DR17_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR17) SetBits(mask DR17_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR17) ClearBits(mask DR17_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR17) Load() DR17_Bits               { return DR17_Bits(r.U16.Load()) }
-func (r *DR17) Store(b DR17_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR17) Bits(mask DR17) DR17    { return DR17(r.U16.Bits(uint16(mask))) }
+func (r *RDR17) StoreBits(mask, b DR17) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR17) SetBits(mask DR17)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR17) ClearBits(mask DR17)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR17) Load() DR17             { return DR17(r.U16.Load()) }
+func (r *RDR17) Store(b DR17)           { r.U16.Store(uint16(b)) }
 
-type DR17_Mask struct{ mmio.UM16 }
+type RMDR17 struct{ mmio.UM16 }
 
-func (rm DR17_Mask) Load() DR17_Bits   { return DR17_Bits(rm.UM16.Load()) }
-func (rm DR17_Mask) Store(b DR17_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR17) Load() DR17   { return DR17(rm.UM16.Load()) }
+func (rm RMDR17) Store(b DR17) { rm.UM16.Store(uint16(b)) }
 
-type DR18_Bits uint16
+type DR18 uint16
 
-func (b DR18_Bits) Field(mask DR18_Bits) int {
+func (b DR18) Field(mask DR18) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR18_Bits) J(v int) DR18_Bits {
-	return DR18_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR18) J(v int) DR18 {
+	return DR18(bits.Make32(v, uint32(mask)))
 }
 
-type DR18 struct{ mmio.U16 }
+type RDR18 struct{ mmio.U16 }
 
-func (r *DR18) Bits(mask DR18_Bits) DR18_Bits { return DR18_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR18) StoreBits(mask, b DR18_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR18) SetBits(mask DR18_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR18) ClearBits(mask DR18_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR18) Load() DR18_Bits               { return DR18_Bits(r.U16.Load()) }
-func (r *DR18) Store(b DR18_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR18) Bits(mask DR18) DR18    { return DR18(r.U16.Bits(uint16(mask))) }
+func (r *RDR18) StoreBits(mask, b DR18) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR18) SetBits(mask DR18)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR18) ClearBits(mask DR18)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR18) Load() DR18             { return DR18(r.U16.Load()) }
+func (r *RDR18) Store(b DR18)           { r.U16.Store(uint16(b)) }
 
-type DR18_Mask struct{ mmio.UM16 }
+type RMDR18 struct{ mmio.UM16 }
 
-func (rm DR18_Mask) Load() DR18_Bits   { return DR18_Bits(rm.UM16.Load()) }
-func (rm DR18_Mask) Store(b DR18_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR18) Load() DR18   { return DR18(rm.UM16.Load()) }
+func (rm RMDR18) Store(b DR18) { rm.UM16.Store(uint16(b)) }
 
-type DR19_Bits uint16
+type DR19 uint16
 
-func (b DR19_Bits) Field(mask DR19_Bits) int {
+func (b DR19) Field(mask DR19) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR19_Bits) J(v int) DR19_Bits {
-	return DR19_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR19) J(v int) DR19 {
+	return DR19(bits.Make32(v, uint32(mask)))
 }
 
-type DR19 struct{ mmio.U16 }
+type RDR19 struct{ mmio.U16 }
 
-func (r *DR19) Bits(mask DR19_Bits) DR19_Bits { return DR19_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR19) StoreBits(mask, b DR19_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR19) SetBits(mask DR19_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR19) ClearBits(mask DR19_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR19) Load() DR19_Bits               { return DR19_Bits(r.U16.Load()) }
-func (r *DR19) Store(b DR19_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR19) Bits(mask DR19) DR19    { return DR19(r.U16.Bits(uint16(mask))) }
+func (r *RDR19) StoreBits(mask, b DR19) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR19) SetBits(mask DR19)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR19) ClearBits(mask DR19)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR19) Load() DR19             { return DR19(r.U16.Load()) }
+func (r *RDR19) Store(b DR19)           { r.U16.Store(uint16(b)) }
 
-type DR19_Mask struct{ mmio.UM16 }
+type RMDR19 struct{ mmio.UM16 }
 
-func (rm DR19_Mask) Load() DR19_Bits   { return DR19_Bits(rm.UM16.Load()) }
-func (rm DR19_Mask) Store(b DR19_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR19) Load() DR19   { return DR19(rm.UM16.Load()) }
+func (rm RMDR19) Store(b DR19) { rm.UM16.Store(uint16(b)) }
 
-type DR20_Bits uint16
+type DR20 uint16
 
-func (b DR20_Bits) Field(mask DR20_Bits) int {
+func (b DR20) Field(mask DR20) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR20_Bits) J(v int) DR20_Bits {
-	return DR20_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR20) J(v int) DR20 {
+	return DR20(bits.Make32(v, uint32(mask)))
 }
 
-type DR20 struct{ mmio.U16 }
+type RDR20 struct{ mmio.U16 }
 
-func (r *DR20) Bits(mask DR20_Bits) DR20_Bits { return DR20_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR20) StoreBits(mask, b DR20_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR20) SetBits(mask DR20_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR20) ClearBits(mask DR20_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR20) Load() DR20_Bits               { return DR20_Bits(r.U16.Load()) }
-func (r *DR20) Store(b DR20_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR20) Bits(mask DR20) DR20    { return DR20(r.U16.Bits(uint16(mask))) }
+func (r *RDR20) StoreBits(mask, b DR20) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR20) SetBits(mask DR20)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR20) ClearBits(mask DR20)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR20) Load() DR20             { return DR20(r.U16.Load()) }
+func (r *RDR20) Store(b DR20)           { r.U16.Store(uint16(b)) }
 
-type DR20_Mask struct{ mmio.UM16 }
+type RMDR20 struct{ mmio.UM16 }
 
-func (rm DR20_Mask) Load() DR20_Bits   { return DR20_Bits(rm.UM16.Load()) }
-func (rm DR20_Mask) Store(b DR20_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR20) Load() DR20   { return DR20(rm.UM16.Load()) }
+func (rm RMDR20) Store(b DR20) { rm.UM16.Store(uint16(b)) }
 
-type DR21_Bits uint16
+type DR21 uint16
 
-func (b DR21_Bits) Field(mask DR21_Bits) int {
+func (b DR21) Field(mask DR21) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR21_Bits) J(v int) DR21_Bits {
-	return DR21_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR21) J(v int) DR21 {
+	return DR21(bits.Make32(v, uint32(mask)))
 }
 
-type DR21 struct{ mmio.U16 }
+type RDR21 struct{ mmio.U16 }
 
-func (r *DR21) Bits(mask DR21_Bits) DR21_Bits { return DR21_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR21) StoreBits(mask, b DR21_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR21) SetBits(mask DR21_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR21) ClearBits(mask DR21_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR21) Load() DR21_Bits               { return DR21_Bits(r.U16.Load()) }
-func (r *DR21) Store(b DR21_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR21) Bits(mask DR21) DR21    { return DR21(r.U16.Bits(uint16(mask))) }
+func (r *RDR21) StoreBits(mask, b DR21) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR21) SetBits(mask DR21)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR21) ClearBits(mask DR21)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR21) Load() DR21             { return DR21(r.U16.Load()) }
+func (r *RDR21) Store(b DR21)           { r.U16.Store(uint16(b)) }
 
-type DR21_Mask struct{ mmio.UM16 }
+type RMDR21 struct{ mmio.UM16 }
 
-func (rm DR21_Mask) Load() DR21_Bits   { return DR21_Bits(rm.UM16.Load()) }
-func (rm DR21_Mask) Store(b DR21_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR21) Load() DR21   { return DR21(rm.UM16.Load()) }
+func (rm RMDR21) Store(b DR21) { rm.UM16.Store(uint16(b)) }
 
-type DR22_Bits uint16
+type DR22 uint16
 
-func (b DR22_Bits) Field(mask DR22_Bits) int {
+func (b DR22) Field(mask DR22) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR22_Bits) J(v int) DR22_Bits {
-	return DR22_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR22) J(v int) DR22 {
+	return DR22(bits.Make32(v, uint32(mask)))
 }
 
-type DR22 struct{ mmio.U16 }
+type RDR22 struct{ mmio.U16 }
 
-func (r *DR22) Bits(mask DR22_Bits) DR22_Bits { return DR22_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR22) StoreBits(mask, b DR22_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR22) SetBits(mask DR22_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR22) ClearBits(mask DR22_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR22) Load() DR22_Bits               { return DR22_Bits(r.U16.Load()) }
-func (r *DR22) Store(b DR22_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR22) Bits(mask DR22) DR22    { return DR22(r.U16.Bits(uint16(mask))) }
+func (r *RDR22) StoreBits(mask, b DR22) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR22) SetBits(mask DR22)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR22) ClearBits(mask DR22)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR22) Load() DR22             { return DR22(r.U16.Load()) }
+func (r *RDR22) Store(b DR22)           { r.U16.Store(uint16(b)) }
 
-type DR22_Mask struct{ mmio.UM16 }
+type RMDR22 struct{ mmio.UM16 }
 
-func (rm DR22_Mask) Load() DR22_Bits   { return DR22_Bits(rm.UM16.Load()) }
-func (rm DR22_Mask) Store(b DR22_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR22) Load() DR22   { return DR22(rm.UM16.Load()) }
+func (rm RMDR22) Store(b DR22) { rm.UM16.Store(uint16(b)) }
 
-type DR23_Bits uint16
+type DR23 uint16
 
-func (b DR23_Bits) Field(mask DR23_Bits) int {
+func (b DR23) Field(mask DR23) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR23_Bits) J(v int) DR23_Bits {
-	return DR23_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR23) J(v int) DR23 {
+	return DR23(bits.Make32(v, uint32(mask)))
 }
 
-type DR23 struct{ mmio.U16 }
+type RDR23 struct{ mmio.U16 }
 
-func (r *DR23) Bits(mask DR23_Bits) DR23_Bits { return DR23_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR23) StoreBits(mask, b DR23_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR23) SetBits(mask DR23_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR23) ClearBits(mask DR23_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR23) Load() DR23_Bits               { return DR23_Bits(r.U16.Load()) }
-func (r *DR23) Store(b DR23_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR23) Bits(mask DR23) DR23    { return DR23(r.U16.Bits(uint16(mask))) }
+func (r *RDR23) StoreBits(mask, b DR23) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR23) SetBits(mask DR23)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR23) ClearBits(mask DR23)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR23) Load() DR23             { return DR23(r.U16.Load()) }
+func (r *RDR23) Store(b DR23)           { r.U16.Store(uint16(b)) }
 
-type DR23_Mask struct{ mmio.UM16 }
+type RMDR23 struct{ mmio.UM16 }
 
-func (rm DR23_Mask) Load() DR23_Bits   { return DR23_Bits(rm.UM16.Load()) }
-func (rm DR23_Mask) Store(b DR23_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR23) Load() DR23   { return DR23(rm.UM16.Load()) }
+func (rm RMDR23) Store(b DR23) { rm.UM16.Store(uint16(b)) }
 
-type DR24_Bits uint16
+type DR24 uint16
 
-func (b DR24_Bits) Field(mask DR24_Bits) int {
+func (b DR24) Field(mask DR24) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR24_Bits) J(v int) DR24_Bits {
-	return DR24_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR24) J(v int) DR24 {
+	return DR24(bits.Make32(v, uint32(mask)))
 }
 
-type DR24 struct{ mmio.U16 }
+type RDR24 struct{ mmio.U16 }
 
-func (r *DR24) Bits(mask DR24_Bits) DR24_Bits { return DR24_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR24) StoreBits(mask, b DR24_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR24) SetBits(mask DR24_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR24) ClearBits(mask DR24_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR24) Load() DR24_Bits               { return DR24_Bits(r.U16.Load()) }
-func (r *DR24) Store(b DR24_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR24) Bits(mask DR24) DR24    { return DR24(r.U16.Bits(uint16(mask))) }
+func (r *RDR24) StoreBits(mask, b DR24) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR24) SetBits(mask DR24)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR24) ClearBits(mask DR24)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR24) Load() DR24             { return DR24(r.U16.Load()) }
+func (r *RDR24) Store(b DR24)           { r.U16.Store(uint16(b)) }
 
-type DR24_Mask struct{ mmio.UM16 }
+type RMDR24 struct{ mmio.UM16 }
 
-func (rm DR24_Mask) Load() DR24_Bits   { return DR24_Bits(rm.UM16.Load()) }
-func (rm DR24_Mask) Store(b DR24_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR24) Load() DR24   { return DR24(rm.UM16.Load()) }
+func (rm RMDR24) Store(b DR24) { rm.UM16.Store(uint16(b)) }
 
-type DR25_Bits uint16
+type DR25 uint16
 
-func (b DR25_Bits) Field(mask DR25_Bits) int {
+func (b DR25) Field(mask DR25) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR25_Bits) J(v int) DR25_Bits {
-	return DR25_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR25) J(v int) DR25 {
+	return DR25(bits.Make32(v, uint32(mask)))
 }
 
-type DR25 struct{ mmio.U16 }
+type RDR25 struct{ mmio.U16 }
 
-func (r *DR25) Bits(mask DR25_Bits) DR25_Bits { return DR25_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR25) StoreBits(mask, b DR25_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR25) SetBits(mask DR25_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR25) ClearBits(mask DR25_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR25) Load() DR25_Bits               { return DR25_Bits(r.U16.Load()) }
-func (r *DR25) Store(b DR25_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR25) Bits(mask DR25) DR25    { return DR25(r.U16.Bits(uint16(mask))) }
+func (r *RDR25) StoreBits(mask, b DR25) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR25) SetBits(mask DR25)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR25) ClearBits(mask DR25)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR25) Load() DR25             { return DR25(r.U16.Load()) }
+func (r *RDR25) Store(b DR25)           { r.U16.Store(uint16(b)) }
 
-type DR25_Mask struct{ mmio.UM16 }
+type RMDR25 struct{ mmio.UM16 }
 
-func (rm DR25_Mask) Load() DR25_Bits   { return DR25_Bits(rm.UM16.Load()) }
-func (rm DR25_Mask) Store(b DR25_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR25) Load() DR25   { return DR25(rm.UM16.Load()) }
+func (rm RMDR25) Store(b DR25) { rm.UM16.Store(uint16(b)) }
 
-type DR26_Bits uint16
+type DR26 uint16
 
-func (b DR26_Bits) Field(mask DR26_Bits) int {
+func (b DR26) Field(mask DR26) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR26_Bits) J(v int) DR26_Bits {
-	return DR26_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR26) J(v int) DR26 {
+	return DR26(bits.Make32(v, uint32(mask)))
 }
 
-type DR26 struct{ mmio.U16 }
+type RDR26 struct{ mmio.U16 }
 
-func (r *DR26) Bits(mask DR26_Bits) DR26_Bits { return DR26_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR26) StoreBits(mask, b DR26_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR26) SetBits(mask DR26_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR26) ClearBits(mask DR26_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR26) Load() DR26_Bits               { return DR26_Bits(r.U16.Load()) }
-func (r *DR26) Store(b DR26_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR26) Bits(mask DR26) DR26    { return DR26(r.U16.Bits(uint16(mask))) }
+func (r *RDR26) StoreBits(mask, b DR26) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR26) SetBits(mask DR26)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR26) ClearBits(mask DR26)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR26) Load() DR26             { return DR26(r.U16.Load()) }
+func (r *RDR26) Store(b DR26)           { r.U16.Store(uint16(b)) }
 
-type DR26_Mask struct{ mmio.UM16 }
+type RMDR26 struct{ mmio.UM16 }
 
-func (rm DR26_Mask) Load() DR26_Bits   { return DR26_Bits(rm.UM16.Load()) }
-func (rm DR26_Mask) Store(b DR26_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR26) Load() DR26   { return DR26(rm.UM16.Load()) }
+func (rm RMDR26) Store(b DR26) { rm.UM16.Store(uint16(b)) }
 
-type DR27_Bits uint16
+type DR27 uint16
 
-func (b DR27_Bits) Field(mask DR27_Bits) int {
+func (b DR27) Field(mask DR27) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR27_Bits) J(v int) DR27_Bits {
-	return DR27_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR27) J(v int) DR27 {
+	return DR27(bits.Make32(v, uint32(mask)))
 }
 
-type DR27 struct{ mmio.U16 }
+type RDR27 struct{ mmio.U16 }
 
-func (r *DR27) Bits(mask DR27_Bits) DR27_Bits { return DR27_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR27) StoreBits(mask, b DR27_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR27) SetBits(mask DR27_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR27) ClearBits(mask DR27_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR27) Load() DR27_Bits               { return DR27_Bits(r.U16.Load()) }
-func (r *DR27) Store(b DR27_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR27) Bits(mask DR27) DR27    { return DR27(r.U16.Bits(uint16(mask))) }
+func (r *RDR27) StoreBits(mask, b DR27) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR27) SetBits(mask DR27)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR27) ClearBits(mask DR27)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR27) Load() DR27             { return DR27(r.U16.Load()) }
+func (r *RDR27) Store(b DR27)           { r.U16.Store(uint16(b)) }
 
-type DR27_Mask struct{ mmio.UM16 }
+type RMDR27 struct{ mmio.UM16 }
 
-func (rm DR27_Mask) Load() DR27_Bits   { return DR27_Bits(rm.UM16.Load()) }
-func (rm DR27_Mask) Store(b DR27_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR27) Load() DR27   { return DR27(rm.UM16.Load()) }
+func (rm RMDR27) Store(b DR27) { rm.UM16.Store(uint16(b)) }
 
-type DR28_Bits uint16
+type DR28 uint16
 
-func (b DR28_Bits) Field(mask DR28_Bits) int {
+func (b DR28) Field(mask DR28) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR28_Bits) J(v int) DR28_Bits {
-	return DR28_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR28) J(v int) DR28 {
+	return DR28(bits.Make32(v, uint32(mask)))
 }
 
-type DR28 struct{ mmio.U16 }
+type RDR28 struct{ mmio.U16 }
 
-func (r *DR28) Bits(mask DR28_Bits) DR28_Bits { return DR28_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR28) StoreBits(mask, b DR28_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR28) SetBits(mask DR28_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR28) ClearBits(mask DR28_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR28) Load() DR28_Bits               { return DR28_Bits(r.U16.Load()) }
-func (r *DR28) Store(b DR28_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR28) Bits(mask DR28) DR28    { return DR28(r.U16.Bits(uint16(mask))) }
+func (r *RDR28) StoreBits(mask, b DR28) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR28) SetBits(mask DR28)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR28) ClearBits(mask DR28)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR28) Load() DR28             { return DR28(r.U16.Load()) }
+func (r *RDR28) Store(b DR28)           { r.U16.Store(uint16(b)) }
 
-type DR28_Mask struct{ mmio.UM16 }
+type RMDR28 struct{ mmio.UM16 }
 
-func (rm DR28_Mask) Load() DR28_Bits   { return DR28_Bits(rm.UM16.Load()) }
-func (rm DR28_Mask) Store(b DR28_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR28) Load() DR28   { return DR28(rm.UM16.Load()) }
+func (rm RMDR28) Store(b DR28) { rm.UM16.Store(uint16(b)) }
 
-type DR29_Bits uint16
+type DR29 uint16
 
-func (b DR29_Bits) Field(mask DR29_Bits) int {
+func (b DR29) Field(mask DR29) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR29_Bits) J(v int) DR29_Bits {
-	return DR29_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR29) J(v int) DR29 {
+	return DR29(bits.Make32(v, uint32(mask)))
 }
 
-type DR29 struct{ mmio.U16 }
+type RDR29 struct{ mmio.U16 }
 
-func (r *DR29) Bits(mask DR29_Bits) DR29_Bits { return DR29_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR29) StoreBits(mask, b DR29_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR29) SetBits(mask DR29_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR29) ClearBits(mask DR29_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR29) Load() DR29_Bits               { return DR29_Bits(r.U16.Load()) }
-func (r *DR29) Store(b DR29_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR29) Bits(mask DR29) DR29    { return DR29(r.U16.Bits(uint16(mask))) }
+func (r *RDR29) StoreBits(mask, b DR29) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR29) SetBits(mask DR29)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR29) ClearBits(mask DR29)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR29) Load() DR29             { return DR29(r.U16.Load()) }
+func (r *RDR29) Store(b DR29)           { r.U16.Store(uint16(b)) }
 
-type DR29_Mask struct{ mmio.UM16 }
+type RMDR29 struct{ mmio.UM16 }
 
-func (rm DR29_Mask) Load() DR29_Bits   { return DR29_Bits(rm.UM16.Load()) }
-func (rm DR29_Mask) Store(b DR29_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR29) Load() DR29   { return DR29(rm.UM16.Load()) }
+func (rm RMDR29) Store(b DR29) { rm.UM16.Store(uint16(b)) }
 
-type DR30_Bits uint16
+type DR30 uint16
 
-func (b DR30_Bits) Field(mask DR30_Bits) int {
+func (b DR30) Field(mask DR30) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR30_Bits) J(v int) DR30_Bits {
-	return DR30_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR30) J(v int) DR30 {
+	return DR30(bits.Make32(v, uint32(mask)))
 }
 
-type DR30 struct{ mmio.U16 }
+type RDR30 struct{ mmio.U16 }
 
-func (r *DR30) Bits(mask DR30_Bits) DR30_Bits { return DR30_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR30) StoreBits(mask, b DR30_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR30) SetBits(mask DR30_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR30) ClearBits(mask DR30_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR30) Load() DR30_Bits               { return DR30_Bits(r.U16.Load()) }
-func (r *DR30) Store(b DR30_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR30) Bits(mask DR30) DR30    { return DR30(r.U16.Bits(uint16(mask))) }
+func (r *RDR30) StoreBits(mask, b DR30) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR30) SetBits(mask DR30)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR30) ClearBits(mask DR30)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR30) Load() DR30             { return DR30(r.U16.Load()) }
+func (r *RDR30) Store(b DR30)           { r.U16.Store(uint16(b)) }
 
-type DR30_Mask struct{ mmio.UM16 }
+type RMDR30 struct{ mmio.UM16 }
 
-func (rm DR30_Mask) Load() DR30_Bits   { return DR30_Bits(rm.UM16.Load()) }
-func (rm DR30_Mask) Store(b DR30_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR30) Load() DR30   { return DR30(rm.UM16.Load()) }
+func (rm RMDR30) Store(b DR30) { rm.UM16.Store(uint16(b)) }
 
-type DR31_Bits uint16
+type DR31 uint16
 
-func (b DR31_Bits) Field(mask DR31_Bits) int {
+func (b DR31) Field(mask DR31) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR31_Bits) J(v int) DR31_Bits {
-	return DR31_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR31) J(v int) DR31 {
+	return DR31(bits.Make32(v, uint32(mask)))
 }
 
-type DR31 struct{ mmio.U16 }
+type RDR31 struct{ mmio.U16 }
 
-func (r *DR31) Bits(mask DR31_Bits) DR31_Bits { return DR31_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR31) StoreBits(mask, b DR31_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR31) SetBits(mask DR31_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR31) ClearBits(mask DR31_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR31) Load() DR31_Bits               { return DR31_Bits(r.U16.Load()) }
-func (r *DR31) Store(b DR31_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR31) Bits(mask DR31) DR31    { return DR31(r.U16.Bits(uint16(mask))) }
+func (r *RDR31) StoreBits(mask, b DR31) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR31) SetBits(mask DR31)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR31) ClearBits(mask DR31)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR31) Load() DR31             { return DR31(r.U16.Load()) }
+func (r *RDR31) Store(b DR31)           { r.U16.Store(uint16(b)) }
 
-type DR31_Mask struct{ mmio.UM16 }
+type RMDR31 struct{ mmio.UM16 }
 
-func (rm DR31_Mask) Load() DR31_Bits   { return DR31_Bits(rm.UM16.Load()) }
-func (rm DR31_Mask) Store(b DR31_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR31) Load() DR31   { return DR31(rm.UM16.Load()) }
+func (rm RMDR31) Store(b DR31) { rm.UM16.Store(uint16(b)) }
 
-type DR32_Bits uint16
+type DR32 uint16
 
-func (b DR32_Bits) Field(mask DR32_Bits) int {
+func (b DR32) Field(mask DR32) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR32_Bits) J(v int) DR32_Bits {
-	return DR32_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR32) J(v int) DR32 {
+	return DR32(bits.Make32(v, uint32(mask)))
 }
 
-type DR32 struct{ mmio.U16 }
+type RDR32 struct{ mmio.U16 }
 
-func (r *DR32) Bits(mask DR32_Bits) DR32_Bits { return DR32_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR32) StoreBits(mask, b DR32_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR32) SetBits(mask DR32_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR32) ClearBits(mask DR32_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR32) Load() DR32_Bits               { return DR32_Bits(r.U16.Load()) }
-func (r *DR32) Store(b DR32_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR32) Bits(mask DR32) DR32    { return DR32(r.U16.Bits(uint16(mask))) }
+func (r *RDR32) StoreBits(mask, b DR32) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR32) SetBits(mask DR32)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR32) ClearBits(mask DR32)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR32) Load() DR32             { return DR32(r.U16.Load()) }
+func (r *RDR32) Store(b DR32)           { r.U16.Store(uint16(b)) }
 
-type DR32_Mask struct{ mmio.UM16 }
+type RMDR32 struct{ mmio.UM16 }
 
-func (rm DR32_Mask) Load() DR32_Bits   { return DR32_Bits(rm.UM16.Load()) }
-func (rm DR32_Mask) Store(b DR32_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR32) Load() DR32   { return DR32(rm.UM16.Load()) }
+func (rm RMDR32) Store(b DR32) { rm.UM16.Store(uint16(b)) }
 
-type DR33_Bits uint16
+type DR33 uint16
 
-func (b DR33_Bits) Field(mask DR33_Bits) int {
+func (b DR33) Field(mask DR33) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR33_Bits) J(v int) DR33_Bits {
-	return DR33_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR33) J(v int) DR33 {
+	return DR33(bits.Make32(v, uint32(mask)))
 }
 
-type DR33 struct{ mmio.U16 }
+type RDR33 struct{ mmio.U16 }
 
-func (r *DR33) Bits(mask DR33_Bits) DR33_Bits { return DR33_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR33) StoreBits(mask, b DR33_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR33) SetBits(mask DR33_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR33) ClearBits(mask DR33_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR33) Load() DR33_Bits               { return DR33_Bits(r.U16.Load()) }
-func (r *DR33) Store(b DR33_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR33) Bits(mask DR33) DR33    { return DR33(r.U16.Bits(uint16(mask))) }
+func (r *RDR33) StoreBits(mask, b DR33) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR33) SetBits(mask DR33)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR33) ClearBits(mask DR33)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR33) Load() DR33             { return DR33(r.U16.Load()) }
+func (r *RDR33) Store(b DR33)           { r.U16.Store(uint16(b)) }
 
-type DR33_Mask struct{ mmio.UM16 }
+type RMDR33 struct{ mmio.UM16 }
 
-func (rm DR33_Mask) Load() DR33_Bits   { return DR33_Bits(rm.UM16.Load()) }
-func (rm DR33_Mask) Store(b DR33_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR33) Load() DR33   { return DR33(rm.UM16.Load()) }
+func (rm RMDR33) Store(b DR33) { rm.UM16.Store(uint16(b)) }
 
-type DR34_Bits uint16
+type DR34 uint16
 
-func (b DR34_Bits) Field(mask DR34_Bits) int {
+func (b DR34) Field(mask DR34) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR34_Bits) J(v int) DR34_Bits {
-	return DR34_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR34) J(v int) DR34 {
+	return DR34(bits.Make32(v, uint32(mask)))
 }
 
-type DR34 struct{ mmio.U16 }
+type RDR34 struct{ mmio.U16 }
 
-func (r *DR34) Bits(mask DR34_Bits) DR34_Bits { return DR34_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR34) StoreBits(mask, b DR34_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR34) SetBits(mask DR34_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR34) ClearBits(mask DR34_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR34) Load() DR34_Bits               { return DR34_Bits(r.U16.Load()) }
-func (r *DR34) Store(b DR34_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR34) Bits(mask DR34) DR34    { return DR34(r.U16.Bits(uint16(mask))) }
+func (r *RDR34) StoreBits(mask, b DR34) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR34) SetBits(mask DR34)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR34) ClearBits(mask DR34)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR34) Load() DR34             { return DR34(r.U16.Load()) }
+func (r *RDR34) Store(b DR34)           { r.U16.Store(uint16(b)) }
 
-type DR34_Mask struct{ mmio.UM16 }
+type RMDR34 struct{ mmio.UM16 }
 
-func (rm DR34_Mask) Load() DR34_Bits   { return DR34_Bits(rm.UM16.Load()) }
-func (rm DR34_Mask) Store(b DR34_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR34) Load() DR34   { return DR34(rm.UM16.Load()) }
+func (rm RMDR34) Store(b DR34) { rm.UM16.Store(uint16(b)) }
 
-type DR35_Bits uint16
+type DR35 uint16
 
-func (b DR35_Bits) Field(mask DR35_Bits) int {
+func (b DR35) Field(mask DR35) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR35_Bits) J(v int) DR35_Bits {
-	return DR35_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR35) J(v int) DR35 {
+	return DR35(bits.Make32(v, uint32(mask)))
 }
 
-type DR35 struct{ mmio.U16 }
+type RDR35 struct{ mmio.U16 }
 
-func (r *DR35) Bits(mask DR35_Bits) DR35_Bits { return DR35_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR35) StoreBits(mask, b DR35_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR35) SetBits(mask DR35_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR35) ClearBits(mask DR35_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR35) Load() DR35_Bits               { return DR35_Bits(r.U16.Load()) }
-func (r *DR35) Store(b DR35_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR35) Bits(mask DR35) DR35    { return DR35(r.U16.Bits(uint16(mask))) }
+func (r *RDR35) StoreBits(mask, b DR35) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR35) SetBits(mask DR35)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR35) ClearBits(mask DR35)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR35) Load() DR35             { return DR35(r.U16.Load()) }
+func (r *RDR35) Store(b DR35)           { r.U16.Store(uint16(b)) }
 
-type DR35_Mask struct{ mmio.UM16 }
+type RMDR35 struct{ mmio.UM16 }
 
-func (rm DR35_Mask) Load() DR35_Bits   { return DR35_Bits(rm.UM16.Load()) }
-func (rm DR35_Mask) Store(b DR35_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR35) Load() DR35   { return DR35(rm.UM16.Load()) }
+func (rm RMDR35) Store(b DR35) { rm.UM16.Store(uint16(b)) }
 
-type DR36_Bits uint16
+type DR36 uint16
 
-func (b DR36_Bits) Field(mask DR36_Bits) int {
+func (b DR36) Field(mask DR36) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR36_Bits) J(v int) DR36_Bits {
-	return DR36_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR36) J(v int) DR36 {
+	return DR36(bits.Make32(v, uint32(mask)))
 }
 
-type DR36 struct{ mmio.U16 }
+type RDR36 struct{ mmio.U16 }
 
-func (r *DR36) Bits(mask DR36_Bits) DR36_Bits { return DR36_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR36) StoreBits(mask, b DR36_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR36) SetBits(mask DR36_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR36) ClearBits(mask DR36_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR36) Load() DR36_Bits               { return DR36_Bits(r.U16.Load()) }
-func (r *DR36) Store(b DR36_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR36) Bits(mask DR36) DR36    { return DR36(r.U16.Bits(uint16(mask))) }
+func (r *RDR36) StoreBits(mask, b DR36) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR36) SetBits(mask DR36)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR36) ClearBits(mask DR36)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR36) Load() DR36             { return DR36(r.U16.Load()) }
+func (r *RDR36) Store(b DR36)           { r.U16.Store(uint16(b)) }
 
-type DR36_Mask struct{ mmio.UM16 }
+type RMDR36 struct{ mmio.UM16 }
 
-func (rm DR36_Mask) Load() DR36_Bits   { return DR36_Bits(rm.UM16.Load()) }
-func (rm DR36_Mask) Store(b DR36_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR36) Load() DR36   { return DR36(rm.UM16.Load()) }
+func (rm RMDR36) Store(b DR36) { rm.UM16.Store(uint16(b)) }
 
-type DR37_Bits uint16
+type DR37 uint16
 
-func (b DR37_Bits) Field(mask DR37_Bits) int {
+func (b DR37) Field(mask DR37) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR37_Bits) J(v int) DR37_Bits {
-	return DR37_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR37) J(v int) DR37 {
+	return DR37(bits.Make32(v, uint32(mask)))
 }
 
-type DR37 struct{ mmio.U16 }
+type RDR37 struct{ mmio.U16 }
 
-func (r *DR37) Bits(mask DR37_Bits) DR37_Bits { return DR37_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR37) StoreBits(mask, b DR37_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR37) SetBits(mask DR37_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR37) ClearBits(mask DR37_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR37) Load() DR37_Bits               { return DR37_Bits(r.U16.Load()) }
-func (r *DR37) Store(b DR37_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR37) Bits(mask DR37) DR37    { return DR37(r.U16.Bits(uint16(mask))) }
+func (r *RDR37) StoreBits(mask, b DR37) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR37) SetBits(mask DR37)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR37) ClearBits(mask DR37)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR37) Load() DR37             { return DR37(r.U16.Load()) }
+func (r *RDR37) Store(b DR37)           { r.U16.Store(uint16(b)) }
 
-type DR37_Mask struct{ mmio.UM16 }
+type RMDR37 struct{ mmio.UM16 }
 
-func (rm DR37_Mask) Load() DR37_Bits   { return DR37_Bits(rm.UM16.Load()) }
-func (rm DR37_Mask) Store(b DR37_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR37) Load() DR37   { return DR37(rm.UM16.Load()) }
+func (rm RMDR37) Store(b DR37) { rm.UM16.Store(uint16(b)) }
 
-type DR38_Bits uint16
+type DR38 uint16
 
-func (b DR38_Bits) Field(mask DR38_Bits) int {
+func (b DR38) Field(mask DR38) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR38_Bits) J(v int) DR38_Bits {
-	return DR38_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR38) J(v int) DR38 {
+	return DR38(bits.Make32(v, uint32(mask)))
 }
 
-type DR38 struct{ mmio.U16 }
+type RDR38 struct{ mmio.U16 }
 
-func (r *DR38) Bits(mask DR38_Bits) DR38_Bits { return DR38_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR38) StoreBits(mask, b DR38_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR38) SetBits(mask DR38_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR38) ClearBits(mask DR38_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR38) Load() DR38_Bits               { return DR38_Bits(r.U16.Load()) }
-func (r *DR38) Store(b DR38_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR38) Bits(mask DR38) DR38    { return DR38(r.U16.Bits(uint16(mask))) }
+func (r *RDR38) StoreBits(mask, b DR38) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR38) SetBits(mask DR38)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR38) ClearBits(mask DR38)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR38) Load() DR38             { return DR38(r.U16.Load()) }
+func (r *RDR38) Store(b DR38)           { r.U16.Store(uint16(b)) }
 
-type DR38_Mask struct{ mmio.UM16 }
+type RMDR38 struct{ mmio.UM16 }
 
-func (rm DR38_Mask) Load() DR38_Bits   { return DR38_Bits(rm.UM16.Load()) }
-func (rm DR38_Mask) Store(b DR38_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR38) Load() DR38   { return DR38(rm.UM16.Load()) }
+func (rm RMDR38) Store(b DR38) { rm.UM16.Store(uint16(b)) }
 
-type DR39_Bits uint16
+type DR39 uint16
 
-func (b DR39_Bits) Field(mask DR39_Bits) int {
+func (b DR39) Field(mask DR39) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR39_Bits) J(v int) DR39_Bits {
-	return DR39_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR39) J(v int) DR39 {
+	return DR39(bits.Make32(v, uint32(mask)))
 }
 
-type DR39 struct{ mmio.U16 }
+type RDR39 struct{ mmio.U16 }
 
-func (r *DR39) Bits(mask DR39_Bits) DR39_Bits { return DR39_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR39) StoreBits(mask, b DR39_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR39) SetBits(mask DR39_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR39) ClearBits(mask DR39_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR39) Load() DR39_Bits               { return DR39_Bits(r.U16.Load()) }
-func (r *DR39) Store(b DR39_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR39) Bits(mask DR39) DR39    { return DR39(r.U16.Bits(uint16(mask))) }
+func (r *RDR39) StoreBits(mask, b DR39) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR39) SetBits(mask DR39)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR39) ClearBits(mask DR39)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR39) Load() DR39             { return DR39(r.U16.Load()) }
+func (r *RDR39) Store(b DR39)           { r.U16.Store(uint16(b)) }
 
-type DR39_Mask struct{ mmio.UM16 }
+type RMDR39 struct{ mmio.UM16 }
 
-func (rm DR39_Mask) Load() DR39_Bits   { return DR39_Bits(rm.UM16.Load()) }
-func (rm DR39_Mask) Store(b DR39_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR39) Load() DR39   { return DR39(rm.UM16.Load()) }
+func (rm RMDR39) Store(b DR39) { rm.UM16.Store(uint16(b)) }
 
-type DR40_Bits uint16
+type DR40 uint16
 
-func (b DR40_Bits) Field(mask DR40_Bits) int {
+func (b DR40) Field(mask DR40) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR40_Bits) J(v int) DR40_Bits {
-	return DR40_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR40) J(v int) DR40 {
+	return DR40(bits.Make32(v, uint32(mask)))
 }
 
-type DR40 struct{ mmio.U16 }
+type RDR40 struct{ mmio.U16 }
 
-func (r *DR40) Bits(mask DR40_Bits) DR40_Bits { return DR40_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR40) StoreBits(mask, b DR40_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR40) SetBits(mask DR40_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR40) ClearBits(mask DR40_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR40) Load() DR40_Bits               { return DR40_Bits(r.U16.Load()) }
-func (r *DR40) Store(b DR40_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR40) Bits(mask DR40) DR40    { return DR40(r.U16.Bits(uint16(mask))) }
+func (r *RDR40) StoreBits(mask, b DR40) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR40) SetBits(mask DR40)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR40) ClearBits(mask DR40)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR40) Load() DR40             { return DR40(r.U16.Load()) }
+func (r *RDR40) Store(b DR40)           { r.U16.Store(uint16(b)) }
 
-type DR40_Mask struct{ mmio.UM16 }
+type RMDR40 struct{ mmio.UM16 }
 
-func (rm DR40_Mask) Load() DR40_Bits   { return DR40_Bits(rm.UM16.Load()) }
-func (rm DR40_Mask) Store(b DR40_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR40) Load() DR40   { return DR40(rm.UM16.Load()) }
+func (rm RMDR40) Store(b DR40) { rm.UM16.Store(uint16(b)) }
 
-type DR41_Bits uint16
+type DR41 uint16
 
-func (b DR41_Bits) Field(mask DR41_Bits) int {
+func (b DR41) Field(mask DR41) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR41_Bits) J(v int) DR41_Bits {
-	return DR41_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR41) J(v int) DR41 {
+	return DR41(bits.Make32(v, uint32(mask)))
 }
 
-type DR41 struct{ mmio.U16 }
+type RDR41 struct{ mmio.U16 }
 
-func (r *DR41) Bits(mask DR41_Bits) DR41_Bits { return DR41_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR41) StoreBits(mask, b DR41_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR41) SetBits(mask DR41_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR41) ClearBits(mask DR41_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR41) Load() DR41_Bits               { return DR41_Bits(r.U16.Load()) }
-func (r *DR41) Store(b DR41_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR41) Bits(mask DR41) DR41    { return DR41(r.U16.Bits(uint16(mask))) }
+func (r *RDR41) StoreBits(mask, b DR41) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR41) SetBits(mask DR41)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR41) ClearBits(mask DR41)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR41) Load() DR41             { return DR41(r.U16.Load()) }
+func (r *RDR41) Store(b DR41)           { r.U16.Store(uint16(b)) }
 
-type DR41_Mask struct{ mmio.UM16 }
+type RMDR41 struct{ mmio.UM16 }
 
-func (rm DR41_Mask) Load() DR41_Bits   { return DR41_Bits(rm.UM16.Load()) }
-func (rm DR41_Mask) Store(b DR41_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR41) Load() DR41   { return DR41(rm.UM16.Load()) }
+func (rm RMDR41) Store(b DR41) { rm.UM16.Store(uint16(b)) }
 
-type DR42_Bits uint16
+type DR42 uint16
 
-func (b DR42_Bits) Field(mask DR42_Bits) int {
+func (b DR42) Field(mask DR42) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask DR42_Bits) J(v int) DR42_Bits {
-	return DR42_Bits(bits.Make32(v, uint32(mask)))
+func (mask DR42) J(v int) DR42 {
+	return DR42(bits.Make32(v, uint32(mask)))
 }
 
-type DR42 struct{ mmio.U16 }
+type RDR42 struct{ mmio.U16 }
 
-func (r *DR42) Bits(mask DR42_Bits) DR42_Bits { return DR42_Bits(r.U16.Bits(uint16(mask))) }
-func (r *DR42) StoreBits(mask, b DR42_Bits)   { r.U16.StoreBits(uint16(mask), uint16(b)) }
-func (r *DR42) SetBits(mask DR42_Bits)        { r.U16.SetBits(uint16(mask)) }
-func (r *DR42) ClearBits(mask DR42_Bits)      { r.U16.ClearBits(uint16(mask)) }
-func (r *DR42) Load() DR42_Bits               { return DR42_Bits(r.U16.Load()) }
-func (r *DR42) Store(b DR42_Bits)             { r.U16.Store(uint16(b)) }
+func (r *RDR42) Bits(mask DR42) DR42    { return DR42(r.U16.Bits(uint16(mask))) }
+func (r *RDR42) StoreBits(mask, b DR42) { r.U16.StoreBits(uint16(mask), uint16(b)) }
+func (r *RDR42) SetBits(mask DR42)      { r.U16.SetBits(uint16(mask)) }
+func (r *RDR42) ClearBits(mask DR42)    { r.U16.ClearBits(uint16(mask)) }
+func (r *RDR42) Load() DR42             { return DR42(r.U16.Load()) }
+func (r *RDR42) Store(b DR42)           { r.U16.Store(uint16(b)) }
 
-type DR42_Mask struct{ mmio.UM16 }
+type RMDR42 struct{ mmio.UM16 }
 
-func (rm DR42_Mask) Load() DR42_Bits   { return DR42_Bits(rm.UM16.Load()) }
-func (rm DR42_Mask) Store(b DR42_Bits) { rm.UM16.Store(uint16(b)) }
+func (rm RMDR42) Load() DR42   { return DR42(rm.UM16.Load()) }
+func (rm RMDR42) Store(b DR42) { rm.UM16.Store(uint16(b)) }

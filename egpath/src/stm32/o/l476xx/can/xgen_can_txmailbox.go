@@ -11,120 +11,120 @@ import (
 )
 
 type CAN_TxMailBox_Periph struct {
-	TIR  TIR
-	TDTR TDTR
-	TDLR TDLR
-	TDHR TDHR
+	TIR  RTIR
+	TDTR RTDTR
+	TDLR RTDLR
+	TDHR RTDHR
 }
 
 func (p *CAN_TxMailBox_Periph) BaseAddr() uintptr {
 	return uintptr(unsafe.Pointer(p))
 }
 
-type TIR_Bits uint32
+type TIR uint32
 
-func (b TIR_Bits) Field(mask TIR_Bits) int {
+func (b TIR) Field(mask TIR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask TIR_Bits) J(v int) TIR_Bits {
-	return TIR_Bits(bits.Make32(v, uint32(mask)))
+func (mask TIR) J(v int) TIR {
+	return TIR(bits.Make32(v, uint32(mask)))
 }
 
-type TIR struct{ mmio.U32 }
+type RTIR struct{ mmio.U32 }
 
-func (r *TIR) Bits(mask TIR_Bits) TIR_Bits { return TIR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *TIR) StoreBits(mask, b TIR_Bits)  { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *TIR) SetBits(mask TIR_Bits)       { r.U32.SetBits(uint32(mask)) }
-func (r *TIR) ClearBits(mask TIR_Bits)     { r.U32.ClearBits(uint32(mask)) }
-func (r *TIR) Load() TIR_Bits              { return TIR_Bits(r.U32.Load()) }
-func (r *TIR) Store(b TIR_Bits)            { r.U32.Store(uint32(b)) }
+func (r *RTIR) Bits(mask TIR) TIR     { return TIR(r.U32.Bits(uint32(mask))) }
+func (r *RTIR) StoreBits(mask, b TIR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RTIR) SetBits(mask TIR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RTIR) ClearBits(mask TIR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RTIR) Load() TIR             { return TIR(r.U32.Load()) }
+func (r *RTIR) Store(b TIR)           { r.U32.Store(uint32(b)) }
 
-func (r *TIR) AtomicStoreBits(mask, b TIR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *TIR) AtomicSetBits(mask TIR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *TIR) AtomicClearBits(mask TIR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RTIR) AtomicStoreBits(mask, b TIR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RTIR) AtomicSetBits(mask TIR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RTIR) AtomicClearBits(mask TIR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type TIR_Mask struct{ mmio.UM32 }
+type RMTIR struct{ mmio.UM32 }
 
-func (rm TIR_Mask) Load() TIR_Bits   { return TIR_Bits(rm.UM32.Load()) }
-func (rm TIR_Mask) Store(b TIR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMTIR) Load() TIR   { return TIR(rm.UM32.Load()) }
+func (rm RMTIR) Store(b TIR) { rm.UM32.Store(uint32(b)) }
 
-type TDTR_Bits uint32
+type TDTR uint32
 
-func (b TDTR_Bits) Field(mask TDTR_Bits) int {
+func (b TDTR) Field(mask TDTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask TDTR_Bits) J(v int) TDTR_Bits {
-	return TDTR_Bits(bits.Make32(v, uint32(mask)))
+func (mask TDTR) J(v int) TDTR {
+	return TDTR(bits.Make32(v, uint32(mask)))
 }
 
-type TDTR struct{ mmio.U32 }
+type RTDTR struct{ mmio.U32 }
 
-func (r *TDTR) Bits(mask TDTR_Bits) TDTR_Bits { return TDTR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *TDTR) StoreBits(mask, b TDTR_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *TDTR) SetBits(mask TDTR_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *TDTR) ClearBits(mask TDTR_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *TDTR) Load() TDTR_Bits               { return TDTR_Bits(r.U32.Load()) }
-func (r *TDTR) Store(b TDTR_Bits)             { r.U32.Store(uint32(b)) }
+func (r *RTDTR) Bits(mask TDTR) TDTR    { return TDTR(r.U32.Bits(uint32(mask))) }
+func (r *RTDTR) StoreBits(mask, b TDTR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RTDTR) SetBits(mask TDTR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RTDTR) ClearBits(mask TDTR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RTDTR) Load() TDTR             { return TDTR(r.U32.Load()) }
+func (r *RTDTR) Store(b TDTR)           { r.U32.Store(uint32(b)) }
 
-func (r *TDTR) AtomicStoreBits(mask, b TDTR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *TDTR) AtomicSetBits(mask TDTR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *TDTR) AtomicClearBits(mask TDTR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RTDTR) AtomicStoreBits(mask, b TDTR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RTDTR) AtomicSetBits(mask TDTR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RTDTR) AtomicClearBits(mask TDTR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type TDTR_Mask struct{ mmio.UM32 }
+type RMTDTR struct{ mmio.UM32 }
 
-func (rm TDTR_Mask) Load() TDTR_Bits   { return TDTR_Bits(rm.UM32.Load()) }
-func (rm TDTR_Mask) Store(b TDTR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMTDTR) Load() TDTR   { return TDTR(rm.UM32.Load()) }
+func (rm RMTDTR) Store(b TDTR) { rm.UM32.Store(uint32(b)) }
 
-type TDLR_Bits uint32
+type TDLR uint32
 
-func (b TDLR_Bits) Field(mask TDLR_Bits) int {
+func (b TDLR) Field(mask TDLR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask TDLR_Bits) J(v int) TDLR_Bits {
-	return TDLR_Bits(bits.Make32(v, uint32(mask)))
+func (mask TDLR) J(v int) TDLR {
+	return TDLR(bits.Make32(v, uint32(mask)))
 }
 
-type TDLR struct{ mmio.U32 }
+type RTDLR struct{ mmio.U32 }
 
-func (r *TDLR) Bits(mask TDLR_Bits) TDLR_Bits { return TDLR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *TDLR) StoreBits(mask, b TDLR_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *TDLR) SetBits(mask TDLR_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *TDLR) ClearBits(mask TDLR_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *TDLR) Load() TDLR_Bits               { return TDLR_Bits(r.U32.Load()) }
-func (r *TDLR) Store(b TDLR_Bits)             { r.U32.Store(uint32(b)) }
+func (r *RTDLR) Bits(mask TDLR) TDLR    { return TDLR(r.U32.Bits(uint32(mask))) }
+func (r *RTDLR) StoreBits(mask, b TDLR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RTDLR) SetBits(mask TDLR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RTDLR) ClearBits(mask TDLR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RTDLR) Load() TDLR             { return TDLR(r.U32.Load()) }
+func (r *RTDLR) Store(b TDLR)           { r.U32.Store(uint32(b)) }
 
-func (r *TDLR) AtomicStoreBits(mask, b TDLR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *TDLR) AtomicSetBits(mask TDLR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *TDLR) AtomicClearBits(mask TDLR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RTDLR) AtomicStoreBits(mask, b TDLR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RTDLR) AtomicSetBits(mask TDLR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RTDLR) AtomicClearBits(mask TDLR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type TDLR_Mask struct{ mmio.UM32 }
+type RMTDLR struct{ mmio.UM32 }
 
-func (rm TDLR_Mask) Load() TDLR_Bits   { return TDLR_Bits(rm.UM32.Load()) }
-func (rm TDLR_Mask) Store(b TDLR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMTDLR) Load() TDLR   { return TDLR(rm.UM32.Load()) }
+func (rm RMTDLR) Store(b TDLR) { rm.UM32.Store(uint32(b)) }
 
-type TDHR_Bits uint32
+type TDHR uint32
 
-func (b TDHR_Bits) Field(mask TDHR_Bits) int {
+func (b TDHR) Field(mask TDHR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask TDHR_Bits) J(v int) TDHR_Bits {
-	return TDHR_Bits(bits.Make32(v, uint32(mask)))
+func (mask TDHR) J(v int) TDHR {
+	return TDHR(bits.Make32(v, uint32(mask)))
 }
 
-type TDHR struct{ mmio.U32 }
+type RTDHR struct{ mmio.U32 }
 
-func (r *TDHR) Bits(mask TDHR_Bits) TDHR_Bits { return TDHR_Bits(r.U32.Bits(uint32(mask))) }
-func (r *TDHR) StoreBits(mask, b TDHR_Bits)   { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *TDHR) SetBits(mask TDHR_Bits)        { r.U32.SetBits(uint32(mask)) }
-func (r *TDHR) ClearBits(mask TDHR_Bits)      { r.U32.ClearBits(uint32(mask)) }
-func (r *TDHR) Load() TDHR_Bits               { return TDHR_Bits(r.U32.Load()) }
-func (r *TDHR) Store(b TDHR_Bits)             { r.U32.Store(uint32(b)) }
+func (r *RTDHR) Bits(mask TDHR) TDHR    { return TDHR(r.U32.Bits(uint32(mask))) }
+func (r *RTDHR) StoreBits(mask, b TDHR) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RTDHR) SetBits(mask TDHR)      { r.U32.SetBits(uint32(mask)) }
+func (r *RTDHR) ClearBits(mask TDHR)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RTDHR) Load() TDHR             { return TDHR(r.U32.Load()) }
+func (r *RTDHR) Store(b TDHR)           { r.U32.Store(uint32(b)) }
 
-func (r *TDHR) AtomicStoreBits(mask, b TDHR_Bits) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *TDHR) AtomicSetBits(mask TDHR_Bits)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *TDHR) AtomicClearBits(mask TDHR_Bits)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RTDHR) AtomicStoreBits(mask, b TDHR) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RTDHR) AtomicSetBits(mask TDHR)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RTDHR) AtomicClearBits(mask TDHR)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type TDHR_Mask struct{ mmio.UM32 }
+type RMTDHR struct{ mmio.UM32 }
 
-func (rm TDHR_Mask) Load() TDHR_Bits   { return TDHR_Bits(rm.UM32.Load()) }
-func (rm TDHR_Mask) Store(b TDHR_Bits) { rm.UM32.Store(uint32(b)) }
+func (rm RMTDHR) Load() TDHR   { return TDHR(rm.UM32.Load()) }
+func (rm RMTDHR) Store(b TDHR) { rm.UM32.Store(uint32(b)) }

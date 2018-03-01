@@ -151,8 +151,8 @@ func main() {
 	adcd.Enable(true)
 
 	div1, div2 := 2, 5 // ADC SR = 72 MHz / (div1 * div2)
-	adct.PSC.Store(tim.PSC_Bits(div1 - 1))
-	adct.ARR.Store(tim.ARR_Bits(div2 - 1))
+	adct.PSC.Store(tim.PSC(div1 - 1))
+	adct.ARR.Store(tim.ARR(div2 - 1))
 	adct.EGR.Store(tim.UG)
 	adcd.Start(1, 0)
 

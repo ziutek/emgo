@@ -15,6 +15,7 @@ import (
 var (
 	led    gpio.Pin
 	relays [4]gpio.Pin
+	ssr    gpio.Pin
 )
 
 func init() {
@@ -24,10 +25,11 @@ func init() {
 	// Allocate pins.
 
 	gpio.B.EnableClock(false)
-	relays[0] = gpio.B.Pin(7)
-	relays[1] = gpio.B.Pin(6)
-	relays[2] = gpio.B.Pin(5)
 	relays[3] = gpio.B.Pin(4)
+	relays[2] = gpio.B.Pin(5)
+	relays[1] = gpio.B.Pin(6)
+	relays[0] = gpio.B.Pin(7)
+	ssr = gpio.B.Pin(8)
 
 	gpio.C.EnableClock(false)
 	led = gpio.C.Pin(13)
@@ -45,18 +47,19 @@ func init() {
 		pin.Set()
 		pin.Setup(cfg)
 	}
-
+	cfg = &gpio.Config{Mode: gpio.Out, Driver: gpio.PushPull, Speed: gpio.Low}
+	ssr.Setup(cfg)
 }
 
 func main() {
 	for _, relay := range relays {
-		relay.Clear()
-
 		led.Clear()
+		relay.Clear()
 		delay.Millisec(50)
 		led.Set()
-		delay.Millisec(1950)
+		delay.Millisec(950)
 	}
+	ssr.Set()
 }
 
 //c:__attribute__((section(".ISRs")))

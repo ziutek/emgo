@@ -14,11 +14,11 @@ func (p *Periph) status() (Event, Error) {
 }
 
 func (p *Periph) clear(ev Event, err Error) {
-	p.raw.ICR.Store(usart.ICR_Bits(ev)<<4 | usart.ICR_Bits(err))
+	p.raw.ICR.Store(usart.ICR(ev)<<4 | usart.ICR(err))
 }
 
 func (p *Periph) store(d int) {
-	p.raw.TDR.Store(usart.TDR_Bits(d))
+	p.raw.TDR.Store(usart.TDR(d))
 }
 
 func (p *Periph) load() int {

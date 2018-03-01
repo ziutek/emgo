@@ -127,10 +127,10 @@ func (p *Periph) Setup(cfg *Config) {
 		trise = pclkM*3/10 + 1 // SCL max. rise time 300 ns.
 	}
 	p.raw.CR1.Store(0) // Disables peripheral.
-	p.raw.FREQ().Store(i2c.CR2_Bits(pclkM))
-	p.raw.CCR.Store(i2c.CCR_Bits(ccr))
-	p.raw.TRISE.Store(i2c.TRISE_Bits(trise))
-	p.raw.CR1.Store(i2c.CR1_Bits(cfg.Mode))
+	p.raw.FREQ().Store(i2c.CR2(pclkM))
+	p.raw.CCR.Store(i2c.CCR(ccr))
+	p.raw.TRISE.Store(i2c.TRISE(trise))
+	p.raw.CR1.Store(i2c.CR1(cfg.Mode))
 }
 
 // Speed returns actual clock speed set.

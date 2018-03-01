@@ -103,7 +103,7 @@ const (
 )
 
 //emgo:const
-var eventHandlers = [...]func(d *Driver, sr1 i2c.SR1_Bits){
+var eventHandlers = [...]func(d *Driver, sr1 i2c.SR1){
 	stateIdle:  (*Driver).idleEH,
 	stateStart: (*Driver).startISR,
 	stateAddr:  (*Driver).addrISR,
@@ -118,7 +118,7 @@ var eventHandlers = [...]func(d *Driver, sr1 i2c.SR1_Bits){
 	stateReadN:    (*Driver).readNISR,
 }
 
-func (d *Driver) idleEH(sr1 i2c.SR1_Bits) {
+func (d *Driver) idleEH(sr1 i2c.SR1) {
 	p := &d.P.raw
 	if d.addr < 0 {
 		// Slave - not implemented.
@@ -155,18 +155,18 @@ func (d *Driver) idleEH(sr1 i2c.SR1_Bits) {
 	d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN)
 }
 
-func (d *Driver) startISR(sr1 i2c.SR1_Bits) {
+func (d *Driver) startISR(sr1 i2c.SR1) {
 	if sr1&i2c.SB == 0 {
 		d.badEvent(sr1)
 		return
 	}
 	d.state = stateAddr
 	p := &d.P.raw
-	p.DR.Store(i2c.DR_Bits(d.addr))
+	p.DR.Store(i2c.DR(d.addr))
 	p.SR1.Load() // Ensure that SB was cleared before return.
 }
 
-func (d *Driver) addrISR(sr1 i2c.SR1_Bits) {
+func (d *Driver) addrISR(sr1 i2c.SR1) {
 	if sr1&i2c.ADDR == 0 {
 		d.badEvent(sr1)
 		return
@@ -213,7 +213,7 @@ func (d *Driver) addrISR(sr1 i2c.SR1_Bits) {
 	}
 }
 
-func (d *Driver) readISR(sr1 i2c.SR1_Bits) {
+func (d *Driver) readISR(sr1 i2c.SR1) {
 	if sr1&i2c.BTF == 0 {
 		d.badEvent(sr1)
 		return
@@ -227,7 +227,7 @@ func (d *Driver) readISR(sr1 i2c.SR1_Bits) {
 	}
 }
 
-func (d *Driver) read1ISR(sr1 i2c.SR1_Bits) {
+func (d *Driver) read1ISR(sr1 i2c.SR1) {
 	if sr1&i2c.RXNE == 0 {
 		d.badEvent(sr1)
 		return
@@ -240,7 +240,7 @@ func (d *Driver) read1ISR(sr1 i2c.SR1_Bits) {
 	d.done.Signal(1)
 }
 
-func (d *Driver) read2ISR(sr1 i2c.SR1_Bits) {
+func (d *Driver) read2ISR(sr1 i2c.SR1) {
 	if sr1&i2c.BTF == 0 {
 		d.badEvent(sr1)
 		return
@@ -259,7 +259,7 @@ func (d *Driver) read2ISR(sr1 i2c.SR1_Bits) {
 	d.done.Signal(1)
 }
 
-func (d *Driver) readNISR(sr1 i2c.SR1_Bits) {
+func (d *Driver) readNISR(sr1 i2c.SR1) {
 	if sr1&i2c.BTF == 0 {
 		d.badEvent(sr1)
 		return
@@ -273,7 +273,7 @@ func (d *Driver) readNISR(sr1 i2c.SR1_Bits) {
 		d.done.Signal(1)
 		return
 	}
-	var dr i2c.DR_Bits
+	var dr i2c.DR
 	if m == 3 {
 		p.ACK().Clear()
 		cortexm.SetPRIMASK()
@@ -293,7 +293,7 @@ func (d *Driver) readNISR(sr1 i2c.SR1_Bits) {
 	d.n = n + 1
 }
 
-func (d *Driver) readWaitEH(_ i2c.SR1_Bits) {
+func (d *Driver) readWaitEH(_ i2c.SR1) {
 	if d.RxDMA != nil && len(d.buf) > 1 {
 		d.state = stateReadDMA
 		if d.stop {
@@ -311,7 +311,7 @@ func (d *Driver) readWaitEH(_ i2c.SR1_Bits) {
 	d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN)
 }
 
-func (d *Driver) writeISR(sr1 i2c.SR1_Bits) {
+func (d *Driver) writeISR(sr1 i2c.SR1) {
 	if sr1&i2c.BTF == 0 {
 		d.badEvent(sr1)
 		return
@@ -323,11 +323,11 @@ func (d *Driver) writeISR(sr1 i2c.SR1_Bits) {
 		d.done.Signal(1)
 		return
 	}
-	d.P.raw.DR.Store(i2c.DR_Bits(d.buf[n]))
+	d.P.raw.DR.Store(i2c.DR(d.buf[n]))
 	d.n = n + 1
 }
 
-func (d *Driver) writeWaitEH(_ i2c.SR1_Bits) {
+func (d *Driver) writeWaitEH(_ i2c.SR1) {
 	d.write()
 	if d.state == stateWrite {
 		d.enableIntI2C(i2c.ITEVTEN | i2c.ITERREN)
@@ -343,7 +343,7 @@ func (d *Driver) write() {
 	} else {
 		d.state = stateWrite
 		d.n = 1
-		d.P.raw.DR.Store(i2c.DR_Bits(d.buf[0]))
+		d.P.raw.DR.Store(i2c.DR(d.buf[0]))
 	}
 }
 
@@ -383,11 +383,11 @@ func (d *Driver) disableDMA(ch *dma.Channel) {
 	d.P.raw.CR2.ClearBits(i2c.DMAEN | i2c.LAST)
 }
 
-func (d *Driver) enableIntI2C(m i2c.CR2_Bits) {
+func (d *Driver) enableIntI2C(m i2c.CR2) {
 	d.P.raw.CR2.SetBits(m)
 }
 
-func (d *Driver) disableIntI2C(m i2c.CR2_Bits) {
+func (d *Driver) disableIntI2C(m i2c.CR2) {
 	d.P.raw.CR2.ClearBits(m)
 }
 
@@ -405,7 +405,7 @@ func (d *Driver) handleErrors() {
 	d.done.Signal(1)
 }
 
-func (d *Driver) badEvent(sr1 i2c.SR1_Bits) {
+func (d *Driver) badEvent(sr1 i2c.SR1) {
 	d.state = stateBadEvent
 	d.handleErrors()
 }

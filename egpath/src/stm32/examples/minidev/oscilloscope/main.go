@@ -131,8 +131,8 @@ func main() {
 	// Max. SR = 72 MHz / 6 / 14 ≈ 857143 Hz
 
 	div1, div2 := 6, 16 // ADC SR = 72 MHz / (div1 * div2)
-	adct.PSC.Store(tim.PSC_Bits(div1 - 1))
-	adct.ARR.Store(tim.ARR_Bits(div2 - 1))
+	adct.PSC.Store(tim.PSC(div1 - 1))
+	adct.ARR.Store(tim.ARR(div2 - 1))
 	adct.EGR.Store(tim.UG)
 
 	wh := scr.Bounds().Max

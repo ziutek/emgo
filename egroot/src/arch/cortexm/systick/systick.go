@@ -15,22 +15,22 @@
 package systick
 
 const (
-	ENABLE    CSR_Bits = 1 << 0  //+ Enable counter.
-	TICKINT   CSR_Bits = 1 << 1  //+ Generate exceptions.
-	CLKSOURCE CSR_Bits = 1 << 2  //+ Clock source: 0:external, 1:CPU.
-	COUNTFLAG CSR_Bits = 1 << 16 //+ 1:Timer counted to 0 since last read of CSR
+	ENABLE    CSR = 1 << 0  //+ Enable counter.
+	TICKINT   CSR = 1 << 1  //+ Generate exceptions.
+	CLKSOURCE CSR = 1 << 2  //+ Clock source: 0:external, 1:CPU.
+	COUNTFLAG CSR = 1 << 16 //+ 1:Timer counted to 0 since last read of CSR
 )
 
 const (
-	RELOAD RVR_Bits = 1<<24 - 1 //+ Loaded into CVR when the counter reaches 0.
+	RELOAD RVR = 1<<24 - 1 //+ Loaded into CVR when the counter reaches 0.
 )
 
 const (
-	CURRENT CVR_Bits = 1<<24 - 1 //+ Read: couter value. Write: clears to zero.
+	CURRENT CVR = 1<<24 - 1 //+ Read: couter value. Write: clears to zero.
 )
 
 const (
-	TENMS CALIB_Bits = 1<<24 - 1 //+
-	SKEW  CALIB_Bits = 1 << 30   //+
-	NOREF CALIB_Bits = 1 << 31   //+
+	TENMS CALIB = 1<<24 - 1 //+
+	SKEW  CALIB = 1 << 30   //+
+	NOREF CALIB = 1 << 31   //+
 )

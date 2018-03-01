@@ -6,9 +6,9 @@
 package scb
 
 const (
-	DISMCYCINT ACTLR_Bits = 1 << 0 //+
-	DISDEFWBUF ACTLR_Bits = 1 << 1 //+
-	DISFOLD    ACTLR_Bits = 1 << 2 //+
-	DISFPCA    ACTLR_Bits = 1 << 8 //+
-	DISOOFP    ACTLR_Bits = 1 << 9 //+
+	DISMCYCINT ACTLR = 1 << 0 //+
+	DISDEFWBUF ACTLR = 1 << 1 //+
+	DISFOLD    ACTLR = 1 << 2 //+
+	DISFPCA    ACTLR = 1 << 8 //+
+	DISOOFP    ACTLR = 1 << 9 //+
 )

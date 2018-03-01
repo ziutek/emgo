@@ -15,12 +15,12 @@ func (p *Periph) status() (Event, Error) {
 
 func (p *Periph) clear(ev Event, _ Error) {
 	if ev != 0 {
-		p.raw.SR.Store(^(usart.SR_Bits(ev) << 4))
+		p.raw.SR.Store(^(usart.SR(ev) << 4))
 	}
 }
 
 func (p *Periph) store(d int) {
-	p.raw.DR.Store(usart.DR_Bits(d))
+	p.raw.DR.Store(usart.DR(d))
 }
 
 func (p *Periph) load() int {
