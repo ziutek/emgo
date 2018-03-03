@@ -71,8 +71,9 @@ func (pwm PWM) SetPolarity(ch0, ch1, ch2, ch3 int) {
 	pwm.P.CCER.Store(CCER(pe))
 }
 
-// Ch returns pointer to n-th PWM channel register. Use its Store method to set
-// PWM duty-cycle for corresponding channel.
+// Ch returns pointer to n-th timer CCR register (PWM channel register). Use
+// its Store method to set PWM duty-cycle for corresponding channel. Channels
+// are numbered from zero, so n=0 means CCR1, n=1 means CCR2 and so on.
 func (pwm PWM) Ch(n int) *mmio.U32 {
 	return &(*[4]mmio.U32)(unsafe.Pointer(&pwm.P.CCR1))[n]
 }

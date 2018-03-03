@@ -36,3 +36,11 @@ func (p *Periph) DisableClock() {
 func (p *Periph) Reset() {
 	internal.APB_Reset(unsafe.Pointer(p))
 }
+
+// Compare/capture channel numbers.
+const (
+	CC1 = iota
+	CC2
+	CC3
+	CC4
+)
