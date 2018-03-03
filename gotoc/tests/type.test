@@ -437,3 +437,33 @@ const tinfo $8$foo$F$$ = {
 // decl
 typedef $4_$$9$$8$void$0$$9$int_$1$uint$0$ foo$F;
 // end
+
+// Go code:
+type A int
+type B = A
+// C code:
+// decl
+const tinfo foo$A$$;
+// def
+const tinfo foo$A$$ = {
+	{
+		.name = EGSTR("foo.A"),
+		.kind = Int
+	}
+};
+// decl
+const tinfo $8$foo$A$$;
+// def
+const tinfo $8$foo$A$$ = {
+	{
+		.kind = Ptr,
+		.elems = CSLICE(1, ((const tinfo*[]){
+			&foo$A$$
+		}))
+	}
+};
+// decl
+typedef int_ foo$A;
+// decl
+typedef foo$A foo$B;
+// end

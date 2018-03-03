@@ -50,11 +50,12 @@ writeType:
 		}
 
 	case *types.Named:
+		o := t.Obj()
 		if _, ok := t.Underlying().(*types.Interface); ok {
 			w.WriteString("interface")
-			cdd.addObject(t.Obj(), direct)
+			cdd.addObject(o, direct)
 		} else {
-			cdd.Name(w, t.Obj(), direct)
+			cdd.Name(w, o, direct)
 		}
 
 	case *types.Pointer:

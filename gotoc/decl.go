@@ -235,18 +235,21 @@ func (gtc *GTC) GenDecl(d *ast.GenDecl, il int) (cdds []*CDD) {
 				w.WriteString(dimFuncPtr(name, dim))
 				cdd.copyDecl(w, ";\n")
 			}
+			w.Reset()
 			typ := to.Type().(*types.Named)
 			for i, n := 0, typ.NumMethods(); i < n; i++ {
 				// Type uses its methods too.
 				cdd.addObject(typ.Method(i), false)
 			}
-			w.Reset()
-			cdd.tinfo(w, typ)
-			if _, ok := typ.Underlying().(*types.Pointer); !ok {
+			if ts.Assign == 0 {
+				// Not type alias.
+				cdd.tinfo(w, typ)
 				w.Reset()
-				cdd.tinfo(w, types.NewPointer(typ))
+				if _, ok := typ.Underlying().(*types.Pointer); !ok {
+					cdd.tinfo(w, types.NewPointer(typ))
+					w.Reset()
+				}
 			}
-			w.Reset()
 			cdds = append(cdds, cdd)
 		}
 
