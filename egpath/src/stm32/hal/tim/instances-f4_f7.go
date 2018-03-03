@@ -15,10 +15,10 @@ var (
 	TIM8 = (*Periph)(unsafe.Pointer(mmap.TIM8_BASE))
 
 	// General-purpose timers.
-	TIM2 = (*Periph)(unsafe.Pointer(mmap.TIM2_BASE))
+	TIM2 = (*Periph)(unsafe.Pointer(mmap.TIM2_BASE)) // 32-bit
 	TIM3 = (*Periph)(unsafe.Pointer(mmap.TIM3_BASE))
 	TIM4 = (*Periph)(unsafe.Pointer(mmap.TIM4_BASE))
-	TIM5 = (*Periph)(unsafe.Pointer(mmap.TIM5_BASE))
+	TIM5 = (*Periph)(unsafe.Pointer(mmap.TIM5_BASE)) // 32-bit
 
 	// Basic timers.
 	TIM6 = (*Periph)(unsafe.Pointer(mmap.TIM6_BASE))

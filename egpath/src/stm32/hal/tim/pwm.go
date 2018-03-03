@@ -31,10 +31,16 @@ func (pwm PWM) Disable() {
 	pwm.P.CR1.Store(0)
 }
 
-// SetFreq setups input clock frequency of underlying timer to produce PWM
-// waveform with period periodus miscroseconds. Max is a value that corresponds
-// to 100% duty-cycle.
-func (pwm PWM) SetFreq(periodus, max int) {
+// SetFreq setups counter clock frequency (CK_CNT) of underlying timer to
+// produce PWM waveform with period periodus miscroseconds. Max is a value that
+// corresponds to 100% duty-cycle. The timer prescaler is set to:
+//
+//	PSC = (CK_INT*periodus + 5e5*max) / (1e6 * max) - 1.
+//
+// The prescaler is 16-bit regisert, so periodus and max must be chosen to not
+// exceed 65535. Note that CK_INT = 2*PCLK if PCLK < HCLK. SetFreq reports
+// whether it successfully set the prescaler to a valid value.
+func (pwm PWM) SetFreq(periodus, max int) bool {
 	p := pwm.P
 	pclk := p.Bus().Clock()
 	if pclk < system.AHB.Clock() {
@@ -42,8 +48,12 @@ func (pwm PWM) SetFreq(periodus, max int) {
 	}
 	m := 1e6 * uint64(max)
 	div := (uint64(pclk)*uint64(periodus) + m/2) / m
+	if div > 65536 {
+		return false
+	}
 	p.PSC.Store(PSC(div - 1))
 	p.ARR.Store(ARR(max - 1))
+	return true
 }
 
 // SetMode sets PWM mode 1 or 2 for PWM channels (use OCPWM1 or OCPWM2
