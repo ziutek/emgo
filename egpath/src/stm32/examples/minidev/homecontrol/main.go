@@ -2,11 +2,13 @@ package main
 
 import (
 	"delay"
+	"fmt"
 
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/rtcst"
+	"stm32/hal/tim"
 
 	"stm32/hal/raw/afio"
 	"stm32/hal/raw/rcc"
@@ -15,7 +17,7 @@ import (
 var (
 	led    gpio.Pin
 	relays [4]gpio.Pin
-	ssr    gpio.Pin
+	pwm    tim.PWM
 )
 
 func init() {
@@ -29,12 +31,12 @@ func init() {
 	relays[2] = gpio.B.Pin(5)
 	relays[1] = gpio.B.Pin(6)
 	relays[0] = gpio.B.Pin(7)
-	ssr = gpio.B.Pin(8)
+	ssr := gpio.B.Pin(8) // TIM4.CC3
 
 	gpio.C.EnableClock(false)
 	led = gpio.C.Pin(13)
 
-	// Configure pins.
+	// Configure pins and peripherals..
 
 	// Release JTDI and NJTRST (PA15 and PB4) to use as GPIO pins.
 	rcc.RCC.AFIOEN().Set()
@@ -47,11 +49,22 @@ func init() {
 		pin.Set()
 		pin.Setup(cfg)
 	}
-	cfg = &gpio.Config{Mode: gpio.Out, Driver: gpio.PushPull, Speed: gpio.Low}
-	ssr.Setup(cfg)
+	ssr.Setup(&gpio.Config{
+		Mode:   gpio.Alt, // TIM4.CC3
+		Driver: gpio.PushPull,
+		Speed:  gpio.Low,
+	})
+	pwm = tim.PWM{tim.TIM4}
+	pwm.P.EnableClock(true)
+	pwm.SetMode(tim.OCPWM1, tim.OCPWM1, tim.OCPWM1, tim.OCPWM1)
+	pwm.SetPolarity(0, 0, 1, 0)
+	pwm.SetFreq(5e5, 1e4)
+	pwm.Enable(1)
 }
 
 func main() {
+	fmt.Printf("HCLK=%d PCLK=%d\n", system.AHB.Clock(), pwm.P.Bus().Clock())
+	pwm.Ch(3 - 1).Store(5e3)
 	for _, relay := range relays {
 		led.Clear()
 		relay.Clear()
@@ -59,7 +72,6 @@ func main() {
 		led.Set()
 		delay.Millisec(950)
 	}
-	ssr.Set()
 }
 
 //c:__attribute__((section(".ISRs")))
