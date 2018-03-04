@@ -64,7 +64,7 @@ func init() {
 
 func main() {
 	fmt.Printf("HCLK=%d PCLK=%d\n", system.AHB.Clock(), pwm.P.Bus().Clock())
-	pwm.Ch(3 - 1).Store(5e3)
+	pwm.Ch(tim.CC3).Store(1e3)
 	for _, relay := range relays {
 		led.Clear()
 		relay.Clear()
