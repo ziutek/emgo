@@ -1,6 +1,7 @@
 #!/bin/sh
 
 INTERFACE=stlink-v2
+#INTERFACE=ftdi
 TARGET=stm32f1x
 TRACECLKIN=72000000
 

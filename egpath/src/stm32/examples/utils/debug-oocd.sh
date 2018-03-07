@@ -11,7 +11,13 @@ if [ -z "$cfg" ]; then
 	: #cfg='unset __NOP'
 fi
 
-oocd_cmd="openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg -c '$cfg' -c 'gdb_port pipe' -c 'log_output /dev/null'"
+if [ "$INTERFACE" == ftdi ]; then
+	INTERFACE=../../utils/ftdi.cfg
+else
+	INTERFACE=interface/$INTERFACE.cfg
+fi
+
+oocd_cmd="openocd -f $INTERFACE -f target/$TARGET.cfg -c '$cfg' -c 'gdb_port pipe' -c 'log_output /dev/null'"
 
 arm-none-eabi-gdb --tui \
 	-ex "target extended-remote | $oocd_cmd" \
