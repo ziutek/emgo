@@ -1,291 +1,132 @@
-// Copyright 2011 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package time
 
-import (
-	"sync"
-)
+type Zone struct {
+	Name   string // Abbreviated name ("CET", "CEST").
+	Offset int    // Seconds east of UTC.
+}
+
+// DST describes daylight saving time zone. 25 least significant bits of Start
+// and End contain seconds from begining of year to the month-weekday-hour at
+// which the DST starts/ends, assuming that the year is not a leap year and its
+// first day is Monday. 7 most significant bits of Start and End contain margin,// a number of days that weekdays can be shifted back to do not introduce new
+// last weekday at end of month or to do not lose first weekday at beginning of
+// month.
+type DST struct {
+	Zone  Zone
+	Start uint32
+	End   uint32
+}
 
 // A Location maps time instants to the zone in use at that time.
-// Typically, the Location represents the collection of time offsets
-// in use in a geographical area, such as CEST and CET for central Europe.
+// This is simplified implementation that does not support historical changes.
 type Location struct {
-	name string
-	zone []zone
-	tx   []zoneTrans
-
-	// Most lookups will be for the current time.
-	// To avoid the binary search through tx, keep a
-	// static one-element cache that gives the correct
-	// zone for the time when the Location was created.
-	// if cacheStart <= t <= cacheEnd,
-	// lookup can return cacheZone.
-	// The units for cacheStart and cacheEnd are seconds
-	// since January 1, 1970 UTC, to match the argument
-	// to lookup.
-	cacheStart int64
-	cacheEnd   int64
-	cacheZone  *zone
+	Name string
+	Zone *Zone
+	DST  *DST // Nil if DST not used in location.
 }
 
-// A zone represents a single time zone such as CEST or CET.
-type zone struct {
-	name   string // abbreviated name, "CET"
-	offset int    // seconds east of UTC
-	isDST  bool   // is this zone Daylight Savings Time?
+func (l *Location) String() string {
+	return l.Name
 }
 
-// A zoneTrans represents a single time zone transition.
-type zoneTrans struct {
-	when         int64 // transition time, in seconds since 1970 GMT
-	index        uint8 // the index of the zone that goes into effect at that time
-	isstd, isutc bool  // ignored - no idea what these mean
-}
-
-// alpha and omega are the beginning and end of time for zone
-// transitions.
-const (
-	alpha = -1 << 63  // math.MinInt64
-	omega = 1<<63 - 1 // math.MaxInt64
+//emgo:const
+var (
+	utcZone = Zone{"UTC", 0}
+	utcLoc  = Location{"UTC", &utcZone, nil}
+	UTC     = &utcLoc
 )
 
-// UTC represents Universal Coordinated Time (UTC).
-//
-//emgo:const
-var UTC *Location = &utcLoc
+// Local is local location. Local is changed to local location when program
+// starts. Do not modify it by hand.
+var Local = &utcLoc
 
-// utcLoc is separate so that get can refer to &utcLoc
-// and ensure that it never returns a nil *Location,
-// even if a badly behaved client has changed UTC.
-var utcLoc = Location{name: "UTC"}
-
-// Local represents the system's local time zone.
-var Local *Location = &localLoc
-
-// localLoc is separate so that initLocal can initialize
-// it even if a client has changed Local.
-var localLoc Location
-var localOnce sync.Once
-
-func (l *Location) get() *Location {
-	if l == nil {
-		return &utcLoc
-	}
-	if l == &localLoc {
-		localOnce.Do(initLocal)
-	}
-	return l
-}
-
-// String returns a descriptive name for the time zone information,
-// corresponding to the argument to LoadLocation.
-func (l *Location) String() string {
-	return l.get().name
-}
-
-// FixedZone returns a Location that always uses
-// the given zone name and offset (seconds east of UTC).
-func FixedZone(name string, offset int) *Location {
-	l := new(Location) // BUG: emgo: memory leak!
-	*l = Location{
-		name:       name,
-		zone:       []zone{{name, offset, false}},
-		tx:         []zoneTrans{{alpha, 0, false, false}},
-		cacheStart: alpha,
-		cacheEnd:   omega,
-	}
-	l.cacheZone = &l.zone[0]
-	return l
-}
-
-// lookup returns information about the time zone in use at an
-// instant in time expressed as seconds since January 1, 1970 00:00:00 UTC.
-//
-// The returned information gives the name of the zone (such as "CET"),
-// the start and end times bracketing sec when that zone is in effect,
-// the offset in seconds east of UTC (such as -5*60*60), and whether
-// the daylight savings is being observed at that time.
-func (l *Location) lookup(sec int64) (name string, offset int, isDST bool, start, end int64) {
-	l = l.get()
-
-	if len(l.zone) == 0 {
-		name = "UTC"
-		offset = 0
-		isDST = false
-		start = alpha
-		end = omega
-		return
+// Lookup returns information about the time zone in use at an instant in time
+// expressed as absolute time abs. The returned information gives the name of
+// the zone (such as "CET"), the offset in seconds east of UTC, the start and
+// end times bracketing abs when that zone is in effect.
+func (l *Location) lookup(abs uint64) (name string, offset int, start, end uint64) {
+	if l.DST == nil {
+		return l.Zone.Name, l.Zone.Offset, 0, 1<<64 - 1
 	}
 
-	if zone := l.cacheZone; zone != nil && l.cacheStart <= sec && sec < l.cacheEnd {
-		name = zone.name
-		offset = zone.offset
-		isDST = zone.isDST
-		start = l.cacheStart
-		end = l.cacheEnd
-		return
-	}
+	// This code is similar to the code of absDate. See absDate for better
+	// description of any step.
 
-	if len(l.tx) == 0 || sec < l.tx[0].when {
-		zone := &l.zone[l.lookupFirstZone()]
-		name = zone.name
-		offset = zone.offset
-		isDST = zone.isDST
-		start = alpha
-		if len(l.tx) > 0 {
-			end = l.tx[0].when
-		} else {
-			end = omega
+	// Avoid 64-bit calculations.
+
+	// Second of 400-year cycle.
+	s400 := abs % (daysPer400Years * secondsPerDay)
+
+	// Day of 400-year cycle.
+	d400 := int(s400 / secondsPerDay)
+
+	// Second of day.
+	s := int(s400 - uint64(d400)*secondsPerDay)
+
+	// Day of 100-year cycle.
+	n100 := d400 / daysPer100Years
+	n100 -= n100 >> 2
+	d := d400 - daysPer100Years*n100
+
+	// Day of 4-year cycle.
+	n4 := d / daysPer4Years
+	d -= daysPer4Years * n4
+
+	// Day of year (0 means first day).
+	n := d / 365
+	n -= n >> 2
+	d -= 365 * n
+
+	// Calculate second of year and determine does the year is a leap year.
+	ys := d*secondsPerDay + s
+	isLeap := (n == 4-1 && (n4 != 25-1 || n100 == 4-1))
+
+	// Weekday of first year day.
+	wday := (d400 - d) % 7 // Zero means Monday.
+
+	// Adjust l.DST.Start and l.DST.End that they describe always the same time
+	// on the same month and the same weakday.
+	dstStart, margin := int(l.DST.Start&0x1FFFFFF), int(l.DST.Start>>25)
+	adj := wday
+	if isLeap && dstStart > (31+28+15)*secondsPerDay {
+		// BUG: dstStart > (31+28+15)*secondsPerDay is simplified condition.
+		// Correct condition should use direction bit of margin (not
+		// implemented) to detect that margin describes first n-th weekday
+		// (Saturday, Sunday) of March or last n-th weekday of March.
+		margin--
+	}
+	if wday >= margin {
+		adj -= 7
+	}
+	dstStart -= adj * secondsPerDay
+	dstEnd, margin := int(l.DST.End&0x1FFFFFF), int(l.DST.End>>25)
+	adj = wday
+	if isLeap && dstEnd > (31+28+15)*secondsPerDay {
+		// BUG: See above.
+		margin--
+	}
+	if wday >= margin {
+		adj -= 7
+	}
+	dstEnd -= adj * secondsPerDay
+
+	abs -= uint64(ys)              // Beginning of year.
+	start = abs + uint64(dstStart) // Start of DST (absolute time).
+	end = abs + uint64(dstEnd)     // End of DST (absolute time).
+
+	// If start/end falls on the previous or next year, the approximate value of
+	// start/end is returned. For now only Date uses these values and such
+	if dstStart < dstEnd {
+		if dstStart <= ys && ys < dstEnd {
+			return l.DST.Zone.Name, l.DST.Zone.Offset, start, end
 		}
-		return
-	}
-
-	// Binary search for entry with largest time <= sec.
-	// Not using sort.Search to avoid dependencies.
-	tx := l.tx
-	end = omega
-	lo := 0
-	hi := len(tx)
-	for hi-lo > 1 {
-		m := lo + (hi-lo)/2
-		lim := tx[m].when
-		if sec < lim {
-			end = lim
-			hi = m
-		} else {
-			lo = m
+		if ys < dstStart {
+			return l.Zone.Name, l.Zone.Offset, end - 365*secondsPerDay, start
 		}
+		return l.Zone.Name, l.Zone.Offset, end, start + 365*secondsPerDay
 	}
-	zone := &l.zone[tx[lo].index]
-	name = zone.name
-	offset = zone.offset
-	isDST = zone.isDST
-	start = tx[lo].when
-	// end = maintained during the search
-	return
+	if dstEnd <= ys && ys < dstStart {
+		return l.Zone.Name, l.Zone.Offset, start, end
+	}
+	return l.DST.Zone.Name, l.DST.Zone.Offset, end - 365*secondsPerDay, start
 }
-
-// lookupFirstZone returns the index of the time zone to use for times
-// before the first transition time, or when there are no transition
-// times.
-//
-// The reference implementation in localtime.c from
-// http://www.iana.org/time-zones/repository/releases/tzcode2013g.tar.gz
-// implements the following algorithm for these cases:
-// 1) If the first zone is unused by the transitions, use it.
-// 2) Otherwise, if there are transition times, and the first
-//    transition is to a zone in daylight time, find the first
-//    non-daylight-time zone before and closest to the first transition
-//    zone.
-// 3) Otherwise, use the first zone that is not daylight time, if
-//    there is one.
-// 4) Otherwise, use the first zone.
-func (l *Location) lookupFirstZone() int {
-	// Case 1.
-	if !l.firstZoneUsed() {
-		return 0
-	}
-
-	// Case 2.
-	if len(l.tx) > 0 && l.zone[l.tx[0].index].isDST {
-		for zi := int(l.tx[0].index) - 1; zi >= 0; zi-- {
-			if !l.zone[zi].isDST {
-				return zi
-			}
-		}
-	}
-
-	// Case 3.
-	for zi := range l.zone {
-		if !l.zone[zi].isDST {
-			return zi
-		}
-	}
-
-	// Case 4.
-	return 0
-}
-
-// firstZoneUsed returns whether the first zone is used by some
-// transition.
-func (l *Location) firstZoneUsed() bool {
-	for _, tx := range l.tx {
-		if tx.index == 0 {
-			return true
-		}
-	}
-	return false
-}
-
-// lookupName returns information about the time zone with
-// the given name (such as "EST") at the given pseudo-Unix time
-// (what the given time of day would be in UTC).
-func (l *Location) lookupName(name string, unix int64) (offset int, isDST bool, ok bool) {
-	l = l.get()
-
-	// First try for a zone with the right name that was actually
-	// in effect at the given time. (In Sydney, Australia, both standard
-	// and daylight-savings time are abbreviated "EST". Using the
-	// offset helps us pick the right one for the given time.
-	// It's not perfect: during the backward transition we might pick
-	// either one.)
-	for i := range l.zone {
-		zone := &l.zone[i]
-		if zone.name == name {
-			nam, offset, isDST, _, _ := l.lookup(unix - int64(zone.offset))
-			if nam == zone.name {
-				return offset, isDST, true
-			}
-		}
-	}
-
-	// Otherwise fall back to an ordinary name match.
-	for i := range l.zone {
-		zone := &l.zone[i]
-		if zone.name == name {
-			return zone.offset, zone.isDST, true
-		}
-	}
-
-	// Otherwise, give up.
-	return
-}
-
-/*
-// NOTE(rsc): Eventually we will need to accept the POSIX TZ environment
-// syntax too, but I don't feel like implementing it today.
-
-var zoneinfo, _ = syscall.Getenv("ZONEINFO")
-
-// LoadLocation returns the Location with the given name.
-//
-// If the name is "" or "UTC", LoadLocation returns UTC.
-// If the name is "Local", LoadLocation returns Local.
-//
-// Otherwise, the name is taken to be a location name corresponding to a file
-// in the IANA Time Zone database, such as "America/New_York".
-//
-// The time zone database needed by LoadLocation may not be
-// present on all systems, especially non-Unix systems.
-// LoadLocation looks in the directory or uncompressed zip file
-// named by the ZONEINFO environment variable, if any, then looks in
-// known installation locations on Unix systems,
-// and finally looks in $GOROOT/lib/time/zoneinfo.zip.
-func LoadLocation(name string) (*Location, error) {
-	if name == "" || name == "UTC" {
-		return UTC, nil
-	}
-	if name == "Local" {
-		return Local, nil
-	}
-	if zoneinfo != "" {
-		if z, err := loadZoneFile(zoneinfo, name); err == nil {
-			z.name = name
-			return z, nil
-		}
-	}
-	return loadLocation(name)
-}
-*/

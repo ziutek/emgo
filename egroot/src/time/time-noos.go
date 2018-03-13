@@ -4,99 +4,56 @@ package time
 
 import (
 	"rtos"
+	"sync"
+	"sync/atomic"
 	"sync/fence"
 )
 
-var start Time
+type sysStart struct {
+	n uintptr
+	t [2]Time
+	sync.Mutex
+}
 
-// SetStart sets start time of rtos system clock.
-func SetStart(t Time) {
-	// BUG: This should be atomic operation.
-	fence.Compiler()
-	start = t
-	fence.Compiler()
+var start sysStart
+
+// Set sets the current time. Local is set to t.Location().
+func Set(t Time) {
+	ns := rtos.Nanosec()
+	t.sec -= ns / 1e9
+	t.nsec -= int32(ns % 1e9)
+	if t.nsec < 0 {
+		t.sec--
+		t.nsec += 1e9
+	}
+	start.Lock()
+	n := start.n + 1
+	start.t[n&1] = t
+	fence.W_SMP()
+	start.n = n
+	Local = t.loc
+	start.Unlock()
 }
 
 func now() Time {
-	return start.Add(Duration(rtos.Nanosec()))
-}
-
-/*
-// String returns a string representing the duration in the form "72h3m0.5s".
-// Leading zero units are omitted.  As a special case, durations less than one
-// second format use a smaller unit (milli-, micro-, or nanoseconds) to ensure
-// that the leading digit is non-zero.  The zero duration formats as 0,
-// with no unit.
-func (d Duration) String() string {
-	// Largest time is 2540400h10m10.000000000s
-	var buf [32]byte
-	w := len(buf)
-
-	u := uint64(d)
-	neg := d < 0
-	if neg {
-		u = -u
-	}
-
-	if u < uint64(Second) {
-		// Special case: if duration is smaller than a second,
-		// use smaller units, like 1.2ms
-		var prec int
-		w--
-		buf[w] = 's'
-		w--
-		switch {
-		case u == 0:
-			return "0"
-		case u < uint64(Microsecond):
-			// print nanoseconds
-			prec = 0
-			buf[w] = 'n'
-		case u < uint64(Millisecond):
-			// print microseconds
-			prec = 3
-			// U+00B5 'µ' micro sign == 0xC2 0xB5
-			w-- // Need room for two bytes.
-			copy(buf[w:], "µ")
-		default:
-			// print milliseconds
-			prec = 6
-			buf[w] = 'm'
+	var t Time
+	n := atomic.LoadUintptr(&start.n)
+	for {
+		fence.R_SMP()
+		t = start.t[n&1]
+		fence.R_SMP()
+		m := atomic.LoadUintptr(&start.n)
+		if m == n {
+			break
 		}
-		w, u = fmtFrac(buf[:w], u, prec)
-		w = fmtInt(buf[:w], u)
-	} else {
-		w--
-		buf[w] = 's'
-
-		w, u = fmtFrac(buf[:w], u, 9)
-
-		// u is now integer seconds
-		w = fmtInt(buf[:w], u%60)
-		u /= 60
-
-		// u is now integer minutes
-		if u > 0 {
-			w--
-			buf[w] = 'm'
-			w = fmtInt(buf[:w], u%60)
-			u /= 60
-
-			// u is now integer hours
-			// Stop at hours because days can be different lengths.
-			if u > 0 {
-				w--
-				buf[w] = 'h'
-				w = fmtInt(buf[:w], u)
-			}
-		}
+		n = m
 	}
-
-	if neg {
-		w--
-		buf[w] = '-'
+	ns := rtos.Nanosec()
+	t.sec += ns / 1e9
+	t.nsec += int32(ns % 1e9)
+	if t.nsec >= 1e9 {
+		t.sec++
+		t.nsec -= 1e9
 	}
-
-	return string(buf[w:])
+	return t
 }
-*/

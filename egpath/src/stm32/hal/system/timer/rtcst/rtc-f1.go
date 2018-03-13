@@ -95,7 +95,7 @@ func setup(freqHz uint) {
 			sec := bkp.StartSec().Load()
 			ns := int32(bkp.StartNanosec().Load())
 			start := time.Unix(int64(sec), int64(ns))
-			time.SetStart(start)
+			time.Set(start)
 		}
 	}
 	// Wait for sync. Need in both cases: after reset (synchronise APB domain)
@@ -268,7 +268,7 @@ func setStartTime(t time.Time) {
 	}
 	sec := t.Unix()
 	ns := t.Nanosecond()
-	time.SetStart(t)
+	time.Set(t)
 	g.status.Bit(flagOK).Clear()
 	bkp.StartSec().Store(uint64(sec))
 	bkp.StartNanosec().Store(uint32(ns))
