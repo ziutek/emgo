@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"rtos"
 	"time"
+	"time/tz"
 
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
@@ -31,8 +32,15 @@ func init() {
 }
 
 func main() {
-	if ok, set := rtcst.Status(); ok && !set {
-		t := time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC)
+	ok, set := rtcst.Status()
+	for !ok {
+		fmt.Printf("RTC error\n")
+		delay.Millisec(1000)
+	}
+	if set {
+		time.Local = &time.EuropeWarsaw
+	} else {
+		t := time.Date(2018, 3, 25, 1, 59, 50, 0, &tz.EuropeWarsaw)
 		rtcst.SetTime(t, rtos.Nanosec())
 	}
 	for {

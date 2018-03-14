@@ -5,6 +5,7 @@ import (
 	"rtos"
 	"strconv"
 	"time"
+	"time/tz"
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
@@ -69,10 +70,18 @@ func main() {
 		tts.WriteString("\r\n")
 	*/
 
-	if ok, set := rtcst.Status(); ok && !set {
-		t := time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC)
+	ok, set := rtcst.Status()
+	for !ok {
+		tts.WriteString("RTC error\n")
+		delay.Millisec(1000)
+	}
+	if set {
+		time.Local = &time.EuropeWarsaw
+	} else {
+		t := time.Date(2018, 3, 25, 1, 59, 50, 0, &tz.EuropeWarsaw)
 		rtcst.SetTime(t, rtos.Nanosec())
 	}
+
 	for {
 		led4.Set()
 		delay.Millisec(500)
@@ -83,10 +92,9 @@ func main() {
 		y, mo, d := t.Date()
 		h, mi, s := t.Clock()
 		ns := t.Nanosecond()
-
-		// Is there an easy way to print formated date without fmt package? Yes,
-		// and by avoiding fmt package the whole program fits into 48 KB SRAM.
-
+		zone, _ := t.Zone()
+		strconv.WriteInt64(tts, rtos.Nanosec(), -10, 12)
+		tts.WriteByte(' ')
 		strconv.WriteInt(tts, y, -10, 4)
 		tts.WriteByte('-')
 		strconv.WriteInt(tts, int(mo), -10, 2)
@@ -100,6 +108,8 @@ func main() {
 		strconv.WriteInt(tts, s, -10, 2)
 		tts.WriteByte('.')
 		strconv.WriteInt(tts, ns, -10, 9)
+		tts.WriteByte(' ')
+		tts.WriteString(zone)
 		tts.WriteString("\r\n")
 	}
 }

@@ -36,7 +36,7 @@ func Set(t Time, ns int64) {
 	start.Lock()
 	n := start.n + 1
 	start.ts[n&1] = timeStamp{t.sec, t.nsec}
-	fence.W_SMP()
+	fence.W_SMP() // Ensure start.ts[n&1] updated befor set start.n.
 	start.n = n
 	Local = t.Location()
 	start.Unlock()
@@ -46,9 +46,9 @@ func now() (int64, int32) {
 	var ts timeStamp
 	n := atomic.LoadUintptr(&start.n)
 	for {
-		fence.R_SMP()
+		fence.R_SMP() // Ensure n is loaded before start.ts[n&1].
 		ts = start.ts[n&1]
-		fence.R_SMP()
+		fence.R_SMP() // Ensure m is loaded after start.ts[n&1].
 		m := atomic.LoadUintptr(&start.n)
 		if m == n {
 			break

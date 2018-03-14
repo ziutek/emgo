@@ -776,7 +776,7 @@ func daysIn(m Month, year int) int {
 // Now returns the current local time.
 func Now() Time {
 	sec, nsec := now()
-	return Time{sec + unixToInternal, nsec, Local}
+	return Time{sec, nsec, Local}
 }
 
 // UTC returns t with the location set to UTC.
