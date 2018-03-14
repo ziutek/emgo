@@ -11,7 +11,7 @@ if [ -z "$cfg" ]; then
 	: #cfg='unset __NOP'
 fi
 
-if [ "$INTERFACE" == ftdi ]; then
+if [ "$INTERFACE" = 'ftdi' ]; then
 	INTERFACE=../../utils/ftdi.cfg
 else
 	INTERFACE=interface/$INTERFACE.cfg
