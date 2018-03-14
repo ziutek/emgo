@@ -4,26 +4,16 @@ package time
 
 import (
 	"rtos"
-	"sync"
-	"sync/atomic"
-	"sync/fence"
 )
 
-type timeStamp struct {
+var start struct {
 	sec  int64
 	nsec int32
 }
 
-type sysStart struct {
-	n  uintptr
-	ts [2]timeStamp
-	sync.Mutex
-}
-
-var start sysStart
-
 // Set sets the current time. Ns should be the value of rtos.Nanosec()
-// corresponding to t. Local is set to t.Location().
+// corresponding to t. Local is set to t.Location(). Set causes discontinuites
+// in time flow mesured by Now and is not thread-safe.
 func Set(t Time, ns int64) {
 	if ns != 0 {
 		t.sec -= ns / 1e9
@@ -33,34 +23,18 @@ func Set(t Time, ns int64) {
 			t.nsec += 1e9
 		}
 	}
-	start.Lock()
-	n := start.n + 1
-	start.ts[n&1] = timeStamp{t.sec, t.nsec}
-	fence.W_SMP() // Ensure start.ts[n&1] updated befor set start.n.
-	start.n = n
+	start.sec = t.sec
+	start.nsec = t.nsec
 	Local = t.Location()
-	start.Unlock()
 }
 
-func now() (int64, int32) {
-	var ts timeStamp
-	n := atomic.LoadUintptr(&start.n)
-	for {
-		fence.R_SMP() // Ensure n is loaded before start.ts[n&1].
-		ts = start.ts[n&1]
-		fence.R_SMP() // Ensure m is loaded after start.ts[n&1].
-		m := atomic.LoadUintptr(&start.n)
-		if m == n {
-			break
-		}
-		n = m
-	}
+func now() (sec int64, nsec int32) {
 	ns := rtos.Nanosec()
-	ts.sec += ns / 1e9
-	ts.nsec += int32(ns % 1e9)
-	if ts.nsec >= 1e9 {
-		ts.sec++
-		ts.nsec -= 1e9
+	sec = start.sec + ns/1e9
+	nsec = start.nsec + int32(ns%1e9)
+	if nsec >= 1e9 {
+		sec++
+		nsec -= 1e9
 	}
-	return ts.sec, ts.nsec
+	return
 }

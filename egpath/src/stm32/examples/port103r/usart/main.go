@@ -64,19 +64,13 @@ func init() {
 }
 
 func main() {
-	/*
-		tts.WriteString("\r\nAFIO.MAPR: ")
-		strconv.WriteUint32(tts, afio.AFIO.MAPR.U32.Load(), -16, 0)
-		tts.WriteString("\r\n")
-	*/
-
 	ok, set := rtcst.Status()
 	for !ok {
 		tts.WriteString("RTC error\n")
 		delay.Millisec(1000)
 	}
 	if set {
-		time.Local = &time.EuropeWarsaw
+		time.Local = &tz.EuropeWarsaw
 	} else {
 		t := time.Date(2018, 3, 25, 1, 59, 50, 0, &tz.EuropeWarsaw)
 		rtcst.SetTime(t, rtos.Nanosec())
