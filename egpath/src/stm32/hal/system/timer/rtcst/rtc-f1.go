@@ -60,7 +60,7 @@ func setup(freqHz uint) {
 		cfg  = rcc.LSEON | rcc.RTCSEL_LSE | rcc.RTCEN
 	)
 
-	// Enable write access to backup domain.
+	// Enable write access to the backup domain.
 	RCC.APB1ENR.SetBits(rcc.PWREN | rcc.BKPEN)
 	_ = RCC.APB1ENR.Load()
 	PWR.DBP().Set()
@@ -95,7 +95,7 @@ func setup(freqHz uint) {
 			sec := bkp.StartSec().Load()
 			ns := int32(bkp.StartNanosec().Load())
 			start := time.Unix(int64(sec), int64(ns))
-			time.Set(start)
+			time.Set(start, 0)
 		}
 	}
 	// Wait for sync. Need in both cases: after reset (synchronise APB domain)
@@ -268,7 +268,6 @@ func setStartTime(t time.Time) {
 	}
 	sec := t.Unix()
 	ns := t.Nanosecond()
-	time.Set(t)
 	g.status.Bit(flagOK).Clear()
 	bkp.StartSec().Store(uint64(sec))
 	bkp.StartNanosec().Store(uint32(ns))

@@ -6,7 +6,6 @@
 package rtcst
 
 import (
-	"rtos"
 	"time"
 )
 
@@ -16,12 +15,10 @@ func Setup(freqHz uint) {
 	setup(freqHz)
 }
 
-// SetTime sets current calendar time. It does not affect rtos.Nanosec. Only
-// time.Now is affected.
-func SetTime(t time.Time) {
-	up := time.Duration(rtos.Nanosec())
-	t = t.Add(-up)
-	setStartTime(t)
+// SetTime works like time.Set but also updates RTC.
+func SetTime(t time.Time, ns int64) {
+	time.Set(t, ns)
+	setStartTime(t.Add(time.Duration(-ns)))
 }
 
 // ISR should be set as irq.RTCAlarm interrupt handler.

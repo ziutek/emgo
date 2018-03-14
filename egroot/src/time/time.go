@@ -773,10 +773,10 @@ func daysIn(m Month, year int) int {
 
 // Provided by package runtime.
 
-
 // Now returns the current local time.
 func Now() Time {
-	return now()
+	sec, nsec := now()
+	return Time{sec + unixToInternal, nsec, Local}
 }
 
 // UTC returns t with the location set to UTC.

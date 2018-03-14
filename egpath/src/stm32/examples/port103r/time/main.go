@@ -3,6 +3,7 @@ package main
 import (
 	"delay"
 	"fmt"
+	"rtos"
 	"time"
 
 	"stm32/hal/gpio"
@@ -31,7 +32,8 @@ func init() {
 
 func main() {
 	if ok, set := rtcst.Status(); ok && !set {
-		rtcst.SetTime(time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC))
+		t := time.Date(2016, 1, 24, 22, 58, 30, 0, time.UTC)
+		rtcst.SetTime(t, rtos.Nanosec())
 	}
 	for {
 		leds.SetPins(LED1)

@@ -36,8 +36,7 @@ var (
 	UTC     = &utcLoc
 )
 
-// Local is local location. Local is changed to local location when program
-// starts. Do not modify it by hand.
+// Local is local location.
 var Local = &utcLoc
 
 // Lookup returns information about the time zone in use at an instant in time

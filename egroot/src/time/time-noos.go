@@ -9,38 +9,45 @@ import (
 	"sync/fence"
 )
 
+type timeStamp struct {
+	sec  int64
+	nsec int32
+}
+
 type sysStart struct {
-	n uintptr
-	t [2]Time
+	n  uintptr
+	ts [2]timeStamp
 	sync.Mutex
 }
 
 var start sysStart
 
-// Set sets the current time. Local is set to t.Location().
-func Set(t Time) {
-	ns := rtos.Nanosec()
-	t.sec -= ns / 1e9
-	t.nsec -= int32(ns % 1e9)
-	if t.nsec < 0 {
-		t.sec--
-		t.nsec += 1e9
+// Set sets the current time. Ns should be the value of rtos.Nanosec()
+// corresponding to t. Local is set to t.Location().
+func Set(t Time, ns int64) {
+	if ns != 0 {
+		t.sec -= ns / 1e9
+		t.nsec -= int32(ns % 1e9)
+		if t.nsec < 0 {
+			t.sec--
+			t.nsec += 1e9
+		}
 	}
 	start.Lock()
 	n := start.n + 1
-	start.t[n&1] = t
+	start.ts[n&1] = timeStamp{t.sec, t.nsec}
 	fence.W_SMP()
 	start.n = n
-	Local = t.loc
+	Local = t.Location()
 	start.Unlock()
 }
 
-func now() Time {
-	var t Time
+func now() (int64, int32) {
+	var ts timeStamp
 	n := atomic.LoadUintptr(&start.n)
 	for {
 		fence.R_SMP()
-		t = start.t[n&1]
+		ts = start.ts[n&1]
 		fence.R_SMP()
 		m := atomic.LoadUintptr(&start.n)
 		if m == n {
@@ -49,11 +56,11 @@ func now() Time {
 		n = m
 	}
 	ns := rtos.Nanosec()
-	t.sec += ns / 1e9
-	t.nsec += int32(ns % 1e9)
-	if t.nsec >= 1e9 {
-		t.sec++
-		t.nsec -= 1e9
+	ts.sec += ns / 1e9
+	ts.nsec += int32(ns % 1e9)
+	if ts.nsec >= 1e9 {
+		ts.sec++
+		ts.nsec -= 1e9
 	}
-	return t
+	return ts.sec, ts.nsec
 }
