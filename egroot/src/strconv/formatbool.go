@@ -11,11 +11,7 @@ import (
 // Formatted value is extended to |width| characters. If width > 0 then spaces
 // are written after value, otherwise spaces (fmt > 0) or zeros (base < 0) are
 // written before it.
-func WriteBool(w io.Writer, b bool, fmt, width int) (int, error) {
-	zeros := fmt < 0
-	if zeros {
-		fmt = -fmt
-	}
+func WriteBool(w io.Writer, b bool, fmt, width int, pad rune) (int, error) {
 	txt := "0false1true"
 	switch fmt {
 	case '1':
@@ -33,5 +29,5 @@ func WriteBool(w io.Writer, b bool, fmt, width int) (int, error) {
 	default:
 		panicBase()
 	}
-	return WriteString(w, txt, width, zeros)
+	return WriteString(w, txt, width, pad)
 }

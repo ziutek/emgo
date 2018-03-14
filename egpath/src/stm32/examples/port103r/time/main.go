@@ -38,7 +38,7 @@ func main() {
 		delay.Millisec(1000)
 	}
 	if set {
-		time.Local = &time.EuropeWarsaw
+		time.Local = &tz.EuropeWarsaw
 	} else {
 		t := time.Date(2018, 3, 25, 1, 59, 50, 0, &tz.EuropeWarsaw)
 		rtcst.SetTime(t, rtos.Nanosec())

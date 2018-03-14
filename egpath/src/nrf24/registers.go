@@ -189,7 +189,7 @@ func (rf RF_SETUP) Format(fs fmt.State, _ rune) {
 		fs, "CONT_WAVE+ RF_DR_LOW+ PLL_LOCK+ RF_DR_HIGH+ LNA_HCURR+ RF_PWR:",
 		0xb9, byte(rf),
 	)
-	strconv.WriteInt(fs, rf.RF_PWR(), 10, 0)
+	strconv.WriteInt(fs, rf.RF_PWR(), 10, 0, ' ')
 	io.WriteString(fs, " dBm")
 }
 
@@ -225,7 +225,7 @@ func (s STATUS) RX_P_NO() int {
 
 func (s STATUS) Format(fs fmt.State, _ rune) {
 	fflags(fs, "RX_DR+ TX_DS+ MAX_RT+ FULL_TX+ RX_P_NO:", 0x71, byte(s))
-	strconv.WriteInt(fs, s.RX_P_NO(), 10, 0)
+	strconv.WriteInt(fs, s.RX_P_NO(), 10, 0, ' ')
 }
 
 // ClearIRQ allow to clear the interrupt bits of the Status register.

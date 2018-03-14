@@ -18,7 +18,7 @@ func main() {
 	rnd.Seed(1)
 
 	for {
-		strconv.WriteUint32(dbg, rnd.Uint32(), 10, -10)
+		strconv.WriteUint32(dbg, rnd.Uint32(), 10, -10, ' ')
 		dbg.WriteByte('\n')
 	}
 }

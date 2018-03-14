@@ -19,7 +19,7 @@ func specials(w io.Writer, f float64, width int) (int, error) {
 	default:
 		return 0, nil
 	}
-	return WriteString(w, txt, width, false)
+	return WriteString(w, txt, width, ' ')
 }
 
 func formatExp(buf []byte, exp int) int {
@@ -78,16 +78,15 @@ const (
 	flagG
 	flagNeg
 	flagLeft
-	flagZeros
 )
 
-func paddBefore(w io.Writer, num, flags int) (int, error) {
+func padBefore(w io.Writer, num, flags int, pad rune) (int, error) {
 	var n int
 	if flags&flagNeg != 0 {
 		num--
 	}
-	if num > 0 && flags&flagZeros == 0 {
-		m, err := padd(w, pspaces, num)
+	if num > 0 && pad != '0' {
+		m, err := writeRuneN(w, pad, num)
 		n += m
 		if err != nil {
 			return n, err
@@ -100,8 +99,8 @@ func paddBefore(w io.Writer, num, flags int) (int, error) {
 			return n, err
 		}
 	}
-	if num > 0 && flags&flagZeros != 0 {
-		m, err := padd(w, pzeros, num)
+	if num > 0 && pad == '0' {
+		m, err := writeRuneN(w, pad, num)
 		n += m
 		if err != nil {
 			return n, err
@@ -110,7 +109,7 @@ func paddBefore(w io.Writer, num, flags int) (int, error) {
 	return n, nil
 }
 
-func writeZero(w io.Writer, width, prec, flags, e int) (int, error) {
+func writeZero(w io.Writer, width, prec, flags, e int, pad rune) (int, error) {
 	var padn int
 	if flags&flagLeft == 0 {
 		padn = width - 1
@@ -121,7 +120,7 @@ func writeZero(w io.Writer, width, prec, flags, e int) (int, error) {
 			padn -= 4
 		}
 	}
-	n, err := paddBefore(w, padn, flags)
+	n, err := padBefore(w, padn, flags, pad)
 	if err != nil {
 		return n, err
 	}
@@ -136,7 +135,7 @@ func writeZero(w io.Writer, width, prec, flags, e int) (int, error) {
 		if err != nil {
 			return n, err
 		}
-		m, err = padd(w, pzeros, prec)
+		m, err = writeRuneN(w, '0', prec)
 		n += m
 		if err != nil {
 			return n, err
@@ -150,7 +149,7 @@ func writeZero(w io.Writer, width, prec, flags, e int) (int, error) {
 		}
 	}
 	if padn := width - n; padn > 0 {
-		m, err = padd(w, pspaces, padn)
+		m, err = writeRuneN(w, ' ', padn)
 		n += m
 		if err != nil {
 			return n, err
@@ -161,10 +160,11 @@ func writeZero(w io.Writer, width, prec, flags, e int) (int, error) {
 
 // WriteFloat writes text representation of f using format specified by fmt:
 //	'b': -ddddp±ddd,
-//	'e': -d.dddde±dd,
-//	'f': -ddddd.dddd,
-//  'g': ...
-func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, error) {
+//	'e': -d.dddde±dd, prec sets the number of digits after decimal,
+//	'f': -ddddd.dddd, prec sets the number of digits after decimal,
+//  'g': shortest from 'e' or 'f', prec sets the number of significant digits.
+// For description of width and pad see WriteInt.
+func WriteFloat(w io.Writer, f float64, fmt, prec, bitsize, width int, pad rune) (int, error) {
 	if n, err := specials(w, f, width); n > 0 {
 		return n, err
 	}
@@ -189,10 +189,6 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 	default:
 		panic("strconv: illegal bitsize")
 	}
-	if fmt < 0 {
-		flags |= flagZeros
-		fmt = -fmt
-	}
 	if fmt == 'b' {
 		var buf [1 + 16 + 1 + 1 + 4]byte
 		n := formatExp(buf[:], exp) - 1
@@ -202,7 +198,7 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 			n--
 			buf[n] = '-'
 		}
-		return writePadded(w, buf[n:], width, flags&flagZeros != 0)
+		return writePadded(w, buf[n:], width, pad)
 	}
 	switch fmt {
 	case 'f', 'F':
@@ -224,7 +220,7 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 		prec = 0
 	}
 	if frac == 0 {
-		return writeZero(w, width, prec, flags, fmt)
+		return writeZero(w, width, prec, flags, fmt, pad)
 	}
 	var g grisu
 	dig, exp := g.Init(frac, exp)
@@ -232,7 +228,7 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 	if flags&flagF != 0 {
 		sigd = exp + 1 + prec
 		if sigd < 0 {
-			return writeZero(w, width, prec, flags, 0)
+			return writeZero(w, width, prec, flags, 0, pad)
 		}
 	} else {
 		sigd = prec + 1
@@ -272,7 +268,7 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 		}
 		padn = width - length
 	}
-	n, err := paddBefore(w, padn, flags)
+	n, err := padBefore(w, padn, flags, pad)
 	if err != nil {
 		return n, err
 	}
@@ -285,7 +281,7 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 			if err != nil {
 				return n, err
 			}
-			m, err = padd(w, pzeros, -todot)
+			m, err = writeRuneN(w, '0', -todot)
 			prec -= m
 			n += m
 			if err != nil {
@@ -310,7 +306,7 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 				if err != nil {
 					return n, err
 				}
-				m, err = padd(w, pzeros, padn)
+				m, err = writeRuneN(w, '0', padn)
 				n += m
 				if err != nil {
 					return n, err
@@ -346,7 +342,7 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 		}
 	}
 	if prec > 0 {
-		m, err = padd(w, pzeros, prec)
+		m, err = writeRuneN(w, '0', prec)
 		n += m
 		if err != nil {
 			return n, err
@@ -362,7 +358,7 @@ func WriteFloat(w io.Writer, f float64, fmt, width, prec, bitsize int) (int, err
 		}
 	}
 	if padn = width - n; padn > 0 {
-		m, err = padd(w, pspaces, padn)
+		m, err = writeRuneN(w, ' ', padn)
 		n += m
 	}
 	return n, err

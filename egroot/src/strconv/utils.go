@@ -12,19 +12,21 @@ func panicBase() {
 	panic("strconv: unsupported base")
 }
 
-const (
-	pspaces = "        "
-	pzeros  = "00000000"
-)
-
-func padd(w io.Writer, chars string, n int) (int, error) {
-	var m int
+func writeRuneN(w io.Writer, r rune, n int) (int, error) {
+	var (
+		m     int
+		chars [8]byte
+	)
+	// BUG: Casting rune to byte.
+	for i := range chars {
+		chars[i] = byte(r)
+	}
 	for {
 		if n <= len(chars) {
-			k, err := io.WriteString(w, chars[:n])
+			k, err := w.Write(chars[:n])
 			return m + k, err
 		}
-		k, err := io.WriteString(w, chars)
+		k, err := w.Write(chars[:])
 		m += k
 		if err != nil {
 			return m, err
@@ -33,7 +35,7 @@ func padd(w io.Writer, chars string, n int) (int, error) {
 	}
 }
 
-func writePadded(w io.Writer, b []byte, width int, zeros bool) (int, error) {
+func writePadded(w io.Writer, b []byte, width int, pad rune) (int, error) {
 	left := width < 0
 	if left {
 		width = -width
@@ -44,7 +46,7 @@ func writePadded(w io.Writer, b []byte, width int, zeros bool) (int, error) {
 		err  error
 	)
 	if extn > 0 && !left {
-		if zeros {
+		if pad == '0' {
 			if b[0] == '-' {
 				n, err = w.Write(b[:1])
 				if err != nil {
@@ -52,10 +54,8 @@ func writePadded(w io.Writer, b []byte, width int, zeros bool) (int, error) {
 				}
 				b = b[1:]
 			}
-			m, err = padd(w, pzeros, extn)
-		} else {
-			m, err = padd(w, pspaces, extn)
 		}
+		m, err = writeRuneN(w, pad, extn)
 		n += m
 		if err != nil {
 			return n, err
@@ -69,7 +69,7 @@ func writePadded(w io.Writer, b []byte, width int, zeros bool) (int, error) {
 		}
 	}
 	if extn > 0 && left {
-		m, err = padd(w, pspaces, extn)
+		m, err = writeRuneN(w, ' ', extn)
 		n += m
 	}
 	return n, err

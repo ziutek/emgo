@@ -170,13 +170,16 @@ func (p *printer) formatValue(verb byte, v reflect.Value) {
 	if p.Flag('-') {
 		width = -width
 	}
-	zeros := p.Flag('0')
+	pad := ' '
+	if p.Flag('0') {
+		pad = '0'
+	}
 	k := v.Kind()
 	switch {
 	case k == reflect.Array || k == reflect.Slice:
 		if verb == 's' && k == reflect.Slice {
 			if b, ok := v.Interface().([]byte); ok {
-				strconv.WriteBytes(p, b, width, zeros)
+				strconv.WriteBytes(p, b, width, pad)
 				break
 			}
 		}
@@ -192,34 +195,34 @@ func (p *printer) formatValue(verb byte, v reflect.Value) {
 	case k == reflect.Invalid:
 		p.WriteString("<invalid>")
 	case k == reflect.Bool:
-		strconv.WriteBool(p, v.Bool(), 't', width)
+		strconv.WriteBool(p, v.Bool(), 't', width, pad)
 	case k <= reflect.Uintptr:
-		p.formatIntVal(v, width, verb, zeros)
+		p.formatIntVal(v, width, verb, pad)
 	case k <= reflect.Float64:
-		p.formatFloatVal(v, width, verb, zeros)
+		p.formatFloatVal(v, width, verb, pad)
 	case k <= reflect.Complex128:
 		c := v.Complex()
 		p.WriteByte('(')
-		p.formatFloatVal(reflect.ValueOf(real(c)), width, verb, zeros)
+		p.formatFloatVal(reflect.ValueOf(real(c)), width, verb, pad)
 		if imag(c) >= 0 {
 			p.WriteByte('+')
 		}
-		p.formatFloatVal(reflect.ValueOf(imag(c)), width, verb, zeros)
+		p.formatFloatVal(reflect.ValueOf(imag(c)), width, verb, pad)
 		p.WriteString("i)")
 	case k <= reflect.Func || k == reflect.Ptr || k == reflect.UnsafePointer:
 		ptr := v.Pointer()
 		if verb != 'v' {
-			p.formatIntVal(reflect.ValueOf(ptr), width, verb, zeros)
+			p.formatIntVal(reflect.ValueOf(ptr), width, verb, pad)
 			break
 		}
 		if ptr == 0 {
 			p.WriteString("<nil>")
 		} else {
 			p.WriteString("0x")
-			strconv.WriteUintptr(p, ptr, 16, 0)
+			strconv.WriteUintptr(p, ptr, 16, 0, pad)
 		}
 	case k == reflect.String:
-		strconv.WriteString(p, v.String(), width, zeros)
+		strconv.WriteString(p, v.String(), width, pad)
 	case k == reflect.Struct:
 		p.WriteByte('{')
 		p.WriteString("TODO")
@@ -229,14 +232,16 @@ func (p *printer) formatValue(verb byte, v reflect.Value) {
 	}
 }
 
-func (p *printer) formatIntVal(v reflect.Value, width int, verb byte, zeros bool) {
+func (p *printer) formatIntVal(v reflect.Value, width int, verb byte, pad rune) {
 	k := v.Kind()
 	base := 10
 	switch verb {
 	case 'v', 'd':
 		base = 10
-	case 'x', 'X':
+	case 'x':
 		base = 16
+	case 'X':
+		base = -16
 	case 'b':
 		base = 2
 	case 'o':
@@ -251,28 +256,25 @@ func (p *printer) formatIntVal(v reflect.Value, width int, verb byte, zeros bool
 	default:
 		p.badVerb(verb, v)
 	}
-	if zeros {
-		base = -base
-	}
 	switch {
 	case k == reflect.Int:
-		strconv.WriteInt(p, int(v.Int()), base, width)
+		strconv.WriteInt(p, int(v.Int()), base, width, pad)
 	case k <= reflect.Int32:
-		strconv.WriteInt32(p, int32(v.Int()), base, width)
+		strconv.WriteInt32(p, int32(v.Int()), base, width, pad)
 	case k == reflect.Int64:
-		strconv.WriteInt64(p, v.Int(), base, width)
+		strconv.WriteInt64(p, v.Int(), base, width, pad)
 	case k == reflect.Uint:
-		strconv.WriteUint(p, uint(v.Uint()), base, width)
+		strconv.WriteUint(p, uint(v.Uint()), base, width, pad)
 	case k <= reflect.Uint32:
-		strconv.WriteUint32(p, uint32(v.Uint()), base, width)
+		strconv.WriteUint32(p, uint32(v.Uint()), base, width, pad)
 	case k == reflect.Uint64:
-		strconv.WriteUint64(p, v.Uint(), base, width)
+		strconv.WriteUint64(p, v.Uint(), base, width, pad)
 	default:
-		strconv.WriteUintptr(p, uintptr(v.Uint()), base, width)
+		strconv.WriteUintptr(p, uintptr(v.Uint()), base, width, pad)
 	}
 }
 
-func (p *printer) formatFloatVal(v reflect.Value, width int, verb byte, zeros bool) {
+func (p *printer) formatFloatVal(v reflect.Value, width int, verb byte, pad rune) {
 	bits := 32
 	if v.Kind() == reflect.Float64 {
 		bits = 64
@@ -282,8 +284,5 @@ func (p *printer) formatFloatVal(v reflect.Value, width int, verb byte, zeros bo
 	if fmt == 'v' {
 		fmt = 'g'
 	}
-	if zeros {
-		fmt = -fmt
-	}
-	strconv.WriteFloat(p, v.Float(), fmt, width, prec, bits)
+	strconv.WriteFloat(p, v.Float(), fmt, prec, bits, width, pad)
 }

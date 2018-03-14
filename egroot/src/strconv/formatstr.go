@@ -4,7 +4,7 @@ import (
 	"io"
 )
 
-func WriteString(w io.Writer, s string, width int, zeros bool) (int, error) {
+func WriteString(w io.Writer, s string, width int, pad rune) (int, error) {
 	left := width < 0
 	if left {
 		width = -width
@@ -15,11 +15,7 @@ func WriteString(w io.Writer, s string, width int, zeros bool) (int, error) {
 		err error
 	)
 	if extn > 0 && !left {
-		if zeros {
-			n, err = padd(w, pzeros, extn)
-		} else {
-			n, err = padd(w, pspaces, extn)
-		}
+		n, err = writeRuneN(w, pad, extn)
 		if err != nil {
 			return n, err
 		}
@@ -30,13 +26,13 @@ func WriteString(w io.Writer, s string, width int, zeros bool) (int, error) {
 		return n, err
 	}
 	if extn > 0 && left {
-		m, err = padd(w, pspaces, extn)
+		m, err = writeRuneN(w, ' ', extn)
 		n += m
 	}
 	return n, err
 }
 
-func WriteBytes(w io.Writer, s []byte, width int, zeros bool) (int, error) {
+func WriteBytes(w io.Writer, s []byte, width int, pad rune) (int, error) {
 	left := width < 0
 	if left {
 		width = -width
@@ -47,11 +43,7 @@ func WriteBytes(w io.Writer, s []byte, width int, zeros bool) (int, error) {
 		err error
 	)
 	if extn > 0 && !left {
-		if zeros {
-			n, err = padd(w, pzeros, extn)
-		} else {
-			n, err = padd(w, pspaces, extn)
-		}
+		n, err = writeRuneN(w, pad, extn)
 		if err != nil {
 			return n, err
 		}
@@ -62,7 +54,7 @@ func WriteBytes(w io.Writer, s []byte, width int, zeros bool) (int, error) {
 		return n, err
 	}
 	if extn > 0 && left {
-		m, err = padd(w, pspaces, extn)
+		m, err = writeRuneN(w, ' ', extn)
 		n += m
 	}
 	return n, err

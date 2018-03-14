@@ -179,7 +179,7 @@ func printTemp(fbs *hdcfb.SyncSlice, sensor *Sensor) {
 		fbs.WriteString(" blad ")
 		return
 	}
-	strconv.WriteFloat(fbs, float64(t)*0.0625, 'f', 4, 1, 32)
+	strconv.WriteFloat(fbs, float64(t)*0.0625, 'f', 4, 1, 32, ' ')
 	fbs.WriteString("\xdfC")
 }
 
