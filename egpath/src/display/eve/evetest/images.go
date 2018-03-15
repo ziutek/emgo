@@ -1,4 +1,4 @@
-package main
+package evetest
 
 // Borrowed from FTDI Sample App
 

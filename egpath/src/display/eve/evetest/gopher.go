@@ -1,4 +1,4 @@
-package main
+package evetest
 
 // JPEG, 272x272
 //emgo:const

@@ -1,4 +1,4 @@
-package main
+package evetest
 
 // L1, 211x251, linestride: 216/8, offset: 31, 21
 //emgo:const

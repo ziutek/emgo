@@ -1,12 +1,17 @@
+// This example demonstrates usage of FTDI EVE based displays.
+//
+// It seems that FT800CB-HY50B display is unstable with fast SPI. If you have
+// problems please reduce SPI speed or better desolder U1 and U2 (74LCX125
+// buffers) and short the U1:2-3,5-6,11-2, U2:2-3,5-6 traces.
 package main
 
 import (
 	"delay"
 	"fmt"
-	"math/rand"
 	"rtos"
 
 	"display/eve"
+	"display/eve/evetest"
 	"display/eve/ft80"
 
 	"stm32/evedci"
@@ -76,9 +81,6 @@ func curFreq(lcd *eve.Driver) uint32 {
 }
 
 func main() {
-	var rnd rand.XorShift64
-	rnd.Seed(1)
-
 	spibus := dci.SPI().P.Bus()
 	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
@@ -86,43 +88,16 @@ func main() {
 	lcd := eve.NewDriver(dci, 128)
 	lcd.Init(&eve.Default480x272)
 
-	fmt.Printf("EVE clock: %d Hz\n", curFreq(lcd))
+	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
 	dci.SetBaudrate(30e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
-	lcd.SetBacklight(64)
-	lcd.W(0).Write(LenaFaceRGB[:])
-
-	fmt.Printf("500 bitmaps:")
-	const n = 120
-	t := rtos.Nanosec()
-	for i := 0; i < n; i++ {
-		dl := lcd.DL(-1)
-		dl.Clear(eve.CST)
-		dl.BitmapHandle(1)
-		dl.BitmapSource(0)
-		dl.BitmapLayout(eve.RGB565, 80, 40)
-		dl.BitmapSize(eve.DEFAULT, 40, 40)
-		dl.Begin(eve.BITMAPS)
-		for k := 0; k < 500; k++ {
-			v := rnd.Uint32()
-			c := v&0xFFFFFF | 0x808080
-			x := int(v>>12) % lcd.Width()
-			y := int(v>>23) % lcd.Height()
-			dl.ColorRGB(c)
-			dl.Vertex2f((x-20)*16, (y-20)*16)
-		}
-		dl.Display()
-		lcd.SwapDL()
+	if err := evetest.Run(lcd); err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
 	}
-	fmt.Printf(" %d fps.\n", n*1e9/(rtos.Nanosec()-t))
+	fmt.Printf("End.\n")
 }
-
-/*ge := lcd.GE(ft80.RAM_CMD + n)
-ge.Clear(eve.CST)
-ge.Calibrate()
-n += ge.Close() + 4
-lcd.WriteInt(ft80.REG_CMD_WRITE, n&4095)*/
 
 func lcdSPIISR() {
 	dci.SPI().ISR()
