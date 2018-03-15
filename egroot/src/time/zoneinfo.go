@@ -42,7 +42,9 @@ var Local = &utcLoc
 // Lookup returns information about the time zone in use at an instant in time
 // expressed as absolute time abs. The returned information gives the name of
 // the zone (such as "CET"), the offset in seconds east of UTC, the start and
-// end times bracketing abs when that zone is in effect.
+// end times bracketing abs when that zone is in effect. If start/end falls on
+// the previous or next year, the approximate value of start/end is returned.
+// For now only Date uses these values and works fine with such approximation.
 func (l *Location) lookup(abs uint64) (name string, offset int, start, end uint64) {
 	if l.DST == nil {
 		return l.Zone.Name, l.Zone.Offset, 0, 1<<64 - 1
@@ -113,19 +115,20 @@ func (l *Location) lookup(abs uint64) (name string, offset int, start, end uint6
 	start = abs + uint64(dstStart) // Start of DST (absolute time).
 	end = abs + uint64(dstEnd)     // End of DST (absolute time).
 
-	// If start/end falls on the previous or next year, the approximate value of
-	// start/end is returned. For now only Date uses these values and such
 	if dstStart < dstEnd {
-		if dstStart <= ys && ys < dstEnd {
-			return l.DST.Zone.Name, l.DST.Zone.Offset, start, end
-		}
 		if ys < dstStart {
 			return l.Zone.Name, l.Zone.Offset, end - 365*secondsPerDay, start
 		}
-		return l.Zone.Name, l.Zone.Offset, end, start + 365*secondsPerDay
+		if dstEnd <= ys {
+			return l.Zone.Name, l.Zone.Offset, end, start + 365*secondsPerDay
+		}
+		return l.DST.Zone.Name, l.DST.Zone.Offset, start, end
 	}
-	if dstEnd <= ys && ys < dstStart {
-		return l.Zone.Name, l.Zone.Offset, start, end
+	if ys < dstEnd {
+		return l.DST.Zone.Name, l.DST.Zone.Offset, start - 365*secondsPerDay, end
 	}
-	return l.DST.Zone.Name, l.DST.Zone.Offset, end - 365*secondsPerDay, start
+	if dstStart <= ys {
+		return l.DST.Zone.Name, l.DST.Zone.Offset, start, end + 365*secondsPerDay
+	}
+	return l.Zone.Name, l.Zone.Offset, end, start
 }
