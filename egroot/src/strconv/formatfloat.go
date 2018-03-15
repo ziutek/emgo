@@ -149,7 +149,10 @@ func writeZero(w io.Writer, width, prec, flags, e int, pad rune) (int, error) {
 		}
 	}
 	if padn := width - n; padn > 0 {
-		m, err = writeRuneN(w, ' ', padn)
+		if pad == '0' {
+			pad = ' '
+		}
+		m, err = writeRuneN(w, pad, padn)
 		n += m
 		if err != nil {
 			return n, err
@@ -358,7 +361,10 @@ func WriteFloat(w io.Writer, f float64, fmt, prec, bitsize, width int, pad rune)
 		}
 	}
 	if padn = width - n; padn > 0 {
-		m, err = writeRuneN(w, ' ', padn)
+		if pad == '0' {
+			pad = ' '
+		}
+		m, err = writeRuneN(w, pad, padn)
 		n += m
 	}
 	return n, err

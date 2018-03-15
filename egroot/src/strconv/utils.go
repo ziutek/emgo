@@ -69,7 +69,10 @@ func writePadded(w io.Writer, b []byte, width int, pad rune) (int, error) {
 		}
 	}
 	if extn > 0 && left {
-		m, err = writeRuneN(w, ' ', extn)
+		if pad == '0' {
+			pad = ' '
+		}
+		m, err = writeRuneN(w, pad, extn)
 		n += m
 	}
 	return n, err

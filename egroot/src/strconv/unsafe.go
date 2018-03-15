@@ -1,6 +1,9 @@
 package strconv
 
-import "unsafe"
+import (
+	"io"
+	"unsafe"
+)
 
 const (
 	intSize = unsafe.Sizeof(int(0))
@@ -17,4 +20,8 @@ func ParseUint64(s []byte, base int) (uint64, error) {
 
 func ParseUint(s []byte, base int) (uint, error) {
 	return ParseStringUint(*(*string)(unsafe.Pointer(&s)), base)
+}
+
+func WriteBytes(w io.Writer, s []byte, width int, pad rune) (int, error) {
+	return WriteString(w, *(*string)(unsafe.Pointer(&s)), width, pad)
 }
