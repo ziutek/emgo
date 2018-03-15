@@ -52,9 +52,10 @@ func main() {
 		y, mo, d := t.Date()
 		h, mi, s := t.Clock()
 		ns := t.Nanosecond()
+		zone, _ := t.Zone()
 		fmt.Printf(
-			"%04d-%02d-%02d %02d:%02d:%02d.%09d\n",
-			y, mo, d, h, mi, s, ns,
+			"%04d-%02d-%02d %02d:%02d:%02d.%09d %s\n",
+			y, mo, d, h, mi, s, ns, zone,
 		)
 	}
 }
