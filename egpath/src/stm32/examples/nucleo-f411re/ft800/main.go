@@ -112,8 +112,12 @@ func lcdTxDMAISR() {
 }
 
 func exti9_5ISR() {
-	exti.Pending().ClearPending()
-	dci.ISR()
+	pending := exti.Pending()
+	pending &= exti.L5 | exti.L6 | exti.L7 | exti.L8 | exti.L9
+	pending.ClearPending()
+	if pending&exti.L7 != 0 {
+		dci.ISR()
+	}
 }
 
 //emgo:const

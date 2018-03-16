@@ -64,7 +64,7 @@ func init() {
 	irqline.Connect(irqn.Port())
 	irqline.EnableFallTrig()
 	irqline.EnableIRQ()
-	rtos.IRQ(irq.EXTI9_5).Enable()
+	rtos.IRQ(irq.EXTI4).Enable()
 
 	dci = evedci.NewSPI(spidrv, csn, pdn)
 }
@@ -109,8 +109,8 @@ func lcdTxDMAISR() {
 	dci.SPI().DMAISR(dci.SPI().TxDMA)
 }
 
-func exti9_5ISR() {
-	exti.Pending().ClearPending()
+func exti4ISR() {
+	exti.L4.ClearPending()
 	dci.ISR()
 }
 
@@ -120,5 +120,5 @@ var ISRs = [...]func(){
 	irq.SPI1:         lcdSPIISR,
 	irq.DMA2_Stream2: lcdRxDMAISR,
 	irq.DMA2_Stream3: lcdTxDMAISR,
-	irq.EXTI9_5:      exti9_5ISR,
+	irq.EXTI4:        exti4ISR,
 }
