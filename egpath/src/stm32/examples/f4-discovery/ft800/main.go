@@ -33,26 +33,27 @@ func init() {
 
 	// GPIO
 
-	gpio.A.EnableClock(true)
-	csn := gpio.A.Pin(4)
-	spiport, sck, miso, mosi := gpio.A, gpio.Pin5, gpio.Pin6, gpio.Pin7
+	gpio.B.EnableClock(true)
+	spiport, sck, miso, mosi := gpio.B, gpio.Pin13, gpio.Pin14, gpio.Pin15
 
-	gpio.C.EnableClock(true)
-	irqn := gpio.C.Pin(4)
-	pdn := gpio.C.Pin(5)
+	gpio.D.EnableClock(true)
+	csn := gpio.D.Pin(8)
+	irqn := gpio.D.Pin(9)
+	pdn := gpio.D.Pin(10)
 
-	// EVE SPI
+	// EVE SPI (Use SPI2. SPI1 is faster but used by onboard accelerometer).
 
-	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
+	// Use max. speed for SCK (not necessary for ABP2), see Errata sheet.
+	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh})
 	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
-	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
-	d := dma.DMA2
+	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI2)
+	d := dma.DMA1
 	d.EnableClock(true)
-	spidrv := spi.NewDriver(spi.SPI1, d.Channel(2, 3), d.Channel(3, 3))
+	spidrv := spi.NewDriver(spi.SPI2, d.Channel(3, 0), d.Channel(4, 0))
 	spidrv.P.EnableClock(true)
-	rtos.IRQ(irq.SPI1).Enable()
-	rtos.IRQ(irq.DMA2_Stream2).Enable()
-	rtos.IRQ(irq.DMA2_Stream3).Enable()
+	rtos.IRQ(irq.SPI2).Enable()
+	rtos.IRQ(irq.DMA1_Stream3).Enable()
+	rtos.IRQ(irq.DMA1_Stream4).Enable()
 
 	// EVE control lines
 
@@ -64,7 +65,7 @@ func init() {
 	irqline.Connect(irqn.Port())
 	irqline.EnableFallTrig()
 	irqline.EnableIRQ()
-	rtos.IRQ(irq.EXTI4).Enable()
+	rtos.IRQ(irq.EXTI9_5).Enable()
 
 	dci = evedci.NewSPI(spidrv, csn, pdn)
 }
@@ -84,10 +85,13 @@ func main() {
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd := eve.NewDriver(dci, 128)
-	lcd.Init(&eve.Default480x272)
+	if err := lcd.Init(&eve.Default480x272); err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
 
 	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
-	dci.SetBaudrate(30e6)
+	dci.SetBaudrate(21e6) // Max. for SPI2 and SPI3 < EVE max. 30 MHz
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	if err := evetest.Run(lcd); err != nil {
@@ -109,16 +113,20 @@ func lcdTxDMAISR() {
 	dci.SPI().DMAISR(dci.SPI().TxDMA)
 }
 
-func exti4ISR() {
-	exti.L4.ClearPending()
-	dci.ISR()
+func exti9_5ISR() {
+	pending := exti.Pending()
+	pending &= exti.L5 | exti.L6 | exti.L7 | exti.L8 | exti.L9
+	pending.ClearPending()
+	if pending&exti.L9 != 0 {
+		dci.ISR()
+	}
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.SPI1:         lcdSPIISR,
-	irq.DMA2_Stream2: lcdRxDMAISR,
-	irq.DMA2_Stream3: lcdTxDMAISR,
-	irq.EXTI4:        exti4ISR,
+	irq.SPI2:         lcdSPIISR,
+	irq.DMA1_Stream3: lcdRxDMAISR,
+	irq.DMA1_Stream4: lcdTxDMAISR,
+	irq.EXTI9_5:      exti9_5ISR,
 }

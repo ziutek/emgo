@@ -63,19 +63,21 @@ func init() {
 
 	// GPIO
 
-	gpio.A.EnableClock(true)
-	ili.ctrport = gpio.A
-	ili.reset, ili.cs, ili.dc = gpio.Pin0, gpio.Pin1, gpio.Pin4
-	spiport, sck, miso, mosi := gpio.A, gpio.Pin5, gpio.Pin6, gpio.Pin7
+	gpio.B.EnableClock(true)
+	spiport, sck, miso, mosi := gpio.B, gpio.Pin13, gpio.Pin14, gpio.Pin15
 
-	// SPI
+	gpio.D.EnableClock(true)
+	ili.ctrport = gpio.D
+	ili.reset, ili.cs, ili.dc = gpio.Pin8, gpio.Pin9, gpio.Pin10
+
+	// SPI (Use SPI2. SPI1 is faster but used by onboard accelerometer).
 
 	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
-	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
-	d := dma.DMA2
+	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI2)
+	d := dma.DMA1
 	d.EnableClock(true)
-	ili.SPI = spi.NewDriver(spi.SPI1, d.Channel(2, 3), d.Channel(3, 3))
+	ili.SPI = spi.NewDriver(spi.SPI2, d.Channel(3, 0), d.Channel(4, 0))
 	ili.SPI.P.EnableClock(true)
 	ili.SPI.P.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
@@ -83,9 +85,9 @@ func init() {
 			spi.SoftSS | spi.ISSHigh,
 	)
 	ili.SPI.P.Enable()
-	rtos.IRQ(irq.SPI1).Enable()
-	rtos.IRQ(irq.DMA2_Stream2).Enable()
-	rtos.IRQ(irq.DMA2_Stream3).Enable()
+	rtos.IRQ(irq.SPI2).Enable()
+	rtos.IRQ(irq.DMA1_Stream3).Enable()
+	rtos.IRQ(irq.DMA1_Stream4).Enable()
 
 	// Controll
 
@@ -154,7 +156,7 @@ func iliTxDMAISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.SPI1:         iliSPIISR,
-	irq.DMA2_Stream2: iliRxDMAISR,
-	irq.DMA2_Stream3: iliTxDMAISR,
+	irq.SPI2:         iliSPIISR,
+	irq.DMA1_Stream3: iliRxDMAISR,
+	irq.DMA1_Stream4: iliTxDMAISR,
 }
