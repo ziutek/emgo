@@ -2,4 +2,6 @@
 
 INTERFACE=stlink-v2
 TARGET=nrf52
-. ../../utils/debug-oocd.sh
+
+. ../../../../../scripts/debug-oocd.sh $@
+
