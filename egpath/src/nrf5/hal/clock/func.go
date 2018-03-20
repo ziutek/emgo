@@ -1,37 +1,8 @@
-// Package clock provides interface to manage nRF51 clocks source/generation.
 package clock
 
 import (
-	"mmio"
-	"unsafe"
-
-	"nrf5/hal/internal/mmap"
 	"nrf5/hal/te"
 )
-
-// Periph represents clock management peripheral.
-type Periph struct {
-	te.Regs
-
-	_            [2]mmio.U32
-	hfclkrun     mmio.U32
-	hfclkstat    mmio.U32
-	_            mmio.U32
-	lfclkrun     mmio.U32
-	lfclkstat    mmio.U32
-	lfclksrccopy mmio.U32
-	_            [62]mmio.U32
-	lfclksrc     mmio.U32
-	_            [7]mmio.U32
-	ctiv         mmio.U32
-	_            [5]mmio.U32
-	xtalfreq     mmio.U32
-	_            [2]mmio.U32
-	traceconfig  mmio.U32
-}
-
-//emgo:const
-var CLOCK = (*Periph)(unsafe.Pointer(mmap.APB_BASE + 0x00000))
 
 type Task byte
 
@@ -45,6 +16,8 @@ const (
 	CTSTOP     Task = 6 // Stop calibration timer.
 )
 
+func (t Task) Task() *te.Task { return r().Regs.Task(int(t)) }
+
 type Event byte
 
 const (
@@ -54,12 +27,11 @@ const (
 	CTTO         Event = 4 // Calibration timer timeout.
 )
 
-func (p *Periph) Task(t Task) *te.Task    { return p.Regs.Task(int(t)) }
-func (p *Periph) Event(e Event) *te.Event { return p.Regs.Event(int(e)) }
+func (e Event) Event() *te.Event { return r().Regs.Event(int(e)) }
 
-// HFCLKRUN returns true if HFCLKSTART task was triggered.
-func (p *Periph) LoadHFCLKRUN() bool {
-	return p.hfclkrun.Load() != 0
+// LoadHFCLKRUN returns true if HFCLKSTART task was triggered.
+func LoadHFCLKRUN() bool {
+	return r().hfclkrun.Load() != 0
 }
 
 type Source byte
@@ -72,49 +44,49 @@ const (
 
 // LoadHFCLKStat returns information about HFCLK status (running or not) and
 // clock source.
-func (p *Periph) LoadHFCLKSTAT() (src Source, running bool) {
-	s := p.hfclkstat.Load()
+func LoadHFCLKSTAT() (src Source, running bool) {
+	s := r().hfclkstat.Load()
 	return Source(s & 1), s&(1<<16) != 0
 }
 
 // LoadLFCLKRUN returns true if LFCLKSTART task was triggered.
-func (p *Periph) LoadLFCLKRUN() bool {
-	return p.lfclkrun.Bit(0) != 0
+func LoadLFCLKRUN() bool {
+	return r().lfclkrun.Bit(0) != 0
 }
 
 // LoadLFCLKSTAT returns information about LFCLK status (running or not) and
 // clock source.
-func (p *Periph) LoadLFCLKSTAT() (src Source, running bool) {
-	s := p.lfclkstat.Load()
+func LoadLFCLKSTAT() (src Source, running bool) {
+	s := r().lfclkstat.Load()
 	return Source(s & 1), s&(1<<16) != 0
 }
 
 // LoadLFCLKSRCCOPY returns clock source for LFCLK from time when LFCLKSTART
 // task has been triggered.
-func (p *Periph) LoadLFCLKSRCCOPY() Source {
-	return Source(p.lfclksrccopy.Bits(3))
+func LoadLFCLKSRCCOPY() Source {
+	return Source(r().lfclksrccopy.Bits(3))
 }
 
 // LoadLFCLKSRC returns clock source for LFCLK.
-func (p *Periph) LoadLFCLKSRC() Source {
-	return Source(p.lfclksrc.Bits(3))
+func LoadLFCLKSRC() Source {
+	return Source(r().lfclksrc.Bits(3))
 }
 
 // StoreLFCLKSRC sets clock source for LFCLK. It can only be modified when
 // LFCLK is not running.
-func (p *Periph) StoreLFCLKSRC(src Source) {
-	p.lfclksrc.Store(uint32(src))
+func StoreLFCLKSRC(src Source) {
+	r().lfclksrc.Store(uint32(src))
 }
 
 // LoadCTIV returns calibration timer interval in milliseconds.
-func (p *Periph) LoadCTIV() int {
-	return int(p.ctiv.Bits(0x7f) * 250)
+func LoadCTIV() int {
+	return int(r().ctiv.Bits(0x7f) * 250)
 }
 
 // StoreCTIV sets calibration timer interval as number of milliseconds
 // (range: 250 ms to 31750 ms).
-func (p *Periph) StoreCTIV(ctiv int) {
-	p.ctiv.Store(uint32(ctiv+125) / 250)
+func StoreCTIV(ctiv int) {
+	r().ctiv.Store(uint32(ctiv+125) / 250)
 }
 
 type XtalFreq byte
@@ -125,13 +97,13 @@ const (
 )
 
 // LoadXTALFREQ returns selected frequency of external crystal for HFCLK. nRF51.
-func (p *Periph) LoadXTALFREQ() XtalFreq {
-	return XtalFreq(p.xtalfreq.Bits(0xff))
+func LoadXTALFREQ() XtalFreq {
+	return XtalFreq(r().xtalfreq.Bits(0xff))
 }
 
 // StoreXTALFREQ selects frequency of external crystal for HFCLK. nRF51.
-func (p *Periph) StoreXTALFREQ(f XtalFreq) {
-	p.xtalfreq.Store(uint32(f))
+func StoreXTALFREQ(f XtalFreq) {
+	r().xtalfreq.Store(uint32(f))
 }
 
 // TraceSpeed represents speed of Trace Port clock.
@@ -155,13 +127,13 @@ const (
 
 // LoadTRACECONFIG returns current speed of Trace Port clock and pin
 // multiplexing of trace signals. nRF52.
-func (p *Periph) LoadTRACECONFIG() (TraceSpeed, TraceMux) {
-	tc := p.traceconfig.Load()
+func LoadTRACECONFIG() (TraceSpeed, TraceMux) {
+	tc := r().traceconfig.Load()
 	return TraceSpeed(tc & 3), TraceMux(tc >> 16 & 3)
 }
 
 // StoreTRACECONFIG sets speed of Trace Port clock and pin multiplexing of
 // trace signals. nRF52.
-func (p *Periph) StoreTRACECONFIG(s TraceSpeed, m TraceMux) {
-	p.traceconfig.Store(uint32(s) | uint32(m)<<16)
+func StoreTRACECONFIG(s TraceSpeed, m TraceMux) {
+	r().traceconfig.Store(uint32(s) | uint32(m)<<16)
 }

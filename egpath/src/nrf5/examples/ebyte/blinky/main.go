@@ -22,7 +22,7 @@ func init() {
 	rtcst.Setup(rtc.RTC0, 1)
 
 	// Configure P0.18 as SWO (fmt.Print* functions use it as standard output).
-	clock.CLOCK.StoreTRACECONFIG(clock.T4MHz, clock.Serial)
+	clock.StoreTRACECONFIG(clock.T4MHz, clock.Serial)
 
 	// Allocate pins (always do it in one place to avoid conflicts).
 	p0 := gpio.P0
