@@ -21,6 +21,9 @@ func init() {
 	system.Setup(clock.XTAL, clock.XTAL, true)
 	rtcst.Setup(rtc.RTC0, 1)
 
+	// Configure P0.18 as SWO (fmt.Print* functions use it as standard output).
+	clock.CLOCK.StoreTRACECONFIG(clock.T4MHz, clock.Serial)
+
 	// Allocate pins (always do it in one place to avoid conflicts).
 	p0 := gpio.P0
 	leds[0] = p0.Pin(24)
@@ -36,10 +39,10 @@ func init() {
 
 func main() {
 	for {
-		fmt.Printf("bla\n")
+		fmt.Printf("Hello world!\n")
 		for _, led := range leds {
 			led.Set()
-			delay.Millisec(200)
+			delay.Millisec(1100)
 			led.Clear()
 		}
 	}

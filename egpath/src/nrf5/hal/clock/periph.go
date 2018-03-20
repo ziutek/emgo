@@ -26,6 +26,8 @@ type Periph struct {
 	ctiv         mmio.U32
 	_            [5]mmio.U32
 	xtalfreq     mmio.U32
+	_            [2]mmio.U32
+	traceconfig  mmio.U32
 }
 
 //emgo:const
@@ -115,17 +117,51 @@ func (p *Periph) StoreCTIV(ctiv int) {
 	p.ctiv.Store(uint32(ctiv+125) / 250)
 }
 
-type Freq byte
+type XtalFreq byte
 
 const (
-	F16MHz Freq = 0xff
-	F32MHz Freq = 0x00
+	X16MHz XtalFreq = 0xff
+	X32MHz XtalFreq = 0x00
 )
 
-func (p *Periph) LoadXTALFREQ() Freq {
-	return Freq(p.xtalfreq.Bits(0xff))
+// LoadXTALFREQ returns selected frequency of external crystal for HFCLK. nRF51.
+func (p *Periph) LoadXTALFREQ() XtalFreq {
+	return XtalFreq(p.xtalfreq.Bits(0xff))
 }
 
-func (p *Periph) StoreXTALFREQ(f Freq) {
+// StoreXTALFREQ selects frequency of external crystal for HFCLK. nRF51.
+func (p *Periph) StoreXTALFREQ(f XtalFreq) {
 	p.xtalfreq.Store(uint32(f))
+}
+
+// TraceSpeed represents speed of Trace Port clock.
+type TraceSpeed byte
+
+const (
+	T32MHz TraceSpeed = 0 // 32 MHz Trace Port clock (TRACECLK = 16 MHz).
+	T16MHz TraceSpeed = 1 // 16 MHz Trace Port clock (TRACECLK = 8 MHz).
+	T8MHz  TraceSpeed = 2 // 8 MHz Trace Port clock (TRACECLK = 4 MHz).
+	T4MHz  TraceSpeed = 3 // 4 MHz Trace Port clock (TRACECLK = 2 MHz).
+)
+
+// TraceMux represents trace pins multiplexing configuration.
+type TraceMux byte
+
+const (
+	GPIO     TraceMux = 0 // GPIOs multiplexed onto all trace pins.
+	Serial   TraceMux = 1 // SWO onto P0.18, GPIO onto other trace pins.
+	Parallel TraceMux = 2 // TRACECLK and TRACEDATA onto P0.20,18,16,15,14.
+)
+
+// LoadTRACECONFIG returns current speed of Trace Port clock and pin
+// multiplexing of trace signals. nRF52.
+func (p *Periph) LoadTRACECONFIG() (TraceSpeed, TraceMux) {
+	tc := p.traceconfig.Load()
+	return TraceSpeed(tc & 3), TraceMux(tc >> 16 & 3)
+}
+
+// StoreTRACECONFIG sets speed of Trace Port clock and pin multiplexing of
+// trace signals. nRF52.
+func (p *Periph) StoreTRACECONFIG(s TraceSpeed, m TraceMux) {
+	p.traceconfig.Store(uint32(s) | uint32(m)<<16)
 }
