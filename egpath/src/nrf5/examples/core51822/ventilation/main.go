@@ -127,12 +127,11 @@ func init() {
 
 	// Semihosting console.
 
-	/*
-		f, err := semihosting.OpenFile(":tt", semihosting.W)
-		for err != nil {
-		}
-		fmt.DefaultWriter = lineWriter{bufio.NewWriterSize(f, 40)}
-	*/
+
+	//f, err := semihosting.OpenFile(":tt", semihosting.W)
+	//for err != nil {
+	//}
+	//fmt.DefaultWriter = lineWriter{bufio.NewWriterSize(f, 40)}
 }
 
 func main() {

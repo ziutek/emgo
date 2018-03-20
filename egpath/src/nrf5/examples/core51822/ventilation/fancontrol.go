@@ -1,6 +1,7 @@
 package main
 
 import (
+	//"fmt"
 	"delay"
 	"sync/atomic"
 
@@ -8,7 +9,7 @@ import (
 )
 
 const (
-	pwmNum  = 50
+	pwmNum  = 24
 	stepRPM = 1 << 5
 	minRPM  = 420
 	maxRPM  = minRPM + (pwmNum-1)*stepRPM
@@ -164,7 +165,7 @@ func (fc *FanControl) Identify() {
 			fan.rpmToPWM[i] = 0
 		}
 	}
-	maxPWM := fc.pwm.Max()
+	maxPWM := fc.pwm.Max()*3/4
 	if maxPWM > 255 {
 		panic("maxPWM>255")
 	}
@@ -180,6 +181,7 @@ func (fc *FanControl) Identify() {
 			}
 			rpm := fc.RPM(n)
 			m := (rpm - minRPM + stepRPM - 1) / stepRPM
+			//fmt.Printf("%d: %d %d\n", n, pwm, rpm)
 			switch {
 			case m >= pwmNum:
 				todo &^= 1 << uint(n)
