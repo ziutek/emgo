@@ -1,0 +1,1 @@
+../../../../scripts/semihosting-oocd.sh

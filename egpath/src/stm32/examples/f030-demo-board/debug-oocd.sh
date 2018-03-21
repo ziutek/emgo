@@ -6,4 +6,4 @@ TARGET=stm32f0x
 #cfg='reset_config none separate' # Press reset before connect.
 #cfg='reset_config srst_only srst_nogate connect_assert_srst'
 
-. ../../utils/debug-oocd.sh
+. ../../../../../scripts/debug-oocd.sh $@
