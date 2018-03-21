@@ -149,7 +149,7 @@ func (fc *FanControl) TachISR() {
 		rpm := fc.RPM(n)
 		e := targetRPM - rpm
 		sum, diff := fan.NextE(e, fc.maxI)
-		dc = modelPWM + e/divP + sum/divI + diff/divD
+		dc = modelPWM + 0*e/divP + sum/divI + 0*diff/divD
 	} else {
 		fan.ResetE()
 	}
@@ -165,7 +165,7 @@ func (fc *FanControl) Identify() {
 			fan.rpmToPWM[i] = 0
 		}
 	}
-	maxPWM := fc.pwm.Max()*3/4
+	maxPWM := fc.pwm.Max() * 3 / 4
 	if maxPWM > 255 {
 		panic("maxPWM>255")
 	}
