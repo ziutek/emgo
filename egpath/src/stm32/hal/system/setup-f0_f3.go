@@ -97,10 +97,10 @@ func SetupPLL(osc, div, mul int) {
 	if osc == 0 {
 		// Div == 2 for HSI can be selected in compatible way: PLLSRC = 0.
 		if div != 2 {
-			cfgr |= 1 << rcc.PLLSRCn
+			cfgr |= 1 << 15 // PLLSRC = 1
 		}
 	} else {
-		cfgr |= 2 << rcc.PLLSRCn
+		cfgr |= 2 << 15 // PLLSRC = 2
 		for RCC.HSERDY().Load() == 0 {
 			// Wait for HSE...
 		}

@@ -10,11 +10,24 @@ import (
 )
 
 const (
-	TIM2_AF1     = AF1
-	TIM15_AF1    = AF1
-	TIM16_AF1    = AF1
-	TIM17_AF1    = AF1
-	EventOut_AF1 = AF1
+	RTC_REFIN     = AF0
+	MCO           = AF0
+	SWDIO_FTNS    = AF0
+	SWCLK_JTCK    = AF0
+	JTDI          = AF0
+	JTDO_TRACESWO = AF0
+	JRST          = AF0
+	TRACECK       = AF0
+	TRACED0       = AF0
+	TRACED1       = AF0
+	TRACED2       = AF0
+	TRACED3       = AF0
+
+	TIM2_AF1  = AF1
+	TIM15_AF1 = AF1
+	TIM16_AF1 = AF1
+	TIM17_AF1 = AF1
+	EVENTOUT  = AF1
 
 	I2C3_AF2  = AF2
 	TIM1_AF2  = AF2
