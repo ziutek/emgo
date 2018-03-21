@@ -1,1 +1,1 @@
-../utils/load-bmp.sh
+../../../../scripts/load-bmp.sh

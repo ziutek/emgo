@@ -2,4 +2,5 @@
 
 INTERFACE=stlink-v2
 TARGET=nrf51
-. ../../utils/load-oocd.sh $@
+
+. ../../../../../scripts/load-oocd.sh $@
