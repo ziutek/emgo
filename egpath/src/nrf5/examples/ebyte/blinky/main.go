@@ -1,5 +1,5 @@
-// This example shows how to use GPIO to as digital output (to blink connected
-// LEDs) and input (to read state of KEY1).
+// This example shows how to use GPIO as digital output and how to enable SWO
+// to allow print debug messages.
 package main
 
 import (
