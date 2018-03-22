@@ -1,1 +1,1 @@
-../utils/debug-bmp.sh
+../../../../scripts/debug-bmp.sh

@@ -3,4 +3,4 @@
 INTERFACE=stlink-v2
 TARGET=stm32l1
 
-. ../../utils/debug-oocd.sh
+. ../../../../../scripts/debug-oocd.sh $@
