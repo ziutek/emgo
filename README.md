@@ -47,15 +47,15 @@ The first compilation may take some time because egc must process all required l
 
 Compilation can produce two kind of binaries: binaries that should be loaded to RAM or loaded to Flash of your MCU.
 
-Loading to RAM is useful in case of small programs, during working on the code and debuging. Loading into RAM is faster, allows unlimited number of breakpoints, allows to modify constants and even the code from debuger and saves your Flash, which has big but limited number of erase cycles.
+Loading to RAM is useful in case of small programs, during working on the code and debuging. Loading to RAM is faster, allows unlimited number of breakpoints, allows to modify constants and even the code from debuger and saves your Flash, which has big but limited number of erase cycles.
 
-To run program loaded to RAM you must change MCU boot option. In case of most STM32 MCUs you simply need to set high BOOT0 and BOOT1 pins. Newer STM32 MCUs do not provide BOOT1 pin, insdead they require change some persistant bits that change the default booting behavior if BOOT0 is set high.
+To run program loaded to RAM you must change the MCU boot behavior. In case of most STM32 MCUs you simply need to set high BOOT0 and BOOT1 pins. Newer STM32 MCUs do not provide BOOT1 pin, insdead they require to program some persistant bits that change the default booting behavior when BOOT0 is set high.
 
-However, eventually your program should be loaded to Flash. Sometimes you have no other alternative: your program is too big to fit in RAM, your MCU does not provide easy way to run program from RAM (eg. nRF51), some bugs may only appear when program runs from Flash.
+However, eventually your program should be loaded to Flash. Sometimes you have no other alternative: your program is too big to fit into RAM or your MCU does not provide easy way to run program from RAM (eg. nRF51). Some bugs may only appear when the program runs from Flash or from RAM, so it is advisable to perform the final test of any new piece of code in both ways.
 
 You need tools to load compiled binary to your MCU's RAM/Flash and allow to debug it. Such tools usually have a hardware part and a software part. In case of STM32 Nucleo or Discovery development boards the hardware part (ST-LINK programmer) is integrated with the board, so you only need the software part, which can be [OpenOCD](http://openocd.org) or [Texane's stlink](https://github.com/texane/stlink). You must install one of them or both before next steps (ensure that `openocd` and/or `st-util` binaries are on your `PATH`). 
 
-There is a set of scripts for any board in `example` directory that simplifies loding and debuging process. The `load-oocd.sh` script cah handle SWO output from ITM (Instrumentation Trace Macrocell) but needs [itmsplit](https://github.com/ziutek/itmsplit) to convert binary stream to readable messages. SWO is very useful for debuging and`fmt.Print*` functions by default use ITM trace port as standard output. Install `itmsplit` with the command:
+There is a set of scripts for any board in `example` directory that simplifies loding and debuging process. The `load-oocd.sh` script cah handle SWO output from ITM (Instrumentation Trace Macrocell) but needs [itmsplit](https://github.com/ziutek/itmsplit) to convert binary stream to readable messages. SWO is very useful for debuging and `fmt.Print*` functions by default use ITM trace port as standard output. Install `itmsplit` with the command:
 
 	go get github.com/ziutek/itmsplit
 	
