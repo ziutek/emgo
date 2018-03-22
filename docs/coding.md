@@ -1,0 +1,31 @@
+### Emgo, C, assembler
+
+Writing part of your package in C is probably really need only if you need to use GCC embaded assembler in function that need to be inlined or access unexported variables.
+
+If you want to write CPU specific function in CPU specific library you are free to write it in assembly. In other cases, you can optimize some function writing it in assembly, but in such case always provide portable Emgo version of this function for other architectures.
+
+### Idiomatic Emgo code
+
+1. Read [Effective Go](http://golang.org/doc/effective_go.html) and study Go standard library.
+
+2. Study Emgo standard library and runtime code to see how to work without implicit dynamic memory allocation.
+
+3. Don't follow coding style you can see in Go to C translator. This piece of code was born as proof of concept project without any plan and without any solid knowledge about Go parser and type checker. As my knowledge grows it evolved from very naive code to something that works but for now this isn't an example of good idiomatic Go code.
+
+### Volatile types and variables
+
+If your CPU guarantees ordered access to I/O address spece, you can use volatile types/variables using //c:volatile pragma. This simplifies code and can slightly improve performance, but can cause bugs in more complicated cases.
+
+Don't use volatile types/variables for other things. If you think that you need volatile for something other than MMIO you're wrong - use functions from sync/atmic package instead.
+
+Emgo standard library tries to limit the presence of volatile pragma to one package: mmio.
+
+### Constant global variables
+
+To avoid copying some global variables (especially big arrays) from Flash to RAM use //emgo:const pragma. C compiler will warn you if your code may modify such variables.
+
+### Line length
+
+Source code in Emgo standard library avoids lines longer than 80 characters.
+
+--------------------------------------------------------------------------------

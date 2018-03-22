@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang=en>
+<head>
+	<meta charset="utf-8">
+	<title>Peripheral registers</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id=page class=wide>
+<div class="container">
+
+<h2 id="introduction">Introduction</h2>
+
+<p>
+Peripheral registers can be handled in many ways. This document presents analysis of three approaches to this subject.
+<p>
+
+<h2 id="struct">Peripheral memory as struct</h2>
+
+<p>
+Simplest approach, many believe that it ensures the best performance. Registers are used as ordinary variables. There are no explicit load nor store operations.
+</p>
+
+<pre>
+//c:volatile
+type Regset struct {
+	A uint32
+	_  [61]uint32
+	B uint32
+	C uint32
+}
+
+var p = (*Regset)(unsafe.Pointer(uintptr(0xe000e000)))
+
+func main() {
+	x := p.A  // Load A
+	p.B |= x  // Set specified bits in B
+	p.C &amp;^= x // Clear specified bits in C
+}
+</pre>
+
+<p>
+Let's see what the compiler will do with this code:
+</p>
+
+<pre>
+00000040 &lt;main$main&gt;:
+      40:	4b06      	ldr	r3, [pc, #24]	; (5c &lt;main$main+0x1c&gt;)
+      42:	681b      	ldr	r3, [r3, #0]
+      44:	1c18      	adds	r0, r3, #0
+      46:	30f8      	adds	r0, #248	; 0xf8
+      48:	6819      	ldr	r1, [r3, #0]
+      4a:	6802      	ldr	r2, [r0, #0]
+      4c:	33fc      	adds	r3, #252	; 0xfc
+      4e:	430a      	orrs	r2, r1
+      50:	6002      	str	r2, [r0, #0]
+      52:	681a      	ldr	r2, [r3, #0]
+      54:	438a      	bics	r2, r1
+      56:	601a      	str	r2, [r3, #0]
+      58:	4770      	bx	lr
+      5a:	46c0      	nop			; (mov r8, r8)
+      5c:	20000c10 	.word	0x20000c10
+</pre>
+
+<p>
+All examples in this document are complied for Cortex-M0 architecture. In the second column you can see hexadecimal opcode of instruction (most of Cortex-M0 instructions use only 16 bits). Subsequent columns contain symbolic name of instruction and its arguments.
+</p>
+
+<p>
+Let's explain what this assembly code does, simply by add comments to relevant instructions:
+</p>
+
+<pre>
+00000040 &lt;main$main&gt;:
+      40:    ldr   r3, [pc, #24]  // Load address of p (value at 5c) to r3.
+      42:    ldr   r3, [r3, #0]   // Load p (address of A) to r3.
+      44:    adds  r0, r3, #0     // Copy r3 to r0.
+      46:    adds  r0, #248       // Add 248 to r0 so now it points to B.
+      48:    ldr   r1, [r3, #0]   // Load A to r1.
+      4a:    ldr   r2, [r0, #0]   // Load B to r2.
+      4c:    adds  r3, #252       // Add 252 to r3 so now it points to C.
+      4e:    orrs  r2, r1         // r2 |= r1
+      50:    str   r2, [r0, #0]   // Store r2 to B.
+      52:    ldr   r2, [r3, #0]   // Load C to r2.
+      54:    bics  r2, r1         // r2 &amp;^= r1
+      56:    str   r2, [r3, #0]   // Store r2 to C.
+      58:    bx    lr
+      5a:    nop
+      5c:   .word  0x20000c10     // &amp;p
+</pre>
+
+<p>
+As you can see, there are 12 instructions and 12*2 + 4 + 4 = 32 bytes used: 24 bytes (ROM) for instructions, 4 bytes (ROM) for address of <code>p</code> and 4 bytes (RAM) for <code>p</code> itself.
+</p>
+
+<h2 id="struct_with_methods">Peripheral memory as struct and methods to access registers</h2>
+
+<p>
+This approach is used in Emgo standard library, especially when some peripheral can have more than one instance (eg. timers, GPIO ports, etc.). But why methods? Whats wrong with previous approach?
+</p>
+
+<p>
+I belive that direct use of peripheral registers as ordinary variables hides the fact that there are usually some side effects related to any load/store. You can disagree with me, but let's leve that aside for now. There is something more interesting in this topic:
+</p>
+
+<p>
+ How methods affect generated code? Let's see:
+</p>
+
+<pre>
+type Regset struct {
+	A mmio.U32
+	_  [61]mmio.U32
+	B mmio.U32
+	C mmio.U32
+}
+
+var p = (*Regset)(unsafe.Pointer(uintptr(0xe000e000)))
+
+func main() {
+	x := p.A.Load()
+	p.B.SetBits(x)
+	p.C.ClearBits(x)
+}
+</pre>
+
+<p>
+As you can see I didn't defined methods for Regset registers myself but have used those provided by package mmio. This is suffucient in simple cases but sometimes you need to define methods for Regset itself to provide more logical interface. Package mmio provides simple methods that in most cases should be inlined by compiler. It is important because overhead of function call can be non-acceptable.
+<p>
+
+<p>
+Let's see how compiler will cope with this code:
+</p>
+
+<pre>
+00000040 &lt;main$main&gt;:
+      40:	4b06      	ldr	r3, [pc, #24]	; (5c &lt;main$main&gt;)
+      42:	681b      	ldr	r3, [r3, #0]
+      44:	1c18      	adds	r0, r3, #0
+      46:	30f8      	adds	r0, #248	; 0xf8
+      48:	6819      	ldr	r1, [r3, #0]
+      4a:	6802      	ldr	r2, [r0, #0]
+      4c:	33fc      	adds	r3, #252	; 0xfc
+      4e:	430a      	orrs	r2, r1
+      50:	6002      	str	r2, [r0, #0]
+      52:	681a      	ldr	r2, [r3, #0]
+      54:	438a      	bics	r2, r1
+      56:	601a      	str	r2, [r3, #0]
+      58:	4770      	bx	lr
+      5a:	46c0      	nop			; (mov r8, r8)
+      5c:	20000c10 	.word	0x20000c10
+</pre>
+
+<p>
+As you can see, it generates identical code. If you don't belive me try it yourself.
+</p>
+
+<p>
+In conclusion, simple methods don't affect code speed and memory usage. Difference is only in how source code looks like. 
+</p>
+
+<h2 id="array">Peripheral memory as array of registers</h2>
+
+<p>
+Peripheral memory can be also represented as array of registers. Usualy registers all have the same size: machine word. Even if some of them have smaller size, they can be treat as fields of word-sized registers. Let's show some array-based code:
+</p>
+
+<pre>
+const (
+	base = 0xe000e000
+	length  = 64
+)
+
+const (
+	A Reg = 0
+	B Reg = 62
+	C Reg = 63
+)
+
+func main() {
+	x := Mask(A.Load())
+	B.SetBits(x)
+	C.ClearBits(x)
+}
+</pre>
+
+<p>There is no any array in presented code but belive me this code uses array of <code>length</code> registers located at <code>base</code> address. Let's compile it:
+</p>
+
+<pre>
+00000040 &lt;main$main&gt;:
+      40:	4b05      	ldr	r3, [pc, #20]	; (58 &lt;main$main&gt;)
+      42:	1c18      	adds	r0, r3, #0
+      44:	30f8      	adds	r0, #248	; 0xf8
+      46:	6819      	ldr	r1, [r3, #0]
+      48:	6802      	ldr	r2, [r0, #0]
+      4a:	33fc      	adds	r3, #252	; 0xfc
+      4c:	430a      	orrs	r2, r1
+      4e:	6002      	str	r2, [r0, #0]
+      50:	681a      	ldr	r2, [r3, #0]
+      52:	438a      	bics	r2, r1
+      54:	601a      	str	r2, [r3, #0]
+      56:	4770      	bx	lr
+      58:	e000e000 	.word	0xe000e000
+</pre>
+
+<p>
+As you can see, generated code is shorter by one instruction. Now, first instruction loads address of A directly from 58: to r3. Following instructions are identical to previous two examples. We save 6 bytes of memory and one instruction to execute. This doesn't make big difference in speed nor memory consumption, although saving some memory is very nice. This approach <strike>is used</strike> in Emgo standard library when some peripheral can exist only in one instance (eg. Cortex-M peripherals like SCB, SysTick or NVIC).
+</p>
+
+<p>
+But for now let's see how these <code>base</code>, <code>length</code> and <code>Reg</code> works. Every package thet uses this approach contains file <code>xgen-mkreg.go</code>:
+</p>
+
+<pre>
+package main
+
+// DO NOT EDIT THIS FILE. GENERATED BY mkreg.sh.
+
+import (
+	"mmio"
+	"unsafe"
+)
+
+type Mask uint32
+type Field uint16
+
+const siz = 8
+
+type Reg int
+
+func reg(r Reg) *mmio.U32 {
+	return &amp;(*[length]mmio.U32)(unsafe.Pointer(uintptr(base)))[r]
+}
+
+func (r Reg) Bits(m Mask) uint32         { return reg(r).Bits(uint32(m)) }
+func (r Reg) StoreBits(m Mask, b uint32) { reg(r).StoreBits(uint32(m), b) }
+func (r Reg) SetBits(m Mask)             { reg(r).SetBits(uint32(m)) }
+func (r Reg) ClearBits(m Mask)           { reg(r).ClearBits(uint32(m)) }
+func (r Reg) Field(f Field) uint32       { return reg(r).Field(uint16(f)) }
+func (r Reg) SetField(f Field, v uint32) { reg(r).SetField(uint16(f), v) }
+func (r Reg) Load() uint32               { return reg(r).Load() }
+func (r Reg) Store(v uint32)             { reg(r).Store(v) }
+</pre>
+
+<p>
+A you can see, this file defines some methods on Reg. They uses it as index in <code>[length]mmio.U32</code> array (see <code>reg</code> function).
+</p>
+
+<p>
+To see why <strike>it is default approach</strike> in Emgo standard library, let's see a piece of code from arch/cortexm/scb package:
+</p>
+
+<pre>
+const (
+	ICSR Reg = 1
+
+	VECTACTIVE  Mask  = 1&lt;&lt;9 - 1
+	RETTOBASE   Mask  = 1 &lt;&lt; 11
+	VECTPENDING Field = 10&lt;&lt;x + 12
+	ISRPENDING  Mask  = 1 &lt;&lt; 22
+	PENDSTCLR   Mask  = 1 &lt;&lt; 25
+	PENDSTSET   Mask  = 1 &lt;&lt; 26
+	PENDSVCLR   Mask  = 1 &lt;&lt; 27
+	PENDSVSET   Mask  = 1 &lt;&lt; 28
+	NMIPENDSET  Mask  = 1 &lt;&lt; 31
+)
+
+const (
+	VTOR Reg = 2
+
+	TBLOFF Mask = (1&lt;&lt;25 - 1) &lt;&lt; 7
+)
+
+const (
+	AIRCR Reg = 3
+
+	VECTRESET     Mask  = 1 &lt;&lt; 0
+	VECTCLRACTIVE Mask  = 1 &lt;&lt; 1
+	SYSRESETREQ   Mask  = 1 &lt;&lt; 2
+	PRIGROUP      Field = 3&lt;&lt;x + 8
+	ENDIANNESS    Mask  = 1 &lt;&lt; 15
+	VECTKEY       Field = 16&lt;&lt;x + 16
+)
+</pre>
+
+<p>
+As you can see, the description of each register is covered in one <code>const</code> block. First declaration in block is the register name, set to its index in array. Subsequent declarations describe all defined bits and fields of this register. This manner of representing registers helps in rapid prototype of register maps. At the same time it turned out to be very readable and easy to use.
+</p>
+
+</div>
+</div>
+</body>
+</html>
