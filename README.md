@@ -88,7 +88,7 @@ You can also load your program during debug session in gdb. Run `../debug-stutil
 
 There are also scripts for [Black Magic Probe](https://github.com/blacksphere/blackmagic/wiki): `load-bmp.sh`, `debug-bmp.sh`.
 
-You may encounter problems where `st-util` or `openocd` can not connect to the board. This is often the case for boards without integrated debuger, when you did not connected the reset pin to the programmer. 
+You may encounter a problem where st-util or openocd can not connect to the board. This is often the case for boards without integrated programmer/debuger, when the external programmer has no connection to the reset pin. If you can not make such connection, simply press and hold the reset button on your board, next run load/debug script and after the script finishes printing anything, release the reset.
 
 #### Documentation
 
