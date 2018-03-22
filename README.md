@@ -53,13 +53,15 @@ To run program loaded to RAM you must change MCU boot option. In case of most ST
 
 However, eventually your program should be loaded to Flash. Sometimes you have no other alternative: your program is too big to fit in RAM, your MCU does not provide easy way to run program from RAM (eg. nRF51), some bugs may only appear when program runs from Flash.
 
-You need tools to load compiled binary to your MCU's RAM/Flash and allow to debug it. Such tools usually have a hardware part and a software part. In case of STM32 Nucleo or Discovery development boards the hardware part (ST-LINK programmer) is integrated with the board, so you only need the software part, which can be [OpenOCD](http://openocd.org) or [Texane's stlink](https://github.com/texane/stlink). You must install one of them or both before next steps (ensure that `openocd` and/or `st-util` binaries are on your `PATH`).
+You need tools to load compiled binary to your MCU's RAM/Flash and allow to debug it. Such tools usually have a hardware part and a software part. In case of STM32 Nucleo or Discovery development boards the hardware part (ST-LINK programmer) is integrated with the board, so you only need the software part, which can be [OpenOCD](http://openocd.org) or [Texane's stlink](https://github.com/texane/stlink). You must install one of them or both before next steps (ensure that `openocd` and/or `st-util` binaries are on your `PATH`). 
 
 There is a set of scripts for any board in `example` directory that simplifies loding and debuging process. The `load-oocd.sh` script cah handle SWO output from ITM (Instrumentation Trace Macrocell) but needs [itmsplit](https://github.com/ziutek/itmsplit) to convert binary stream to readable messages. SWO is very useful for debuging and`fmt.Print*` functions by default use ITM trace port as standard output. Install `itmsplit` with the command:
 
 	go get github.com/ziutek/itmsplit
 	
 and ensure that produced binary is in your `PATH`.
+
+You need the rights to the USB device that corresponds to your programming hardware. This can be done through adding appropriate udev rules. See example rules in Texane's stlink repository, in `etc` directory.
 
 To program your MCU using Texane's stlink run:
 
@@ -77,7 +79,7 @@ to
 
 	INCLUDE stm32/loadflash
 
-and run `../build.sh`. More editing is need for STM32F1xx series: you additionally have to comment two lines:
+More editing is need for STM32F1xx series: you additionally have to comment two lines:
 
 	bootOffset = 0x1E0;
 	ENTRY(bootRAM)
@@ -85,6 +87,8 @@ and run `../build.sh`. More editing is need for STM32F1xx series: you additional
 You can also load your program during debug session in gdb. Run `../debug-stutil.sh` or `../debug-oocd.sh` and next invoke `load` command.
 
 There are also scripts for [Black Magic Probe](https://github.com/blacksphere/blackmagic/wiki): `load-bmp.sh`, `debug-bmp.sh`.
+
+You may encounter problems where `st-util` or `openocd` can not connect to the board. This is often the case for boards without integrated debuger, when you did not connected the reset pin to the programmer. 
 
 #### Documentation
 
