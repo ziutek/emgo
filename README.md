@@ -17,7 +17,7 @@ For now, Emgo supports only ARM Cortex-M based MCUs. To build code for Cortex-M 
 
 or better go to the [GNU ARM Embedded Toolchain website](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm) and download most recent toolchain. This is preffered version of toolchain, try use it before report any bug with compilation.
 
-Installed toolchain contains set of `arm-none-eabi-*` binaries. Find their location and set required enviroment variables:
+Installed toolchain contains set of arm-none-eabi-* binaries. Find their location and set required enviroment variables:
 
 	export EGCC=path_to_arm_gcc            # eg. /usr/local/arm/bin/arm-none-eabi-gcc
 	export EGLD=path_to_arm_linekr         # eg. /usr/local/arm/bin/arm-none-eabi-ld
@@ -26,7 +26,7 @@ Installed toolchain contains set of `arm-none-eabi-*` binaries. Find their locat
 	export EGROOT=path_to_egroot_directory # eg. $HOME/emgo/egroot
 	export EGPATH=path_to_egpath_directory # eg. $HOME/emgo/egpath
 
-Load/debug helper scripts use also some other tools from the ARM toolchain (eg. `arm-none-eabi-objcopy`). If you downloaded the toolchain manually, you probably need also to add its bin direcotry to the `PATH` enviroment variable:
+Load/debug helper scripts use also some other tools from the ARM toolchain (eg. arm-none-eabi-objcopy). If you downloaded the toolchain manually, you probably need also to add its bin direcotry to the PATH enviroment variable:
 
 	export PATH=$PATH:path_to_arm_bin_dir  # eg. /usr/local/arm/bin
 
@@ -43,7 +43,7 @@ For example, to build blinky for STM32 NUCLEO-F411RE board:
 	cd $EGPATH/src/stm32/examples/nucleo-f411re/blinky
     ../build.sh
 
-The first compilation may take some time because egc must process all required libraries and runtime. If everything went well you obtain `cortexm4f.elf` binary file.
+The first compilation may take some time because egc must process all required libraries and runtime. If everything went well you obtain cortexm4f.elf binary file.
 
 Compilation can produce two kind of binaries: binaries that should be loaded to RAM or loaded to Flash of your MCU.
 
@@ -53,15 +53,15 @@ To run program loaded to RAM you must change the MCU boot behavior. In case of m
 
 However, eventually your program should be loaded to Flash. Sometimes you have no other alternative: your program is too big to fit into RAM or your MCU does not provide easy way to run program from RAM (eg. nRF51). Some bugs may only appear when the program runs from Flash or from RAM, so it is advisable to perform the final test of any new piece of code in both ways.
 
-You need tools to load compiled binary to your MCU's RAM/Flash and allow to debug it. Such tools usually have a hardware part and a software part. In case of STM32 Nucleo or Discovery development boards the hardware part (ST-LINK programmer) is integrated with the board, so you only need the software part, which can be [OpenOCD](http://openocd.org) or [Texane's stlink](https://github.com/texane/stlink). You must install one of them or both before next steps (ensure that `openocd` and/or `st-util` binaries are on your `PATH`). 
+You need tools to load compiled binary to your MCU's RAM/Flash and allow to debug it. Such tools usually have a hardware part and a software part. In case of STM32 Nucleo or Discovery development boards the hardware part (ST-LINK programmer) is integrated with the board, so you only need the software part, which can be [OpenOCD](http://openocd.org) or [Texane's stlink](https://github.com/texane/stlink). You must install one of them or both before next steps (ensure that openocd and/or st-util binaries are on your PATH). 
 
-There is a set of scripts for any board in `example` directory that simplifies loding and debuging process. The `load-oocd.sh` script cah handle SWO output from ITM (Instrumentation Trace Macrocell) but needs [itmsplit](https://github.com/ziutek/itmsplit) to convert binary stream to readable messages. SWO is very useful for debuging and `fmt.Print*` functions by default use ITM trace port as standard output. Install `itmsplit` with the command:
+There is a set of scripts for any board in example directory that simplifies loding and debuging process. The load-oocd.sh and swo-oocd.sh scripts can handle SWO output from ITM (Instrumentation Trace Macrocell) but needs [itmsplit](https://github.com/ziutek/itmsplit) to convert binary stream to readable messages. SWO is very useful for debuging and `fmt.Print*` functions by default use ITM trace port as standard output. Install itmsplit with the command:
 
 	go get github.com/ziutek/itmsplit
 	
-and ensure that produced binary is in your `PATH`.
+and ensure that produced binary is in your PATH.
 
-You need the rights to the USB device that corresponds to your programming hardware. This can be done through adding appropriate udev rules. See example rules in Texane's stlink repository, in `etc` directory.
+You need the rights to the USB device that corresponds to your programming hardware. This can be done through adding appropriate udev rules. See example rules in Texane's stlink repository, in etc directory.
 
 To program your MCU using Texane's stlink run:
 
@@ -71,7 +71,7 @@ If you want to use OpenOCD, run:
 
 	../load-oocd.sh
 
-Some examples by default are configured to run from RAM. If you have problem to setup your board to run from RAM, edit `script.ld` file and change the line:
+Some examples by default are configured to run from RAM. If you have problem to setup your board to run from RAM, edit script.ld file and change the line:
 
 	INCLUDE stm32/loadram
 
@@ -86,7 +86,7 @@ More editing is need for STM32F1xx series: you additionally have to comment two 
 
 You can also load your program during debug session in gdb. Run `../debug-stutil.sh` or `../debug-oocd.sh` and next invoke `load` command.
 
-There are also scripts for [Black Magic Probe](https://github.com/blacksphere/blackmagic/wiki): `load-bmp.sh`, `debug-bmp.sh`.
+There are also scripts for [Black Magic Probe](https://github.com/blacksphere/blackmagic/wiki): load-bmp.sh, debug-bmp.sh.
 
 You may encounter a problem where st-util or openocd can not connect to the board. This is often the case for boards without integrated programmer/debuger, when the external programmer has no connection to the reset pin. If you can not make such connection, simply press and hold the reset button on your board, next run load/debug script and after the script finishes printing anything, release the reset.
 
