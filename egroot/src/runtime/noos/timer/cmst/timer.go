@@ -30,7 +30,7 @@ func ticktons(tick int64) int64 {
 }
 
 // Setup setups SysTick to work as sytem timer.
-//  periodns - number of nanoseconds between ticks,
+//  periodns - number of nanoseconds between interrupts,
 //  hz       - frequency of SysTick clock source,
 //  external - false: SysTick uses CPU clock; true: SysTick uses external clock.
 // Setup must be run in privileged mode.

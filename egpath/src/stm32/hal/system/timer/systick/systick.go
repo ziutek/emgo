@@ -9,7 +9,9 @@ import (
 	"stm32/hal/system"
 )
 
-// Setup setups and uses Cortex-M SYSTICK as system timer.
+// Setup setups Cortex-M SYSTICK as system timer. This is ticking timer. Use
+// tickless timer if available. SYSTICK runs scheduler every periodns
+// nanoseconds. 
 func Setup(periodns uint) {
 	lev, _ := syscall.SetPrivLevel(0)
 	cmst.Setup(periodns, system.AHB.Clock()/8, true)
