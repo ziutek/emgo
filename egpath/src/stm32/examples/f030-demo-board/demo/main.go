@@ -29,8 +29,8 @@ func init() {
 type On int
 
 func task1(ch chan<- interface{}) {
-	var r rand.XorShift64
-	r.Seed(rtos.Nanosec())
+	var rnd rand.XorShift64
+	rnd.Seed(rtos.Nanosec())
 	for {
 		ch <- On(rnd.Int32()&511 + 89)
 	}
