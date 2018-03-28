@@ -116,7 +116,13 @@ func (p *exporter) obj(obj types.Object) {
 		p.typ(obj.Type())
 		p.value(obj.Val())
 	case *types.TypeName:
-		p.int(typeTag)
+		if obj.IsAlias() {
+			p.int(aliasTag)
+			p.string(obj.Name())
+			p.pkg(obj.Pkg())
+		} else {
+			p.int(typeTag)
+		}
 		// name is written by corresponding named type
 		p.typ(obj.Type().(*types.Named))
 	case *types.Var:

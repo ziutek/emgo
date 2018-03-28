@@ -19,6 +19,7 @@ const (
 	// Objects
 	constTag
 	typeTag
+	aliasTag
 	varTag
 	funcTag
 

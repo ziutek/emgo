@@ -128,6 +128,11 @@ func (p *importer) obj(pkg *types.Package) {
 		// type object is added to scope via respective named type
 		_ = p.typ().(*types.Named)
 		return
+	case aliasTag:
+		name := p.string()
+		pkg := p.pkg()
+		typ := p.typ().(*types.Named)
+		obj = types.NewTypeName(token.NoPos, pkg, name, typ)
 	case varTag:
 		obj = types.NewVar(token.NoPos, pkg, p.string(), p.typ())
 	case funcTag:
