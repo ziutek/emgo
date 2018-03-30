@@ -84,11 +84,23 @@ type DisplayConfig struct {
 }
 
 //emgo:const
-var Default480x272 = DisplayConfig{
-	Hcycle: 548, Hsize: 480, Hsync0: 0, Hsync1: 41, Hoffset: 43,
-	Vcycle: 292, Vsize: 272, Vsync0: 0, Vsync1: 10, Voffset: 12,
-	ClkPol: 1, ClkPre: 5,
-}
+var (
+	Default320x240 = DisplayConfig{
+		Hcycle: 408, Hsize: 320, Hsync0: 0, Hsync1: 10, Hoffset: 70,
+		Vcycle: 263, Vsize: 240, Vsync0: 0, Vsync1: 2, Voffset: 13,
+		ClkPol: 0, ClkPre: 8,
+	}
+	Default480x272 = DisplayConfig{
+		Hcycle: 548, Hsize: 480, Hsync0: 0, Hsync1: 41, Hoffset: 43,
+		Vcycle: 292, Vsize: 272, Vsync0: 0, Vsync1: 10, Voffset: 12,
+		ClkPol: 1, ClkPre: 5,
+	}
+	Default800x480 = DisplayConfig{
+		Hcycle: 928, Hsize: 800, Hsync0: 0, Hsync1: 48, Hoffset: 88,
+		Vcycle: 525, Vsize: 480, Vsync0: 0, Vsync1: 3, Voffset: 32,
+		ClkPol: 1, ClkPre: 2,
+	}
+)
 
 // Host commands for initialisation.
 const (
