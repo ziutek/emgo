@@ -20,7 +20,7 @@ or better go to the [GNU ARM Embedded Toolchain website](https://developer.arm.c
 Installed toolchain contains set of arm-none-eabi-* binaries. Find their location and set required enviroment variables:
 
 	export EGCC=path_to_arm_gcc            # eg. /usr/local/arm/bin/arm-none-eabi-gcc
-	export EGLD=path_to_arm_linekr         # eg. /usr/local/arm/bin/arm-none-eabi-ld
+	export EGLD=path_to_arm_linker         # eg. /usr/local/arm/bin/arm-none-eabi-ld
 	export EGAR=path_to_arm_archiver       # eg. /usr/local/arm/bin/arm-none-eabi-ar
 
 	export EGROOT=path_to_egroot_directory # eg. $HOME/emgo/egroot
