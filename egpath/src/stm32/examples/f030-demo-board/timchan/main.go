@@ -40,7 +40,7 @@ func init() {
 	freq := uint(1e3) // Hz
 	timer.EnableClock(true)
 	timer.PSC.Store(tim.PSC(pclk / freq))
-	timer.ARR.Store(500) // ms
+	timer.ARR.Store(200) // ms
 	timer.DIER.Store(tim.UIE)
 	timer.CR1.Store(tim.CEN)
 
@@ -50,15 +50,15 @@ func init() {
 func blinky(led gpio.Pin, period int) {
 	for range ch {
 		led.Clear()
-		delay.Millisec(50)
+		delay.Millisec(100)
 		led.Set()
-		delay.Millisec(period - 50)
+		delay.Millisec(period - 100)
 	}
 }
 
 func main() {
-	go blinky(leds[1], 200)
-	blinky(leds[2], 200)
+	go blinky(leds[1], 500)
+	blinky(leds[2], 500)
 }
 
 func timerISR() {
