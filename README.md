@@ -20,13 +20,13 @@ or better go to the [GNU ARM Embedded Toolchain website](https://developer.arm.c
 Installed toolchain contains set of arm-none-eabi-* binaries. Find their location and set required enviroment variables:
 
 	export EGCC=path_to_arm_gcc            # eg. /usr/local/arm/bin/arm-none-eabi-gcc
-	export EGLD=path_to_arm_linekr         # eg. /usr/local/arm/bin/arm-none-eabi-ld
+	export EGLD=path_to_arm_linker         # eg. /usr/local/arm/bin/arm-none-eabi-ld
 	export EGAR=path_to_arm_archiver       # eg. /usr/local/arm/bin/arm-none-eabi-ar
 
 	export EGROOT=path_to_egroot_directory # eg. $HOME/emgo/egroot
 	export EGPATH=path_to_egpath_directory # eg. $HOME/emgo/egpath
 
-Load/debug helper scripts use also some other tools from the ARM toolchain (eg. arm-none-eabi-objcopy). If you downloaded the toolchain manually, you probably need also to add its bin direcotry to the PATH enviroment variable:
+Load/debug helper scripts use also some other tools from the ARM toolchain (eg. arm-none-eabi-objcopy). If you downloaded the toolchain manually, you probably need also to add its bin directory to the PATH enviroment variable:
 
 	export PATH=$PATH:path_to_arm_bin_dir  # eg. /usr/local/arm/bin
 
