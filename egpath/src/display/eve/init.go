@@ -108,6 +108,12 @@ const (
 	cmdClkExt = 0x44
 )
 
+// REG_ID adresses
+const (
+	ramreg  = 0x102400
+	ramreg2 = 0x302000
+)
+
 // Init initializes EVE and writes first display list.
 func (d *Driver) Init(cfg *DisplayConfig) error {
 	d.dci.SetPDN(0)
@@ -118,8 +124,31 @@ func (d *Driver) Init(cfg *DisplayConfig) error {
 	d.width = cfg.Hsize
 	d.height = cfg.Vsize
 
-	d.HostCmd(cmdActive, 0)
 	d.HostCmd(cmdClkExt, 0) // Select external 12 MHz oscilator as clock source.
+	d.HostCmd(cmdActive, 0)
+
+	// Read both possible REG_ID locations for max. 300 ms, then check CHIPID.
+	for i := 0; i < 30; i++ {
+		if d.ReadByte(ramreg) == 0x7C {
+			break
+		}
+		if d.ReadByte(ramreg2) == 0x7C {
+			break
+		}
+		delay.Millisec(10)
+	}
+	if err := d.Err(true); err != nil {
+		return err
+	}
+	chipid := d.ReadUint32(chipidAddr)
+	switch {
+	case chipid == 0x10008:
+		d.mmap = &eve1
+	case 0x11008 <= chipid && chipid <= 0x111308:
+		d.mmap = &eve2
+	default:
+		return errors.New("eve: unknown controller")
+	}
 
 	/*
 		// Simple triming algorithm if internal oscilator is used.
@@ -131,20 +160,6 @@ func (d *Driver) Init(cfg *DisplayConfig) error {
 			}
 		}
 	*/
-
-	if err := d.Err(true); err != nil {
-		return err
-	}
-
-	chipid := d.ReadUint32(chipidAddr)
-	switch {
-	case chipid == 0x10008:
-		d.mmap = &eve1
-	case 0x11008 <= chipid && chipid <= 0x111308:
-		d.mmap = &eve2
-	default:
-		return errors.New("eve: unknown controller")
-	}
 
 	d.SetBacklight(0)
 	d.SetIntMask(0)
