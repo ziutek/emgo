@@ -67,20 +67,20 @@ const (
 )
 
 type DisplayConfig struct {
-	Hcycle  uint16 // Total number of clocks per line.
-	Hsize   uint16 // Active width of LCD display.
-	Hsync0  byte   // Start of horizontal sync pulse.
-	Hsync1  byte   // End of horizontal sync pulse.
-	Hoffset byte   // Start of active line.
+	Hcycle  uint16 // Total number of clocks per line.(Th)
+	Hsize   uint16 // Active width of LCD display.....(Thd)
+	Hsync0  byte   // Start of horizontal sync pulse..(Thf)
+	Hsync1  byte   // End of horizontal sync pulse....(Thf+Thp)
+	Hoffset byte   // Start of active line............(Thp+Thb)
 	ClkPol  byte   // Define active edge of pixel clock.
-	Vcycle  uint16 // Total number of lines per screen.
-	Vsize   uint16 // Active height of LCD display.
-	Vsync0  byte   // Start of vertical sync pulse.
-	Vsync1  byte   // End of vertical sync pulse.
-	Voffset byte   // Start of active screen.
-	ClkPre  byte   // Pixel Clock prescaler.
+	Vcycle  uint16 // Total number of lines per scree.(Tv)
+	Vsize   uint16 // Active height of LCD display....(Tvd)
+	Vsync0  byte   // Start of vertical sync pulse....(Tvf)
+	Vsync1  byte   // End of vertical sync pulse......(Tvf+Tvp)
+	Voffset byte   // Start of active screen..........(Tvp+Tvb)
+	ClkMHz  byte   // Pixel Clock MHz.................(Fclk)
 	Swizzle byte   // Arrangement of output RGB pins.
-	Spreed  byte   // Color signals spread, reduces EM noise
+	Spreed  byte   // Color signals spread, reduces EM noise.
 }
 
 //emgo:const
@@ -88,17 +88,17 @@ var (
 	Default320x240 = DisplayConfig{
 		Hcycle: 408, Hsize: 320, Hsync0: 0, Hsync1: 10, Hoffset: 70,
 		Vcycle: 263, Vsize: 240, Vsync0: 0, Vsync1: 2, Voffset: 13,
-		ClkPol: 0, ClkPre: 8,
+		ClkPol: 0, ClkMHz: 6,
 	}
 	Default480x272 = DisplayConfig{
 		Hcycle: 548, Hsize: 480, Hsync0: 0, Hsync1: 41, Hoffset: 43,
 		Vcycle: 292, Vsize: 272, Vsync0: 0, Vsync1: 10, Voffset: 12,
-		ClkPol: 1, ClkPre: 5,
+		ClkPol: 1, ClkMHz: 9,
 	}
 	Default800x480 = DisplayConfig{
-		Hcycle: 928, Hsize: 800, Hsync0: 0, Hsync1: 48, Hoffset: 88,
-		Vcycle: 525, Vsize: 480, Vsync0: 0, Vsync1: 3, Voffset: 32,
-		ClkPol: 1, ClkPre: 2,
+		Hcycle: 928, Hsize: 800, Hsync0: 40, Hsync1: 40+48, Hoffset: 88,
+		Vcycle: 525, Vsize: 480, Vsync0: 13, Vsync1: 13+3, Voffset: 32,
+		ClkPol: 1, ClkMHz: 30, // KD50G21-40NT-A1
 	}
 )
 
@@ -191,8 +191,15 @@ func (d *Driver) Init(cfg *DisplayConfig) error {
 	)
 	d.SwapDL()
 	b := d.ReadByte(d.mmap.regdlswap + ogpio)
-	d.WriteByte(d.mmap.regdlswap+ogpio, b|0x80)     // Set DISP high.
-	d.WriteByte(d.mmap.regdlswap+opclk, cfg.ClkPre) // Enable PCLK.
+	d.WriteByte(d.mmap.regdlswap+ogpio, b|0x80) // Set DISP high.
+	// Calculate prescaler. +1 causes that the half-way cases are rounded up.
+	var presc int
+	if d.mmap == &eve1 {
+		presc = (48*2 + 1 + int(cfg.ClkMHz)) / (int(cfg.ClkMHz) * 2)
+	} else {
+		presc = (60*2 + 1 + int(cfg.ClkMHz)) / (int(cfg.ClkMHz) * 2)
+	}
+	d.WriteByte(d.mmap.regdlswap+opclk, byte(presc)) // Enable PCLK.
 
 	delay.Millisec(20) // Wait for new main clock.
 

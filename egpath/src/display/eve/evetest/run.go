@@ -144,7 +144,7 @@ func Run(lcd *eve.Driver) error {
 		ge.DLStart()
 		ge.ClearColorRGB(0xc3a6f4)
 		ge.Clear(eve.CST)
-		ge.Gradient(0, 0, 0x0004ff, 0, 271, 0xe08484)
+		ge.Gradient(0, 0, 0x0004ff, 0, height, 0xe08484)
 		ge.Text(width-180, 20, 26, eve.DEFAULT)
 		fmt.Fprintf(&ge, "x=%d y=%d tag=%d\000", x, y, tag)
 		ge.Align32()

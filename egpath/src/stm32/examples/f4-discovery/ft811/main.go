@@ -11,7 +11,8 @@ import (
 	"rtos"
 
 	"display/eve"
-	"display/eve/ft80"
+	"display/eve/evetest"
+	"display/eve/ft81"
 
 	"stm32/evedci"
 
@@ -70,10 +71,10 @@ func init() {
 }
 
 func curFreq(lcd *eve.Driver) uint32 {
-	clk1 := lcd.ReadUint32(ft80.REG_CLOCK)
+	clk1 := lcd.ReadUint32(ft81.REG_CLOCK)
 	t1 := rtos.Nanosec()
 	delay.Millisec(8)
-	clk2 := lcd.ReadUint32(ft80.REG_CLOCK)
+	clk2 := lcd.ReadUint32(ft81.REG_CLOCK)
 	t2 := rtos.Nanosec()
 	return uint32(int64(clk2-clk1) * 1e9 / (t2 - t1))
 }
@@ -85,83 +86,32 @@ func waitTouch(lcd *eve.Driver) {
 }
 
 func main() {
+	delay.Millisec(100) // For SWO output.
+
 	spibus := dci.SPI().P.Bus()
 	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd := eve.NewDriver(dci, 128)
-	//if err := lcd.Init(&eve.Default480x272); err != nil {
 	if err := lcd.Init(&eve.Default800x480); err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
 
+	// Dithering causes distortion of vertical gradients on my KD50G21-40NT-A1:
+	// horizontal darker lines appear. Please write how it looks on your screen.
+	//lcd.WriteUint32(ft81.REG_DITHER, 0)
+
 	/*
 		fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
 		dci.SetBaudrate(21e6) // Max. for SPI2 and SPI3 < EVE max. 30 MHz
 		fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
-
-		if err := evetest.Run(lcd); err != nil {
-			fmt.Printf("Error: %v\n", err)
-			return
-		}
 	*/
 
-	lcd.SetBacklight(64)
-
-	width, height := lcd.Width(), lcd.Height()
-
-	dl := lcd.DL(-1)
-	dl.Clear(eve.CST)
-	dl.ColorRGB(0xAAAAAA)
-	dl.LineWidth(10 << 4)
-	dl.Begin(eve.RECTS)
-	dl.Vertex2f(20<<4, 20<<4)
-	dl.Vertex2f((width-20)<<4, (height-20)<<4)
-	dl.Display()
-
-	lcd.SwapDL()
-	waitTouch(lcd)
-
-	dl = lcd.DL(-1)
-	dl.Clear(eve.CST)
-	dl.Begin(eve.RECTS)
-	for i := 0; i < 256; i++ {
-		dl.ColorRGB(uint32(i<<16 | i<<8 | i))
-		dl.Vertex2f((16+i*3)<<4, 0<<4)
-		dl.Vertex2f((16+i*3+2)<<4, height<<4)
+	if err := evetest.Run(lcd); err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
 	}
-	dl.Display()
-	lcd.SwapDL()
-
-	waitTouch(lcd)
-
-	for k := 0; ; k++ {
-		dl = lcd.DL(-1)
-		dl.Clear(eve.CST)
-		dl.PointSize(0)
-		dl.Begin(eve.RECTS)
-		for i := 0; i < height/4; i++ {
-			y := 8*i - k
-			if i&1 == 0 {
-				dl.ColorRGB(0x880000)
-			} else {
-				dl.ColorRGB(0x008800)
-			}
-			dl.Vertex2f(0<<4, y<<4)
-			dl.Vertex2f(7<<4, (y+7)<<4)
-			c := uint32(i & 0xFF)
-			dl.ColorRGB(c<<16 | c<<8 | c)
-			dl.Vertex2f(8<<4, y<<4)
-			dl.Vertex2f(width<<4, (y+7)<<4)
-		}
-		dl.Display()
-		lcd.SwapDL()
-
-		//waitTouch(lcd)
-		delay.Millisec(200)
-	}
-
 	fmt.Printf("End.\n")
 }
 
