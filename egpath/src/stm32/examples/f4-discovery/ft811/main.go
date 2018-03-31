@@ -90,6 +90,7 @@ func main() {
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd := eve.NewDriver(dci, 128)
+	//if err := lcd.Init(&eve.Default480x272); err != nil {
 	if err := lcd.Init(&eve.Default800x480); err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -113,7 +114,7 @@ func main() {
 	dl := lcd.DL(-1)
 	dl.Clear(eve.CST)
 	dl.ColorRGB(0xAAAAAA)
-	dl.PointSize(10 << 4)
+	dl.LineWidth(10 << 4)
 	dl.Begin(eve.RECTS)
 	dl.Vertex2f(20<<4, 20<<4)
 	dl.Vertex2f((width-20)<<4, (height-20)<<4)
@@ -124,7 +125,6 @@ func main() {
 
 	dl = lcd.DL(-1)
 	dl.Clear(eve.CST)
-	dl.PointSize(0)
 	dl.Begin(eve.RECTS)
 	for i := 0; i < 256; i++ {
 		dl.ColorRGB(uint32(i<<16 | i<<8 | i))
@@ -133,7 +133,7 @@ func main() {
 	}
 	dl.Display()
 	lcd.SwapDL()
-	
+
 	waitTouch(lcd)
 
 	for k := 0; ; k++ {
@@ -141,15 +141,25 @@ func main() {
 		dl.Clear(eve.CST)
 		dl.PointSize(0)
 		dl.Begin(eve.RECTS)
-		for x := 0; x < height; x++ {
-			c := uint32(x+k) & 0xFF
+		for i := 0; i < height/4; i++ {
+			y := 8*i - k
+			if i&1 == 0 {
+				dl.ColorRGB(0x880000)
+			} else {
+				dl.ColorRGB(0x008800)
+			}
+			dl.Vertex2f(0<<4, y<<4)
+			dl.Vertex2f(7<<4, (y+7)<<4)
+			c := uint32(i & 0xFF)
 			dl.ColorRGB(c<<16 | c<<8 | c)
-			dl.Vertex2f(0<<4, x<<4)
-			dl.Vertex2f(width<<4, x<<4)
+			dl.Vertex2f(8<<4, y<<4)
+			dl.Vertex2f(width<<4, (y+7)<<4)
 		}
 		dl.Display()
 		lcd.SwapDL()
-		delay.Millisec(50)
+
+		//waitTouch(lcd)
+		delay.Millisec(200)
 	}
 
 	fmt.Printf("End.\n")
