@@ -333,8 +333,9 @@ func (ge *GE) ToggleString(x, y, w int, font byte, opts uint16, state bool, s st
 
 // Text writes only header of CMD_TEXT command (without text string). Use
 // Write* methods to write text. Text string must be terminated with zero byte.
-//  ge.TextHeader(40, 40, 18, 0)
-//  fmt.Fprintf(ge, "Weight: %.1f kg\000", weight)
+//	ge.Text(20, 30, 26, eve.DEFAULT)
+//	fmt.Fprintf(&ge, "x=%d y=%d\000", x, y)
+//	ge.Align32()
 func (ge *GE) Text(x, y int, font byte, options uint16) {
 	ge.restart(3 * 4)
 	ge.wr32(CMD_TEXT)
