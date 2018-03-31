@@ -15,6 +15,7 @@ $ud STM32F10X_MD   stm32f10x.h |stm32xgen stm32/o/f10x_md
 $ud STM32F10X_HD   stm32f10x.h |stm32xgen stm32/o/f10x_hd
 
 stm32xgen stm32/o/f030x6 <stm32f0xx/stm32f030x6.h
+stm32xgen stm32/o/f030x8 <stm32f0xx/stm32f030x8.h
 stm32xgen stm32/o/f303xe <stm32f3xx/stm32f303xe.h
 stm32xgen stm32/o/f746xx <stm32f7xx/stm32f746xx.h
 stm32xgen stm32/o/l476xx <stm32l4xx/stm32l476xx.h
