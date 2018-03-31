@@ -112,7 +112,7 @@ func Run(lcd *eve.Driver) error {
 	ge.BitmapLayout(eve.L1, 216/8, 251)
 	ge.BitmapSize(eve.DEFAULT, 211, 251)
 	ge.Clear(eve.CST)
-	ge.Gradient(0, 0, 0x001155, 0, 271, 0x772200)
+	ge.Gradient(0, 0, 0x001155, 0, height, 0x772200)
 	ge.Begin(eve.BITMAPS)
 	ge.ColorMask(eve.A)
 	ge.Clear(eve.C)
