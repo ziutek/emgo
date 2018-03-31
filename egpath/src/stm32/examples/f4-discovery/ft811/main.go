@@ -11,7 +11,6 @@ import (
 	"rtos"
 
 	"display/eve"
-	"display/eve/evetest"
 	"display/eve/ft80"
 
 	"stm32/evedci"
@@ -79,6 +78,12 @@ func curFreq(lcd *eve.Driver) uint32 {
 	return uint32(int64(clk2-clk1) * 1e9 / (t2 - t1))
 }
 
+func waitTouch(lcd *eve.Driver) {
+	delay.Millisec(100)
+	lcd.ClearIntFlags(eve.INT_TOUCH)
+	lcd.Wait(eve.INT_TOUCH)
+}
+
 func main() {
 	spibus := dci.SPI().P.Bus()
 	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
@@ -90,14 +95,63 @@ func main() {
 		return
 	}
 
-	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
-	dci.SetBaudrate(21e6) // Max. for SPI2 and SPI3 < EVE max. 30 MHz
-	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
+	/*
+		fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
+		dci.SetBaudrate(21e6) // Max. for SPI2 and SPI3 < EVE max. 30 MHz
+		fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
-	if err := evetest.Run(lcd); err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
+		if err := evetest.Run(lcd); err != nil {
+			fmt.Printf("Error: %v\n", err)
+			return
+		}
+	*/
+
+	lcd.SetBacklight(64)
+
+	width, height := lcd.Width(), lcd.Height()
+
+	dl := lcd.DL(-1)
+	dl.Clear(eve.CST)
+	dl.ColorRGB(0xAAAAAA)
+	dl.PointSize(10 << 4)
+	dl.Begin(eve.RECTS)
+	dl.Vertex2f(20<<4, 20<<4)
+	dl.Vertex2f((width-20)<<4, (height-20)<<4)
+	dl.Display()
+
+	lcd.SwapDL()
+	waitTouch(lcd)
+
+	dl = lcd.DL(-1)
+	dl.Clear(eve.CST)
+	dl.PointSize(0)
+	dl.Begin(eve.RECTS)
+	for i := 0; i < 256; i++ {
+		dl.ColorRGB(uint32(i<<16 | i<<8 | i))
+		dl.Vertex2f((16+i*3)<<4, 0<<4)
+		dl.Vertex2f((16+i*3+2)<<4, height<<4)
 	}
+	dl.Display()
+	lcd.SwapDL()
+	
+	waitTouch(lcd)
+
+	for k := 0; ; k++ {
+		dl = lcd.DL(-1)
+		dl.Clear(eve.CST)
+		dl.PointSize(0)
+		dl.Begin(eve.RECTS)
+		for x := 0; x < height; x++ {
+			c := uint32(x+k) & 0xFF
+			dl.ColorRGB(c<<16 | c<<8 | c)
+			dl.Vertex2f(0<<4, x<<4)
+			dl.Vertex2f(width<<4, x<<4)
+		}
+		dl.Display()
+		lcd.SwapDL()
+		delay.Millisec(50)
+	}
+
 	fmt.Printf("End.\n")
 }
 
