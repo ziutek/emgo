@@ -1,4 +1,4 @@
-// +build f746xx l476xx
+// +build f030x6 f303xe f746xx l476xx
 
 package usart
 
