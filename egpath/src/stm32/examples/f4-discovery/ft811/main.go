@@ -92,15 +92,15 @@ func main() {
 	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
+	// Dithering causes distortion of vertical gradients on my KD50G21-40NT-A1:
+	// horizontal darker lines appear. Please write on Emgo forum how it looks
+	// on your screen when Dither is set to 0 and next to 1.
+
 	lcd := eve.NewDriver(dci, 128)
-	if err := lcd.Init(&eve.Default800x480); err != nil {
+	if err := lcd.Init(&eve.Default800x480, &eve.Config{Dither: 1}); err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
-
-	// Dithering causes distortion of vertical gradients on my KD50G21-40NT-A1:
-	// horizontal darker lines appear. Please write how it looks on your screen.
-	//lcd.WriteUint32(ft81.REG_DITHER, 0)
 
 	/*
 		fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))

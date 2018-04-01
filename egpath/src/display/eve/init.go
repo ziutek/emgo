@@ -39,7 +39,8 @@ var eve2 = mmap{
 // Register offsets relative to REG_DLSWAP.
 const (
 	ohcycle  = -40
-	oswizzle = 16
+	orotate  = 4
+	opclkpol = 24
 	opclk    = 28
 	ogpio    = 64
 )
@@ -66,6 +67,21 @@ const (
 	regcmdbwrite = 0x302578
 )
 
+// Host commands for initialisation.
+const (
+	cmdActive = 0
+	cmdClkExt = 0x44
+)
+
+// REG_ID adresses
+const (
+	ramreg  = 0x102400
+	ramreg2 = 0x302000
+)
+
+// DisplayConfig contains LCD timing parameters. It seems to be an error in
+// datasheet that describes HOFFSET as non-visible part of line (Thf+Thp+Thb)
+// and VOFFSET as number of non-visible lines (Tvf+Tvp+Tvb).
 type DisplayConfig struct {
 	Hcycle  uint16 // Total number of clocks per line.(Th)
 	Hsize   uint16 // Active width of LCD display.....(Thd)
@@ -79,8 +95,6 @@ type DisplayConfig struct {
 	Vsync1  byte   // End of vertical sync pulse......(Tvf+Tvp)
 	Voffset byte   // Start of active screen..........(Tvp+Tvb)
 	ClkMHz  byte   // Pixel Clock MHz.................(Fclk)
-	Swizzle byte   // Arrangement of output RGB pins.
-	Spreed  byte   // Color signals spread, reduces EM noise.
 }
 
 //emgo:const
@@ -96,33 +110,31 @@ var (
 		ClkPol: 1, ClkMHz: 9,
 	}
 	Default800x480 = DisplayConfig{
-		Hcycle: 928, Hsize: 800, Hsync0: 40, Hsync1: 40+48, Hoffset: 88,
-		Vcycle: 525, Vsize: 480, Vsync0: 13, Vsync1: 13+3, Voffset: 32,
+		Hcycle: 928, Hsize: 800, Hsync0: 40, Hsync1: 40 + 48, Hoffset: 88,
+		Vcycle: 525, Vsize: 480, Vsync0: 13, Vsync1: 13 + 3, Voffset: 32,
 		ClkPol: 1, ClkMHz: 30, // KD50G21-40NT-A1
 	}
 )
 
-// Host commands for initialisation.
-const (
-	cmdActive = 0
-	cmdClkExt = 0x44
-)
+type Config struct {
+	OutBits uint16 // Bits 8-0 set number of red, green, blue output signals.
+	Rotate  byte   // Screen rotation controll.
+	Dither  byte   // Dithering controll (note that 0 overrides default 1).
+	Swizzle byte   // Control the arrangement of output RGB pins.
+	Spread  byte   // Control the color signals spread (for reducing EM noise).
+}
 
-// REG_ID adresses
-const (
-	ramreg  = 0x102400
-	ramreg2 = 0x302000
-)
-
-// Init initializes EVE and writes first display list.
-func (d *Driver) Init(cfg *DisplayConfig) error {
+// Init initializes EVE and writes first display list. Dcf describes display
+// configuration. Cfg describes EVE configuration and can be nil to use reset
+// defaults.
+func (d *Driver) Init(dcf *DisplayConfig, cfg *Config) error {
 	d.dci.SetPDN(0)
 	delay.Millisec(20)
 	d.dci.SetPDN(1)
 	delay.Millisec(20) // Wait 20 ms for internal oscilator and PLL.
 
-	d.width = cfg.Hsize
-	d.height = cfg.Vsize
+	d.width = dcf.Hsize
+	d.height = dcf.Vsize
 
 	d.HostCmd(cmdClkExt, 0) // Select external 12 MHz oscilator as clock source.
 	d.HostCmd(cmdActive, 0)
@@ -164,25 +176,36 @@ func (d *Driver) Init(cfg *DisplayConfig) error {
 	d.SetBacklight(0)
 	d.SetIntMask(0)
 	d.WriteByte(d.mmap.regintflags+ointen, 1)
-	w := d.W(d.mmap.regdlswap + oswizzle)
+	if cfg != nil {
+		w := d.W(d.mmap.regdlswap + orotate)
+		w.Write32(
+			uint32(cfg.Rotate),
+			uint32(cfg.OutBits),
+			uint32(cfg.Dither),
+			uint32(cfg.Swizzle),
+			uint32(cfg.Spread),
+			uint32(dcf.ClkPol),
+			0, // REG_PCLK
+		)
+	} else {
+		w := d.W(d.mmap.regdlswap + opclkpol)
+		w.Write32(
+			uint32(dcf.ClkPol),
+			0, // REG_PCLK
+		)
+	}
+	w := d.W(d.mmap.regdlswap + ohcycle)
 	w.Write32(
-		uint32(cfg.Swizzle),
-		uint32(cfg.Spreed),
-		uint32(cfg.ClkPol),
-		0, // REG_PCLK
-	)
-	w = d.W(d.mmap.regdlswap + ohcycle)
-	w.Write32(
-		uint32(cfg.Hcycle),
-		uint32(cfg.Hoffset),
-		uint32(cfg.Hsize),
-		uint32(cfg.Hsync0),
-		uint32(cfg.Hsync1),
-		uint32(cfg.Vcycle),
-		uint32(cfg.Voffset),
-		uint32(cfg.Vsize),
-		uint32(cfg.Vsync0),
-		uint32(cfg.Vsync1),
+		uint32(dcf.Hcycle),
+		uint32(dcf.Hoffset),
+		uint32(dcf.Hsize),
+		uint32(dcf.Hsync0),
+		uint32(dcf.Hsync1),
+		uint32(dcf.Vcycle),
+		uint32(dcf.Voffset),
+		uint32(dcf.Vsize),
+		uint32(dcf.Vsync0),
+		uint32(dcf.Vsync1),
 	)
 	w = d.W(d.mmap.ramdl)
 	w.Write32(
@@ -195,9 +218,9 @@ func (d *Driver) Init(cfg *DisplayConfig) error {
 	// Calculate prescaler. +1 causes that the half-way cases are rounded up.
 	var presc int
 	if d.mmap == &eve1 {
-		presc = (48*2 + 1 + int(cfg.ClkMHz)) / (int(cfg.ClkMHz) * 2)
+		presc = (48*2 + 1 + int(dcf.ClkMHz)) / (int(dcf.ClkMHz) * 2)
 	} else {
-		presc = (60*2 + 1 + int(cfg.ClkMHz)) / (int(cfg.ClkMHz) * 2)
+		presc = (60*2 + 1 + int(dcf.ClkMHz)) / (int(dcf.ClkMHz) * 2)
 	}
 	d.WriteByte(d.mmap.regdlswap+opclk, byte(presc)) // Enable PCLK.
 
