@@ -131,6 +131,10 @@ func Run(lcd *eve.Driver) error {
 
 	ge.DLStart()
 	ge.Clear(eve.CST)
+	ge.TextString(
+		width/2, height/2, 30, eve.OPT_CENTER,
+		"Touch panel calibration",
+	)
 	addr = ge.Calibrate()
 	lcd.Wait(eve.INT_CMDEMPTY)
 	if lcd.ReadInt(addr) == 0 {
@@ -148,21 +152,21 @@ func Run(lcd *eve.Driver) error {
 		ge.Text(width-180, 20, 26, eve.DEFAULT)
 		fmt.Fprintf(&ge, "x=%d y=%d tag=%d\000", x, y, tag)
 		ge.Align32()
-		ge.TextString(width/2, height/2, 31, eve.OPT_CENTER, "Hello World!")
+		ge.TextString(width/2, height/2, 30, eve.OPT_CENTER, "Hello World!")
 		ge.Begin(eve.RECTS)
 		ge.ColorA(128)
-		ge.ColorRGB(0xff8000)
+		ge.ColorRGB(0xFF8000)
 		ge.Vertex2ii(260, 100, 0, 0)
 		ge.Vertex2ii(360, 200, 0, 0)
-		ge.ColorRGB(0x0080ff)
+		ge.ColorRGB(0x0080FF)
 		ge.Vertex2ii(300, 160, 0, 0)
 		ge.Vertex2ii(400, 260, 0, 0)
-		ge.ColorRGB(0xffffff)
+		ge.ColorRGB(0xFFFFFF)
 		ge.ColorA(200)
 		t := time.Now()
 		h, m, s := t.Clock()
 		ms := int(t.Nanosecond() / 1e6)
-		ge.Clock(60, 60, 50, eve.OPT_NOBACK, h, m, s, ms)
+		ge.Clock(100, 100, 70, eve.OPT_NOBACK, h, m, s, ms)
 		ge.ColorA(255)
 		ge.Tag(button)
 		buttonFont := byte(27)
@@ -170,10 +174,10 @@ func Run(lcd *eve.Driver) error {
 		if tag == button {
 			buttonFont--
 			buttonStyle |= eve.OPT_FLAT
-			ge.TextString(20, height-90, 29, eve.DEFAULT, "Thanks!")
+			ge.TextString(300, height-70, 29, eve.DEFAULT, "Thanks!")
 		}
 		ge.ButtonString(
-			20, height-50, 100, 32, buttonFont, buttonStyle,
+			40, height-70, 100, 40, buttonFont, buttonStyle,
 			"Push me!",
 		)
 		ge.Display()
@@ -187,7 +191,7 @@ func Run(lcd *eve.Driver) error {
 /*
 	var rnd rand.XorShift64
 	rnd.Seed(1)
-	
+
 	const testLen = 120
 
 	// Create display list directly in RAM_DL.

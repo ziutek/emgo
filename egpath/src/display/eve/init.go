@@ -119,9 +119,9 @@ var (
 type Config struct {
 	OutBits uint16 // Bits 8-0 set number of red, green, blue output signals.
 	Rotate  byte   // Screen rotation controll.
-	Dither  byte   // Dithering controll (note that 0 overrides default 1).
+	Dither  byte   // Dithering controll (reset default 1).
 	Swizzle byte   // Control the arrangement of output RGB pins.
-	Spread  byte   // Control the color signals spread (for reducing EM noise).
+	Spread  byte   // Control the color signals spread (reset default 1).
 }
 
 // Init initializes EVE and writes first display list. Dcf describes display

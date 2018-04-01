@@ -85,6 +85,15 @@ func waitTouch(lcd *eve.Driver) {
 	lcd.Wait(eve.INT_TOUCH)
 }
 
+func checkErr(err error) {
+	if err == nil {
+		return
+	}
+	fmt.Printf("Error: %v\n", err)
+	for {
+	}
+}
+
 func main() {
 	delay.Millisec(100) // For SWO output.
 
@@ -92,26 +101,19 @@ func main() {
 	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
-	// Dithering causes distortion of vertical gradients on my KD50G21-40NT-A1:
-	// horizontal darker lines appear. Please write on Emgo forum how it looks
-	// on your screen when Dither is set to 0 and next to 1.
+	// Dithering causes distortion of vertical gradients on my FT811CB-HY50HD:
+	// horizontal darker lines appear. The effect is dramatic if both Dither and
+	// Spread are set (this is default after reset). Please write on Emgo forum
+	// how it looks on your screen.
 
 	lcd := eve.NewDriver(dci, 128)
-	if err := lcd.Init(&eve.Default800x480, &eve.Config{Dither: 1}); err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
+	checkErr(lcd.Init(&eve.Default800x480, &eve.Config{Dither: 1}))
 
-	/*
-		fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
-		dci.SetBaudrate(21e6) // Max. for SPI2 and SPI3 < EVE max. 30 MHz
-		fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
-	*/
+	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
+	dci.SetBaudrate(21e6) // Max. for SPI2 and SPI3 < EVE max. 30 MHz
+	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
-	if err := evetest.Run(lcd); err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
+	checkErr(evetest.Run(lcd))
 	fmt.Printf("End.\n")
 }
 
