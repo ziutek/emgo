@@ -33,7 +33,7 @@ func NewSPI(spidrv *spi.Driver, csn, pdn gpio.Pin) *SPI {
 
 func (dci *SPI) SetBaudrate(baud int) {
 	p := dci.spi.P
-	p.SetConf(p.Conf()&^spi.BR256 | p.BR(30e6))
+	p.SetConf(p.Conf()&^spi.BR256 | p.BR(baud))
 }
 
 func (dci *SPI) SPI() *spi.Driver {
