@@ -86,7 +86,7 @@ func main() {
 	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
 
 	lcd := eve.NewDriver(dci, 128)
-	lcd.Init(&eve.Default480x272)
+	lcd.Init(&eve.Default480x272, nil)
 
 	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
 	dci.SetBaudrate(30e6)
