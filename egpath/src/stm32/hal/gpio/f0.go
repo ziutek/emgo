@@ -1,4 +1,4 @@
-// +build f030x6
+// +build f030x6 f030x8
 
 package gpio
 
@@ -56,7 +56,6 @@ const (
 	TIM16_AF5  = AF5
 	TIM17_AF5  = AF5
 	MCO_AF5    = AF5
-	TIM17_AF5  = AF5
 	SPI2_AF5   = AF5
 	I2C2_AF5   = AF5
 

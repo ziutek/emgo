@@ -6,8 +6,6 @@ import (
 	"stm32/hal/raw/usart"
 )
 
-const lbd = usart.LBD
-
 func (p *Periph) status() (Event, Error) {
 	sr := p.raw.SR.Load()
 	return Event(sr >> 4), Error(sr & 0xf)

@@ -108,7 +108,7 @@ func (p *Periph) EnableIRQ(e Event) {
 		p.raw.CR1.SetBits(usart.CR1(cr1e) << 4)
 	}
 	if e&LINBreak != 0 {
-		p.raw.LBDIE().Set()
+		p.raw.CR2.SetBits(lbdie)
 	}
 	if e&CTS != 0 {
 		p.raw.CTSIE().Set()
@@ -121,7 +121,7 @@ func (p *Periph) DisableIRQ(e Event) {
 		p.raw.CR1.ClearBits(usart.CR1(cr1e) << 4)
 	}
 	if e&LINBreak != 0 {
-		p.raw.LBDIE().Clear()
+		p.raw.CR2.ClearBits(lbdie)
 	}
 	if e&CTS != 0 {
 		p.raw.CTSIE().Clear()

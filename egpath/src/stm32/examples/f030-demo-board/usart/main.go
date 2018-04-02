@@ -2,7 +2,6 @@ package main
 
 import (
 	"delay"
-	"io"
 	"rtos"
 
 	"stm32/hal/dma"
@@ -43,72 +42,51 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	tts = usart.NewDriver(
-		usart.USART1, d.Channel(3, 0), d.Channel(2, 0), dmarxbuf[:],
+		//usart.USART1, d.Channel(3, 0), d.Channel(2, 0), dmarxbuf[:],
+		usart.USART1, nil, d.Channel(2, 0), dmarxbuf[:],
 	)
 	tts.P.EnableClock(true)
 	tts.P.SetBaudRate(115200)
 	tts.P.Enable()
-	tts.EnableRx()
+	//tts.EnableRx()
 	tts.EnableTx()
+
 	rtos.IRQ(irq.USART1).Enable()
-	rtos.IRQ(irq.DMA1_Channel3).Enable()
-	rtos.IRQ(irq.DMA1_Channel2).Enable()
-	fmt.DefaultWriter = linewriter.New(
-		bufio.NewWriterSize(tts, 88),
-		linewriter.CRLF,
-	)
-}
-
-func blink(c gpio.Pins, dly int) {
-	leds.SetPins(c)
-	if dly > 0 {
-		delay.Millisec(dly)
-	} else {
-		delay.Loop(-1e4 * dly)
-	}
-	leds.ClearPins(c)
-}
-
-func checkErr(err error) {
-	if err == nil {
-		break
-	}
-		fmt.Printf("\nError: %v\n", err)
-		led.Clear()
-	for {
-	{
+	rtos.IRQ(irq.DMA1_Channel2_3).Enable()
 }
 
 func main() {
-	io.WriteString(tts, "Echo:\n")
-	var buf [40]byte
 	for {
-		n, err := tts.Read(buf[:])
-		checkErr(err)
-		_, err = tts.Write(buf[:n])
-		checkErr()
+		tts.WriteString("Echo:\n")
 		led.Clear()
 		delay.Millisec(50)
 		led.Set()
+		delay.Millisec(450)
 	}
+	/*
+		var buf [40]byte
+		for {
+			n, _ := tts.Read(buf[:])
+			tts.Write(buf[:n])
+			led.Clear()
+			delay.Millisec(50)
+			led.Set()
+		}
+	*/
 }
 
 func ttsISR() {
 	tts.ISR()
 }
 
-func ttsRxDMAISR() {
-	tts.RxDMAISR()
-}
-
-func ttsTxDMAISR() {
+func ttsDMAISR() {
+	//tts.RxDMAISR()
 	tts.TxDMAISR()
 }
 
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.USART1:        ttsISR,
-	irq.DMA1_Channel3: ttsRxDMAISR,
-	irq.DMA1_Channel2: ttsTxDMAISR,
+	irq.USART1:          ttsISR,
+	irq.DMA1_Channel2_3: ttsDMAISR,
 }

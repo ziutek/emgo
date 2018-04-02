@@ -1,4 +1,4 @@
-// +build f030x6 f303xe
+// +build f030x6 f030x8 f303xe
 
 package system
 

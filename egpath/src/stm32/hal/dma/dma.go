@@ -2,14 +2,6 @@ package dma
 
 import (
 	"unsafe"
-
-	"stm32/hal/raw/mmap"
-)
-
-//emgo:const
-var (
-	DMA1 = (*DMA)(unsafe.Pointer(mmap.DMA1_BASE))
-	DMA2 = (*DMA)(unsafe.Pointer(mmap.DMA2_BASE))
 )
 
 type DMA dmaperiph
