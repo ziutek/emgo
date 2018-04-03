@@ -42,13 +42,12 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	tts = usart.NewDriver(
-		//usart.USART1, d.Channel(3, 0), d.Channel(2, 0), dmarxbuf[:],
-		usart.USART1, nil, d.Channel(2, 0), dmarxbuf[:],
+		usart.USART1, d.Channel(3, 0), d.Channel(2, 0), dmarxbuf[:],
 	)
 	tts.P.EnableClock(true)
 	tts.P.SetBaudRate(115200)
 	tts.P.Enable()
-	//tts.EnableRx()
+	tts.EnableRx()
 	tts.EnableTx()
 
 	rtos.IRQ(irq.USART1).Enable()
@@ -56,23 +55,22 @@ func init() {
 }
 
 func main() {
+	tts.WriteString("\r\nEcho:\r\n")
+	var buf [40]byte
 	for {
-		tts.WriteString("Echo:\n")
+		n, err := tts.Read(buf[:])
+		if err != nil {
+			tts.WriteString(err.Error())
+			tts.WriteString(" -> ")
+		} else {
+			tts.WriteString("ok -> ")
+		}
+		tts.Write(buf[:n])
+		tts.WriteString("\r\n")
 		led.Clear()
 		delay.Millisec(50)
 		led.Set()
-		delay.Millisec(450)
 	}
-	/*
-		var buf [40]byte
-		for {
-			n, _ := tts.Read(buf[:])
-			tts.Write(buf[:n])
-			led.Clear()
-			delay.Millisec(50)
-			led.Set()
-		}
-	*/
 }
 
 func ttsISR() {
@@ -80,7 +78,7 @@ func ttsISR() {
 }
 
 func ttsDMAISR() {
-	//tts.RxDMAISR()
+	tts.RxDMAISR()
 	tts.TxDMAISR()
 }
 

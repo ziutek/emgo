@@ -1,20 +1,13 @@
-// +build f030x6
+// +build f030x6 f030x8 f10x_ld f10x_ld_vl f10x_md f10x_md_vl f10x_hd f10x_hd_vl f10x_xl f10x_cl f303xe
 
 package internal
 
 import (
 	"bits"
-	"mmio"
 	"unsafe"
 
-	"stm32/hal/raw/mmap"
 	"stm32/hal/raw/rcc"
 )
-
-func bit(addr unsafe.Pointer, apb1reg, _ *mmio.U32) AtomicBit {
-	n := int(uintptr(addr)-mmap.APBPERIPH_BASE) / 0x400
-	return AtomicBit{apb1reg, n}
-}
 
 func APB_SetEnabled(addr unsafe.Pointer, en bool) {
 	bit := bit(addr, &rcc.RCC.APB1ENR.U32, &rcc.RCC.APB2ENR.U32)

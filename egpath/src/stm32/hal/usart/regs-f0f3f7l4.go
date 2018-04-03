@@ -1,4 +1,4 @@
-// +build f030x6 f303xe f746xx l476xx
+// +build f030x6 f030x8 f303xe f746xx l476xx
 
 package usart
 
@@ -12,7 +12,11 @@ func (p *Periph) status() (Event, Error) {
 }
 
 func (p *Periph) clear(ev Event, err Error) {
-	p.raw.ICR.Store(usart.ICR(ev)<<4 | usart.ICR(err))
+	raw := &p.raw
+	raw.ICR.Store(usart.ICR(ev)<<4 | usart.ICR(err))
+	if ev&RxNotEmpty != 0 {
+		raw.RQR.Store(usart.RXFRQ)
+	}
 }
 
 func (p *Periph) store(d int) {

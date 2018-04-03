@@ -1,4 +1,4 @@
-// +build f030x6 030x8
+// +build f030x6 f030x8
 
 package usart
 

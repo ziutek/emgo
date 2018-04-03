@@ -91,20 +91,24 @@ func (d *Driver) DisableRx() {
 	p.DMAR().Clear()
 	d.rxN = 0
 	d.rxM = 0
+	// Wait fo DMA really stops.
 	for ch.Enabled() {
-		// Wait dma really stops.
+		rtos.SchedYield()
 	}
 	d.dmaN = 0
 }
 
 func (d *Driver) RxDMAISR() {
 	ch := d.RxDMA
-	if _, e := ch.Status(); e != 0 {
+	ev, err := ch.Status()
+	if err != 0 {
 		d.rxready.Signal(1)
 		return
 	}
-	ch.Clear(dma.EvAll, dma.ErrAll)
-	atomic.StoreUint32(&d.dmaN, d.dmaN+1)
+	if ev != 0 {
+		ch.Clear(dma.EvAll, dma.ErrAll)
+		atomic.StoreUint32(&d.dmaN, d.dmaN+1)
+	}
 }
 
 func (d *Driver) dmaNM() (n, m uint32) {
@@ -259,8 +263,11 @@ func (d *Driver) WriteByte(b byte) error {
 }
 
 func (d *Driver) TxDMAISR() {
-	d.TxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
-	d.txdone.Signal(1)
+	ch := d.TxDMA
+	if ev, err := ch.Status(); ev != 0 || err != 0 {
+		ch.DisableIRQ(dma.EvAll, dma.ErrAll)
+		d.txdone.Signal(1)
+	}
 }
 
 func (d *Driver) SetReadDeadline(t int64) {
