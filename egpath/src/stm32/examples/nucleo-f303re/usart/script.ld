@@ -1,8 +1,13 @@
-ISRStack = 1024;
-MainStack = 1536;
+ISRStack  = 64 * 32;
+MainStack = 200 * 32;
 TaskStack = 0;
-MaxTasks = 1;
+MaxTasks  = 1;
 
-INCLUDE stm32/f030x4
-INCLUDE stm32/loadflash
+INCLUDE stm32/f303xe
+INCLUDE stm32/loadram
 INCLUDE noos-cortexm
+
+/* 
+To run from RAM the BOOT0 pin must be high and nBOOT1 option bit must be
+cleared. To run from Flash change stm32/loadram to stm32/loadflash.
+*/
