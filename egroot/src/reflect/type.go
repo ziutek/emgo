@@ -96,8 +96,7 @@ func (t Type) Size() uintptr {
 		return t.Elem().Size() * uintptr(t.Len())
 	case Struct:
 		var size uintptr
-		n := t.NumField()
-		for i := 0; i < n; i++ {
+		for i, n := 0, t.NumField(); i < n; i++ {
 			size += t.Field(i).Size()
 		}
 		return size
@@ -115,8 +114,7 @@ func (t Type) Align() uintptr {
 		return t.Elem().Align()
 	case Struct:
 		var align uintptr
-		n := t.NumField()
-		for i := 0; i < n; i++ {
+		for i, n := 0, t.NumField(); i < n; i++ {
 			if a := t.Field(i).Align(); a > align {
 				align = a
 			}
@@ -189,7 +187,7 @@ func (t Type) String() string {
 // Ptr, or Slice.
 func (t Type) Elem() Type {
 	if e := t.b.Elems(); len(e) == 1 && t.Kind() != Struct {
-		return Type{e[0]}
+		return Type{e[0].Type}
 	}
 	panic(badKind)
 }
@@ -203,9 +201,40 @@ func (t Type) NumField() int {
 	return len(t.b.Elems())
 }
 
-func (t Type) Field(i int) Type {
+type StructField struct {
+	e internal.Elem
+}
+
+// Name return name of struct field. Unexported field has empty name.
+func (f StructField) Name() string {
+	return f.e.Name()
+}
+
+// Type returns type of struct field. Unexported field has zero type.
+func (f StructField) Type() Type {
+	return Type{f.e.Type}
+}
+
+// Size returns size od struct field, also in case of unexported field.
+func (f StructField) Size() uintptr {
+	if f.e.Type == nil {
+		return f.e.UnexportedSize()
+	}
+	return Type{f.e.Type}.Size()
+}
+
+// Align returns alignment of struct field, also in case of unexported field.
+func (f StructField) Align() uintptr {
+	if f.e.Type == nil {
+		return f.e.UnexportedAlign()
+	}
+	return Type{f.e.Type}.Align()
+}
+
+// Field returns a struct type's i-th field.
+func (t Type) Field(i int) StructField {
 	if t.Kind() != Struct {
 		panic(badKind)
 	}
-	return Type{t.b.Elems()[i]}
+	return StructField{t.b.Elems()[i]}
 }

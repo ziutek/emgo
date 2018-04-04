@@ -486,9 +486,15 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	}
 	//acd.indent(w)
 	//w.WriteString(".size = " + strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
+
+	type telem struct {
+		Name string
+		Type types.Type
+		Priv bool
+	}
 	var (
 		kind  string
-		elems []types.Type
+		elems []telem
 	)
 	switch t := typ.Underlying().(type) {
 	case *types.Basic:
@@ -499,28 +505,31 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		kind = basicKinds[k]
 	case *types.Array:
 		kind = "Array - " + strconv.FormatInt(t.Len(), 10)
-		elems = []types.Type{t.Elem()}
+		elems = []telem{{Type: t.Elem()}}
 	case *types.Chan:
 		kind = "Chan"
-		elems = []types.Type{t.Elem()}
+		elems = []telem{{Type: t.Elem()}}
 	case *types.Signature:
 		kind = "Func"
 	case *types.Interface:
 		kind = "Interface"
 	case *types.Map:
 		kind = "Map"
-		elems = []types.Type{t.Key(), t.Elem()}
+		elems = []telem{{Type: t.Key()}, {Type: t.Elem()}}
 	case *types.Pointer:
 		kind = "Ptr"
-		elems = []types.Type{t.Elem()}
+		elems = []telem{{Type: t.Elem()}}
 	case *types.Slice:
 		kind = "Slice"
-		elems = []types.Type{t.Elem()}
+		elems = []telem{{Type: t.Elem()}}
 	case *types.Struct:
 		kind = "Struct"
-		elems = make([]types.Type, t.NumFields())
+		elems = make([]telem, t.NumFields())
 		for i := range elems {
-			elems[i] = t.Field(i).Type()
+			v := t.Field(i)
+			elems[i] = telem{
+				Name: v.Name(), Type: v.Type(), Priv: !v.Exported(),
+			}
 		}
 	default:
 		panic(t)
@@ -532,15 +541,37 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		acd.indent(w)
 		w.WriteString(".elems = CSLICE(")
 		w.WriteString(strconv.Itoa(len(elems)))
-		w.WriteString(", ((const tinfo*[]){\n")
+		w.WriteString(", ((const telem[]){\n")
 		acd.il++
 		for i, e := range elems {
 			if i != 0 {
 				w.WriteString(",\n")
 			}
 			acd.indent(w)
-			w.WriteByte('&')
-			w.WriteString(acd.tinameDU(e))
+			ti := acd.tinameDU(e.Type)
+			w.WriteByte('{')
+			if e.Priv {
+				w.WriteString("{(byte*)")
+				w.WriteString(
+					strconv.FormatInt(acd.gtc.siz.Alignof(e.Type), 10),
+				)
+				w.WriteString(", ")
+				w.WriteString(
+					strconv.FormatInt(acd.gtc.siz.Alignof(e.Type), 10),
+				)
+				w.WriteString("}, nil")
+			} else {
+				if e.Name == "" || e.Name == "_" {
+					w.WriteString("{}")
+				} else {
+					w.WriteString(`EGSTR("`)
+					w.WriteString(e.Name)
+					w.WriteString(`")`)
+				}
+				w.WriteString(", &")
+				w.WriteString(ti)
+			}
+			w.WriteByte('}')
 		}
 		w.WriteByte('\n')
 		acd.il--

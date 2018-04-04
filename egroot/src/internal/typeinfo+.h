@@ -1,8 +1,6 @@
 #define ithead internal$ItHead
-
-struct minfo {
-	internal$Method;
-};
+#define minfo internal$Method
+#define telem internal$Elem
 
 struct tinfo {
 	internal$Type;

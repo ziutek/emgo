@@ -6,10 +6,33 @@ type Method struct {
 	_ byte
 }
 
+type Elem struct {
+	name string
+	Type *Type
+}
+
+func (e Elem) Name() string {
+	if e.Type == nil {
+		return ""
+	}
+	return e.name
+}
+
+// In case of unexported field Elem.name is used to store alignment and size.
+type unexported struct{ align, size uintptr }
+
+func (e Elem) UnexportedSize() uintptr {
+	return (*unexported)(unsafe.Pointer(&e.name)).size
+}
+
+func (e Elem) UnexportedAlign() uintptr {
+	return (*unexported)(unsafe.Pointer(&e.name)).align
+}
+
 type Type struct {
 	name    string
 	kind    int
-	elems   []*Type `c:"const"`
+	elems   []Elem
 	methods []*Method
 	fns     [0]unsafe.Pointer
 }
@@ -33,7 +56,7 @@ func (t *Type) Name() string {
 	return t.name
 }
 
-func (t *Type) Elems() []*Type {
+func (t *Type) Elems() []Elem {
 	return t.elems
 }
 
@@ -46,12 +69,11 @@ func (t *Type) Fns() []unsafe.Pointer {
 }
 
 type ItHead struct {
-	typ *Type `c:"const"`
+	typ *Type
 }
 
 func (ith *ItHead) Type() *Type {
-	// ith.typ is read-only (can be plced in ROM).
-	return (*Type)(unsafe.Pointer(ith.typ))
+	return ith.typ
 }
 
 type Itable struct {
