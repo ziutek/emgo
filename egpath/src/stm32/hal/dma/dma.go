@@ -77,7 +77,7 @@ func (ch *Channel) Status() (Event, Error) {
 	return Event(flags) & EvAll, Error(flags) & ErrAll
 }
 
-// ClearEvents clears specified event flags.
+// Clear clears specified flags.
 func (ch *Channel) Clear(ev Event, err Error) {
 	ch.clear(byte(ev) | byte(err))
 }
