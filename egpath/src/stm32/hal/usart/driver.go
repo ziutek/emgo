@@ -39,8 +39,8 @@ type Driver struct {
 
 	txdone   rtos.EventFlag
 	rxready  rtos.EventFlag
-	rxM, rxN uint32
-	dmaN     uint32
+	rxH, rxL uint32
+	dmaH     uint32
 }
 
 // NewDriver provides convenient way to create heap allocated Driver struct.
@@ -89,13 +89,13 @@ func (d *Driver) DisableRx() {
 	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 	p.RE().Clear()
 	p.DMAR().Clear()
-	d.rxN = 0
-	d.rxM = 0
+	d.rxH = 0
+	d.rxL = 0
 	// Wait fo DMA really stops.
 	for ch.Enabled() {
 		rtos.SchedYield()
 	}
-	d.dmaN = 0
+	d.dmaH = 0
 }
 
 func (d *Driver) RxDMAISR() {
@@ -105,32 +105,32 @@ func (d *Driver) RxDMAISR() {
 		d.rxready.Signal(1)
 		return
 	}
-	if ev != 0 {
+	if ev&dma.Complete != 0 {
 		ch.Clear(dma.EvAll, dma.ErrAll)
-		atomic.StoreUint32(&d.dmaN, d.dmaN+1)
+		atomic.StoreUint32(&d.dmaH, d.dmaH+1)
 	}
 }
 
-func (d *Driver) dmaNM() (n, m uint32) {
+func (d *Driver) dmaHL() (h, l uint32) {
 	ch := d.RxDMA
-	n = atomic.LoadUint32(&d.dmaN)
+	h = atomic.LoadUint32(&d.dmaH)
 	for {
-		fence.R() // First read of dmaN must be executed before read of ch.Len.
+		fence.R() // First read of dmaH must be executed before read of ch.Len.
 		cl := ch.Len()
-		fence.R() // Second read of dmaN must be executed after read of ch.Len.
-		nn := atomic.LoadUint32(&d.dmaN)
-		if n == nn {
-			return n, uint32(len(d.RxBuf) - cl)
+		fence.R() // Second read of dmaH must be executed after read of ch.Len.
+		nh := atomic.LoadUint32(&d.dmaH)
+		if h == nh {
+			return h, uint32(len(d.RxBuf) - cl)
 		}
-		n = nn
+		h = nh
 	}
 }
 
-func (d *Driver) rxNMadd(m int) {
-	d.rxM += uint32(m)
-	if d.rxM >= uint32(len(d.RxBuf)) {
-		d.rxM -= uint32(len(d.RxBuf))
-		d.rxN++
+func (d *Driver) rxHLadd(n int) {
+	d.rxL += uint32(n)
+	if d.rxL >= uint32(len(d.RxBuf)) {
+		d.rxL -= uint32(len(d.RxBuf))
+		d.rxH++
 	}
 }
 
@@ -148,16 +148,18 @@ func (d *Driver) ISR() {
 
 func (d *Driver) Read(buf []byte) (int, error) {
 start:
-	dmaN, dmaM := d.dmaNM()
-	switch dmaN - d.rxN {
+	dmaH, dmaL := d.dmaHL()
+	switch dmaH - d.rxH {
 	case 0:
-		if dmaM == d.rxM {
+		if dmaL == d.rxL {
+			// No data in ring buffer. Wait for RxNotEmpty or error (DMA IRQs
+			// are useless because they can only signal half or full transfer.
 			d.rxready.Reset(0)
 			fence.W()
 			d.P.EnableIRQ(RxNotEmpty)
 			d.P.EnableErrorIRQ()
-			dmaN, dmaM = d.dmaNM()
-			if dmaM != d.rxM || dmaN != d.rxN {
+			dmaH, dmaL = d.dmaHL()
+			if dmaL != d.rxL || dmaH != d.rxH {
 				d.disableRxIRQ()
 				goto start
 			}
@@ -175,31 +177,32 @@ start:
 			}
 			goto start
 		}
-		if dmaM == 0 {
-			// Belated RxDMAISR: dmaNM read NDTR just after it was reloaded and
+		if dmaL == 0 {
+			// Belated RxDMAISR: dmaHL read NDTR just after it was reloaded and
 			// before TC interrupt was taken.
-			dmaM = uint32(len(d.RxBuf))
+			dmaL = uint32(len(d.RxBuf))
 		}
-		n := copy(buf, d.RxBuf[d.rxM:dmaM])
-		d.rxNMadd(n)
+		n := copy(buf, d.RxBuf[d.rxL:dmaL])
+		d.rxHLadd(n)
 		return n, nil
 	case 1:
-		if dmaM > d.rxM {
+		if dmaL > d.rxL {
 			break
 		}
-		n := copy(buf, d.RxBuf[d.rxM:])
+		n := copy(buf, d.RxBuf[d.rxL:])
 		if n < len(buf) {
-			n += copy(buf[n:], d.RxBuf[:dmaM])
+			n += copy(buf[n:], d.RxBuf[:dmaL])
 		}
-		dmaN, dmaM = d.dmaNM()
-		if dmaN-d.rxN != 1 || dmaM > d.rxM {
+		dmaH, dmaL = d.dmaHL()
+		if dmaH-d.rxH != 1 || dmaL > d.rxL {
+			// There is no certainty that we managed to copy before overwriting.
 			break
 		}
-		d.rxNMadd(n)
+		d.rxHLadd(n)
 		return n, nil
 	}
-	d.rxN = dmaN
-	d.rxM = dmaM
+	d.rxH = dmaH
+	d.rxL = dmaL
 	return 0, ErrBufOverflow
 }
 
@@ -264,7 +267,7 @@ func (d *Driver) WriteByte(b byte) error {
 
 func (d *Driver) TxDMAISR() {
 	ch := d.TxDMA
-	if ev, err := ch.Status(); ev != 0 || err != 0 {
+	if ev, err := ch.Status(); ev&dma.Complete != 0 || err != 0 {
 		ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 		d.txdone.Signal(1)
 	}

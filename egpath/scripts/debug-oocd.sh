@@ -11,7 +11,7 @@ if [ -z "$cfg" ]; then
 	cfg="'set __NOP _'"
 fi
 
-oocd_cmd="openocd -f interface/$INTERFACE.cfg -f target/$TARGET.cfg -c "$cfg" -c 'gdb_port pipe' -c 'log_output /dev/null'"
+oocd_cmd="openocd -d0 -f interface/$INTERFACE.cfg -f target/$TARGET.cfg -c "$cfg" -c 'gdb_port pipe' -c 'log_output /dev/null'"
 
 brkpnt=6
 wchpnt=4

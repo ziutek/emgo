@@ -13,9 +13,8 @@ import (
 )
 
 var (
-	led      gpio.Pin
-	tts      *usart.Driver
-	dmarxbuf [40]byte
+	led gpio.Pin
+	tts *usart.Driver
 )
 
 func init() {
@@ -42,7 +41,7 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	tts = usart.NewDriver(
-		usart.USART1, d.Channel(3, 0), d.Channel(2, 0), dmarxbuf[:],
+		usart.USART1, d.Channel(3, 0), d.Channel(2, 0), make([]byte, 40),
 	)
 	tts.P.EnableClock(true)
 	tts.P.SetBaudRate(115200)
