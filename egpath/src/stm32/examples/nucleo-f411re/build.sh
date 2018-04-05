@@ -1,2 +1,2 @@
 #!/bin/sh
-EGOS=noos EGARCH=cortexm4f EGTARGET=f411xe egc
+EGOS=noos EGARCH=cortexm4f EGTARGET=f411xe egc $@

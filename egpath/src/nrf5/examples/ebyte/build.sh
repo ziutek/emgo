@@ -1,2 +1,2 @@
 #!/bin/sh
-EGOS=noos EGARCH=cortexm4f egc
+EGOS=noos EGARCH=cortexm4f egc $@
