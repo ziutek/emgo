@@ -45,11 +45,11 @@ struct $3_$int__struct {
 slice foo$ArrayToSlice($3_$int_ a$);
 // def
 slice foo$ArrayToSlice($3_$int_ a$) {
-	slice b$ = ASLICELH(&a$, 0L, 3L);
-	b$ = ASLICEH(&a$, 3L);
-	b$ = ASLICEL(&a$, 0L);
-	b$ = ASLICELHM(&a$, 0L, 1L, 2L);
-	b$ = ASLICEHM(&a$, 1L, 2L);
+	slice b$ = ASLICELHC(&a$, 0L, 3L);
+	b$ = ASLICEHC(&a$, 3L);
+	b$ = ASLICELC(&a$, 0L);
+	b$ = ASLICELHMC(&a$, 0L, 1L, 2L);
+	b$ = ASLICEHMC(&a$, 1L, 2L);
 	return b$;
 }
 // end
@@ -91,11 +91,11 @@ func SliceToSlice(a []int) []int {
 slice foo$SliceToSlice(slice a$);
 // def
 slice foo$SliceToSlice(slice a$) {
-	slice b$ = SLICELH(a$, int_*, 0L, 3L);
-	b$ = SLICEH(a$, 3L);
-	b$ = SLICEL(a$, int_*, 0L);
-	b$ = SLICELHM(a$, int_*, 0L, 1L, 2L);
-	b$ = SLICEHM(a$, 1L, 2L);
+	slice b$ = SLICELHC(a$, int_*, 0L, 3L);
+	b$ = SLICEHC(a$, 3L);
+	b$ = SLICELC(a$, int_*, 0L);
+	b$ = SLICELHMC(a$, int_*, 0L, 1L, 2L);
+	b$ = SLICEHMC(a$, 1L, 2L);
 	return b$;
 }
 // end

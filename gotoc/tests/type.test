@@ -27,9 +27,7 @@ const tinfo $8$foo$F$$;
 const tinfo $8$foo$F$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$F$$
-		}))
+		.elems = &foo$F$$
 	}
 };
 // decl
@@ -56,9 +54,7 @@ const tinfo foo$A$$ = {
 	{
 		.name = EGSTR("foo.A"),
 		.kind = Array - 4,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&int_$$
-		}))
+		.elems = &int_$$
 	}
 };
 // decl
@@ -67,9 +63,7 @@ const tinfo $8$foo$A$$;
 const tinfo $8$foo$A$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$A$$
-		}))
+		.elems = &foo$A$$
 	}
 };
 // decl
@@ -96,9 +90,7 @@ const tinfo foo$AP$$ = {
 	{
 		.name = EGSTR("foo.AP"),
 		.kind = Array - 4,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&$8$int_$$
-		}))
+		.elems = &$8$int_$$
 	}
 };
 // decl
@@ -107,9 +99,7 @@ const tinfo $8$foo$AP$$;
 const tinfo $8$foo$AP$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$AP$$
-		}))
+		.elems = &foo$AP$$
 	}
 };
 // decl
@@ -135,9 +125,7 @@ const tinfo $4_$int_$$;
 const tinfo $4_$int_$$ = {
 	{
 		.kind = Array - 4,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&int_$$
-		}))
+		.elems = &int_$$
 	}
 };
 // decl
@@ -147,9 +135,7 @@ const tinfo foo$PA$$ = {
 	{
 		.name = EGSTR("foo.PA"),
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&$4_$int_$$
-		}))
+		.elems = &$4_$int_$$
 	}
 };
 // decl
@@ -175,9 +161,7 @@ const tinfo $4_$$8$int_$$;
 const tinfo $4_$$8$int_$$ = {
 	{
 		.kind = Array - 4,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&$8$int_$$
-		}))
+		.elems = &$8$int_$$
 	}
 };
 // decl
@@ -187,9 +171,7 @@ const tinfo foo$PAP$$ = {
 	{
 		.name = EGSTR("foo.PAP"),
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&$4_$$8$int_$$
-		}))
+		.elems = &$4_$$8$int_$$
 	}
 };
 // decl
@@ -225,9 +207,7 @@ const tinfo $3_$int_$$;
 const tinfo $3_$int_$$ = {
 	{
 		.kind = Array - 3,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&int_$$
-		}))
+		.elems = &int_$$
 	}
 };
 // decl
@@ -237,9 +217,7 @@ const tinfo foo$AA$$ = {
 	{
 		.name = EGSTR("foo.AA"),
 		.kind = Array - 4,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&$3_$int_$$
-		}))
+		.elems = &$3_$int_$$
 	}
 };
 // decl
@@ -248,9 +226,7 @@ const tinfo $8$foo$AA$$;
 const tinfo $8$foo$AA$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$AA$$
-		}))
+		.elems = &foo$AA$$
 	}
 };
 // decl
@@ -286,9 +262,7 @@ const tinfo $3_$int_$$;
 const tinfo $3_$int_$$ = {
 	{
 		.kind = Array - 3,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&int_$$
-		}))
+		.elems = &int_$$
 	}
 };
 // decl
@@ -297,9 +271,7 @@ const tinfo $4_$$3_$int_$$;
 const tinfo $4_$$3_$int_$$ = {
 	{
 		.kind = Array - 4,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&$3_$int_$$
-		}))
+		.elems = &$3_$int_$$
 	}
 };
 // decl
@@ -309,9 +281,7 @@ const tinfo foo$PAA$$ = {
 	{
 		.name = EGSTR("foo.PAA"),
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&$4_$$3_$int_$$
-		}))
+		.elems = &$4_$$3_$int_$$
 	}
 };
 // decl
@@ -347,9 +317,7 @@ const tinfo $3_$int_$$;
 const tinfo $3_$int_$$ = {
 	{
 		.kind = Array - 3,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&int_$$
-		}))
+		.elems = &int_$$
 	}
 };
 // decl
@@ -358,9 +326,7 @@ const tinfo $8$$3_$int_$$;
 const tinfo $8$$3_$int_$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&$3_$int_$$
-		}))
+		.elems = &$3_$int_$$
 	}
 };
 // decl
@@ -369,9 +335,7 @@ const tinfo $4_$$8$$3_$int_$$;
 const tinfo $4_$$8$$3_$int_$$ = {
 	{
 		.kind = Array - 4,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&$8$$3_$int_$$
-		}))
+		.elems = &$8$$3_$int_$$
 	}
 };
 // decl
@@ -381,9 +345,7 @@ const tinfo foo$PAPA$$ = {
 	{
 		.name = EGSTR("foo.PAPA"),
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&$4_$$8$$3_$int_$$
-		}))
+		.elems = &$4_$$8$$3_$int_$$
 	}
 };
 // decl
@@ -418,9 +380,7 @@ const tinfo foo$F$$ = {
 	{
 		.name = EGSTR("foo.F"),
 		.kind = Array - 4,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&func$$$int_$$uint$$$
-		}))
+		.elems = &func$$$int_$$uint$$$
 	}
 };
 // decl
@@ -429,9 +389,7 @@ const tinfo $8$foo$F$$;
 const tinfo $8$foo$F$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$F$$
-		}))
+		.elems = &foo$F$$
 	}
 };
 // decl
@@ -457,9 +415,7 @@ const tinfo $8$foo$A$$;
 const tinfo $8$foo$A$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$A$$
-		}))
+		.elems = &foo$A$$
 	}
 };
 // decl

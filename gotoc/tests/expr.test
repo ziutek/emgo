@@ -20,7 +20,7 @@ int_ foo$CompositeLitSlice();
 // def
 int_ foo$CompositeLitSlice() {
 	slice a$ = CSLICE(3, (($2_$int_[]){(($2_$int_){{1L, 2L}}), (($2_$int_){{3L, 4L}}), (($2_$int_){{4L, 5L}})}));
-	slice b$ = CSLICE(3, (($2_$int_*[]){&SLIDX($2_$int_*, a$, 0L), &SLIDX($2_$int_*, a$, 1L), &SLIDX($2_$int_*, a$, 2L)}));
+	slice b$ = CSLICE(3, (($2_$int_*[]){&SLIDXC($2_$int_*, a$, 0L), &SLIDXC($2_$int_*, a$, 1L), &SLIDXC($2_$int_*, a$, 2L)}));
 	return len(b$);
 }
 // end
@@ -42,10 +42,11 @@ const tinfo foo$S$$51 = {
 	{
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
-		.elems = CSLICE(2, ((const tinfo*[]){
-			&int_$$,
-			&int_$$
-		}))
+		.elems = (const field[]){
+			{{(byte*)4, 4}, nil},
+			{{(byte*)4, 4}, nil}
+		},
+		.elemN = 2
 	}
 };
 // decl
@@ -54,9 +55,7 @@ const tinfo $8$foo$S$$51;
 const tinfo $8$foo$S$$51 = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$S$$51
-		}))
+		.elems = &foo$S$$51
 	}
 };
 // decl

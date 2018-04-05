@@ -22,9 +22,10 @@ const tinfo foo$T$$ = {
 	{
 		.name = EGSTR("foo.T"),
 		.kind = Uint8,
-		.methods = CSLICE(1, ((const minfo*[]){
+		.methods = (const minfo*[]){
 			&F$$$$
-		}))
+		},
+		.methodN = 1
 	}, {
 		foo$T$F$1
 	}
@@ -41,10 +42,11 @@ const tinfo $8$foo$T$$;
 const tinfo $8$foo$T$$ = {
 	{
 		.kind = Ptr,
-		.elems = {&foo$T$$},
-		.methods = CSLICE(1, ((const minfo*[]){
+		.elems = &foo$T$$,
+		.methods = (const minfo*[]){
 			&F$$$$
-		}))
+		},
+		.methodN = 1
 	}, {
 		foo$T$F$0
 	}
@@ -93,10 +95,11 @@ const tinfo $8$foo$T$$;
 const tinfo $8$foo$T$$ = {
 	{
 		.kind = Ptr,
-		.elems = {&foo$T$$},
-		.methods = CSLICE(1, ((const minfo*[]){
+		.elems = &foo$T$$,
+		.methods = (const minfo*[]){
 			&F$$$$
-		}))
+		},
+		.methodN = 1
 	}, {
 		foo$T$F$0
 	}

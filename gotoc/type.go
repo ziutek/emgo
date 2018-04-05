@@ -540,19 +540,18 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	if etyp != nil {
 		w.WriteString(",\n")
 		acd.indent(w)
-		w.WriteString(".elems = {&")
+		w.WriteString(".elems = &")
 		w.WriteString(acd.tinameDU(etyp))
 		if ekey != nil {
-			w.WriteString(", (unintptr)&")
+			w.WriteByte('\n')
+			acd.indent(w)
+			w.WriteString(".elemN = &")
 			w.WriteString(acd.tinameDU(ekey))
 		}
-		w.WriteByte('}')
 	} else if len(fields) > 0 {
 		w.WriteString(",\n")
 		acd.indent(w)
-		w.WriteString(".elems = CSLICE(")
-		w.WriteString(strconv.Itoa(len(fields)))
-		w.WriteString(", ((const field[]){\n")
+		w.WriteString(".elems = (const field[]){\n")
 		acd.il++
 		for i, e := range fields {
 			if i != 0 {
@@ -587,7 +586,10 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		w.WriteByte('\n')
 		acd.il--
 		acd.indent(w)
-		w.WriteString("}))")
+		w.WriteString("},\n")
+		acd.indent(w)
+		w.WriteString(".elemN = ")
+		w.WriteString(strconv.Itoa(len(fields)))
 	}
 	mset := acd.gtc.methodSet(typ)
 	_, isi := typ.Underlying().(*types.Interface)
@@ -595,9 +597,7 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		acd.Weak = false
 		w.WriteString(",\n")
 		acd.indent(w)
-		w.WriteString(".methods = CSLICE(")
-		w.WriteString(strconv.Itoa(mset.Len()))
-		w.WriteString(", ((const minfo*[]){\n")
+		w.WriteString(".methods = (const minfo*[]){\n")
 		acd.il++
 		for i, c := 0, false; i < mset.Len(); i++ {
 			f := mset.At(i).Obj().(*types.Func)
@@ -619,7 +619,10 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		w.WriteByte('\n')
 		acd.il--
 		acd.indent(w)
-		w.WriteString("}))")
+		w.WriteString("},\n")
+		acd.indent(w)
+		w.WriteString(".methodN = ")
+		w.WriteString(strconv.Itoa(mset.Len()))
 		if !isi {
 			w.WriteByte('\n')
 			acd.il--
