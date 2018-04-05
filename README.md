@@ -2,7 +2,7 @@
 
 First of all, to try Emgo you need the [Go compiler](https://golang.org/) installed. The current Emgo compiler and whole process described below requires also some kind of Unix-like operating system. There is a chance that Windows with Cygwin can be used but this was not tested.
 
-You can probably use `go get` to install Emgo but the preffered way is to clone this repository using the git command:
+You can probably use `go get` to install Emgo but the preferred way is to clone this repository using the git command:
 
 	git clone https://github.com/ziutek/emgo.git
 
@@ -15,7 +15,7 @@ For now, Emgo supports only ARM Cortex-M based MCUs. To build code for Cortex-M 
 
 	apt-get install gcc-arm-none-eabi
 
-or better go to the [GNU ARM Embedded Toolchain website](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm) and download most recent toolchain. This is preffered version of toolchain, try use it before report any bug with compilation.
+or better go to the [GNU ARM Embedded Toolchain website](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm) and download most recent toolchain. This is preferred version of toolchain, try use it before report any bug with compilation.
 
 Installed toolchain contains set of arm-none-eabi-* binaries. Find their location and set required enviroment variables:
 
