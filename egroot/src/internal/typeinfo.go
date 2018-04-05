@@ -6,33 +6,33 @@ type Method struct {
 	_ byte
 }
 
-type Elem struct {
+type StructField struct {
 	name string
 	Type *Type
 }
 
-func (e Elem) Name() string {
-	if e.Type == nil {
+func (f StructField) Name() string {
+	if f.Type == nil {
 		return ""
 	}
-	return e.name
+	return f.name
 }
 
 // In case of unexported field Elem.name is used to store alignment and size.
 type unexported struct{ align, size uintptr }
 
-func (e Elem) UnexportedSize() uintptr {
-	return (*unexported)(unsafe.Pointer(&e.name)).size
+func (f StructField) UnexportedSize() uintptr {
+	return (*unexported)(unsafe.Pointer(&f.name)).size
 }
 
-func (e Elem) UnexportedAlign() uintptr {
-	return (*unexported)(unsafe.Pointer(&e.name)).align
+func (f StructField) UnexportedAlign() uintptr {
+	return (*unexported)(unsafe.Pointer(&f.name)).align
 }
 
 type Type struct {
 	name    string
 	kind    int
-	elems   []Elem
+	elems   []StructField
 	methods []*Method
 	fns     [0]unsafe.Pointer
 }
@@ -56,7 +56,17 @@ func (t *Type) Name() string {
 	return t.name
 }
 
-func (t *Type) Elems() []Elem {
+type elemKey struct{ elem, key *Type }
+
+func (t *Type) Elem() *Type {
+	return (*elemKey)(unsafe.Pointer(&t.elems)).elem
+}
+
+func (t *Type) Key() *Type {
+	return (*elemKey)(unsafe.Pointer(&t.elems)).key
+}
+
+func (t *Type) Fields() []StructField {
 	return t.elems
 }
 

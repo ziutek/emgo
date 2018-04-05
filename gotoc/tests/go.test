@@ -75,9 +75,7 @@ const tinfo $8$foo$I$$;
 const tinfo $8$foo$I$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const telem[]){
-			{{}, &foo$I$$}
-		})),
+		.elems = {&foo$I$$},
 		.methods = CSLICE(1, ((const minfo*[]){
 			&F$$$int_$$$int_$$
 		}))

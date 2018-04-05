@@ -8,7 +8,7 @@ const tinfo foo$S$$ = {
 	{
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
-		.elems = CSLICE(2, ((const telem[]){
+		.elems = CSLICE(2, ((const field[]){
 			{{(byte*)4, 4}, nil},
 			{{(byte*)4, 4}, nil}
 		}))
@@ -20,9 +20,7 @@ const tinfo $8$foo$S$$;
 const tinfo $8$foo$S$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const telem[]){
-			{{}, &foo$S$$}
-		}))
+		.elems = {&foo$S$$}
 	}
 };
 // decl
@@ -50,7 +48,7 @@ const tinfo foo$S$$ = {
 	{
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
-		.elems = CSLICE(4, ((const telem[]){
+		.elems = CSLICE(4, ((const field[]){
 			{{(byte*)1, 1}, nil},
 			{{(byte*)1, 1}, nil},
 			{{(byte*)1, 1}, nil},
@@ -64,9 +62,7 @@ const tinfo $8$foo$S$$;
 const tinfo $8$foo$S$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const telem[]){
-			{{}, &foo$S$$}
-		}))
+		.elems = {&foo$S$$}
 	}
 };
 // decl
@@ -113,7 +109,7 @@ const tinfo foo$S$$ = {
 	{
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
-		.elems = CSLICE(1, ((const telem[]){
+		.elems = CSLICE(1, ((const field[]){
 			{EGSTR("F"), &func$$$int_$$int_$$$uint$$int_$$uint8$$}
 		}))
 	}
@@ -124,9 +120,7 @@ const tinfo $8$foo$S$$;
 const tinfo $8$foo$S$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$S$$
-		}))
+		.elems = {&foo$S$$}
 	}
 };
 // decl
@@ -168,9 +162,7 @@ const tinfo $3_$byte$$;
 const tinfo $3_$byte$$ = {
 	{
 		.kind = Array - 3,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&uint8$$
-		}))
+		.elems = {&uint8$$}
 	}
 };
 // decl
@@ -180,10 +172,10 @@ const tinfo foo$S$$ = {
 	{
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
-		.elems = CSLICE(3, ((const tinfo*[]){
-			&int_$$,
-			&uint8$$,
-			&$3_$byte$$
+		.elems = CSLICE(3, ((const field[]){
+			{{(byte*)4, 4}, nil},
+			{{(byte*)1, 1}, nil},
+			{{(byte*)1, 1}, nil}
 		}))
 	}
 };
@@ -193,9 +185,7 @@ const tinfo $8$foo$S$$;
 const tinfo $8$foo$S$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$S$$
-		}))
+		.elems = {&foo$S$$}
 	}
 };
 // decl

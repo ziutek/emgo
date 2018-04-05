@@ -75,6 +75,7 @@ var kinfos = [...]kindInfo{
 	{"unsafe.Pointer", byte(unsafe.Sizeof(uintptr(0))), byte(unsafe.Alignof(uintptr(0)))},
 }
 
+// String resturns string representation of k.
 func (k Kind) String() string {
 	if k++; uint(k) >= uint(len(kinfos)) {
 		k = 1
@@ -157,8 +158,9 @@ func (t Type) Len() int {
 	return t.b.Len()
 }
 
-// Name returns name of type within its package. It returns empty string if t
-// is not valid or represents unnamed type.
+// Name returns name of type within its package. It can return empty string if
+// type is not valid, represents unnamed type or there is no information about
+// type names.
 func (t Type) Name() string {
 	if !t.IsValid() {
 		return ""
@@ -183,13 +185,23 @@ func (t Type) String() string {
 	return t.Kind().String()
 }
 
-// Elem return type of element of t. It panics if kind of t isn't Array, Chan,
-// Ptr, or Slice.
+// Elem returns type of element of t. It panics if kind of t is not Array, Chan,
+// Map, Ptr or Slice.
 func (t Type) Elem() Type {
-	if e := t.b.Elems(); len(e) == 1 && t.Kind() != Struct {
-		return Type{e[0].Type}
+	switch t.Kind() {
+	case Array, Chan, Map, Ptr, Slice:
+		return Type{t.b.Elem()}
+	default:
+		panic(badKind)
 	}
-	panic(badKind)
+}
+
+// Key returns type of map key. It panics if kind of t is not Map.
+func (t Type) Key() Type {
+	if t.Kind() != Map {
+		panic(badKind)
+	}
+	return Type{t.b.Key()}
 }
 
 // NumField returns number of fields in struct. It panics if kind of t isn't
@@ -198,37 +210,38 @@ func (t Type) NumField() int {
 	if t.Kind() != Struct {
 		panic(badKind)
 	}
-	return len(t.b.Elems())
+	return len(t.b.Fields())
 }
 
 type StructField struct {
-	e internal.Elem
+	b internal.StructField
 }
 
-// Name return name of struct field. Unexported field has empty name.
+// Name return name of struct field. It can return empty string in case of
+// unexported field or when there is no information about field names.
 func (f StructField) Name() string {
-	return f.e.Name()
+	return f.b.Name()
 }
 
-// Type returns type of struct field. Unexported field has zero type.
+// Type returns type of struct field. Unexported field returns zero type.
 func (f StructField) Type() Type {
-	return Type{f.e.Type}
+	return Type{f.b.Type}
 }
 
 // Size returns size od struct field, also in case of unexported field.
 func (f StructField) Size() uintptr {
-	if f.e.Type == nil {
-		return f.e.UnexportedSize()
+	if f.b.Type == nil {
+		return f.b.UnexportedSize()
 	}
-	return Type{f.e.Type}.Size()
+	return Type{f.b.Type}.Size()
 }
 
 // Align returns alignment of struct field, also in case of unexported field.
 func (f StructField) Align() uintptr {
-	if f.e.Type == nil {
-		return f.e.UnexportedAlign()
+	if f.b.Type == nil {
+		return f.b.UnexportedAlign()
 	}
-	return Type{f.e.Type}.Align()
+	return Type{f.b.Type}.Align()
 }
 
 // Field returns a struct type's i-th field.
@@ -236,5 +249,5 @@ func (t Type) Field(i int) StructField {
 	if t.Kind() != Struct {
 		panic(badKind)
 	}
-	return StructField{t.b.Elems()[i]}
+	return StructField{t.b.Fields()[i]}
 }

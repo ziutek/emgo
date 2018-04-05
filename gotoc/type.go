@@ -486,17 +486,15 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 			w.WriteString(".name = EGSTR(\"" + nt.String() + "\"),\n")
 		}
 	}
-	//acd.indent(w)
-	//w.WriteString(".size = " + strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
-
-	type telem struct {
+	type field struct {
 		Name string
 		Type types.Type
 		Priv bool
 	}
 	var (
-		kind  string
-		elems []telem
+		kind       string
+		fields     []field
+		etyp, ekey types.Type
 	)
 	switch t := typ.Underlying().(type) {
 	case *types.Basic:
@@ -507,29 +505,30 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 		kind = basicKinds[k]
 	case *types.Array:
 		kind = "Array - " + strconv.FormatInt(t.Len(), 10)
-		elems = []telem{{Type: t.Elem()}}
+		etyp = t.Elem()
 	case *types.Chan:
 		kind = "Chan"
-		elems = []telem{{Type: t.Elem()}}
+		etyp = t.Elem()
 	case *types.Signature:
 		kind = "Func"
 	case *types.Interface:
 		kind = "Interface"
 	case *types.Map:
 		kind = "Map"
-		elems = []telem{{Type: t.Key()}, {Type: t.Elem()}}
+		etyp = t.Elem()
+		ekey = t.Key()
 	case *types.Pointer:
 		kind = "Ptr"
-		elems = []telem{{Type: t.Elem()}}
+		etyp = t.Elem()
 	case *types.Slice:
 		kind = "Slice"
-		elems = []telem{{Type: t.Elem()}}
+		etyp = t.Elem()
 	case *types.Struct:
 		kind = "Struct"
-		elems = make([]telem, t.NumFields())
-		for i := range elems {
+		fields = make([]field, t.NumFields())
+		for i := range fields {
 			v := t.Field(i)
-			elems[i] = telem{
+			fields[i] = field{
 				Name: v.Name(), Type: v.Type(), Priv: !v.Exported(),
 			}
 		}
@@ -538,14 +537,24 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	}
 	acd.indent(w)
 	w.WriteString(".kind = " + kind)
-	if len(elems) > 0 {
+	if etyp != nil {
+		w.WriteString(",\n")
+		acd.indent(w)
+		w.WriteString(".elems = {&")
+		w.WriteString(acd.tinameDU(etyp))
+		if ekey != nil {
+			w.WriteString(", (unintptr)&")
+			w.WriteString(acd.tinameDU(ekey))
+		}
+		w.WriteByte('}')
+	} else if len(fields) > 0 {
 		w.WriteString(",\n")
 		acd.indent(w)
 		w.WriteString(".elems = CSLICE(")
-		w.WriteString(strconv.Itoa(len(elems)))
-		w.WriteString(", ((const telem[]){\n")
+		w.WriteString(strconv.Itoa(len(fields)))
+		w.WriteString(", ((const field[]){\n")
 		acd.il++
-		for i, e := range elems {
+		for i, e := range fields {
 			if i != 0 {
 				w.WriteString(",\n")
 			}
