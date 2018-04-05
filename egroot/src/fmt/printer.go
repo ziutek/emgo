@@ -225,7 +225,27 @@ func (p *printer) formatValue(verb byte, v reflect.Value) {
 		strconv.WriteString(p, v.String(), width, pad)
 	case k == reflect.Struct:
 		p.WriteByte('{')
-		p.WriteString("TODO")
+		var (
+			exported   bool
+			unexported bool
+		)
+		for i, n := 0, v.NumField(); i < n; i++ {
+			if exported {
+				p.WriteByte(' ')
+			}
+			if f := v.Field(i); f.IsValid() {
+				p.tryFormatAsInterface(verb, f)
+				exported = true
+			} else {
+				unexported = true
+			}
+		}
+		if unexported {
+			if exported {
+				p.WriteByte(' ')
+			}
+			p.WriteString("...")
+		}
 		p.WriteByte('}')
 	default:
 		p.WriteString("<!not supported>")

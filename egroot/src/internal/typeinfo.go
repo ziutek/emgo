@@ -32,8 +32,10 @@ func (f StructField) UnexportedAlign() uintptr {
 type Type struct {
 	name    string
 	kind    int
-	elems   []StructField
-	methods []*Method
+	elems   unsafe.Pointer
+	elemN   uintptr
+	methods unsafe.Pointer
+	methodN uintptr
 	fns     [0]unsafe.Pointer
 }
 
@@ -59,23 +61,23 @@ func (t *Type) Name() string {
 type elemKey struct{ elem, key *Type }
 
 func (t *Type) Elem() *Type {
-	return (*elemKey)(unsafe.Pointer(&t.elems)).elem
+	return (*Type)(t.elems)
 }
 
 func (t *Type) Key() *Type {
-	return (*elemKey)(unsafe.Pointer(&t.elems)).key
+	return (*Type)(unsafe.Pointer(t.elemN))
 }
 
 func (t *Type) Fields() []StructField {
-	return t.elems
+	return (*[1 << 24]StructField)(t.elems)[:t.elemN]
 }
 
 func (t *Type) Methods() []*Method {
-	return t.methods
+	return (*[1 << 28]*Method)(t.methods)[:t.methodN]
 }
 
 func (t *Type) Fns() []unsafe.Pointer {
-	return (*[1 << 28]unsafe.Pointer)(unsafe.Pointer(&t.fns))[:len(t.methods)]
+	return (*[1 << 28]unsafe.Pointer)(unsafe.Pointer(&t.fns))[:t.methodN]
 }
 
 type ItHead struct {
@@ -96,21 +98,23 @@ func (it *Itable) Head() *ItHead {
 }
 
 func (it *Itable) Fns() []unsafe.Pointer {
-	return (*[1 << 28]unsafe.Pointer)(unsafe.Pointer(&it.fns))[:len(it.head.typ.methods)]
+	return (*[1 << 28]unsafe.Pointer)(unsafe.Pointer(&it.fns))[:it.head.typ.methodN]
 }
 
 // NewItable allocates and initializes new itable.
 // etyp must be assignable to ityp.
 func NewItable(ityp, etyp *Type) *Itable {
-	const hlen = int((unsafe.Sizeof(ItHead{}) + unsafe.Sizeof(uintptr(0)) - 1) / unsafe.Sizeof(uintptr(0)))
-	sli := make([]uintptr, hlen+len(ityp.methods))
+	const hlen = (unsafe.Sizeof(ItHead{}) + unsafe.Sizeof(uintptr(0)) - 1) /
+		unsafe.Sizeof(uintptr(0))
+	sli := make([]uintptr, hlen+ityp.methodN)
 	itab := (*Itable)(unsafe.Pointer(&sli[0]))
 	itab.head.typ = etyp
 	e := 0
 	itabFns := itab.Fns()
 	etypFns := etyp.Fns()
-	for i, m := range ityp.methods {
-		for etyp.methods[e] != m {
+	etm := etyp.Methods()
+	for i, m := range ityp.Methods() {
+		for etm[e] != m {
 			e++
 		}
 		itabFns[i] = etypFns[e]
@@ -125,19 +129,20 @@ func (t *Type) Implements(ityp *Type) bool {
 	if t == nil {
 		return false
 	}
-	if len(ityp.methods) == 0 {
+	if ityp.methodN == 0 {
 		return true
 	}
-	if len(t.methods) < len(ityp.methods) {
+	if t.methodN < ityp.methodN {
 		return false
 	}
-	k := 0
-	for _, im := range ityp.methods {
+	k := uintptr(0)
+	tm := t.Methods()
+	for _, im := range ityp.Methods() {
 		for {
-			if k >= len(t.methods) {
+			if k >= t.methodN {
 				return false
 			}
-			m := t.methods[k]
+			m := tm[k]
 			k++
 			if m == im {
 				break

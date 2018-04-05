@@ -132,7 +132,7 @@ func (v Value) Complex() complex128 {
 }
 
 // Pointer returns underlying value of v as an uintptr.
-// It panics if kind of v isn't Chan, Func, Map, Ptr, Slice or UnsafePointer.
+// It panics if kind of v is not Chan, Func, Map, Ptr, Slice or UnsafePointer.
 func (v Value) Pointer() uintptr {
 	pt := v.ptrto()
 	switch v.Kind() {
@@ -167,6 +167,7 @@ func (v Value) Elem() Value {
 		return v
 	case Interface:
 		// TODO
+		break
 	}
 	panic(badKind)
 }
@@ -180,21 +181,23 @@ func (v Value) String() string {
 	return *(*string)(v.ptrto())
 }
 
+const badIndex = "reflect: index out of range"
+
 func (v *Value) Index(i int) Value {
 	if uint(i) >= uint(v.Len()) {
-		panic("reflect: index out of range")
+		panic(badIndex)
 	}
 	switch k := v.Kind(); k {
 	case Slice, Array:
-		var uptr uintptr
+		var ptr uintptr
 		if k == Array {
-			uptr = uintptr(v.ptrto())
+			ptr = uintptr(v.ptrto())
 		} else {
-			uptr = v.Pointer()
+			ptr = v.Pointer()
 		}
 		r := Value{typ: v.Type().Elem(), flags: v.flags | flagIndir}
-		uptr += mem.AlignUp(r.typ.Size(), r.typ.Align()) * uintptr(i)
-		*(*unsafe.Pointer)(unsafe.Pointer(&r.val)) = unsafe.Pointer(uptr)
+		ptr += mem.AlignUp(r.typ.Size(), r.typ.Align()) * uintptr(i)
+		*(*unsafe.Pointer)(unsafe.Pointer(&r.val)) = unsafe.Pointer(ptr)
 		return r
 	case String:
 		return ValueOf(v.String()[i])
@@ -250,4 +253,25 @@ func (v Value) Interface() interface{} {
 
 func (v Value) NumField() int {
 	return v.Type().NumField()
+}
+
+func (v *Value) Field(i int) Value {
+	t := v.Type()
+	if t.Kind() != Struct {
+		panic(badKind)
+	}
+	if uint(i) >= uint(t.NumField()) {
+		panic(badIndex)
+	}
+	rt := t.Field(i).Type()
+	if !rt.IsValid() {
+		return Value{}
+	}
+	ptr := uintptr(v.ptrto())
+	for k := 0; k < i; k++ {
+		ptr += mem.AlignUp(t.Field(k).Size(), t.Field(k+1).Align())
+	}
+	r := Value{typ: rt, flags: v.flags | flagIndir}
+	*(*unsafe.Pointer)(unsafe.Pointer(&r.val)) = unsafe.Pointer(ptr)
+	return r
 }
