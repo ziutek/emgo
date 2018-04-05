@@ -21,6 +21,8 @@ type GTC struct {
 	ti            *types.Info
 	noinlineThres int
 	boundsCheck   bool
+	typeNames     bool
+	fieldNames    bool
 	nextInt       chan int
 	siz           types.Sizes
 	sizPtr        int64
@@ -45,21 +47,24 @@ func NewGTC(fset *token.FileSet, pkg *types.Package, ti *types.Info, siz types.S
 		sizIval = 16 // complex128
 	}
 	return &GTC{
-		fset:    fset,
-		pkg:     pkg,
-		ti:      ti,
-		nextInt: c,
-		tuples:  make(map[string]types.Object),
-		arrays:  make(map[string]types.Object),
-		itables: make(map[string]types.Object),
-		tinfos:  make(map[string]types.Object),
-		minfos:  make(map[string]types.Object),
-		cmap:    make(ast.CommentMap),
-		defs:    make(map[types.Object]ast.Node),
-		siz:     siz,
-		sizPtr:  siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
-		sizIval: sizIval,
-		sizInt:  siz.Sizeof(types.Typ[types.Int]),
+		fset:        fset,
+		pkg:         pkg,
+		ti:          ti,
+		boundsCheck: true,
+		typeNames:   true,
+		fieldNames:  true,
+		nextInt:     c,
+		tuples:      make(map[string]types.Object),
+		arrays:      make(map[string]types.Object),
+		itables:     make(map[string]types.Object),
+		tinfos:      make(map[string]types.Object),
+		minfos:      make(map[string]types.Object),
+		cmap:        make(ast.CommentMap),
+		defs:        make(map[types.Object]ast.Node),
+		siz:         siz,
+		sizPtr:      siz.Sizeof(types.NewPointer(types.NewStruct(nil, nil))),
+		sizIval:     sizIval,
+		sizInt:      siz.Sizeof(types.Typ[types.Int]),
 	}
 }
 
@@ -69,6 +74,14 @@ func (cc *GTC) SetNoinlineThres(thres int) {
 
 func (cc *GTC) SetBoundsCheck(bc bool) {
 	cc.boundsCheck = bc
+}
+
+func (cc *GTC) SetTypeNames(tn bool) {
+	cc.typeNames = tn
+}
+
+func (cc *GTC) SetFieldNames(fn bool) {
+	cc.fieldNames = fn
 }
 
 func (gtc *GTC) File(f *ast.File) (cdds []*CDD) {

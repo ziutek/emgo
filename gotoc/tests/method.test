@@ -41,8 +41,8 @@ const tinfo $8$foo$T$$;
 const tinfo $8$foo$T$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$T$$
+		.elems = CSLICE(1, ((const telem[]){
+			{{}, &foo$T$$}
 		})),
 		.methods = CSLICE(1, ((const minfo*[]){
 			&F$$$$
@@ -95,8 +95,8 @@ const tinfo $8$foo$T$$;
 const tinfo $8$foo$T$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$T$$
+		.elems = CSLICE(1, ((const telem[]){
+			{{}, &foo$T$$}
 		})),
 		.methods = CSLICE(1, ((const minfo*[]){
 			&F$$$$

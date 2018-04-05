@@ -481,8 +481,10 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 	acd.il++
 	if nt, ok := typ.(*types.Named); ok {
 		acd.addObject(nt.Obj(), true)
-		acd.indent(w)
-		w.WriteString(".name = EGSTR(\"" + nt.String() + "\"),\n")
+		if acd.gtc.typeNames {
+			acd.indent(w)
+			w.WriteString(".name = EGSTR(\"" + nt.String() + "\"),\n")
+		}
 	}
 	//acd.indent(w)
 	//w.WriteString(".size = " + strconv.FormatInt(acd.gtc.siz.Sizeof(typ), 10) + ",\n")
@@ -561,7 +563,7 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 				)
 				w.WriteString("}, nil")
 			} else {
-				if e.Name == "" || e.Name == "_" {
+				if !acd.gtc.fieldNames || e.Name == "" || e.Name == "_" {
 					w.WriteString("{}")
 				} else {
 					w.WriteString(`EGSTR("`)

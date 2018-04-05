@@ -57,10 +57,12 @@ func getEnv() {
 }
 
 var (
-	tmpDir    string
-	verbosity int
-	optLevel  string
-	disableBC bool
+	tmpDir       string
+	verbosity    int
+	optLevel     string
+	disableBC    bool
+	noTypeNames  bool
+	noFieldNames bool
 )
 
 func usage() {
@@ -72,6 +74,10 @@ func main() {
 	flag.IntVar(&verbosity, "v", 0, "Verbosity level [0...2]")
 	flag.StringVar(&optLevel, "O", "s", "GCC optimization level")
 	flag.BoolVar(&disableBC, "B", false, "Disable bounds checking")
+	flag.BoolVar(&noTypeNames, "nt", false, "Do not include type names names.")
+	flag.BoolVar(
+		&noFieldNames, "nf", false, "Do not include struct field names.",
+	)
 	flag.Usage = usage
 	flag.Parse()
 	args := flag.Args()

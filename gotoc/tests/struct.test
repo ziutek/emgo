@@ -8,9 +8,9 @@ const tinfo foo$S$$ = {
 	{
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
-		.elems = CSLICE(2, ((const tinfo*[]){
-			&int_$$,
-			&int_$$
+		.elems = CSLICE(2, ((const telem[]){
+			{{(byte*)4, 4}, nil},
+			{{(byte*)4, 4}, nil}
 		}))
 	}
 };
@@ -20,8 +20,8 @@ const tinfo $8$foo$S$$;
 const tinfo $8$foo$S$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$S$$
+		.elems = CSLICE(1, ((const telem[]){
+			{{}, &foo$S$$}
 		}))
 	}
 };
@@ -50,11 +50,11 @@ const tinfo foo$S$$ = {
 	{
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
-		.elems = CSLICE(4, ((const tinfo*[]){
-			&uint8$$,
-			&uint8$$,
-			&uint8$$,
-			&uint8$$
+		.elems = CSLICE(4, ((const telem[]){
+			{{(byte*)1, 1}, nil},
+			{{(byte*)1, 1}, nil},
+			{{(byte*)1, 1}, nil},
+			{{(byte*)1, 1}, nil}
 		}))
 	}
 };
@@ -64,8 +64,8 @@ const tinfo $8$foo$S$$;
 const tinfo $8$foo$S$$ = {
 	{
 		.kind = Ptr,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&foo$S$$
+		.elems = CSLICE(1, ((const telem[]){
+			{{}, &foo$S$$}
 		}))
 	}
 };
@@ -113,8 +113,8 @@ const tinfo foo$S$$ = {
 	{
 		.name = EGSTR("foo.S"),
 		.kind = Struct,
-		.elems = CSLICE(1, ((const tinfo*[]){
-			&func$$$int_$$int_$$$uint$$int_$$uint8$$
+		.elems = CSLICE(1, ((const telem[]){
+			{EGSTR("F"), &func$$$int_$$int_$$$uint$$int_$$uint8$$}
 		}))
 	}
 };

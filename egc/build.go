@@ -198,6 +198,8 @@ func compile(bp *build.Package) error {
 	gtc := gotoc.NewGTC(fset, pkg, ti, tc.Sizes)
 	gtc.SetNoinlineThres(8)
 	gtc.SetBoundsCheck(!disableBC)
+	gtc.SetTypeNames(!noTypeNames)
+	gtc.SetFieldNames(!noFieldNames)
 	if err = gtc.Translate(wh, wc, flist); err != nil {
 		return err
 	}
