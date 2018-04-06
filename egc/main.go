@@ -63,6 +63,7 @@ var (
 	disableBC    bool
 	noTypeNames  bool
 	noFieldNames bool
+	fullTypeInfo bool
 )
 
 func usage() {
@@ -74,9 +75,14 @@ func main() {
 	flag.IntVar(&verbosity, "v", 0, "Verbosity level [0...2]")
 	flag.StringVar(&optLevel, "O", "s", "GCC optimization level")
 	flag.BoolVar(&disableBC, "B", false, "Disable bounds checking")
-	flag.BoolVar(&noTypeNames, "nt", false, "Do not include type names names.")
 	flag.BoolVar(
-		&noFieldNames, "nf", false, "Do not include struct field names.",
+		&noTypeNames, "nt", false, "Do not include type names in TI.",
+	)
+	flag.BoolVar(
+		&noFieldNames, "nf", false, "Do not include struct field names in TI.",
+	)
+	flag.BoolVar(
+		&fullTypeInfo, "ft", false, "Include unexported fields in TI.",
 	)
 	flag.Usage = usage
 	flag.Parse()

@@ -560,26 +560,42 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 			acd.indent(w)
 			ti := acd.tinameDU(e.Type)
 			w.WriteByte('{')
-			if e.Priv {
-				w.WriteString("{(byte*)")
-				w.WriteString(
-					strconv.FormatInt(acd.gtc.siz.Alignof(e.Type), 10),
-				)
-				w.WriteString(", ")
-				w.WriteString(
-					strconv.FormatInt(acd.gtc.siz.Alignof(e.Type), 10),
-				)
-				w.WriteString("}, nil")
-			} else {
-				if !acd.gtc.fieldNames || e.Name == "" || e.Name == "_" {
-					w.WriteString("{}")
-				} else {
+			if acd.gtc.fullTypeInfo {
+				switch {
+				case acd.gtc.fieldNames:
 					w.WriteString(`EGSTR("`)
 					w.WriteString(e.Name)
 					w.WriteString(`")`)
+				case e.Priv:
+					w.WriteString(`EGSTR("x")`)
+				default:
+					w.WriteString(`EGSTR("X")`)
 				}
+			} else {
+				switch {
+				case e.Priv:
+					w.WriteString("{(byte*)")
+					w.WriteString(
+						strconv.FormatInt(acd.gtc.siz.Alignof(e.Type), 10),
+					)
+					w.WriteString(", ")
+					w.WriteString(
+						strconv.FormatInt(acd.gtc.siz.Alignof(e.Type), 10),
+					)
+					w.WriteByte('}')
+				case acd.gtc.fieldNames:
+					w.WriteString(`EGSTR("`)
+					w.WriteString(e.Name)
+					w.WriteString(`")`)
+				default:
+					w.WriteString(`EGSTR("X")`)
+				}
+			}
+			if acd.gtc.fullTypeInfo || !e.Priv {
 				w.WriteString(", &")
 				w.WriteString(ti)
+			} else {
+				w.WriteString(", nil")
 			}
 			w.WriteByte('}')
 		}

@@ -18,15 +18,18 @@ func (f StructField) Name() string {
 	return f.name
 }
 
-// In case of unexported field Elem.name is used to store alignment and size.
-type unexported struct{ align, size uintptr }
-
-func (f StructField) UnexportedSize() uintptr {
-	return (*unexported)(unsafe.Pointer(&f.name)).size
+func (f StructField) Exported() bool {
+	return f.Type != nil && f.name[0] >= 'A' && f.name[0] <= 'Z'
 }
 
-func (f StructField) UnexportedAlign() uintptr {
-	return (*unexported)(unsafe.Pointer(&f.name)).align
+type savedSize struct{ align, size uintptr }
+
+func (f StructField) SavedSize() uintptr {
+	return (*savedSize)(unsafe.Pointer(&f.name)).size
+}
+
+func (f StructField) SavedAlign() uintptr {
+	return (*savedSize)(unsafe.Pointer(&f.name)).align
 }
 
 type Type struct {
@@ -153,9 +156,9 @@ func (t *Type) Implements(ityp *Type) bool {
 }
 
 // ItableFor should return itable for given interface and non-interface type
-// pair. It is always called with etyp assignable to ityp.
-// To allow assign/assert to interfaces in interrupt handlers ItableFor must
-// be implemented in nonblocking way.
+// pair. It is always called with etyp assignable to ityp. To allow
+// assign/assert to interfaces in interrupt handlers ItableFor must be
+// implemented in nonblocking way.
 var ItableFor func(ityp, etyp *Type) *Itable
 
 type generateBasicTinfos struct {
