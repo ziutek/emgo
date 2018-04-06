@@ -159,7 +159,7 @@ func (t Type) Len() int {
 }
 
 // Name returns name of type within its package. It can return empty string if
-// type is not valid, represents unnamed type or there is no information about
+// type is not valid represents unnamed type or there is no information about
 // type names.
 func (t Type) Name() string {
 	if !t.IsValid() {
@@ -217,29 +217,36 @@ type StructField struct {
 	b internal.StructField
 }
 
-// Name return name of struct field. It can return empty string in case of
-// unexported field or when there is no information about field names.
+// Name return the name of struct field. It can return empty string in case of
+// unexported field or can return arbitrary string if there is no information
+// about field names.
 func (f StructField) Name() string {
 	return f.b.Name()
 }
 
-// Type returns type of struct field. Unexported field returns zero type.
+// Type returns type of struct field. It can return zero type if there is no
+// typ information for unexported fields.
 func (f StructField) Type() Type {
 	return Type{f.b.Type}
 }
 
-// Size returns size od struct field, also in case of unexported field.
+// Exported reports whether this is exported field.
+func (f StructField) Exported() bool {
+	return f.b.Exported()
+}
+
+// Size returns size od struct field..
 func (f StructField) Size() uintptr {
 	if f.b.Type == nil {
-		return f.b.UnexportedSize()
+		return f.b.SavedSize()
 	}
 	return Type{f.b.Type}.Size()
 }
 
-// Align returns alignment of struct field, also in case of unexported field.
+// Align returns alignment of struct field.
 func (f StructField) Align() uintptr {
 	if f.b.Type == nil {
-		return f.b.UnexportedAlign()
+		return f.b.SavedAlign()
 	}
 	return Type{f.b.Type}.Align()
 }

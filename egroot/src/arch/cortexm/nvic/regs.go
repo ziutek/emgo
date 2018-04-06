@@ -5,9 +5,10 @@ import (
 	"unsafe"
 )
 
+//c:volatile
 type u8w struct {
 	r [8]uint32
-} //c:volatile
+}
 
 func (r *u8w) SetBit(irq IRQ) {
 	val := uint32(1) << (irq & 31)
@@ -21,9 +22,10 @@ func (r *u8w) Bit(irq IRQ) bool {
 	return r.r[irq]&mask != 0
 }
 
+//c:volatile
 type u60w struct {
 	r [60]uint32 // Use uint32 because Cortex-M0 supports only word access.
-} //c:volatile
+} 
 
 func (r *u60w) SetByte(irq IRQ, b byte) {
 	shift := uint(irq&3) * 8

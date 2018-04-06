@@ -200,6 +200,7 @@ func compile(bp *build.Package) error {
 	gtc.SetBoundsCheck(!disableBC)
 	gtc.SetTypeNames(!noTypeNames)
 	gtc.SetFieldNames(!noFieldNames)
+	gtc.SetFullTypeInfo(fullTypeInfo)
 	if err = gtc.Translate(wh, wc, flist); err != nil {
 		return err
 	}

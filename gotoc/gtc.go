@@ -23,6 +23,7 @@ type GTC struct {
 	boundsCheck   bool
 	typeNames     bool
 	fieldNames    bool
+	fullTypeInfo  bool
 	nextInt       chan int
 	siz           types.Sizes
 	sizPtr        int64
@@ -82,6 +83,10 @@ func (cc *GTC) SetTypeNames(tn bool) {
 
 func (cc *GTC) SetFieldNames(fn bool) {
 	cc.fieldNames = fn
+}
+
+func (cc *GTC) SetFullTypeInfo(fti bool) {
+	cc.fullTypeInfo = fti
 }
 
 func (gtc *GTC) File(f *ast.File) (cdds []*CDD) {

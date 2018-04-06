@@ -226,22 +226,22 @@ func (p *printer) formatValue(verb byte, v reflect.Value) {
 	case k == reflect.Struct:
 		p.WriteByte('{')
 		var (
-			exported   bool
-			unexported bool
+			printed  bool
+			notValid bool
 		)
 		for i, n := 0, v.NumField(); i < n; i++ {
-			if exported {
-				p.WriteByte(' ')
-			}
 			if f := v.Field(i); f.IsValid() {
+				if printed {
+					p.WriteByte(' ')
+				}
 				p.tryFormatAsInterface(verb, f)
-				exported = true
+				printed = true
 			} else {
-				unexported = true
+				notValid = true
 			}
 		}
-		if unexported {
-			if exported {
+		if notValid {
+			if printed {
 				p.WriteByte(' ')
 			}
 			p.WriteString("...")
