@@ -1,8 +1,8 @@
 package main
 
 import (
-	"io"
 	"rtos"
+	"strconv"
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
@@ -28,11 +28,11 @@ func init() {
 	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
 	port.SetAltFunc(tx, gpio.USART1_AF1)
 	d := dma.DMA1
-	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
-	tts = usart.NewDriver(usart.USART1, nil, d.Channel(2, 0), nil)
-	tts.P.EnableClock(true) // USART clock must remain enabled in sleep mode.
-	tts.P.SetBaudRate(115200)
-	tts.P.Enable()
+	d.EnableClock(true) // DMA must remain enabled in sleep mode.
+	tts = usart.NewDriver(usart.USART1, d.Channel(2, 0), nil, nil)
+	tts.Periph().EnableClock(true) // USART must remain enabled in sleep mode.
+	tts.Periph().SetBaudRate(115200)
+	tts.Periph().Enable()
 	tts.EnableTx()
 
 	rtos.IRQ(irq.USART1).Enable()
@@ -40,7 +40,9 @@ func init() {
 }
 
 func main() {
-	io.WriteString(tts, "\r\nHello, World!\r\n")
+	tts.WriteString("\r\nVal: ")
+	strconv.WriteInt(tts, 21, 10, 4, ' ')
+	tts.WriteString("\n")
 }
 
 func ttsISR() {

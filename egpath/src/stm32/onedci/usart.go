@@ -19,7 +19,7 @@ func (dci USART) setReadTimeout() {
 }
 
 func (dci USART) Reset() error {
-	dci.Drv.P.SetBaudRate(9600)
+	dci.Drv.Periph().SetBaudRate(9600)
 	err := dci.Drv.WriteByte(0xf0)
 	if err != nil {
 		return err
@@ -32,7 +32,7 @@ func (dci USART) Reset() error {
 	if r == 0xf0 {
 		return onewire.ErrNoResponse
 	}
-	dci.Drv.P.SetBaudRate(115200)
+	dci.Drv.Periph().SetBaudRate(115200)
 	return nil
 }
 
@@ -40,8 +40,8 @@ func (dci USART) Reset() error {
 func (dci USART) resetRX() {
 	// Clear Rx buffer and all errors.
 	dci.Drv.DisableRx()
-	dci.Drv.P.Status()
-	dci.Drv.P.Load()
+	dci.Drv.Periph().Status()
+	dci.Drv.Periph().Load()
 	dci.Drv.EnableRx()
 }
 

@@ -32,6 +32,7 @@ func init() {
 	// LEDs
 
 	cfg := gpio.Config{Mode: gpio.Out, Driver: gpio.OpenDrain, Speed: gpio.Low}
+	led.Set()
 	led.Setup(&cfg)
 
 	// USART
@@ -41,11 +42,11 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	tts = usart.NewDriver(
-		usart.USART3, d.Channel(3, 0), d.Channel(2, 0), make([]byte, 40),
+		usart.USART3, d.Channel(2, 0), d.Channel(3, 0), make([]byte, 40),
 	)
-	tts.P.EnableClock(true)
-	tts.P.SetBaudRate(115200)
-	tts.P.Enable()
+	tts.Periph().EnableClock(true)
+	tts.Periph().SetBaudRate(115200)
+	tts.Periph().Enable()
 	tts.EnableRx()
 	tts.EnableTx()
 
@@ -67,9 +68,9 @@ func main() {
 		}
 		tts.Write(buf[:n])
 		tts.WriteString("\r\n")
-		led.Set()
-		delay.Millisec(50)
 		led.Clear()
+		delay.Millisec(50)
+		led.Set()
 	}
 }
 

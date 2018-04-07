@@ -41,11 +41,11 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	tts = usart.NewDriver(
-		usart.USART1, d.Channel(3, 0), d.Channel(2, 0), make([]byte, 40),
+		usart.USART1, d.Channel(2, 0), d.Channel(3, 0), make([]byte, 40),
 	)
-	tts.P.EnableClock(true)
-	tts.P.SetBaudRate(115200)
-	tts.P.Enable()
+	tts.Periph().EnableClock(true)
+	tts.Periph().SetBaudRate(115200)
+	tts.Periph().Enable()
 	tts.EnableRx()
 	tts.EnableTx()
 

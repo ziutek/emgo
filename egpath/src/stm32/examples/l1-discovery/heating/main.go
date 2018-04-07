@@ -90,7 +90,7 @@ func init() {
 	// 1-wire bus.
 	owport.Setup(owpin, &gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
 	owport.SetAltFunc(owpin, gpio.USART3)
-	owd.Start(usart.USART3, dma1.Channel(3, 0), dma1.Channel(2, 0))
+	owd.Start(usart.USART3, dma1.Channel(2, 0), dma1.Channel(3, 0))
 	irqen(irq.USART3, 12)
 	irqen(irq.DMA1_Channel3, 12)
 	irqen(irq.DMA1_Channel2, 12)

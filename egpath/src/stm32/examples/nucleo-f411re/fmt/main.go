@@ -32,11 +32,11 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	tts = usart.NewDriver(
-		usart.USART2, d.Channel(5, 4), d.Channel(6, 4), dmarxbuf[:],
+		usart.USART2, d.Channel(6, 4), d.Channel(5, 4), dmarxbuf[:],
 	)
-	tts.P.EnableClock(true)
-	tts.P.SetBaudRate(115200)
-	tts.P.Enable()
+	tts.Periph().EnableClock(true)
+	tts.Periph().SetBaudRate(115200)
+	tts.Periph().Enable()
 	tts.EnableRx()
 	tts.EnableTx()
 	rtos.IRQ(irq.USART2).Enable()
@@ -64,7 +64,10 @@ func main() {
 	fmt.Println(2, 2.3)
 	sli := []int{1, 2, 3, 4, 5, 6}
 	fmt.Println(sli)
-	fmt.Println(S2{5, 33, S1{6.25, 1.33}})
+	s := S2{5, 33, S1{6.25, 1.33}}
+	fmt.Println(s)
+	fmt.Printf("%v\n", s)
+	fmt.Printf("%v\n", &s)
 }
 
 func ttsISR() {

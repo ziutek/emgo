@@ -32,10 +32,10 @@ type Driver struct {
 	deadlineRx int64
 	deadlineTx int64
 
-	P     *Periph
-	RxDMA *dma.Channel
-	TxDMA *dma.Channel
-	RxBuf []byte // Rx ring buffer for RxDMA.
+	p     *Periph
+	txDMA *dma.Channel
+	rxDMA *dma.Channel
+	rxBuf []byte // Rx ring buffer for RxDMA.
 
 	txdone   rtos.EventFlag
 	rxready  rtos.EventFlag
@@ -43,14 +43,32 @@ type Driver struct {
 	dmaH     uint32
 }
 
-// NewDriver provides convenient way to create heap allocated Driver struct.
-func NewDriver(p *Periph, rxdma, txdma *dma.Channel, rxbuf []byte) *Driver {
+// MakeDriver returns initialized UART driver that uses provided USART
+// peripheral, DMA channels and receive buffer to handle transmit and receive
+// of bytes. *Driver implements io.Reader and io.Writer interfaces. It can work
+// in full-duplex mode, in Tx only mode (both rxdma and rxbuf can be nil) or
+// Rx only mode (txdma can be nil).
+func MakeDriver(p *Periph, txdma, rxdma *dma.Channel, rxbuf []byte) Driver {
+	return Driver{p: p, txDMA: txdma, rxDMA: rxdma, rxBuf: rxbuf}
+}
+
+// NewDriver provides convenient way to create heap allocated Driver.
+func NewDriver(p *Periph, txdma, rxdma *dma.Channel, rxbuf []byte) *Driver {
 	d := new(Driver)
-	d.P = p
-	d.RxDMA = rxdma
-	d.TxDMA = txdma
-	d.RxBuf = rxbuf
+	*d = MakeDriver(p, txdma, rxdma, rxbuf)
 	return d
+}
+
+func (d *Driver) Periph() *Periph {
+	return d.p
+}
+
+func (d *Driver) TxDMA() *dma.Channel {
+	return d.txDMA
+}
+
+func (d *Driver) RxDMA() *dma.Channel {
+	return d.rxDMA
 }
 
 func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode, addr uintptr) {
@@ -72,19 +90,19 @@ func startDMA(ch *dma.Channel, maddr unsafe.Pointer, mlen int) {
 // to continuous reception of data. Driver assumes that it has exclusive access
 // to P and RxDMA between EnableRx and DisableRx.
 func (d *Driver) EnableRx() {
-	p := &d.P.raw
-	ch := d.RxDMA
+	p := &d.p.raw
+	ch := d.rxDMA
 	p.RE().Set()
 	p.DMAR().Set()
-	d.setupDMA(ch, dma.PTM|dma.IncM|dma.Circ, d.P.rdAddr())
-	startDMA(ch, unsafe.Pointer(&d.RxBuf[0]), len(d.RxBuf))
+	d.setupDMA(ch, dma.PTM|dma.IncM|dma.Circ, d.p.rdAddr())
+	startDMA(ch, unsafe.Pointer(&d.rxBuf[0]), len(d.rxBuf))
 }
 
 // DisableRx disables recieve of data and resets the state of internal ring
 // buffer.
 func (d *Driver) DisableRx() {
-	p := &d.P.raw
-	ch := d.RxDMA
+	p := &d.p.raw
+	ch := d.rxDMA
 	ch.Disable()
 	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 	p.RE().Clear()
@@ -99,7 +117,7 @@ func (d *Driver) DisableRx() {
 }
 
 func (d *Driver) RxDMAISR() {
-	ch := d.RxDMA
+	ch := d.rxDMA
 	ev, err := ch.Status()
 	if err != 0 {
 		d.rxready.Signal(1)
@@ -112,7 +130,7 @@ func (d *Driver) RxDMAISR() {
 }
 
 func (d *Driver) dmaHL() (h, l uint32) {
-	ch := d.RxDMA
+	ch := d.rxDMA
 	h = atomic.LoadUint32(&d.dmaH)
 	for {
 		fence.R() // First read of dmaH must be executed before read of ch.Len.
@@ -120,7 +138,7 @@ func (d *Driver) dmaHL() (h, l uint32) {
 		fence.R() // Second read of dmaH must be executed after read of ch.Len.
 		nh := atomic.LoadUint32(&d.dmaH)
 		if h == nh {
-			return h, uint32(len(d.RxBuf) - cl)
+			return h, uint32(len(d.rxBuf) - cl)
 		}
 		h = nh
 	}
@@ -128,16 +146,16 @@ func (d *Driver) dmaHL() (h, l uint32) {
 
 func (d *Driver) rxHLadd(n int) {
 	d.rxL += uint32(n)
-	if d.rxL >= uint32(len(d.RxBuf)) {
-		d.rxL -= uint32(len(d.RxBuf))
+	if d.rxL >= uint32(len(d.rxBuf)) {
+		d.rxL -= uint32(len(d.rxBuf))
 		d.rxH++
 	}
 }
 
 func (d *Driver) disableRxIRQ() {
-	d.P.DisableIRQ(RxNotEmpty)
-	d.P.Clear(RxNotEmpty, 0)
-	d.P.DisableErrorIRQ()
+	d.p.DisableIRQ(RxNotEmpty)
+	d.p.Clear(RxNotEmpty, 0)
+	d.p.DisableErrorIRQ()
 
 }
 
@@ -156,8 +174,8 @@ start:
 			// are useless because they can only signal half or full transfer.
 			d.rxready.Reset(0)
 			fence.W()
-			d.P.EnableIRQ(RxNotEmpty)
-			d.P.EnableErrorIRQ()
+			d.p.EnableIRQ(RxNotEmpty)
+			d.p.EnableErrorIRQ()
 			dmaH, dmaL = d.dmaHL()
 			if dmaL != d.rxL || dmaH != d.rxH {
 				d.disableRxIRQ()
@@ -166,13 +184,13 @@ start:
 			if !d.rxready.Wait(1, d.deadlineRx) {
 				return 0, ErrTimeout
 			}
-			if _, e := d.P.Status(); e != 0 {
+			if _, e := d.p.Status(); e != 0 {
 				// Clear errors
-				d.P.Load()      // For older MCUs (complete read SR then DR seq)
-				d.P.Clear(0, e) // For newer MCUs.
+				d.p.Load()      // For older MCUs (complete read SR then DR seq)
+				d.p.Clear(0, e) // For newer MCUs.
 				return 0, e
 			}
-			if _, e := d.RxDMA.Status(); e != 0 {
+			if _, e := d.rxDMA.Status(); e != 0 {
 				return 0, e
 			}
 			goto start
@@ -180,18 +198,18 @@ start:
 		if dmaL == 0 {
 			// Belated RxDMAISR: dmaHL read NDTR just after it was reloaded and
 			// before TC interrupt was taken.
-			dmaL = uint32(len(d.RxBuf))
+			dmaL = uint32(len(d.rxBuf))
 		}
-		n := copy(buf, d.RxBuf[d.rxL:dmaL])
+		n := copy(buf, d.rxBuf[d.rxL:dmaL])
 		d.rxHLadd(n)
 		return n, nil
 	case 1:
 		if dmaL > d.rxL {
 			break
 		}
-		n := copy(buf, d.RxBuf[d.rxL:])
+		n := copy(buf, d.rxBuf[d.rxL:])
 		if n < len(buf) {
-			n += copy(buf[n:], d.RxBuf[:dmaL])
+			n += copy(buf[n:], d.rxBuf[:dmaL])
 		}
 		dmaH, dmaL = d.dmaHL()
 		if dmaH-d.rxH != 1 || dmaL > d.rxL {
@@ -215,19 +233,19 @@ func (d *Driver) ReadByte() (byte, error) {
 // EnableTx enables Tx part of P and setups TxDMA. Driver assumes that it has
 // exclusive access to P and TxDMA between EnableTx and DisableTx.
 func (d *Driver) EnableTx() {
-	p := &d.P.raw
+	p := &d.p.raw
 	p.TE().Set()
 	p.DMAT().Set()
-	d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4, d.P.tdAddr())
+	d.setupDMA(d.txDMA, dma.MTP|dma.IncM|dma.FIFO_4_4, d.p.tdAddr())
 }
 
 func (d *Driver) DisableTx() {
-	p := &d.P.raw
+	p := &d.p.raw
 	p.TE().Clear()
 }
 
 func (d *Driver) WriteString(s string) (int, error) {
-	ch := d.TxDMA
+	ch := d.txDMA
 	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
 	var n int
 	for {
@@ -239,7 +257,7 @@ func (d *Driver) WriteString(s string) (int, error) {
 			m = 0xffff
 		}
 		d.txdone.Reset(0)
-		d.P.clear(TxDone, 0) // Clear TC.
+		d.p.clear(TxDone, 0) // Clear TC.
 		startDMA(ch, unsafe.Pointer(sh.Data+uintptr(n)), m)
 		n += m
 		done := d.txdone.Wait(1, d.deadlineTx)
@@ -266,7 +284,7 @@ func (d *Driver) WriteByte(b byte) error {
 }
 
 func (d *Driver) TxDMAISR() {
-	ch := d.TxDMA
+	ch := d.txDMA
 	if ev, err := ch.Status(); ev&dma.Complete != 0 || err != 0 {
 		ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 		d.txdone.Signal(1)

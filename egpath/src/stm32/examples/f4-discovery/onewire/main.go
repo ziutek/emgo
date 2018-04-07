@@ -50,11 +50,11 @@ func init() {
 	oprt.Setup(opin, &gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
 	oprt.SetAltFunc(opin, gpio.USART6)
 	one = usart.NewDriver(
-		usart.USART6, usart6rxdma, usart6txdma, make([]byte, 16),
+		usart.USART6, usart6txdma, usart6rxdma, make([]byte, 16),
 	)
-	one.P.EnableClock(true)
-	one.P.SetMode(usart.HalfDuplex | usart.OneBit)
-	one.P.Enable()
+	one.Periph().EnableClock(true)
+	one.Periph().SetMode(usart.HalfDuplex | usart.OneBit)
+	one.Periph().Enable()
 	one.EnableRx()
 	one.EnableTx()
 	rtos.IRQ(irq.USART6).Enable()

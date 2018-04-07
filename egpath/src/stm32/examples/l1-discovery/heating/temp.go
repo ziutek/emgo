@@ -16,11 +16,11 @@ type OneWireDaemon struct {
 	Cmd chan interface{}
 }
 
-func (d *OneWireDaemon) Start(u *usart.Periph, rxdma, txdma *dma.Channel) {
-	drv := usart.NewDriver(u, rxdma, txdma, make([]byte, 16))
-	drv.P.EnableClock(true)
-	drv.P.SetMode(usart.HalfDuplex | usart.OneBit)
-	drv.P.Enable()
+func (d *OneWireDaemon) Start(u *usart.Periph, txdma, rxdma *dma.Channel) {
+	drv := usart.NewDriver(u, txdma, rxdma, make([]byte, 16))
+	drv.Periph().EnableClock(true)
+	drv.Periph().SetMode(usart.HalfDuplex | usart.OneBit)
+	drv.Periph().Enable()
 	drv.EnableRx()
 	drv.EnableTx()
 	d.m.DCI = onedci.USART{drv}

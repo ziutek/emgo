@@ -60,11 +60,11 @@ func init() {
 	cprt.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	cprt.SetAltFunc(tx|rx, gpio.USART2)
 	con = usart.NewDriver(
-		usart.USART2, usart2rxdma, usart2txdma, make([]byte, 80),
+		usart.USART2, usart2txdma, usart2rxdma, make([]byte, 80),
 	)
-	con.P.EnableClock(true)
-	con.P.SetBaudRate(115200)
-	con.P.Enable()
+	con.Periph().EnableClock(true)
+	con.Periph().SetBaudRate(115200)
+	con.Periph().Enable()
 	con.EnableRx()
 	con.EnableTx()
 	rtos.IRQ(irq.USART2).Enable()
@@ -80,11 +80,11 @@ func init() {
 	oprt.Setup(opin, &gpio.Config{Mode: gpio.Alt, Driver: gpio.OpenDrain})
 	oprt.SetAltFunc(opin, gpio.USART6)
 	one = usart.NewDriver(
-		usart.USART6, usart6rxdma, usart6txdma, make([]byte, 16),
+		usart.USART6, usart6txdma, usart6rxdma, make([]byte, 16),
 	)
-	one.P.EnableClock(true)
-	one.P.SetMode(usart.HalfDuplex | usart.OneBit)
-	one.P.Enable()
+	one.Periph().EnableClock(true)
+	one.Periph().SetMode(usart.HalfDuplex | usart.OneBit)
+	one.Periph().Enable()
 	one.EnableRx()
 	one.EnableTx()
 	rtos.IRQ(irq.USART6).Enable()

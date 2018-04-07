@@ -43,11 +43,17 @@ func init() {
 	ledspin.Setup(&gpio.Config{Mode: gpio.Alt})
 	d := dma.DMA1
 	d.EnableClock(true)
-	leds = usart.NewDriver(usart.USART2, nil, d.Channel(7, 0), nil)
-	leds.P.EnableClock(true)
-	leds.P.SetBaudRate(2250e3)    // 36MHz/16: 444 ns/UARTbit, 1333 ns/WS2811bit.
-	leds.P.SetConf(usart.Stop0b5) // F103 has no 7-bit mode: save 0.5 bit.
-	leds.P.Enable()
+
+	// Set UART baudrate to 2250 kb/s (36 MHz / 16 = 2.25 MHz). This gives
+	// 444 ns/UARTbit and 1333 ns/WS2811bit. It would be best to use the 7-bit
+	// mode but F103 does not support it. Use 0.5 stop bit to slightly speed-up
+	// transmission.
+
+	leds = usart.NewDriver(usart.USART2, d.Channel(7, 0), nil, nil)
+	leds.Periph().EnableClock(true)
+	leds.Periph().SetBaudRate(2250e3)
+	leds.Periph().SetConf(usart.Stop0b5)
+	leds.Periph().Enable()
 	leds.EnableTx()
 	rtos.IRQ(irq.USART2).Enable()
 	rtos.IRQ(irq.DMA1_Channel7).Enable()
@@ -59,11 +65,11 @@ func init() {
 	d = dma.DMA1
 	d.EnableClock(true)
 	us100 = usart.NewDriver(
-		usart.USART3, d.Channel(3, 0), d.Channel(2, 0), make([]byte, 8),
+		usart.USART3, d.Channel(2, 0), d.Channel(3, 0), make([]byte, 8),
 	)
-	us100.P.EnableClock(true)
-	us100.P.SetBaudRate(9600)
-	us100.P.Enable()
+	us100.Periph().EnableClock(true)
+	us100.Periph().SetBaudRate(9600)
+	us100.Periph().Enable()
 	us100.EnableRx()
 	us100.EnableTx()
 	rtos.IRQ(irq.USART3).Enable()

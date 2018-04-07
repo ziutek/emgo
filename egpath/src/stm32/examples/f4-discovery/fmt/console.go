@@ -23,10 +23,10 @@ func initConsole() {
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode
 
-	tts = usart.NewDriver(usart.USART2, nil, d.Channel(6, 4), nil)
-	tts.P.EnableClock(true)
-	tts.P.SetBaudRate(115200)
-	tts.P.Enable()
+	tts = usart.NewDriver(usart.USART2, d.Channel(6, 4), nil, nil)
+	tts.Periph().EnableClock(true)
+	tts.Periph().SetBaudRate(115200)
+	tts.Periph().Enable()
 	tts.EnableTx()
 	rtos.IRQ(irq.USART2).Enable()
 	rtos.IRQ(irq.DMA1_Stream6).Enable()

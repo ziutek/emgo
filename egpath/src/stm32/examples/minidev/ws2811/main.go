@@ -32,11 +32,17 @@ func init() {
 	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in s
-	tts = usart.NewDriver(usart.USART2, nil, d.Channel(7, 0), nil)
-	tts.P.EnableClock(true)
-	tts.P.SetBaudRate(2250e3)    // 36MHz/16: 444 ns/UARTbit, 1333 ns/WS2811bit.
-	tts.P.SetConf(usart.Stop0b5) // F103 has no 7-bit mode: save 0.5 bit only.
-	tts.P.Enable()
+	
+	// Set UART baudrate to 2250 kb/s (36 MHz / 16 = 2.25 MHz). This gives
+	// 444 ns/UARTbit and 1333 ns/WS2811bit. It would be best to use the 7-bit
+	// mode but F103 does not support it. Use 0.5 stop bit to slightly speed-up
+	// transmission.
+	
+	tts = usart.NewDriver(usart.USART2, d.Channel(7, 0), nil, nil)
+	tts.Periph().EnableClock(true)
+	tts.Periph().SetBaudRate(2250e3)    
+	tts.Periph().SetConf(usart.Stop0b5)
+	tts.Periph().Enable()
 	tts.EnableTx()
 	rtos.IRQ(irq.USART1).Enable()
 	rtos.IRQ(irq.DMA1_Channel7).Enable()
