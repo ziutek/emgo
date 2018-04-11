@@ -2,7 +2,6 @@ package main
 
 import (
 	"rtos"
-	"strconv"
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
@@ -18,19 +17,15 @@ func init() {
 	system.SetupPLL(8, 1, 48/8)
 	systick.Setup(2e6)
 
-	// GPIO
-
 	gpio.A.EnableClock(true)
 	port, tx := gpio.A, gpio.Pin9
-
-	// USART
 
 	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
 	port.SetAltFunc(tx, gpio.USART1_AF1)
 	d := dma.DMA1
-	d.EnableClock(true) // DMA must remain enabled in sleep mode.
+	d.EnableClock(true)
 	tts = usart.NewDriver(usart.USART1, d.Channel(2, 0), nil, nil)
-	tts.Periph().EnableClock(true) // USART must remain enabled in sleep mode.
+	tts.Periph().EnableClock(true)
 	tts.Periph().SetBaudRate(115200)
 	tts.Periph().Enable()
 	tts.EnableTx()
@@ -40,9 +35,7 @@ func init() {
 }
 
 func main() {
-	tts.WriteString("\r\nVal: ")
-	strconv.WriteInt(tts, 21, 10, 4, ' ')
-	tts.WriteString("\n")
+	tts.WriteString("Hello, World!\r\n")
 }
 
 func ttsISR() {
@@ -53,7 +46,6 @@ func ttsDMAISR() {
 	tts.TxDMAISR()
 }
 
-//emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
 	irq.USART1:          ttsISR,
