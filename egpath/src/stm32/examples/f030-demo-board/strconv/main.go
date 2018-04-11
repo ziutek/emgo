@@ -1,8 +1,8 @@
 package main
 
 import (
-	"io"
 	"rtos"
+	"strconv"
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
@@ -36,7 +36,22 @@ func init() {
 }
 
 func main() {
-	io.WriteString(tts, "Hello, World!\r\n")
+	a := 12
+	b := -123
+
+	tts.WriteString("a = ")
+	strconv.WriteInt(tts, a, 10, 0, 0)
+	tts.WriteString("\r\n")
+	tts.WriteString("b = ")
+	strconv.WriteInt(tts, b, 10, 0, 0)
+	tts.WriteString("\r\n")
+	
+	tts.WriteString("hex(a) = ")
+	strconv.WriteInt(tts, a, 16, 0, 0)
+	tts.WriteString("\r\n")
+	tts.WriteString("hex(b) = ")
+	strconv.WriteInt(tts, b, 16, 0, 0)
+	tts.WriteString("\r\n")
 }
 
 func ttsISR() {
