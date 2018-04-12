@@ -36,21 +36,20 @@ func init() {
 }
 
 func main() {
-	a := 12
 	b := -123
-
-	tts.WriteString("a = ")
-	strconv.WriteInt(tts, a, 10, 0, 0)
-	tts.WriteString("\r\n")
-	tts.WriteString("b = ")
 	strconv.WriteInt(tts, b, 10, 0, 0)
 	tts.WriteString("\r\n")
-	
-	tts.WriteString("hex(a) = ")
-	strconv.WriteInt(tts, a, 16, 0, 0)
+	strconv.WriteInt(tts, b, 10, 6, ' ')
 	tts.WriteString("\r\n")
-	tts.WriteString("hex(b) = ")
-	strconv.WriteInt(tts, b, 16, 0, 0)
+	strconv.WriteInt(tts, b, 10, 6, '0')
+	tts.WriteString("\r\n")
+	strconv.WriteInt(tts, b, 10, 6, '.')
+	tts.WriteString("\r\n")
+	strconv.WriteInt(tts, b, 10, -6, ' ')
+	tts.WriteString("\r\n")
+	strconv.WriteInt(tts, b, 10, -6, '0')
+	tts.WriteString("\r\n")
+	strconv.WriteInt(tts, b, 10, -6, '.')
 	tts.WriteString("\r\n")
 }
 
