@@ -6,11 +6,10 @@ import (
 
 // WriteBool writes text representation of b to w using format specified by
 // base:
-//	|fmt| == '1': 0 / 1,
-//  |fmt| == 't': false / true.
-// Formatted value is extended to |width| characters. If width > 0 then spaces
-// are written after value, otherwise spaces (fmt > 0) or zeros (base < 0) are
-// written before it.
+//	fmt = '1': 0 / 1,
+//	fmt = 't': false / true.
+// If width > 0 then written value is right-justified, otherwise it is
+// left-justified.
 func WriteBool(w io.Writer, b bool, fmt, width int, pad rune) (int, error) {
 	txt := "0false1true"
 	switch fmt {

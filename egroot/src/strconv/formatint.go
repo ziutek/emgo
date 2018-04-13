@@ -105,8 +105,7 @@ func WriteInt64(w io.Writer, i int64, base, width int, pad rune) (int, error) {
 
 // WriteInt writes text representation of i to w using 2 <= base <= 36.
 // If width > 0 then written value is right-justified, otherwise it is
-// left-justified. The right-justified value is padded with pad runes, the
-// left-justified value is padded with spaces.
+// left-justified.
 func WriteInt(w io.Writer, i, base, width int, pad rune) (int, error) {
 	if intSize <= 4 {
 		return WriteInt32(w, int32(i), base, width, pad)
