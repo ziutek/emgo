@@ -19,10 +19,10 @@ func init() {
 	systick.Setup(2e6)
 
 	gpio.A.EnableClock(true)
-	port, tx := gpio.A, gpio.Pin9
+	tx := gpio.A.Pin(9)
 
-	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
-	port.SetAltFunc(tx, gpio.USART1_AF1)
+	tx.Setup(&gpio.Config{Mode: gpio.Alt})
+	tx.SetAltFunc(gpio.USART1_AF1)
 	d := dma.DMA1
 	d.EnableClock(true)
 	tts = usart.NewDriver(usart.USART1, d.Channel(2, 0), nil, nil)
