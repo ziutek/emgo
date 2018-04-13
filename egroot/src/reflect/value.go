@@ -183,7 +183,7 @@ func (v Value) String() string {
 
 const badIndex = "reflect: index out of range"
 
-func (v *Value) Index(i int) Value {
+func (v Value) Index(i int) Value {
 	if uint(i) >= uint(v.Len()) {
 		panic(badIndex)
 	}
@@ -255,7 +255,7 @@ func (v Value) NumField() int {
 	return v.Type().NumField()
 }
 
-func (v *Value) Field(i int) Value {
+func (v Value) Field(i int) Value {
 	t := v.Type()
 	if t.Kind() != Struct {
 		panic(badKind)
