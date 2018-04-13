@@ -567,9 +567,9 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 					w.WriteString(e.Name)
 					w.WriteString(`")`)
 				case e.Priv:
-					w.WriteString(`EGSTR("x")`)
+					w.WriteString(`EGSTR("x.")`)
 				default:
-					w.WriteString(`EGSTR("X")`)
+					w.WriteString(`EGSTR("X.")`)
 				}
 			} else {
 				switch {
@@ -588,7 +588,7 @@ func (cdd *CDD) tinfo(w *bytes.Buffer, typ types.Type) string {
 					w.WriteString(e.Name)
 					w.WriteString(`")`)
 				default:
-					w.WriteString(`EGSTR("X")`)
+					w.WriteString(`EGSTR("X.")`)
 				}
 			}
 			if acd.gtc.fullTypeInfo || !e.Priv {
