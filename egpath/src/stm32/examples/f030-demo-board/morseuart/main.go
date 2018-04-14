@@ -52,7 +52,7 @@ func (w *MorseWriter) Write(s []byte) (n int, err error) {
 			continue
 		}
 		var symbol morseSymbol
-		if c == ' ' {
+		if c == ' ' || c == '\n' {
 			symbol.length = 2
 			buf[0] = ' '
 			buf[1] = ' '
@@ -77,8 +77,11 @@ func (w *MorseWriter) Write(s []byte) (n int, err error) {
 }
 
 func main() {
+	s := "Hello, World!\r\n"
 	w := &MorseWriter{tts}
-	io.WriteString(w, "Hello, World!\r\n")
+
+	io.WriteString(tts, s)
+	io.WriteString(w, s)
 }
 
 func ttsISR() {
