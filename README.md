@@ -98,6 +98,8 @@ You may encounter a problem where st-util or openocd can not connect to the boar
 
 #### Other resources
 
+[Blog](https://ziutek.github.io/)
+
 [YouTube](https://www.youtube.com/channel/UCAW4PLMDGO7_vY4sCG0jg6Q)
 
 [Forum](https://groups.google.com/forum/#!forum/emgo)
