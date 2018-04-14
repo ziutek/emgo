@@ -48,9 +48,9 @@ func (t Telegraph) Write(s []byte) (int, error) {
 }
 
 func main() {
-	mt := &MorseWriter{Telegraph{led, 100}}
+	telegraph := &MorseWriter{Telegraph{led, 100}}
 	for {
-		io.WriteString(mt, "Hello, World! ")
+		io.WriteString(telegraph, "Hello, World! ")
 	}
 }
 
