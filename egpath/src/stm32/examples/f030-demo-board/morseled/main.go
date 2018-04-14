@@ -1,38 +1,57 @@
 package main
 
 import (
+	"delay"
 	"io"
-	"rtos"
 
-	"stm32/hal/dma"
 	"stm32/hal/gpio"
-	"stm32/hal/irq"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
-	"stm32/hal/usart"
 )
 
-var tts *usart.Driver
+var led gpio.Pin
 
 func init() {
 	system.SetupPLL(8, 1, 48/8)
 	systick.Setup(2e6)
 
-	gpio.A.EnableClock(true)
-	tx := gpio.A.Pin(9)
+	gpio.A.EnableClock(false)
+	led = gpio.A.Pin(4)
 
-	tx.Setup(&gpio.Config{Mode: gpio.Alt})
-	tx.SetAltFunc(gpio.USART1_AF1)
-	d := dma.DMA1
-	d.EnableClock(true)
-	tts = usart.NewDriver(usart.USART1, d.Channel(2, 0), nil, nil)
-	tts.Periph().EnableClock(true)
-	tts.Periph().SetBaudRate(115200)
-	tts.Periph().Enable()
-	tts.EnableTx()
+	cfg := gpio.Config{Mode: gpio.Out, Driver: gpio.OpenDrain, Speed: gpio.Low}
+	led.Setup(&cfg)
+}
 
-	rtos.IRQ(irq.USART1).Enable()
-	rtos.IRQ(irq.DMA1_Channel2_3).Enable()
+type Telegraph struct {
+	Pin   gpio.Pin
+	Dotms int // Dot length [ms]
+}
+
+func (t Telegraph) Write(s []byte) (int, error) {
+	for _, c := range s {
+		switch c {
+		case '.':
+			t.Pin.Clear()
+			delay.Millisec(t.Dotms)
+			t.Pin.Set()
+			delay.Millisec(t.Dotms)
+		case '-':
+			t.Pin.Clear()
+			delay.Millisec(3 * t.Dotms)
+			t.Pin.Set()
+			delay.Millisec(t.Dotms)
+		case ' ':
+			delay.Millisec(3 * t.Dotms)
+		}
+	}
+	return len(s), nil
+}
+
+func main() {
+	mt := &MorseWriter{Telegraph{led, 100}}
+	for {
+		io.WriteString(mt, "Hello, World! ")
+	}
 }
 
 type MorseWriter struct {
@@ -71,28 +90,6 @@ func (w *MorseWriter) Write(s []byte) (int, error) {
 		}
 	}
 	return len(s), nil
-}
-
-func main() {
-	s := "Hello, World!\r\n"
-	mw := &MorseWriter{tts}
-
-	io.WriteString(tts, s)
-	io.WriteString(mw, s)
-}
-
-func ttsISR() {
-	tts.ISR()
-}
-
-func ttsDMAISR() {
-	tts.TxDMAISR()
-}
-
-//c:__attribute__((section(".ISRs")))
-var ISRs = [...]func(){
-	irq.USART1:          ttsISR,
-	irq.DMA1_Channel2_3: ttsDMAISR,
 }
 
 type morseSymbol struct {
