@@ -38,10 +38,14 @@ func init() {
 	// mode but F103 does not support it. Use 0.5 stop bit to slightly speed-up
 	// transmission.
 	
+	// Edit: It seems that 1333 ns/WS2811bit is wrong. According to datasheet
+	// WS2811 bit takes 2500±300 ns. However, this timing works but it is WS2812
+	// timing (WS2812 bit takes 1390 ns).
+	
 	tts = usart.NewDriver(usart.USART2, d.Channel(7, 0), nil, nil)
 	tts.Periph().EnableClock(true)
 	tts.Periph().SetBaudRate(2250e3)    
-	tts.Periph().SetConf(usart.Stop0b5)
+	tts.Periph().SetConf2(usart.Stop0b5)
 	tts.Periph().Enable()
 	tts.EnableTx()
 	rtos.IRQ(irq.USART1).Enable()

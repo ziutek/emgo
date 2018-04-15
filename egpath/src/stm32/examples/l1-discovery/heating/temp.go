@@ -19,7 +19,7 @@ type OneWireDaemon struct {
 func (d *OneWireDaemon) Start(u *usart.Periph, txdma, rxdma *dma.Channel) {
 	drv := usart.NewDriver(u, txdma, rxdma, make([]byte, 16))
 	drv.Periph().EnableClock(true)
-	drv.Periph().SetMode(usart.HalfDuplex | usart.OneBit)
+	drv.Periph().SetConf3(usart.HalfDuplex | usart.OneBit)
 	drv.Periph().Enable()
 	drv.EnableRx()
 	drv.EnableTx()

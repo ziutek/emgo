@@ -165,46 +165,61 @@ func (p *Periph) Disable() {
 	p.raw.UE().Clear()
 }
 
-type Conf uint32
+type Conf1 uint32
 
 const (
-	RxEna   Conf = 1 << 2         // Receiver enabled.
-	TxEna   Conf = 1 << 3         // Transmiter enabled.
-	ParEven Conf = 2 << 9         // Parity control enabled: even.
-	ParOdd  Conf = 3 << 9         // Parity control enabled: odd.
-	Word9b  Conf = 1 << 12        // Use 9 bit word instead of 8 bit.
-	Stop0b5 Conf = 1 << (16 + 12) // Use 0.5 stop bits insted of 1.
-	Stop2b  Conf = 2 << (16 + 12) // Use 2 stop bits instead of 1.
-	Stop1b5 Conf = 3 << (16 + 12) // Use 1.5 stop bits instead of 1.
+	RxEna   Conf1 = 1 << 2  // Receiver enabled.
+	TxEna   Conf1 = 1 << 3  // Transmiter enabled.
+	ParEven Conf1 = 2 << 9  // Parity control enabled: even.
+	ParOdd  Conf1 = 3 << 9  // Parity control enabled: odd.
+	Word9b  Conf1 = 1 << 12 // Use 9 bit word instead of 8 bit.
 )
 
-func (p *Periph) Conf() Conf {
-	return Conf(p.raw.CR1.Bits(usart.CR1(RxEna|TxEna|ParOdd))) |
-		Conf(p.raw.CR2.Bits(usart.CR2(Stop1b5>>16))<<16)
+func (p *Periph) Conf1() Conf1 {
+	return Conf1(p.raw.CR1.Load())
 }
 
-func (p *Periph) SetConf(cfg Conf) {
-	p.raw.CR1.StoreBits(usart.CR1(RxEna|TxEna|ParOdd), usart.CR1(cfg))
-	p.raw.CR2.StoreBits(usart.CR2(Stop1b5>>16), usart.CR2(cfg>>16))
+func (p *Periph) SetConf1(c Conf1) {
+	p.raw.CR1.Store(usart.CR1(c))
 }
 
-type Mode uint32
+type Conf2 uint32
+
+const (
+	Stop0b5 Conf2 = 1 << 12 // Use 0.5 stop bits insted of 1.
+	Stop2b  Conf2 = 2 << 12 // Use 2 stop bits instead of 1.
+	Stop1b5 Conf2 = 3 << 12 // Use 1.5 stop bits instead of 1.
+	Swap    Conf2 = 1 << 15 // Swap Tx/Rx pins.
+	RxInv   Conf2 = 1 << 16 // Invert Rx signal.
+	TxInv   Conf2 = 1 << 17 // Invert Tx signal.
+	DataInv Conf2 = 1 << 18 // Ivert data bits for Tx and Rx.
+)
+
+func (p *Periph) Conf2() Conf2 {
+	return Conf2(p.raw.CR2.Load())
+}
+
+func (p *Periph) SetConf2(c Conf2) {
+	p.raw.CR2.Store(usart.CR2(c))
+}
+
+type Conf3 uint32
 
 const (
 	// HalfDuplex enables half-duplx operation.
-	HalfDuplex Mode = 1 << (16 + 3)
+	HalfDuplex Conf3 = 1 << 3
 
 	// OneBit sets sampling method to one bit and disables Noise error
 	// detection.
-	OneBit Mode = 1 << (16 + 11)
+	OneBit Conf3 = 1 << 11
 )
 
-func (p *Periph) SetMode(mode Mode) {
-	//p.raw.CR2.StoreBits(mask, usart.CR2(mode))
-	p.raw.CR3.StoreBits(
-		usart.CR3((HalfDuplex|OneBit)>>16),
-		usart.CR3(mode>>16),
-	)
+func (p *Periph) Conf3() Conf3 {
+	return Conf3(p.raw.CR3.Load())
+}
+
+func (p *Periph) SetConf3(c Conf3) {
+	p.raw.CR3.Store(usart.CR3(c))
 }
 
 func (p *Periph) Store(d int) {

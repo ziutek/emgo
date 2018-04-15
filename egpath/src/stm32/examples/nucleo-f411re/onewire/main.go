@@ -83,7 +83,7 @@ func init() {
 		usart.USART6, usart6txdma, usart6rxdma, make([]byte, 16),
 	)
 	one.Periph().EnableClock(true)
-	one.Periph().SetMode(usart.HalfDuplex | usart.OneBit)
+	one.Periph().SetConf3(usart.HalfDuplex | usart.OneBit)
 	one.Periph().Enable()
 	one.EnableRx()
 	one.EnableTx()

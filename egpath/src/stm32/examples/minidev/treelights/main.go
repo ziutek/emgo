@@ -52,7 +52,7 @@ func init() {
 	leds = usart.NewDriver(usart.USART2, d.Channel(7, 0), nil, nil)
 	leds.Periph().EnableClock(true)
 	leds.Periph().SetBaudRate(2250e3)
-	leds.Periph().SetConf(usart.Stop0b5)
+	leds.Periph().SetConf2(usart.Stop0b5)
 	leds.Periph().Enable()
 	leds.EnableTx()
 	rtos.IRQ(irq.USART2).Enable()

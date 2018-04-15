@@ -31,7 +31,7 @@ func init() {
 	tts.EnableClock(true)
 	tts.SetBaudRate(115200)
 	tts.Enable()
-	tts.SetConf(usart.RxEna | usart.TxEna)
+	tts.SetConf1(usart.RxEna | usart.TxEna)
 }
 
 func writeByte(b byte) {
