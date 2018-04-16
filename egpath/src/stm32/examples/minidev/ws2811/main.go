@@ -55,8 +55,8 @@ func init() {
 func main() {
 	delay.Millisec(250)
 
-	ledram := ws281x.MakeFBU(50)
-	pixel := ws281x.MakeFBU(1)
+	ledram := ws281x.MakeUARTFB(50)
+	pixel := ws281x.MakeUARTFB(1)
 	var rnd rand.XorShift64
 	rnd.Seed(rtos.Nanosec())
 	for {

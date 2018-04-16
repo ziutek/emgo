@@ -130,10 +130,10 @@ func play(melody []Note, n int) {
 
 func main() {
 	buf := make([]byte, 2)
-	ledram := ws281x.MakeFBU(50)
-	pixel := ws281x.MakeFBU(1)
-	white := ws281x.MakeFBU(1)
-	red := ws281x.MakeFBU(1)
+	ledram := ws281x.MakeUARTFB(50)
+	pixel := ws281x.MakeUARTFB(1)
+	white := ws281x.MakeUARTFB(1)
+	red := ws281x.MakeUARTFB(1)
 	white.EncodeRGB(ws281x.Color(0xffffff))
 	red.EncodeRGB(ws281x.Color(0xff0000))
 

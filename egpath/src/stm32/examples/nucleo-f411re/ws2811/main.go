@@ -52,8 +52,8 @@ func main() {
 
 	fmt.Printf("\nSPI speed: %d Hz\n", wspi.P.Baudrate(wspi.P.Conf()))
 
-	ledram := ws281x.MakeFBS(50)
-	pixel := ws281x.MakeFBS(1)
+	ledram := ws281x.MakeSPIFB(50)
+	pixel := ws281x.MakeSPIFB(1)
 	colors := []ws281x.Color{
 		0x99aadd,
 		0xddaa99,

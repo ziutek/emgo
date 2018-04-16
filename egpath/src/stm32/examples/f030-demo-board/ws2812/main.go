@@ -2,7 +2,6 @@ package main
 
 import (
 	"delay"
-	"math/rand"
 	"rtos"
 
 	"ws281x"
@@ -33,7 +32,7 @@ func init() {
 
 	tts = usart.NewDriver(usart.USART1, d.Channel(2, 0), nil, nil)
 	tts.Periph().EnableClock(true)
-	tts.Periph().SetBaudRate(3000000000 / 1390)
+	tts.Periph().SetBaudRate(3000000000 / 1400)
 	tts.Periph().SetConf2(usart.TxInv) // STM32F0 need no external inverter.
 	tts.Periph().Enable()
 	tts.EnableTx()
@@ -43,15 +42,19 @@ func init() {
 }
 
 func main() {
-	var rnd rand.XorShift64
-	rnd.Seed(1)
-	fb := ws281x.MakeFBU(3)
+	fb := ws281x.MakeUARTFB(3)
+	c0 := ws281x.RGB(128, 0, 0)
+	c1 := ws281x.RGB(0, 128, 0)
+	c2 := ws281x.RGB(0, 0, 128)
 	for {
-		fb.At(0).EncodeGRB(ws281x.Color(rnd.Uint32()).Gamma())
-		fb.At(1).EncodeGRB(ws281x.Color(rnd.Uint32()).Gamma())
-		fb.At(2).EncodeGRB(ws281x.Color(rnd.Uint32()).Gamma())
+		fb.At(0).EncodeGRB(c0)
+		fb.At(1).EncodeGRB(c1)
+		fb.At(2).EncodeGRB(c2)
 		tts.Write(fb.Bytes())
 		delay.Millisec(1e3)
+		tts.Write(fb.Bytes())
+		delay.Millisec(1e3)
+		c0, c1, c2 = c2, c0, c1
 	}
 }
 
