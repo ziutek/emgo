@@ -172,15 +172,18 @@ const (
 	TxEna   Conf1 = 1 << 3  // Transmiter enabled.
 	ParEven Conf1 = 2 << 9  // Parity control enabled: even.
 	ParOdd  Conf1 = 3 << 9  // Parity control enabled: odd.
-	Word9b  Conf1 = 1 << 12 // Use 9 bit word instead of 8 bit.
+	Word9b  Conf1 = 1 << 12 // 9 bit data word instead of 8 bit.
+	over8         = 1 << 15
+	Word7b  Conf1 = 1 << 28 // 7 bit data word instead of 8 bit.
 )
 
 func (p *Periph) Conf1() Conf1 {
-	return Conf1(p.raw.CR1.Load())
+	return Conf1(p.raw.CR1.Load() &^ over8)
 }
 
 func (p *Periph) SetConf1(c Conf1) {
-	p.raw.CR1.Store(usart.CR1(c))
+	cr1 := p.raw.CR1.Load()&over8 | usart.CR1(c)&^over8
+	p.raw.CR1.Store(cr1)
 }
 
 type Conf2 uint32
