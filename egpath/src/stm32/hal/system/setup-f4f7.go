@@ -1,4 +1,4 @@
-// +build f2xxx-TODO f40_41xxx f411xe f746xx
+// +build f40_41xxx f411xe f746xx
 
 // Clock setup for USB
 //
