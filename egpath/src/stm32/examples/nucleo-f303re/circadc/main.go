@@ -138,7 +138,7 @@ func main() {
 
 	scr := lcd.Area(lcd.Bounds())
 
-	scr.SetColor(0)
+	scr.SetColorRGB(0, 0, 0)
 	scr.FillRect(scr.Bounds())
 
 	adcd.P().SetResolution(adc.Res8)
@@ -182,9 +182,9 @@ func main() {
 			offset = 0
 		}
 		for x := 0; x < wh.X; x++ {
-			scr.SetColor(0)
+			scr.SetColorRGB(0, 0, 0)
 			scr.FillRect(image.Rect(x, 0, x+1, wh.Y))
-			scr.SetColor(0xffff)
+			scr.SetColorRGB(255, 255, 255)
 			y0 := scale(buf[offset+x])
 			y1 := scale(buf[offset+x+1])
 			if y0 > y1 {

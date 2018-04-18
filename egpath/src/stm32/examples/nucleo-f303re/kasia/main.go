@@ -97,7 +97,7 @@ func main() {
 	scr.SetColor(0xde7b)
 	scr.FillRect(scr.Bounds())
 
-	scr.SetColor(0xa800)
+	scr.SetColorRGB(255, 0, 0)
 
 	scr.FillRect(image.Rect(147, 117, 162, 130)) // głowa
 
@@ -109,14 +109,14 @@ func main() {
 	scr.DrawLine(image.Pt(140, 160), image.Pt(140, 180))
 	scr.DrawLine(image.Pt(169, 160), image.Pt(169, 180))
 
-	scr.SetColor(0x0000)
+	scr.SetColorRGB(0, 0, 0)
 
 	scr.FillRect(image.Rect(150, 120, 153, 123)) // oko
 	scr.FillRect(image.Rect(156, 120, 159, 123)) // oko
 
 	scr.FillRect(image.Rect(152, 126, 157, 127)) // usta
 
-	scr.SetColor(0xffff)
+	scr.SetColorRGB(255, 255, 255)
 
 	scr.DrawCircle(image.Pt(220, 60), 60)
 	scr.FillCircle(image.Pt(220, 60), 58)

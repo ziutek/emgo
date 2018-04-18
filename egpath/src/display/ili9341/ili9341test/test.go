@@ -4,7 +4,6 @@ import (
 	"delay"
 	"fmt"
 	"image"
-	"image/color"
 	"math/rand"
 	"rtos"
 
@@ -59,9 +58,9 @@ func Run(lcd *ili9341.Display, n int, init bool) {
 
 	start = rtos.Nanosec()
 	for i := n; i > 0; i-- {
-		scr.SetColor(0xfff0)
+		scr.SetColorRGB(255, 67, 0)
 		scr.FillRect(scr.Bounds())
-		scr.SetColor(0)
+		scr.SetColorRGB(0, 0, 0)
 		scr.FillRect(scr.Bounds())
 	}
 	fps = perSec(n*2, start)
@@ -72,12 +71,12 @@ func Run(lcd *ili9341.Display, n int, init bool) {
 
 	start = rtos.Nanosec()
 	for i := n; i > 0; i-- {
-		scr.SetColor(0xf0ff)
+		scr.SetColorRGB(99, 23, 99)
 		scr.DrawLine(image.Pt(0, 0), image.Pt(319, 239))
 		scr.DrawLine(image.Pt(0, 239), image.Pt(319, 0))
 		scr.DrawLine(image.Pt(-10, 120), image.Pt(350, 120))
 		scr.DrawLine(image.Pt(160, -10), image.Pt(160, 250))
-		scr.SetColor(0)
+		scr.SetColorRGB(0, 0, 0)
 		scr.DrawLine(image.Pt(0, 0), image.Pt(319, 239))
 		scr.DrawLine(image.Pt(0, 239), image.Pt(319, 0))
 		scr.DrawLine(image.Pt(-10, 120), image.Pt(350, 120))
@@ -87,12 +86,12 @@ func Run(lcd *ili9341.Display, n int, init bool) {
 
 	start = rtos.Nanosec()
 	for i := 0; i < n; i++ {
-		scr.SetColor(0xff0f)
+		scr.SetColorRGB(255, 0, 99)
 		scr.DrawLine_(image.Pt(0, 0), image.Pt(319, 239))
 		scr.DrawLine_(image.Pt(0, 239), image.Pt(319, 0))
 		scr.DrawLine_(image.Pt(-10, 120), image.Pt(350, 120))
 		scr.DrawLine_(image.Pt(160, -10), image.Pt(160, 250))
-		scr.SetColor(0)
+		scr.SetColorRGB(0, 0, 0)
 		scr.DrawLine_(image.Pt(0, 0), image.Pt(319, 239))
 		scr.DrawLine_(image.Pt(0, 239), image.Pt(319, 0))
 		scr.DrawLine_(image.Pt(-10, 120), image.Pt(350, 120))
@@ -106,11 +105,11 @@ func Run(lcd *ili9341.Display, n int, init bool) {
 
 	start = rtos.Nanosec()
 	for i := 0; i < n; i++ {
-		scr.SetColor(0xf0ff)
+		scr.SetColorRGB(255, 0, 99)
 		scr.DrawLine(p0, p1)
 		scr.DrawLine(p1, p2)
 		scr.DrawLine(p2, p0)
-		scr.SetColor(0)
+		scr.SetColorRGB(0, 0, 0)
 		scr.DrawLine(p0, p1)
 		scr.DrawLine(p1, p2)
 		scr.DrawLine(p2, p0)
@@ -119,11 +118,11 @@ func Run(lcd *ili9341.Display, n int, init bool) {
 
 	start = rtos.Nanosec()
 	for i := 0; i < n; i++ {
-		scr.SetColor(0xff0f)
+		scr.SetColorRGB(255, 0, 99)
 		scr.DrawLine_(p0, p1)
 		scr.DrawLine_(p1, p2)
 		scr.DrawLine_(p2, p0)
-		scr.SetColor(0)
+		scr.SetColorRGB(0, 0, 0)
 		scr.DrawLine_(p0, p1)
 		scr.DrawLine_(p1, p2)
 		scr.DrawLine_(p2, p0)
@@ -138,18 +137,18 @@ func Run(lcd *ili9341.Display, n int, init bool) {
 	r--
 	start = rtos.Nanosec()
 	for i := 0; i < n; i++ {
-		scr.SetColor(0xffff)
+		scr.SetColorRGB(255, 255, 255)
 		scr.FillCircle(p0, r)
-		scr.SetColor(0)
+		scr.SetColorRGB(0, 0, 0)
 		scr.FillCircle(p0, r)
 	}
 	printSpeed("scr.FillCircle   ", perSec(n*2, start))
 
 	start = rtos.Nanosec()
 	for i := 0; i < n; i++ {
-		scr.SetColor(0xffff)
+		scr.SetColorRGB(255, 255, 255)
 		scr.DrawCircle(p0, r)
-		scr.SetColor(0)
+		scr.SetColorRGB(0, 0, 0)
 		scr.DrawCircle(p0, r)
 	}
 	printSpeed("scr.DrawCircle   ", perSec(n*2, start))
@@ -169,7 +168,7 @@ func Run(lcd *ili9341.Display, n int, init bool) {
 		r.Max.X -= int(vh >> 24 & 0xff)
 
 		start := rtos.Nanosec()
-		scr.SetColor(color.RGB16(vl))
+		scr.SetColorRGB(byte(vl), byte(vl>>8), byte(vl>>16))
 		if vl>>16&3 != 0 {
 			scr.FillRect(r)
 		} else {

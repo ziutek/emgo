@@ -11,7 +11,7 @@ type Area struct {
 	x0, y0 uint16
 	width  uint16
 	height uint16
-	color  color.RGB16
+	color  uint16
 	swapWH bool
 }
 
@@ -36,6 +36,12 @@ func (a *Area) Bounds() image.Rectangle {
 }
 
 // SetColor sets the color used by drawing methods.
-func (a *Area) SetColor(c color.RGB16) {
-	a.color = c
+func (a *Area) SetColorRGB(r, g, b byte) {
+	a.color = uint16(r)>>3<<11 | uint16(g)>>2<<5 | uint16(b)>>3
+}
+
+// SetColor sets the color used by drawing methods.
+func (a *Area) SetColor(c color.Color) {
+	r, g, b, _ := c.RGBA()
+	a.color = uint16(r>>11<<11 | g>>10<<5 | b>>11)
 }

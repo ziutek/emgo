@@ -129,9 +129,9 @@ func (dl *DL) ClearColorA(alpha byte) {
 }
 
 // ClearColorRGB sets the clear values for red, green and blue channels.
-func (dl *DL) ClearColorRGB(rgb uint32) {
+func (dl *DL) ClearColorRGB(r, g, b byte) {
 	dl.restart(4)
-	dl.wr32(CLEAR_COLOR_RGB | rgb)
+	dl.wr32(CLEAR_COLOR_RGB | uint32(r)<<16 | uint32(g)<<8 | uint32(b))
 }
 
 // ClearStencil sets the clear value for the stencil buffer.
@@ -159,9 +159,9 @@ func (dl *DL) ColorMask(rgba byte) {
 }
 
 // ColorRGB sets the current color red, green and blue.
-func (dl *DL) ColorRGB(rgb uint32) {
+func (dl *DL) ColorRGB(r, g, b byte) {
 	dl.restart(4)
-	dl.wr32(COLOR_RGB | rgb)
+	dl.wr32(COLOR_RGB | uint32(r)<<16 | uint32(g)<<8 | uint32(b))
 }
 
 // Display ends the display list (following command will be ignored).
