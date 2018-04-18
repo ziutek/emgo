@@ -94,7 +94,7 @@ func main() {
 
 	scr := lcd.Area(lcd.Bounds())
 
-	scr.SetColor(0xde7b)
+	scr.SetColorRGB(0xde, 0xe7, 0x7b)
 	scr.FillRect(scr.Bounds())
 
 	scr.SetColorRGB(255, 0, 0)
