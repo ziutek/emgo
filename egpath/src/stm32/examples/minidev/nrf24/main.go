@@ -51,7 +51,7 @@ func init() {
 	csn.Setup(&gpio.Config{Mode: gpio.Out, Speed: gpio.High})
 	d := dma.DMA1
 	d.EnableClock(true)
-	spid := spi.NewDriver(spi.SPI2, d.Channel(4, 0), d.Channel(5, 0))
+	spid := spi.NewDriver(spi.SPI2, d.Channel(5, 0), d.Channel(4, 0))
 	spid.P.EnableClock(true)
 	rtos.IRQ(irq.SPI2).Enable()
 	rtos.IRQ(irq.DMA1_Channel4).Enable()

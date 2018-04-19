@@ -49,7 +49,7 @@ func init() {
 	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI2)
 	d := dma.DMA1
 	d.EnableClock(true)
-	spidrv := spi.NewDriver(spi.SPI2, d.Channel(3, 0), d.Channel(4, 0))
+	spidrv := spi.NewDriver(spi.SPI2, d.Channel(4, 0), d.Channel(3, 0))
 	spidrv.P.EnableClock(true)
 	rtos.IRQ(irq.SPI2).Enable()
 	rtos.IRQ(irq.DMA1_Stream3).Enable()

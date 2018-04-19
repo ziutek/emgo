@@ -52,7 +52,7 @@ func init() {
 	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	d := dma.DMA1
 	d.EnableClock(true)
-	epd.spi = spi.NewDriver(spi.SPI1, nil, d.Channel(3, 0))
+	epd.spi = spi.NewDriver(spi.SPI1, d.Channel(3, 0), nil)
 	epd.spi.P.EnableClock(true)
 	epd.spi.P.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |

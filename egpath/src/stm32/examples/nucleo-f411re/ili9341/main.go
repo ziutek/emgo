@@ -47,7 +47,7 @@ func init() {
 	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
 	d := dma.DMA2
 	d.EnableClock(true)
-	lcdspi = spi.NewDriver(spi.SPI1, d.Channel(2, 3), d.Channel(3, 3))
+	lcdspi = spi.NewDriver(spi.SPI1, d.Channel(3, 3), d.Channel(2, 3))
 	lcdspi.P.EnableClock(true)
 	lcdspi.P.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |

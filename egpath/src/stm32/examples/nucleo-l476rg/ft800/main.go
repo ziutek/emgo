@@ -53,7 +53,7 @@ func init() {
 	rxdc, txdc := d.Channel(2, 0), d.Channel(3, 0)
 	rxdc.SetRequest(dma.DMA1_SPI1)
 	txdc.SetRequest(dma.DMA1_SPI1)
-	spidrv := spi.NewDriver(spi.SPI1, rxdc, txdc)
+	spidrv := spi.NewDriver(spi.SPI1, txdc, rxdc)
 	spidrv.P.EnableClock(true)
 	rtos.IRQ(irq.SPI1).Enable()
 	rtos.IRQ(irq.DMA1_Channel2).Enable()

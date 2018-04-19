@@ -36,7 +36,7 @@ type Driver struct {
 }
 
 // NewDriver provides convenient way to create heap allocated Driver struct.
-func NewDriver(p *Periph, rxdma, txdma *dma.Channel) *Driver {
+func NewDriver(p *Periph, txdma, rxdma *dma.Channel) *Driver {
 	d := new(Driver)
 	d.P = p
 	d.RxDMA = rxdma
