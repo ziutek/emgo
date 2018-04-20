@@ -48,14 +48,14 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true)
 	lcdspi = spi.NewDriver(spi.SPI1, d.Channel(3, 0), d.Channel(2, 0))
-	lcdspi.P.EnableClock(true)
-	lcdspi.P.SetConf(
+	lcdspi.Periph().EnableClock(true)
+	lcdspi.Periph().SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			lcdspi.P.BR(36e6) | // 36 MHz max.
+			lcdspi.Periph().BR(36e6) | // 36 MHz max.
 			spi.SoftSS | spi.ISSHigh,
 	)
-	lcdspi.P.SetWordSize(8)
-	lcdspi.P.Enable()
+	lcdspi.Periph().SetWordSize(8)
+	lcdspi.Periph().Enable()
 	rtos.IRQ(irq.SPI1).Enable()
 	rtos.IRQ(irq.DMA1_Channel2).Enable()
 	rtos.IRQ(irq.DMA1_Channel3).Enable()
@@ -78,12 +78,10 @@ func init() {
 
 func main() {
 	delay.Millisec(100)
-	spibus := lcdspi.P.Bus()
-	baudrate := lcdspi.P.Baudrate(lcdspi.P.Conf())
-	fmt.Printf(
-		"\nSPI on %s (%d MHz). SPI speed: %d bps.\n\n",
-		spibus, spibus.Clock()/1e6, baudrate,
-	)
+	spip := lcdspi.Periph()
+	spibus := spip.Bus()
+	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
+	fmt.Printf("SPI speed: %d bps.\n", spip.Baudrate(spip.Conf()))
 
 	lcd.SlpOut()
 	delay.Millisec(120)
@@ -127,11 +125,11 @@ func lcdSPIISR() {
 }
 
 func lcdRxDMAISR() {
-	lcdspi.DMAISR(lcdspi.RxDMA)
+	lcdspi.DMAISR(lcdspi.RxDMA())
 }
 
 func lcdTxDMAISR() {
-	lcdspi.DMAISR(lcdspi.TxDMA)
+	lcdspi.DMAISR(lcdspi.TxDMA())
 }
 
 //emgo:const

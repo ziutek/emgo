@@ -14,7 +14,7 @@ type SPI struct {
 }
 
 func NewSPI(spidrv *spi.Driver, csn, pdn gpio.Pin) *SPI {
-	p := spidrv.P
+	p := spidrv.Periph()
 	p.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
 			p.BR(11e6) | // 11 MHz max. before configure PCLK.
@@ -32,7 +32,7 @@ func NewSPI(spidrv *spi.Driver, csn, pdn gpio.Pin) *SPI {
 }
 
 func (dci *SPI) SetBaudrate(baud int) {
-	p := dci.spi.P
+	p := dci.spi.Periph()
 	p.SetConf(p.Conf()&^spi.BR256 | p.BR(baud))
 }
 

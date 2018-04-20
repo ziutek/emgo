@@ -28,12 +28,13 @@ type DCI struct {
 func NewDCI(spidrv *spi.Driver, csn gpio.Pin, pclk uint, cet *tim.TIM_Periph, ch int, irqline exti.Lines) *DCI {
 	dci := new(DCI)
 	dci.spi = spidrv
-	spidrv.P.SetConf(
+	p := spidrv.Periph()
+	p.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			spidrv.P.BR(10e6) | // 10 MHz max.
+			p.BR(10e6) | // 10 MHz max.
 			spi.SoftSS | spi.ISSHigh,
 	)
-	spidrv.P.Enable()
+	p.Enable()
 
 	dci.csn = csn
 	csn.Set()
@@ -126,5 +127,6 @@ func (dci *DCI) ISR() {
 }
 
 func (dci *DCI) Baudrate() uint {
-	return dci.spi.P.Baudrate(dci.spi.P.Conf())
+	p := dci.spi.Periph()
+	return p.Baudrate(p.Conf())
 }

@@ -67,14 +67,14 @@ func init() {
 	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
 	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
 	lcdspi = spi.NewDriver(spi.SPI1, dma1.Channel(3, 0), dma1.Channel(2, 0))
-	lcdspi.P.EnableClock(true)
-	lcdspi.P.SetConf(
+	lcdspi.Periph().EnableClock(true)
+	lcdspi.Periph().SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			lcdspi.P.BR(36e6) | // 36 MHz max.
+			lcdspi.Periph().BR(36e6) | // 36 MHz max.
 			spi.SoftSS | spi.ISSHigh,
 	)
-	lcdspi.P.SetWordSize(8)
-	lcdspi.P.Enable()
+	lcdspi.Periph().SetWordSize(8)
+	lcdspi.Periph().Enable()
 	rtos.IRQ(irq.SPI1).Enable()
 	rtos.IRQ(irq.DMA1_Channel2).Enable()
 	rtos.IRQ(irq.DMA1_Channel3).Enable()
@@ -193,11 +193,11 @@ func lcdSPIISR() {
 }
 
 func lcdRxDMAISR() {
-	lcdspi.DMAISR(lcdspi.RxDMA)
+	lcdspi.DMAISR(lcdspi.RxDMA())
 }
 
 func lcdTxDMAISR() {
-	lcdspi.DMAISR(lcdspi.TxDMA)
+	lcdspi.DMAISR(lcdspi.TxDMA())
 }
 
 func adcISR() {

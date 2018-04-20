@@ -40,17 +40,18 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true)
 	wspi = spi.NewDriver(spi.SPI3, d.Channel(7, 0), nil)
-	wspi.P.EnableClock(true)
+	wspi.Periph().EnableClock(true)
 	rtos.IRQ(irq.SPI3).Enable()
 	rtos.IRQ(irq.DMA1_Stream7).Enable()
 }
 
 func main() {
-	wspi.P.SetConf(spi.Master | wspi.P.BR(3200e3) | spi.SoftSS | spi.ISSHigh)
-	wspi.P.Enable()
+	spip := wspi.Periph()
+	spip.SetConf(spi.Master | spip.BR(3200e3) | spi.SoftSS | spi.ISSHigh)
+	spip.Enable()
 	delay.Millisec(250) // For SWO handling in ST-Link.
 
-	fmt.Printf("\nSPI speed: %d Hz\n", wspi.P.Baudrate(wspi.P.Conf()))
+	fmt.Printf("\nSPI speed: %d Hz\n", spip.Baudrate(spip.Conf()))
 
 	ledram := ws281x.MakeSPIFB(50)
 	pixel := ws281x.MakeSPIFB(1)
@@ -85,7 +86,7 @@ func spiISR() {
 }
 
 func spiTxDMAISR() {
-	wspi.DMAISR(wspi.TxDMA)
+	wspi.DMAISR(wspi.TxDMA())
 }
 
 //emgo:const

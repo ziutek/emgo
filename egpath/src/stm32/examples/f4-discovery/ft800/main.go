@@ -50,7 +50,7 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true)
 	spidrv := spi.NewDriver(spi.SPI2, d.Channel(4, 0), d.Channel(3, 0))
-	spidrv.P.EnableClock(true)
+	spidrv.Periph().EnableClock(true)
 	rtos.IRQ(irq.SPI2).Enable()
 	rtos.IRQ(irq.DMA1_Stream3).Enable()
 	rtos.IRQ(irq.DMA1_Stream4).Enable()
@@ -89,16 +89,19 @@ func checkErr(err error) {
 }
 
 func main() {
-	spibus := dci.SPI().P.Bus()
+	delay.Millisec(100) // For SWO output.
+
+	spip := dci.SPI().Periph()
+	spibus := spip.Bus()
 	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
-	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
+	fmt.Printf("SPI speed: %d bps.\n", spip.Baudrate(spip.Conf()))
 
 	lcd := eve.NewDriver(dci, 128)
 	checkErr(lcd.Init(&eve.Default480x272, nil))
 
 	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
 	dci.SetBaudrate(21e6) // Max. for SPI2 and SPI3 < EVE max. 30 MHz
-	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
+	fmt.Printf("SPI speed: %d bps.\n", spip.Baudrate(spip.Conf()))
 
 	checkErr(evetest.Run(lcd))
 	fmt.Printf("End.\n")
@@ -109,11 +112,11 @@ func lcdSPIISR() {
 }
 
 func lcdRxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().RxDMA)
+	dci.SPI().DMAISR(dci.SPI().RxDMA())
 }
 
 func lcdTxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().TxDMA)
+	dci.SPI().DMAISR(dci.SPI().TxDMA())
 }
 
 func exti9_5ISR() {

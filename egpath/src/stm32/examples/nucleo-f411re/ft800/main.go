@@ -51,7 +51,7 @@ func init() {
 	d := dma.DMA2
 	d.EnableClock(true)
 	spidrv := spi.NewDriver(spi.SPI1, d.Channel(3, 3), d.Channel(2, 3))
-	spidrv.P.EnableClock(true)
+	spidrv.Periph().EnableClock(true)
 	rtos.IRQ(irq.SPI1).Enable()
 	rtos.IRQ(irq.DMA2_Stream2).Enable()
 	rtos.IRQ(irq.DMA2_Stream3).Enable()
@@ -81,16 +81,22 @@ func curFreq(lcd *eve.Driver) uint32 {
 }
 
 func main() {
-	spibus := dci.SPI().P.Bus()
+	spibus := dci.SPI().Periph().Bus()
 	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
-	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
+	fmt.Printf(
+		"SPI speed: %d bps.\n",
+		dci.SPI().Periph().Baudrate(dci.SPI().Periph().Conf()),
+	)
 
 	lcd := eve.NewDriver(dci, 128)
 	lcd.Init(&eve.Default480x272, nil)
 
 	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
 	dci.SetBaudrate(30e6)
-	fmt.Printf("SPI speed: %d bps.\n", dci.SPI().P.Baudrate(dci.SPI().P.Conf()))
+	fmt.Printf(
+		"SPI speed: %d bps.\n",
+		dci.SPI().Periph().Baudrate(dci.SPI().Periph().Conf()),
+	)
 
 	if err := evetest.Run(lcd); err != nil {
 		fmt.Printf("Error: %v\n", err)
@@ -104,11 +110,11 @@ func lcdSPIISR() {
 }
 
 func lcdRxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().RxDMA)
+	dci.SPI().DMAISR(dci.SPI().RxDMA())
 }
 
 func lcdTxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().TxDMA)
+	dci.SPI().DMAISR(dci.SPI().TxDMA())
 }
 
 func exti9_5ISR() {

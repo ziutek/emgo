@@ -75,7 +75,7 @@ func init() {
 	d = dma.DMA2
 	d.EnableClock(true)
 	spid := spi.NewDriver(spi.SPI1, d.Channel(3, 3), d.Channel(2, 3))
-	spid.P.EnableClock(true)
+	spid.Periph().EnableClock(true)
 	rtos.IRQ(irq.SPI1).Enable()
 	rtos.IRQ(irq.DMA2_Stream2).Enable()
 	rtos.IRQ(irq.DMA2_Stream3).Enable()
@@ -155,7 +155,7 @@ func printRegs(nrf *nrf24.Radio) {
 func main() {
 	var buf [32]byte
 
-	spibus := dci.SPI().P.Bus()
+	spibus := dci.SPI().Periph().Bus()
 	fmt.Printf(
 		"\nSPI on %s (%d MHz). SPI speed: %d Hz.\n\n",
 		spibus, spibus.Clock()/1e6, dci.Baudrate(),
@@ -251,11 +251,11 @@ func nrfSPIISR() {
 }
 
 func nrfRxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().RxDMA)
+	dci.SPI().DMAISR(dci.SPI().RxDMA())
 }
 
 func nrfTxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().TxDMA)
+	dci.SPI().DMAISR(dci.SPI().TxDMA())
 }
 
 //emgo:const

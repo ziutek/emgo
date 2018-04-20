@@ -1,6 +1,6 @@
-// This is test program that tries to communicate with ILI9341 controller using
-// raw SPI (without any display library). There are more useful examples (for
-// other boards) that use display/ili9341 package.
+// This is test program that shows how to communicate with ILI9341 controller
+// using raw SPI (without any display library). There are more useful examples
+// (for other boards, eg. NUCLEO-F411RE) that use display/ili9341 package.
 package main
 
 import (
@@ -78,13 +78,13 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true)
 	ili.SPI = spi.NewDriver(spi.SPI2, d.Channel(4, 0), d.Channel(3, 0))
-	ili.SPI.P.EnableClock(true)
-	ili.SPI.P.SetConf(
+	ili.SPI.Periph().EnableClock(true)
+	ili.SPI.Periph().SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			ili.SPI.P.BR(21e6) | // 21 MHz max.
+			ili.SPI.Periph().BR(21e6) | // 21 MHz max.
 			spi.SoftSS | spi.ISSHigh,
 	)
-	ili.SPI.P.Enable()
+	ili.SPI.Periph().Enable()
 	rtos.IRQ(irq.SPI2).Enable()
 	rtos.IRQ(irq.DMA1_Stream3).Enable()
 	rtos.IRQ(irq.DMA1_Stream4).Enable()
@@ -113,11 +113,9 @@ func main() {
 	delay.Millisec(120)
 	ili.Cmd(ILI9341_DISPON)
 
-	spibus := ili.SPI.P.Bus()
-	fmt.Printf(
-		"\nSPI on %s (%d MHz). SPI speed: %d Hz.\n\n",
-		spibus, spibus.Clock()/1e6, ili.SPI.P.Baudrate(ili.SPI.P.Conf()),
-	)
+	spip := ili.SPI.Periph()
+	fmt.Printf("\nSPI on %s (%d MHz).\n", spip.Bus(), spip.Bus().Clock()/1e6)
+	fmt.Printf("SPI speed: %d bps.\n", spip.Baudrate(spip.Conf()))
 
 	ili.Cmd(ILI9341_PIXFMT)
 	ili.WriteByte(0x55) // 16 bit 565 format.
@@ -146,11 +144,11 @@ func iliSPIISR() {
 }
 
 func iliRxDMAISR() {
-	ili.SPI.DMAISR(ili.SPI.RxDMA)
+	ili.SPI.DMAISR(ili.SPI.RxDMA())
 }
 
 func iliTxDMAISR() {
-	ili.SPI.DMAISR(ili.SPI.TxDMA)
+	ili.SPI.DMAISR(ili.SPI.TxDMA())
 }
 
 //emgo:const

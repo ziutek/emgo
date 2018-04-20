@@ -53,14 +53,13 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true)
 	epd.spi = spi.NewDriver(spi.SPI1, d.Channel(3, 0), nil)
-	epd.spi.P.EnableClock(true)
-	epd.spi.P.SetConf(
+	epd.spi.Periph().EnableClock(true)
+	epd.spi.Periph().SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			epd.spi.P.BR(10e6) | // 10 MHz max.
+			epd.spi.Periph().BR(10e6) | // 10 MHz max.
 			spi.SoftSS | spi.ISSHigh,
 	)
-	epd.spi.P.SetWordSize(8)
-	epd.spi.P.Enable()
+	epd.spi.Periph().Enable()
 	rtos.IRQ(irq.SPI1).Enable()
 	rtos.IRQ(irq.DMA1_Channel3).Enable()
 
@@ -82,13 +81,11 @@ func init() {
 }
 
 func main() {
-	delay.Millisec(100)
-	spibus := epd.spi.P.Bus()
-	baudrate := epd.spi.P.Baudrate(epd.spi.P.Conf())
-	fmt.Printf(
-		"\nSPI on %s (%d MHz). SPI speed: %d bps.\n\n",
-		spibus, spibus.Clock()/1e6, baudrate,
-	)
+	delay.Millisec(100) // For SWO output.
+
+	spip := epd.spi.Periph()
+	fmt.Printf("\nSPI on %s (%d MHz).\n", spip.Bus(), spip.Bus().Clock()/1e6)
+	fmt.Printf("SPI speed: %d bps.\n", spip.Baudrate(spip.Conf()))
 
 	led1.Set()
 
@@ -174,7 +171,7 @@ func epdSPIISR() {
 }
 
 func epdTxDMAISR() {
-	epd.spi.DMAISR(epd.spi.TxDMA)
+	epd.spi.DMAISR(epd.spi.TxDMA())
 }
 
 //emgo:const

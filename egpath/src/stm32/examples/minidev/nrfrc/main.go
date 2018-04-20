@@ -70,7 +70,7 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true)
 	spid := spi.NewDriver(spi.SPI1, d.Channel(3, 0), d.Channel(2, 0))
-	spid.P.EnableClock(true)
+	spid.Periph().EnableClock(true)
 	rtos.IRQ(irq.SPI1).Enable()
 	rtos.IRQ(irq.DMA1_Channel2).Enable()
 	rtos.IRQ(irq.DMA1_Channel3).Enable()
@@ -130,11 +130,11 @@ func nrfSPIISR() {
 }
 
 func nrfRxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().RxDMA)
+	dci.SPI().DMAISR(dci.SPI().RxDMA())
 }
 
 func nrfTxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().TxDMA)
+	dci.SPI().DMAISR(dci.SPI().TxDMA())
 }
 
 //emgo:const

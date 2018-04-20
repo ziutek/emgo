@@ -23,7 +23,7 @@ func (dci *DCI) SPI() *spi.Driver {
 }
 
 func (dci *DCI) SetWordSize(size int) {
-	dci.spi.P.SetWordSize(size)
+	dci.spi.Periph().SetWordSize(size)
 }
 
 func (dci *DCI) Cmd(b byte) {
