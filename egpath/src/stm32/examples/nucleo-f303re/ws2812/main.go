@@ -4,7 +4,7 @@ import (
 	"delay"
 	"rtos"
 
-	"ws281x"
+	"led/ws281x/wsuart"
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
@@ -45,19 +45,22 @@ func init() {
 }
 
 func main() {
-	fb := ws281x.MakeUARTFB(3)
-	c0 := ws281x.RGB(16, 0, 0)
-	c1 := ws281x.RGB(0, 16, 0)
-	c2 := ws281x.RGB(0, 0, 16)
+	rgb := wsuart.RGB
+	strip := wsuart.Strip{
+		rgb.Pixel(0, 0, 99),
+		rgb.Pixel(0, 99, 0),
+		rgb.Pixel(0, 99, 99),
+		rgb.Pixel(99, 0, 0),
+		rgb.Pixel(99, 0, 99),
+		rgb.Pixel(99, 99, 0),
+		rgb.Pixel(99, 99, 99),
+	}
 	for {
-		fb.At(0).EncodeGRB(c0)
-		fb.At(1).EncodeGRB(c1)
-		fb.At(2).EncodeGRB(c2)
-		tts.Write(fb.Bytes())
+		tts.Write(strip.Bytes())
 		delay.Millisec(1e3)
-		tts.Write(fb.Bytes())
-		delay.Millisec(1e3)
-		c0, c1, c2 = c2, c0, c1
+		p := strip[0]
+		copy(strip, strip[1:])
+		strip[len(strip)-1] = p
 	}
 }
 
