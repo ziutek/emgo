@@ -43,21 +43,19 @@ func init() {
 
 func main() {
 	rgb := wsuart.GRB
-	strip := wsuart.Strip{
-		rgb.Pixel(0, 0, 99),
-		rgb.Pixel(0, 99, 0),
-		rgb.Pixel(0, 99, 99),
-		rgb.Pixel(99, 0, 0),
-		rgb.Pixel(99, 0, 99),
-		rgb.Pixel(99, 99, 0),
-		rgb.Pixel(99, 99, 99),
-	}
+	strip := make(wsuart.Strip, 24)
+	r := rgb.Pixel(99, 0, 99)
+	g := rgb.Pixel(99, 99, 0)
+	b := rgb.Pixel(0, 99, 99)
+	i := 0
 	for {
+		strip.Clear()
+		strip[i%24] = r
+		strip[(1<<30-i)%24] = g
+		strip[(i/2)%24] = b
 		tts.Write(strip.Bytes())
-		delay.Millisec(1e3)
-		p := strip[0]
-		copy(strip, strip[1:])
-		strip[len(strip)-1] = p
+		delay.Millisec(50)
+		i++
 	}
 }
 
