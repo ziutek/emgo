@@ -41,20 +41,6 @@ func init() {
 	irqn := gpio.D.Pin(9)
 	pdn := gpio.D.Pin(10)
 
-	// EVE SPI (Use SPI2. SPI1 is faster but used by onboard accelerometer).
-
-	// Use max. speed for SCK (not necessary for ABP2), see Errata sheet.
-	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh})
-	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
-	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI2)
-	d := dma.DMA1
-	d.EnableClock(true)
-	spidrv := spi.NewDriver(spi.SPI2, d.Channel(4, 0), d.Channel(3, 0))
-	spidrv.Periph().EnableClock(true)
-	rtos.IRQ(irq.SPI2).Enable()
-	rtos.IRQ(irq.DMA1_Stream3).Enable()
-	rtos.IRQ(irq.DMA1_Stream4).Enable()
-
 	// EVE control lines
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.High}
@@ -66,6 +52,19 @@ func init() {
 	irqline.EnableFallTrig()
 	irqline.EnableIRQ()
 	rtos.IRQ(irq.EXTI9_5).Enable()
+
+	// EVE SPI (Use SPI2. SPI1 is faster but used by onboard accelerometer).
+
+	// Use max. speed for SCK (not necessary for ABP2), see Errata sheet.
+	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh})
+	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
+	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI2)
+	d := dma.DMA1
+	d.EnableClock(true)
+	spidrv := spi.NewDriver(spi.SPI2, d.Channel(4, 0), d.Channel(3, 0))
+	rtos.IRQ(irq.SPI2).Enable()
+	rtos.IRQ(irq.DMA1_Stream3).Enable()
+	rtos.IRQ(irq.DMA1_Stream4).Enable()
 
 	dci = evedci.NewSPI(spidrv, csn, pdn)
 }

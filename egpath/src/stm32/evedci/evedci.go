@@ -15,12 +15,13 @@ type SPI struct {
 
 func NewSPI(spidrv *spi.Driver, csn, pdn gpio.Pin) *SPI {
 	p := spidrv.Periph()
+	p.EnableClock(true)
 	p.SetConf(
 		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
 			p.BR(11e6) | // 11 MHz max. before configure PCLK.
 			spi.SoftSS | spi.ISSHigh,
 	)
-	p.SetWordSize(8)
+	p.SetWordSize(8) // Default settings are wrong in case of F0, F3, L4.
 	p.Enable()
 	csn.Set()
 	dci := new(SPI)

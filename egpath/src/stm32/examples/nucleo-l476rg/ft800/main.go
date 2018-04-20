@@ -43,22 +43,6 @@ func init() {
 	gpio.C.EnableClock(true)
 	irqn := gpio.C.Pin(7)
 
-	// EVE SPI
-
-	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
-	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
-	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
-	d := dma.DMA1
-	d.EnableClock(true)
-	rxdc, txdc := d.Channel(2, 0), d.Channel(3, 0)
-	rxdc.SetRequest(dma.DMA1_SPI1)
-	txdc.SetRequest(dma.DMA1_SPI1)
-	spidrv := spi.NewDriver(spi.SPI1, txdc, rxdc)
-	spidrv.Periph().EnableClock(true)
-	rtos.IRQ(irq.SPI1).Enable()
-	rtos.IRQ(irq.DMA1_Channel2).Enable()
-	rtos.IRQ(irq.DMA1_Channel3).Enable()
-
 	// EVE control lines
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.High}
@@ -70,6 +54,21 @@ func init() {
 	irqline.EnableFallTrig()
 	irqline.EnableIRQ()
 	rtos.IRQ(irq.EXTI9_5).Enable()
+
+	// EVE SPI
+
+	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
+	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
+	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
+	d := dma.DMA1
+	d.EnableClock(true)
+	rxdc, txdc := d.Channel(2, 0), d.Channel(3, 0)
+	rxdc.SetRequest(dma.DMA1_SPI1)
+	txdc.SetRequest(dma.DMA1_SPI1)
+	spidrv := spi.NewDriver(spi.SPI1, txdc, rxdc)
+	rtos.IRQ(irq.SPI1).Enable()
+	rtos.IRQ(irq.DMA1_Channel2).Enable()
+	rtos.IRQ(irq.DMA1_Channel3).Enable()
 
 	dci = evedci.NewSPI(spidrv, csn, pdn)
 }
