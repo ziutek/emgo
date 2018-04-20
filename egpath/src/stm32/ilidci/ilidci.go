@@ -11,7 +11,16 @@ type DCI struct {
 	dc  gpio.Pin
 }
 
-func NewDCI(spidrv *spi.Driver, dc gpio.Pin) *DCI {
+func New(spidrv *spi.Driver, baudrate int, dc gpio.Pin) *DCI {
+	p := spidrv.Periph()
+	p.EnableClock(true)
+	p.SetConf(
+		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
+			p.BR(baudrate) |
+			spi.SoftSS | spi.ISSHigh,
+	)
+	p.SetWordSize(8) // Default settings are wrong in case of F0, F3, L4.
+	p.Enable()
 	dci := new(DCI)
 	dci.spi = spidrv
 	dci.dc = dc

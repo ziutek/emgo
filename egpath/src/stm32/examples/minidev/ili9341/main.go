@@ -44,13 +44,6 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true)
 	lcdspi = spi.NewDriver(spi.SPI1, d.Channel(3, 0), d.Channel(2, 0))
-	lcdspi.Periph().EnableClock(true)
-	lcdspi.Periph().SetConf(
-		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 |
-			lcdspi.Periph().BR(36e6) | // 36 MHz max.
-			spi.SoftSS | spi.ISSHigh,
-	)
-	lcdspi.Periph().Enable()
 	rtos.IRQ(irq.SPI1).Enable()
 	rtos.IRQ(irq.DMA1_Channel2).Enable()
 	rtos.IRQ(irq.DMA1_Channel3).Enable()
@@ -68,7 +61,7 @@ func init() {
 	delay.Millisec(5) // Wait for reset.
 	ilics.Clear()
 
-	lcd = ili9341.NewDisplay(ilidci.NewDCI(lcdspi, ilidc), 240, 320)
+	lcd = ili9341.NewDisplay(ilidci.New(lcdspi, 36e6, ilidc), 240, 320)
 }
 
 func main() {
