@@ -42,7 +42,7 @@ func init() {
 }
 
 func main() {
-	rgb := wsuart.RGB
+	rgb := wsuart.GRB
 	strip := wsuart.Strip{
 		rgb.Pixel(0, 0, 99),
 		rgb.Pixel(0, 99, 0),
