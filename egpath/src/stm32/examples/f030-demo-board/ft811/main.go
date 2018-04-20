@@ -1,12 +1,12 @@
 package main
 
 import (
-	"delay"
 	"rtos"
 
 	"stm32/evedci"
 
 	"stm32/hal/dma"
+	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/spi"
@@ -37,11 +37,10 @@ func init() {
 	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
 	d := dma.DMA1
 	d.EnableClock(true)
-	spidrv := spi.NewDriver(spi.SPI1, d.Channel(3, 0), d.Channel(2, 0), 0)
-	spidrv.P.EnableClock(true)
+	spidrv := spi.NewDriver(spi.SPI1, d.Channel(3, 0), d.Channel(2, 0))
+	spidrv.Periph().EnableClock(true)
 	rtos.IRQ(irq.SPI1).Enable()
-	rtos.IRQ(irq.DMA1_Channel2).Enable()
-	rtos.IRQ(irq.DMA1_Channel3).Enable()
+	rtos.IRQ(irq.DMA1_Channel2_3).Enable()
 
 	// EVE control lines
 
@@ -53,26 +52,21 @@ func init() {
 	irqline.Connect(irqn.Port())
 	irqline.EnableFallTrig()
 	irqline.EnableIRQ()
-	rtos.IRQ(irq.EXTI9_5).Enable()
+	rtos.IRQ(irq.EXTI4_15).Enable()
 
 	dci = evedci.NewSPI(spidrv, csn, pdn)
 }
 
 func main() {
-	for {
-	}
 }
 
 func lcdSPIISR() {
 	dci.SPI().ISR()
 }
 
-func lcdRxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().RxDMA)
-}
-
-func lcdTxDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().TxDMA)
+func lcdDMAISR() {
+	dci.SPI().DMAISR(dci.SPI().RxDMA())
+	dci.SPI().DMAISR(dci.SPI().TxDMA())
 }
 
 func exti4_15ISR() {
@@ -87,8 +81,7 @@ func exti4_15ISR() {
 
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.SPI1:          lcdSPIISR,
-	irq.DMA1_Channel2: lcdRxDMAISR,
-	irq.DMA1_Channel3: lcdTxDMAISR,
-	irq.EXTI4_15:      exti4_15ISR,
+	irq.SPI1:            lcdSPIISR,
+	irq.DMA1_Channel2_3: lcdDMAISR,
+	irq.EXTI4_15:        exti4_15ISR,
 }
