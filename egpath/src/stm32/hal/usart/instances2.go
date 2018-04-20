@@ -1,4 +1,4 @@
-// +build f030x6 f030x8
+// +build f030x8
 
 package usart
 
@@ -11,4 +11,5 @@ import (
 //emgo:const
 var (
 	USART1 = (*Periph)(unsafe.Pointer(mmap.USART1_BASE))
+	USART2 = (*Periph)(unsafe.Pointer(mmap.USART2_BASE))
 )
