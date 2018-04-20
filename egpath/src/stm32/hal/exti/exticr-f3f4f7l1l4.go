@@ -12,10 +12,12 @@ import (
 func exticr(n int) *mmio.U32 {
 	return (*mmio.U32)(&syscfg.SYSCFG.EXTICR[n].U32)
 }
+
 func exticrEna() {
     rcc.RCC.SYSCFGEN().AtomicSet()
 	rcc.RCC.APB2ENR.Load()
 }
+
 func exticrDis() {
 	rcc.RCC.SYSCFGEN().AtomicClear()
 }

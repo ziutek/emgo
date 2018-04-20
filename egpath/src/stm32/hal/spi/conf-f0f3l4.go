@@ -1,4 +1,4 @@
-// +build f303xe l476xx
+// +build f030x6 f030x8 f303xe l476xx
 
 package spi
 
