@@ -68,6 +68,7 @@ func init() {
 	rtos.IRQ(irq.DMA1_Channel3).Enable()
 
 	dci = evedci.NewSPI(spidrv, csn, pdn)
+	dci.Setup(11e6)
 }
 
 func curFreq(lcd *eve.Driver) uint32 {
@@ -81,7 +82,7 @@ func curFreq(lcd *eve.Driver) uint32 {
 
 func main() {
 	delay.Millisec(100) // For SWO output.
-	
+
 	spip := dci.SPI().Periph()
 	spibus := spip.Bus()
 	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
@@ -91,7 +92,7 @@ func main() {
 	lcd.Init(&eve.Default480x272, nil)
 
 	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
-	dci.SetBaudrate(30e6)
+	dci.Setup(30e6)
 	fmt.Printf("SPI speed: %d bps.\n", spip.Baudrate(spip.Conf()))
 
 	if err := evetest.Run(lcd); err != nil {

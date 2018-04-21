@@ -54,6 +54,7 @@ func init() {
 	rtos.IRQ(irq.DMA1_Channel2_3).Enable()
 
 	dci = evedci.NewSPI(spidrv, csn, pdn)
+	dci.Setup(11e6)
 }
 
 func main() {

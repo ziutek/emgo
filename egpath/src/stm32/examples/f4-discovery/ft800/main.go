@@ -67,6 +67,7 @@ func init() {
 	rtos.IRQ(irq.DMA1_Stream4).Enable()
 
 	dci = evedci.NewSPI(spidrv, csn, pdn)
+	dci.Setup(11e6)
 }
 
 func curFreq(lcd *eve.Driver) uint32 {
@@ -99,7 +100,7 @@ func main() {
 	checkErr(lcd.Init(&eve.Default480x272, nil))
 
 	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
-	dci.SetBaudrate(21e6) // Max. for SPI2 and SPI3 < EVE max. 30 MHz
+	dci.Setup(21e6) // Max. for SPI2 and SPI3 < EVE max. 30 MHz
 	fmt.Printf("SPI speed: %d bps.\n", spip.Baudrate(spip.Conf()))
 
 	checkErr(evetest.Run(lcd))
