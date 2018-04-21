@@ -25,8 +25,7 @@ func New(spidrv *spi.Driver, dc gpio.Pin, baudrate int) *DCI {
 	return dci
 }
 
-// Setup configures and enables SPI. Use it after reset and after any
-// other use of the same SPI peripheral.
+// Setup configures and enables SPI peripheral.
 func (dci *DCI) Setup() {
 	p := dci.spi.Periph()
 	p.EnableClock(true)
