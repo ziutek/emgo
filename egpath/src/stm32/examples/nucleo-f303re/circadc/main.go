@@ -62,16 +62,6 @@ func init() {
 	dma1 := dma.DMA1
 	dma1.EnableClock(true)
 
-	// ILI SPI
-
-	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
-	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
-	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
-	lcdspi = spi.NewDriver(spi.SPI1, dma1.Channel(3, 0), dma1.Channel(2, 0))
-	rtos.IRQ(irq.SPI1).Enable()
-	rtos.IRQ(irq.DMA1_Channel2).Enable()
-	rtos.IRQ(irq.DMA1_Channel3).Enable()
-
 	// ILI Controll
 
 	cfg := gpio.Config{Mode: gpio.Out, Speed: gpio.High}
@@ -85,7 +75,18 @@ func init() {
 	delay.Millisec(5) // Wait for reset.
 	ilics.Clear()
 
-	lcd = ili9341.NewDisplay(ilidci.New(lcdspi, 36e6, ilidc), 240, 320)
+	// ILI SPI
+
+	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
+	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
+	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
+	lcdspi = spi.NewDriver(spi.SPI1, dma1.Channel(3, 0), dma1.Channel(2, 0))
+	rtos.IRQ(irq.SPI1).Enable()
+	rtos.IRQ(irq.DMA1_Channel2).Enable()
+	rtos.IRQ(irq.DMA1_Channel3).Enable()
+
+	lcd = ili9341.NewDisplay(ilidci.New(lcdspi, ilidc, 36e6), 240, 320)
+	lcd.DCI().Setup()
 
 	// ADC
 

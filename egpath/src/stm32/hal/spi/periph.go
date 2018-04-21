@@ -102,8 +102,10 @@ func (p *Periph) SetConf(cfg Conf) {
 	p.raw.CR1.StoreBits(cr1Mask, spi.CR1(cfg))
 }
 
-// SetWordSize sets size of data word. All families support 8 and 16-bit word, some
-// 4 to 16-bit. Some families require disable peripheral before use this function.
+// SetWordSize sets size of data word. All families support 8 and 16-bit words,
+// F0, F3, L4 supports 4 to 16-bit. Some families require disable peripheral
+// before use this function. SetWordSize is mandatory for F0, F3, L4 if you use
+// Driver because the default reset configuration does not work.
 func (p *Periph) SetWordSize(size int) {
 	p.setWordSize(size)
 }

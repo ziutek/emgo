@@ -2,6 +2,8 @@ package ili9341
 
 // DCI stands for Display Controller Interface / Data and Control Interface.
 type DCI interface {
+	Setup() // Setup configures and enables SPI.
+
 	Cmd(b byte)       // Cmd invokes a command (8-bit word size).
 	WriteByte(b byte) // WriteByte pass one byte of data (8-bit word size).
 

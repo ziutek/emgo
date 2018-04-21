@@ -65,7 +65,8 @@ func init() {
 	delay.Millisec(5) // Wait for reset.
 	ilics.Clear()
 
-	lcd = ili9341.NewDisplay(ilidci.New(lcdspi, 48e6, ilidc), 240, 320)
+	lcd = ili9341.NewDisplay(ilidci.New(lcdspi, ilidc, 48e6), 240, 320)
+	lcd.DCI().Setup()
 }
 
 func main() {
