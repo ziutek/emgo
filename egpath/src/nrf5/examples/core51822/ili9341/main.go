@@ -79,8 +79,6 @@ func init() {
 	lcdspi.P.StorePSEL(spi.SCK, ilisck)
 	lcdspi.P.StorePSEL(spi.MISO, ilimiso)
 	lcdspi.P.StorePSEL(spi.MOSI, ilimosi)
-	lcdspi.P.StoreFREQUENCY(spi.Freq8M)
-	lcdspi.Enable()
 	rtos.IRQ(lcdspi.P.NVIC()).Enable()
 
 	// LCD controll
@@ -92,7 +90,8 @@ func init() {
 	delay.Millisec(5) // Wait for reset.
 	ilicsn.Clear()
 
-	lcd = ili9341.NewDisplay(ilidci.NewDCI(lcdspi, ilidc), 240, 320)
+	lcd = ili9341.NewDisplay(ilidci.New(lcdspi, ilidc, spi.Freq8M), 240, 320)
+	lcd.DCI().Setup()
 }
 
 func main() {

@@ -7,15 +7,31 @@ import (
 
 // DCI implements ili9341.DCI interface.
 type DCI struct {
-	spi *spi.Driver
-	dc  gpio.Pin
+	spi  *spi.Driver
+	dc   gpio.Pin
+	freq spi.Freq
 }
 
-func NewDCI(spidrv *spi.Driver, dc gpio.Pin) *DCI {
+// Make returns initialized DCI struct. It only initializes DCI type and does
+// not configure SPI peripheral. Use DCI.Setup to configure SPI.
+func Make(spidrv *spi.Driver, dc gpio.Pin, baudrate spi.Freq) DCI {
+	return DCI{spidrv, dc, baudrate}
+}
+
+// New provides convenient way to create heap allocated DCI. See Make.
+func New(spidrv *spi.Driver, dc gpio.Pin, baudrate spi.Freq) *DCI {
 	dci := new(DCI)
-	dci.spi = spidrv
-	dci.dc = dc
+	*dci = Make(spidrv, dc, baudrate)
 	return dci
+}
+
+// Setup configures and enables SPI. Use it after reset and after any
+// other use of the same SPI peripheral.
+func (dci *DCI) Setup() {
+	drv := dci.spi
+	drv.Disable()
+	drv.P.StoreFREQUENCY(dci.freq)
+	drv.Enable()
 }
 
 func (dci *DCI) SPI() *spi.Driver {

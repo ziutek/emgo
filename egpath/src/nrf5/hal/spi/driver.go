@@ -33,8 +33,7 @@ func (d *Driver) Enable() {
 }
 
 func (d *Driver) Disable() {
-	p := d.P
-	p.StoreENABLE(false)
+	d.P.StoreENABLE(false)
 }
 
 // ISR should be used as SPI interrupt handler.
