@@ -55,11 +55,20 @@ func (d *Driver) RxDMA() *dma.Channel {
 }
 
 func (d *Driver) DMAISR(ch *dma.Channel) {
-	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
-	_, e := ch.Status()
-	if e&^dma.ErrFIFO != 0 || atomic.AddInt(&d.dmacnt, -1) == 0 {
-		d.done.Signal(1)
+	ev, err := ch.Status()
+	if err&^dma.ErrFIFO != 0 {
+		goto done
 	}
+	if ev&dma.Complete != 0 {
+		ch.Clear(dma.Complete, 0)
+		if atomic.AddInt(&d.dmacnt, -1) == 0 {
+			goto done
+		}
+	}
+	return
+done:
+	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
+	d.done.Signal(1)
 }
 
 func (d *Driver) ISR() {

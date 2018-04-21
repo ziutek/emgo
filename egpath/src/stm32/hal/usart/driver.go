@@ -120,11 +120,12 @@ func (d *Driver) RxDMAISR() {
 	ch := d.rxDMA
 	ev, err := ch.Status()
 	if err != 0 {
+		ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 		d.rxready.Signal(1)
 		return
 	}
 	if ev&dma.Complete != 0 {
-		ch.Clear(dma.EvAll, dma.ErrAll)
+		ch.Clear(dma.Complete, 0)
 		atomic.StoreUint32(&d.dmaH, d.dmaH+1)
 	}
 }
@@ -285,7 +286,8 @@ func (d *Driver) WriteByte(b byte) error {
 
 func (d *Driver) TxDMAISR() {
 	ch := d.txDMA
-	if ev, err := ch.Status(); ev&dma.Complete != 0 || err != 0 {
+	ev, err := ch.Status()
+	if err&^dma.ErrFIFO != 0 || ev&dma.Complete != 0 {
 		ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 		d.txdone.Signal(1)
 	}
