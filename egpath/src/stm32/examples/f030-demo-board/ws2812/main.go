@@ -1,8 +1,10 @@
 package main
 
 import (
-	"delay"
+	//"delay"
 	"rtos"
+	"time"
+	//"time/tz"
 
 	"led/ws281x/wsuart"
 
@@ -44,18 +46,29 @@ func init() {
 func main() {
 	rgb := wsuart.GRB
 	strip := make(wsuart.Strip, 24)
-	r := rgb.Pixel(99, 0, 99)
-	g := rgb.Pixel(99, 99, 0)
-	b := rgb.Pixel(0, 99, 99)
-	i := 0
 	for {
 		strip.Clear()
-		strip[i%24] = r
-		strip[(1<<30-i)%24] = g
-		strip[(i/2)%24] = b
+		h, m, s := time.Now().Clock()
+		h = h * 2 % 24
+		m = m * 2 / 5
+		s = s * 2 / 5
+		strip[h] = rgb.Pixel(99, 0, 0)
+		if h != m {
+			strip[m] = rgb.Pixel(0, 0, 99)
+		} else {
+			strip[m] = rgb.Pixel(99, 0, 99)
+		}
+		if s != m && s != h {
+			strip[s] = rgb.Pixel(0, 99, 0)
+		} else if s == m && s == h {
+			strip[s] = rgb.Pixel(99, 99, 99)
+		} else if s == m {
+			strip[s] = rgb.Pixel(0, 99, 99)
+		} else {
+			strip[s] = rgb.Pixel(99, 99, 0)
+		}
 		tts.Write(strip.Bytes())
-		delay.Millisec(50)
-		i++
+		//delay.Millisec(500)
 	}
 }
 
