@@ -213,8 +213,7 @@ func (d *Driver) Init(dcf *DisplayConfig, cfg *Config) error {
 		DISPLAY,
 	)
 	d.SwapDL()
-	b := d.ReadByte(d.mmap.regdlswap + ogpio)
-	d.WriteByte(d.mmap.regdlswap+ogpio, b|0x80) // Set DISP high.
+	d.WriteByte(d.mmap.regdlswap+ogpio, 0x80) // Set DISP high.
 	// Calculate prescaler. +1 causes that the half-way cases are rounded up.
 	var presc int
 	if d.mmap == &eve1 {
