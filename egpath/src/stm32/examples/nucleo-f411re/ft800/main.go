@@ -81,22 +81,18 @@ func curFreq(lcd *eve.Driver) uint32 {
 }
 
 func main() {
-	spibus := dci.SPI().Periph().Bus()
-	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
-	fmt.Printf(
-		"SPI speed: %d bps.\n",
-		dci.SPI().Periph().Baudrate(dci.SPI().Periph().Conf()),
-	)
+	delay.Millisec(100) // For SWO output.
+
+	spip := dci.SPI().Periph()
+	fmt.Printf("\nSPI on %s (%d MHz).\n", spip.Bus(), spip.Bus().Clock()/1e6)
+	fmt.Printf("SPI speed: %d bps.\n", spip.Baudrate(spip.Conf()))
 
 	lcd := eve.NewDriver(dci, 128)
 	lcd.Init(&eve.Default480x272, nil)
 
 	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
 	dci.Setup(30e6)
-	fmt.Printf(
-		"SPI speed: %d bps.\n",
-		dci.SPI().Periph().Baudrate(dci.SPI().Periph().Conf()),
-	)
+	fmt.Printf("SPI speed: %d bps.\n", spip.Baudrate(spip.Conf()))
 
 	if err := evetest.Run(lcd); err != nil {
 		fmt.Printf("Error: %v\n", err)

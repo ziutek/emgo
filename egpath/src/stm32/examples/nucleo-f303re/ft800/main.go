@@ -84,8 +84,7 @@ func main() {
 	delay.Millisec(100) // For SWO output.
 
 	spip := dci.SPI().Periph()
-	spibus := spip.Bus()
-	fmt.Printf("\nSPI on %s (%d MHz).\n", spibus, spibus.Clock()/1e6)
+	fmt.Printf("\nSPI on %s (%d MHz).\n", spip.Bus(), spip.Bus().Clock()/1e6)
 	fmt.Printf("SPI speed: %d bps.\n", spip.Baudrate(spip.Conf()))
 
 	lcd := eve.NewDriver(dci, 128)

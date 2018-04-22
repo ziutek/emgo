@@ -1,6 +1,6 @@
-// This example demonstrates usage of FTDI EVE2 based displays.
+// This example demonstrates usage of FTDI EVE based displays.
 //
-// It seems that FT811CB-HY50HD display is unstable with fast SPI. If you have
+// It seems that FT800CB-HY50B display is unstable with fast SPI. If you have
 // problems please reduce SPI speed or better desolder U1 and U2 (74LCX125
 // buffers) and short the U1:2-3,5-6,11-2, U2:2-3,5-6 traces.
 package main
@@ -28,18 +28,20 @@ import (
 var dci *evedci.SPI
 
 func init() {
-	system.Setup168(8)
+	system.Setup96(8)
 	systick.Setup(2e6)
 
 	// GPIO
 
-	gpio.B.EnableClock(true)
-	spiport, sck, miso, mosi := gpio.B, gpio.Pin13, gpio.Pin14, gpio.Pin15
+	gpio.A.EnableClock(true)
+	spiport, sck, miso, mosi := gpio.A, gpio.Pin5, gpio.Pin6, gpio.Pin7
+	pdn := gpio.A.Pin(9)
 
-	gpio.D.EnableClock(true)
-	csn := gpio.D.Pin(8)
-	irqn := gpio.D.Pin(9)
-	pdn := gpio.D.Pin(10)
+	gpio.B.EnableClock(true)
+	csn := gpio.B.Pin(6)
+
+	gpio.C.EnableClock(true)
+	irqn := gpio.C.Pin(7)
 
 	// EVE control lines
 
@@ -53,18 +55,17 @@ func init() {
 	irqline.EnableIRQ()
 	rtos.IRQ(irq.EXTI9_5).Enable()
 
-	// EVE SPI (Use SPI2. SPI1 is faster but used by onboard accelerometer).
+	// EVE SPI
 
-	// Use max. speed for SCK (not necessary for ABP2), see Errata sheet.
-	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh})
+	spiport.Setup(sck|mosi, &gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
 	spiport.Setup(miso, &gpio.Config{Mode: gpio.AltIn})
-	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI2)
-	d := dma.DMA1
+	spiport.SetAltFunc(sck|miso|mosi, gpio.SPI1)
+	d := dma.DMA2
 	d.EnableClock(true)
-	spidrv := spi.NewDriver(spi.SPI2, d.Channel(4, 0), d.Channel(3, 0))
-	rtos.IRQ(irq.SPI2).Enable()
-	rtos.IRQ(irq.DMA1_Stream3).Enable()
-	rtos.IRQ(irq.DMA1_Stream4).Enable()
+	spidrv := spi.NewDriver(spi.SPI1, d.Channel(3, 3), d.Channel(2, 3))
+	rtos.IRQ(irq.SPI1).Enable()
+	rtos.IRQ(irq.DMA2_Stream2).Enable()
+	rtos.IRQ(irq.DMA2_Stream3).Enable()
 
 	dci = evedci.NewSPI(spidrv, csn, pdn)
 	dci.Setup(11e6)
@@ -77,21 +78,6 @@ func curFreq(lcd *eve.Driver) uint32 {
 	clk2 := lcd.ReadUint32(ft81.REG_CLOCK)
 	t2 := rtos.Nanosec()
 	return uint32(int64(clk2-clk1) * 1e9 / (t2 - t1))
-}
-
-func waitTouch(lcd *eve.Driver) {
-	delay.Millisec(100)
-	lcd.ClearIntFlags(eve.INT_TOUCH)
-	lcd.Wait(eve.INT_TOUCH)
-}
-
-func checkErr(err error) {
-	if err == nil {
-		return
-	}
-	fmt.Printf("Error: %v\n", err)
-	for {
-	}
 }
 
 func main() {
@@ -107,13 +93,16 @@ func main() {
 	// how it looks on your screen.
 
 	lcd := eve.NewDriver(dci, 128)
-	checkErr(lcd.Init(&eve.Default800x480, &eve.Config{Dither: 1}))
+	lcd.Init(&eve.Default800x480, &eve.Config{Dither: 1})
 
 	fmt.Printf("EVE clock: %d Hz.\n", curFreq(lcd))
-	dci.Setup(21e6) // Max. for SPI2 and SPI3 < EVE max. 30 MHz
+	dci.Setup(30e6)
 	fmt.Printf("SPI speed: %d bps.\n", spip.Baudrate(spip.Conf()))
 
-	checkErr(evetest.Run(lcd))
+	if err := evetest.Run(lcd); err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
 	fmt.Printf("End.\n")
 }
 
@@ -133,7 +122,7 @@ func exti9_5ISR() {
 	pending := exti.Pending()
 	pending &= exti.L5 | exti.L6 | exti.L7 | exti.L8 | exti.L9
 	pending.ClearPending()
-	if pending&exti.L9 != 0 {
+	if pending&exti.L7 != 0 {
 		dci.ISR()
 	}
 }
@@ -141,8 +130,8 @@ func exti9_5ISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.SPI2:         lcdSPIISR,
-	irq.DMA1_Stream3: lcdRxDMAISR,
-	irq.DMA1_Stream4: lcdTxDMAISR,
+	irq.SPI1:         lcdSPIISR,
+	irq.DMA2_Stream2: lcdRxDMAISR,
+	irq.DMA2_Stream3: lcdTxDMAISR,
 	irq.EXTI9_5:      exti9_5ISR,
 }
