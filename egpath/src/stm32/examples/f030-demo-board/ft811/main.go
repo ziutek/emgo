@@ -103,7 +103,7 @@ func main() {
 			eve.VERTEX2F|uint32(x)&0x7FFF*16<<15|uint32(y)&0x7FFF*16,
 		)
 		lcd.WriteUint32(ft81.RAM_DL+32, eve.DISPLAY)
-		
+
 		lcd.WriteUint32(ft81.REG_DLSWAP, eve.DLSWAP_FRAME)
 
 		for {
@@ -121,8 +121,9 @@ func lcdSPIISR() {
 }
 
 func lcdDMAISR() {
-	dci.SPI().DMAISR(dci.SPI().RxDMA())
-	dci.SPI().DMAISR(dci.SPI().TxDMA())
+	p := dci.SPI()
+	p.DMAISR(p.RxDMA())
+	p.DMAISR(p.TxDMA())
 }
 
 func exti4_15ISR() {
