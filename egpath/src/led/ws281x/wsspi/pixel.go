@@ -2,7 +2,10 @@
 // LEDs. There are better solutions for multiple (8, 16) strings.
 package wsuart
 
-import "led"
+import (
+	"led"
+	"led/internal"
+)
 
 // Pixel represents SPI data that need to be send to the WS281x controller to
 // set the color of one LED.
@@ -24,10 +27,9 @@ const (
 
 const zero = 0x88
 
-// RawPixel returns a pixel with color set to raw (r, g, b).
-func (c ColorOrder) RawPixel(r, g, b byte) Pixel {
+func (co ColorOrder) pixel(r, g, b byte) Pixel {
 	var p Pixel
-	switch c {
+	switch co {
 	case RGB:
 		for n := uint(0); n < 4; n++ {
 			p.data[3-n] = zero | r>>(2*n+1)&1<<6 | r>>(2*n)&1<<4
@@ -44,7 +46,15 @@ func (c ColorOrder) RawPixel(r, g, b byte) Pixel {
 	return p
 }
 
-// Pixel returns a pixel with color set to (r, g, b) with gamma corection.
-func (c ColorOrder) Pixel(r, g, b byte) Pixel {
-	return c.RawPixel(led.Gamma8(r), led.Gamma8(g), led.Gamma8(b))
+// PixelRaw returns a pixel with color set to c without gamma correction.
+func (co ColorOrder) RawPixel(c led.Color) Pixel {
+	return co.pixel(c.Red(), c.Green(), c.Blue())
+}
+
+// Pixel returns a pixel with color set to c with gamma correction.
+func (co ColorOrder) Pixel(c led.Color) Pixel {
+	r := internal.Gamma8(c.Red())
+	g := internal.Gamma8(c.Green())
+	b := internal.Gamma8(c.Blue())
+	return co.pixel(r, g, b)
 }

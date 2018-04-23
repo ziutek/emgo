@@ -4,6 +4,7 @@ import (
 	"delay"
 	"rtos"
 
+	"led"
 	"led/ws281x/wsuart"
 
 	"stm32/hal/dma"
@@ -33,6 +34,7 @@ func init() {
 	tts = usart.NewDriver(usart.USART1, d.Channel(2, 0), nil, nil)
 	tts.Periph().EnableClock(true)
 	tts.Periph().SetBaudRate(3000000000 / 1390)
+	//tts.Periph().SetConf1(usart.Word7b) // Not-supported by STM32F0.
 	tts.Periph().SetConf2(usart.TxInv) // STM32F0 need no external inverter.
 	tts.Periph().Enable()
 	tts.EnableTx()
@@ -49,20 +51,20 @@ func main() {
 		h := (i * 2 / 3) % 24
 		m := (i / 2) % 24
 		s := (1<<32 - 1 - i*2/5) % 24
-		strip[h] = rgb.Pixel(99, 0, 0)
+		strip[h] = rgb.Pixel(led.RGB(99, 0, 0))
 		if h != m {
-			strip[m] = rgb.Pixel(0, 0, 99)
+			strip[m] = rgb.Pixel(led.RGB(0, 0, 99))
 		} else {
-			strip[m] = rgb.Pixel(99, 0, 99)
+			strip[m] = rgb.Pixel(led.RGB(99, 0, 99))
 		}
 		if s != m && s != h {
-			strip[s] = rgb.Pixel(0, 99, 0)
+			strip[s] = rgb.Pixel(led.RGB(0, 99, 0))
 		} else if s == m && s == h {
-			strip[s] = rgb.Pixel(99, 99, 99)
+			strip[s] = rgb.Pixel(led.RGB(99, 99, 99))
 		} else if s == m {
-			strip[s] = rgb.Pixel(0, 99, 99)
+			strip[s] = rgb.Pixel(led.RGB(0, 99, 99))
 		} else {
-			strip[s] = rgb.Pixel(99, 99, 0)
+			strip[s] = rgb.Pixel(led.RGB(99, 99, 0))
 		}
 		tts.Write(strip.Bytes())
 		delay.Millisec(50)

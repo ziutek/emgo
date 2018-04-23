@@ -6,6 +6,7 @@ import (
 	"time"
 	//"time/tz"
 
+	"led"
 	"led/ws281x/wsuart"
 
 	"stm32/hal/dma"
@@ -52,20 +53,20 @@ func main() {
 		h = h * 2 % 24
 		m = m * 2 / 5
 		s = s * 2 / 5
-		strip[h] = rgb.Pixel(99, 0, 0)
+		strip[h] = rgb.Pixel(led.RGB(99, 0, 0))
 		if h != m {
-			strip[m] = rgb.Pixel(0, 0, 99)
+			strip[m] = rgb.Pixel(led.RGB(0, 0, 99))
 		} else {
-			strip[m] = rgb.Pixel(99, 0, 99)
+			strip[m] = rgb.Pixel(led.RGB(99, 0, 99))
 		}
 		if s != m && s != h {
-			strip[s] = rgb.Pixel(0, 99, 0)
+			strip[s] = rgb.Pixel(led.RGB(0, 99, 0))
 		} else if s == m && s == h {
-			strip[s] = rgb.Pixel(99, 99, 99)
+			strip[s] = rgb.Pixel(led.RGB(99, 99, 99))
 		} else if s == m {
-			strip[s] = rgb.Pixel(0, 99, 99)
+			strip[s] = rgb.Pixel(led.RGB(0, 99, 99))
 		} else {
-			strip[s] = rgb.Pixel(99, 99, 0)
+			strip[s] = rgb.Pixel(led.RGB(99, 99, 0))
 		}
 		tts.Write(strip.Bytes())
 		//delay.Millisec(500)

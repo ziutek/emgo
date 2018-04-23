@@ -1,8 +1,8 @@
-package led
+package internal
 
-// Gamma8 converts 8-bit color c according to CIE 1976.
-func Gamma8(c byte) byte {
-	return gamma[c]
+// Gamma8 converts 8-bit luminance y according to CIE 1976.
+func Gamma8(y byte) byte {
+	return gamma[y]
 }
 
 // Gamma table according to CIE 1976.
