@@ -4,6 +4,8 @@ package led
 // alpha, red, green and blue (0xAARRGGBB).
 type Color uint32
 
+// RGBA returns Color for alpha-premultipled r, g, b (r<=a && g<=a && b<=a). To
+// obtain Color from not alpha-premultipled R, G, B use RGB(R, G, B).Mask(a).
 func RGBA(r, g, b, a byte) Color {
 	return Color(a)<<24 | Color(r)<<16 | Color(g)<<8 | Color(b)
 }
@@ -28,10 +30,36 @@ func (c Color) Blue() byte {
 	return byte(c)
 }
 
-func (c Color) Mul(alpha byte) Color {
-	a := byte((uint32(c.Alpha())*uint32(alpha) + 255) >> 8)
-	r := byte((uint32(c.Red())*uint32(alpha) + 255) >> 8)
-	g := byte((uint32(c.Green())*uint32(alpha) + 255) >> 8)
-	b := byte((uint32(c.Blue())*uint32(alpha) + 255) >> 8)
-	return RGBA(r, g, b, a)
+func (c Color) Mask(mask byte) Color {
+	// Consider replace the original formula (c*m + 127) / 255 with cheaper
+	// (c*m + 255) >> 8 which avoids division and (c*255 + 255) >> 8 == c.
+	
+	m := uint(mask)
+	r := (uint(c.Red())*m + 127) / 255
+	g := (uint(c.Green())*m + 127) / 255
+	b := (uint(c.Blue())*m + 127) / 255
+	a := (uint(c.Alpha())*m + 127) / 255
+	
+	return Color(a<<24 | r<<16 | g<<8 | b)
+}
+
+func (c1 Color) Blend(c2 Color, mask byte) Color {
+	r1 := uint(c1.Red())
+	g1 := uint(c1.Green())
+	b1 := uint(c1.Blue())
+	a1 := uint(c1.Alpha())
+	r2 := uint(c2.Red())
+	g2 := uint(c2.Green())
+	b2 := uint(c2.Blue())
+	a2 := uint(c2.Alpha())
+	m2 := uint(mask)
+
+	m1 := (255*255 - a2*m2)
+	m2 *= 255
+	r := (r1*m1 + r2*m2) / (255 * 255)
+	g := (g1*m1 + g2*m2) / (255 * 255)
+	b := (b1*m1 + b2*m2) / (255 * 255)
+	a := (a1*m1 + a2*m2) / (255 * 255)
+	
+	return Color(a<<24 | r<<16 | g<<8 | b)
 }
