@@ -60,58 +60,86 @@ func init() {
 	dci.Setup(11e6)
 }
 
+func lcdHostCmd(cmd eve.HostCmd, param byte) {
+	dci.Write([]byte{byte(cmd), param, 0})
+	dci.End()
+}
+
+func lcdWriteUint32(addr int, val uint32) int {
+	dci.Write([]byte{
+		1<<7 | byte(addr>>16), byte(addr >> 8), byte(addr),
+		byte(val), byte(val >> 8), byte(val >> 16), byte(val >> 24),
+	})
+	dci.End()
+	return addr + 4
+}
+
+func lcdReadUint32(addr int) uint32 {
+	buf := [5]byte{byte(addr >> 16), byte(addr >> 8), byte(addr)}
+	dci.Write(buf[:3])
+	dci.Read(buf[:5])
+	dci.End()
+	return uint32(buf[1]) | uint32(buf[2])<<8 | uint32(buf[3])<<16 |
+		uint32(buf[4])<<24
+}
+
+func lcdWait(flags uint32) {
+	for lcdReadUint32(ft81.REG_INT_FLAGS)&flags == 0 {
+		<-dci.IRQ()
+	}
+}
+
+func f(n int16) uint32 { return uint32(n) * 16 & 0x7FFF }
+
 func main() {
 	dci.SetPDN(0)
 	delay.Millisec(20)
 	dci.SetPDN(1)
 	delay.Millisec(20)
 
-	lcd := eve.NewDriver(dci, 128)
-	lcd.HostCmd(ft81.CLKEXT, 0)
-	lcd.HostCmd(ft81.ACTIVE, 0)
+	lcdHostCmd(ft81.CLKEXT, 0)
+	lcdHostCmd(ft81.ACTIVE, 0)
 	delay.Millisec(300)
+
+	cfg := &eve.Default800x480
+	lcdWriteUint32(ft81.REG_HCYCLE, uint32(cfg.Hcycle))
+	lcdWriteUint32(ft81.REG_HOFFSET, uint32(cfg.Hoffset))
+	lcdWriteUint32(ft81.REG_HSIZE, uint32(cfg.Hsize))
+	lcdWriteUint32(ft81.REG_HSYNC0, uint32(cfg.Hsync0))
+	lcdWriteUint32(ft81.REG_HSYNC1, uint32(cfg.Hsync1))
+	lcdWriteUint32(ft81.REG_VCYCLE, uint32(cfg.Vcycle))
+	lcdWriteUint32(ft81.REG_VOFFSET, uint32(cfg.Voffset))
+	lcdWriteUint32(ft81.REG_VSIZE, uint32(cfg.Vsize))
+	lcdWriteUint32(ft81.REG_VSYNC0, uint32(cfg.Vsync0))
+	lcdWriteUint32(ft81.REG_VSYNC1, uint32(cfg.Vsync1))
+	lcdWriteUint32(ft81.REG_PCLK_POL, uint32(cfg.ClkPol))
+
+	lcdWriteUint32(ft81.REG_GPIO, 0x80)
+	lcdWriteUint32(ft81.REG_PCLK, 5)
+	lcdWriteUint32(ft81.REG_INT_EN, 1)
 
 	dci.Setup(30e6)
 
-	cfg := &eve.Default800x480
-	lcd.WriteUint32(ft81.REG_HCYCLE, uint32(cfg.Hcycle))
-	lcd.WriteUint32(ft81.REG_HOFFSET, uint32(cfg.Hoffset))
-	lcd.WriteUint32(ft81.REG_HSIZE, uint32(cfg.Hsize))
-	lcd.WriteUint32(ft81.REG_HSYNC0, uint32(cfg.Hsync0))
-	lcd.WriteUint32(ft81.REG_HSYNC1, uint32(cfg.Hsync1))
-	lcd.WriteUint32(ft81.REG_VCYCLE, uint32(cfg.Vcycle))
-	lcd.WriteUint32(ft81.REG_VOFFSET, uint32(cfg.Voffset))
-	lcd.WriteUint32(ft81.REG_VSIZE, uint32(cfg.Vsize))
-	lcd.WriteUint32(ft81.REG_VSYNC0, uint32(cfg.Vsync0))
-	lcd.WriteUint32(ft81.REG_VSYNC1, uint32(cfg.Vsync1))
-	lcd.WriteUint32(ft81.REG_PCLK_POL, uint32(cfg.ClkPol))
-
-	lcd.WriteUint32(ft81.REG_GPIO, 0x80)
-	lcd.WriteUint32(ft81.REG_PCLK, 5)
-
 	var x, y int16
 	for {
-		lcd.WriteUint32(ft81.RAM_DL, eve.CLEAR|eve.CST)
-		lcd.WriteUint32(ft81.RAM_DL+4, eve.BEGIN|eve.POINTS)
-		lcd.WriteUint32(ft81.RAM_DL+8, eve.POINT_SIZE|150*16)
-		lcd.WriteUint32(ft81.RAM_DL+12, eve.VERTEX2F|400*16<<15|240*16)
-		lcd.WriteUint32(ft81.RAM_DL+16, eve.POINT_SIZE|100*16)
-		lcd.WriteUint32(ft81.RAM_DL+20, eve.COLOR_RGB|0x8800AA)
-		lcd.WriteUint32(ft81.RAM_DL+24, eve.COLOR_A|128)
-		lcd.WriteUint32(
-			ft81.RAM_DL+28,
-			eve.VERTEX2F|uint32(x)&0x7FFF*16<<15|uint32(y)&0x7FFF*16,
-		)
-		lcd.WriteUint32(ft81.RAM_DL+32, eve.DISPLAY)
-
-		lcd.WriteUint32(ft81.REG_DLSWAP, eve.DLSWAP_FRAME)
-
+		a := lcdWriteUint32(ft81.RAM_DL, eve.CLEAR|eve.CST)
+		a = lcdWriteUint32(a, eve.BEGIN|eve.POINTS)
+		a = lcdWriteUint32(a, eve.POINT_SIZE|f(150))
+		a = lcdWriteUint32(a, eve.VERTEX2F|f(400)<<15|f(240))
+		a = lcdWriteUint32(a, eve.POINT_SIZE|f(100))
+		a = lcdWriteUint32(a, eve.COLOR_RGB|0x9600C8)
+		a = lcdWriteUint32(a, eve.COLOR_A|128)
+		a = lcdWriteUint32(a, eve.VERTEX2F|f(x)<<15|f(y))
+		a = lcdWriteUint32(a, eve.DISPLAY)
+		lcdWriteUint32(ft81.REG_DLSWAP, eve.DLSWAP_FRAME)
+		lcdWait(eve.INT_SWAP)
 		for {
-			xy := lcd.ReadUint32(ft81.REG_TOUCH_SCREEN_XY)
-			x, y = int16(xy>>16), int16(xy)
-			if x >= 0 && y >= 0 {
+			xy := lcdReadUint32(ft81.REG_TOUCH_SCREEN_XY)
+			if xy != 0x80008000 {
+				x, y = int16(xy>>16), int16(xy)
 				break
 			}
+			lcdWait(eve.INT_TOUCH)
 		}
 	}
 }
