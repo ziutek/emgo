@@ -19,12 +19,20 @@ type Driver struct {
 }
 
 // NewDriver returns new driver to the EVE graphics controller accessed via dci.
-// N sets the capacity of the internal buffer (bytes, must be >= 4).
+// N sets the capacity of the internal buffer (bytes, must be >= 4). New does
+// not initialize DCI - Setup method must be used.
 func NewDriver(dci DCI, n int) *Driver {
 	d := new(Driver)
 	d.dci = dci
 	d.buf = make([]byte, 0, n)
 	return d
+}
+
+// Setup configures and enables SPI/QSPI/I2C. Use clkHz <= 11 for SPI (3.4e6 for
+// I2C) before caling Init. In case of SPI/QSPI call Setup one more time after
+// initialization with clkHz <= 30e6 (25e6 for 4-bit QSPI).
+func (d *Driver) Setup(clkHz int) {
+	d.dci.Setup(clkHz)
 }
 
 // Width returns screen width.
