@@ -57,30 +57,36 @@ func init() {
 	dci = evedci.NewSPI(spidrv, csn, pdn)
 }
 
+func f(n int) int { return n * 16 }
+
 func main() {
 	lcd := eve.NewDriver(dci, 128)
 	lcd.Setup(11e6)
 	lcd.Init(&eve.Default800x480, nil)
 	lcd.Setup(30e6)
+	lcd.SetBacklight(64)
 
 	var x, y int
 	for {
 		dl := lcd.DL(-1)
 		dl.Clear(eve.CST)
 		dl.Begin(eve.POINTS)
-		dl.PointSize(150 * 16)
-		dl.Vertex2f(400*16, 240*16)
-		dl.PointSize(100 * 16)
-		dl.ColorRGB(136, 0, 170)
+		dl.PointSize(f(150))
+		dl.Vertex2f(f(400), f(240))
+		dl.PointSize(f(100))
+		dl.ColorRGB(150, 0, 200)
 		dl.ColorA(128)
-		dl.Vertex2f(x*16, y*16)
+		dl.Vertex2f(f(x), f(y))
 		dl.Display()
-
 		lcd.SwapDL()
-
-		lcd.Wait(eve.INT_TOUCH)
-		lcd.ClearIntFlags(eve.INT_TOUCH)
-		x, y = lcd.TouchScreenXY()
+		for {
+			x, y = lcd.TouchScreenXY()
+			if x|y != -32768 {
+				break
+			}
+			lcd.Wait(eve.INT_TOUCH)
+			lcd.ClearIntFlags(eve.INT_TOUCH)
+		}
 	}
 }
 
