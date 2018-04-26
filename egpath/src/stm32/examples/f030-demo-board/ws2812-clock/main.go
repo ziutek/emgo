@@ -1,10 +1,8 @@
 package main
 
 import (
-	//"delay"
+	"delay"
 	"rtos"
-	"time"
-	//"time/tz"
 
 	"led"
 	"led/ws281x/wsuart"
@@ -17,14 +15,20 @@ import (
 	"stm32/hal/usart"
 )
 
-var tts *usart.Driver
+var (
+	tts *usart.Driver
+	btn gpio.Pin
+)
 
 func init() {
 	system.SetupPLL(8, 1, 48/8)
 	systick.Setup(2e6)
 
 	gpio.A.EnableClock(true)
+	btn = gpio.A.Pin(4)
 	tx := gpio.A.Pin(9)
+
+	btn.Setup(&gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
 
 	tx.Setup(&gpio.Config{Mode: gpio.Alt})
 	tx.SetAltFunc(gpio.USART1_AF1)
@@ -45,31 +49,61 @@ func init() {
 }
 
 func main() {
+	var setClock, setSpeed int
 	rgb := wsuart.GRB
 	strip := make(wsuart.Strip, 24)
 	for {
+		hs := int(rtos.Nanosec() / 5e8) // Half-seconds elapsed since reset.
+		hs += setClock
+
+		hs %= 12 * 3600 * 2 // Half-seconds from the last 0:00 or 12:00.
+		h := len(strip) * hs / (12 * 3600 * 2)
+
+		hs %= 3600 * 2 // Half-second from the beginning of the current hour.
+		m := len(strip) * hs / (3600 * 2)
+
+		hs %= 60 * 2 // Half-second from the beginning of the current minute.
+		s := len(strip) * hs / (60 * 2)
+
+		hc := led.Color(0x550000)
+		mc := led.Color(0x005500)
+		sc := led.Color(0x000055)
+
+		// Blend colors if the hands of the clock overlap.
+		if h == m {
+			hc |= mc
+			mc = hc
+		}
+		if m == s {
+			mc |= sc
+			sc = mc
+		}
+		if s == h {
+			sc |= hc
+			hc = mc
+		}
+
 		strip.Clear()
-		h, m, s := time.Now().Clock()
-		h = h * 2 % 24
-		m = m * 2 / 5
-		s = s * 2 / 5
-		strip[h] = rgb.Pixel(led.RGB(99, 0, 0))
-		if h != m {
-			strip[m] = rgb.Pixel(led.RGB(0, 0, 99))
-		} else {
-			strip[m] = rgb.Pixel(led.RGB(99, 0, 99))
-		}
-		if s != m && s != h {
-			strip[s] = rgb.Pixel(led.RGB(0, 99, 0))
-		} else if s == m && s == h {
-			strip[s] = rgb.Pixel(led.RGB(99, 99, 99))
-		} else if s == m {
-			strip[s] = rgb.Pixel(led.RGB(0, 99, 99))
-		} else {
-			strip[s] = rgb.Pixel(led.RGB(99, 99, 0))
-		}
+		strip[h] = rgb.Pixel(hc)
+		strip[m] = rgb.Pixel(mc)
+		strip[s] = rgb.Pixel(sc)
 		tts.Write(strip.Bytes())
-		//delay.Millisec(500)
+
+		// Set colck.
+		if btn.Load() == 0 {
+			setClock += setSpeed
+			i := 0
+			for btn.Load() == 0 && i < 10 {
+				delay.Millisec(20)
+				i++
+			}
+			if i == 10 && setSpeed < 10*60*2 {
+				setSpeed += 10
+			}
+			continue
+		}
+		setSpeed = 5
+		delay.Millisec(50)
 	}
 }
 
