@@ -83,13 +83,14 @@ func main() {
 			hc = sc
 		}
 
+		// Draw the clock and send to the ring.
 		strip.Clear()
 		strip[h] = rgb.Pixel(hc)
 		strip[m] = rgb.Pixel(mc)
 		strip[s] = rgb.Pixel(sc)
 		tts.Write(strip.Bytes())
 
-		// Set colck.
+		// Set the clock.
 		if btn.Load() == 0 {
 			setClock += setSpeed
 			i := 0
