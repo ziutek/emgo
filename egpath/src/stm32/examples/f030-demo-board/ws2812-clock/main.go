@@ -56,13 +56,13 @@ func main() {
 		hs := int(rtos.Nanosec() / 5e8) // Half-seconds elapsed since reset.
 		hs += setClock
 
-		hs %= 12 * 3600 * 2 // Half-seconds from the last 0:00 or 12:00.
+		hs %= 12 * 3600 * 2 // Half-seconds since the last 0:00 or 12:00.
 		h := len(strip) * hs / (12 * 3600 * 2)
 
-		hs %= 3600 * 2 // Half-second from the beginning of the current hour.
+		hs %= 3600 * 2 // Half-second since the beginning of the current hour.
 		m := len(strip) * hs / (3600 * 2)
 
-		hs %= 60 * 2 // Half-second from the beginning of the current minute.
+		hs %= 60 * 2 // Half-second since the beginning of the current minute.
 		s := len(strip) * hs / (60 * 2)
 
 		hc := led.Color(0x550000)
@@ -90,15 +90,15 @@ func main() {
 		strip[s] = rgb.Pixel(sc)
 		tts.Write(strip.Bytes())
 
-		// Set the clock.
+		// Adjust the clock.
 		if btn.Load() == 0 {
 			setClock += setSpeed
-			i := 0
-			for btn.Load() == 0 && i < 10 {
+			i, n := 0, 10
+			for btn.Load() == 0 && i < n {
 				delay.Millisec(20)
 				i++
 			}
-			if i == 10 && setSpeed < 10*60*2 {
+			if i == n && setSpeed < 10*60*2 {
 				setSpeed += 10
 			}
 			continue
