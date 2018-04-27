@@ -35,7 +35,7 @@ func init() {
 	d := dma.DMA1
 	d.EnableClock(true)
 
-	// WS2812 bit should take 1390 ns -> 463 ns for UART bit -> 2158273 bit/s.
+	// 1390 ns/WS2812bit = 3 * 463 ns/UARTbit -> BR = 3 * 1e9 ns/s / 1390 ns/bit
 
 	tts = usart.NewDriver(usart.USART1, d.Channel(2, 0), nil, nil)
 	tts.Periph().EnableClock(true)
@@ -80,7 +80,7 @@ func main() {
 		}
 		if s == h {
 			sc |= hc
-			hc = mc
+			hc = sc
 		}
 
 		strip.Clear()
