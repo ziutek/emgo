@@ -8,6 +8,7 @@ import (
 	"led/ws281x/wsuart"
 
 	"stm32/hal/dma"
+	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/system"
@@ -16,8 +17,9 @@ import (
 )
 
 var (
-	tts *usart.Driver
-	btn gpio.Pin
+	tts      *usart.Driver
+	btn      gpio.Pin
+	btnEvent rtos.EventFlag
 )
 
 func init() {
@@ -29,6 +31,12 @@ func init() {
 	tx := gpio.A.Pin(9)
 
 	btn.Setup(&gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
+	ei := exti.Lines(btn.Mask())
+	ei.Connect(btn.Port())
+	ei.EnableFallTrig()
+	ei.EnableRisiTrig()
+	ei.EnableIRQ()
+	rtos.IRQ(irq.EXTI4_15).Enable()
 
 	tx.Setup(&gpio.Config{Mode: gpio.Alt})
 	tx.SetAltFunc(gpio.USART1_AF1)
@@ -43,7 +51,6 @@ func init() {
 	tts.Periph().SetConf2(usart.TxInv) // STM32F0 need no external inverter.
 	tts.Periph().Enable()
 	tts.EnableTx()
-
 	rtos.IRQ(irq.USART1).Enable()
 	rtos.IRQ(irq.DMA1_Channel2_3).Enable()
 }
@@ -91,20 +98,36 @@ func main() {
 		tts.Write(strip.Bytes())
 
 		// Adjust the clock.
-		if btn.Load() == 0 {
+		if btnWait(0, 250) {
 			setClock += setSpeed
-			i, n := 0, 10
-			for btn.Load() == 0 && i < n {
-				delay.Millisec(20)
-				i++
-			}
-			if i == n && setSpeed < 10*60*2 {
+			delay.Millisec(100)
+			if !btnWait(1, 100) && setSpeed < 10*60*2 {
 				setSpeed += 10
 			}
 			continue
 		}
 		setSpeed = 5
-		delay.Millisec(50)
+	}
+}
+
+func btnWait(state, ms int) bool {
+	deadline := rtos.Nanosec() + int64(ms)*1e6
+	for btn.Load() != state {
+		if !btnEvent.Wait(1, deadline) {
+			return false // Timeout
+		}
+		btnEvent.Reset(0)
+	}
+	return true
+}
+
+func exti4_15ISR() {
+	pending := exti.Pending()
+	pending &= exti.L4 | exti.L5 | exti.L6 | exti.L7 | exti.L8 | exti.L9 |
+		exti.L10 | exti.L11 | exti.L12 | exti.L13 | exti.L14 | exti.L15
+	pending.ClearPending()
+	if pending&exti.Lines(btn.Mask()) != 0 {
+		btnEvent.Signal(1)
 	}
 }
 
@@ -120,4 +143,5 @@ func ttsDMAISR() {
 var ISRs = [...]func(){
 	irq.USART1:          ttsISR,
 	irq.DMA1_Channel2_3: ttsDMAISR,
+	irq.EXTI4_15:        exti4_15ISR,
 }
