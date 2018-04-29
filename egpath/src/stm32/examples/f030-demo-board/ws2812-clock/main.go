@@ -8,6 +8,7 @@ import (
 	"led/ws281x/wsuart"
 
 	"stm32/hal/dma"
+	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/system"
@@ -16,8 +17,9 @@ import (
 )
 
 var (
-	tts *usart.Driver
-	btn gpio.Pin
+	tts   *usart.Driver
+	btn   gpio.Pin
+	btnev rtos.EventFlag
 )
 
 func init() {
@@ -29,6 +31,12 @@ func init() {
 	tx := gpio.A.Pin(9)
 
 	btn.Setup(&gpio.Config{Mode: gpio.In, Pull: gpio.PullUp})
+	ei := exti.Lines(btn.Mask())
+	ei.Connect(btn.Port())
+	ei.EnableFallTrig()
+	ei.EnableRisiTrig()
+	ei.EnableIRQ()
+	rtos.IRQ(irq.EXTI4_15).Enable()
 
 	tx.Setup(&gpio.Config{Mode: gpio.Alt})
 	tx.SetAltFunc(gpio.USART1_AF1)
@@ -43,68 +51,85 @@ func init() {
 	tts.Periph().SetConf2(usart.TxInv) // STM32F0 need no external inverter.
 	tts.Periph().Enable()
 	tts.EnableTx()
-
 	rtos.IRQ(irq.USART1).Enable()
 	rtos.IRQ(irq.DMA1_Channel2_3).Enable()
 }
 
 func main() {
-	var setClock, setSpeed int
 	rgb := wsuart.GRB
 	strip := make(wsuart.Strip, 24)
+	ds := 4 * 60 / len(strip) // Interval between LEDs (quarter-seconds).
+	adjust := 0
+	adjspeed := ds
 	for {
-		hs := int(rtos.Nanosec() / 5e8) // Half-seconds elapsed since reset.
-		hs += setClock
+		qs := int(rtos.Nanosec() / 25e7) // Quarter-seconds elapsed since reset.
+		qa := qs + adjust
 
-		hs %= 12 * 3600 * 2 // Half-seconds since the last 0:00 or 12:00.
-		h := len(strip) * hs / (12 * 3600 * 2)
+		qa %= 12 * 3600 * 4 // Quarter-seconds since the last 0:00 or 12:00.
+		hi := len(strip) * qa / (12 * 3600 * 4)
 
-		hs %= 3600 * 2 // Half-seconds since the beginning of the current hour.
-		m := len(strip) * hs / (3600 * 2)
+		qa %= 3600 * 4 // Quarter-seconds in the current hour.
+		mi := len(strip) * qa / (3600 * 4)
 
-		hs %= 60 * 2 // Half-seconds since the beginning of the current minute.
-		s := len(strip) * hs / (60 * 2)
+		qa %= 60 * 4 // Quarter-seconds in the current minute.
+		si := len(strip) * qa / (60 * 4)
 
 		hc := led.Color(0x550000)
 		mc := led.Color(0x005500)
 		sc := led.Color(0x000055)
 
 		// Blend colors if the hands of the clock overlap.
-		if h == m {
+		if hi == mi {
 			hc |= mc
 			mc = hc
 		}
-		if m == s {
+		if mi == si {
 			mc |= sc
 			sc = mc
 		}
-		if s == h {
+		if si == hi {
 			sc |= hc
 			hc = sc
 		}
 
 		// Draw the clock and send to the ring.
 		strip.Clear()
-		strip[h] = rgb.Pixel(hc)
-		strip[m] = rgb.Pixel(mc)
-		strip[s] = rgb.Pixel(sc)
+		strip[hi] = rgb.Pixel(hc)
+		strip[mi] = rgb.Pixel(mc)
+		strip[si] = rgb.Pixel(sc)
 		tts.Write(strip.Bytes())
 
-		// Adjust the clock.
-		if btn.Load() == 0 {
-			setClock += setSpeed
-			i, n := 0, 10
-			for btn.Load() == 0 && i < n {
-				delay.Millisec(20)
-				i++
+		// Sleep until the button is pressed or the second hand should be moved.
+		if btnWait(0, int64(qs+ds)*25e7) {
+			adjust += adjspeed
+			// Sleep until the button is released or timeout.
+			if !btnWait(1, rtos.Nanosec()+100e6) {
+				if adjspeed < 5*60*4 {
+					adjspeed += 2 * ds
+				}
+				continue
 			}
-			if i == n && setSpeed < 10*60*2 {
-				setSpeed += 10
-			}
-			continue
+			adjspeed = ds
 		}
-		setSpeed = 5
-		delay.Millisec(50)
+	}
+}
+
+func btnWait(state int, deadline int64) bool {
+	for btn.Load() != state {
+		if !btnev.Wait(1, deadline) {
+			return false // timeout
+		}
+		btnev.Reset(0)
+	}
+	delay.Millisec(50) // debouncing
+	return true
+}
+
+func exti4_15ISR() {
+	pending := exti.Pending() & 0xFFF0
+	pending.ClearPending()
+	if pending&exti.Lines(btn.Mask()) != 0 {
+		btnev.Signal(1)
 	}
 }
 
@@ -120,4 +145,5 @@ func ttsDMAISR() {
 var ISRs = [...]func(){
 	irq.USART1:          ttsISR,
 	irq.DMA1_Channel2_3: ttsDMAISR,
+	irq.EXTI4_15:        exti4_15ISR,
 }
