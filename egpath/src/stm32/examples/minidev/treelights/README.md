@@ -49,3 +49,5 @@ STM32103C8T6 has no internal DAC peripheral. Instead of use external DAC the int
 ![PWM](https://raw.githubusercontent.com/ziutek/emgo/devel/egpath/src/stm32/examples/minidev/treelights/images/pwm.png)
 
 According to the datasheet and the Flash Size Register the STM32F103R8T6 MCU has 64 KB of Flash. Audio code heavily exploits the "property" that 128 KB of Flash seems to be available on any STM32F103R8T6 chip.
+
+Use ../load-oocd-128k.sh to flash this program.

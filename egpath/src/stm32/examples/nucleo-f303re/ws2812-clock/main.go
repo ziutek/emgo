@@ -39,7 +39,7 @@ func init() {
 	tts.Periph().EnableClock(true)
 	tts.Periph().SetBaudRate(3000000000 / 1390)
 	tts.Periph().SetConf1(usart.Word7b) // 9 bits: 1 start, 7 data, 1 stop.
-	tts.Periph().SetConf2(usart.TxInv)  // STM32F3 need no external inverter.
+	tts.Periph().SetConf2(usart.TxInv)  // STM32F3 needs no external inverter.
 	tts.Periph().Enable()
 	tts.EnableTx()
 
@@ -65,6 +65,7 @@ func main() {
 		rtos.Nanosec(),
 	)
 	strip := make(wsuart.Strip, 24)
+	strip.Clear()
 	fb := make([]led.Color, len(strip))
 	rgb := wsuart.GRB
 	for {

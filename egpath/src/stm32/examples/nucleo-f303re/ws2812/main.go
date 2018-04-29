@@ -50,11 +50,12 @@ func main() {
 	var rnd rand.XorShift64
 	rnd.Seed(1)
 	strip := make(wsuart.Strip, 24)
+	strip.Clear()
 	rgb := wsuart.GRB
 	for k := 0; ; k++ {
 		c := led.Color(rnd.Uint32())
 		for i := range strip {
-			strip[(i+k)%24] = rgb.Pixel(c.Mask(byte(255 * (i + 1) / 24)))
+			strip[(i+k)%24] = rgb.Pixel(c.Mul(byte(255 * (i + 1) / 24)))
 		}
 		tts.Write(strip.Bytes())
 		delay.Millisec(1000)

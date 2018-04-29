@@ -6,7 +6,8 @@ import (
 	"math/rand"
 	"rtos"
 
-	"ws281x"
+	"led"
+	"led/ws281x/wsuart"
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
@@ -99,12 +100,12 @@ func checkErr(err error) {
 	}
 }
 
-func rndColor() ws281x.Color {
-	x := int(rnd.Uint32())
-	r := x & 0xff * 3 / 4
-	g := (x >> 8) & 0xff * 3 / 4
-	b := (x >> 16) & 0xff * 3 / 4
-	return ws281x.RGB(r, g, b)
+func rndColor() led.Color {
+	x := rnd.Uint32()
+	r := byte(x * 3 / 4)
+	g := byte(x >> 8 * 3 / 4)
+	b := byte(x >> 16 * 3 / 4)
+	return led.RGB(r, g, b)
 }
 
 func play(melody []Note, n int) {
@@ -130,21 +131,45 @@ func play(melody []Note, n int) {
 
 func main() {
 	buf := make([]byte, 2)
-	ledram := ws281x.MakeUARTFB(50)
-	pixel := ws281x.MakeUARTFB(1)
-	white := ws281x.MakeUARTFB(1)
-	red := ws281x.MakeUARTFB(1)
-	white.EncodeRGB(ws281x.Color(0xffffff))
-	red.EncodeRGB(ws281x.Color(0xff0000))
+	strip := make(wsuart.Strip, 50)
+	strip.Clear()
+	rgb := wsuart.RGB
+	black := rgb.Pixel(led.RGB(0, 0, 0))
+	white := rgb.Pixel(led.RGB(255, 255, 255))
+	red := rgb.Pixel(led.RGB(255, 0, 0))
 
 	delay.Millisec(200) // Wait for US-100 startup.
 
-	var color ws281x.Color
-	color1 := rndColor()
-	color2 := rndColor()
 	dist := 14000 // 14 m
-	iter := 0
+	colorMax := 64
+	colorIter := colorMax
+	color1 := led.Color(0)
+	color2 := rndColor()
 	for {
+		// Slowly change the current color.
+		if colorIter++; colorIter > colorMax {
+			colorIter = 0
+			color1 = color2
+			color2 = rndColor()
+		}
+		color := color1.Blend(color2, byte(255*colorIter/colorMax))
+		pixel := rgb.Pixel(color)
+		strip.Fill(pixel)
+		leds.Write(strip.Bytes())
+
+		// Sparkle effect.
+		for i := 0; i < 10; i++ {
+			if r := int(rnd.Uint32() & 0x1ff); r < len(strip) {
+				strip[r] = white
+				leds.Write(strip.Bytes())
+				delay.Millisec(20)
+				strip[r] = pixel
+				leds.Write(strip.Bytes())
+			} else {
+				delay.Millisec(60)
+			}
+		}
+
 		// Read distance from ultrasonic sensor.
 		checkErr(us100.WriteByte(0x55))
 		_, err := io.ReadFull(us100, buf)
@@ -155,20 +180,17 @@ func main() {
 			dist = 14000
 
 			// Slowly dim the current color.
-			r, g, b := color.RGB()
-			const N = 256
-			for i := N; i >= 0; i-- {
-				pixel.EncodeRGB(ws281x.RGB(r*i/N, g*i/N, b*i/N).Gamma())
-				ledram.Fill(pixel)
-				leds.Write(ledram.Bytes())
+			for i := 255; i >= 0; i-- {
+				strip.Fill(rgb.Pixel(color.Mul(byte(i))))
+				leds.Write(strip.Bytes())
 				delay.Millisec(6)
 			}
 			delay.Millisec(500)
 
 			// Light the red color and play music.
-			ledram.Fill(red)
-			leds.Write(ledram.Bytes())
-			switch iter % 3 {
+			strip.Fill(red)
+			leds.Write(strip.Bytes())
+			switch colorIter % 3 {
 			case 0:
 				play(melody0, 2)
 			case 1:
@@ -178,42 +200,15 @@ func main() {
 			}
 
 			// Turn off LEDs in sequence (starting from both ends).
-			for i := 0; i < ledram.Len()/2; i++ {
-				ledram.At(i).Head(1).Clear()
-				ledram.At(49 - i).Head(1).Clear()
-				leds.Write(ledram.Bytes())
+			for i := 0; i < len(strip)/2; i++ {
+				strip[i] = black
+				strip[len(strip)-1-i] = black
+				leds.Write(strip.Bytes())
 				delay.Millisec(10)
 			}
 			delay.Millisec(400)
 		}
 
-		// Slowly change the current color.
-		const N = 64
-		r := (color1.Red()*(N-iter) + color2.Red()*iter) / N
-		g := (color1.Green()*(N-iter) + color2.Green()*iter) / N
-		b := (color1.Blue()*(N-iter) + color2.Blue()*iter) / N
-		color = ws281x.RGB(r, g, b)
-		if iter++; iter > N {
-			iter = 0
-			color1 = color2
-			color2 = rndColor()
-		}
-		pixel.EncodeRGB(color.Gamma())
-		ledram.Fill(pixel)
-		leds.Write(ledram.Bytes())
-
-		// Sparkle effect.
-		for i := 0; i < 10; i++ {
-			if r := int(rnd.Uint32() & 0x1ff); r < ledram.Len() {
-				ledram.At(r).Write(white)
-				leds.Write(ledram.Bytes())
-				delay.Millisec(20)
-				ledram.At(r).Write(pixel)
-				leds.Write(ledram.Bytes())
-			} else {
-				delay.Millisec(60)
-			}
-		}
 	}
 }
 

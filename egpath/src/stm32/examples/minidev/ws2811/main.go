@@ -2,11 +2,11 @@ package main
 
 import (
 	"delay"
-	"fmt"
 	"math/rand"
 	"rtos"
 
-	"ws281x"
+	"led"
+	"led/ws281x/wsuart"
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
@@ -31,20 +31,20 @@ func init() {
 
 	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
 	d := dma.DMA1
-	d.EnableClock(true) // DMA clock must remain enabled in s
-	
+	d.EnableClock(true) // DMA clock must remain enabled in sleep.
+
 	// Set UART baudrate to 2250 kb/s (36 MHz / 16 = 2.25 MHz). This gives
 	// 444 ns/UARTbit and 1333 ns/WS2811bit. It would be best to use the 7-bit
 	// mode but F103 does not support it. Use 0.5 stop bit to slightly speed-up
 	// transmission.
-	
-	// Edit: It seems that 1333 ns/WS2811bit is wrong. According to datasheet
-	// WS2811 bit takes 2500±300 ns. However, this timing works but it is WS2812
-	// timing (WS2812 bit takes 1390 ns).
-	
+
+	// Edit: It seems that 1333 ns/WS2811bit is wrong. According to the
+	// datasheet WS2811 bit takes 2500±300 ns. However, this timing works but
+	// it is WS2812 timing (WS2812 bit takes 1390 ns).
+
 	tts = usart.NewDriver(usart.USART2, d.Channel(7, 0), nil, nil)
 	tts.Periph().EnableClock(true)
-	tts.Periph().SetBaudRate(2250e3)    
+	tts.Periph().SetBaudRate(2250e3)
 	tts.Periph().SetConf2(usart.Stop0b5)
 	tts.Periph().Enable()
 	tts.EnableTx()
@@ -53,26 +53,21 @@ func init() {
 }
 
 func main() {
-	delay.Millisec(250)
-
-	ledram := ws281x.MakeUARTFB(50)
-	pixel := ws281x.MakeUARTFB(1)
+	strip := make(wsuart.Strip, 50)
+	strip.Clear()
 	var rnd rand.XorShift64
 	rnd.Seed(rtos.Nanosec())
+	rgb := wsuart.RGB
 	for {
-		c := ws281x.Color(rnd.Uint32())
-		fmt.Printf("%3d %3d %3d\n", c.Red(), c.Green(), c.Blue())
-		pixel.EncodeRGB(c.Gamma())
-		for i := 0; i < ledram.Len(); i++ {
-			ledram.Clear()
-			ledram.At(i).Write(pixel)
-			tts.Write(ledram.Bytes())
+		pixel := rgb.Pixel(led.Color(rnd.Uint32()))
+		for i := range strip {
+			strip.Clear()
+			strip[i] = pixel
+			tts.Write(strip.Bytes())
 			delay.Millisec(20)
 		}
-		for i := 0; i < ledram.Len(); i++ {
-			ledram.At(i).Write(pixel)
-		}
-		tts.Write(ledram.Bytes())
+		strip.Fill(pixel)
+		tts.Write(strip.Bytes())
 		delay.Millisec(450)
 	}
 }
