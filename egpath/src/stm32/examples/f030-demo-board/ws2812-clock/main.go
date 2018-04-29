@@ -58,6 +58,7 @@ func init() {
 func main() {
 	rgb := wsuart.GRB
 	strip := make(wsuart.Strip, 24)
+	strip.Clear()
 	ds := 4 * 60 / len(strip) // Interval between LEDs (quarter-seconds).
 	adjust := 0
 	adjspeed := ds
