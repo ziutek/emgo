@@ -30,11 +30,11 @@ func (c Color) Blue() byte {
 	return byte(c)
 }
 
-func (c Color) Mask(mask byte) Color {
+func (c Color) Mul(alpha byte) Color {
 	// Consider replace the original formula (c*m + 127) / 255 with cheaper
-	// (c*m + 255) >> 8 which avoids division and (c*255 + 255) >> 8 == c.
+	// (c*m + 255) >> 8 which avoids division but still (c*255 + 255)>>8 == c.
 
-	m := uint(mask)
+	m := uint(alpha)
 	r := (uint(c.Red())*m + 127) / 255
 	g := (uint(c.Green())*m + 127) / 255
 	b := (uint(c.Blue())*m + 127) / 255
@@ -43,7 +43,7 @@ func (c Color) Mask(mask byte) Color {
 	return Color(a<<24 | r<<16 | g<<8 | b)
 }
 
-func (c1 Color) Blend(c2 Color, mask byte) Color {
+func (c1 Color) Blend(c2 Color, alpha byte) Color {
 	r1 := uint(c1.Red())
 	g1 := uint(c1.Green())
 	b1 := uint(c1.Blue())
@@ -52,7 +52,7 @@ func (c1 Color) Blend(c2 Color, mask byte) Color {
 	g2 := uint(c2.Green())
 	b2 := uint(c2.Blue())
 	a2 := uint(c2.Alpha())
-	m2 := uint(mask)
+	m2 := uint(alpha)
 
 	m1 := (255*255 - a2*m2)
 	m2 *= 255
