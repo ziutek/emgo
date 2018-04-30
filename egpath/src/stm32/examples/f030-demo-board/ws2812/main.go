@@ -52,7 +52,7 @@ func main() {
 	strip.Clear()
 	black := rgb.Pixel(led.Color(0))
 	for {
-		pixel := rgb.Pixel(led.Color(rnd.Uint32()).Mul(127))
+		pixel := rgb.Pixel(led.Color(rnd.Uint32()).Scale(127))
 		for i := range strip {
 			strip[i] = pixel
 			tts.Write(strip.Bytes())

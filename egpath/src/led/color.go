@@ -30,9 +30,9 @@ func (c Color) Blue() byte {
 	return byte(c)
 }
 
-func (c Color) Mul(alpha byte) Color {
-	// Consider replace the original formula (c*m + 127) / 255 with cheaper
-	// (c*m + 255) >> 8 which avoids division but still (c*255 + 255)>>8 == c.
+func (c Color) Scale(alpha byte) Color {
+	// Consider replace the original formula (c*alpha + 127) / 255 with cheaper
+	// (c*m + 255) >> 8 which avoids division but still (c*255 + 255) >> 8 == c.
 
 	m := uint(alpha)
 	r := (uint(c.Red())*m + 127) / 255

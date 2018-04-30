@@ -181,7 +181,7 @@ func main() {
 
 			// Slowly dim the current color.
 			for i := 255; i >= 0; i-- {
-				strip.Fill(rgb.Pixel(color.Mul(byte(i))))
+				strip.Fill(rgb.Pixel(color.Scale(byte(i))))
 				leds.Write(strip.Bytes())
 				delay.Millisec(6)
 			}
