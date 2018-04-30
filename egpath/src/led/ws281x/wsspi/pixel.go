@@ -1,6 +1,6 @@
 // Package wsspi allows to use SPI based driver to controll a string of WS281x
 // LEDs. There are better solutions for multiple (8, 16) strings.
-package wsuart
+package wsspi
 
 import (
 	"led"

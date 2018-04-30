@@ -1,4 +1,4 @@
-package wsuart
+package wsspi
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ type Strip []Pixel
 
 // Bytes returns reference to the internal storage of s.
 func (s Strip) Bytes() []byte {
-	return (*[1<<31 - 1]byte)(unsafe.Pointer(&s[0]))[:len(s)*8]
+	return (*[1<<31 - 1]byte)(unsafe.Pointer(&s[0]))[:len(s)*12]
 }
 
 // Fill fills whole s with pixel p.
