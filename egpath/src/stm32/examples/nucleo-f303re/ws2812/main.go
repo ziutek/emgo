@@ -49,8 +49,7 @@ func init() {
 func main() {
 	var rnd rand.XorShift64
 	rnd.Seed(1)
-	strip := make(wsuart.Strip, 24)
-	strip.Clear()
+	strip := wsuart.Make(24)
 	rgb := wsuart.GRB
 	for k := 0; ; k++ {
 		c := led.Color(rnd.Uint32())

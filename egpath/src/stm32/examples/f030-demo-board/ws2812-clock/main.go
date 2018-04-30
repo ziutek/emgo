@@ -57,8 +57,7 @@ func init() {
 
 func main() {
 	rgb := wsuart.GRB
-	strip := make(wsuart.Strip, 24)
-	strip.Clear()
+	strip := wsuart.Make(24)
 	ds := 4 * 60 / len(strip) // Interval between LEDs (quarter-seconds).
 	adjust := 0
 	adjspeed := ds
@@ -100,7 +99,7 @@ func main() {
 		strip[si] = rgb.Pixel(sc)
 		tts.Write(strip.Bytes())
 
-		// Sleep until the button is pressed or the second hand should be moved.
+		// Sleep until the button pressed or the second hand should be moved.
 		if btnWait(0, int64(qs+ds)*25e7) {
 			adjust += adjspeed
 			// Sleep until the button is released or timeout.

@@ -8,6 +8,13 @@ import (
 // Strip represents string of LEDs.
 type Strip []Pixel
 
+// Make returns cleared Strip of n pixels.
+func Make(n int) Strip {
+	s := make(Strip, n)
+	s.Clear()
+	return s
+}
+
 // Bytes returns reference to the internal storage of s.
 func (s Strip) Bytes() []byte {
 	return (*[1<<31 - 1]byte)(unsafe.Pointer(&s[0]))[:len(s)*12]

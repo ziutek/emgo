@@ -64,8 +64,7 @@ func main() {
 		time.Date(2018, 4, 25, 15, 0, 0, 0, &tz.EuropeWarsaw),
 		rtos.Nanosec(),
 	)
-	strip := make(wsuart.Strip, 24)
-	strip.Clear()
+	strip := wsuart.Make(24)
 	fb := make([]led.Color, len(strip))
 	rgb := wsuart.GRB
 	for {

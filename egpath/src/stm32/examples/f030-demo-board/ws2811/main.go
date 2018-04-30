@@ -48,8 +48,7 @@ func main() {
 	var rnd rand.XorShift64
 	rnd.Seed(1)
 	rgb := wsuart.RGB
-	strip := make(wsuart.Strip, 50)
-	strip.Clear()
+	strip := wsuart.Make(24)
 	for {
 		strip.Fill(rgb.Pixel(led.Color(rnd.Uint32())))
 		tts.Write(strip.Bytes())

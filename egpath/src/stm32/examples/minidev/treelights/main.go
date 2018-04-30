@@ -131,8 +131,7 @@ func play(melody []Note, n int) {
 
 func main() {
 	buf := make([]byte, 2)
-	strip := make(wsuart.Strip, 50)
-	strip.Clear()
+	strip := wsuart.Make(24)
 	rgb := wsuart.RGB
 	black := rgb.Pixel(led.RGB(0, 0, 0))
 	white := rgb.Pixel(led.RGB(255, 255, 255))

@@ -53,8 +53,7 @@ func init() {
 }
 
 func main() {
-	strip := make(wsuart.Strip, 50)
-	strip.Clear()
+	strip := wsuart.Make(24)
 	var rnd rand.XorShift64
 	rnd.Seed(rtos.Nanosec())
 	rgb := wsuart.RGB
