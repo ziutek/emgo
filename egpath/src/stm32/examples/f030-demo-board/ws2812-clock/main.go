@@ -78,7 +78,7 @@ func main() {
 		mc := led.Color(0x005500)
 		sc := led.Color(0x000055)
 
-		// Blend colors if the hands of the clock overlap.
+		// Blend the colors if the hands of the clock overlap.
 		if hi == mi {
 			hc |= mc
 			mc = hc
@@ -92,7 +92,7 @@ func main() {
 			hc = sc
 		}
 
-		// Draw the clock and send to the ring.
+		// Draw the clock and write to the ring.
 		strip.Clear()
 		strip[hi] = rgb.Pixel(hc)
 		strip[mi] = rgb.Pixel(mc)
