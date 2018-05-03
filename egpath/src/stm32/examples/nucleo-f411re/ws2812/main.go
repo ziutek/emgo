@@ -1,5 +1,4 @@
-// Simple WS2812 example. This example can work with F4-Discovery, but VDD=3V
-// instead of 3.3V can be a problem.
+// Simple WS2812 example.
 package main
 
 import (
@@ -28,12 +27,12 @@ func init() {
 	// GPIO
 
 	gpio.C.EnableClock(true)
-	spiport, mosi := gpio.C, gpio.Pin12
+	mosi := gpio.C.Pin(12)
 
 	// SPI.
-	cfg := gpio.Config{Mode: gpio.Alt, Speed: gpio.High}
-	spiport.Setup(mosi, &cfg)
-	spiport.SetAltFunc(mosi, gpio.SPI3)
+
+	mosi.Setup(&gpio.Config{Mode: gpio.Alt, Speed: gpio.High})
+	mosi.SetAltFunc(gpio.SPI3)
 	d := dma.DMA1
 	d.EnableClock(true)
 	ws = spi.NewDriver(spi.SPI3, d.Channel(7, 0), nil)
@@ -54,7 +53,7 @@ func main() {
 	var rnd rand.XorShift64
 	rnd.Seed(1)
 	rgb := wsspi.GRB
-	strip := wsspi.Make(24) 
+	strip := wsspi.Make(24)
 	black := rgb.Pixel(0)
 	for {
 		c := led.Color(rnd.Uint32()).Scale(127)
