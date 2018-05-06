@@ -35,3 +35,7 @@ This directory contains examples for the following STM32 development boards:
 [port103r](port103r): WaveShare Port103R, [website](http://www.waveshare.net/wiki/Port103R)
 
 ![WaveShare Port103R](port103r/board.jpg)
+
+[wifimcu](wifimcu): WiFiMCU/EMW3165 (STM32F411CE + BCM43362), [website](http://www.wifimcu.com/)
+
+![WiFiMCH](wifimcu/board.jpg)
