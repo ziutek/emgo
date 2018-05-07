@@ -2,7 +2,8 @@
 
 // Clock setup for USB
 //
-// Goal is to provide 48 MHz for USB FS. So PLLVCO must satisfy the equation:
+// Goal is to provide 48 MHz for USB FS (SDIO, RNG). So PLLVCO must satisfy the
+// equation:
 //
 //  PLLVCO = 48 MHz * Q
 //
@@ -155,7 +156,7 @@ func SetupPLL(osc, N, P int) {
 	var src rcc.PLLCFGR
 	mnpq := rcc.PLLCFGR(N)<<rcc.PLLNn | // PLL multiler.
 		rcc.PLLCFGR(P/2-1)<<rcc.PLLPn | // SysClk divider.
-		rcc.PLLCFGR(2*N+47)/48<<rcc.PLLQn // USB 48MHz divider.
+		rcc.PLLCFGR(2*N+47)/48<<rcc.PLLQn // 48MHz divider for USB, SDIO, RNG.
 	if osc != 0 {
 		src = rcc.PLLSRC_HSE
 		mnpq |= rcc.PLLCFGR(osc/2) << rcc.PLLMn
