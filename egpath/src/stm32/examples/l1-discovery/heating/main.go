@@ -59,7 +59,7 @@ func init() {
 	btn.Setup(&gpio.Config{Mode: gpio.In})
 	line := exti.LineIndex(btn.Index())
 	line.Connect(btn.Port())
-	line.EnableRisiTrig()
+	line.EnableRiseTrig()
 	line.EnableIRQ()
 	irqen(irq.EXTI0, 1)
 

@@ -8,15 +8,15 @@ import (
 
 type lines uint32
 
-func risiTrigEnabled() Lines {
+func riseTrigEnabled() Lines {
 	return Lines(exti.EXTI.RTSR.Load())
 }
 
-func (li Lines) enableRisiTrig() {
+func (li Lines) enableRiseTrig() {
 	exti.EXTI.RTSR.AtomicSetBits(exti.RTSR(li))
 }
 
-func (li Lines) disableRisiTrig() {
+func (li Lines) disableRiseTrig() {
 	exti.EXTI.RTSR.AtomicClearBits(exti.RTSR(li))
 }
 

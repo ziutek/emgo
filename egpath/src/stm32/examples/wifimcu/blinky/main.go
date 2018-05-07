@@ -25,7 +25,6 @@ func init() {
 	led.Setup(&cfg)
 }
 
-
 func main() {
 	for {
 		led.Clear()

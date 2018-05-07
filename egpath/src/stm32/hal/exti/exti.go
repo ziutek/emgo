@@ -74,19 +74,19 @@ func (li Lines) Connect(port *gpio.Port) {
 	exticrDis()
 }
 
-// RisiTrigEnabled returns lines that have rising edge detection enabled.
-func RisiTrigEnabled() Lines {
-	return risiTrigEnabled()
+// RiseTrigEnabled returns lines that have rising edge detection enabled.
+func RiseTrigEnabled() Lines {
+	return riseTrigEnabled()
 }
 
-// EnableRisiTrig enables rising edge detection for lines.
-func (li Lines) EnableRisiTrig() {
-	li.enableRisiTrig()
+// EnableRiseTrig enables rising edge detection for lines.
+func (li Lines) EnableRiseTrig() {
+	li.enableRiseTrig()
 }
 
-// DisableRisiTrig disables rising edge detection for lines.
-func (li Lines) DisableRisiTrig() {
-	li.disableRisiTrig()
+// DisableRiseTrig disables rising edge detection for lines.
+func (li Lines) DisableRiseTrig() {
+	li.disableRiseTrig()
 }
 
 // FallTrigEnabled returns lines that have falling edge detection enabled.

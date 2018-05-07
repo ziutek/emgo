@@ -23,13 +23,13 @@ func NewSPI(spidrv *spi.Driver, csn, pdn gpio.Pin) *SPI {
 }
 
 // Setup configures and enables SPI peripheral.
-func (dci *SPI)	Setup(clkHz int)  {
+func (dci *SPI) Setup(clkHz int) {
 	dci.csn.Set()
 	p := dci.spi.Periph()
 	p.EnableClock(true)
 	p.Disable()
 	p.SetConf(
-		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 | p.BR(clkHz) | 
+		spi.Master | spi.MSBF | spi.CPOL0 | spi.CPHA0 | p.BR(clkHz) |
 			spi.SoftSS | spi.ISSHigh,
 	)
 	p.SetWordSize(8) // Default settings are wrong in case of F0, F3, L4.

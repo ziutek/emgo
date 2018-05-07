@@ -442,7 +442,7 @@ func (d *Driver) DMAISR(ch *dma.Channel) {
 
 func (d *Driver) waitDone(ch *dma.Channel) (e Error) {
 	timeout := byteTimeout + 2*9e9*int64(len(d.buf)+1)/int64(d.P.Speed())
-	if !d.done.Wait(1, rtos.Nanosec() + timeout) {
+	if !d.done.Wait(1, rtos.Nanosec()+timeout) {
 		e = SoftTimeout
 		d.disableIntI2C(i2c.ITEVTEN | i2c.ITERREN | i2c.ITBUFEN)
 		if ch != nil {

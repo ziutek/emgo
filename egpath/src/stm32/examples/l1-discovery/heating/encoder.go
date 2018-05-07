@@ -21,9 +21,9 @@ func (es EncoderState) Btn() bool {
 }
 
 type Encoder struct {
-	t     *tim.TIM_Periph
-	btnIn gpio.Pin
-	btnEL exti.Lines
+	t       *tim.TIM_Periph
+	btnIn   gpio.Pin
+	btnEL   exti.Lines
 	lastCnt uint32
 	lastBtn int
 
@@ -50,7 +50,7 @@ func (e *Encoder) Init(t *tim.TIM_Periph, btn gpio.Pin) {
 
 	e.btnEL.Connect(btn.Port())
 	e.btnEL.EnableFallTrig()
-	e.btnEL.EnableRisiTrig()
+	e.btnEL.EnableRiseTrig()
 	e.btnEL.EnableIRQ()
 }
 

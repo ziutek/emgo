@@ -53,7 +53,7 @@ func SetupPLL(osc, div, mul int) {
 	if osc != 0 {
 		// HSE needs milliseconds to stabilize, so enable it now.
 		RCC.HSEON().Set()
-		sysclk = uint(osc) * 1e6 / uint(div) * uint(mul)  // Hz
+		sysclk = uint(osc) * 1e6 / uint(div) * uint(mul) // Hz
 	}
 	ahbclk := sysclk
 	cfgr := rcc.CFGR(mul-2) * rcc.PLLMULL_0

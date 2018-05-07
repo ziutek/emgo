@@ -30,7 +30,7 @@ func init() {
 
 	line := exti.Lines(dcfpin)
 	line.Connect(dcfport)
-	line.EnableRisiTrig()
+	line.EnableRiseTrig()
 	line.EnableFallTrig()
 	line.EnableIRQ()
 

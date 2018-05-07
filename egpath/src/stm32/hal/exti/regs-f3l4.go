@@ -8,11 +8,11 @@ import (
 
 type lines uint64
 
-func risiTrigEnabled() Lines {
+func riseTrigEnabled() Lines {
 	return Lines(exti.EXTI.RTSR1.Load()) | Lines(exti.EXTI.RTSR2.Load())<<32
 }
 
-func (li Lines) enableRisiTrig() {
+func (li Lines) enableRiseTrig() {
 	if m := exti.RTSR1(li); m != 0 {
 		exti.EXTI.RTSR1.AtomicSetBits(m)
 	}
@@ -21,7 +21,7 @@ func (li Lines) enableRisiTrig() {
 	}
 }
 
-func (li Lines) disableRisiTrig() {
+func (li Lines) disableRiseTrig() {
 	if m := exti.RTSR1(li); m != 0 {
 		exti.EXTI.RTSR1.AtomicClearBits(m)
 	}

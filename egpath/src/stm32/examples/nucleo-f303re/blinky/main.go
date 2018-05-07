@@ -21,7 +21,7 @@ func init() {
 }
 
 func wait() {
-	
+
 }
 
 func main() {

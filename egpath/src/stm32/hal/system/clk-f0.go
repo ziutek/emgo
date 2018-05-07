@@ -16,6 +16,6 @@ const (
 	ppreDiv4  = rcc.PPRE_DIV4
 	ppreDiv8  = rcc.PPRE_DIV8
 	ppreDiv16 = rcc.PPRE_DIV16
-	
+
 	usbpre = 0
 )

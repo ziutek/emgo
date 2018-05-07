@@ -16,5 +16,5 @@ func dmanum(p *DMA) int {
 }
 
 func bit(p *DMA, r *mmio.U32, dma1bitn int) internal.AtomicBit {
-	return internal.AtomicBit{r, dma1bitn+dmanum(p)}
+	return internal.AtomicBit{r, dma1bitn + dmanum(p)}
 }

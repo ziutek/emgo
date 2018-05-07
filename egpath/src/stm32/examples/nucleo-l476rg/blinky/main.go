@@ -16,7 +16,7 @@ func init() {
 	//system.Setup80(0, 0) // Short form of above configuration.
 	//system.SetupPLL(-4, 1, 26, 0, 0, 4) // 26 MHz (max. for voltage Range 2).
 	system.SetupMSI(100) // Lowest possible frequency (100 kHz).
-	systick.Setup(2e7) // Typical 2e6 ns is to low for 100 kHz SysClk.
+	systick.Setup(2e7)   // Typical 2e6 ns is to low for 100 kHz SysClk.
 
 	gpio.A.EnableClock(false)
 	led = gpio.A.Pin(5)

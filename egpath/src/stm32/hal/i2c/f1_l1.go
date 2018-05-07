@@ -4,7 +4,7 @@ package i2c
 
 import (
 	"unsafe"
-	
+
 	"stm32/hal/raw/mmap"
 )
 
