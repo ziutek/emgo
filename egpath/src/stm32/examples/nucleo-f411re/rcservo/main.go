@@ -65,7 +65,7 @@ func init() {
 	if pclk != system.AHB.Clock() {
 		pclk *= 2
 	}
-	t.PSC.U16.Store(uint16(pclk/1000*pwmperiod/pwmmax - 1))
+	t.PSC.Store(tim.PSC(pclk/1000*pwmperiod/pwmmax - 1))
 	t.ARR.Store(pwmmax - 1)
 	t.CCMR1.Store(pwmmode<<tim.OC1Mn | tim.OC1PE)
 	t.CCER.Store(tim.CC1E)

@@ -35,7 +35,7 @@ func main() {
 	RCC := rcc.RCC
 	RTC := rtc.RTC
 
-	const lse = 1 * rcc.RTCSEL_0
+	const lse = 1 << rcc.RTCSELn
 	const bdcrcfg = rcc.LSEON | lse | rcc.RTCEN
 
 	wait()
