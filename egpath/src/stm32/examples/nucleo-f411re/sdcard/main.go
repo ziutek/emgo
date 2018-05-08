@@ -1,6 +1,9 @@
 package main
 
 import (
+	"delay"
+	"fmt"
+
 	"stm32/hal/gpio"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
@@ -41,8 +44,8 @@ func init() {
 }
 
 const (
-	waitShortResp = 1 << sdio.WAITRESPn
-	waitLongResp  = 3 << sdio.WAITRESPn
+	shortResp = 1 << sdio.WAITRESPn
+	longResp  = 3 << sdio.WAITRESPn
 )
 
 const sdioErrFlags = sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT | sdio.DTIMEOUT |
@@ -79,6 +82,32 @@ func sdioCMD(cmd sdio.CMD, arg sdio.ARG) (status sdio.STA) {
 	return status & sdioErrFlags // Return error flags if any.
 }
 
-func main() {
+const (
+	resp7 = shortResp
+)
 
+const (
+	GO_IDLE_STATE = 0
+	SEND_IF_COND  = 8 | resp7
+)
+
+func main() {
+	delay.Millisec(200) // For SWO output
+
+	sd := sdio.SDIO
+
+	status := sdioCMD(GO_IDLE_STATE, 0)
+	checkStatus("GO_IDLE_STATE", status)
+	status = sdioCMD(SEND_IF_COND, 0x1AA)
+	checkStatus("SEND_IF_COND", status)
+	fmt.Printf("SEND_IF_COND resp: %x\n", sd.RESP[0].Load())
+}
+
+func checkStatus(cmd string, status sdio.STA) {
+	if status == 0 {
+		return
+	}
+	fmt.Printf("%s error: %x\n", cmd, status)
+	for {
+	}
 }
