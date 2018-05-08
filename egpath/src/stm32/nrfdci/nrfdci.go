@@ -45,7 +45,7 @@ func NewDCI(spidrv *spi.Driver, csn gpio.Pin, pclk uint, cet *tim.TIM_Periph, ch
 	}
 
 	// PSC=1 gives shortest possible delay (1/pclk) before CE pulse.
-	cet.PSC.U16.Store(1)
+	cet.PSC.Store(1)
 
 	// ARR=(pclk+1e5-1)/1e5 corresponds to the shortest posible pulse but
 	// not less than 10 us. CE will be asserted after 1/pclk (CCRn=1) for
