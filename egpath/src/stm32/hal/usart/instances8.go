@@ -1,4 +1,4 @@
-// +build f40_41xxx f411xe f746xx
+// +build f40_41xxx f746xx
 
 package usart
 
