@@ -351,7 +351,7 @@ func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode) {
 	d.disableDMA(ch)
 	ch.Setup(mode)
 	ch.SetWordSize(1, 1)
-	ch.SetAddrP(unsafe.Pointer(d.P.raw.DR.U16.Addr()))
+	ch.SetAddrP(unsafe.Pointer(d.P.raw.DR.Addr()))
 }
 
 func (d *Driver) startDMA(ch *dma.Channel) {

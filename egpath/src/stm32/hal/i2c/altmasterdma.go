@@ -54,13 +54,13 @@ func (c *AltMasterConnDMA) Write(buf []byte) (int, error) {
 		c.state = actwr
 		txd.Setup(dma.MTP | dma.IncM | dma.FIFO_4_4)
 		txd.SetWordSize(1, 1)
-		txd.SetAddrP(unsafe.Pointer(p.DR.U16.Addr()))
+		txd.SetAddrP(unsafe.Pointer(p.DR.Addr()))
 		p.DMAEN().Set()
 		p.START().Set()
 		if e = d.waitEvent(i2c.SB); e != 0 {
 			goto err
 		}
-		p.DR.U16.Store(c.addr) // BUG: 10-bit addr not supported.
+		p.DR.Store(i2c.DR(c.addr)) // BUG: 10-bit addr not supported.
 		if e = d.waitEvent(i2c.ADDR); e != 0 {
 			goto err
 		}
@@ -159,7 +159,7 @@ func (c *AltMasterConnDMA) Read(buf []byte) (int, error) {
 		}
 		rxd.Setup(dma.PTM | dma.IncM | dma.FIFO_1_4)
 		rxd.SetWordSize(1, 1)
-		rxd.SetAddrP(unsafe.Pointer(p.DR.U16.Addr()))
+		rxd.SetAddrP(unsafe.Pointer(p.DR.Addr()))
 		p.DMAEN().Set()
 		p.SR2.Load()
 	}

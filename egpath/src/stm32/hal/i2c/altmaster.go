@@ -66,7 +66,7 @@ func (c *AltMasterConn) Write(buf []byte) (int, error) {
 		if e = d.waitEvent(i2c.SB); e != 0 {
 			goto err
 		}
-		p.DR.U16.Store(c.addr) // BUG: 10-bit addr not supported.
+		p.DR.Store(i2c.DR(c.addr)) // BUG: 10-bit addr not supported.
 		if e = d.waitEvent(i2c.ADDR); e != 0 {
 			goto err
 		}
@@ -127,7 +127,7 @@ func (c *AltMasterConn) Read(buf []byte) (int, error) {
 		if e = d.waitEvent(i2c.SB); e != 0 {
 			goto end
 		}
-		p.DR.U16.Store(c.addr | 1) // BUG: 10-bit addr not supported.
+		p.DR.Store(i2c.DR(c.addr | 1)) // BUG: 10-bit addr not supported.
 		if e = d.waitEvent(i2c.ADDR); e != 0 {
 			goto end
 		}
