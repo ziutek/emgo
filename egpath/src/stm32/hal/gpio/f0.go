@@ -3,9 +3,6 @@
 package gpio
 
 import (
-	"unsafe"
-
-	"stm32/hal/raw/mmap"
 	"stm32/hal/raw/rcc"
 )
 
@@ -68,15 +65,6 @@ const (
 	_        = 0  // 10 MHz (CL = 50 pF, VDD >= 2.4 V)
 	high     = 2  // 30 MHz (CL = 50 pF, VDD >= 2.7 V)
 	veryHigh = 2  // Not supported.
-)
-
-//emgo:const
-var (
-	A = (*Port)(unsafe.Pointer(mmap.GPIOA_BASE))
-	B = (*Port)(unsafe.Pointer(mmap.GPIOB_BASE))
-	C = (*Port)(unsafe.Pointer(mmap.GPIOC_BASE))
-	D = (*Port)(unsafe.Pointer(mmap.GPIOD_BASE))
-	F = (*Port)(unsafe.Pointer(mmap.GPIOF_BASE))
 )
 
 func enreg() *rcc.RAHBENR   { return &rcc.RCC.AHBENR }
