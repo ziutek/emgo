@@ -13,7 +13,7 @@ for target in *; do
 		halpkg=../../hal/raw/$pkg
 		mkdir -p $halpkg
 		cd $pkg
-		for f in *; do
+		for f in *.go; do
 			half=../$halpkg/$target--$f
 			echo "// +build $target" >$half
 			echo >>$half
