@@ -26,14 +26,6 @@ const (
 	LATENCY_5WS   ACR = 0x05 << 0
 	LATENCY_6WS   ACR = 0x06 << 0
 	LATENCY_7WS   ACR = 0x07 << 0
-	LATENCY_8WS   ACR = 0x08 << 0
-	LATENCY_9WS   ACR = 0x09 << 0
-	LATENCY_10WS  ACR = 0x0A << 0
-	LATENCY_11WS  ACR = 0x0B << 0
-	LATENCY_12WS  ACR = 0x0C << 0
-	LATENCY_13WS  ACR = 0x0D << 0
-	LATENCY_14WS  ACR = 0x0E << 0
-	LATENCY_15WS  ACR = 0x0F << 0
 	PRFTEN        ACR = 0x01 << 8  //+
 	ICEN          ACR = 0x01 << 9  //+
 	DCEN          ACR = 0x01 << 10 //+
@@ -59,6 +51,7 @@ const (
 	PGAERR SR = 0x01 << 5  //+
 	PGPERR SR = 0x01 << 6  //+
 	PGSERR SR = 0x01 << 7  //+
+	RDERR  SR = 0x01 << 8  //+
 	BSY    SR = 0x01 << 16 //+
 )
 
@@ -69,26 +62,19 @@ const (
 	PGAERRn = 5
 	PGPERRn = 6
 	PGSERRn = 7
+	RDERRn  = 8
 	BSYn    = 16
 )
 
 const (
-	PG      CR = 0x01 << 0 //+
-	SER     CR = 0x01 << 1 //+
-	MER     CR = 0x01 << 2 //+
-	SNB     CR = 0x1F << 3 //+
-	SNB_0   CR = 0x01 << 3
-	SNB_1   CR = 0x02 << 3
-	SNB_2   CR = 0x04 << 3
-	SNB_3   CR = 0x08 << 3
-	SNB_4   CR = 0x08 << 3
-	PSIZE   CR = 0x03 << 8 //+
-	PSIZE_0 CR = 0x01 << 8
-	PSIZE_1 CR = 0x02 << 8
-	MER2    CR = 0x01 << 15 //+
-	STRT    CR = 0x01 << 16 //+
-	EOPIE   CR = 0x01 << 24 //+
-	LOCK    CR = 0x01 << 31 //+
+	PG    CR = 0x01 << 0  //+
+	SER   CR = 0x01 << 1  //+
+	MER   CR = 0x01 << 2  //+
+	SNB   CR = 0x1F << 3  //+
+	PSIZE CR = 0x03 << 8  //+
+	STRT  CR = 0x01 << 16 //+
+	EOPIE CR = 0x01 << 24 //+
+	LOCK  CR = 0x01 << 31 //+
 )
 
 const (
@@ -97,7 +83,6 @@ const (
 	MERn   = 2
 	SNBn   = 3
 	PSIZEn = 8
-	MER2n  = 15
 	STRTn  = 16
 	EOPIEn = 24
 	LOCKn  = 31
@@ -109,19 +94,10 @@ const (
 	BOR_LEV_0  OPTCR = 0x01 << 2 //+
 	BOR_LEV_1  OPTCR = 0x01 << 3 //+
 	BOR_LEV    OPTCR = 0x03 << 2
-	BFB2       OPTCR = 0x01 << 4 //+
-	WDG_SW     OPTCR = 0x01 << 5 //+
-	nRST_STOP  OPTCR = 0x01 << 6 //+
-	nRST_STDBY OPTCR = 0x01 << 7 //+
-	RDP        OPTCR = 0xFF << 8 //+
-	RDP_0      OPTCR = 0x01 << 8
-	RDP_1      OPTCR = 0x02 << 8
-	RDP_2      OPTCR = 0x04 << 8
-	RDP_3      OPTCR = 0x08 << 8
-	RDP_4      OPTCR = 0x10 << 8
-	RDP_5      OPTCR = 0x20 << 8
-	RDP_6      OPTCR = 0x40 << 8
-	RDP_7      OPTCR = 0x80 << 8
+	WDG_SW     OPTCR = 0x01 << 5   //+
+	nRST_STOP  OPTCR = 0x01 << 6   //+
+	nRST_STDBY OPTCR = 0x01 << 7   //+
+	RDP        OPTCR = 0xFF << 8   //+
 	nWRP       OPTCR = 0xFFF << 16 //+
 	nWRP_0     OPTCR = 0x01 << 16
 	nWRP_1     OPTCR = 0x02 << 16
@@ -135,8 +111,6 @@ const (
 	nWRP_9     OPTCR = 0x200 << 16
 	nWRP_10    OPTCR = 0x400 << 16
 	nWRP_11    OPTCR = 0x800 << 16
-	DB1M       OPTCR = 0x01 << 30 //+
-	SPRMOD     OPTCR = 0x01 << 31 //+
 )
 
 const (
@@ -144,12 +118,9 @@ const (
 	OPTSTRTn    = 1
 	BOR_LEV_0n  = 2
 	BOR_LEV_1n  = 3
-	BFB2n       = 4
 	WDG_SWn     = 5
 	nRST_STOPn  = 6
 	nRST_STDBYn = 7
 	RDPn        = 8
 	nWRPn       = 16
-	DB1Mn       = 30
-	SPRMODn     = 31
 )

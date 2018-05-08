@@ -23,13 +23,11 @@ const (
 )
 
 const (
-	DBG_SLEEP    CR = 0x01 << 0 //+
-	DBG_STOP     CR = 0x01 << 1 //+
-	DBG_STANDBY  CR = 0x01 << 2 //+
-	TRACE_IOEN   CR = 0x01 << 5 //+
-	TRACE_MODE   CR = 0x03 << 6 //+
-	TRACE_MODE_0 CR = 0x01 << 6 //  Bit 0.
-	TRACE_MODE_1 CR = 0x02 << 6 //  Bit 1.
+	DBG_SLEEP   CR = 0x01 << 0 //+
+	DBG_STOP    CR = 0x01 << 1 //+
+	DBG_STANDBY CR = 0x01 << 2 //+
+	TRACE_IOEN  CR = 0x01 << 5 //+
+	TRACE_MODE  CR = 0x03 << 6 //+
 )
 
 const (

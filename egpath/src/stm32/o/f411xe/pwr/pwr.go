@@ -17,9 +17,6 @@ const (
 	CSBF     CR = 0x01 << 3  //+ Clear Standby Flag.
 	PVDE     CR = 0x01 << 4  //+ Power Voltage Detector Enable.
 	PLS      CR = 0x07 << 5  //+ PLS[2:0] bits (PVD Level Selection).
-	PLS_0    CR = 0x01 << 5  //  Bit 0.
-	PLS_1    CR = 0x02 << 5  //  Bit 1.
-	PLS_2    CR = 0x04 << 5  //  Bit 2.
 	PLS_LEV0 CR = 0x00 << 5  //  PVD level 0.
 	PLS_LEV1 CR = 0x01 << 5  //  PVD level 1.
 	PLS_LEV2 CR = 0x02 << 5  //  PVD level 2.
@@ -30,19 +27,12 @@ const (
 	PLS_LEV7 CR = 0x07 << 5  //  PVD level 7.
 	DBP      CR = 0x01 << 8  //+ Disable Backup Domain write protection.
 	FPDS     CR = 0x01 << 9  //+ Flash power down in Stop mode.
-	LPUDS    CR = 0x01 << 10 //+ Low-Power Regulator in Stop under-drive mode.
-	MRUDS    CR = 0x01 << 11 //+ Main regulator in Stop under-drive mode.
-	LPLVDS   CR = 0x01 << 10 //  Low-power regulator Low Voltage in Deep Sleep mode.
-	MRLVDS   CR = 0x01 << 11 //  Main regulator Low Voltage in Deep Sleep mode.
+	LPLVDS   CR = 0x01 << 10 //+ Low Power Regulator Low Voltage in Deep Sleep mode.
+	MRLVDS   CR = 0x01 << 11 //+ Main Regulator Low Voltage in Deep Sleep mode.
 	ADCDC1   CR = 0x01 << 13 //+ Refer to AN4073 on how to use this bit.
 	VOS      CR = 0x03 << 14 //+ VOS[1:0] bits (Regulator voltage scaling output selection).
 	VOS_0    CR = 0x01 << 14 //  Bit 0.
 	VOS_1    CR = 0x02 << 14 //  Bit 1.
-	ODEN     CR = 0x01 << 16 //+ Over Drive enable.
-	ODSWEN   CR = 0x01 << 17 //+ Over Drive switch enabled.
-	UDEN     CR = 0x03 << 18 //+ Under Drive enable in stop mode.
-	UDEN_0   CR = 0x01 << 18 //  Bit 0.
-	UDEN_1   CR = 0x02 << 18 //  Bit 1.
 	FMSSR    CR = 0x01 << 20 //+ Flash Memory Sleep System Run.
 	FISSR    CR = 0x01 << 21 //+ Flash Interface Stop while System Run.
 )
@@ -56,41 +46,30 @@ const (
 	PLSn    = 5
 	DBPn    = 8
 	FPDSn   = 9
-	LPUDSn  = 10
-	MRUDSn  = 11
+	LPLVDSn = 10
+	MRLVDSn = 11
 	ADCDC1n = 13
 	VOSn    = 14
-	ODENn   = 16
-	ODSWENn = 17
-	UDENn   = 18
 	FMSSRn  = 20
 	FISSRn  = 21
 )
 
 const (
-	WUF     CSR = 0x01 << 0  //+ Wakeup Flag.
-	SBF     CSR = 0x01 << 1  //+ Standby Flag.
-	PVDO    CSR = 0x01 << 2  //+ PVD Output.
-	BRR     CSR = 0x01 << 3  //+ Backup regulator ready.
-	WUPP    CSR = 0x01 << 7  //+ WKUP pin Polarity.
-	EWUP    CSR = 0x01 << 8  //+ Enable WKUP pin.
-	BRE     CSR = 0x01 << 9  //+ Backup regulator enable.
-	VOSRDY  CSR = 0x01 << 14 //+ Regulator voltage scaling output selection ready.
-	ODRDY   CSR = 0x01 << 16 //+ Over Drive generator ready.
-	ODSWRDY CSR = 0x01 << 17 //+ Over Drive Switch ready.
-	UDSWRDY CSR = 0x03 << 18 //+ Under Drive ready.
+	WUF    CSR = 0x01 << 0  //+ Wakeup Flag.
+	SBF    CSR = 0x01 << 1  //+ Standby Flag.
+	PVDO   CSR = 0x01 << 2  //+ PVD Output.
+	BRR    CSR = 0x01 << 3  //+ Backup regulator ready.
+	EWUP   CSR = 0x01 << 8  //+ Enable WKUP pin.
+	BRE    CSR = 0x01 << 9  //+ Backup regulator enable.
+	VOSRDY CSR = 0x01 << 14 //+ Regulator voltage scaling output selection ready.
 )
 
 const (
-	WUFn     = 0
-	SBFn     = 1
-	PVDOn    = 2
-	BRRn     = 3
-	WUPPn    = 7
-	EWUPn    = 8
-	BREn     = 9
-	VOSRDYn  = 14
-	ODRDYn   = 16
-	ODSWRDYn = 17
-	UDSWRDYn = 18
+	WUFn    = 0
+	SBFn    = 1
+	PVDOn   = 2
+	BRRn    = 3
+	EWUPn   = 8
+	BREn    = 9
+	VOSRDYn = 14
 )

@@ -7,17 +7,16 @@
 //  SPI1     mmap.SPI1_BASE
 //  SPI4     mmap.SPI4_BASE
 //  SPI5     mmap.SPI5_BASE
-//  SPI6     mmap.SPI6_BASE
 // Registers:
-//  0x00 16  CR1     Control register 1 (not used in I2S mode).
-//  0x04 16  CR2     Control register 2.
-//  0x08 16  SR      Status register.
-//  0x0C 16  DR      Data register.
-//  0x10 16  CRCPR   CRC polynomial register (not used in I2S mode).
-//  0x14 16  RXCRCR  RX CRC register (not used in I2S mode).
-//  0x18 16  TXCRCR  TX CRC register (not used in I2S mode).
-//  0x1C 16  I2SCFGR SPI_I2S configuration register.
-//  0x20 16  I2SPR   SPI_I2S prescaler register.
+//  0x00 32  CR1     Control register 1 (not used in I2S mode).
+//  0x04 32  CR2     Control register 2.
+//  0x08 32  SR      Status register.
+//  0x0C 32  DR      Data register.
+//  0x10 32  CRCPR   CRC polynomial register (not used in I2S mode).
+//  0x14 32  RXCRCR  RX CRC register (not used in I2S mode).
+//  0x18 32  TXCRCR  TX CRC register (not used in I2S mode).
+//  0x1C 32  I2SCFGR SPI_I2S configuration register.
+//  0x20 32  I2SPR   SPI_I2S prescaler register.
 // Import:
 //  stm32/o/f411xe/mmap
 package spi
@@ -29,9 +28,6 @@ const (
 	CPOL     CR1 = 0x01 << 1  //+ Clock Polarity.
 	MSTR     CR1 = 0x01 << 2  //+ Master Selection.
 	BR       CR1 = 0x07 << 3  //+ BR[2:0] bits (Baud Rate Control).
-	BR_0     CR1 = 0x01 << 3  //  Bit 0.
-	BR_1     CR1 = 0x02 << 3  //  Bit 1.
-	BR_2     CR1 = 0x04 << 3  //  Bit 2.
 	SPE      CR1 = 0x01 << 6  //+ SPI Enable.
 	LSBFIRST CR1 = 0x01 << 7  //+ Frame Format.
 	SSI      CR1 = 0x01 << 8  //+ Internal slave select.
@@ -65,6 +61,7 @@ const (
 	RXDMAEN CR2 = 0x01 << 0 //+ Rx Buffer DMA Enable.
 	TXDMAEN CR2 = 0x01 << 1 //+ Tx Buffer DMA Enable.
 	SSOE    CR2 = 0x01 << 2 //+ SS Output Enable.
+	FRF     CR2 = 0x01 << 4 //+ Frame Format.
 	ERRIE   CR2 = 0x01 << 5 //+ Error Interrupt Enable.
 	RXNEIE  CR2 = 0x01 << 6 //+ RX buffer Not Empty Interrupt Enable.
 	TXEIE   CR2 = 0x01 << 7 //+ Tx buffer Empty Interrupt Enable.
@@ -74,6 +71,7 @@ const (
 	RXDMAENn = 0
 	TXDMAENn = 1
 	SSOEn    = 2
+	FRFn     = 4
 	ERRIEn   = 5
 	RXNEIEn  = 6
 	TXEIEn   = 7
@@ -88,6 +86,7 @@ const (
 	MODF   SR = 0x01 << 5 //+ Mode fault.
 	OVR    SR = 0x01 << 6 //+ Overrun flag.
 	BSY    SR = 0x01 << 7 //+ Busy flag.
+	FRE    SR = 0x01 << 8 //+ Frame format error flag.
 )
 
 const (
@@ -99,6 +98,7 @@ const (
 	MODFn   = 5
 	OVRn    = 6
 	BSYn    = 7
+	FREn    = 8
 )
 
 const (
@@ -126,20 +126,14 @@ const (
 )
 
 const (
-	CHLEN    I2SCFGR = 0x01 << 0  //+ Channel length (number of bits per audio channel).
-	DATLEN   I2SCFGR = 0x03 << 1  //+ DATLEN[1:0] bits (Data length to be transferred).
-	DATLEN_0 I2SCFGR = 0x01 << 1  //  Bit 0.
-	DATLEN_1 I2SCFGR = 0x02 << 1  //  Bit 1.
-	CKPOL    I2SCFGR = 0x01 << 3  //+ steady state clock polarity.
-	I2SSTD   I2SCFGR = 0x03 << 4  //+ I2SSTD[1:0] bits (I2S standard selection).
-	I2SSTD_0 I2SCFGR = 0x01 << 4  //  Bit 0.
-	I2SSTD_1 I2SCFGR = 0x02 << 4  //  Bit 1.
-	PCMSYNC  I2SCFGR = 0x01 << 7  //+ PCM frame synchronization.
-	I2SCFG   I2SCFGR = 0x03 << 8  //+ I2SCFG[1:0] bits (I2S configuration mode).
-	I2SCFG_0 I2SCFGR = 0x01 << 8  //  Bit 0.
-	I2SCFG_1 I2SCFGR = 0x02 << 8  //  Bit 1.
-	I2SE     I2SCFGR = 0x01 << 10 //+ I2S Enable.
-	I2SMOD   I2SCFGR = 0x01 << 11 //+ I2S mode selection.
+	CHLEN   I2SCFGR = 0x01 << 0  //+ Channel length (number of bits per audio channel).
+	DATLEN  I2SCFGR = 0x03 << 1  //+ DATLEN[1:0] bits (Data length to be transferred).
+	CKPOL   I2SCFGR = 0x01 << 3  //+ steady state clock polarity.
+	I2SSTD  I2SCFGR = 0x03 << 4  //+ I2SSTD[1:0] bits (I2S standard selection).
+	PCMSYNC I2SCFGR = 0x01 << 7  //+ PCM frame synchronization.
+	I2SCFG  I2SCFGR = 0x03 << 8  //+ I2SCFG[1:0] bits (I2S configuration mode).
+	I2SE    I2SCFGR = 0x01 << 10 //+ I2S Enable.
+	I2SMOD  I2SCFGR = 0x01 << 11 //+ I2S mode selection.
 )
 
 const (

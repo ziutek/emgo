@@ -135,8 +135,16 @@ func (p *EXTI_Periph) IL19() RMIMR {
 	return RMIMR{mmio.UM32{&p.IMR.U32, uint32(IL19)}}
 }
 
-func (p *EXTI_Periph) IL23() RMIMR {
-	return RMIMR{mmio.UM32{&p.IMR.U32, uint32(IL23)}}
+func (p *EXTI_Periph) IL20() RMIMR {
+	return RMIMR{mmio.UM32{&p.IMR.U32, uint32(IL20)}}
+}
+
+func (p *EXTI_Periph) IL21() RMIMR {
+	return RMIMR{mmio.UM32{&p.IMR.U32, uint32(IL21)}}
+}
+
+func (p *EXTI_Periph) IL22() RMIMR {
+	return RMIMR{mmio.UM32{&p.IMR.U32, uint32(IL22)}}
 }
 
 type EMR uint32
@@ -246,8 +254,16 @@ func (p *EXTI_Periph) EL19() RMEMR {
 	return RMEMR{mmio.UM32{&p.EMR.U32, uint32(EL19)}}
 }
 
-func (p *EXTI_Periph) EL23() RMEMR {
-	return RMEMR{mmio.UM32{&p.EMR.U32, uint32(EL23)}}
+func (p *EXTI_Periph) EL20() RMEMR {
+	return RMEMR{mmio.UM32{&p.EMR.U32, uint32(EL20)}}
+}
+
+func (p *EXTI_Periph) EL21() RMEMR {
+	return RMEMR{mmio.UM32{&p.EMR.U32, uint32(EL21)}}
+}
+
+func (p *EXTI_Periph) EL22() RMEMR {
+	return RMEMR{mmio.UM32{&p.EMR.U32, uint32(EL22)}}
 }
 
 type RTSR uint32
@@ -357,8 +373,16 @@ func (p *EXTI_Periph) TR19() RMRTSR {
 	return RMRTSR{mmio.UM32{&p.RTSR.U32, uint32(TR19)}}
 }
 
-func (p *EXTI_Periph) TR23() RMRTSR {
-	return RMRTSR{mmio.UM32{&p.RTSR.U32, uint32(TR23)}}
+func (p *EXTI_Periph) TR20() RMRTSR {
+	return RMRTSR{mmio.UM32{&p.RTSR.U32, uint32(TR20)}}
+}
+
+func (p *EXTI_Periph) TR21() RMRTSR {
+	return RMRTSR{mmio.UM32{&p.RTSR.U32, uint32(TR21)}}
+}
+
+func (p *EXTI_Periph) TR22() RMRTSR {
+	return RMRTSR{mmio.UM32{&p.RTSR.U32, uint32(TR22)}}
 }
 
 type FTSR uint32
@@ -468,8 +492,16 @@ func (p *EXTI_Periph) TF19() RMFTSR {
 	return RMFTSR{mmio.UM32{&p.FTSR.U32, uint32(TF19)}}
 }
 
-func (p *EXTI_Periph) TF23() RMFTSR {
-	return RMFTSR{mmio.UM32{&p.FTSR.U32, uint32(TF23)}}
+func (p *EXTI_Periph) TF20() RMFTSR {
+	return RMFTSR{mmio.UM32{&p.FTSR.U32, uint32(TF20)}}
+}
+
+func (p *EXTI_Periph) TF21() RMFTSR {
+	return RMFTSR{mmio.UM32{&p.FTSR.U32, uint32(TF21)}}
+}
+
+func (p *EXTI_Periph) TF22() RMFTSR {
+	return RMFTSR{mmio.UM32{&p.FTSR.U32, uint32(TF22)}}
 }
 
 type SWIER uint32
@@ -579,8 +611,16 @@ func (p *EXTI_Periph) SWI19() RMSWIER {
 	return RMSWIER{mmio.UM32{&p.SWIER.U32, uint32(SWI19)}}
 }
 
-func (p *EXTI_Periph) SWI23() RMSWIER {
-	return RMSWIER{mmio.UM32{&p.SWIER.U32, uint32(SWI23)}}
+func (p *EXTI_Periph) SWI20() RMSWIER {
+	return RMSWIER{mmio.UM32{&p.SWIER.U32, uint32(SWI20)}}
+}
+
+func (p *EXTI_Periph) SWI21() RMSWIER {
+	return RMSWIER{mmio.UM32{&p.SWIER.U32, uint32(SWI21)}}
+}
+
+func (p *EXTI_Periph) SWI22() RMSWIER {
+	return RMSWIER{mmio.UM32{&p.SWIER.U32, uint32(SWI22)}}
 }
 
 type PR uint32
@@ -690,6 +730,14 @@ func (p *EXTI_Periph) PIF19() RMPR {
 	return RMPR{mmio.UM32{&p.PR.U32, uint32(PIF19)}}
 }
 
-func (p *EXTI_Periph) PIF23() RMPR {
-	return RMPR{mmio.UM32{&p.PR.U32, uint32(PIF23)}}
+func (p *EXTI_Periph) PIF20() RMPR {
+	return RMPR{mmio.UM32{&p.PR.U32, uint32(PIF20)}}
+}
+
+func (p *EXTI_Periph) PIF21() RMPR {
+	return RMPR{mmio.UM32{&p.PR.U32, uint32(PIF21)}}
+}
+
+func (p *EXTI_Periph) PIF22() RMPR {
+	return RMPR{mmio.UM32{&p.PR.U32, uint32(PIF22)}}
 }

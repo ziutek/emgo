@@ -3,21 +3,16 @@
 // Peripheral: USART_Periph  Universal Synchronous Asynchronous Receiver Transmitter.
 // Instances:
 //  USART2  mmap.USART2_BASE
-//  USART3  mmap.USART3_BASE
-//  UART4   mmap.UART4_BASE
-//  UART5   mmap.UART5_BASE
-//  UART7   mmap.UART7_BASE
-//  UART8   mmap.UART8_BASE
 //  USART1  mmap.USART1_BASE
 //  USART6  mmap.USART6_BASE
 // Registers:
-//  0x00 16  SR   Status register.
-//  0x04 16  DR   Data register.
-//  0x08 16  BRR  Baud rate register.
-//  0x0C 16  CR1  Control register 1.
-//  0x10 16  CR2  Control register 2.
-//  0x14 16  CR3  Control register 3.
-//  0x18 16  GTPR Guard time and prescaler register.
+//  0x00 32  SR   Status register.
+//  0x04 32  DR   Data register.
+//  0x08 32  BRR  Baud rate register.
+//  0x0C 32  CR1  Control register 1.
+//  0x10 32  CR2  Control register 2.
+//  0x14 32  CR3  Control register 3.
+//  0x18 32  GTPR Guard time and prescaler register.
 // Import:
 //  stm32/o/f411xe/mmap
 package usart
@@ -68,7 +63,7 @@ const (
 	IDLEIE CR1 = 0x01 << 4  //+ IDLE Interrupt Enable.
 	RXNEIE CR1 = 0x01 << 5  //+ RXNE Interrupt Enable.
 	TCIE   CR1 = 0x01 << 6  //+ Transmission Complete Interrupt Enable.
-	TXEIE  CR1 = 0x01 << 7  //+ PE Interrupt Enable.
+	TXEIE  CR1 = 0x01 << 7  //+ TXE Interrupt Enable.
 	PEIE   CR1 = 0x01 << 8  //+ PE Interrupt Enable.
 	PS     CR1 = 0x01 << 9  //+ Parity Selection.
 	PCE    CR1 = 0x01 << 10 //+ Parity Control Enable.
@@ -97,17 +92,15 @@ const (
 )
 
 const (
-	ADD    CR2 = 0x0F << 0  //+ Address of the USART node.
-	LBDL   CR2 = 0x01 << 5  //+ LIN Break Detection Length.
-	LBDIE  CR2 = 0x01 << 6  //+ LIN Break Detection Interrupt Enable.
-	LBCL   CR2 = 0x01 << 8  //+ Last Bit Clock pulse.
-	CPHA   CR2 = 0x01 << 9  //+ Clock Phase.
-	CPOL   CR2 = 0x01 << 10 //+ Clock Polarity.
-	CLKEN  CR2 = 0x01 << 11 //+ Clock Enable.
-	STOP   CR2 = 0x03 << 12 //+ STOP[1:0] bits (STOP bits).
-	STOP_0 CR2 = 0x01 << 12 //  Bit 0.
-	STOP_1 CR2 = 0x02 << 12 //  Bit 1.
-	LINEN  CR2 = 0x01 << 14 //+ LIN mode enable.
+	ADD   CR2 = 0x0F << 0  //+ Address of the USART node.
+	LBDL  CR2 = 0x01 << 5  //+ LIN Break Detection Length.
+	LBDIE CR2 = 0x01 << 6  //+ LIN Break Detection Interrupt Enable.
+	LBCL  CR2 = 0x01 << 8  //+ Last Bit Clock pulse.
+	CPHA  CR2 = 0x01 << 9  //+ Clock Phase.
+	CPOL  CR2 = 0x01 << 10 //+ Clock Polarity.
+	CLKEN CR2 = 0x01 << 11 //+ Clock Enable.
+	STOP  CR2 = 0x03 << 12 //+ STOP[1:0] bits (STOP bits).
+	LINEN CR2 = 0x01 << 14 //+ LIN mode enable.
 )
 
 const (
@@ -153,16 +146,8 @@ const (
 )
 
 const (
-	PSC   GTPR = 0xFF << 0 //+ PSC[7:0] bits (Prescaler value).
-	PSC_0 GTPR = 0x01 << 0 //  Bit 0.
-	PSC_1 GTPR = 0x02 << 0 //  Bit 1.
-	PSC_2 GTPR = 0x04 << 0 //  Bit 2.
-	PSC_3 GTPR = 0x08 << 0 //  Bit 3.
-	PSC_4 GTPR = 0x10 << 0 //  Bit 4.
-	PSC_5 GTPR = 0x20 << 0 //  Bit 5.
-	PSC_6 GTPR = 0x40 << 0 //  Bit 6.
-	PSC_7 GTPR = 0x80 << 0 //  Bit 7.
-	GT    GTPR = 0xFF << 8 //+ Guard time value.
+	PSC GTPR = 0xFF << 0 //+ PSC[7:0] bits (Prescaler value).
+	GT  GTPR = 0xFF << 8 //+ Guard time value.
 )
 
 const (

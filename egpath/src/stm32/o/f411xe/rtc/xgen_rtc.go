@@ -192,8 +192,8 @@ func (p *RTC_Periph) COSEL() RMCR {
 	return RMCR{mmio.UM32{&p.CR.U32, uint32(COSEL)}}
 }
 
-func (p *RTC_Periph) BCK() RMCR {
-	return RMCR{mmio.UM32{&p.CR.U32, uint32(BCK)}}
+func (p *RTC_Periph) BKP() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(BKP)}}
 }
 
 func (p *RTC_Periph) SUB1H() RMCR {
@@ -843,8 +843,8 @@ func (p *RTC_Periph) TSINSEL() RMTAFCR {
 	return RMTAFCR{mmio.UM32{&p.TAFCR.U32, uint32(TSINSEL)}}
 }
 
-func (p *RTC_Periph) TAMPINSEL() RMTAFCR {
-	return RMTAFCR{mmio.UM32{&p.TAFCR.U32, uint32(TAMPINSEL)}}
+func (p *RTC_Periph) TAMP1INSEL() RMTAFCR {
+	return RMTAFCR{mmio.UM32{&p.TAFCR.U32, uint32(TAMP1INSEL)}}
 }
 
 func (p *RTC_Periph) TAMPPUDIS() RMTAFCR {

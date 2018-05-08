@@ -184,6 +184,10 @@ func (p *FLASH_Periph) PGSERR() RMSR {
 	return RMSR{mmio.UM32{&p.SR.U32, uint32(PGSERR)}}
 }
 
+func (p *FLASH_Periph) RDERR() RMSR {
+	return RMSR{mmio.UM32{&p.SR.U32, uint32(RDERR)}}
+}
+
 func (p *FLASH_Periph) BSY() RMSR {
 	return RMSR{mmio.UM32{&p.SR.U32, uint32(BSY)}}
 }
@@ -233,10 +237,6 @@ func (p *FLASH_Periph) SNB() RMCR {
 
 func (p *FLASH_Periph) PSIZE() RMCR {
 	return RMCR{mmio.UM32{&p.CR.U32, uint32(PSIZE)}}
-}
-
-func (p *FLASH_Periph) MER2() RMCR {
-	return RMCR{mmio.UM32{&p.CR.U32, uint32(MER2)}}
 }
 
 func (p *FLASH_Periph) STRT() RMCR {
@@ -294,10 +294,6 @@ func (p *FLASH_Periph) BOR_LEV_1(n int) RMOPTCR {
 	return RMOPTCR{mmio.UM32{&p.OPTCR[n].U32, uint32(BOR_LEV_1)}}
 }
 
-func (p *FLASH_Periph) BFB2(n int) RMOPTCR {
-	return RMOPTCR{mmio.UM32{&p.OPTCR[n].U32, uint32(BFB2)}}
-}
-
 func (p *FLASH_Periph) WDG_SW(n int) RMOPTCR {
 	return RMOPTCR{mmio.UM32{&p.OPTCR[n].U32, uint32(WDG_SW)}}
 }
@@ -316,12 +312,4 @@ func (p *FLASH_Periph) RDP(n int) RMOPTCR {
 
 func (p *FLASH_Periph) nWRP(n int) RMOPTCR {
 	return RMOPTCR{mmio.UM32{&p.OPTCR[n].U32, uint32(nWRP)}}
-}
-
-func (p *FLASH_Periph) DB1M(n int) RMOPTCR {
-	return RMOPTCR{mmio.UM32{&p.OPTCR[n].U32, uint32(DB1M)}}
-}
-
-func (p *FLASH_Periph) SPRMOD(n int) RMOPTCR {
-	return RMOPTCR{mmio.UM32{&p.OPTCR[n].U32, uint32(SPRMOD)}}
 }

@@ -110,10 +110,6 @@ func (p *DMA_Stream_Periph) PBURST() RMCR {
 	return RMCR{mmio.UM32{&p.CR.U32, uint32(PBURST)}}
 }
 
-func (p *DMA_Stream_Periph) ACK() RMCR {
-	return RMCR{mmio.UM32{&p.CR.U32, uint32(ACK)}}
-}
-
 func (p *DMA_Stream_Periph) CT() RMCR {
 	return RMCR{mmio.UM32{&p.CR.U32, uint32(CT)}}
 }
@@ -178,6 +174,10 @@ func (p *DMA_Stream_Periph) EN() RMCR {
 	return RMCR{mmio.UM32{&p.CR.U32, uint32(EN)}}
 }
 
+func (p *DMA_Stream_Periph) ACK() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(ACK)}}
+}
+
 type NDTR uint32
 
 func (b NDTR) Field(mask NDTR) int {
@@ -232,6 +232,10 @@ type RMPAR struct{ mmio.UM32 }
 func (rm RMPAR) Load() PAR   { return PAR(rm.UM32.Load()) }
 func (rm RMPAR) Store(b PAR) { rm.UM32.Store(uint32(b)) }
 
+func (p *DMA_Stream_Periph) PA() RMPAR {
+	return RMPAR{mmio.UM32{&p.PAR.U32, uint32(PA)}}
+}
+
 type M0AR uint32
 
 func (b M0AR) Field(mask M0AR) int {
@@ -259,6 +263,10 @@ type RMM0AR struct{ mmio.UM32 }
 func (rm RMM0AR) Load() M0AR   { return M0AR(rm.UM32.Load()) }
 func (rm RMM0AR) Store(b M0AR) { rm.UM32.Store(uint32(b)) }
 
+func (p *DMA_Stream_Periph) M0A() RMM0AR {
+	return RMM0AR{mmio.UM32{&p.M0AR.U32, uint32(M0A)}}
+}
+
 type M1AR uint32
 
 func (b M1AR) Field(mask M1AR) int {
@@ -285,6 +293,10 @@ type RMM1AR struct{ mmio.UM32 }
 
 func (rm RMM1AR) Load() M1AR   { return M1AR(rm.UM32.Load()) }
 func (rm RMM1AR) Store(b M1AR) { rm.UM32.Store(uint32(b)) }
+
+func (p *DMA_Stream_Periph) M1A() RMM1AR {
+	return RMM1AR{mmio.UM32{&p.M1AR.U32, uint32(M1A)}}
+}
 
 type FCR uint32
 

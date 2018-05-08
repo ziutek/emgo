@@ -13,13 +13,6 @@ package wwdg
 
 const (
 	T    CR = 0x7F << 0 //+ T[6:0] bits (7-Bit counter (MSB to LSB)).
-	T_0  CR = 0x01 << 0 //  Bit 0.
-	T_1  CR = 0x02 << 0 //  Bit 1.
-	T_2  CR = 0x04 << 0 //  Bit 2.
-	T_3  CR = 0x08 << 0 //  Bit 3.
-	T_4  CR = 0x10 << 0 //  Bit 4.
-	T_5  CR = 0x20 << 0 //  Bit 5.
-	T_6  CR = 0x40 << 0 //  Bit 6.
 	WDGA CR = 0x01 << 7 //+ Activation bit.
 )
 
@@ -29,18 +22,9 @@ const (
 )
 
 const (
-	W       CFR = 0x7F << 0 //+ W[6:0] bits (7-bit window value).
-	W_0     CFR = 0x01 << 0 //  Bit 0.
-	W_1     CFR = 0x02 << 0 //  Bit 1.
-	W_2     CFR = 0x04 << 0 //  Bit 2.
-	W_3     CFR = 0x08 << 0 //  Bit 3.
-	W_4     CFR = 0x10 << 0 //  Bit 4.
-	W_5     CFR = 0x20 << 0 //  Bit 5.
-	W_6     CFR = 0x40 << 0 //  Bit 6.
-	WDGTB   CFR = 0x03 << 7 //+ WDGTB[1:0] bits (Timer Base).
-	WDGTB_0 CFR = 0x01 << 7 //  Bit 0.
-	WDGTB_1 CFR = 0x02 << 7 //  Bit 1.
-	EWI     CFR = 0x01 << 9 //+ Early Wakeup Interrupt.
+	W     CFR = 0x7F << 0 //+ W[6:0] bits (7-bit window value).
+	WDGTB CFR = 0x03 << 7 //+ WDGTB[1:0] bits (Timer Base).
+	EWI   CFR = 0x01 << 9 //+ Early Wakeup Interrupt.
 )
 
 const (

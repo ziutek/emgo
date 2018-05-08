@@ -6,16 +6,16 @@
 //  I2C2  mmap.I2C2_BASE
 //  I2C3  mmap.I2C3_BASE
 // Registers:
-//  0x00 16  CR1   Control register 1.
-//  0x04 16  CR2   Control register 2.
-//  0x08 16  OAR1  Own address register 1.
-//  0x0C 16  OAR2  Own address register 2.
-//  0x10 16  DR    Data register.
-//  0x14 16  SR1   Status register 1.
-//  0x18 16  SR2   Status register 2.
-//  0x1C 16  CCR   Clock control register.
-//  0x20 16  TRISE TRISE register.
-//  0x24 16  FLTR  FLTR register.
+//  0x00 32  CR1   Control register 1.
+//  0x04 32  CR2   Control register 2.
+//  0x08 32  OAR1  Own address register 1.
+//  0x0C 32  OAR2  Own address register 2.
+//  0x10 32  DR    Data register.
+//  0x14 32  SR1   Status register 1.
+//  0x18 32  SR2   Status register 2.
+//  0x1C 32  CCR   Clock control register.
+//  0x20 32  TRISE TRISE register.
+//  0x24 32  FLTR  FLTR register.
 // Import:
 //  stm32/o/f411xe/mmap
 package i2c
@@ -58,12 +58,6 @@ const (
 
 const (
 	FREQ    CR2 = 0x3F << 0  //+ FREQ[5:0] bits (Peripheral Clock Frequency).
-	FREQ_0  CR2 = 0x01 << 0  //  Bit 0.
-	FREQ_1  CR2 = 0x02 << 0  //  Bit 1.
-	FREQ_2  CR2 = 0x04 << 0  //  Bit 2.
-	FREQ_3  CR2 = 0x08 << 0  //  Bit 3.
-	FREQ_4  CR2 = 0x10 << 0  //  Bit 4.
-	FREQ_5  CR2 = 0x20 << 0  //  Bit 5.
 	ITERREN CR2 = 0x01 << 8  //+ Error Interrupt Enable.
 	ITEVTEN CR2 = 0x01 << 9  //+ Event Interrupt Enable.
 	ITBUFEN CR2 = 0x01 << 10 //+ Buffer Interrupt Enable.

@@ -4,16 +4,24 @@
 // Instances:
 //  SDMMC1  mmap.SDMMC1_BASE
 // Registers:
-//  0x00 32  POWER  Power control register.
-//  0x04 32  CLKCR  Clock control register.
-//  0x08 32  ARG    Argument register.
-//  0x0C 32  CMD    Command register.
-//  0x10 32  DTIMER Data timer register.
-//  0x14 32  DLEN   Data length register.
-//  0x18 32  DCTRL  Data control register.
-//  0x1C 32  ICR    Interrupt clear register.
-//  0x20 32  MASK   Mask register.
-//  0x60 32  FIFO   Data FIFO register.
+//  0x00 32  POWER   Power control register.
+//  0x04 32  CLKCR   Clock control register.
+//  0x08 32  ARG     Argument register.
+//  0x0C 32  CMD     Command register.
+//  0x10 32  RESPCMD Command response register.
+//  0x14 32  RESP1   Response 1 register.
+//  0x18 32  RESP2   Response 2 register.
+//  0x1C 32  RESP3   Response 3 register.
+//  0x20 32  RESP4   Response 4 register.
+//  0x24 32  DTIMER  Data timer register.
+//  0x28 32  DLEN    Data length register.
+//  0x2C 32  DCTRL   Data control register.
+//  0x30 32  DCOUNT  Data counter register.
+//  0x34 32  STA     Status register.
+//  0x38 32  ICR     Interrupt clear register.
+//  0x3C 32  MASK    Mask register.
+//  0x48 32  FIFOCNT FIFO counter register.
+//  0x80 32  FIFO    Data FIFO register.
 // Import:
 //  stm32/o/l476xx/mmap
 package sdmmc
@@ -75,6 +83,38 @@ const (
 )
 
 const (
+	CARDSTATUS1 RESP1 = 0xFFFFFFFF << 0 //+ Card Status.
+)
+
+const (
+	CARDSTATUS1n = 0
+)
+
+const (
+	CARDSTATUS2 RESP2 = 0xFFFFFFFF << 0 //+ Card Status.
+)
+
+const (
+	CARDSTATUS2n = 0
+)
+
+const (
+	CARDSTATUS3 RESP3 = 0xFFFFFFFF << 0 //+ Card Status.
+)
+
+const (
+	CARDSTATUS3n = 0
+)
+
+const (
+	CARDSTATUS4 RESP4 = 0xFFFFFFFF << 0 //+ Card Status.
+)
+
+const (
+	CARDSTATUS4n = 0
+)
+
+const (
 	DATATIME DTIMER = 0xFFFFFFFF << 0 //+ Data timeout period..
 )
 
@@ -112,6 +152,66 @@ const (
 	RWSTOPn     = 9
 	RWMODn      = 10
 	SDIOENn     = 11
+)
+
+const (
+	DATACOUNT DCOUNT = 0x1FFFFFF << 0 //+ Data count value.
+)
+
+const (
+	DATACOUNTn = 0
+)
+
+const (
+	CCRCFAIL STA = 0x01 << 0  //+ Command response received (CRC check failed).
+	DCRCFAIL STA = 0x01 << 1  //+ Data block sent/received (CRC check failed).
+	CTIMEOUT STA = 0x01 << 2  //+ Command response timeout.
+	DTIMEOUT STA = 0x01 << 3  //+ Data timeout.
+	TXUNDERR STA = 0x01 << 4  //+ Transmit FIFO underrun error.
+	RXOVERR  STA = 0x01 << 5  //+ Received FIFO overrun error.
+	CMDREND  STA = 0x01 << 6  //+ Command response received (CRC check passed).
+	CMDSENT  STA = 0x01 << 7  //+ Command sent (no response required).
+	DATAEND  STA = 0x01 << 8  //+ Data end (data counter, SDIDCOUNT, is zero).
+	STBITERR STA = 0x01 << 9  //+ Start bit not detected on all data signals in wide bus mode.
+	DBCKEND  STA = 0x01 << 10 //+ Data block sent/received (CRC check passed).
+	CMDACT   STA = 0x01 << 11 //+ Command transfer in progress.
+	TXACT    STA = 0x01 << 12 //+ Data transmit in progress.
+	RXACT    STA = 0x01 << 13 //+ Data receive in progress.
+	TXFIFOHE STA = 0x01 << 14 //+ Transmit FIFO Half Empty: at least 8 words can be written into the FIFO.
+	RXFIFOHF STA = 0x01 << 15 //+ Receive FIFO Half Full: there are at least 8 words in the FIFO.
+	TXFIFOF  STA = 0x01 << 16 //+ Transmit FIFO full.
+	RXFIFOF  STA = 0x01 << 17 //+ Receive FIFO full.
+	TXFIFOE  STA = 0x01 << 18 //+ Transmit FIFO empty.
+	RXFIFOE  STA = 0x01 << 19 //+ Receive FIFO empty.
+	TXDAVL   STA = 0x01 << 20 //+ Data available in transmit FIFO.
+	RXDAVL   STA = 0x01 << 21 //+ Data available in receive FIFO.
+	SDIOIT   STA = 0x01 << 22 //+ SDIO interrupt received.
+)
+
+const (
+	CCRCFAILn = 0
+	DCRCFAILn = 1
+	CTIMEOUTn = 2
+	DTIMEOUTn = 3
+	TXUNDERRn = 4
+	RXOVERRn  = 5
+	CMDRENDn  = 6
+	CMDSENTn  = 7
+	DATAENDn  = 8
+	STBITERRn = 9
+	DBCKENDn  = 10
+	CMDACTn   = 11
+	TXACTn    = 12
+	RXACTn    = 13
+	TXFIFOHEn = 14
+	RXFIFOHFn = 15
+	TXFIFOFn  = 16
+	RXFIFOFn  = 17
+	TXFIFOEn  = 18
+	RXFIFOEn  = 19
+	TXDAVLn   = 20
+	RXDAVLn   = 21
+	SDIOITn   = 22
 )
 
 const (
@@ -192,6 +292,14 @@ const (
 	TXDAVLIEn   = 20
 	RXDAVLIEn   = 21
 	SDIOITIEn   = 22
+)
+
+const (
+	FIFOCOUNT FIFOCNT = 0xFFFFFF << 0 //+ Remaining number of words to be written to or read from the FIFO.
+)
+
+const (
+	FIFOCOUNTn = 0
 )
 
 const (

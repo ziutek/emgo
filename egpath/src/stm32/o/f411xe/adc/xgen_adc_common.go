@@ -21,7 +21,7 @@ func (p *ADC_Common_Periph) BaseAddr() uintptr {
 }
 
 //emgo:const
-var ADC = (*ADC_Common_Periph)(unsafe.Pointer(uintptr(mmap.ADC_BASE)))
+var ADC1_COMMON = (*ADC_Common_Periph)(unsafe.Pointer(uintptr(mmap.ADC1_COMMON_BASE)))
 
 type CSR uint32
 
@@ -72,54 +72,6 @@ func (p *ADC_Common_Periph) STRT1() RMCSR {
 
 func (p *ADC_Common_Periph) OVR1() RMCSR {
 	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(OVR1)}}
-}
-
-func (p *ADC_Common_Periph) AWD2() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(AWD2)}}
-}
-
-func (p *ADC_Common_Periph) EOC2() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(EOC2)}}
-}
-
-func (p *ADC_Common_Periph) JEOC2() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(JEOC2)}}
-}
-
-func (p *ADC_Common_Periph) JSTRT2() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(JSTRT2)}}
-}
-
-func (p *ADC_Common_Periph) STRT2() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(STRT2)}}
-}
-
-func (p *ADC_Common_Periph) OVR2() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(OVR2)}}
-}
-
-func (p *ADC_Common_Periph) AWD3() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(AWD3)}}
-}
-
-func (p *ADC_Common_Periph) EOC3() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(EOC3)}}
-}
-
-func (p *ADC_Common_Periph) JEOC3() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(JEOC3)}}
-}
-
-func (p *ADC_Common_Periph) JSTRT3() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(JSTRT3)}}
-}
-
-func (p *ADC_Common_Periph) STRT3() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(STRT3)}}
-}
-
-func (p *ADC_Common_Periph) OVR3() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(OVR3)}}
 }
 
 type CCR uint32

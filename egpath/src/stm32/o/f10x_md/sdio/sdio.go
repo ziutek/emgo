@@ -6,12 +6,20 @@
 //  0x04 32  CLKCR
 //  0x08 32  ARG
 //  0x0C 32  CMD
-//  0x10 32  DTIMER
-//  0x14 32  DLEN
-//  0x18 32  DCTRL
-//  0x1C 32  ICR
-//  0x20 32  MASK
-//  0x60 32  FIFO
+//  0x10 32  RESPCMD
+//  0x14 32  RESP1
+//  0x18 32  RESP2
+//  0x1C 32  RESP3
+//  0x20 32  RESP4
+//  0x24 32  DTIMER
+//  0x28 32  DLEN
+//  0x2C 32  DCTRL
+//  0x30 32  DCOUNT
+//  0x34 32  STA
+//  0x38 32  ICR
+//  0x3C 32  MASK
+//  0x48 32  FIFOCNT
+//  0x80 32  FIFO
 // Import:
 //  stm32/o/f10x_md/mmap
 package sdio
@@ -85,6 +93,38 @@ const (
 )
 
 const (
+	CARDSTATUS1 RESP1 = 0xFFFFFFFF << 0 //+ Card Status.
+)
+
+const (
+	CARDSTATUS1n = 0
+)
+
+const (
+	CARDSTATUS2 RESP2 = 0xFFFFFFFF << 0 //+ Card Status.
+)
+
+const (
+	CARDSTATUS2n = 0
+)
+
+const (
+	CARDSTATUS3 RESP3 = 0xFFFFFFFF << 0 //+ Card Status.
+)
+
+const (
+	CARDSTATUS3n = 0
+)
+
+const (
+	CARDSTATUS4 RESP4 = 0xFFFFFFFF << 0 //+ Card Status.
+)
+
+const (
+	CARDSTATUS4n = 0
+)
+
+const (
 	DATATIME DTIMER = 0xFFFFFFFF << 0 //+ Data timeout period..
 )
 
@@ -126,6 +166,68 @@ const (
 	RWSTOPn     = 9
 	RWMODn      = 10
 	SDIOENn     = 11
+)
+
+const (
+	DATACOUNT DCOUNT = 0x1FFFFFF << 0 //+ Data count value.
+)
+
+const (
+	DATACOUNTn = 0
+)
+
+const (
+	CCRCFAIL STA = 0x01 << 0  //+ Command response received (CRC check failed).
+	DCRCFAIL STA = 0x01 << 1  //+ Data block sent/received (CRC check failed).
+	CTIMEOUT STA = 0x01 << 2  //+ Command response timeout.
+	DTIMEOUT STA = 0x01 << 3  //+ Data timeout.
+	TXUNDERR STA = 0x01 << 4  //+ Transmit FIFO underrun error.
+	RXOVERR  STA = 0x01 << 5  //+ Received FIFO overrun error.
+	CMDREND  STA = 0x01 << 6  //+ Command response received (CRC check passed).
+	CMDSENT  STA = 0x01 << 7  //+ Command sent (no response required).
+	DATAEND  STA = 0x01 << 8  //+ Data end (data counter, SDIDCOUNT, is zero).
+	STBITERR STA = 0x01 << 9  //+ Start bit not detected on all data signals in wide bus mode.
+	DBCKEND  STA = 0x01 << 10 //+ Data block sent/received (CRC check passed).
+	CMDACT   STA = 0x01 << 11 //+ Command transfer in progress.
+	TXACT    STA = 0x01 << 12 //+ Data transmit in progress.
+	RXACT    STA = 0x01 << 13 //+ Data receive in progress.
+	TXFIFOHE STA = 0x01 << 14 //+ Transmit FIFO Half Empty: at least 8 words can be written into the FIFO.
+	RXFIFOHF STA = 0x01 << 15 //+ Receive FIFO Half Full: there are at least 8 words in the FIFO.
+	TXFIFOF  STA = 0x01 << 16 //+ Transmit FIFO full.
+	RXFIFOF  STA = 0x01 << 17 //+ Receive FIFO full.
+	TXFIFOE  STA = 0x01 << 18 //+ Transmit FIFO empty.
+	RXFIFOE  STA = 0x01 << 19 //+ Receive FIFO empty.
+	TXDAVL   STA = 0x01 << 20 //+ Data available in transmit FIFO.
+	RXDAVL   STA = 0x01 << 21 //+ Data available in receive FIFO.
+	SDIOIT   STA = 0x01 << 22 //+ SDIO interrupt received.
+	CEATAEND STA = 0x01 << 23 //+ CE-ATA command completion signal received for CMD61.
+)
+
+const (
+	CCRCFAILn = 0
+	DCRCFAILn = 1
+	CTIMEOUTn = 2
+	DTIMEOUTn = 3
+	TXUNDERRn = 4
+	RXOVERRn  = 5
+	CMDRENDn  = 6
+	CMDSENTn  = 7
+	DATAENDn  = 8
+	STBITERRn = 9
+	DBCKENDn  = 10
+	CMDACTn   = 11
+	TXACTn    = 12
+	RXACTn    = 13
+	TXFIFOHEn = 14
+	RXFIFOHFn = 15
+	TXFIFOFn  = 16
+	RXFIFOFn  = 17
+	TXFIFOEn  = 18
+	RXFIFOEn  = 19
+	TXDAVLn   = 20
+	RXDAVLn   = 21
+	SDIOITn   = 22
+	CEATAENDn = 23
 )
 
 const (
@@ -212,6 +314,14 @@ const (
 	RXDAVLIEn   = 21
 	SDIOITIEn   = 22
 	CEATAENDIEn = 23
+)
+
+const (
+	FIFOCOUNT FIFOCNT = 0xFFFFFF << 0 //+ Remaining number of words to be written to or read from the FIFO.
+)
+
+const (
+	FIFOCOUNTn = 0
 )
 
 const (

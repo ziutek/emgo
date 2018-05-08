@@ -173,11 +173,9 @@ func peripherals(r *scanner) []*Package {
 			brief = bri
 			continue
 		}
-		if io := strings.Index(line, "__IO"); io == 0 ||
-			strings.HasPrefix(line, "uint") {
-			if io == 0 {
-				line = strings.TrimSpace(line[len("__IO"):])
-			}
+		if uintx := strings.Index(line, "uint"); uintx >= 0 {
+			ioreg := strings.HasPrefix(line, "__I") // True for IO register.
+			line = line[uintx:]
 			n := strings.IndexByte(line, ';')
 			if n < 0 {
 				r.Die("';' expected after register name")
@@ -214,7 +212,7 @@ func peripherals(r *scanner) []*Package {
 				length = int(n)
 				size *= length
 			}
-			if io != 0 {
+			if !ioreg {
 				offset += size
 				continue
 			}
@@ -322,4 +320,3 @@ func fsmcBank1(p *Periph) {
 		}
 	}
 }
-

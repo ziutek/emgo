@@ -81,12 +81,12 @@ func (p *PWR_Periph) FPDS() RMCR {
 	return RMCR{mmio.UM32{&p.CR.U32, uint32(FPDS)}}
 }
 
-func (p *PWR_Periph) LPUDS() RMCR {
-	return RMCR{mmio.UM32{&p.CR.U32, uint32(LPUDS)}}
+func (p *PWR_Periph) LPLVDS() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(LPLVDS)}}
 }
 
-func (p *PWR_Periph) MRUDS() RMCR {
-	return RMCR{mmio.UM32{&p.CR.U32, uint32(MRUDS)}}
+func (p *PWR_Periph) MRLVDS() RMCR {
+	return RMCR{mmio.UM32{&p.CR.U32, uint32(MRLVDS)}}
 }
 
 func (p *PWR_Periph) ADCDC1() RMCR {
@@ -95,18 +95,6 @@ func (p *PWR_Periph) ADCDC1() RMCR {
 
 func (p *PWR_Periph) VOS() RMCR {
 	return RMCR{mmio.UM32{&p.CR.U32, uint32(VOS)}}
-}
-
-func (p *PWR_Periph) ODEN() RMCR {
-	return RMCR{mmio.UM32{&p.CR.U32, uint32(ODEN)}}
-}
-
-func (p *PWR_Periph) ODSWEN() RMCR {
-	return RMCR{mmio.UM32{&p.CR.U32, uint32(ODSWEN)}}
-}
-
-func (p *PWR_Periph) UDEN() RMCR {
-	return RMCR{mmio.UM32{&p.CR.U32, uint32(UDEN)}}
 }
 
 func (p *PWR_Periph) FMSSR() RMCR {
@@ -160,10 +148,6 @@ func (p *PWR_Periph) BRR() RMCSR {
 	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(BRR)}}
 }
 
-func (p *PWR_Periph) WUPP() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(WUPP)}}
-}
-
 func (p *PWR_Periph) EWUP() RMCSR {
 	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(EWUP)}}
 }
@@ -174,16 +158,4 @@ func (p *PWR_Periph) BRE() RMCSR {
 
 func (p *PWR_Periph) VOSRDY() RMCSR {
 	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(VOSRDY)}}
-}
-
-func (p *PWR_Periph) ODRDY() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(ODRDY)}}
-}
-
-func (p *PWR_Periph) ODSWRDY() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(ODSWRDY)}}
-}
-
-func (p *PWR_Periph) UDSWRDY() RMCSR {
-	return RMCSR{mmio.UM32{&p.CSR.U32, uint32(UDSWRDY)}}
 }

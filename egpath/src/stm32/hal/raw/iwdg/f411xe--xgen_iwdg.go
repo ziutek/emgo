@@ -84,10 +84,6 @@ type RMPR struct{ mmio.UM32 }
 func (rm RMPR) Load() PR   { return PR(rm.UM32.Load()) }
 func (rm RMPR) Store(b PR) { rm.UM32.Store(uint32(b)) }
 
-func (p *IWDG_Periph) PR() RMPR {
-	return RMPR{mmio.UM32{&p.PR.U32, uint32(PR)}}
-}
-
 type RLR uint32
 
 func (b RLR) Field(mask RLR) int {

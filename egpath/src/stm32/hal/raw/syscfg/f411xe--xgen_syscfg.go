@@ -58,14 +58,6 @@ func (p *SYSCFG_Periph) MEM_MODE() RMMEMRMP {
 	return RMMEMRMP{mmio.UM32{&p.MEMRMP.U32, uint32(MEM_MODE)}}
 }
 
-func (p *SYSCFG_Periph) FB_MODE() RMMEMRMP {
-	return RMMEMRMP{mmio.UM32{&p.MEMRMP.U32, uint32(FB_MODE)}}
-}
-
-func (p *SYSCFG_Periph) SWP_FMC() RMMEMRMP {
-	return RMMEMRMP{mmio.UM32{&p.MEMRMP.U32, uint32(SWP_FMC)}}
-}
-
 type PMC uint32
 
 func (b PMC) Field(mask PMC) int {
@@ -93,12 +85,8 @@ type RMPMC struct{ mmio.UM32 }
 func (rm RMPMC) Load() PMC   { return PMC(rm.UM32.Load()) }
 func (rm RMPMC) Store(b PMC) { rm.UM32.Store(uint32(b)) }
 
-func (p *SYSCFG_Periph) ADCxDC2() RMPMC {
-	return RMPMC{mmio.UM32{&p.PMC.U32, uint32(ADCxDC2)}}
-}
-
-func (p *SYSCFG_Periph) MII_RMII_SEL() RMPMC {
-	return RMPMC{mmio.UM32{&p.PMC.U32, uint32(MII_RMII_SEL)}}
+func (p *SYSCFG_Periph) ADC1DC2() RMPMC {
+	return RMPMC{mmio.UM32{&p.PMC.U32, uint32(ADC1DC2)}}
 }
 
 type EXTICR uint32
