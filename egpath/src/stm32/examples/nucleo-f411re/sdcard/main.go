@@ -36,23 +36,47 @@ func init() {
 
 	rcc.RCC.SDIOEN().Set()
 	sd := sdio.SDIO
-	sd.CLKCR.Store(sdio.CLKEN | (48e6/400e3-2)<<sdio.CLKDIVn) // 400 kHz
+	sd.CLKCR.Store(sdio.CLKEN | (48e6/400e3-2)<<sdio.CLKDIVn) // CLK=400 kHz
 	sd.POWER.Store(3)                                         // Power on.
 }
 
-func sdioCMD(cmd sdio.CMD, arg sdio.ARG) {
+const (
+	waitShortResp = 1 << sdio.WAITRESPn
+	waitLongResp  = 3 << sdio.WAITRESPn
+)
+
+const sdioErrFlags = sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT | sdio.DTIMEOUT |
+	sdio.TXUNDERR | sdio.RXOVERR
+
+func sdioCMD(cmd sdio.CMD, arg sdio.ARG) (status sdio.STA) {
 	sd := sdio.SDIO
 	for i := 0; i < 10; i++ {
 		sd.ICR.Store(0xFFFFFFFF)
 		sd.ARG.Store(arg)
 		sd.CMD.Store(sdio.CPSMEN | cmd)
-		
-		/*
 		for sd.CMDACT().Load() != 0 {
 			// Wait for transfer end.
 		}
-		*/
+		if cmd&sdio.WAITRESP == 0 {
+			break
+		}
+		// Wait for response
+		for {
+			status = sd.STA.Load()
+			if status&(sdio.CMDREND|sdioErrFlags) != 0 {
+				break
+			}
+		}
+		if status&(sdio.CMDREND|sdio.CTIMEOUT) != 0 {
+			break // Response received or timeout
+		}
+		if cid := cmd & sdio.CMDINDEX; status&sdio.CCRCFAIL != 0 && (cid == 5 || cid == 41) {
+			// SDIO periph always calculates CRC. Ignore CRC error for commands 5 and 41.
+			break
+		}
+		// Try again.
 	}
+	return status & sdioErrFlags // Return error flags if any.
 }
 
 func main() {
