@@ -18,10 +18,7 @@ type SDIO_Periph struct {
 	ARG     RARG
 	CMD     RCMD
 	RESPCMD RRESPCMD
-	RESP1   RRESP1
-	RESP2   RRESP2
-	RESP3   RRESP3
-	RESP4   RRESP4
+	RESP    [4]RRESP
 	DTIMER  RDTIMER
 	DLEN    RDLEN
 	DCTRL   RDCTRL
@@ -249,128 +246,35 @@ type RMRESPCMD struct{ mmio.UM32 }
 func (rm RMRESPCMD) Load() RESPCMD   { return RESPCMD(rm.UM32.Load()) }
 func (rm RMRESPCMD) Store(b RESPCMD) { rm.UM32.Store(uint32(b)) }
 
-type RESP1 uint32
+type RESP uint32
 
-func (b RESP1) Field(mask RESP1) int {
+func (b RESP) Field(mask RESP) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
-func (mask RESP1) J(v int) RESP1 {
-	return RESP1(bits.Make32(v, uint32(mask)))
+func (mask RESP) J(v int) RESP {
+	return RESP(bits.Make32(v, uint32(mask)))
 }
 
-type RRESP1 struct{ mmio.U32 }
+type RRESP struct{ mmio.U32 }
 
-func (r *RRESP1) Bits(mask RESP1) RESP1   { return RESP1(r.U32.Bits(uint32(mask))) }
-func (r *RRESP1) StoreBits(mask, b RESP1) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *RRESP1) SetBits(mask RESP1)      { r.U32.SetBits(uint32(mask)) }
-func (r *RRESP1) ClearBits(mask RESP1)    { r.U32.ClearBits(uint32(mask)) }
-func (r *RRESP1) Load() RESP1             { return RESP1(r.U32.Load()) }
-func (r *RRESP1) Store(b RESP1)           { r.U32.Store(uint32(b)) }
+func (r *RRESP) Bits(mask RESP) RESP    { return RESP(r.U32.Bits(uint32(mask))) }
+func (r *RRESP) StoreBits(mask, b RESP) { r.U32.StoreBits(uint32(mask), uint32(b)) }
+func (r *RRESP) SetBits(mask RESP)      { r.U32.SetBits(uint32(mask)) }
+func (r *RRESP) ClearBits(mask RESP)    { r.U32.ClearBits(uint32(mask)) }
+func (r *RRESP) Load() RESP             { return RESP(r.U32.Load()) }
+func (r *RRESP) Store(b RESP)           { r.U32.Store(uint32(b)) }
 
-func (r *RRESP1) AtomicStoreBits(mask, b RESP1) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *RRESP1) AtomicSetBits(mask RESP1)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *RRESP1) AtomicClearBits(mask RESP1)    { r.U32.AtomicClearBits(uint32(mask)) }
+func (r *RRESP) AtomicStoreBits(mask, b RESP) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
+func (r *RRESP) AtomicSetBits(mask RESP)      { r.U32.AtomicSetBits(uint32(mask)) }
+func (r *RRESP) AtomicClearBits(mask RESP)    { r.U32.AtomicClearBits(uint32(mask)) }
 
-type RMRESP1 struct{ mmio.UM32 }
+type RMRESP struct{ mmio.UM32 }
 
-func (rm RMRESP1) Load() RESP1   { return RESP1(rm.UM32.Load()) }
-func (rm RMRESP1) Store(b RESP1) { rm.UM32.Store(uint32(b)) }
+func (rm RMRESP) Load() RESP   { return RESP(rm.UM32.Load()) }
+func (rm RMRESP) Store(b RESP) { rm.UM32.Store(uint32(b)) }
 
-func (p *SDIO_Periph) CARDSTATUS1() RMRESP1 {
-	return RMRESP1{mmio.UM32{&p.RESP1.U32, uint32(CARDSTATUS1)}}
-}
-
-type RESP2 uint32
-
-func (b RESP2) Field(mask RESP2) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask RESP2) J(v int) RESP2 {
-	return RESP2(bits.Make32(v, uint32(mask)))
-}
-
-type RRESP2 struct{ mmio.U32 }
-
-func (r *RRESP2) Bits(mask RESP2) RESP2   { return RESP2(r.U32.Bits(uint32(mask))) }
-func (r *RRESP2) StoreBits(mask, b RESP2) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *RRESP2) SetBits(mask RESP2)      { r.U32.SetBits(uint32(mask)) }
-func (r *RRESP2) ClearBits(mask RESP2)    { r.U32.ClearBits(uint32(mask)) }
-func (r *RRESP2) Load() RESP2             { return RESP2(r.U32.Load()) }
-func (r *RRESP2) Store(b RESP2)           { r.U32.Store(uint32(b)) }
-
-func (r *RRESP2) AtomicStoreBits(mask, b RESP2) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *RRESP2) AtomicSetBits(mask RESP2)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *RRESP2) AtomicClearBits(mask RESP2)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type RMRESP2 struct{ mmio.UM32 }
-
-func (rm RMRESP2) Load() RESP2   { return RESP2(rm.UM32.Load()) }
-func (rm RMRESP2) Store(b RESP2) { rm.UM32.Store(uint32(b)) }
-
-func (p *SDIO_Periph) CARDSTATUS2() RMRESP2 {
-	return RMRESP2{mmio.UM32{&p.RESP2.U32, uint32(CARDSTATUS2)}}
-}
-
-type RESP3 uint32
-
-func (b RESP3) Field(mask RESP3) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask RESP3) J(v int) RESP3 {
-	return RESP3(bits.Make32(v, uint32(mask)))
-}
-
-type RRESP3 struct{ mmio.U32 }
-
-func (r *RRESP3) Bits(mask RESP3) RESP3   { return RESP3(r.U32.Bits(uint32(mask))) }
-func (r *RRESP3) StoreBits(mask, b RESP3) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *RRESP3) SetBits(mask RESP3)      { r.U32.SetBits(uint32(mask)) }
-func (r *RRESP3) ClearBits(mask RESP3)    { r.U32.ClearBits(uint32(mask)) }
-func (r *RRESP3) Load() RESP3             { return RESP3(r.U32.Load()) }
-func (r *RRESP3) Store(b RESP3)           { r.U32.Store(uint32(b)) }
-
-func (r *RRESP3) AtomicStoreBits(mask, b RESP3) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *RRESP3) AtomicSetBits(mask RESP3)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *RRESP3) AtomicClearBits(mask RESP3)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type RMRESP3 struct{ mmio.UM32 }
-
-func (rm RMRESP3) Load() RESP3   { return RESP3(rm.UM32.Load()) }
-func (rm RMRESP3) Store(b RESP3) { rm.UM32.Store(uint32(b)) }
-
-func (p *SDIO_Periph) CARDSTATUS3() RMRESP3 {
-	return RMRESP3{mmio.UM32{&p.RESP3.U32, uint32(CARDSTATUS3)}}
-}
-
-type RESP4 uint32
-
-func (b RESP4) Field(mask RESP4) int {
-	return bits.Field32(uint32(b), uint32(mask))
-}
-func (mask RESP4) J(v int) RESP4 {
-	return RESP4(bits.Make32(v, uint32(mask)))
-}
-
-type RRESP4 struct{ mmio.U32 }
-
-func (r *RRESP4) Bits(mask RESP4) RESP4   { return RESP4(r.U32.Bits(uint32(mask))) }
-func (r *RRESP4) StoreBits(mask, b RESP4) { r.U32.StoreBits(uint32(mask), uint32(b)) }
-func (r *RRESP4) SetBits(mask RESP4)      { r.U32.SetBits(uint32(mask)) }
-func (r *RRESP4) ClearBits(mask RESP4)    { r.U32.ClearBits(uint32(mask)) }
-func (r *RRESP4) Load() RESP4             { return RESP4(r.U32.Load()) }
-func (r *RRESP4) Store(b RESP4)           { r.U32.Store(uint32(b)) }
-
-func (r *RRESP4) AtomicStoreBits(mask, b RESP4) { r.U32.AtomicStoreBits(uint32(mask), uint32(b)) }
-func (r *RRESP4) AtomicSetBits(mask RESP4)      { r.U32.AtomicSetBits(uint32(mask)) }
-func (r *RRESP4) AtomicClearBits(mask RESP4)    { r.U32.AtomicClearBits(uint32(mask)) }
-
-type RMRESP4 struct{ mmio.UM32 }
-
-func (rm RMRESP4) Load() RESP4   { return RESP4(rm.UM32.Load()) }
-func (rm RMRESP4) Store(b RESP4) { rm.UM32.Store(uint32(b)) }
-
-func (p *SDIO_Periph) CARDSTATUS4() RMRESP4 {
-	return RMRESP4{mmio.UM32{&p.RESP4.U32, uint32(CARDSTATUS4)}}
+func (p *SDIO_Periph) CARDSTATUS1(n int) RMRESP {
+	return RMRESP{mmio.UM32{&p.RESP[n].U32, uint32(CARDSTATUS1)}}
 }
 
 type DTIMER uint32

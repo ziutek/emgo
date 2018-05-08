@@ -9,10 +9,7 @@
 //  0x08 32  ARG     Argument register.
 //  0x0C 32  CMD     Command register.
 //  0x10 32  RESPCMD Command response register.
-//  0x14 32  RESP1   Response 1 register.
-//  0x18 32  RESP2   Response 2 register.
-//  0x1C 32  RESP3   Response 3 register.
-//  0x20 32  RESP4   Response 4 register.
+//  0x14 32  RESP[4] Response registers.
 //  0x24 32  DTIMER  Data timer register.
 //  0x28 32  DLEN    Data length register.
 //  0x2C 32  DCTRL   Data control register.
@@ -89,35 +86,11 @@ const (
 )
 
 const (
-	CARDSTATUS1 RESP1 = 0xFFFFFFFF << 0 //+ Card Status.
+	CARDSTATUS1 RESP = 0xFFFFFFFF << 0 //+ Card Status.
 )
 
 const (
 	CARDSTATUS1n = 0
-)
-
-const (
-	CARDSTATUS2 RESP2 = 0xFFFFFFFF << 0 //+ Card Status.
-)
-
-const (
-	CARDSTATUS2n = 0
-)
-
-const (
-	CARDSTATUS3 RESP3 = 0xFFFFFFFF << 0 //+ Card Status.
-)
-
-const (
-	CARDSTATUS3n = 0
-)
-
-const (
-	CARDSTATUS4 RESP4 = 0xFFFFFFFF << 0 //+ Card Status.
-)
-
-const (
-	CARDSTATUS4n = 0
 )
 
 const (

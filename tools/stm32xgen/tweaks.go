@@ -36,6 +36,8 @@ func lastTweaks(pkg *Package) {
 			pwr(p)
 		case "DMA_Request":
 			dmaRequest(p)
+		case "SDIO":
+			sdio(p)
 		}
 	}
 }
@@ -367,4 +369,23 @@ func dmaRequest(p *Periph) {
 		&Instance{Name: "DMA1_Request", Base: "mmap.DMA1_CSELR_BASE"},
 		&Instance{Name: "DMA2_Request", Base: "mmap.DMA2_CSELR_BASE"},
 	)
+}
+
+func sdio(p *Periph) {
+	regs := make([]*Register, 0, len(p.Regs))
+	var resp *Register
+	for _, r := range p.Regs {
+		switch {
+		case r.Name == "RESP1":
+			resp = r
+			resp.Name = "RESP"
+			resp.Len = 1
+			resp.Descr = "Response registers"
+		case r.Name != "RESPCMD" && strings.HasPrefix(r.Name, "RESP"):
+			resp.Len++
+			continue
+		}
+		regs = append(regs, r)
+	}
+	p.Regs = regs
 }
