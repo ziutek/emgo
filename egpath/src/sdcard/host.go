@@ -1,5 +1,5 @@
 package sdcard
 
 type Host interface {
-	Cmd(cmd Command, arg uint32) (error, Response)
+	Cmd(cmd Command, arg uint32) (Response, error)
 }
