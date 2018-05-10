@@ -4,6 +4,8 @@ import (
 	"delay"
 	"fmt"
 
+	"sdcard"
+
 	"stm32/hal/gpio"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
@@ -43,74 +45,98 @@ func init() {
 	sd.POWER.Store(3)                                         // Power on.
 }
 
-const (
-	shortResp = 1 << sdio.WAITRESPn // Total 48 bits (start,content,stop)
-	longResp  = 3 << sdio.WAITRESPn // Total 136 bits (start,content,CRC,stop)
-)
-
-const sdioErrFlags = sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT | sdio.DTIMEOUT |
-	sdio.TXUNDERR | sdio.RXOVERR
-
-func sdioCMD(cmd sdio.CMD, arg sdio.ARG) (status sdio.STA) {
-	sd := sdio.SDIO
-	for i := 0; i < 10; i++ {
-		sd.ICR.Store(0xFFFFFFFF)
-		sd.ARG.Store(arg)
-		sd.CMD.Store(sdio.CPSMEN | cmd)
-		for sd.CMDACT().Load() != 0 {
-			// Wait for transfer end.
-		}
-		if cmd&sdio.WAITRESP == 0 {
-			break
-		}
-		// Wait for response
-		for {
-			status = sd.STA.Load()
-			if status&(sdio.CMDREND|sdioErrFlags) != 0 {
-				break
-			}
-		}
-		if status&(sdio.CMDREND|sdio.CTIMEOUT) != 0 {
-			break // Response received or timeout
-		}
-		if cid := cmd & sdio.CMDINDEX; status&sdio.CCRCFAIL != 0 &&
-			(cid == 5 || cid == 41) {
-			// SDIO periph always checks CRC.
-			// Ignore CRC error for commands 5 and 41.
-			status &^= sdio.CCRCFAIL
-			break
-		}
-		// Try again.
-	}
-	return status & sdioErrFlags // Return error flags if any.
+type Host struct {
+	status sdio.STA
 }
 
-const (
-	resp7 = shortResp
-)
-
-const (
-	GO_IDLE_STATE = 0
-	SEND_IF_COND  = 8 | resp7
-)
-
-func main() {
-	delay.Millisec(200) // For SWO output
-
-	sd := sdio.SDIO
-
-	status := sdioCMD(GO_IDLE_STATE, 0)
-	checkStatus("GO_IDLE_STATE", status)
-	status = sdioCMD(SEND_IF_COND, 0x1AA)
-	checkStatus("SEND_IF_COND", status)
-	fmt.Printf("SEND_IF_COND resp: %x\n", sd.RESP[0].Load())
-}
-
-func checkStatus(cmd string, status sdio.STA) {
-	if status == 0 {
+func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
+	if h.status != 0 {
 		return
 	}
-	fmt.Printf("%s error: %x\n", cmd, status)
+	sd := sdio.SDIO
+	sd.ICR.Store(0xFFFFFFFF)
+	sd.ARG.Store(sdio.ARG(arg))
+	sd.CMD.Store(sdio.CPSMEN | sdio.CMD(cmd)&0xFF)
+	for sd.CMDACT().Load() != 0 {
+		// Wait for transfer end.
+	}
+	h.status = sd.STA.Load()
+	if cmd&sdcard.RespLen == sdcard.NoResp {
+		goto end
+	}
+	const errFlags = sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT |
+		sdio.DTIMEOUT | sdio.TXUNDERR | sdio.RXOVERR
+	// Wait for response
+	for h.status&(sdio.CMDREND|errFlags) == 0 {
+		h.status = sd.STA.Load()
+	}
+	if h.status&errFlags != 0 {
+		r := cmd >> 10
+		if h.status&sdio.CCRCFAIL == 0 {
+			goto end
+		}
+		if r != sdcard.R3 && r != sdcard.R4 {
+			goto end
+		}
+		// Ignore CRC error for responses R3 and R4
+		h.status &^= sdio.CCRCFAIL
+	}
+	resp[0] = sd.RESP[0].U32.Load()
+	if cmd&sdcard.RespLen == sdcard.LongResp {
+		resp[1] = sd.RESP[1].U32.Load()
+		resp[2] = sd.RESP[2].U32.Load()
+		resp[3] = sd.RESP[3].U32.Load()
+	}
+end:
+	h.status &= errFlags // Return error flags if any.
+	return
+}
+
+type Error sdio.STA
+
+func (err Error) Error() string {
+	return "SDIO error"
+}
+
+func (h *Host) Err(clear bool) error {
+	if h.status == 0 {
+		return nil
+	}
+	err := Error(h.status)
+	if clear {
+		h.status = 0
+	}
+	return err
+}
+
+func checkErr(h *Host, cmd string) {
+	err := h.Err(false)
+	if err == nil {
+		return
+	}
+	fmt.Printf("%v: %x\n", err, err)
 	for {
 	}
+}
+
+func main() {
+	delay.Millisec(250) // For SWO output
+
+	h := new(Host)
+
+	h.Cmd(sdcard.CMD0())
+	checkErr(h, "CMD0")
+
+	vhs, pattern := h.Cmd(sdcard.CMD8(sdcard.V27_36, 0xAC)).R7()
+	checkErr(h, "CMD8")
+
+	if vhs != sdcard.V27_36 || pattern != 0xAC {
+		fmt.Printf("CMD8 bad resp: %x, %x\n", vhs, pattern)
+		return
+	}
+
+	status := h.Cmd(sdcard.CMD55(0)).R1()
+	checkErr(h, "CMD55")
+
+	fmt.Printf("%b\n", status)
 }
