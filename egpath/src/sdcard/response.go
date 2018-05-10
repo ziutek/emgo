@@ -1,5 +1,23 @@
 package sdcard
 
+type Response [4]uint32
+
+func (r Response) R1() CardStatus {
+	return CardStatus(r[0])
+}
+
+func (r Response) R2CID() CID {
+	return CID(r)
+}
+
+func (r Response) R2CSD() CSD {
+	return CSD(r)
+}
+
+func (r Response) R3() OCR {
+	return OCR(r[0])
+}
+
 type CardStatus uint32
 
 const (
@@ -93,20 +111,3 @@ func (cid CID) MID() byte {
 }
 
 type CSD [4]uint32
-
-type Response struct {
-	d [4]uint32
-}
-
-func (r *Response) R1() CardStatus {
-	return CardStatus(r.d[0])
-}
-
-// R2 returns CID or CSD.
-func (r *Response) R2() [4]uint32 {
-	return r.d
-}
-
-func (r *Response) R3() OCR {
-	return OCR(r.d[0])
-}

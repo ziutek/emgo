@@ -44,8 +44,8 @@ func init() {
 }
 
 const (
-	shortResp = 1 << sdio.WAITRESPn
-	longResp  = 3 << sdio.WAITRESPn
+	shortResp = 1 << sdio.WAITRESPn // Total 48 bits (start,content,stop)
+	longResp  = 3 << sdio.WAITRESPn // Total 136 bits (start,content,CRC,stop)
 )
 
 const sdioErrFlags = sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT | sdio.DTIMEOUT |
@@ -73,8 +73,11 @@ func sdioCMD(cmd sdio.CMD, arg sdio.ARG) (status sdio.STA) {
 		if status&(sdio.CMDREND|sdio.CTIMEOUT) != 0 {
 			break // Response received or timeout
 		}
-		if cid := cmd & sdio.CMDINDEX; status&sdio.CCRCFAIL != 0 && (cid == 5 || cid == 41) {
-			// SDIO periph always calculates CRC. Ignore CRC error for commands 5 and 41.
+		if cid := cmd & sdio.CMDINDEX; status&sdio.CCRCFAIL != 0 &&
+			(cid == 5 || cid == 41) {
+			// SDIO periph always checks CRC.
+			// Ignore CRC error for commands 5 and 41.
+			status &^= sdio.CCRCFAIL
 			break
 		}
 		// Try again.
