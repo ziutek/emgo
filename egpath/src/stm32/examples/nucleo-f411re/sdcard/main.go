@@ -61,22 +61,23 @@ func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 		// Wait for transfer end.
 	}
 	h.status = sd.STA.Load()
-	if cmd&sdcard.RespLen == sdcard.NoResp {
-		goto end
-	}
 	const errFlags = sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT |
 		sdio.DTIMEOUT | sdio.TXUNDERR | sdio.RXOVERR
+	if cmd&sdcard.RespLen == sdcard.NoResp {
+		h.status &= errFlags
+		return
+	}
 	// Wait for response
 	for h.status&(sdio.CMDREND|errFlags) == 0 {
 		h.status = sd.STA.Load()
 	}
-	if h.status&errFlags != 0 {
-		r := cmd >> 10
+	h.status &= errFlags
+	if h.status != 0 {
 		if h.status&sdio.CCRCFAIL == 0 {
-			goto end
+			return
 		}
-		if r != sdcard.R3 && r != sdcard.R4 {
-			goto end
+		if r := cmd & sdcard.R; r != sdcard.R3 && r != sdcard.R4 {
+			return
 		}
 		// Ignore CRC error for responses R3 and R4
 		h.status &^= sdio.CCRCFAIL
@@ -87,8 +88,6 @@ func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 		resp[2] = sd.RESP[2].U32.Load()
 		resp[3] = sd.RESP[3].U32.Load()
 	}
-end:
-	h.status &= errFlags // Return error flags if any.
 	return
 }
 
@@ -102,19 +101,23 @@ func (h *Host) Err(clear bool) error {
 	if h.status == 0 {
 		return nil
 	}
-	err := Error(h.status)
+	var err error
+	if h.status == sdio.CTIMEOUT {
+		err = sdcard.ErrTimeout
+	} else {
+		err = Error(h.status)
+	}
 	if clear {
 		h.status = 0
 	}
 	return err
 }
 
-func checkErr(h *Host, cmd string) {
-	err := h.Err(false)
+func checkErr(what string, err error) {
 	if err == nil {
 		return
 	}
-	fmt.Printf("%v: %x\n", err, err)
+	fmt.Printf("%s: %v (0x%X)\n", what, err, err)
 	for {
 	}
 }
@@ -123,20 +126,57 @@ func main() {
 	delay.Millisec(250) // For SWO output
 
 	h := new(Host)
+	ocr := sdcard.V33 | sdcard.HCXC
+	v2 := true
+
+	fmt.Printf("\nInitializing SD card")
 
 	h.Cmd(sdcard.CMD0())
-	checkErr(h, "CMD0")
+	checkErr("CMD0", h.Err(true))
 
 	vhs, pattern := h.Cmd(sdcard.CMD8(sdcard.V27_36, 0xAC)).R7()
-	checkErr(h, "CMD8")
-
+	if err := h.Err(true); err != nil {
+		if err == sdcard.ErrTimeout {
+			ocr &^= sdcard.HCXC
+			v2 = false
+		} else {
+			checkErr("CMD8", err)
+		}
+	}
 	if vhs != sdcard.V27_36 || pattern != 0xAC {
-		fmt.Printf("CMD8 bad resp: %x, %x\n", vhs, pattern)
-		return
+		fmt.Printf("CMD8 bad response: %x, %x\n", vhs, pattern)
+		for {
+		}
 	}
 
-	status := h.Cmd(sdcard.CMD55(0)).R1()
-	checkErr(h, "CMD55")
+	for i := 0; ocr&sdcard.PWUP == 0 && i < 10; i++ {
+		h.Cmd(sdcard.CMD55(0))
+		ocr = h.Cmd(sdcard.ACMD41(ocr)).R3()
+		checkErr("ACMD41", h.Err(true))
+		fmt.Printf(".")
+		delay.Millisec(100)
+	}
+	if ocr&sdcard.PWUP == 0 {
+		fmt.Printf(" timeout\n")
+		for {
+		}
+	}
+	fmt.Printf(" OK\n\n")
+	fmt.Printf("Physicaly layer version 2.00+: %t\n", v2)
+	fmt.Printf("Operation Conditions Register: 0x%08X\n\n", ocr)
 
-	fmt.Printf("%b\n", status)
+	cid := h.Cmd(sdcard.CMD2()).R2CID()
+	checkErr("CMD2", h.Err(true))
+
+	y, m := cid.MDT()
+	pnm := cid.PNM()
+	oid := cid.OID()
+	prv := cid.PRV()
+	fmt.Printf("Manufacturer ID:       %d\n", cid.MID())
+	fmt.Printf("OEM/Application ID:    %s\n", oid[:])
+	fmt.Printf("Product name:          %s\n", pnm[:])
+	fmt.Printf("Product revision:      %d.%d\n", prv>>4&15, prv&15)
+	fmt.Printf("Product serial number: %d\n", cid.PSN())
+	fmt.Printf("Manufacturing date:    %04d-%02d\n", y, m)
+
 }

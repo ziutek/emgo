@@ -25,11 +25,11 @@ func (r Response) R7() (vhs VHS, pattern byte) {
 type CardStatus uint32
 
 const (
-	AKE_SEQ_ERROR      CardStatus = 0x1 << 3
-	APP_CMD            CardStatus = 0x1 << 5
-	FX_EVENT           CardStatus = 0x1 << 6
-	READY_FOR_DATA     CardStatus = 0x1 << 8
-	CURRENT_STATE      CardStatus = 0xF << 9
+	AKE_SEQ_ERROR      CardStatus = 1 << 3
+	APP_CMD            CardStatus = 1 << 5
+	FX_EVENT           CardStatus = 1 << 6
+	READY_FOR_DATA     CardStatus = 1 << 8
+	CURRENT_STATE      CardStatus = 15 << 9
 	StateIdle          CardStatus = 0 << 9
 	StateReady         CardStatus = 1 << 9
 	StateIdent         CardStatus = 2 << 9
@@ -40,23 +40,23 @@ const (
 	StatePrg           CardStatus = 7 << 9
 	StateDis           CardStatus = 8 << 9
 	StateIOOnly        CardStatus = 15 << 9
-	ERASE_RESET        CardStatus = 0x1 << 13
-	ARD_ECC_DISABLED   CardStatus = 0x1 << 14
-	WP_ERASE_SKIP      CardStatus = 0x1 << 15
-	CSD_OVERWRITE      CardStatus = 0x1 << 16
-	ERROR              CardStatus = 0x1 << 19
-	CC_ERROR           CardStatus = 0x1 << 20
-	CARD_ECC_FAILED    CardStatus = 0x1 << 21
-	ILLEGAL_COMMAND    CardStatus = 0x1 << 22
-	COM_CRC_ERROR      CardStatus = 0x1 << 23
-	LOCK_UNLOCK_FAILED CardStatus = 0x1 << 24
-	CARD_IS_LOCKED     CardStatus = 0x1 << 25
-	WP_VIOLATION       CardStatus = 0x1 << 26
-	ERASE_PARAM        CardStatus = 0x1 << 27
-	ERASE_SEQ_ERROR    CardStatus = 0x1 << 28
-	BLOCK_LEN_ERROR    CardStatus = 0x1 << 29
-	ADDRESS_ERROR      CardStatus = 0x1 << 30
-	OUT_OF_RANGE       CardStatus = 0x1 << 31
+	ERASE_RESET        CardStatus = 1 << 13
+	ARD_ECC_DISABLED   CardStatus = 1 << 14
+	WP_ERASE_SKIP      CardStatus = 1 << 15
+	CSD_OVERWRITE      CardStatus = 1 << 16
+	ERROR              CardStatus = 1 << 19
+	CC_ERROR           CardStatus = 1 << 20
+	CARD_ECC_FAILED    CardStatus = 1 << 21
+	ILLEGAL_COMMAND    CardStatus = 1 << 22
+	COM_CRC_ERROR      CardStatus = 1 << 23
+	LOCK_UNLOCK_FAILED CardStatus = 1 << 24
+	CARD_IS_LOCKED     CardStatus = 1 << 25
+	WP_VIOLATION       CardStatus = 1 << 26
+	ERASE_PARAM        CardStatus = 1 << 27
+	ERASE_SEQ_ERROR    CardStatus = 1 << 28
+	BLOCK_LEN_ERROR    CardStatus = 1 << 29
+	ADDRESS_ERROR      CardStatus = 1 << 30
+	OUT_OF_RANGE       CardStatus = 1 << 31
 )
 
 type OCR uint32
@@ -72,46 +72,52 @@ const (
 	V34   OCR = 1 << 21 // 3.3-3.4 V
 	V35   OCR = 1 << 22 // 3.4-3.5 V
 	V36   OCR = 1 << 23 // 3.5-3.6 V
-	S18A  OCR = 1 << 24 // Switching to 1.8V accepted
+	S18   OCR = 1 << 24 // Switching to 1.8V
+	XPC   OCR = 1 << 18 // SDXC maximum performance
 	UHSII OCR = 1 << 29 // UHS-II Card Status
-	CCS   OCR = 1 << 30 // Card Capacity Status
-	PWUP  OCR = 1 << 31 // Card in power up state
+	HCXC  OCR = 1 << 30 // Card Capacity Status (set fot SDHC, SDXC).
+	PWUP  OCR = 1 << 31 // Card in power up state (^Busy).
 )
 
 type CID [4]uint32
 
-// CRC returns the 7-bit CRC field.
-func (cid CID) CRC() byte {
-	return byte(cid[0] >> 1)
+// MID returns the manufacturer ID.
+func (cid CID) MID() byte {
+	return byte(cid[0] >> 24)
 }
 
-// MDT returns the manufacturing date.
-func (cid CID) MDT() (month, year int) {
-	mdt := int(cid[0] >> 8 & 0xFFF)
-	return mdt & 15, mdt>>4 + 2000
+// OID returns the OEM/Application ID.
+func (cid CID) OID() [2]byte {
+	return [2]byte{byte(cid[0] >> 16), byte(cid[0] >> 8)}
 }
 
-func (cid CID) PSN() uint32 {
-	return cid[0]>>24 | cid[1]<<8
-}
-
-func (cid CID) PRV() byte {
-	return byte(cid[1] >> 24)
-}
-
+// PNM returns the product name.
 func (cid CID) PNM() [5]byte {
 	return [5]byte{
-		byte(cid[2]), byte(cid[2] >> 8), byte(cid[2] >> 16),
-		byte(cid[2] >> 24), byte(cid[3]),
+		byte(cid[0]), byte(cid[1] >> 24), byte(cid[1] >> 16), byte(cid[1] >> 8),
+		byte(cid[1]),
 	}
 }
 
-func (cid CID) OID() [2]byte {
-	return [2]byte{byte(cid[3] >> 8), byte(cid[3] >> 16)}
+// PRV returns the product revision.
+func (cid CID) PRV() byte {
+	return byte(cid[2] >> 24)
 }
 
-func (cid CID) MID() byte {
-	return byte(cid[3] >> 24)
+// PSN returns the product serial number.
+func (cid CID) PSN() uint32 {
+	return cid[2]<<8 | cid[3]>>24
+}
+
+// MDT returns the manufacturing date.
+func (cid CID) MDT() (year, month int) {
+	mdt := int(cid[3] >> 8 & 0xFFF)
+	return mdt>>4 + 2000, mdt & 15
+}
+
+// CRC returns the 7-bit CRC field.
+func (cid CID) CRC() byte {
+	return byte(cid[3] >> 1)
 }
 
 type CSD [4]uint32

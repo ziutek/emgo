@@ -8,12 +8,14 @@ const (
 	RespLen Command = 0x03 << 6
 	ACMD    Command = 0x01 << 8
 	Busy    Command = 0x01 << 9
-	R       Command = 0x3F << 10
+	R       Command = 0x3F<<10 | RespLen
 
+	// Response length
 	NoResp    Command = 0 << 6
 	ShortResp Command = 1 << 6
 	LongResp  Command = 3 << 6
 
+	// Response types
 	R1  = 1<<10 | ShortResp
 	R1b = 1<<10 | ShortResp | Busy
 	R2  = 2<<10 | LongResp
@@ -73,6 +75,11 @@ func CMD0() (Command, uint32) {
 	return cmd0, 0
 }
 
+// CMD2 (ALL_SEND_CID, R2)
+func CMD2() (Command, uint32) {
+	return cmd2, 0
+}
+
 type VHS byte
 
 const (
@@ -90,4 +97,9 @@ func CMD8(vhs VHS, checkPattern byte) (Command, uint32) {
 // application specific command.
 func CMD55(rca uint16) (Command, uint32) {
 	return cmd55, uint32(rca) << 16
+}
+
+// ACMD41 (SD_SEND_OP_COND, R3) starts initialization/identification process.
+func ACMD41(ocr OCR) (Command, uint32) {
+	return acmd41, uint32(ocr)
 }
