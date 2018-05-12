@@ -75,9 +75,15 @@ func CMD0() (Command, uint32) {
 	return cmd0, 0
 }
 
-// CMD2 (ALL_SEND_CID, R2)
+// CMD2 (ALL_SEND_CID, R2) gets Card Identification Data.
 func CMD2() (Command, uint32) {
 	return cmd2, 0
+}
+
+// CMD3 (SEND_RELATIVE_ADDR, R6) asks the card to publishets a new Relative
+// Card Address (RCA).23,22,19,12:0
+func CMD3() (Command, uint32) {
+	return cmd3, 0
 }
 
 type VHS byte
@@ -91,6 +97,11 @@ const (
 // Layer Specification Version 2.00 or later.
 func CMD8(vhs VHS, checkPattern byte) (Command, uint32) {
 	return cmd8, uint32(vhs)&0xF<<8 | uint32(checkPattern)
+}
+
+// CMD9 (SEND_CSD, R2) gets Card Specific Data from card indentified by rca.
+func CMD9(rca uint16) (Command, uint32) {
+	return cmd9, uint32(rca) << 16
 }
 
 // CMD55 (APP_CMD, R1) indicates to the card that the next command is an

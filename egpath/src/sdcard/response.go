@@ -14,8 +14,16 @@ func (r Response) R2CSD() CSD {
 	return CSD(r)
 }
 
+// R3 contains Operating Condition Register.
 func (r Response) R3() OCR {
 	return OCR(r[0])
+}
+
+// R6 contains Relative Card Address and Card Status bits 23, 22, 19, 12:0.
+func (r Response) R6() (rca uint16, status CardStatus) {
+	rca = uint16(r[0] >> 16)
+	status = CardStatus(r[0]>>14&3<<22 | r[0]>>13&1<<19 | r[0]&0x1FFF)
+	return
 }
 
 func (r Response) R7() (vhs VHS, pattern byte) {
@@ -121,3 +129,38 @@ func (cid CID) CRC() byte {
 }
 
 type CSD [4]uint32
+
+func (csd CSD) Version() int {
+	return int(csd[0]>>30 + 1)
+}
+
+// CSD1 returns csd as CSD version 1.
+func (csd CSD) CSD1() CSD1 {
+	return CSD1(csd)
+}
+
+type CSD1 [4]uint32
+
+//emgo:const
+var frac = [16]byte{
+	0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80,
+}
+
+func pow10(exp uint32) int {
+	pow := 1
+	for exp > 0 {
+		pow *= 10
+		exp--
+	}
+	return pow
+}
+
+// TAAC returns asynchronous part of the data access time [ns].
+func (csd CSD1) TAAC() int {
+	exp := csd[0] >> 16 & 7
+	f := int(frac[csd[0]>>19&15])
+	if exp > 0 {
+		return f * pow10(exp-1)
+	}
+	return f / 10
+}

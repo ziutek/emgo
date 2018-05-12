@@ -177,6 +177,20 @@ func main() {
 	fmt.Printf("Product name:          %s\n", pnm[:])
 	fmt.Printf("Product revision:      %d.%d\n", prv>>4&15, prv&15)
 	fmt.Printf("Product serial number: %d\n", cid.PSN())
-	fmt.Printf("Manufacturing date:    %04d-%02d\n", y, m)
+	fmt.Printf("Manufacturing date:    %04d-%02d\n\n", y, m)
 
+	rca, _ := h.Cmd(sdcard.CMD3()).R6()
+	checkErr("CMD3", h.Err(true))
+
+	fmt.Printf("Relative Card Address: 0x%04X\n\n", rca)
+
+	csd := h.Cmd(sdcard.CMD9(rca)).R2CSD()
+	checkErr("CMD9", h.Err(true))
+
+	fmt.Printf("CSD version: %d\n", csd.Version())
+	switch csd.Version() {
+	case 1:
+		csd1 := csd.CSD1()
+		fmt.Printf("TAAC:        %dns\n", csd1.TAAC())
+	}
 }
