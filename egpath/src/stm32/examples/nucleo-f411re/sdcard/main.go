@@ -187,10 +187,10 @@ func main() {
 	csd := h.Cmd(sdcard.CMD9(rca)).R2CSD()
 	checkErr("CMD9", h.Err(true))
 
-	fmt.Printf("CSD version: %d\n", csd.Version())
-	switch csd.Version() {
-	case 1:
-		csd1 := csd.CSD1()
-		fmt.Printf("TAAC:        %dns\n", csd1.TAAC())
-	}
+	csdv := csd.Version()
+	fmt.Printf("CSD version: %d\n", csdv)
+	fmt.Printf("TAAC:        %d ns\n", csd.TAAC())
+	fmt.Printf("NSAC:        %d clk\n", csd.NSAC())
+	fmt.Printf("TRAN_SPEED:  %d kbit/s\n", csd.TRAN_SPEED())
+	fmt.Printf("CCC:         %012b\n", csd.CCC())
 }

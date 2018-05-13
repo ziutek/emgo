@@ -134,13 +134,6 @@ func (csd CSD) Version() int {
 	return int(csd[0]>>30 + 1)
 }
 
-// CSD1 returns csd as CSD version 1.
-func (csd CSD) CSD1() CSD1 {
-	return CSD1(csd)
-}
-
-type CSD1 [4]uint32
-
 //emgo:const
 var frac = [16]byte{
 	0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80,
@@ -156,11 +149,29 @@ func pow10(exp uint32) int {
 }
 
 // TAAC returns asynchronous part of the data access time [ns].
-func (csd CSD1) TAAC() int {
+func (csd CSD) TAAC() int {
 	exp := csd[0] >> 16 & 7
 	f := int(frac[csd[0]>>19&15])
 	if exp > 0 {
 		return f * pow10(exp-1)
 	}
 	return f / 10
+}
+
+// NSAC returns the worst case for the clock-dependent factor of the data
+// access time [clk].
+func (csd CSD) NSAC() int {
+	return int(csd[0] >> 8 & 255 * 100)
+}
+
+// TRAN_SPEED returns the maximum data transfer rate per one data line [kb/s].
+func (csd CSD) TRAN_SPEED() int {
+	exp := csd[0] & 7
+	f := int(frac[csd[0]>>3&15])
+	return f * 10 * pow10(exp)
+}
+
+// CCC returns SDMC command set as 12-bit bitfield.
+func (csd CSD) CCC() uint {
+	return uint(csd[1] >> 20)
 }
