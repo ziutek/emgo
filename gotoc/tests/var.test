@@ -98,3 +98,15 @@ bool$$int32 (*foo$F)(byte, int_);
 // def
 __typeof__(foo$F) foo$F = nil;
 // end
+
+//// Go code:
+// BUG!
+//func F(x int) int {
+//	{
+//		var x = x
+//		return x
+//	}
+//}
+//// C code:
+//// decl
+//// end
