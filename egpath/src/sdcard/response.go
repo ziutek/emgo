@@ -274,3 +274,20 @@ func (csd CSD) FILE_FORMAT() FileFormat {
 func (csd CSD) COPY() bool {
 	return csd[3]>>14&1 != 0
 }
+
+// PERM_WRITE_PROTECT reports whether the entrie card content is permanently
+// protected against overwriting or erasing.
+func (csd CSD) PERM_WRITE_PROTECT() bool {
+	return csd[3]>>13&1 != 0
+}
+
+// TMP_WRITE_PROTECT reports whether the entrie card content is temporarily
+// protected against overwriting or erasing.
+func (csd CSD) TMP_WRITE_PROTECT() bool {
+	return csd[3]>>12&1 != 0
+}
+
+// CRC returns the checksum for the CSD content.
+func (csd CSD) CRC() byte {
+	return byte(csd[3] >> 1 & 127)
+}

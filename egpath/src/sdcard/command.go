@@ -30,6 +30,7 @@ const (
 	cmd3  = 3 | R6      // SEND_RELATIVE_ADDR
 	cmd4  = 4 | NoResp  // SET_DSR
 	cmd5  = 5 | R4      // IO_SEND_OP_COND
+	cmd6  = 6 | R1      // SWITCH_FUNC
 	cmd7  = 7 | R1b     // SELECT_CARD/DESELECT_CARD
 	cmd8  = 8 | R7      // SEND_IF_COND
 	cmd9  = 9 | R2      // SEND_CSD
@@ -81,9 +82,14 @@ func CMD2() (Command, uint32) {
 }
 
 // CMD3 (SEND_RELATIVE_ADDR, R6) asks the card to publishets a new Relative
-// Card Address (RCA).23,22,19,12:0
+// Card Address (RCA) and Card Status bits 23,22,19,12:0
 func CMD3() (Command, uint32) {
 	return cmd3, 0
+}
+
+// CMD6 (SWITCH_FUNC, R1) switches or expands memory card functions.
+func CMD6(adtc uint32) (Command, uint32) {
+	return cmd6, adtc
 }
 
 type VHS byte

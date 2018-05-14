@@ -148,22 +148,22 @@ func main() {
 		for {
 		}
 	}
-
-	for i := 0; ocr&sdcard.PWUP == 0 && i < 10; i++ {
+	var oca sdcard.OCR
+	for i := 0; oca&sdcard.PWUP == 0 && i < 20; i++ {
 		h.Cmd(sdcard.CMD55(0))
-		ocr = h.Cmd(sdcard.ACMD41(ocr)).R3()
+		oca = h.Cmd(sdcard.ACMD41(ocr)).R3()
 		checkErr("ACMD41", h.Err(true))
 		fmt.Printf(".")
-		delay.Millisec(100)
+		delay.Millisec(50)
 	}
-	if ocr&sdcard.PWUP == 0 {
+	if oca&sdcard.PWUP == 0 {
 		fmt.Printf(" timeout\n")
 		for {
 		}
 	}
 	fmt.Printf(" OK\n\n")
 	fmt.Printf("Physicaly layer version 2.00+: %t\n", v2)
-	fmt.Printf("Operation Conditions Register: 0x%08X\n\n", ocr)
+	fmt.Printf("Operation Conditions Register: 0x%08X\n\n", oca)
 
 	cid := h.Cmd(sdcard.CMD2()).R2CID()
 	checkErr("CMD2", h.Err(true))
@@ -183,6 +183,8 @@ func main() {
 	checkErr("CMD3", h.Err(true))
 
 	fmt.Printf("Relative Card Address: 0x%04X\n\n", rca)
+	
+	// After CMD3 card is in Data Transfer Mode and CLK can be up to 25 MHz.
 
 	csd := h.Cmd(sdcard.CMD9(rca)).R2CSD()
 	checkErr("CMD9", h.Err(true))
@@ -208,4 +210,6 @@ func main() {
 	fmt.Printf("WRITE_BL_PARTIAL:   %t\n", csd.WRITE_BL_PARTIAL())
 	fmt.Printf("FILE_FORMAT:        %d\n", csd.FILE_FORMAT())
 	fmt.Printf("COPY:               %t\n", csd.COPY())
+	fmt.Printf("PERM_WRITE_PROTECT: %t\n", csd.PERM_WRITE_PROTECT())
+	fmt.Printf("TMP_WRITE_PROTECT:  %t\n", csd.TMP_WRITE_PROTECT())
 }
