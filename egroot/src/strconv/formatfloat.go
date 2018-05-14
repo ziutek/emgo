@@ -109,7 +109,7 @@ func padBefore(w io.Writer, num, flags int, pad rune) (int, error) {
 	return n, nil
 }
 
-func writeZero(w io.Writer, width, prec, flags, e int, pad rune) (int, error) {
+func writeZero(w io.Writer, width, prec, flags int, e byte, pad rune) (int, error) {
 	var padn int
 	if flags&flagLeft == 0 {
 		padn = width - 1
@@ -167,7 +167,7 @@ func writeZero(w io.Writer, width, prec, flags, e int, pad rune) (int, error) {
 //	'f': -ddddd.dddd, prec sets the number of digits after decimal,
 //  'g': shortest from 'e' or 'f', prec sets the number of significant digits.
 // For description of width and pad see WriteInt.
-func WriteFloat(w io.Writer, f float64, fmt, prec, bitsize, width int, pad rune) (int, error) {
+func WriteFloat(w io.Writer, f float64, fmt byte, prec, bitsize, width int, pad rune) (int, error) {
 	if n, err := specials(w, f, width); n > 0 {
 		return n, err
 	}

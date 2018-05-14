@@ -195,7 +195,12 @@ func (p *printer) formatValue(verb byte, v reflect.Value) {
 	case k == reflect.Invalid:
 		p.WriteString("<invalid>")
 	case k == reflect.Bool:
-		strconv.WriteBool(p, v.Bool(), 't', width, pad)
+		switch verb {
+		case 'v', 't', 'd', 'x', 'X':
+			strconv.WriteBool(p, v.Bool(), verb, width, pad)
+		default:
+			p.badVerb(verb, v)
+		}
 	case k <= reflect.Uintptr:
 		p.formatIntVal(v, width, verb, pad)
 	case k <= reflect.Float64:
@@ -300,9 +305,8 @@ func (p *printer) formatFloatVal(v reflect.Value, width int, verb byte, pad rune
 		bits = 64
 	}
 	prec, _ := p.Precision()
-	fmt := int(verb)
-	if fmt == 'v' {
-		fmt = 'g'
+	if verb == 'v' {
+		verb = 'g'
 	}
-	strconv.WriteFloat(p, v.Float(), fmt, prec, bits, width, pad)
+	strconv.WriteFloat(p, v.Float(), verb, prec, bits, width, pad)
 }
