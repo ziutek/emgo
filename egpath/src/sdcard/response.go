@@ -175,3 +175,102 @@ func (csd CSD) TRAN_SPEED() int {
 func (csd CSD) CCC() uint {
 	return uint(csd[1] >> 20)
 }
+
+// READ_BL_LEN returns the maximum read data block length (bytes).
+func (csd CSD) READ_BL_LEN() int {
+	return 1 << (csd[1] >> 16 & 15)
+}
+
+// READ_BL_PARTIAL reports whether Partial Block Read is allowed.
+func (csd CSD) READ_BL_PARTIAL() bool {
+	return csd[1]>>15&1 != 0
+}
+
+// WRITE_BLK_MISALIGN reports whether the data block to be written by one
+// command can be spread over more than one physical block of the memory device.
+func (csd CSD) WRITE_BLK_MISALIGN() bool {
+	return csd[1]>>14&1 != 0
+}
+
+// READ_BLK_MISALIGN reports whether the data block to be read by one command
+// can be spread over more than one physical block of the memory device.
+func (csd CSD) READ_BLK_MISALIGN() bool {
+	return csd[1]>>13&1 != 0
+}
+
+// DSR_IMP reports whether the configurable driver stage is integrated on the
+// card and Driver Stage Register is implemented.
+func (csd CSD) DSR_IMP() bool {
+	return csd[1]>>12&1 != 0
+}
+
+// C_SIZE returns the user's data card capacity as number of 512 B blocks.
+func (csd CSD) C_SIZE() int64 {
+	if csd.Version() == 2 {
+		return int64(csd[1]&63<<16+csd[2]>>16+1) << 10
+	}
+	read_bl_len := csd[1] >> 16 & 15
+	c_size := csd[1]&0x3FF<<2 + csd[2]>>30
+	c_size_mult := csd[2] >> 15 & 7
+	return int64((c_size + 1) << (read_bl_len + c_size_mult + 2 - 9))
+}
+
+// ERASE_BLK_EN reports whether the memory card supports erasing of one or
+// multiple 512 B blocks. If ERASE_BLK_EN is false it supports erasing of one
+// or more sectors of SECTOR_SIZE * WRITE_BL_LEN bytes.
+func (csd CSD) ERASE_BLK_EN() bool {
+	return csd[2]>>14&1 != 0
+}
+
+// SECTOR_SIZE returns the size of an erasable sector as number of blocks of
+// WRITE_BL_LEN bytes.
+func (csd CSD) SECTOR_SIZE() int {
+	return int(csd[2]>>7&127 + 1)
+}
+
+// WP_GRP_SIZE returns the size of a write protected group.
+func (csd CSD) WP_GRP_SIZE() int {
+	return int(csd[2]&127 + 1)
+}
+
+// WP_GRP_ENABLE reports whether the write protection is possible
+func (csd CSD) WP_GRP_ENABLE() bool {
+	return csd[3]>>31&1 != 0
+}
+
+// R2W_FACTOR returns the typical block program time as a multiple of the read
+// access time.
+func (csd CSD) R2W_FACTOR() int {
+	return int(csd[3]>>26&7 + 1)
+}
+
+// WRITE_BL_LEN returns the maximum write data block length (bytes).
+func (csd CSD) WRITE_BL_LEN() int {
+	return 1 << (csd[3] >> 22 & 15)
+}
+
+// WRITE_BL_PARTIAL reports whether the partial block sizes can be used in
+// block write commands
+func (csd CSD) WRITE_BL_PARTIAL() bool {
+	return csd[3]>>21&1 != 0
+}
+
+type FileFormat byte
+
+const (
+	HardDisk  FileFormat = 0 // Hard disk-like file system with partition table.
+	DOSFloppy FileFormat = 1 // DOS FAT (floppy-like) with boot sector only.
+	UFF       FileFormat = 2 // Universal File Format.
+	OtherFF   FileFormat = 3 // Other/unknown.
+)
+
+// FILE_FORMAT returns the file format on the card (3-bit field: the MS bit
+// represents format group, two LS bits represents format).
+func (csd CSD) FILE_FORMAT() FileFormat {
+	return FileFormat(csd[3]>>13&4 | csd[3]>>10&3)
+}
+
+// COPY reports whether the contents has been copied (not original).
+func (csd CSD) COPY() bool {
+	return csd[3]>>14&1 != 0
+}
