@@ -183,7 +183,7 @@ func main() {
 	checkErr("CMD3", h.Err(true))
 
 	fmt.Printf("Relative Card Address: 0x%04X\n\n", rca)
-	
+
 	// After CMD3 card is in Data Transfer Mode and CLK can be up to 25 MHz.
 
 	csd := h.Cmd(sdcard.CMD9(rca)).R2CSD()
@@ -194,6 +194,7 @@ func main() {
 	fmt.Printf("TAAC:               %d ns\n", csd.TAAC())
 	fmt.Printf("NSAC:               %d clk\n", csd.NSAC())
 	fmt.Printf("TRAN_SPEED:         %d kbit/s\n", csd.TRAN_SPEED())
+	fmt.Printf("CCC:                0b%012b\n", csd.CCC())
 	fmt.Printf("READ_BL_LEN:        %d B\n", csd.READ_BL_LEN())
 	fmt.Printf("READ_BL_PARTIAL:    %t\n", csd.READ_BL_PARTIAL())
 	fmt.Printf("WRITE_BLK_MISALIGN: %t\n", csd.WRITE_BLK_MISALIGN())

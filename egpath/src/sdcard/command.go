@@ -87,9 +87,42 @@ func CMD3() (Command, uint32) {
 	return cmd3, 0
 }
 
+type SwitchFunc uint32
+
+const (
+	AccessMode   SwitchFunc = 0x00000F // Access mode (keep current).
+	DefaultSpeed SwitchFunc = 0x000000 // Default Speed or SDR12.
+	HighSpeed    SwitchFunc = 0x000001 // High Speed or SDR25.
+	SDR50        SwitchFunc = 0x000002 // SDR50.
+	SDR104       SwitchFunc = 0x000003 // SDR104.
+	DDR50        SwitchFunc = 0x000004 // DDR50.
+
+	CommandSystem SwitchFunc = 0x0000F0 // Command system (keep current).
+	DefaultSystem SwitchFunc = 0x000000 // Default Command System.
+	OTP           SwitchFunc = 0x000030
+	ASSD          SwitchFunc = 0x000040
+	VendorSpec    SwitchFunc = 0x0000E0
+
+	Driver       SwitchFunc = 0x000F00 // UHS-I driver strength (keep current).
+	DefaultTypeB SwitchFunc = 0x000000 // Default Type B driver.
+	TypeA        SwitchFunc = 0x000100 // Type A driver.
+	TypeC        SwitchFunc = 0x000200 // Type C driver.
+	TypeD        SwitchFunc = 0x000300 // Type D driver.
+
+	PowerLimit SwitchFunc = 0x00F000 // Power limit (keep current).
+	Default720 SwitchFunc = 0x000000 // Default limit: 720 mW.
+	Power1440  SwitchFunc = 0x001000 // Limit: 1440 mW.
+	Power2160  SwitchFunc = 0x002000 // Limit: 2160 mW.
+	Power2880  SwitchFunc = 0x003000 // Limit: 2880 mW.
+	Power1800  SwitchFunc = 0x004000 // Limit: 1800 mW.
+
+	ModeCheck  SwitchFunc = 0 << 31
+	ModeSwitch SwitchFunc = 1 << 31
+)
+
 // CMD6 (SWITCH_FUNC, R1) switches or expands memory card functions.
-func CMD6(adtc uint32) (Command, uint32) {
-	return cmd6, adtc
+func CMD6(sf SwitchFunc) (Command, uint32) {
+	return cmd6, uint32(sf)
 }
 
 type VHS byte
@@ -114,6 +147,18 @@ func CMD9(rca uint16) (Command, uint32) {
 // application specific command.
 func CMD55(rca uint16) (Command, uint32) {
 	return cmd55, uint32(rca) << 16
+}
+
+type BusWidth byte
+
+const (
+	Bus1bit BusWidth = 0
+	Bus4bit BusWidth = 2
+)
+
+// ACMD6 (SET_BUS_WIDTH, R1) sets the data bus width.
+func ACMD6(bw BusWidth) (Command, uint32) {
+	return acmd6, uint32(bw)
 }
 
 // ACMD41 (SD_SEND_OP_COND, R3) starts initialization/identification process.
