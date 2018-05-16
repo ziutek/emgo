@@ -102,6 +102,8 @@ const (
 	fifo_2_4 = 0
 	fifo_3_4 = 0
 	fifo_4_4 = 0
+
+	pfc = 0
 )
 
 func (ch *Channel) setup(m Mode) {

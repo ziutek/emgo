@@ -130,6 +130,7 @@ const (
 	Circ Mode = circ // Enable circular mode.
 	IncP Mode = incP // Peripheral increment mode.
 	IncM Mode = incM // Memory increment mode.
+	PFC  Mode = pfc  // Peripheral flow controller.
 
 	Direct   Mode = 0        // Direct mode.
 	FIFO_1_4 Mode = fifo_1_4 // FIFO mode, threshold 1/4.
