@@ -45,6 +45,12 @@ func init() {
 	sd.POWER.Store(3)                                         // Power on.
 }
 
+// SDIO Errata Sheet DocID027036 Rev 2:
+// 2.7.1 Don't use HW flow control: CLKCR.HWFC_EN.
+// 2.7.2 Ignore STA.CCRCFAIL for R3 and R4.
+// 2.7.3 Don't use clock dephasing: CLKCR.NEGEDGE.
+// 2.7.5 Avoid 3*period(PCLK2) + 3*period(SDIOCLK) >= 32/BusWidth*period(SDIO_CK)
+
 type Host struct {
 	status sdio.STA
 }
@@ -57,21 +63,25 @@ func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 	sd.ICR.Store(0xFFFFFFFF)
 	sd.ARG.Store(sdio.ARG(arg))
 	sd.CMD.Store(sdio.CPSMEN | sdio.CMD(cmd)&0xFF)
-	for sd.CMDACT().Load() != 0 {
-		// Wait for transfer end.
+	respLen := cmd & sdcard.RespLen
+	errFlags := sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT | sdio.DTIMEOUT |
+		sdio.TXUNDERR | sdio.RXOVERR
+	waitFlags := errFlags
+	if respLen == sdcard.NoResp {
+		waitFlags |= sdio.CMDSENT
+	} else {
+		waitFlags |= sdio.CMDREND
 	}
-	h.status = sd.STA.Load()
-	const errFlags = sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT |
-		sdio.DTIMEOUT | sdio.TXUNDERR | sdio.RXOVERR
-	if cmd&sdcard.RespLen == sdcard.NoResp {
-		h.status &= errFlags
-		return
-	}
-	// Wait for response
-	for h.status&(sdio.CMDREND|errFlags) == 0 {
+	for {
 		h.status = sd.STA.Load()
+		if h.status&waitFlags != 0 {
+			break
+		}
 	}
 	h.status &= errFlags
+	if respLen == sdcard.NoResp {
+		return
+	}
 	if h.status != 0 {
 		if h.status&sdio.CCRCFAIL == 0 {
 			return
@@ -79,11 +89,11 @@ func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 		if r := cmd & sdcard.R; r != sdcard.R3 && r != sdcard.R4 {
 			return
 		}
-		// Ignore CRC error for responses R3 and R4
+		// Ignore CRC error for responses R3 and R4.
 		h.status &^= sdio.CCRCFAIL
 	}
 	resp[0] = sd.RESP[0].U32.Load()
-	if cmd&sdcard.RespLen == sdcard.LongResp {
+	if respLen == sdcard.LongResp {
 		resp[1] = sd.RESP[1].U32.Load()
 		resp[2] = sd.RESP[2].U32.Load()
 		resp[3] = sd.RESP[3].U32.Load()
@@ -129,7 +139,7 @@ func main() {
 	ocr := sdcard.V33 | sdcard.HCXC
 	v2 := true
 
-	fmt.Printf("\nInitializing SD card")
+	fmt.Printf("\nInitializing SD card ")
 
 	h.Cmd(sdcard.CMD0())
 	checkErr("CMD0", h.Err(true))

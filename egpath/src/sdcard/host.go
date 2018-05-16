@@ -7,7 +7,7 @@ import (
 var ErrTimeout = errors.New("sdio: timeout")
 
 type Host interface {
-	// Sends a command to the card and receives its response, if any.
+	// Cmd sends a command to the card and receives its response, if any.
 	Cmd(cmd Command, arg uint32) Response
 
 	// Err returns and clears internal error status. The internal error status,
