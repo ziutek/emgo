@@ -3,9 +3,11 @@ package main
 import (
 	"delay"
 	"fmt"
+	"unsafe"
 
 	"sdcard"
 
+	"stm32/hal/dma"
 	"stm32/hal/gpio"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
@@ -13,6 +15,13 @@ import (
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/sdio"
 )
+
+type Host struct {
+	dma    *dma.Channel
+	status sdio.STA
+}
+
+var h Host
 
 func init() {
 	system.Setup96(8) // Setups USB/SDIO/RNG clock to 48 MHz
@@ -39,21 +48,22 @@ func init() {
 		pin.SetAltFunc(gpio.SDIO)
 	}
 
+	d := dma.DMA2
+	d.EnableClock(true)
+	h.dma = d.Channel(6, 4)
+
 	rcc.RCC.SDIOEN().Set()
 	sd := sdio.SDIO
 	sd.CLKCR.Store(sdio.CLKEN | (48e6/400e3-2)<<sdio.CLKDIVn) // CLK=400 kHz
 	sd.POWER.Store(3)                                         // Power on.
 }
 
-// SDIO Errata Sheet DocID027036 Rev 2:
+// SDIO Errata Sheet DocID027036 Rev 2 workarounds:
 // 2.7.1 Don't use HW flow control: CLKCR.HWFC_EN.
 // 2.7.2 Ignore STA.CCRCFAIL for R3 and R4.
 // 2.7.3 Don't use clock dephasing: CLKCR.NEGEDGE.
-// 2.7.5 Avoid 3*period(PCLK2) + 3*period(SDIOCLK) >= 32/BusWidth*period(SDIO_CK)
-
-type Host struct {
-	status sdio.STA
-}
+// 2.7.5 Ensure 3*period(PCLK2)+3*period(SDIOCLK) < 32/BusWidth*period(SDIO_CK)
+//       (always met for PCLK > 28.8 MHz.)
 
 func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 	if h.status != 0 {
@@ -63,11 +73,10 @@ func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 	sd.ICR.Store(0xFFFFFFFF)
 	sd.ARG.Store(sdio.ARG(arg))
 	sd.CMD.Store(sdio.CPSMEN | sdio.CMD(cmd)&0xFF)
-	respLen := cmd & sdcard.RespLen
 	errFlags := sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT | sdio.DTIMEOUT |
 		sdio.TXUNDERR | sdio.RXOVERR
 	waitFlags := errFlags
-	if respLen == sdcard.NoResp {
+	if cmd&sdcard.HasResp == 0 {
 		waitFlags |= sdio.CMDSENT
 	} else {
 		waitFlags |= sdio.CMDREND
@@ -79,26 +88,41 @@ func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 		}
 	}
 	h.status &= errFlags
-	if respLen == sdcard.NoResp {
+	if cmd&sdcard.HasResp == 0 {
 		return
 	}
 	if h.status != 0 {
 		if h.status&sdio.CCRCFAIL == 0 {
 			return
 		}
-		if r := cmd & sdcard.R; r != sdcard.R3 && r != sdcard.R4 {
+		if r := cmd & sdcard.RespType; r != sdcard.R3 && r != sdcard.R4 {
 			return
 		}
 		// Ignore CRC error for responses R3 and R4.
 		h.status &^= sdio.CCRCFAIL
 	}
 	resp[0] = sd.RESP[0].U32.Load()
-	if respLen == sdcard.LongResp {
+	if cmd&sdcard.LongResp != 0 {
 		resp[1] = sd.RESP[1].U32.Load()
 		resp[2] = sd.RESP[2].U32.Load()
 		resp[3] = sd.RESP[3].U32.Load()
 	}
 	return
+}
+
+func (h *Host) Recv(buf []uint32) {
+	if h.status != 0 || len(buf) == 0 {
+		return
+	}
+	sd := sdio.SDIO
+	ch := h.dma
+	ch.Setup(dma.PTM | dma.PFC | dma.IncM | dma.FIFO_1_4)
+	ch.SetWordSize(4, 4)
+	ch.SetBurst(4, 1)
+	ch.SetAddrP(unsafe.Pointer(sd.FIFO.Addr()))
+	ch.SetAddrM(unsafe.Pointer(&buf[0]))
+	ch.Enable()
+	// ...
 }
 
 type Error sdio.STA
@@ -135,7 +159,6 @@ func checkErr(what string, err error) {
 func main() {
 	delay.Millisec(250) // For SWO output
 
-	h := new(Host)
 	ocr := sdcard.V33 | sdcard.HCXC
 	v2 := true
 

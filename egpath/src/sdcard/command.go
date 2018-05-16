@@ -4,70 +4,66 @@ type Command uint16
 
 const (
 	// Command fields
-	CMD     Command = 0x3F << 0
-	RespLen Command = 0x03 << 6
-	ACMD    Command = 0x01 << 8
-	Busy    Command = 0x01 << 9
-	R       Command = 0x3F<<10 | RespLen
-
-	// Response length
-	NoResp    Command = 0 << 6
-	ShortResp Command = 1 << 6
-	LongResp  Command = 3 << 6
+	CmdIdx   Command = 63 << 0 // Command index.
+	HasResp  Command = 1 << 6  // Response expected.
+	LongResp Command = 1 << 7  // Long response.
+	RespIdx  Command = 63 << 8 // Response index.
+	BusyCmd  Command = 1 << 14 // Command can set D0 low to signal busy state.
+	AppCmd   Command = 1 << 15 // Application command (hint, APP_CMD required).
 
 	// Response types
-	R1  = 1<<10 | ShortResp
-	R1b = 1<<10 | ShortResp | Busy
-	R2  = 2<<10 | LongResp
-	R3  = 3<<10 | ShortResp
-	R4  = 4<<10 | ShortResp
-	R5  = 5<<10 | ShortResp
-	R6  = 6<<10 | ShortResp
-	R7  = 7<<10 | ShortResp
+	RespType = RespIdx | HasResp | LongResp
+	R1       = 1<<10 | HasResp
+	R2       = 2<<10 | HasResp | LongResp
+	R3       = 3<<10 | HasResp
+	R4       = 4<<10 | HasResp
+	R5       = 5<<10 | HasResp
+	R6       = 6<<10 | HasResp
+	R7       = 7<<10 | HasResp
 
-	cmd0  = 0 | NoResp  // GO_IDLE_STATE
-	cmd2  = 2 | R2      // ALL_SEND_CID
-	cmd3  = 3 | R6      // SEND_RELATIVE_ADDR
-	cmd4  = 4 | NoResp  // SET_DSR
-	cmd5  = 5 | R4      // IO_SEND_OP_COND
-	cmd6  = 6 | R1      // SWITCH_FUNC
-	cmd7  = 7 | R1b     // SELECT_CARD/DESELECT_CARD
-	cmd8  = 8 | R7      // SEND_IF_COND
-	cmd9  = 9 | R2      // SEND_CSD
-	cmd10 = 10 | R2     // SEND_CID
-	cmd11 = 11 | R1     // VOLTAGE_SWITCH
-	cmd12 = 12 | R1b    // STOP_TRANSMISSION
-	cmd13 = 13 | R1     // SEND_STATUS/SEND_TASK_STATUS
-	cmd15 = 15 | NoResp // GO_INACTIVE_STATE
-	cmd16 = 16 | R1     // SET_BLOCKLEN
-	cmd17 = 17 | R1     // READ_SINGLE_BLOCK
-	cmd18 = 18 | R1     // READ_MULTIPLE_BLOCK
-	cmd19 = 19 | R1     // SEND_TUNING_BLOCK
-	cmd20 = 20 | R1b    // SPEED_CLASS_CONTROL
-	cmd23 = 23 | R1     // SET_BLOCK_COUNT
-	cmd24 = 24 | R1     // WRITE_BLOCK
-	cmd25 = 25 | R1     // WRITE_MULTIPLE_BLOCK
-	cmd27 = 27 | R1     // PROGRAM_CSD
-	cmd28 = 28 | R1b    // SET_WRITE_PROT
-	cmd29 = 29 | R1b    // CLR_WRITE_PROT
-	cmd30 = 30 | R1     // SEND_WRITE_PROT
-	cmd32 = 30 | R1     // ERASE_WR_BLK_START
-	cmd33 = 33 | R1     // ERASE_WR_BLK_END
-	cmd38 = 38 | R1b    // ERASE
-	cmd40 = 40 | R1     // TODO: See DPS spec.
-	cmd42 = 42 | R1     // LOCK_UNLOCK
-	cmd52 = 52 | R5     // IO_RW_DIRECT
-	cmd53 = 53 | R5     // IO_RW_EXTENDED
-	cmd55 = 55 | R1     // APP_CMD
-	cmd56 = 56 | R1     // GEN_CMD
+	cmd0  = 0                 // GO_IDLE_STATE
+	cmd2  = 2 | R2            // ALL_SEND_CID
+	cmd3  = 3 | R6            // SEND_RELATIVE_ADDR
+	cmd4  = 4                 // SET_DSR
+	cmd5  = 5 | R4            // IO_SEND_OP_COND
+	cmd6  = 6 | R1            // SWITCH_FUNC
+	cmd7  = 7 | R1 | BusyCmd  // SELECT_CARD/DESELECT_CARD
+	cmd8  = 8 | R7            // SEND_IF_COND
+	cmd9  = 9 | R2            // SEND_CSD
+	cmd10 = 10 | R2           // SEND_CID
+	cmd11 = 11 | R1           // VOLTAGE_SWITCH
+	cmd12 = 12 | R1 | BusyCmd // STOP_TRANSMISSION
+	cmd13 = 13 | R1           // SEND_STATUS/SEND_TASK_STATUS
+	cmd15 = 15                // GO_INACTIVE_STATE
+	cmd16 = 16 | R1           // SET_BLOCKLEN
+	cmd17 = 17 | R1           // READ_SINGLE_BLOCK
+	cmd18 = 18 | R1           // READ_MULTIPLE_BLOCK
+	cmd19 = 19 | R1           // SEND_TUNING_BLOCK
+	cmd20 = 20 | R1 | BusyCmd // SPEED_CLASS_CONTROL
+	cmd23 = 23 | R1           // SET_BLOCK_COUNT
+	cmd24 = 24 | R1           // WRITE_BLOCK
+	cmd25 = 25 | R1           // WRITE_MULTIPLE_BLOCK
+	cmd27 = 27 | R1           // PROGRAM_CSD
+	cmd28 = 28 | R1 | BusyCmd // SET_WRITE_PROT
+	cmd29 = 29 | R1 | BusyCmd // CLR_WRITE_PROT
+	cmd30 = 30 | R1           // SEND_WRITE_PROT
+	cmd32 = 30 | R1           // ERASE_WR_BLK_START
+	cmd33 = 33 | R1           // ERASE_WR_BLK_END
+	cmd38 = 38 | R1 | BusyCmd // ERASE
+	cmd40 = 40 | R1           // TODO: See DPS spec.
+	cmd42 = 42 | R1           // LOCK_UNLOCK
+	cmd52 = 52 | R5           // IO_RW_DIRECT
+	cmd53 = 53 | R5           // IO_RW_EXTENDED
+	cmd55 = 55 | R1           // APP_CMD
+	cmd56 = 56 | R1           // GEN_CMD
 
-	acmd6  = ACMD | 6 | R1  // SET_BUS_WIDTH
-	acmd13 = ACMD | 13 | R1 // SD_STATUS
-	acmd22 = ACMD | 22 | R1 // SEND_NUM_WR_BLOCKS
-	acmd23 = ACMD | 23 | R1 // SET_WR_BLK_ERASE_COUNT
-	acmd41 = ACMD | 41 | R3 // SD_SEND_OP_COND
-	acmd42 = ACMD | 42 | R1 // SET_CLR_CARD_DETECT
-	acmd51 = ACMD | 51 | R1 // SEND_SCR
+	acmd6  = AppCmd | 6 | R1  // SET_BUS_WIDTH
+	acmd13 = AppCmd | 13 | R1 // SD_STATUS
+	acmd22 = AppCmd | 22 | R1 // SEND_NUM_WR_BLOCKS
+	acmd23 = AppCmd | 23 | R1 // SET_WR_BLK_ERASE_COUNT
+	acmd41 = AppCmd | 41 | R3 // SD_SEND_OP_COND
+	acmd42 = AppCmd | 42 | R1 // SET_CLR_CARD_DETECT
+	acmd51 = AppCmd | 51 | R1 // SEND_SCR
 )
 
 // CMD0 (GO_IDLE_STATE, -) performs software reset and sets a card into Idle
