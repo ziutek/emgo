@@ -176,6 +176,43 @@ func (ch *Channel) setWordSize(p, m uintptr) {
 	sraw(ch).CR.U32.StoreBits(0x7800, uint32(cr))
 }
 
+func (ch *Channel) burst() (p, m int) {
+	cr := sraw(ch).CR.Load()
+	p = 1 << (cr >> 21 & 3)
+	m = 1 << (cr >> 23 & 3)
+	return
+}
+
+func (ch *Channel) setBurst(p, m int) {
+	var cr dma.CR
+	switch p {
+	case 1:
+	case 4:
+		cr = 1 << 21
+	case 8:
+		cr = 2 << 21
+	case 16:
+		cr = 3 << 21
+	default:
+		goto panicBurst
+	}
+	switch m {
+	case 1:
+	case 4:
+		cr |= 1 << 23
+	case 8:
+		cr |= 2 << 23
+	case 16:
+		cr |= 3 << 23
+	default:
+		goto panicBurst
+	}
+	sraw(ch).CR.StoreBits(0xF<<21, cr)
+	return
+panicBurst:
+	panic("dma: bad burst")
+}
+
 func (ch *Channel) len() int {
 	return int(sraw(ch).NDTR.Load() & 0xFFFF)
 }

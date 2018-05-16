@@ -173,6 +173,18 @@ func (ch *Channel) SetWordSize(p, m uintptr) {
 	ch.setWordSize(p, m)
 }
 
+// Burst returns the current burst mode for peripheral and memory side of
+// transfer.
+func (ch *Channel) Burst() (p, m int) {
+	return ch.burst()
+}
+
+// SetBurst sets the incremental burst mode for peripheral and memory side of
+// transfer. Allowed values: 1 (no burst), 4, 8, 16.
+func (ch *Channel) SetBurst(p, m int) {
+	ch.setBurst(p, m)
+}
+
 // Len returns current number of words to transfer.
 func (ch *Channel) Len() int {
 	return ch.len()

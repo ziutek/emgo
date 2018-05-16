@@ -137,6 +137,9 @@ func (ch *Channel) setWordSize(p, m uintptr) {
 	ch.raw.CCR.U32.StoreBits(0xf00, uint32(ccr))
 }
 
+func (ch *Channel) burst() (p, m int) { return 1, 1 }
+func (ch *Channel) setBurst(p, m int) {}
+
 func (ch *Channel) len() int {
 	return int(ch.raw.NDT().Load())
 }
