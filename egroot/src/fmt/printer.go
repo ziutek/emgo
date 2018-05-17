@@ -227,7 +227,12 @@ func (p *printer) formatValue(verb byte, v reflect.Value) {
 			strconv.WriteUintptr(p, ptr, 16, 0, pad)
 		}
 	case k == reflect.String:
-		strconv.WriteString(p, v.String(), width, pad)
+		switch verb {
+		case 'v', 's':
+			strconv.WriteString(p, v.String(), width, pad)
+		default:
+			p.badVerb(verb, v)
+		}
 	case k == reflect.Struct:
 		p.WriteByte('{')
 		var (
