@@ -66,7 +66,7 @@ const (
 	acmd51 = AppCmd | 51 | R1 // SEND_SCR
 )
 
-// CMD0 (GO_IDLE_STATE, -) performs software reset and sets a card into Idle
+// CMD0 (GO_IDLE_STATE) performs software reset and sets the card into Idle
 // State.
 func CMD0() (Command, uint32) {
 	return cmd0, 0

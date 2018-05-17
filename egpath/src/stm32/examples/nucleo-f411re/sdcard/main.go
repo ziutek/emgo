@@ -3,6 +3,7 @@ package main
 import (
 	"delay"
 	"fmt"
+	"rtos"
 	"unsafe"
 
 	"sdcard"
@@ -59,11 +60,11 @@ func init() {
 }
 
 // SDIO Errata Sheet DocID027036 Rev 2 workarounds:
-// 2.7.1 Don't use HW flow control: CLKCR.HWFC_EN.
+// 2.7.1 Don't use HW flow control (CLKCR.HWFC_EN).
 // 2.7.2 Ignore STA.CCRCFAIL for R3 and R4.
-// 2.7.3 Don't use clock dephasing: CLKCR.NEGEDGE.
+// 2.7.3 Don't use clock dephasing (CLKCR.NEGEDGE).
 // 2.7.5 Ensure 3*period(PCLK2)+3*period(SDIOCLK) < 32/BusWidth*period(SDIO_CK)
-//       (always met for PCLK > 28.8 MHz.)
+//       (always met for PCLK2 (APB2CLK) > 28.8 MHz).
 
 func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 	if h.status != 0 {
@@ -86,6 +87,7 @@ func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 		if h.status&waitFlags != 0 {
 			break
 		}
+		rtos.SchedYield()
 	}
 	h.status &= errFlags
 	if cmd&sdcard.HasResp == 0 {
@@ -98,14 +100,16 @@ func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 		if r := cmd & sdcard.RespType; r != sdcard.R3 && r != sdcard.R4 {
 			return
 		}
-		// Ignore CRC error for responses R3 and R4.
+		// Ignore CRC error for R3, R4 responses.
 		h.status &^= sdio.CCRCFAIL
 	}
-	resp[0] = sd.RESP[0].U32.Load()
 	if cmd&sdcard.LongResp != 0 {
-		resp[1] = sd.RESP[1].U32.Load()
-		resp[2] = sd.RESP[2].U32.Load()
-		resp[3] = sd.RESP[3].U32.Load()
+		resp[3] = sd.RESP[0].U32.Load() // most significant bits
+		resp[2] = sd.RESP[1].U32.Load()
+		resp[1] = sd.RESP[2].U32.Load()
+		resp[0] = sd.RESP[3].U32.Load() // least significant bits
+	} else {
+		resp[0] = sd.RESP[0].U32.Load()
 	}
 	return
 }

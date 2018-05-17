@@ -91,47 +91,47 @@ type CID [4]uint32
 
 // MID returns the manufacturer ID.
 func (cid CID) MID() byte {
-	return byte(cid[0] >> 24)
+	return byte(cid[3] >> 24)
 }
 
 // OID returns the OEM/Application ID.
 func (cid CID) OID() [2]byte {
-	return [2]byte{byte(cid[0] >> 16), byte(cid[0] >> 8)}
+	return [2]byte{byte(cid[3] >> 16), byte(cid[3] >> 8)}
 }
 
 // PNM returns the product name.
 func (cid CID) PNM() [5]byte {
 	return [5]byte{
-		byte(cid[0]), byte(cid[1] >> 24), byte(cid[1] >> 16), byte(cid[1] >> 8),
-		byte(cid[1]),
+		byte(cid[3]), byte(cid[2] >> 24), byte(cid[2] >> 16), byte(cid[2] >> 8),
+		byte(cid[2]),
 	}
 }
 
 // PRV returns the product revision.
 func (cid CID) PRV() byte {
-	return byte(cid[2] >> 24)
+	return byte(cid[1] >> 24)
 }
 
 // PSN returns the product serial number.
 func (cid CID) PSN() uint32 {
-	return cid[2]<<8 | cid[3]>>24
+	return cid[1]<<8 | cid[0]>>24
 }
 
 // MDT returns the manufacturing date.
 func (cid CID) MDT() (year, month int) {
-	mdt := int(cid[3] >> 8 & 0xFFF)
+	mdt := int(cid[0] >> 8 & 0xFFF)
 	return mdt>>4 + 2000, mdt & 15
 }
 
 // CRC returns the 7-bit CRC field.
 func (cid CID) CRC() byte {
-	return byte(cid[3] >> 1)
+	return byte(cid[0] >> 1)
 }
 
 type CSD [4]uint32
 
 func (csd CSD) Version() int {
-	return int(csd[0]>>30 + 1)
+	return int(csd[3]>>30 + 1)
 }
 
 //emgo:const
@@ -150,8 +150,8 @@ func pow10(exp uint32) int {
 
 // TAAC returns asynchronous part of the data access time [ns].
 func (csd CSD) TAAC() int {
-	exp := csd[0] >> 16 & 7
-	f := int(frac[csd[0]>>19&15])
+	exp := csd[3] >> 16 & 7
+	f := int(frac[csd[3]>>19&15])
 	if exp > 0 {
 		return f * pow10(exp-1)
 	}
@@ -161,57 +161,57 @@ func (csd CSD) TAAC() int {
 // NSAC returns the worst case for the clock-dependent factor of the data
 // access time [clk].
 func (csd CSD) NSAC() int {
-	return int(csd[0] >> 8 & 255 * 100)
+	return int(csd[3] >> 8 & 255 * 100)
 }
 
 // TRAN_SPEED returns the maximum data transfer rate per one data line [kb/s].
 func (csd CSD) TRAN_SPEED() int {
-	exp := csd[0] & 7
-	f := int(frac[csd[0]>>3&15])
+	exp := csd[3] & 7
+	f := int(frac[csd[3]>>3&15])
 	return f * 10 * pow10(exp)
 }
 
 // CCC returns SDMC command set as 12-bit bitfield.
 func (csd CSD) CCC() uint {
-	return uint(csd[1] >> 20)
+	return uint(csd[2] >> 20)
 }
 
 // READ_BL_LEN returns the maximum read data block length (bytes).
 func (csd CSD) READ_BL_LEN() int {
-	return 1 << (csd[1] >> 16 & 15)
+	return 1 << (csd[2] >> 16 & 15)
 }
 
 // READ_BL_PARTIAL reports whether Partial Block Read is allowed.
 func (csd CSD) READ_BL_PARTIAL() bool {
-	return csd[1]>>15&1 != 0
+	return csd[2]>>15&1 != 0
 }
 
 // WRITE_BLK_MISALIGN reports whether the data block to be written by one
 // command can be spread over more than one physical block of the memory device.
 func (csd CSD) WRITE_BLK_MISALIGN() bool {
-	return csd[1]>>14&1 != 0
+	return csd[2]>>14&1 != 0
 }
 
 // READ_BLK_MISALIGN reports whether the data block to be read by one command
 // can be spread over more than one physical block of the memory device.
 func (csd CSD) READ_BLK_MISALIGN() bool {
-	return csd[1]>>13&1 != 0
+	return csd[2]>>13&1 != 0
 }
 
 // DSR_IMP reports whether the configurable driver stage is integrated on the
 // card and Driver Stage Register is implemented.
 func (csd CSD) DSR_IMP() bool {
-	return csd[1]>>12&1 != 0
+	return csd[2]>>12&1 != 0
 }
 
 // C_SIZE returns the user's data card capacity as number of 512 B blocks.
 func (csd CSD) C_SIZE() int64 {
 	if csd.Version() == 2 {
-		return int64(csd[1]&63<<16+csd[2]>>16+1) << 10
+		return int64(csd[2]&63<<16+csd[1]>>16+1) << 10
 	}
-	read_bl_len := csd[1] >> 16 & 15
-	c_size := csd[1]&0x3FF<<2 + csd[2]>>30
-	c_size_mult := csd[2] >> 15 & 7
+	read_bl_len := csd[2] >> 16 & 15
+	c_size := csd[2]&0x3FF<<2 + csd[1]>>30
+	c_size_mult := csd[1] >> 15 & 7
 	return int64((c_size + 1) << (read_bl_len + c_size_mult + 2 - 9))
 }
 
@@ -219,47 +219,47 @@ func (csd CSD) C_SIZE() int64 {
 // multiple 512 B blocks. If ERASE_BLK_EN is false it supports erasing of one
 // or more sectors of SECTOR_SIZE * WRITE_BL_LEN bytes.
 func (csd CSD) ERASE_BLK_EN() bool {
-	return csd[2]>>14&1 != 0
+	return csd[1]>>14&1 != 0
 }
 
 // SECTOR_SIZE returns the size of an erasable sector as number of blocks of
 // WRITE_BL_LEN bytes.
 func (csd CSD) SECTOR_SIZE() int {
-	return int(csd[2]>>7&127 + 1)
+	return int(csd[1]>>7&127 + 1)
 }
 
 // WP_GRP_SIZE returns the size of a write protected group.
 func (csd CSD) WP_GRP_SIZE() int {
-	return int(csd[2]&127 + 1)
+	return int(csd[1]&127 + 1)
 }
 
 // WP_GRP_ENABLE reports whether the write protection is possible
 func (csd CSD) WP_GRP_ENABLE() bool {
-	return csd[3]>>31&1 != 0
+	return csd[0]>>31&1 != 0
 }
 
 // R2W_FACTOR returns the typical block program time as a multiple of the read
 // access time.
 func (csd CSD) R2W_FACTOR() int {
-	return int(csd[3]>>26&7 + 1)
+	return int(csd[0]>>26&7 + 1)
 }
 
 // WRITE_BL_LEN returns the maximum write data block length (bytes).
 func (csd CSD) WRITE_BL_LEN() int {
-	return 1 << (csd[3] >> 22 & 15)
+	return 1 << (csd[0] >> 22 & 15)
 }
 
 // WRITE_BL_PARTIAL reports whether the partial block sizes can be used in
 // block write commands
 func (csd CSD) WRITE_BL_PARTIAL() bool {
-	return csd[3]>>21&1 != 0
+	return csd[0]>>21&1 != 0
 }
 
 type FileFormat byte
 
 const (
 	HardDisk  FileFormat = 0 // Hard disk-like file system with partition table.
-	DOSFloppy FileFormat = 1 // DOS FAT (floppy-like) with boot sector only.
+	DOSFloppy FileFormat = 1 // DOS FAT (floppy-like) without partition table.
 	UFF       FileFormat = 2 // Universal File Format.
 	OtherFF   FileFormat = 3 // Other/unknown.
 )
