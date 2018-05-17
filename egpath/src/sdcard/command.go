@@ -1,5 +1,9 @@
 package sdcard
 
+import (
+	"bits"
+)
+
 type Command uint16
 
 const (
@@ -121,6 +125,12 @@ func CMD6(sf SwitchFunc) (Command, uint32) {
 	return cmd6, uint32(sf)
 }
 
+// CMD7 (SELECT_CARD/DESELECT_CARD, R1b) selects card with rca address (puts
+// into Transfer State) and deselects all other (puts into Stand-by State).
+func CMD7(rca uint16) (Command, uint32) {
+	return cmd7, uint32(rca) << 16
+}
+
 type VHS byte
 
 const (
@@ -137,6 +147,11 @@ func CMD8(vhs VHS, checkPattern byte) (Command, uint32) {
 // CMD9 (SEND_CSD, R2) gets Card Specific Data from card indentified by rca.
 func CMD9(rca uint16) (Command, uint32) {
 	return cmd9, uint32(rca) << 16
+}
+
+// CMD16 (SET_BLOCKLEN, R1) sets the block length (in bytes) for block commands.
+func CMD16(blen int) (Command, uint32) {
+	return cmd9, uint32(blen)
 }
 
 // CMD55 (APP_CMD, R1) indicates to the card that the next command is an
@@ -160,4 +175,9 @@ func ACMD6(bw BusWidth) (Command, uint32) {
 // ACMD41 (SD_SEND_OP_COND, R3) starts initialization/identification process.
 func ACMD41(ocr OCR) (Command, uint32) {
 	return acmd41, uint32(ocr)
+}
+
+// ACMD42 (SET_CLR_CARD_DETECT, R1) enables/disables pull-up resistor on D3/CD.
+func ACMD42(pullUp bool) (Command, uint32) {
+	return acmd42, uint32(bits.One(pullUp))
 }

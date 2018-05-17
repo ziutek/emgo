@@ -49,7 +49,7 @@ const (
 	StateDis           CardStatus = 8 << 9
 	StateIOOnly        CardStatus = 15 << 9
 	ERASE_RESET        CardStatus = 1 << 13
-	ARD_ECC_DISABLED   CardStatus = 1 << 14
+	CARD_ECC_DISABLED  CardStatus = 1 << 14
 	WP_ERASE_SKIP      CardStatus = 1 << 15
 	CSD_OVERWRITE      CardStatus = 1 << 16
 	ERROR              CardStatus = 1 << 19
@@ -87,6 +87,8 @@ const (
 	PWUP  OCR = 1 << 31 // Card in power up state (^Busy).
 )
 
+
+// CID - Card Identification Register
 type CID [4]uint32
 
 // MID returns the manufacturer ID.
@@ -128,6 +130,7 @@ func (cid CID) CRC() byte {
 	return byte(cid[0] >> 1)
 }
 
+// CSD - Card Specific Data register
 type CSD [4]uint32
 
 func (csd CSD) Version() int {
