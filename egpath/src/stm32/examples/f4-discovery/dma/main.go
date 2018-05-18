@@ -17,8 +17,9 @@ import (
 )
 
 var (
-	ch  *dma.Channel
-	tce rtos.EventFlag
+	ch     *dma.Channel
+	dmaErr dma.Error
+	tce    rtos.EventFlag
 )
 
 func init() {
@@ -63,8 +64,8 @@ func copyDMA(mode dma.Mode) {
 	fence.W()
 	ch.Enable()
 	tce.Wait(1, 0)
-	if _, err := ch.Status(); err != 0 {
-		fmt.Println(err)
+	if dmaErr != 0 {
+		fmt.Println(dmaErr)
 	}
 }
 
@@ -125,6 +126,7 @@ func dmaISR() {
 	ev, err := ch.Status()
 	ch.Clear(ev, err)
 	if ev&dma.Complete != 0 || err != 0 {
+		dmaErr = err
 		tce.Signal(1)
 	}
 }
