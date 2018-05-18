@@ -237,7 +237,7 @@ func (d *Driver) EnableTx() {
 	p := &d.p.raw
 	p.TE().Set()
 	p.DMAT().Set()
-	d.setupDMA(d.txDMA, dma.MTP|dma.IncM|dma.FIFO_4_4, d.p.tdAddr())
+	d.setupDMA(d.txDMA, dma.MTP|dma.IncM|dma.FT4, d.p.tdAddr())
 }
 
 func (d *Driver) DisableTx() {

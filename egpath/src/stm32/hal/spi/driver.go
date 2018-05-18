@@ -142,12 +142,12 @@ func startDMA(ch *dma.Channel, addr uintptr, n int) {
 }
 
 func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int, wsize uintptr) (n int) {
-	txdmacfg := dma.MTP | dma.FIFO_4_4
+	txdmacfg := dma.MTP | dma.FT4
 	if olen > 1 {
 		txdmacfg |= dma.IncM
 	}
 	d.setupDMA(d.txDMA, txdmacfg, 1)
-	d.setupDMA(d.rxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4, wsize)
+	d.setupDMA(d.rxDMA, dma.PTM|dma.IncM|dma.FT4, wsize)
 	p := d.p
 	p.SetDuplex(Full)
 	p.EnableDMA(RxNotEmpty | TxEmpty)
@@ -200,7 +200,7 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int, wsize uintptr) (n
 }
 
 func (d *Driver) writeDMA(out uintptr, n int, wsize uintptr, incm dma.Mode) {
-	d.setupDMA(d.txDMA, dma.MTP|incm|dma.FIFO_4_4, wsize)
+	d.setupDMA(d.txDMA, dma.MTP|incm|dma.FT4, wsize)
 	p := d.p
 	p.SetDuplex(HalfOut) // Avoid ErrOverflow.
 	p.EnableDMA(TxEmpty)

@@ -182,7 +182,7 @@ func (d *Driver) addrISR(sr1 i2c.SR1) {
 	if d.RxDMA != nil && len(d.buf) > 1 {
 		d.state = stateReadDMA
 		p.SR2.Load()
-		d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4)
+		d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FT1)
 		d.startDMA(d.RxDMA)
 		return
 	}
@@ -299,7 +299,7 @@ func (d *Driver) readWaitEH(_ i2c.SR1) {
 		if d.stop {
 			d.P.raw.LAST().Set()
 		}
-		d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FIFO_1_4)
+		d.setupDMA(d.RxDMA, dma.PTM|dma.IncM|dma.FT1)
 		d.startDMA(d.RxDMA)
 		return
 	}
@@ -338,7 +338,7 @@ func (d *Driver) write() {
 	if d.TxDMA != nil && len(d.buf) > 1 {
 		d.state = stateWriteDMA
 		d.n = 0
-		d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FIFO_4_4)
+		d.setupDMA(d.TxDMA, dma.MTP|dma.IncM|dma.FT4)
 		d.startDMA(d.TxDMA)
 	} else {
 		d.state = stateWrite

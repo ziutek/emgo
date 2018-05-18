@@ -132,11 +132,17 @@ const (
 	IncM Mode = incM // Memory increment mode.
 	PFC  Mode = pfc  // Peripheral flow controller.
 
-	Direct   Mode = 0        // Direct mode.
-	FIFO_1_4 Mode = fifo_1_4 // FIFO mode, threshold 1/4.
-	FIFO_2_4 Mode = fifo_2_4 // FIFO mode, threshold 2/4.
-	FIFO_3_4 Mode = fifo_3_4 // FIFO mode, threshold 3/4.
-	FIFO_4_4 Mode = fifo_4_4 // FIFO mode, threshold 4/4.
+	FT1 Mode = ft1 // FIFO mode, threshold 1/4.
+	FT2 Mode = ft2 // FIFO mode, threshold 2/4.
+	FT3 Mode = ft3 // FIFO mode, threshold 3/4.
+	FT4 Mode = ft4 // FIFO mode, threshold 4/4.
+
+	PB4  Mode = pb4  // Perepheral burst transfer, 4 beats.
+	PB8  Mode = pb8  // Perepheral burst transfer, 8 beats.
+	PB16 Mode = pb16 // Perepheral burst transfer, 16 beats.
+	MB4  Mode = mb4  // Memory burst transfer, 4 beats.
+	MB8  Mode = mb4  // Memory burst transfer, 4 beats.
+	MB16 Mode = mb4  // Memory burst transfer, 4 beats.
 )
 
 // Setup configures channel.
@@ -144,13 +150,14 @@ func (ch *Channel) Setup(m Mode) {
 	ch.setup(m)
 }
 
+// Prio describes DMA stream priority level.
 type Prio byte
 
 const (
-	Low      Prio = 0     // Stream priority level: Low.
-	Medium   Prio = prioM // Stream priority level: Medium.
-	High     Prio = prioH // Stream priority level: High.
-	VeryHigh Prio = prioV // Stream priority level: Very high.
+	Low      Prio = 0     // Low priority.
+	Medium   Prio = prioM // Medium priority.
+	High     Prio = prioH // High priority.
+	VeryHigh Prio = prioV // Very high priority.
 )
 
 func (ch *Channel) SetPrio(prio Prio) {
@@ -171,18 +178,6 @@ func (ch *Channel) WordSize() (p, m uintptr) {
 // transfer.
 func (ch *Channel) SetWordSize(p, m uintptr) {
 	ch.setWordSize(p, m)
-}
-
-// Burst returns the current burst mode for peripheral and memory side of
-// transfer.
-func (ch *Channel) Burst() (p, m int) {
-	return ch.burst()
-}
-
-// SetBurst sets the incremental burst mode for peripheral and memory side of
-// transfer. Allowed values: 1 (no burst), 4, 8, 16.
-func (ch *Channel) SetBurst(p, m int) {
-	ch.setBurst(p, m)
 }
 
 // Len returns current number of words to transfer.

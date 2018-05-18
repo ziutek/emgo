@@ -35,7 +35,7 @@ var (
 )
 
 func main() {
-	ch.Setup(dma.MTM | dma.IncP | dma.IncM | dma.FIFO_4_4)
+	ch.Setup(dma.MTM | dma.IncP | dma.IncM | dma.FT4)
 	ch.SetWordSize(unsafe.Sizeof(P[0]), unsafe.Sizeof(M[0]))
 	ch.SetLen(len(P))
 	ch.SetAddrP(unsafe.Pointer(&P[0]))

@@ -126,11 +126,13 @@ func (ch *Channel) disableIRQ(flags byte) {
 	st.FCR.U32.ClearBits(uint32(flags) & 1 << 7)
 }
 
+// Use numbers instead of constants from stm32/hal/raw/dma to see that ftX that
+// are in DMAX_StreamY.FCR don't interfere with others that are in DMAX.CR.
 const (
-	fifo_1_4 = 4 << 0
-	fifo_2_4 = 5 << 0
-	fifo_3_4 = 6 << 0
-	fifo_4_4 = 7 << 0
+	ft1 = 4 << 0
+	ft2 = 5 << 0
+	ft3 = 6 << 0
+	ft4 = 7 << 0
 
 	pfc = 1 << 5
 
@@ -140,11 +142,21 @@ const (
 	circ = 1 << 8
 	incP = 1 << 9
 	incM = 1 << 10
+
+	pb4  = 1 << 21
+	pb8  = 2 << 21
+	pb16 = 3 << 21
+	mb4  = 1 << 23
+	mb8  = 2 << 23
+	mb16 = 3 << 23
+
+	chSel = 7 << 25 // Only to see that others don't interfere with CHSEL.
 )
 
 func (ch *Channel) setup(m Mode) {
 	cr := dma.CR(cnum(ch))<<dma.CHSELn | dma.CR(m)
-	mask := dma.CHSEL | dma.PL | dma.MINC | dma.PINC | dma.CIRC | dma.DIR
+	mask := dma.PFCTRL | dma.DIR | dma.CIRC | dma.PINC | dma.MINC |
+		dma.PBURST | dma.MBURST | dma.CHSEL
 	st := sraw(ch)
 	st.CR.StoreBits(mask, cr)
 	st.FCR.StoreBits(dma.DMDIS|dma.FTH, dma.FCR(m))
@@ -174,43 +186,6 @@ func (ch *Channel) wordSize() (p, m uintptr) {
 func (ch *Channel) setWordSize(p, m uintptr) {
 	cr := p&6<<10 | m&6<<12
 	sraw(ch).CR.U32.StoreBits(0x7800, uint32(cr))
-}
-
-func (ch *Channel) burst() (p, m int) {
-	cr := sraw(ch).CR.Load()
-	p = 1 << (cr >> 21 & 3)
-	m = 1 << (cr >> 23 & 3)
-	return
-}
-
-func (ch *Channel) setBurst(p, m int) {
-	var cr dma.CR
-	switch p {
-	case 1:
-	case 4:
-		cr = 1 << 21
-	case 8:
-		cr = 2 << 21
-	case 16:
-		cr = 3 << 21
-	default:
-		goto panicBurst
-	}
-	switch m {
-	case 1:
-	case 4:
-		cr |= 1 << 23
-	case 8:
-		cr |= 2 << 23
-	case 16:
-		cr |= 3 << 23
-	default:
-		goto panicBurst
-	}
-	sraw(ch).CR.StoreBits(0xF<<21, cr)
-	return
-panicBurst:
-	panic("dma: bad burst")
 }
 
 func (ch *Channel) len() int {

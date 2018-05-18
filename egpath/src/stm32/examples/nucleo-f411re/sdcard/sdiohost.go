@@ -91,9 +91,8 @@ func (h *Host) Recv(buf []uint32) {
 	}
 	sd := sdio.SDIO
 	ch := h.dma
-	ch.Setup(dma.PTM | dma.PFC | dma.IncM | dma.FIFO_1_4)
+	ch.Setup(dma.PTM | dma.PFC | dma.IncM | dma.FT4 | dma.PB4 | dma.MB4)
 	ch.SetWordSize(4, 4)
-	ch.SetBurst(4, 1)
 	ch.SetAddrP(unsafe.Pointer(sd.FIFO.Addr()))
 	ch.SetAddrM(unsafe.Pointer(&buf[0]))
 	ch.Enable()

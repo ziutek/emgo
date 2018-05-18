@@ -52,7 +52,7 @@ func (c *AltMasterConnDMA) Write(buf []byte) (int, error) {
 		}
 		d.mutex.Lock()
 		c.state = actwr
-		txd.Setup(dma.MTP | dma.IncM | dma.FIFO_4_4)
+		txd.Setup(dma.MTP | dma.IncM | dma.FT4)
 		txd.SetWordSize(1, 1)
 		txd.SetAddrP(unsafe.Pointer(p.DR.Addr()))
 		p.DMAEN().Set()
@@ -157,7 +157,7 @@ func (c *AltMasterConnDMA) Read(buf []byte) (int, error) {
 			n = 1
 			goto end
 		}
-		rxd.Setup(dma.PTM | dma.IncM | dma.FIFO_1_4)
+		rxd.Setup(dma.PTM | dma.IncM | dma.FT1)
 		rxd.SetWordSize(1, 1)
 		rxd.SetAddrP(unsafe.Pointer(p.DR.Addr()))
 		p.DMAEN().Set()

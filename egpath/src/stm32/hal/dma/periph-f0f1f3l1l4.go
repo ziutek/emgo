@@ -98,10 +98,17 @@ const (
 	incP = 1 << dma.PINCn
 	incM = 1 << dma.MINCn
 
-	fifo_1_4 = 0
-	fifo_2_4 = 0
-	fifo_3_4 = 0
-	fifo_4_4 = 0
+	ft1 = 0
+	ft2 = 0
+	ft3 = 0
+	ft4 = 0
+
+	pb4  = 0
+	pb8  = 0
+	pb16 = 0
+	mb4  = 0
+	mb8  = 0
+	mb16 = 0
 
 	pfc = 0
 )
@@ -136,9 +143,6 @@ func (ch *Channel) setWordSize(p, m uintptr) {
 	ccr := p&6<<7 | m&6<<9
 	ch.raw.CCR.U32.StoreBits(0xf00, uint32(ccr))
 }
-
-func (ch *Channel) burst() (p, m int) { return 1, 1 }
-func (ch *Channel) setBurst(p, m int) {}
 
 func (ch *Channel) len() int {
 	return int(ch.raw.NDT().Load())

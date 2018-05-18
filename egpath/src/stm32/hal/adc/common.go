@@ -17,7 +17,7 @@ func panicSeq() {
 func enableDMA(ch *dma.Channel, circ dma.Mode, half dma.Event,
 	paddr, maddr unsafe.Pointer, wordSize uintptr, n int) {
 
-	ch.Setup(dma.PTM | dma.IncM | dma.FIFO_1_4 | circ)
+	ch.Setup(dma.PTM | dma.IncM | dma.FT1 | circ)
 	ch.SetWordSize(wordSize, wordSize)
 	ch.SetAddrP(paddr)
 	ch.SetAddrM(maddr)
