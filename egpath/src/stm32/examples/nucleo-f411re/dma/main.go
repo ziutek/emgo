@@ -1,11 +1,13 @@
-// This example shows how to use DMA for memory to memory transfers. In case of
-// STM32F2xx/4xx only DMA2 supports MTM transfer.
+// This example tests different ways of coping memory. It also shows how to use
+// DMA for memory to memory transfers. In case of STM32F2xx/4xx only DMA2
+// supports MTM transfer.
 package main
 
 import (
 	"delay"
 	"fmt"
 	"rtos"
+	"sync/fence"
 	"unsafe"
 
 	"stm32/hal/dma"
@@ -26,31 +28,97 @@ func init() {
 	d := dma.DMA2
 	d.EnableClock(true)
 	ch = d.Channel(0, 0)
+	ch.EnableIRQ(dma.Complete, dma.ErrAll)
 	rtos.IRQ(irq.DMA2_Stream0).Enable()
 }
 
+const n = 40 * 1024 / 4
+
 var (
-	P = [...]int{1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -2, -3, -4, -5, -6, -7, -8, -9}
-	M [len(P)]int
+	src = make([]uint32, n)
+	dst = make([]uint32, n)
 )
 
-func main() {
-	ch.Setup(dma.MTM | dma.IncP | dma.IncM | dma.FT4)
-	ch.SetWordSize(unsafe.Sizeof(P[0]), unsafe.Sizeof(M[0]))
-	ch.SetLen(len(P))
-	ch.SetAddrP(unsafe.Pointer(&P[0]))
-	ch.SetAddrM(unsafe.Pointer(&M[0]))
-	ch.EnableIRQ(dma.Complete, dma.ErrAll)
+func printSpeed(t int64, check bool) {
+	t = rtos.Nanosec() - t
+	if check {
+		for i := range dst {
+			if dst[i] != uint32(i) {
+				fmt.Printf(" dst != src\n")
+				return
+			}
+			dst[i] = 0
+		}
+	}
+	fmt.Printf(" %6d kB/s\n", (int64(n*unsafe.Sizeof(dst[0]))*1e6+t/2)/t)
+}
+
+func copyDMA(mode dma.Mode) {
+	ch.Setup(dma.MTM | dma.IncP | dma.IncM | mode)
+	ch.SetWordSize(unsafe.Sizeof(src[0]), unsafe.Sizeof(dst[0]))
+	ch.SetLen(n)
+	ch.SetAddrP(unsafe.Pointer(&src[0]))
+	ch.SetAddrM(unsafe.Pointer(&dst[0]))
+	tce.Reset(0)
+	fence.W()
 	ch.Enable()
 	tce.Wait(1, 0)
-
-	delay.Millisec(250) // Wait for OpenOCD (press reset if you see nothing).
-
 	if _, err := ch.Status(); err != 0 {
-		fmt.Printf("Error: %v\n", err)
-	} else {
-		fmt.Println(M[:])
+		fmt.Println(err)
 	}
+}
+
+func main() {
+	delay.Millisec(250) // Wait for SWO (press reset if you see nothing).
+
+	fmt.Printf("Initialize src                        ")
+	t := rtos.Nanosec()
+	for i := range src {
+		src[i] = uint32(i)
+	}
+	printSpeed(t, false)
+
+	fmt.Printf("for i := range src { dst[i] = src[i] }")
+	t = rtos.Nanosec()
+	for i := range src {
+		dst[i] = src[i]
+	}
+	printSpeed(t, true)
+
+	fmt.Printf("copy(dst, src)                        ")
+	t = rtos.Nanosec()
+	copy(dst, src)
+	printSpeed(t, true)
+
+	fmt.Printf("DMA                                   ")
+	t = rtos.Nanosec()
+	copyDMA(0)
+	printSpeed(t, true)
+
+	fmt.Printf("DMA FT1                               ")
+	t = rtos.Nanosec()
+	copyDMA(dma.FT1)
+	printSpeed(t, true)
+
+	fmt.Printf("DMA FT2                               ")
+	t = rtos.Nanosec()
+	copyDMA(dma.FT2)
+	printSpeed(t, true)
+
+	fmt.Printf("DMA FT3                               ")
+	t = rtos.Nanosec()
+	copyDMA(dma.FT3)
+	printSpeed(t, true)
+
+	fmt.Printf("DMA FT4                               ")
+	t = rtos.Nanosec()
+	copyDMA(dma.FT4)
+	printSpeed(t, true)
+
+	fmt.Printf("DMA FT4 PB4 MB4                       ")
+	t = rtos.Nanosec()
+	copyDMA(dma.FT4 | dma.PB4 | dma.MB4)
+	printSpeed(t, true)
 }
 
 func dmaISR() {
