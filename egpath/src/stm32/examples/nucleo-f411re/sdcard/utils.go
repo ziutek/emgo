@@ -30,7 +30,7 @@ func checkErr(what string, err error, status sdcard.CardStatus) {
 		sdcard.ERASE_RESET |
 		sdcard.AKE_SEQ_ERROR
 	if status &= errFlags; status != 0 {
-		fmt.Printf("%s: 0x%X", status)
+		fmt.Printf("%s: 0x%X", what, status)
 		for {
 		}
 	}

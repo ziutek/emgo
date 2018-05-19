@@ -3,6 +3,7 @@ package main
 import (
 	"delay"
 	"fmt"
+	"rtos"
 
 	"sdcard"
 
@@ -12,6 +13,7 @@ import (
 	"stm32/hal/system/timer/systick"
 
 	"stm32/hal/raw/rcc"
+	"stm32/hal/raw/sdio"
 )
 
 var h Host
@@ -123,4 +125,55 @@ func main() {
 	cs = h.Cmd(sdcard.ACMD42(false)).R1()
 	checkErr("ACMD42", h.Err(true), cs)
 
+	if ocr&sdcard.HCXC == 0 {
+		// Set block size to 512 B for version < 2 or SDSC card.
+		cs = h.Cmd(sdcard.CMD16(512)).R1()
+		checkErr("CMD16", h.Err(true), cs)
+	}
+
+	block := make([]uint32, 512/4)
+
+	for n := uint(0); n < 4; n++ {
+		addr := n
+		if ocr&sdcard.HCXC == 0 {
+			addr *= 512
+		}
+		h.SetupDMA(dma.PTM, block)
+		cs = h.Cmd(sdcard.CMD17(addr)).R1()
+		checkErr("CMD17", h.Err(true), cs)
+		h.StartBlockTransfer(RD)
+		for {
+			ev, err := h.dma.Status()
+			if err != 0 {
+				fmt.Printf("DMA error: %v\n", err)
+				return
+			}
+			if ev == dma.Complete {
+				break
+			}
+		}
+		errFlags := sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT | sdio.DTIMEOUT |
+			sdio.TXUNDERR | sdio.RXOVERR
+		waitFlags := errFlags | sdio.DBCKEND
+		for {
+			h.status = sdio.SDIO.STA.Load()
+			if h.status&waitFlags != 0 {
+				break
+			}
+			rtos.SchedYield()
+		}
+		h.status &= errFlags
+		checkErr("CMD17 data", h.Err(true), 0)
+		fmt.Printf("%d:\n", n)
+		for i, w := range block {
+			c := ' '
+			if (i+1)%8 == 0 {
+				c = '\n'
+			}
+			fmt.Printf(
+				"%02x%02x%02x%02x%c",
+				byte(w), byte(w>>8), byte(w>>16), byte(w>>24), c,
+			)
+		}
+	}
 }

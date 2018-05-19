@@ -85,18 +85,31 @@ func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 	return
 }
 
-func (h *Host) Recv(buf []uint32) {
+func (h *Host) SetupDMA(dir dma.Mode, buf []uint32) {
 	if h.status != 0 || len(buf) == 0 {
 		return
 	}
 	sd := sdio.SDIO
+	sd.DLEN.Store(sdio.DLEN(len(buf)) * 4)
+	sd.DTIMER.Store(0xFFFFFFFF)
 	ch := h.dma
-	ch.Setup(dma.PTM | dma.PFC | dma.IncM | dma.FT4 | dma.PB4 | dma.MB4)
+	ch.Clear(dma.EvAll, dma.ErrAll)
+	ch.Setup(dir | dma.PFC | dma.IncM | dma.FT4 | dma.PB4 | dma.MB4)
 	ch.SetWordSize(4, 4)
 	ch.SetAddrP(unsafe.Pointer(sd.FIFO.Addr()))
 	ch.SetAddrM(unsafe.Pointer(&buf[0]))
 	ch.Enable()
-	// ...
+}
+
+// Set DTEN, DBLOCKSIZE, Wait for SDIO DBCKEND.
+
+const (
+	WR = 0 << sdio.DTDIRn
+	RD = 1 << sdio.DTDIRn
+)
+
+func (h *Host) StartBlockTransfer(dir sdio.DCTRL) {
+	sdio.SDIO.DCTRL.Store(sdio.DTEN | dir | sdio.DMAEN | 9<<sdio.DBLOCKSIZEn)
 }
 
 type Error sdio.STA
