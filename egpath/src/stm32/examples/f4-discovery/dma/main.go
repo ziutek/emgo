@@ -41,7 +41,9 @@ var (
 )
 
 func printSpeed(t int64, check bool) {
-	t = rtos.Nanosec() - t
+	t1 := rtos.Nanosec()
+	t2 := rtos.Nanosec()
+	dt := (t1 - t) - (t2 - t1)
 	if check {
 		for i := range dst {
 			if dst[i] != uint32(i) {
@@ -51,7 +53,7 @@ func printSpeed(t int64, check bool) {
 			dst[i] = 0
 		}
 	}
-	fmt.Printf(" %6d kB/s\n", (int64(n*unsafe.Sizeof(dst[0]))*1e6+t/2)/t)
+	fmt.Printf(" %6d kB/s\n", (int64(n*unsafe.Sizeof(dst[0]))*1e6+dt/2)/dt)
 }
 
 func copyDMA(mode dma.Mode) {
