@@ -151,7 +151,12 @@ func CMD9(rca uint16) (Command, uint32) {
 
 // CMD16 (SET_BLOCKLEN, R1) sets the block length (in bytes) for block commands.
 func CMD16(blen int) (Command, uint32) {
-	return cmd9, uint32(blen)
+	return cmd16, uint32(blen)
+}
+
+// CMD17 (READ_SINGLE_BLOCK, R1) reads a block of the size selected by CMD16.
+func CMD17(addr uint) (Command, uint32) {
+	return cmd17, uint32(addr)
 }
 
 // CMD55 (APP_CMD, R1) indicates to the card that the next command is an
