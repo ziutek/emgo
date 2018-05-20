@@ -133,7 +133,7 @@ func main() {
 
 	block := make([]uint32, 512/4)
 
-	for n := uint(0); n < 4; n++ {
+	for n := uint(0); n < 24; n++ {
 		addr := n
 		if ocr&sdcard.HCXC == 0 {
 			addr *= 512
@@ -152,8 +152,8 @@ func main() {
 				break
 			}
 		}
-		errFlags := sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT | sdio.DTIMEOUT |
-			sdio.TXUNDERR | sdio.RXOVERR
+		errFlags := sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT |
+			sdio.DTIMEOUT | sdio.TXUNDERR | sdio.RXOVERR
 		waitFlags := errFlags | sdio.DBCKEND
 		for {
 			h.status = sdio.SDIO.STA.Load()
@@ -170,10 +170,13 @@ func main() {
 			if (i+1)%8 == 0 {
 				c = '\n'
 			}
+			_ = w
 			fmt.Printf(
 				"%02x%02x%02x%02x%c",
-				byte(w), byte(w>>8), byte(w>>16), byte(w>>24), c,
+				byte(w), byte(w>>8), byte(w>>16), byte(w>>24),
+				c,
 			)
+			delay.Millisec(2)
 		}
 	}
 }
