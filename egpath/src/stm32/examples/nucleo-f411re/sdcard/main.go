@@ -55,11 +55,11 @@ func main() {
 	ocr := sdcard.V31 | sdcard.V32 | sdcard.V33 | sdcard.HCXC
 	v2 := true
 
-	fmt.Printf("\nInitializing SD card ")
-
 	// Reset
 	h.Cmd(sdcard.CMD0())
 	checkErr("CMD0", h.Err(true), 0)
+	
+	delay.Millisec(2) // CMD0 may require up to 8 clock cycles to reset card.	
 
 	// Verify card interface operating condition.
 	vhs, pattern := h.Cmd(sdcard.CMD8(sdcard.V27_36, 0xAC)).R7()
@@ -75,8 +75,9 @@ func main() {
 		for {
 		}
 	}
+	fmt.Printf("\nPhysicaly layer version 2.00+: %t\n", v2)
 
-	// Initialize memory card.
+	fmt.Printf("Initializing SD card ")
 	var oca sdcard.OCR
 	for i := 0; oca&sdcard.PWUP == 0 && i < 20; i++ {
 		h.Cmd(sdcard.CMD55(0))
@@ -91,7 +92,6 @@ func main() {
 		}
 	}
 	fmt.Printf(" OK\n\n")
-	fmt.Printf("Physicaly layer version 2.00+: %t\n", v2)
 	fmt.Printf("Operation Conditions Register: 0x%08X\n\n", oca)
 
 	// Read Card Identification Register.
@@ -133,9 +133,9 @@ func main() {
 
 	block := make([]uint32, 512/4)
 
-	for n := uint(0); n < 24; n++ {
+	for n := uint(0); n < 16; n++ {
 		addr := n
-		if ocr&sdcard.HCXC == 0 {
+		if oca&sdcard.HCXC == 0 {
 			addr *= 512
 		}
 		h.SetupDMA(dma.PTM, block)
