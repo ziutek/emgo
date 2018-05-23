@@ -32,9 +32,13 @@ func (h *Host) Disable() {
 }
 
 // SetFreq sets SDIO divider to provide SDIO_CK frequency <= freqHz.
-func (h *Host) SetFreq(freqHz int) {
+func (h *Host) SetFreq(freqHz int, pwrsave bool) {
 	div := sdio.CLKCR((48e6 + freqHz - 1) / freqHz)
-	sdio.SDIO.CLKCR.Store(sdio.CLKEN | sdio.PWRSAV | (div-2)<<sdio.CLKDIVn)
+	clkcr := sdio.CLKEN | (div-2)<<sdio.CLKDIVn
+	if pwrsave {
+		clkcr |= sdio.PWRSAV
+	}
+	sdio.SDIO.CLKCR.Store(clkcr)
 }
 
 func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {

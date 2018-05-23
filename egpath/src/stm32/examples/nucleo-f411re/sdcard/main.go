@@ -25,6 +25,7 @@ func init() {
 	// GPIO
 
 	gpio.A.EnableClock(true)
+	// irq := gpio.A.Pin(0)
 	cmd := gpio.A.Pin(6)
 	//d1 := gpio.A.Pin(8)
 	//d2 := gpio.A.Pin(9)
@@ -46,20 +47,27 @@ func init() {
 
 	rcc.RCC.SDIOEN().Set()
 	h.Enable()
-	h.SetFreq(400e3) // Set SDIO_CK to no more than 400 kHz (max. OD freq).
 }
 
 func main() {
-	delay.Millisec(250) // For SWO output
+	delay.Millisec(200) // For SWO output
 
 	ocr := sdcard.V31 | sdcard.V32 | sdcard.V33 | sdcard.HCXC
 	v2 := true
 
-	// Reset
+	// Set SDIO_CK to no more than 400 kHz (max. open-drain freq). Clock must
+	// continuously enabled (pwrsave = false) to allow correct initialisation.
+	h.SetFreq(400e3, false)
+
+	// SD card power-up takes maximum of 1 ms or 74 clock cycles.
+	delay.Millisec(1)
+
+	// Reset.
 	h.Cmd(sdcard.CMD0())
 	checkErr("CMD0", h.Err(true), 0)
-	
-	delay.Millisec(2) // CMD0 may require up to 8 clock cycles to reset card.	
+
+	// CMD0 may require up to 8 clock cycles to reset the card.
+	delay.Millisec(1)
 
 	// Verify card interface operating condition.
 	vhs, pattern := h.Cmd(sdcard.CMD8(sdcard.V27_36, 0xAC)).R7()
@@ -75,7 +83,7 @@ func main() {
 		for {
 		}
 	}
-	fmt.Printf("\nPhysicaly layer version 2.00+: %t\n", v2)
+	fmt.Printf("\nPhysical layer version 2.00+: %t\n", v2)
 
 	fmt.Printf("Initializing SD card ")
 	var oca sdcard.OCR
@@ -107,8 +115,9 @@ func main() {
 	fmt.Printf("Relative Card Address: 0x%04X\n\n", rca)
 
 	// After CMD3 card is in Data Transfer Mode (Standby State) and SDIO_CK can
-	// be set to no more than 25 MHz (max. PP freq).
-	h.SetFreq(25e6)
+	// be set to no more than 25 MHz (max. push-pull freq). Clock power save
+	// mode can be enabled.
+	h.SetFreq(25e6, true)
 
 	// Read Card Specific Data register.
 	csd := h.Cmd(sdcard.CMD9(rca)).R2CSD()
@@ -170,13 +179,8 @@ func main() {
 			if (i+1)%8 == 0 {
 				c = '\n'
 			}
-			_ = w
-			fmt.Printf(
-				"%02x%02x%02x%02x%c",
-				byte(w), byte(w>>8), byte(w>>16), byte(w>>24),
-				c,
-			)
-			delay.Millisec(2)
+			fmt.Printf("%08x%c", w, c)
 		}
+		delay.Millisec(1000)
 	}
 }
