@@ -9,7 +9,7 @@ import (
 	"stm32/hal/raw/sdio"
 )
 
-type Periph struct {
+type periph struct {
 	raw sdio.SDIO_Periph
 }
 

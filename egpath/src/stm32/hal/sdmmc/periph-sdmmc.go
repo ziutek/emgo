@@ -9,7 +9,7 @@ import (
 	"stm32/hal/raw/sdmmc"
 )
 
-type Periph struct {
+type periph struct {
 	raw sdmmc.SDMMC_Periph
 }
 
