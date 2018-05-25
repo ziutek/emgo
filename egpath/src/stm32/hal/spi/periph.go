@@ -203,6 +203,11 @@ func (p *Periph) DisableDMA(e Event) {
 	}
 }
 
+// Enabled reports whether p is enabled.
+func (p *Periph) Enabled() bool {
+	return p.raw.SPE().Load() != 0
+}
+
 // Enable enables p.
 func (p *Periph) Enable() {
 	p.raw.SPE().Set()
