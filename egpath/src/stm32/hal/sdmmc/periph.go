@@ -187,8 +187,8 @@ func (p *Periph) SetDataCtrl(cfg DataCtrl, blexp int) {
 	p.raw.DCTRL.U32.Store(uint32(cfg) | uint32(blexp)<<4)
 }
 
-// DataCount returns the number of remaining data bytes to be transfered.
-func (p *Periph) DataCount() int {
+// RemainBytes returns the number of remaining data bytes to be transfered.
+func (p *Periph) RemainBytes() int {
 	return int(p.raw.DCOUNT.Load())
 }
 
@@ -224,19 +224,46 @@ const (
 	ErrRxOverrun   Error = 1 << 5 // Rx FIFO overrun.
 )
 
+// Status returns the current status of p as event and error bits.
 func (p *Periph) Status() (Event, Error) {
 	sta := p.raw.STA.Load()
 	return Event(sta & 0x7FFDC), Error(sta & 0x3F)
 }
 
+// Clear clears specified events and errors. All errors and CmdRespOK, CmdSent,
+// DataEnd, DataBlkEnd, IOIRQ events can be cleared this way.
 func (p *Periph) Clear(ev Event, err Error) {
 	p.raw.ICR.U32.Store(uint32(ev) | uint32(err))
 }
 
+// EnableIRQ enables generating of IRQ by specified events and errors.
 func (p *Periph) EnableIRQ(ev Event, err Error) {
 	p.raw.MASK.U32.SetBits(uint32(ev) | uint32(err))
 }
 
+// DisableIRQ disables generating of IRQ by specified events and errors.
 func (p *Periph) DisableIRQ(ev Event, err Error) {
 	p.raw.MASK.U32.ClearBits(uint32(ev) | uint32(err))
 }
+
+// RemainWords returns the number of remaining words that can be read from /
+// written to the FIFO: (RemainBytes() + 3) / 4.
+func (p *Periph) RemainWords() int {
+	return int(p.raw.FIFOCNT.Load())
+}
+
+// Load loads one word from FIFO.
+func (p *Periph) Load() uint32 {
+	return p.raw.FIFO.U32.Load()
+}
+
+// Store stores one word into FIFO.
+func (p *Periph) Store(w uint32) {
+	p.raw.FIFO.U32.Store(w)
+}
+
+// Load8 reads eight words from FIFO using LDM instruction.
+//func (p *Periph) Load8(buf []uint32)
+
+// Store8 stores eight words into FIFO using STM instruction.
+//func (p *Periph) Store8(buf []uint32)
