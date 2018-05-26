@@ -66,12 +66,13 @@ const (
 )
 
 // BusClock returns the current configuration of SDMMC bus.
-func (p *Periph) BusClock() (cfg BusClock, clkdiv uint) {
+func (p *Periph) BusClock() (cfg BusClock, clkdiv int) {
 	clkcr := p.raw.CLKCR.Load()
-	return BusClock(clkcr >> 8), uint(clkdiv & 255)
+	return BusClock(clkcr >> 8), int(clkcr & 255)
 }
 
-// SetBusClock configures the SDMMC bus.
+// SetBusClock configures the SDMMC bus and clock. If ClkByp is set bus clock
+// frequency is equal to SDMMCCLK, otherwise it is SDMMCCLK / (clkdiv+2).
 //
 // Note (Errata Sheet DocID027036 Rev 2):
 // 2.7.1 Don't use hardware flow controll (FlowCtrl).
@@ -81,8 +82,8 @@ func (p *Periph) BusClock() (cfg BusClock, clkdiv uint) {
 //	3*period(PCLK)+3*period(SDMMCCLK) < 32/BusWidth*period(SDMMC_CK)
 //  (always met for: PCLK > 28.8 MHz).
 //
-func (p *Periph) SetBusClock(cfg BusClock, clkdiv uint) {
-	if clkdiv > 255 {
+func (p *Periph) SetBusClock(cfg BusClock, clkdiv int) {
+	if uint(clkdiv) > 255 {
 		panic("sdio: bad clkdiv")
 	}
 	p.raw.CLKCR.U32.Store(uint32(cfg)<<8 | uint32(clkdiv))
@@ -211,9 +212,14 @@ const (
 	TxNotEmpty  Event = 1 << 20 // Tx FIFO not empty.
 	RxNotEmpty  Event = 1 << 21 // Rx FIFO not empty.
 	IOIRQ       Event = 1 << 22 // SDIO interrupt request.
+	EvAll       Event = 0x7FFDC0
 )
 
 type Error byte
+
+func (err Error) Error() string {
+	return "sdmmc: error"
+}
 
 const (
 	ErrCmdCRC      Error = 1 << 0 // Command response received, CRC failed.
@@ -222,12 +228,17 @@ const (
 	ErrDataTimeout Error = 1 << 3 // Data response timeout.
 	ErrTxUnderrun  Error = 1 << 4 // Tx FIFO underrun.
 	ErrRxOverrun   Error = 1 << 5 // Rx FIFO overrun.
+	ErrAll         Error = 0x3F
 )
 
-// Status returns the current status of p as event and error bits.
+// Status returns the status bits: events and errors.
+//
+// Note (Errata Sheet DocID027036 Rev 2 2.7.2): Ignore ErrCmdCRC for R3
+// and R4 responses.
+//
 func (p *Periph) Status() (Event, Error) {
 	sta := p.raw.STA.Load()
-	return Event(sta & 0x7FFDC), Error(sta & 0x3F)
+	return Event(sta) & EvAll, Error(sta) & ErrAll
 }
 
 // Clear clears specified events and errors. All errors and CmdRespOK, CmdSent,

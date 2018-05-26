@@ -9,11 +9,9 @@ import (
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
+	"stm32/hal/sdmmc"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
-
-	"stm32/hal/raw/rcc"
-	"stm32/hal/raw/sdio"
 )
 
 var h Host
@@ -44,9 +42,9 @@ func init() {
 	d := dma.DMA2
 	d.EnableClock(true)
 	h.dma = d.Channel(6, 4)
-
-	rcc.RCC.SDIOEN().Set()
-	h.Enable()
+	h.p = sdmmc.SDMMC
+	h.p.EnableClock(true)
+	h.p.Enable()
 }
 
 func main() {
@@ -161,17 +159,14 @@ func main() {
 				break
 			}
 		}
-		errFlags := sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT |
-			sdio.DTIMEOUT | sdio.TXUNDERR | sdio.RXOVERR
-		waitFlags := errFlags | sdio.DBCKEND
 		for {
-			h.status = sdio.SDIO.STA.Load()
-			if h.status&waitFlags != 0 {
+			ev, err := h.p.Status()
+			if err != 0 || ev&sdmmc.DataBlkEnd != 0 {
+				h.err = err
 				break
 			}
 			rtos.SchedYield()
 		}
-		h.status &= errFlags
 		checkErr("CMD17 data", h.Err(true), 0)
 		fmt.Printf("%d:\n", n)
 		for i, w := range block {
@@ -181,6 +176,6 @@ func main() {
 			}
 			fmt.Printf("%08x%c", w, c)
 		}
-		delay.Millisec(500)
+		delay.Millisec(1000)
 	}
 }
