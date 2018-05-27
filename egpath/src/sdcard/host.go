@@ -7,9 +7,9 @@ import (
 var ErrTimeout = errors.New("sdio: timeout")
 
 type Host interface {
-	// SetFreq sets the CLK/SCLK clock frequency to freqHz. Host can implement
+	// SetFreq sets the CLK/SCLK clock frequency to freqhz. Host can implement
 	// disabling clock output if the bus is idle and pwrsave is set to true.
-	SetFreq(freqHz int, pwrsave bool)
+	SetFreq(freqhz int, pwrsave bool)
 
 	// SetBusWidth allow to change the the host data bus width.
 	SetBusWidth(width int)
