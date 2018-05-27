@@ -33,12 +33,16 @@ type Driver struct {
 	err      uint32
 }
 
+// MakeDriver returns initialized SPI driver that uses provided SPI peripheral
+// and DMA channels.
+func MakeDriver(p *Periph, txdma, rxdma *dma.Channel) Driver {
+	return Driver{p: p, rxDMA: rxdma, txDMA: txdma}
+}
+
 // NewDriver provides convenient way to create heap allocated Driver struct.
 func NewDriver(p *Periph, txdma, rxdma *dma.Channel) *Driver {
 	d := new(Driver)
-	d.p = p
-	d.rxDMA = rxdma
-	d.txDMA = txdma
+	*d = MakeDriver(p, txdma, rxdma)
 	return d
 }
 
