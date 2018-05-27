@@ -9,11 +9,10 @@ import (
 
 	"stm32/hal/dma"
 	"stm32/hal/gpio"
+	"stm32/hal/irq"
+	"stm32/hal/sdmmc"
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
-
-	"stm32/hal/raw/rcc"
-	"stm32/hal/raw/sdio"
 )
 
 var h Host
@@ -44,9 +43,10 @@ func init() {
 	d := dma.DMA2
 	d.EnableClock(true)
 	h.dma = d.Channel(6, 4)
+	h.p = sdmmc.SDIO
+	h.p.EnableClock(true)
+	h.p.Enable()
 
-	rcc.RCC.SDIOEN().Set()
-	h.Enable()
 }
 
 func main() {
@@ -150,7 +150,8 @@ func main() {
 		h.SetupDMA(dma.PTM, block)
 		cs = h.Cmd(sdcard.CMD17(addr)).R1()
 		checkErr("CMD17", h.Err(true), cs)
-		h.StartBlockTransfer(RD)
+		h.StartBlockTransfer(sdmmc.Recv)
+		// Wait for DMA.
 		for {
 			ev, err := h.dma.Status()
 			if err != 0 {
@@ -161,17 +162,15 @@ func main() {
 				break
 			}
 		}
-		errFlags := sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT |
-			sdio.DTIMEOUT | sdio.TXUNDERR | sdio.RXOVERR
-		waitFlags := errFlags | sdio.DBCKEND
+		// Wait for CRC.
 		for {
-			h.status = sdio.SDIO.STA.Load()
-			if h.status&waitFlags != 0 {
+			ev, err := h.p.Status()
+			if err != 0 || ev&sdmmc.DataBlkEnd != 0 {
+				h.err = err
 				break
 			}
 			rtos.SchedYield()
 		}
-		h.status &= errFlags
 		checkErr("CMD17 data", h.Err(true), 0)
 		fmt.Printf("%d:\n", n)
 		for i, w := range block {
@@ -180,7 +179,16 @@ func main() {
 				c = '\n'
 			}
 			fmt.Printf("%08x%c", w, c)
+			delay.Millisec(2)
 		}
-		delay.Millisec(500)
 	}
+}
+
+func sdioISR() {
+
+}
+
+//c:__attribute__((section(".ISRs")))
+var ISRs = [...]func(){
+	irq.SDIO: sdioISR,
 }

@@ -165,11 +165,11 @@ const (
 	DTEna   DataCtrl = 1 << 0  // Enable data transfer.
 	Recv    DataCtrl = 1 << 1  // Receive data from card.
 	Stream  DataCtrl = 1 << 2  // Stream or SDIO multibyte data transfer.
-	UseDMA  DataCtrl = 1 << 3  // Enable DMA.
+	UseDMA  DataCtrl = 1 << 3  // Use DMA.
 	RWStart DataCtrl = 1 << 8  // Read wait start.
 	RWStop  DataCtrl = 1 << 9  // Read wait stop.
 	RWCK    DataCtrl = 1 << 10 // Read wait constrol using CK instead of D2.
-	SDIO    DataCtrl = 1 << 11 // SDIO specific operation.
+	IO      DataCtrl = 1 << 11 // SDIO specific operation.
 )
 
 // DataCtrl returns current state/configuration of Data Path State Machine
@@ -273,8 +273,12 @@ func (p *Periph) Store(w uint32) {
 	p.raw.FIFO.U32.Store(w)
 }
 
-// Load8 reads eight words from FIFO using LDM instruction.
-//func (p *Periph) Load8(buf []uint32)
+// Load16 reads 16 words from FIFO using two LDM instructions.
+//func (p *Periph) Load16(buf []uint32)
 
-// Store8 stores eight words into FIFO using STM instruction.
-//func (p *Periph) Store8(buf []uint32)
+// Store16 stores 16 words into FIFO using two STM instructions.
+//func (p *Periph) Store16(buf []uint32)
+
+func (p *Periph) FIFOAddr() uintptr {
+	return p.raw.FIFO.Addr()
+}

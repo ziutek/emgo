@@ -14,4 +14,4 @@ type periph struct {
 }
 
 //emgo:const
-var SDMMC = (*Periph)(unsafe.Pointer(mmap.SDIO_BASE))
+var SDIO = (*Periph)(unsafe.Pointer(mmap.SDIO_BASE))

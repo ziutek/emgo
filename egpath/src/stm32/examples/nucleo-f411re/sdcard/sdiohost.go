@@ -1,14 +1,12 @@
 package main
 
 import (
-	"rtos"
 	"unsafe"
 
 	"sdcard"
 
 	"stm32/hal/dma"
-
-	"stm32/hal/raw/sdio"
+	"stm32/hal/sdmmc"
 )
 
 // SDIO Errata Sheet DocID027036 Rev 2 workarounds:
@@ -19,122 +17,99 @@ import (
 //       (always met for PCLK2 (APB2CLK) > 28.8 MHz).
 
 type Host struct {
-	dma    *dma.Channel
-	status sdio.STA
-}
-
-func (h *Host) Enable() {
-	sdio.SDIO.POWER.Store(3)
-}
-
-func (h *Host) Disable() {
-	sdio.SDIO.POWER.Store(0)
+	p   *sdmmc.Periph
+	dma *dma.Channel
+	err sdmmc.Error
 }
 
 // SetFreq sets SDIO divider to provide SDIO_CK frequency <= freqHz.
 func (h *Host) SetFreq(freqHz int, pwrsave bool) {
-	div := sdio.CLKCR((48e6 + freqHz - 1) / freqHz)
-	// BUG: handle clkdiv == 1
-	clkcr := sdio.CLKEN | (div-2)<<sdio.CLKDIVn
+	clkdiv := (48e6 + freqHz - 1) / freqHz
+	cfg := sdmmc.ClkEna
 	if pwrsave {
-		clkcr |= sdio.PWRSAV
+		cfg |= sdmmc.PwrSave
 	}
-	sdio.SDIO.CLKCR.Store(clkcr)
+	// BUG: handle clkdiv == 1
+	h.p.SetBusClock(cfg, clkdiv-2)
 }
 
 func (h *Host) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
-	if h.status != 0 {
+	if h.err != 0 {
 		return
 	}
-	sd := sdio.SDIO
-	sd.ICR.Store(0xFFFFFFFF)
-	sd.ARG.Store(sdio.ARG(arg))
-	sd.CMD.Store(sdio.CPSMEN | sdio.CMD(cmd)&0xFF)
-	errFlags := sdio.CCRCFAIL | sdio.DCRCFAIL | sdio.CTIMEOUT | sdio.DTIMEOUT |
-		sdio.TXUNDERR | sdio.RXOVERR
-	waitFlags := errFlags
-	if cmd&sdcard.HasResp == 0 {
-		waitFlags |= sdio.CMDSENT
+	h.p.Clear(sdmmc.EvAll, sdmmc.ErrAll)
+	h.p.SetArg(arg)
+	h.p.SetCmd(sdmmc.CmdEna | sdmmc.Command(cmd)&255)
+
+	var waitFor sdmmc.Event
+	if cmd&sdcard.HasResp != 0 {
+		waitFor = sdmmc.CmdRespOK
 	} else {
-		waitFlags |= sdio.CMDREND
+		waitFor = sdmmc.CmdSent
 	}
 	for {
-		h.status = sd.STA.Load()
-		if h.status&waitFlags != 0 {
+		ev, err := h.p.Status()
+		if err != 0 || ev&waitFor != 0 {
+			h.err = err
 			break
 		}
-		rtos.SchedYield()
+		//rtos.SchedYield()
 	}
-	h.status &= errFlags
 	if cmd&sdcard.HasResp == 0 {
 		return
 	}
-	if h.status != 0 {
-		if h.status&sdio.CCRCFAIL == 0 {
+	if h.err != 0 {
+		if h.err&sdmmc.ErrCmdCRC == 0 {
 			return
 		}
 		if r := cmd & sdcard.RespType; r != sdcard.R3 && r != sdcard.R4 {
 			return
 		}
 		// Ignore CRC error for R3, R4 responses.
-		h.status &^= sdio.CCRCFAIL
+		h.err &^= sdmmc.ErrCmdCRC
 	}
 	if cmd&sdcard.LongResp != 0 {
-		resp[3] = sd.RESP[0].U32.Load() // Most significant bits.
-		resp[2] = sd.RESP[1].U32.Load()
-		resp[1] = sd.RESP[2].U32.Load()
-		resp[0] = sd.RESP[3].U32.Load() // Least significant bits.
+		resp[3] = h.p.Resp(0) // Most significant bits.
+		resp[2] = h.p.Resp(1)
+		resp[1] = h.p.Resp(2)
+		resp[0] = h.p.Resp(3) // Least significant bits.
 	} else {
-		resp[0] = sd.RESP[0].U32.Load()
+		resp[0] = h.p.Resp(0)
 	}
 	return
 }
 
 func (h *Host) SetupDMA(dir dma.Mode, buf []uint32) {
-	if h.status != 0 || len(buf) == 0 {
+	if h.err != 0 || len(buf) == 0 {
 		return
 	}
-	sd := sdio.SDIO
-	sd.DLEN.Store(sdio.DLEN(len(buf)) * 4)
-	sd.DTIMER.Store(0xFFFFFFFF)
+	h.p.SetDataLen(len(buf) * 4)
+	h.p.SetDataTimeout(0xFFFFFFFF)
 	ch := h.dma
 	ch.Clear(dma.EvAll, dma.ErrAll)
 	ch.Setup(dir | dma.PFC | dma.IncM | dma.FT4 | dma.PB4 | dma.MB4)
 	ch.SetWordSize(4, 4)
-	ch.SetAddrP(unsafe.Pointer(sd.FIFO.Addr()))
+	ch.SetAddrP(unsafe.Pointer(h.p.FIFOAddr()))
 	ch.SetAddrM(unsafe.Pointer(&buf[0]))
 	ch.Enable()
 }
 
-// Set DTEN, DBLOCKSIZE, Wait for SDIO DBCKEND.
-
-const (
-	WR = 0 << sdio.DTDIRn
-	RD = 1 << sdio.DTDIRn
-)
-
-func (h *Host) StartBlockTransfer(dir sdio.DCTRL) {
-	sdio.SDIO.DCTRL.Store(sdio.DTEN | dir | sdio.DMAEN | 9<<sdio.DBLOCKSIZEn)
-}
-
-type Error sdio.STA
-
-func (err Error) Error() string {
-	return "SDIO error"
+func (h *Host) StartBlockTransfer(dir sdmmc.DataCtrl) {
+	h.p.SetDataCtrl(sdmmc.DTEna|sdmmc.UseDMA|dir, 9)
 }
 
 func (h *Host) Err(clear bool) error {
-	if h.status == 0 {
+	if h.err == 0 {
 		return nil
 	}
 	var err error
-	if h.status == sdio.CTIMEOUT {
+	if h.err == sdmmc.ErrCmdTimeout {
 		err = sdcard.ErrTimeout
 	} else {
-		err = Error(h.status)
+		err = h.err
 	}
 	if clear {
-		h.status = 0
+		h.err = 0
 	}
 	return err
 }
