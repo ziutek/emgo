@@ -43,7 +43,7 @@ func (b GOTGCTL) Field(mask GOTGCTL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GOTGCTL) J(v int) GOTGCTL {
-	return GOTGCTL(bits.Make32(v, uint32(mask)))
+	return GOTGCTL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGOTGCTL struct{ mmio.U32 }
@@ -110,7 +110,7 @@ func (b GOTGINT) Field(mask GOTGINT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GOTGINT) J(v int) GOTGINT {
-	return GOTGINT(bits.Make32(v, uint32(mask)))
+	return GOTGINT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGOTGINT struct{ mmio.U32 }
@@ -161,7 +161,7 @@ func (b GAHBCFG) Field(mask GAHBCFG) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GAHBCFG) J(v int) GAHBCFG {
-	return GAHBCFG(bits.Make32(v, uint32(mask)))
+	return GAHBCFG(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGAHBCFG struct{ mmio.U32 }
@@ -208,7 +208,7 @@ func (b GUSBCFG) Field(mask GUSBCFG) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GUSBCFG) J(v int) GUSBCFG {
-	return GUSBCFG(bits.Make32(v, uint32(mask)))
+	return GUSBCFG(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGUSBCFG struct{ mmio.U32 }
@@ -307,7 +307,7 @@ func (b GRSTCTL) Field(mask GRSTCTL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GRSTCTL) J(v int) GRSTCTL {
-	return GRSTCTL(bits.Make32(v, uint32(mask)))
+	return GRSTCTL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGRSTCTL struct{ mmio.U32 }
@@ -366,7 +366,7 @@ func (b GINTSTS) Field(mask GINTSTS) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GINTSTS) J(v int) GINTSTS {
-	return GINTSTS(bits.Make32(v, uint32(mask)))
+	return GINTSTS(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGINTSTS struct{ mmio.U32 }
@@ -497,7 +497,7 @@ func (b GINTMSK) Field(mask GINTMSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GINTMSK) J(v int) GINTMSK {
-	return GINTMSK(bits.Make32(v, uint32(mask)))
+	return GINTMSK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGINTMSK struct{ mmio.U32 }
@@ -628,7 +628,7 @@ func (b GRXSTSR) Field(mask GRXSTSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GRXSTSR) J(v int) GRXSTSR {
-	return GRXSTSR(bits.Make32(v, uint32(mask)))
+	return GRXSTSR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGRXSTSR struct{ mmio.U32 }
@@ -655,7 +655,7 @@ func (b GRXSTSP) Field(mask GRXSTSP) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GRXSTSP) J(v int) GRXSTSP {
-	return GRXSTSP(bits.Make32(v, uint32(mask)))
+	return GRXSTSP(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGRXSTSP struct{ mmio.U32 }
@@ -698,7 +698,7 @@ func (b GRXFSIZ) Field(mask GRXFSIZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GRXFSIZ) J(v int) GRXFSIZ {
-	return GRXFSIZ(bits.Make32(v, uint32(mask)))
+	return GRXFSIZ(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGRXFSIZ struct{ mmio.U32 }
@@ -729,7 +729,7 @@ func (b DIEPTXF0_HNPTXFSIZ) Field(mask DIEPTXF0_HNPTXFSIZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DIEPTXF0_HNPTXFSIZ) J(v int) DIEPTXF0_HNPTXFSIZ {
-	return DIEPTXF0_HNPTXFSIZ(bits.Make32(v, uint32(mask)))
+	return DIEPTXF0_HNPTXFSIZ(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDIEPTXF0_HNPTXFSIZ struct{ mmio.U32 }
@@ -766,7 +766,7 @@ func (b HNPTXSTS) Field(mask HNPTXSTS) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HNPTXSTS) J(v int) HNPTXSTS {
-	return HNPTXSTS(bits.Make32(v, uint32(mask)))
+	return HNPTXSTS(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHNPTXSTS struct{ mmio.U32 }
@@ -793,7 +793,7 @@ func (b GCCFG) Field(mask GCCFG) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GCCFG) J(v int) GCCFG {
-	return GCCFG(bits.Make32(v, uint32(mask)))
+	return GCCFG(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGCCFG struct{ mmio.U32 }
@@ -844,7 +844,7 @@ func (b CID) Field(mask CID) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CID) J(v int) CID {
-	return CID(bits.Make32(v, uint32(mask)))
+	return CID(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCID struct{ mmio.U32 }
@@ -875,7 +875,7 @@ func (b HPTXFSIZ) Field(mask HPTXFSIZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HPTXFSIZ) J(v int) HPTXFSIZ {
-	return HPTXFSIZ(bits.Make32(v, uint32(mask)))
+	return HPTXFSIZ(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHPTXFSIZ struct{ mmio.U32 }
@@ -910,7 +910,7 @@ func (b DIEPTXF) Field(mask DIEPTXF) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DIEPTXF) J(v int) DIEPTXF {
-	return DIEPTXF(bits.Make32(v, uint32(mask)))
+	return DIEPTXF(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDIEPTXF struct{ mmio.U32 }

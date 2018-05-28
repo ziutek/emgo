@@ -31,7 +31,7 @@ func (b IDCODE) Field(mask IDCODE) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IDCODE) J(v int) IDCODE {
-	return IDCODE(bits.Make32(v, uint32(mask)))
+	return IDCODE(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIDCODE struct{ mmio.U32 }
@@ -66,7 +66,7 @@ func (b CR) Field(mask CR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CR) J(v int) CR {
-	return CR(bits.Make32(v, uint32(mask)))
+	return CR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCR struct{ mmio.U32 }
@@ -113,7 +113,7 @@ func (b APB1FZR1) Field(mask APB1FZR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask APB1FZR1) J(v int) APB1FZR1 {
-	return APB1FZR1(bits.Make32(v, uint32(mask)))
+	return APB1FZR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RAPB1FZR1 struct{ mmio.U32 }
@@ -196,7 +196,7 @@ func (b APB1FZR2) Field(mask APB1FZR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask APB1FZR2) J(v int) APB1FZR2 {
-	return APB1FZR2(bits.Make32(v, uint32(mask)))
+	return APB1FZR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RAPB1FZR2 struct{ mmio.U32 }
@@ -227,7 +227,7 @@ func (b APB2FZ) Field(mask APB2FZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask APB2FZ) J(v int) APB2FZ {
-	return APB2FZ(bits.Make32(v, uint32(mask)))
+	return APB2FZ(bits.MakeField32(v, uint32(mask)))
 }
 
 type RAPB2FZ struct{ mmio.U32 }

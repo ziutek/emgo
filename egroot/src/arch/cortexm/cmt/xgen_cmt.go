@@ -34,7 +34,7 @@ func (b ICIALLU) Field(mask ICIALLU) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ICIALLU) J(v int) ICIALLU {
-	return ICIALLU(bits.Make32(v, uint32(mask)))
+	return ICIALLU(bits.MakeField32(v, uint32(mask)))
 }
 
 type RICIALLU struct{ mmio.U32 }
@@ -61,7 +61,7 @@ func (b ICIMVAU) Field(mask ICIMVAU) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ICIMVAU) J(v int) ICIMVAU {
-	return ICIMVAU(bits.Make32(v, uint32(mask)))
+	return ICIMVAU(bits.MakeField32(v, uint32(mask)))
 }
 
 type RICIMVAU struct{ mmio.U32 }
@@ -88,7 +88,7 @@ func (b DCIMVAC) Field(mask DCIMVAC) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DCIMVAC) J(v int) DCIMVAC {
-	return DCIMVAC(bits.Make32(v, uint32(mask)))
+	return DCIMVAC(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDCIMVAC struct{ mmio.U32 }
@@ -115,7 +115,7 @@ func (b DCISW) Field(mask DCISW) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DCISW) J(v int) DCISW {
-	return DCISW(bits.Make32(v, uint32(mask)))
+	return DCISW(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDCISW struct{ mmio.U32 }
@@ -142,7 +142,7 @@ func (b DCCMVAU) Field(mask DCCMVAU) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DCCMVAU) J(v int) DCCMVAU {
-	return DCCMVAU(bits.Make32(v, uint32(mask)))
+	return DCCMVAU(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDCCMVAU struct{ mmio.U32 }
@@ -169,7 +169,7 @@ func (b DCCMVAC) Field(mask DCCMVAC) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DCCMVAC) J(v int) DCCMVAC {
-	return DCCMVAC(bits.Make32(v, uint32(mask)))
+	return DCCMVAC(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDCCMVAC struct{ mmio.U32 }
@@ -196,7 +196,7 @@ func (b DCCSW) Field(mask DCCSW) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DCCSW) J(v int) DCCSW {
-	return DCCSW(bits.Make32(v, uint32(mask)))
+	return DCCSW(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDCCSW struct{ mmio.U32 }
@@ -223,7 +223,7 @@ func (b DCCIMVAC) Field(mask DCCIMVAC) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DCCIMVAC) J(v int) DCCIMVAC {
-	return DCCIMVAC(bits.Make32(v, uint32(mask)))
+	return DCCIMVAC(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDCCIMVAC struct{ mmio.U32 }
@@ -250,7 +250,7 @@ func (b DCCISW) Field(mask DCCISW) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DCCISW) J(v int) DCCISW {
-	return DCCISW(bits.Make32(v, uint32(mask)))
+	return DCCISW(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDCCISW struct{ mmio.U32 }

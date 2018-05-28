@@ -29,7 +29,7 @@ func (b BWTR) Field(mask BWTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask BWTR) J(v int) BWTR {
-	return BWTR(bits.Make32(v, uint32(mask)))
+	return BWTR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RBWTR struct{ mmio.U32 }

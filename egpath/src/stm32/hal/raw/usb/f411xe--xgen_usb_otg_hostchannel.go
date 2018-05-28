@@ -31,7 +31,7 @@ func (b HCCHAR) Field(mask HCCHAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HCCHAR) J(v int) HCCHAR {
-	return HCCHAR(bits.Make32(v, uint32(mask)))
+	return HCCHAR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHCCHAR struct{ mmio.U32 }
@@ -98,7 +98,7 @@ func (b HCSPLT) Field(mask HCSPLT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HCSPLT) J(v int) HCSPLT {
-	return HCSPLT(bits.Make32(v, uint32(mask)))
+	return HCSPLT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHCSPLT struct{ mmio.U32 }
@@ -145,7 +145,7 @@ func (b HCINT) Field(mask HCINT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HCINT) J(v int) HCINT {
-	return HCINT(bits.Make32(v, uint32(mask)))
+	return HCINT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHCINT struct{ mmio.U32 }
@@ -216,7 +216,7 @@ func (b HCINTMSK) Field(mask HCINTMSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HCINTMSK) J(v int) HCINTMSK {
-	return HCINTMSK(bits.Make32(v, uint32(mask)))
+	return HCINTMSK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHCINTMSK struct{ mmio.U32 }
@@ -287,7 +287,7 @@ func (b HCTSIZ) Field(mask HCTSIZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HCTSIZ) J(v int) HCTSIZ {
-	return HCTSIZ(bits.Make32(v, uint32(mask)))
+	return HCTSIZ(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHCTSIZ struct{ mmio.U32 }
@@ -330,7 +330,7 @@ func (b HCDMA) Field(mask HCDMA) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HCDMA) J(v int) HCDMA {
-	return HCDMA(bits.Make32(v, uint32(mask)))
+	return HCDMA(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHCDMA struct{ mmio.U32 }

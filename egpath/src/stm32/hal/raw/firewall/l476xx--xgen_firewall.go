@@ -36,7 +36,7 @@ func (b CSSA) Field(mask CSSA) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CSSA) J(v int) CSSA {
-	return CSSA(bits.Make32(v, uint32(mask)))
+	return CSSA(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCSSA struct{ mmio.U32 }
@@ -63,7 +63,7 @@ func (b CSL) Field(mask CSL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CSL) J(v int) CSL {
-	return CSL(bits.Make32(v, uint32(mask)))
+	return CSL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCSL struct{ mmio.U32 }
@@ -90,7 +90,7 @@ func (b NVDSSA) Field(mask NVDSSA) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask NVDSSA) J(v int) NVDSSA {
-	return NVDSSA(bits.Make32(v, uint32(mask)))
+	return NVDSSA(bits.MakeField32(v, uint32(mask)))
 }
 
 type RNVDSSA struct{ mmio.U32 }
@@ -117,7 +117,7 @@ func (b NVDSL) Field(mask NVDSL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask NVDSL) J(v int) NVDSL {
-	return NVDSL(bits.Make32(v, uint32(mask)))
+	return NVDSL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RNVDSL struct{ mmio.U32 }
@@ -144,7 +144,7 @@ func (b VDSSA) Field(mask VDSSA) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask VDSSA) J(v int) VDSSA {
-	return VDSSA(bits.Make32(v, uint32(mask)))
+	return VDSSA(bits.MakeField32(v, uint32(mask)))
 }
 
 type RVDSSA struct{ mmio.U32 }
@@ -171,7 +171,7 @@ func (b VDSL) Field(mask VDSL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask VDSL) J(v int) VDSL {
-	return VDSL(bits.Make32(v, uint32(mask)))
+	return VDSL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RVDSL struct{ mmio.U32 }
@@ -198,7 +198,7 @@ func (b CR) Field(mask CR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CR) J(v int) CR {
-	return CR(bits.Make32(v, uint32(mask)))
+	return CR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCR struct{ mmio.U32 }

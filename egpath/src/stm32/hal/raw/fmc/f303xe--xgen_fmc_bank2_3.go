@@ -41,7 +41,7 @@ func (b PCR2) Field(mask PCR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PCR2) J(v int) PCR2 {
-	return PCR2(bits.Make32(v, uint32(mask)))
+	return PCR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPCR2 struct{ mmio.U32 }
@@ -100,7 +100,7 @@ func (b SR2) Field(mask SR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SR2) J(v int) SR2 {
-	return SR2(bits.Make32(v, uint32(mask)))
+	return SR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSR2 struct{ mmio.U32 }
@@ -155,7 +155,7 @@ func (b PMEM2) Field(mask PMEM2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PMEM2) J(v int) PMEM2 {
-	return PMEM2(bits.Make32(v, uint32(mask)))
+	return PMEM2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPMEM2 struct{ mmio.U32 }
@@ -198,7 +198,7 @@ func (b PATT2) Field(mask PATT2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PATT2) J(v int) PATT2 {
-	return PATT2(bits.Make32(v, uint32(mask)))
+	return PATT2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPATT2 struct{ mmio.U32 }
@@ -241,7 +241,7 @@ func (b ECCR2) Field(mask ECCR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ECCR2) J(v int) ECCR2 {
-	return ECCR2(bits.Make32(v, uint32(mask)))
+	return ECCR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RECCR2 struct{ mmio.U32 }
@@ -272,7 +272,7 @@ func (b PCR3) Field(mask PCR3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PCR3) J(v int) PCR3 {
-	return PCR3(bits.Make32(v, uint32(mask)))
+	return PCR3(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPCR3 struct{ mmio.U32 }
@@ -331,7 +331,7 @@ func (b SR3) Field(mask SR3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SR3) J(v int) SR3 {
-	return SR3(bits.Make32(v, uint32(mask)))
+	return SR3(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSR3 struct{ mmio.U32 }
@@ -386,7 +386,7 @@ func (b PMEM3) Field(mask PMEM3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PMEM3) J(v int) PMEM3 {
-	return PMEM3(bits.Make32(v, uint32(mask)))
+	return PMEM3(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPMEM3 struct{ mmio.U32 }
@@ -429,7 +429,7 @@ func (b PATT3) Field(mask PATT3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PATT3) J(v int) PATT3 {
-	return PATT3(bits.Make32(v, uint32(mask)))
+	return PATT3(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPATT3 struct{ mmio.U32 }
@@ -472,7 +472,7 @@ func (b ECCR3) Field(mask ECCR3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ECCR3) J(v int) ECCR3 {
-	return ECCR3(bits.Make32(v, uint32(mask)))
+	return ECCR3(bits.MakeField32(v, uint32(mask)))
 }
 
 type RECCR3 struct{ mmio.U32 }

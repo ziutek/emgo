@@ -31,7 +31,7 @@ func (b DOEPCTL) Field(mask DOEPCTL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DOEPCTL) J(v int) DOEPCTL {
-	return DOEPCTL(bits.Make32(v, uint32(mask)))
+	return DOEPCTL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDOEPCTL struct{ mmio.U32 }
@@ -106,7 +106,7 @@ func (b DOEPINT) Field(mask DOEPINT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DOEPINT) J(v int) DOEPINT {
-	return DOEPINT(bits.Make32(v, uint32(mask)))
+	return DOEPINT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDOEPINT struct{ mmio.U32 }
@@ -161,7 +161,7 @@ func (b DOEPTSIZ) Field(mask DOEPTSIZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DOEPTSIZ) J(v int) DOEPTSIZ {
-	return DOEPTSIZ(bits.Make32(v, uint32(mask)))
+	return DOEPTSIZ(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDOEPTSIZ struct{ mmio.U32 }
@@ -200,7 +200,7 @@ func (b DOEPDMA) Field(mask DOEPDMA) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DOEPDMA) J(v int) DOEPDMA {
-	return DOEPDMA(bits.Make32(v, uint32(mask)))
+	return DOEPDMA(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDOEPDMA struct{ mmio.U32 }

@@ -31,7 +31,7 @@ func (b EVCR) Field(mask EVCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask EVCR) J(v int) EVCR {
-	return EVCR(bits.Make32(v, uint32(mask)))
+	return EVCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type REVCR struct{ mmio.U32 }
@@ -70,7 +70,7 @@ func (b MAPR) Field(mask MAPR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask MAPR) J(v int) MAPR {
-	return MAPR(bits.Make32(v, uint32(mask)))
+	return MAPR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RMAPR struct{ mmio.U32 }
@@ -165,7 +165,7 @@ func (b EXTICR) Field(mask EXTICR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask EXTICR) J(v int) EXTICR {
-	return EXTICR(bits.Make32(v, uint32(mask)))
+	return EXTICR(bits.MakeField32(v, uint32(mask)))
 }
 
 type REXTICR struct{ mmio.U32 }
@@ -208,7 +208,7 @@ func (b MAPR2) Field(mask MAPR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask MAPR2) J(v int) MAPR2 {
-	return MAPR2(bits.Make32(v, uint32(mask)))
+	return MAPR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RMAPR2 struct{ mmio.U32 }

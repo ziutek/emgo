@@ -30,7 +30,7 @@ func (b ISR) Field(mask ISR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ISR) J(v int) ISR {
-	return ISR(bits.Make32(v, uint32(mask)))
+	return ISR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RISR struct{ mmio.U32 }
@@ -137,7 +137,7 @@ func (b IFCR) Field(mask IFCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IFCR) J(v int) IFCR {
-	return IFCR(bits.Make32(v, uint32(mask)))
+	return IFCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIFCR struct{ mmio.U32 }

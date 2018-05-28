@@ -50,7 +50,7 @@ func (b ICR) Field(mask ICR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ICR) J(v int) ICR {
-	return ICR(bits.Make32(v, uint32(mask)))
+	return ICR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RICR struct{ mmio.U32 }
@@ -113,7 +113,7 @@ func (b ASCR1) Field(mask ASCR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ASCR1) J(v int) ASCR1 {
-	return ASCR1(bits.Make32(v, uint32(mask)))
+	return ASCR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RASCR1 struct{ mmio.U32 }
@@ -156,7 +156,7 @@ func (b ASCR2) Field(mask ASCR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ASCR2) J(v int) ASCR2 {
-	return ASCR2(bits.Make32(v, uint32(mask)))
+	return ASCR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RASCR2 struct{ mmio.U32 }
@@ -291,7 +291,7 @@ func (b HYSCR1) Field(mask HYSCR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HYSCR1) J(v int) HYSCR1 {
-	return HYSCR1(bits.Make32(v, uint32(mask)))
+	return HYSCR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHYSCR1 struct{ mmio.U32 }
@@ -326,7 +326,7 @@ func (b HYSCR2) Field(mask HYSCR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HYSCR2) J(v int) HYSCR2 {
-	return HYSCR2(bits.Make32(v, uint32(mask)))
+	return HYSCR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHYSCR2 struct{ mmio.U32 }
@@ -361,7 +361,7 @@ func (b HYSCR3) Field(mask HYSCR3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HYSCR3) J(v int) HYSCR3 {
-	return HYSCR3(bits.Make32(v, uint32(mask)))
+	return HYSCR3(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHYSCR3 struct{ mmio.U32 }
@@ -392,7 +392,7 @@ func (b HYSCR4) Field(mask HYSCR4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HYSCR4) J(v int) HYSCR4 {
-	return HYSCR4(bits.Make32(v, uint32(mask)))
+	return HYSCR4(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHYSCR4 struct{ mmio.U32 }
@@ -423,7 +423,7 @@ func (b ASMR1) Field(mask ASMR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ASMR1) J(v int) ASMR1 {
-	return ASMR1(bits.Make32(v, uint32(mask)))
+	return ASMR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RASMR1 struct{ mmio.U32 }
@@ -454,7 +454,7 @@ func (b CMR1) Field(mask CMR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CMR1) J(v int) CMR1 {
-	return CMR1(bits.Make32(v, uint32(mask)))
+	return CMR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCMR1 struct{ mmio.U32 }
@@ -485,7 +485,7 @@ func (b CICR1) Field(mask CICR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CICR1) J(v int) CICR1 {
-	return CICR1(bits.Make32(v, uint32(mask)))
+	return CICR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCICR1 struct{ mmio.U32 }
@@ -516,7 +516,7 @@ func (b ASMR2) Field(mask ASMR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ASMR2) J(v int) ASMR2 {
-	return ASMR2(bits.Make32(v, uint32(mask)))
+	return ASMR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RASMR2 struct{ mmio.U32 }
@@ -547,7 +547,7 @@ func (b CMR2) Field(mask CMR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CMR2) J(v int) CMR2 {
-	return CMR2(bits.Make32(v, uint32(mask)))
+	return CMR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCMR2 struct{ mmio.U32 }
@@ -578,7 +578,7 @@ func (b CICR2) Field(mask CICR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CICR2) J(v int) CICR2 {
-	return CICR2(bits.Make32(v, uint32(mask)))
+	return CICR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCICR2 struct{ mmio.U32 }
@@ -609,7 +609,7 @@ func (b ASMR3) Field(mask ASMR3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ASMR3) J(v int) ASMR3 {
-	return ASMR3(bits.Make32(v, uint32(mask)))
+	return ASMR3(bits.MakeField32(v, uint32(mask)))
 }
 
 type RASMR3 struct{ mmio.U32 }
@@ -640,7 +640,7 @@ func (b CMR3) Field(mask CMR3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CMR3) J(v int) CMR3 {
-	return CMR3(bits.Make32(v, uint32(mask)))
+	return CMR3(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCMR3 struct{ mmio.U32 }
@@ -671,7 +671,7 @@ func (b CICR3) Field(mask CICR3) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CICR3) J(v int) CICR3 {
-	return CICR3(bits.Make32(v, uint32(mask)))
+	return CICR3(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCICR3 struct{ mmio.U32 }
@@ -702,7 +702,7 @@ func (b ASMR4) Field(mask ASMR4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ASMR4) J(v int) ASMR4 {
-	return ASMR4(bits.Make32(v, uint32(mask)))
+	return ASMR4(bits.MakeField32(v, uint32(mask)))
 }
 
 type RASMR4 struct{ mmio.U32 }
@@ -733,7 +733,7 @@ func (b CMR4) Field(mask CMR4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CMR4) J(v int) CMR4 {
-	return CMR4(bits.Make32(v, uint32(mask)))
+	return CMR4(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCMR4 struct{ mmio.U32 }
@@ -764,7 +764,7 @@ func (b CICR4) Field(mask CICR4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CICR4) J(v int) CICR4 {
-	return CICR4(bits.Make32(v, uint32(mask)))
+	return CICR4(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCICR4 struct{ mmio.U32 }
@@ -795,7 +795,7 @@ func (b ASMR5) Field(mask ASMR5) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ASMR5) J(v int) ASMR5 {
-	return ASMR5(bits.Make32(v, uint32(mask)))
+	return ASMR5(bits.MakeField32(v, uint32(mask)))
 }
 
 type RASMR5 struct{ mmio.U32 }
@@ -826,7 +826,7 @@ func (b CMR5) Field(mask CMR5) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CMR5) J(v int) CMR5 {
-	return CMR5(bits.Make32(v, uint32(mask)))
+	return CMR5(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCMR5 struct{ mmio.U32 }
@@ -857,7 +857,7 @@ func (b CICR5) Field(mask CICR5) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CICR5) J(v int) CICR5 {
-	return CICR5(bits.Make32(v, uint32(mask)))
+	return CICR5(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCICR5 struct{ mmio.U32 }

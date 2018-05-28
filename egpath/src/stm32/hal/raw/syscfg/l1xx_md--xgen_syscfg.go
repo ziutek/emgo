@@ -31,7 +31,7 @@ func (b MEMRMP) Field(mask MEMRMP) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask MEMRMP) J(v int) MEMRMP {
-	return MEMRMP(bits.Make32(v, uint32(mask)))
+	return MEMRMP(bits.MakeField32(v, uint32(mask)))
 }
 
 type RMEMRMP struct{ mmio.U32 }
@@ -66,7 +66,7 @@ func (b PMC) Field(mask PMC) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PMC) J(v int) PMC {
-	return PMC(bits.Make32(v, uint32(mask)))
+	return PMC(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPMC struct{ mmio.U32 }
@@ -97,7 +97,7 @@ func (b EXTICR) Field(mask EXTICR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask EXTICR) J(v int) EXTICR {
-	return EXTICR(bits.Make32(v, uint32(mask)))
+	return EXTICR(bits.MakeField32(v, uint32(mask)))
 }
 
 type REXTICR struct{ mmio.U32 }

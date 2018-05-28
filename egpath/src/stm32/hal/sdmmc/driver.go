@@ -44,7 +44,7 @@ func (d *Driver) Err(clear bool) error {
 	}
 	var err error
 	if d.err == ErrCmdTimeout {
-		err = sdcard.ErrTimeout
+		err = sdcard.ErrCmdTimeout
 	} else {
 		err = d.err
 	}

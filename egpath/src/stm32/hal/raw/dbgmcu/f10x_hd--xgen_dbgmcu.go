@@ -30,7 +30,7 @@ func (b IDCODE) Field(mask IDCODE) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IDCODE) J(v int) IDCODE {
-	return IDCODE(bits.Make32(v, uint32(mask)))
+	return IDCODE(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIDCODE struct{ mmio.U32 }
@@ -65,7 +65,7 @@ func (b CR) Field(mask CR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CR) J(v int) CR {
-	return CR(bits.Make32(v, uint32(mask)))
+	return CR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCR struct{ mmio.U32 }

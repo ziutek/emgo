@@ -35,7 +35,7 @@ func (b CSR) Field(mask CSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CSR) J(v int) CSR {
-	return CSR(bits.Make32(v, uint32(mask)))
+	return CSR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCSR struct{ mmio.U32 }
@@ -102,7 +102,7 @@ func (b OTR) Field(mask OTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask OTR) J(v int) OTR {
-	return OTR(bits.Make32(v, uint32(mask)))
+	return OTR(bits.MakeField32(v, uint32(mask)))
 }
 
 type ROTR struct{ mmio.U32 }
@@ -137,7 +137,7 @@ func (b LPOTR) Field(mask LPOTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask LPOTR) J(v int) LPOTR {
-	return LPOTR(bits.Make32(v, uint32(mask)))
+	return LPOTR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RLPOTR struct{ mmio.U32 }

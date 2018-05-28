@@ -40,7 +40,7 @@ func (b CR) Field(mask CR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CR) J(v int) CR {
-	return CR(bits.Make32(v, uint32(mask)))
+	return CR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCR struct{ mmio.U32 }
@@ -115,7 +115,7 @@ func (b IER) Field(mask IER) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IER) J(v int) IER {
-	return IER(bits.Make32(v, uint32(mask)))
+	return IER(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIER struct{ mmio.U32 }
@@ -150,7 +150,7 @@ func (b ICR) Field(mask ICR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ICR) J(v int) ICR {
-	return ICR(bits.Make32(v, uint32(mask)))
+	return ICR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RICR struct{ mmio.U32 }
@@ -185,7 +185,7 @@ func (b ISR) Field(mask ISR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ISR) J(v int) ISR {
-	return ISR(bits.Make32(v, uint32(mask)))
+	return ISR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RISR struct{ mmio.U32 }
@@ -220,7 +220,7 @@ func (b IOHCR) Field(mask IOHCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IOHCR) J(v int) IOHCR {
-	return IOHCR(bits.Make32(v, uint32(mask)))
+	return IOHCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIOHCR struct{ mmio.U32 }
@@ -375,7 +375,7 @@ func (b IOASCR) Field(mask IOASCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IOASCR) J(v int) IOASCR {
-	return IOASCR(bits.Make32(v, uint32(mask)))
+	return IOASCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIOASCR struct{ mmio.U32 }
@@ -530,7 +530,7 @@ func (b IOSCR) Field(mask IOSCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IOSCR) J(v int) IOSCR {
-	return IOSCR(bits.Make32(v, uint32(mask)))
+	return IOSCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIOSCR struct{ mmio.U32 }
@@ -685,7 +685,7 @@ func (b IOCCR) Field(mask IOCCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IOCCR) J(v int) IOCCR {
-	return IOCCR(bits.Make32(v, uint32(mask)))
+	return IOCCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIOCCR struct{ mmio.U32 }
@@ -840,7 +840,7 @@ func (b IOGCSR) Field(mask IOGCSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IOGCSR) J(v int) IOGCSR {
-	return IOGCSR(bits.Make32(v, uint32(mask)))
+	return IOGCSR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIOGCSR struct{ mmio.U32 }
@@ -931,7 +931,7 @@ func (b IOGXCR) Field(mask IOGXCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IOGXCR) J(v int) IOGXCR {
-	return IOGXCR(bits.Make32(v, uint32(mask)))
+	return IOGXCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIOGXCR struct{ mmio.U32 }

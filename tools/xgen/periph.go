@@ -146,7 +146,7 @@ func (b {{$bits}}) Field(mask {{$bits}}) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask {{$bits}}) J(v int) {{$bits}} {
-	return {{$bits}}(bits.Make32(v, uint32(mask)))
+	return {{$bits}}(bits.MakeField32(v, uint32(mask)))
 }
 
 type {{$reg}} struct { {{$mu}} }

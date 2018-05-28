@@ -104,7 +104,7 @@ func (h *Host) Err(clear bool) error {
 	}
 	var err error
 	if h.err == sdmmc.ErrCmdTimeout {
-		err = sdcard.ErrTimeout
+		err = sdcard.ErrCmdTimeout
 	} else {
 		err = h.err
 	}

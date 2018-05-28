@@ -71,7 +71,7 @@ func (r *U8) Field(mask uint8) int {
 }
 
 func (r *U8) SetField(mask uint8, v int) {
-	r.StoreBits(mask, uint8(bits.Make32(v, uint32(mask))))
+	r.StoreBits(mask, uint8(bits.MakeField32(v, uint32(mask))))
 }
 
 type UM8 struct {
@@ -149,7 +149,7 @@ func (r *U16) Field(mask uint16) int {
 }
 
 func (r *U16) SetField(mask uint16, v int) {
-	r.StoreBits(mask, uint16(bits.Make32(v, uint32(mask))))
+	r.StoreBits(mask, uint16(bits.MakeField32(v, uint32(mask))))
 }
 
 type UM16 struct {
@@ -243,7 +243,7 @@ func (r *U32) Field(mask uint32) int {
 }
 
 func (r *U32) SetField(mask uint32, v int) {
-	r.StoreBits(mask, bits.Make32(v, mask))
+	r.StoreBits(mask, bits.MakeField32(v, mask))
 }
 
 type UM32 struct {

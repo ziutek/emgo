@@ -27,7 +27,7 @@ func (b HR) Field(mask HR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HR) J(v int) HR {
-	return HR(bits.Make32(v, uint32(mask)))
+	return HR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHR struct{ mmio.U32 }

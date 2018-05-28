@@ -35,7 +35,7 @@ func (b LISR) Field(mask LISR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask LISR) J(v int) LISR {
-	return LISR(bits.Make32(v, uint32(mask)))
+	return LISR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RLISR struct{ mmio.U32 }
@@ -142,7 +142,7 @@ func (b HISR) Field(mask HISR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HISR) J(v int) HISR {
-	return HISR(bits.Make32(v, uint32(mask)))
+	return HISR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHISR struct{ mmio.U32 }
@@ -249,7 +249,7 @@ func (b LIFCR) Field(mask LIFCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask LIFCR) J(v int) LIFCR {
-	return LIFCR(bits.Make32(v, uint32(mask)))
+	return LIFCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RLIFCR struct{ mmio.U32 }
@@ -356,7 +356,7 @@ func (b HIFCR) Field(mask HIFCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HIFCR) J(v int) HIFCR {
-	return HIFCR(bits.Make32(v, uint32(mask)))
+	return HIFCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHIFCR struct{ mmio.U32 }

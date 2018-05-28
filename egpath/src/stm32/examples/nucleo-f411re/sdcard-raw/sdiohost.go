@@ -129,7 +129,7 @@ func (h *Host) Err(clear bool) error {
 	}
 	var err error
 	if h.status == sdio.CTIMEOUT {
-		err = sdcard.ErrTimeout
+		err = sdcard.ErrCmdTimeout
 	} else {
 		err = Error(h.status)
 	}

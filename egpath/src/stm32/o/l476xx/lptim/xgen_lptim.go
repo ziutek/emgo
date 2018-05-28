@@ -38,7 +38,7 @@ func (b ISR) Field(mask ISR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ISR) J(v int) ISR {
-	return ISR(bits.Make32(v, uint32(mask)))
+	return ISR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RISR struct{ mmio.U32 }
@@ -93,7 +93,7 @@ func (b ICR) Field(mask ICR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ICR) J(v int) ICR {
-	return ICR(bits.Make32(v, uint32(mask)))
+	return ICR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RICR struct{ mmio.U32 }
@@ -148,7 +148,7 @@ func (b IER) Field(mask IER) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IER) J(v int) IER {
-	return IER(bits.Make32(v, uint32(mask)))
+	return IER(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIER struct{ mmio.U32 }
@@ -203,7 +203,7 @@ func (b CFGR) Field(mask CFGR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CFGR) J(v int) CFGR {
-	return CFGR(bits.Make32(v, uint32(mask)))
+	return CFGR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCFGR struct{ mmio.U32 }
@@ -282,7 +282,7 @@ func (b CR) Field(mask CR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CR) J(v int) CR {
-	return CR(bits.Make32(v, uint32(mask)))
+	return CR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCR struct{ mmio.U32 }
@@ -321,7 +321,7 @@ func (b CMP) Field(mask CMP) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CMP) J(v int) CMP {
-	return CMP(bits.Make32(v, uint32(mask)))
+	return CMP(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCMP struct{ mmio.U32 }
@@ -348,7 +348,7 @@ func (b ARR) Field(mask ARR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ARR) J(v int) ARR {
-	return ARR(bits.Make32(v, uint32(mask)))
+	return ARR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RARR struct{ mmio.U32 }
@@ -375,7 +375,7 @@ func (b CNT) Field(mask CNT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CNT) J(v int) CNT {
-	return CNT(bits.Make32(v, uint32(mask)))
+	return CNT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCNT struct{ mmio.U32 }
@@ -402,7 +402,7 @@ func (b OR) Field(mask OR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask OR) J(v int) OR {
-	return OR(bits.Make32(v, uint32(mask)))
+	return OR(bits.MakeField32(v, uint32(mask)))
 }
 
 type ROR struct{ mmio.U32 }

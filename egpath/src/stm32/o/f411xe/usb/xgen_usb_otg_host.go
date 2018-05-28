@@ -30,7 +30,7 @@ func (b HCFG) Field(mask HCFG) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HCFG) J(v int) HCFG {
-	return HCFG(bits.Make32(v, uint32(mask)))
+	return HCFG(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHCFG struct{ mmio.U32 }
@@ -65,7 +65,7 @@ func (b HFIR) Field(mask HFIR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HFIR) J(v int) HFIR {
-	return HFIR(bits.Make32(v, uint32(mask)))
+	return HFIR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHFIR struct{ mmio.U32 }
@@ -96,7 +96,7 @@ func (b HFNUM) Field(mask HFNUM) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HFNUM) J(v int) HFNUM {
-	return HFNUM(bits.Make32(v, uint32(mask)))
+	return HFNUM(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHFNUM struct{ mmio.U32 }
@@ -131,7 +131,7 @@ func (b HPTXSTS) Field(mask HPTXSTS) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HPTXSTS) J(v int) HPTXSTS {
-	return HPTXSTS(bits.Make32(v, uint32(mask)))
+	return HPTXSTS(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHPTXSTS struct{ mmio.U32 }
@@ -170,7 +170,7 @@ func (b HAINT) Field(mask HAINT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HAINT) J(v int) HAINT {
-	return HAINT(bits.Make32(v, uint32(mask)))
+	return HAINT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHAINT struct{ mmio.U32 }
@@ -197,7 +197,7 @@ func (b HAINTMSK) Field(mask HAINTMSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask HAINTMSK) J(v int) HAINTMSK {
-	return HAINTMSK(bits.Make32(v, uint32(mask)))
+	return HAINTMSK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RHAINTMSK struct{ mmio.U32 }

@@ -28,7 +28,7 @@ func (b CLIDR) Field(mask CLIDR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CLIDR) J(v int) CLIDR {
-	return CLIDR(bits.Make32(v, uint32(mask)))
+	return CLIDR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCLIDR struct{ mmio.U32 }
@@ -151,7 +151,7 @@ func (b CTR) Field(mask CTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CTR) J(v int) CTR {
-	return CTR(bits.Make32(v, uint32(mask)))
+	return CTR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCTR struct{ mmio.U32 }
@@ -198,7 +198,7 @@ func (b CCSIDR) Field(mask CCSIDR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CCSIDR) J(v int) CCSIDR {
-	return CCSIDR(bits.Make32(v, uint32(mask)))
+	return CCSIDR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCCSIDR struct{ mmio.U32 }
@@ -253,7 +253,7 @@ func (b CSSELR) Field(mask CSSELR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CSSELR) J(v int) CSSELR {
-	return CSSELR(bits.Make32(v, uint32(mask)))
+	return CSSELR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCSSELR struct{ mmio.U32 }

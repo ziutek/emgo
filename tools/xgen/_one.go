@@ -78,7 +78,7 @@ func (b {{.Bits}}) Field(mask {{.Bits}}) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask {{.Bits}}) J(v int) {{.Bits}} {
-	return {{.Bits}}(bits.Make32(v, uint32(mask)))
+	return {{.Bits}}(bits.MakeField32(v, uint32(mask)))
 }
 {{end}}
 `

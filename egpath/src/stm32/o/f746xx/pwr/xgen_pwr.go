@@ -30,7 +30,7 @@ func (b CR1) Field(mask CR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CR1) J(v int) CR1 {
-	return CR1(bits.Make32(v, uint32(mask)))
+	return CR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCR1 struct{ mmio.U32 }
@@ -113,7 +113,7 @@ func (b CSR1) Field(mask CSR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CSR1) J(v int) CSR1 {
-	return CSR1(bits.Make32(v, uint32(mask)))
+	return CSR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCSR1 struct{ mmio.U32 }
@@ -180,7 +180,7 @@ func (b CR2) Field(mask CR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CR2) J(v int) CR2 {
-	return CR2(bits.Make32(v, uint32(mask)))
+	return CR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCR2 struct{ mmio.U32 }
@@ -255,7 +255,7 @@ func (b CSR2) Field(mask CSR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CSR2) J(v int) CSR2 {
-	return CSR2(bits.Make32(v, uint32(mask)))
+	return CSR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCSR2 struct{ mmio.U32 }

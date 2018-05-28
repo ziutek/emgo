@@ -47,7 +47,7 @@ func (b CRH) Field(mask CRH) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CRH) J(v int) CRH {
-	return CRH(bits.Make32(v, uint32(mask)))
+	return CRH(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCRH struct{ mmio.U16 }
@@ -82,7 +82,7 @@ func (b CRL) Field(mask CRL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CRL) J(v int) CRL {
-	return CRL(bits.Make32(v, uint32(mask)))
+	return CRL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCRL struct{ mmio.U16 }
@@ -129,7 +129,7 @@ func (b PRLH) Field(mask PRLH) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PRLH) J(v int) PRLH {
-	return PRLH(bits.Make32(v, uint32(mask)))
+	return PRLH(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPRLH struct{ mmio.U16 }
@@ -152,7 +152,7 @@ func (b PRLL) Field(mask PRLL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PRLL) J(v int) PRLL {
-	return PRLL(bits.Make32(v, uint32(mask)))
+	return PRLL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPRLL struct{ mmio.U16 }
@@ -175,7 +175,7 @@ func (b DIVH) Field(mask DIVH) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DIVH) J(v int) DIVH {
-	return DIVH(bits.Make32(v, uint32(mask)))
+	return DIVH(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDIVH struct{ mmio.U16 }
@@ -198,7 +198,7 @@ func (b DIVL) Field(mask DIVL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DIVL) J(v int) DIVL {
-	return DIVL(bits.Make32(v, uint32(mask)))
+	return DIVL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDIVL struct{ mmio.U16 }
@@ -221,7 +221,7 @@ func (b CNTH) Field(mask CNTH) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CNTH) J(v int) CNTH {
-	return CNTH(bits.Make32(v, uint32(mask)))
+	return CNTH(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCNTH struct{ mmio.U16 }
@@ -244,7 +244,7 @@ func (b CNTL) Field(mask CNTL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CNTL) J(v int) CNTL {
-	return CNTL(bits.Make32(v, uint32(mask)))
+	return CNTL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCNTL struct{ mmio.U16 }
@@ -267,7 +267,7 @@ func (b ALRH) Field(mask ALRH) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ALRH) J(v int) ALRH {
-	return ALRH(bits.Make32(v, uint32(mask)))
+	return ALRH(bits.MakeField32(v, uint32(mask)))
 }
 
 type RALRH struct{ mmio.U16 }
@@ -290,7 +290,7 @@ func (b ALRL) Field(mask ALRL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ALRL) J(v int) ALRL {
-	return ALRL(bits.Make32(v, uint32(mask)))
+	return ALRL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RALRL struct{ mmio.U16 }

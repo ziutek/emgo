@@ -25,7 +25,7 @@ func (b ACTLR) Field(mask ACTLR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ACTLR) J(v int) ACTLR {
-	return ACTLR(bits.Make32(v, uint32(mask)))
+	return ACTLR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RACTLR struct{ mmio.U32 }

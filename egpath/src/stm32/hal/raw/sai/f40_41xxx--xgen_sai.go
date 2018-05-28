@@ -29,7 +29,7 @@ func (b GCR) Field(mask GCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GCR) J(v int) GCR {
-	return GCR(bits.Make32(v, uint32(mask)))
+	return GCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGCR struct{ mmio.U32 }

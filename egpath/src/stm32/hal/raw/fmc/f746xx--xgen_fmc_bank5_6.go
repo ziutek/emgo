@@ -33,7 +33,7 @@ func (b SDCR) Field(mask SDCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SDCR) J(v int) SDCR {
-	return SDCR(bits.Make32(v, uint32(mask)))
+	return SDCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSDCR struct{ mmio.U32 }
@@ -96,7 +96,7 @@ func (b SDTR) Field(mask SDTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SDTR) J(v int) SDTR {
-	return SDTR(bits.Make32(v, uint32(mask)))
+	return SDTR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSDTR struct{ mmio.U32 }
@@ -151,7 +151,7 @@ func (b SDCMR) Field(mask SDCMR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SDCMR) J(v int) SDCMR {
-	return SDCMR(bits.Make32(v, uint32(mask)))
+	return SDCMR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSDCMR struct{ mmio.U32 }
@@ -198,7 +198,7 @@ func (b SDRTR) Field(mask SDRTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SDRTR) J(v int) SDRTR {
-	return SDRTR(bits.Make32(v, uint32(mask)))
+	return SDRTR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSDRTR struct{ mmio.U32 }
@@ -237,7 +237,7 @@ func (b SDSR) Field(mask SDSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SDSR) J(v int) SDSR {
-	return SDSR(bits.Make32(v, uint32(mask)))
+	return SDSR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSDSR struct{ mmio.U32 }

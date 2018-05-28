@@ -50,7 +50,7 @@ func (b FLTCR1) Field(mask FLTCR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTCR1) J(v int) FLTCR1 {
-	return FLTCR1(bits.Make32(v, uint32(mask)))
+	return FLTCR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTCR1 struct{ mmio.U32 }
@@ -133,7 +133,7 @@ func (b FLTCR2) Field(mask FLTCR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTCR2) J(v int) FLTCR2 {
-	return FLTCR2(bits.Make32(v, uint32(mask)))
+	return FLTCR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTCR2 struct{ mmio.U32 }
@@ -196,7 +196,7 @@ func (b FLTISR) Field(mask FLTISR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTISR) J(v int) FLTISR {
-	return FLTISR(bits.Make32(v, uint32(mask)))
+	return FLTISR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTISR struct{ mmio.U32 }
@@ -259,7 +259,7 @@ func (b FLTICR) Field(mask FLTICR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTICR) J(v int) FLTICR {
-	return FLTICR(bits.Make32(v, uint32(mask)))
+	return FLTICR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTICR struct{ mmio.U32 }
@@ -302,7 +302,7 @@ func (b FLTJCHGR) Field(mask FLTJCHGR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTJCHGR) J(v int) FLTJCHGR {
-	return FLTJCHGR(bits.Make32(v, uint32(mask)))
+	return FLTJCHGR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTJCHGR struct{ mmio.U32 }
@@ -333,7 +333,7 @@ func (b FLTFCR) Field(mask FLTFCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTFCR) J(v int) FLTFCR {
-	return FLTFCR(bits.Make32(v, uint32(mask)))
+	return FLTFCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTFCR struct{ mmio.U32 }
@@ -372,7 +372,7 @@ func (b FLTJDATAR) Field(mask FLTJDATAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTJDATAR) J(v int) FLTJDATAR {
-	return FLTJDATAR(bits.Make32(v, uint32(mask)))
+	return FLTJDATAR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTJDATAR struct{ mmio.U32 }
@@ -409,7 +409,7 @@ func (b FLTRDATAR) Field(mask FLTRDATAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTRDATAR) J(v int) FLTRDATAR {
-	return FLTRDATAR(bits.Make32(v, uint32(mask)))
+	return FLTRDATAR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTRDATAR struct{ mmio.U32 }
@@ -450,7 +450,7 @@ func (b FLTAWHTR) Field(mask FLTAWHTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTAWHTR) J(v int) FLTAWHTR {
-	return FLTAWHTR(bits.Make32(v, uint32(mask)))
+	return FLTAWHTR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTAWHTR struct{ mmio.U32 }
@@ -485,7 +485,7 @@ func (b FLTAWLTR) Field(mask FLTAWLTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTAWLTR) J(v int) FLTAWLTR {
-	return FLTAWLTR(bits.Make32(v, uint32(mask)))
+	return FLTAWLTR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTAWLTR struct{ mmio.U32 }
@@ -520,7 +520,7 @@ func (b FLTAWSR) Field(mask FLTAWSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTAWSR) J(v int) FLTAWSR {
-	return FLTAWSR(bits.Make32(v, uint32(mask)))
+	return FLTAWSR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTAWSR struct{ mmio.U32 }
@@ -555,7 +555,7 @@ func (b FLTAWCFR) Field(mask FLTAWCFR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTAWCFR) J(v int) FLTAWCFR {
-	return FLTAWCFR(bits.Make32(v, uint32(mask)))
+	return FLTAWCFR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTAWCFR struct{ mmio.U32 }
@@ -590,7 +590,7 @@ func (b FLTEXMAX) Field(mask FLTEXMAX) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTEXMAX) J(v int) FLTEXMAX {
-	return FLTEXMAX(bits.Make32(v, uint32(mask)))
+	return FLTEXMAX(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTEXMAX struct{ mmio.U32 }
@@ -625,7 +625,7 @@ func (b FLTEXMIN) Field(mask FLTEXMIN) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTEXMIN) J(v int) FLTEXMIN {
-	return FLTEXMIN(bits.Make32(v, uint32(mask)))
+	return FLTEXMIN(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTEXMIN struct{ mmio.U32 }
@@ -660,7 +660,7 @@ func (b FLTCNVTIMR) Field(mask FLTCNVTIMR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FLTCNVTIMR) J(v int) FLTCNVTIMR {
-	return FLTCNVTIMR(bits.Make32(v, uint32(mask)))
+	return FLTCNVTIMR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFLTCNVTIMR struct{ mmio.U32 }

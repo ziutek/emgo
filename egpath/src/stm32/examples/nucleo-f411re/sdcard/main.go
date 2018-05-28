@@ -72,7 +72,7 @@ func main() {
 	// Verify card interface operating condition.
 	vhs, pattern := h.Cmd(sdcard.CMD8(sdcard.V27_36, 0xAC)).R7()
 	if err := h.Err(true); err != nil {
-		if err == sdcard.ErrTimeout {
+		if err == sdcard.ErrCmdTimeout {
 			ocr &^= sdcard.HCXC
 			v2 = false
 		} else {

@@ -31,7 +31,7 @@ func (b PCR4) Field(mask PCR4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PCR4) J(v int) PCR4 {
-	return PCR4(bits.Make32(v, uint32(mask)))
+	return PCR4(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPCR4 struct{ mmio.U32 }
@@ -90,7 +90,7 @@ func (b SR4) Field(mask SR4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SR4) J(v int) SR4 {
-	return SR4(bits.Make32(v, uint32(mask)))
+	return SR4(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSR4 struct{ mmio.U32 }
@@ -145,7 +145,7 @@ func (b PMEM4) Field(mask PMEM4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PMEM4) J(v int) PMEM4 {
-	return PMEM4(bits.Make32(v, uint32(mask)))
+	return PMEM4(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPMEM4 struct{ mmio.U32 }
@@ -188,7 +188,7 @@ func (b PATT4) Field(mask PATT4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PATT4) J(v int) PATT4 {
-	return PATT4(bits.Make32(v, uint32(mask)))
+	return PATT4(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPATT4 struct{ mmio.U32 }
@@ -231,7 +231,7 @@ func (b PIO4) Field(mask PIO4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PIO4) J(v int) PIO4 {
-	return PIO4(bits.Make32(v, uint32(mask)))
+	return PIO4(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPIO4 struct{ mmio.U32 }

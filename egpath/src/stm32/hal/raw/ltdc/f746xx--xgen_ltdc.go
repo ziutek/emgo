@@ -45,7 +45,7 @@ func (b SSCR) Field(mask SSCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SSCR) J(v int) SSCR {
-	return SSCR(bits.Make32(v, uint32(mask)))
+	return SSCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSSCR struct{ mmio.U32 }
@@ -80,7 +80,7 @@ func (b BPCR) Field(mask BPCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask BPCR) J(v int) BPCR {
-	return BPCR(bits.Make32(v, uint32(mask)))
+	return BPCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RBPCR struct{ mmio.U32 }
@@ -115,7 +115,7 @@ func (b AWCR) Field(mask AWCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask AWCR) J(v int) AWCR {
-	return AWCR(bits.Make32(v, uint32(mask)))
+	return AWCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RAWCR struct{ mmio.U32 }
@@ -150,7 +150,7 @@ func (b TWCR) Field(mask TWCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask TWCR) J(v int) TWCR {
-	return TWCR(bits.Make32(v, uint32(mask)))
+	return TWCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RTWCR struct{ mmio.U32 }
@@ -185,7 +185,7 @@ func (b GCR) Field(mask GCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask GCR) J(v int) GCR {
-	return GCR(bits.Make32(v, uint32(mask)))
+	return GCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RGCR struct{ mmio.U32 }
@@ -248,7 +248,7 @@ func (b SRCR) Field(mask SRCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SRCR) J(v int) SRCR {
-	return SRCR(bits.Make32(v, uint32(mask)))
+	return SRCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSRCR struct{ mmio.U32 }
@@ -283,7 +283,7 @@ func (b BCCR) Field(mask BCCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask BCCR) J(v int) BCCR {
-	return BCCR(bits.Make32(v, uint32(mask)))
+	return BCCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RBCCR struct{ mmio.U32 }
@@ -322,7 +322,7 @@ func (b IER) Field(mask IER) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IER) J(v int) IER {
-	return IER(bits.Make32(v, uint32(mask)))
+	return IER(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIER struct{ mmio.U32 }
@@ -365,7 +365,7 @@ func (b ISR) Field(mask ISR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ISR) J(v int) ISR {
-	return ISR(bits.Make32(v, uint32(mask)))
+	return ISR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RISR struct{ mmio.U32 }
@@ -408,7 +408,7 @@ func (b ICR) Field(mask ICR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ICR) J(v int) ICR {
-	return ICR(bits.Make32(v, uint32(mask)))
+	return ICR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RICR struct{ mmio.U32 }
@@ -451,7 +451,7 @@ func (b LIPCR) Field(mask LIPCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask LIPCR) J(v int) LIPCR {
-	return LIPCR(bits.Make32(v, uint32(mask)))
+	return LIPCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RLIPCR struct{ mmio.U32 }
@@ -482,7 +482,7 @@ func (b CPSR) Field(mask CPSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CPSR) J(v int) CPSR {
-	return CPSR(bits.Make32(v, uint32(mask)))
+	return CPSR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCPSR struct{ mmio.U32 }
@@ -517,7 +517,7 @@ func (b CDSR) Field(mask CDSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CDSR) J(v int) CDSR {
-	return CDSR(bits.Make32(v, uint32(mask)))
+	return CDSR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCDSR struct{ mmio.U32 }

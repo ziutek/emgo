@@ -30,7 +30,7 @@ func (b DIEPCTL) Field(mask DIEPCTL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DIEPCTL) J(v int) DIEPCTL {
-	return DIEPCTL(bits.Make32(v, uint32(mask)))
+	return DIEPCTL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDIEPCTL struct{ mmio.U32 }
@@ -109,7 +109,7 @@ func (b DIEPINT) Field(mask DIEPINT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DIEPINT) J(v int) DIEPINT {
-	return DIEPINT(bits.Make32(v, uint32(mask)))
+	return DIEPINT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDIEPINT struct{ mmio.U32 }
@@ -180,7 +180,7 @@ func (b DIEPTSIZ) Field(mask DIEPTSIZ) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DIEPTSIZ) J(v int) DIEPTSIZ {
-	return DIEPTSIZ(bits.Make32(v, uint32(mask)))
+	return DIEPTSIZ(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDIEPTSIZ struct{ mmio.U32 }
@@ -219,7 +219,7 @@ func (b DIEPDMA) Field(mask DIEPDMA) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DIEPDMA) J(v int) DIEPDMA {
-	return DIEPDMA(bits.Make32(v, uint32(mask)))
+	return DIEPDMA(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDIEPDMA struct{ mmio.U32 }
@@ -250,7 +250,7 @@ func (b DTXFSTS) Field(mask DTXFSTS) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DTXFSTS) J(v int) DTXFSTS {
-	return DTXFSTS(bits.Make32(v, uint32(mask)))
+	return DTXFSTS(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDTXFSTS struct{ mmio.U32 }

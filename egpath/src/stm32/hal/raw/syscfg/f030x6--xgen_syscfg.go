@@ -32,7 +32,7 @@ func (b CFGR1) Field(mask CFGR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CFGR1) J(v int) CFGR1 {
-	return CFGR1(bits.Make32(v, uint32(mask)))
+	return CFGR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCFGR1 struct{ mmio.U32 }
@@ -95,7 +95,7 @@ func (b EXTICR) Field(mask EXTICR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask EXTICR) J(v int) EXTICR {
-	return EXTICR(bits.Make32(v, uint32(mask)))
+	return EXTICR(bits.MakeField32(v, uint32(mask)))
 }
 
 type REXTICR struct{ mmio.U32 }
@@ -138,7 +138,7 @@ func (b CFGR2) Field(mask CFGR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CFGR2) J(v int) CFGR2 {
-	return CFGR2(bits.Make32(v, uint32(mask)))
+	return CFGR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCFGR2 struct{ mmio.U32 }

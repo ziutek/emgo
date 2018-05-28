@@ -40,7 +40,7 @@ func (b CR) Field(mask CR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CR) J(v int) CR {
-	return CR(bits.Make32(v, uint32(mask)))
+	return CR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCR struct{ mmio.U32 }
@@ -131,7 +131,7 @@ func (b SWTRIGR) Field(mask SWTRIGR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SWTRIGR) J(v int) SWTRIGR {
-	return SWTRIGR(bits.Make32(v, uint32(mask)))
+	return SWTRIGR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSWTRIGR struct{ mmio.U32 }
@@ -166,7 +166,7 @@ func (b DHR12R1) Field(mask DHR12R1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DHR12R1) J(v int) DHR12R1 {
-	return DHR12R1(bits.Make32(v, uint32(mask)))
+	return DHR12R1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDHR12R1 struct{ mmio.U32 }
@@ -197,7 +197,7 @@ func (b DHR12L1) Field(mask DHR12L1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DHR12L1) J(v int) DHR12L1 {
-	return DHR12L1(bits.Make32(v, uint32(mask)))
+	return DHR12L1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDHR12L1 struct{ mmio.U32 }
@@ -228,7 +228,7 @@ func (b DHR8R1) Field(mask DHR8R1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DHR8R1) J(v int) DHR8R1 {
-	return DHR8R1(bits.Make32(v, uint32(mask)))
+	return DHR8R1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDHR8R1 struct{ mmio.U32 }
@@ -259,7 +259,7 @@ func (b DHR12R2) Field(mask DHR12R2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DHR12R2) J(v int) DHR12R2 {
-	return DHR12R2(bits.Make32(v, uint32(mask)))
+	return DHR12R2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDHR12R2 struct{ mmio.U32 }
@@ -290,7 +290,7 @@ func (b DHR12L2) Field(mask DHR12L2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DHR12L2) J(v int) DHR12L2 {
-	return DHR12L2(bits.Make32(v, uint32(mask)))
+	return DHR12L2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDHR12L2 struct{ mmio.U32 }
@@ -321,7 +321,7 @@ func (b DHR8R2) Field(mask DHR8R2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DHR8R2) J(v int) DHR8R2 {
-	return DHR8R2(bits.Make32(v, uint32(mask)))
+	return DHR8R2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDHR8R2 struct{ mmio.U32 }
@@ -352,7 +352,7 @@ func (b DHR12RD) Field(mask DHR12RD) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DHR12RD) J(v int) DHR12RD {
-	return DHR12RD(bits.Make32(v, uint32(mask)))
+	return DHR12RD(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDHR12RD struct{ mmio.U32 }
@@ -387,7 +387,7 @@ func (b DHR12LD) Field(mask DHR12LD) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DHR12LD) J(v int) DHR12LD {
-	return DHR12LD(bits.Make32(v, uint32(mask)))
+	return DHR12LD(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDHR12LD struct{ mmio.U32 }
@@ -422,7 +422,7 @@ func (b DHR8RD) Field(mask DHR8RD) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DHR8RD) J(v int) DHR8RD {
-	return DHR8RD(bits.Make32(v, uint32(mask)))
+	return DHR8RD(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDHR8RD struct{ mmio.U32 }
@@ -457,7 +457,7 @@ func (b DOR1) Field(mask DOR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DOR1) J(v int) DOR1 {
-	return DOR1(bits.Make32(v, uint32(mask)))
+	return DOR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDOR1 struct{ mmio.U32 }
@@ -488,7 +488,7 @@ func (b DOR2) Field(mask DOR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DOR2) J(v int) DOR2 {
-	return DOR2(bits.Make32(v, uint32(mask)))
+	return DOR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDOR2 struct{ mmio.U32 }
@@ -519,7 +519,7 @@ func (b SR) Field(mask SR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SR) J(v int) SR {
-	return SR(bits.Make32(v, uint32(mask)))
+	return SR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSR struct{ mmio.U32 }

@@ -43,7 +43,7 @@ func (b CR1) Field(mask CR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CR1) J(v int) CR1 {
-	return CR1(bits.Make32(v, uint32(mask)))
+	return CR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCR1 struct{ mmio.U32 }
@@ -70,7 +70,7 @@ func (b CR2) Field(mask CR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CR2) J(v int) CR2 {
-	return CR2(bits.Make32(v, uint32(mask)))
+	return CR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCR2 struct{ mmio.U32 }
@@ -97,7 +97,7 @@ func (b FRCR) Field(mask FRCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FRCR) J(v int) FRCR {
-	return FRCR(bits.Make32(v, uint32(mask)))
+	return FRCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFRCR struct{ mmio.U32 }
@@ -124,7 +124,7 @@ func (b SLOTR) Field(mask SLOTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SLOTR) J(v int) SLOTR {
-	return SLOTR(bits.Make32(v, uint32(mask)))
+	return SLOTR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSLOTR struct{ mmio.U32 }
@@ -151,7 +151,7 @@ func (b IMR) Field(mask IMR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IMR) J(v int) IMR {
-	return IMR(bits.Make32(v, uint32(mask)))
+	return IMR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIMR struct{ mmio.U32 }
@@ -178,7 +178,7 @@ func (b SR) Field(mask SR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SR) J(v int) SR {
-	return SR(bits.Make32(v, uint32(mask)))
+	return SR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSR struct{ mmio.U32 }
@@ -205,7 +205,7 @@ func (b CLRFR) Field(mask CLRFR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CLRFR) J(v int) CLRFR {
-	return CLRFR(bits.Make32(v, uint32(mask)))
+	return CLRFR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCLRFR struct{ mmio.U32 }
@@ -232,7 +232,7 @@ func (b DR) Field(mask DR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DR) J(v int) DR {
-	return DR(bits.Make32(v, uint32(mask)))
+	return DR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDR struct{ mmio.U32 }

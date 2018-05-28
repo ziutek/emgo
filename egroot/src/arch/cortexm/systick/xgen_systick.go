@@ -28,7 +28,7 @@ func (b CSR) Field(mask CSR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CSR) J(v int) CSR {
-	return CSR(bits.Make32(v, uint32(mask)))
+	return CSR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCSR struct{ mmio.U32 }
@@ -71,7 +71,7 @@ func (b RVR) Field(mask RVR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RVR) J(v int) RVR {
-	return RVR(bits.Make32(v, uint32(mask)))
+	return RVR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRVR struct{ mmio.U32 }
@@ -102,7 +102,7 @@ func (b CVR) Field(mask CVR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CVR) J(v int) CVR {
-	return CVR(bits.Make32(v, uint32(mask)))
+	return CVR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCVR struct{ mmio.U32 }
@@ -133,7 +133,7 @@ func (b CALIB) Field(mask CALIB) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CALIB) J(v int) CALIB {
-	return CALIB(bits.Make32(v, uint32(mask)))
+	return CALIB(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCALIB struct{ mmio.U32 }

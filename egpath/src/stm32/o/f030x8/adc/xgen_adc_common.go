@@ -30,7 +30,7 @@ func (b CCR) Field(mask CCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CCR) J(v int) CCR {
-	return CCR(bits.Make32(v, uint32(mask)))
+	return CCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCCR struct{ mmio.U32 }

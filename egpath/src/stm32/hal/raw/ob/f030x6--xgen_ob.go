@@ -33,7 +33,7 @@ func (b RDP) Field(mask RDP) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RDP) J(v int) RDP {
-	return RDP(bits.Make32(v, uint32(mask)))
+	return RDP(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRDP struct{ mmio.U16 }
@@ -64,7 +64,7 @@ func (b USER) Field(mask USER) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask USER) J(v int) USER {
-	return USER(bits.Make32(v, uint32(mask)))
+	return USER(bits.MakeField32(v, uint32(mask)))
 }
 
 type RUSER struct{ mmio.U16 }
@@ -95,7 +95,7 @@ func (b DATA0) Field(mask DATA0) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DATA0) J(v int) DATA0 {
-	return DATA0(bits.Make32(v, uint32(mask)))
+	return DATA0(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDATA0 struct{ mmio.U16 }
@@ -118,7 +118,7 @@ func (b DATA1) Field(mask DATA1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DATA1) J(v int) DATA1 {
-	return DATA1(bits.Make32(v, uint32(mask)))
+	return DATA1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDATA1 struct{ mmio.U16 }
@@ -141,7 +141,7 @@ func (b WRP0) Field(mask WRP0) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask WRP0) J(v int) WRP0 {
-	return WRP0(bits.Make32(v, uint32(mask)))
+	return WRP0(bits.MakeField32(v, uint32(mask)))
 }
 
 type RWRP0 struct{ mmio.U16 }

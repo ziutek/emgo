@@ -44,7 +44,7 @@ func (b CFGR1) Field(mask CFGR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CFGR1) J(v int) CFGR1 {
-	return CFGR1(bits.Make32(v, uint32(mask)))
+	return CFGR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCFGR1 struct{ mmio.U32 }
@@ -127,7 +127,7 @@ func (b RCR) Field(mask RCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RCR) J(v int) RCR {
-	return RCR(bits.Make32(v, uint32(mask)))
+	return RCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRCR struct{ mmio.U32 }
@@ -218,7 +218,7 @@ func (b EXTICR) Field(mask EXTICR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask EXTICR) J(v int) EXTICR {
-	return EXTICR(bits.Make32(v, uint32(mask)))
+	return EXTICR(bits.MakeField32(v, uint32(mask)))
 }
 
 type REXTICR struct{ mmio.U32 }
@@ -261,7 +261,7 @@ func (b CFGR2) Field(mask CFGR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CFGR2) J(v int) CFGR2 {
-	return CFGR2(bits.Make32(v, uint32(mask)))
+	return CFGR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCFGR2 struct{ mmio.U32 }
@@ -308,7 +308,7 @@ func (b RESERVED0) Field(mask RESERVED0) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED0) J(v int) RESERVED0 {
-	return RESERVED0(bits.Make32(v, uint32(mask)))
+	return RESERVED0(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED0 struct{ mmio.U32 }
@@ -337,7 +337,7 @@ func (b RESERVED1) Field(mask RESERVED1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED1) J(v int) RESERVED1 {
-	return RESERVED1(bits.Make32(v, uint32(mask)))
+	return RESERVED1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED1 struct{ mmio.U32 }
@@ -366,7 +366,7 @@ func (b RESERVED2) Field(mask RESERVED2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED2) J(v int) RESERVED2 {
-	return RESERVED2(bits.Make32(v, uint32(mask)))
+	return RESERVED2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED2 struct{ mmio.U32 }
@@ -395,7 +395,7 @@ func (b RESERVED4) Field(mask RESERVED4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED4) J(v int) RESERVED4 {
-	return RESERVED4(bits.Make32(v, uint32(mask)))
+	return RESERVED4(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED4 struct{ mmio.U32 }
@@ -424,7 +424,7 @@ func (b RESERVED5) Field(mask RESERVED5) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED5) J(v int) RESERVED5 {
-	return RESERVED5(bits.Make32(v, uint32(mask)))
+	return RESERVED5(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED5 struct{ mmio.U32 }
@@ -453,7 +453,7 @@ func (b RESERVED6) Field(mask RESERVED6) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED6) J(v int) RESERVED6 {
-	return RESERVED6(bits.Make32(v, uint32(mask)))
+	return RESERVED6(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED6 struct{ mmio.U32 }
@@ -482,7 +482,7 @@ func (b RESERVED7) Field(mask RESERVED7) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED7) J(v int) RESERVED7 {
-	return RESERVED7(bits.Make32(v, uint32(mask)))
+	return RESERVED7(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED7 struct{ mmio.U32 }
@@ -511,7 +511,7 @@ func (b RESERVED8) Field(mask RESERVED8) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED8) J(v int) RESERVED8 {
-	return RESERVED8(bits.Make32(v, uint32(mask)))
+	return RESERVED8(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED8 struct{ mmio.U32 }
@@ -540,7 +540,7 @@ func (b RESERVED9) Field(mask RESERVED9) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED9) J(v int) RESERVED9 {
-	return RESERVED9(bits.Make32(v, uint32(mask)))
+	return RESERVED9(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED9 struct{ mmio.U32 }
@@ -569,7 +569,7 @@ func (b RESERVED10) Field(mask RESERVED10) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED10) J(v int) RESERVED10 {
-	return RESERVED10(bits.Make32(v, uint32(mask)))
+	return RESERVED10(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED10 struct{ mmio.U32 }
@@ -598,7 +598,7 @@ func (b RESERVED11) Field(mask RESERVED11) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED11) J(v int) RESERVED11 {
-	return RESERVED11(bits.Make32(v, uint32(mask)))
+	return RESERVED11(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED11 struct{ mmio.U32 }
@@ -627,7 +627,7 @@ func (b CFGR4) Field(mask CFGR4) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CFGR4) J(v int) CFGR4 {
-	return CFGR4(bits.Make32(v, uint32(mask)))
+	return CFGR4(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCFGR4 struct{ mmio.U32 }
@@ -710,7 +710,7 @@ func (b RESERVED12) Field(mask RESERVED12) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED12) J(v int) RESERVED12 {
-	return RESERVED12(bits.Make32(v, uint32(mask)))
+	return RESERVED12(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED12 struct{ mmio.U32 }
@@ -739,7 +739,7 @@ func (b RESERVED13) Field(mask RESERVED13) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask RESERVED13) J(v int) RESERVED13 {
-	return RESERVED13(bits.Make32(v, uint32(mask)))
+	return RESERVED13(bits.MakeField32(v, uint32(mask)))
 }
 
 type RRESERVED13 struct{ mmio.U32 }

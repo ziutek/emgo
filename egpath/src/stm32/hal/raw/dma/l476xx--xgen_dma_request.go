@@ -32,7 +32,7 @@ func (b CSELR) Field(mask CSELR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CSELR) J(v int) CSELR {
-	return CSELR(bits.Make32(v, uint32(mask)))
+	return CSELR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCSELR struct{ mmio.U32 }

@@ -71,7 +71,7 @@ func (b CCR) Field(mask CCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CCR) J(v int) CCR {
-	return CCR(bits.Make32(v, uint32(mask)))
+	return CCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCCR struct{ mmio.U32 }
@@ -146,7 +146,7 @@ func (b CNDTR) Field(mask CNDTR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CNDTR) J(v int) CNDTR {
-	return CNDTR(bits.Make32(v, uint32(mask)))
+	return CNDTR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCNDTR struct{ mmio.U32 }
@@ -177,7 +177,7 @@ func (b CPAR) Field(mask CPAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CPAR) J(v int) CPAR {
-	return CPAR(bits.Make32(v, uint32(mask)))
+	return CPAR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCPAR struct{ mmio.U32 }
@@ -208,7 +208,7 @@ func (b CMAR) Field(mask CMAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CMAR) J(v int) CMAR {
-	return CMAR(bits.Make32(v, uint32(mask)))
+	return CMAR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCMAR struct{ mmio.U32 }

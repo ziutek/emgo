@@ -27,7 +27,7 @@ func (b FR1) Field(mask FR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FR1) J(v int) FR1 {
-	return FR1(bits.Make32(v, uint32(mask)))
+	return FR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFR1 struct{ mmio.U32 }
@@ -54,7 +54,7 @@ func (b FR2) Field(mask FR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FR2) J(v int) FR2 {
-	return FR2(bits.Make32(v, uint32(mask)))
+	return FR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFR2 struct{ mmio.U32 }

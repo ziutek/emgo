@@ -58,7 +58,7 @@ func (b CODEPAGESIZE) Field(mask CODEPAGESIZE) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CODEPAGESIZE) J(v int) CODEPAGESIZE {
-	return CODEPAGESIZE(bits.Make32(v, uint32(mask)))
+	return CODEPAGESIZE(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCODEPAGESIZE struct{ mmio.U32 }
@@ -89,7 +89,7 @@ func (b CODESIZE) Field(mask CODESIZE) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CODESIZE) J(v int) CODESIZE {
-	return CODESIZE(bits.Make32(v, uint32(mask)))
+	return CODESIZE(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCODESIZE struct{ mmio.U32 }
@@ -116,7 +116,7 @@ func (b CLENR0) Field(mask CLENR0) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CLENR0) J(v int) CLENR0 {
-	return CLENR0(bits.Make32(v, uint32(mask)))
+	return CLENR0(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCLENR0 struct{ mmio.U32 }
@@ -143,7 +143,7 @@ func (b PPFC) Field(mask PPFC) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask PPFC) J(v int) PPFC {
-	return PPFC(bits.Make32(v, uint32(mask)))
+	return PPFC(bits.MakeField32(v, uint32(mask)))
 }
 
 type RPPFC struct{ mmio.U32 }
@@ -170,7 +170,7 @@ func (b NUMRAMBLOCK) Field(mask NUMRAMBLOCK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask NUMRAMBLOCK) J(v int) NUMRAMBLOCK {
-	return NUMRAMBLOCK(bits.Make32(v, uint32(mask)))
+	return NUMRAMBLOCK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RNUMRAMBLOCK struct{ mmio.U32 }
@@ -201,7 +201,7 @@ func (b SIZERAMBLOCK) Field(mask SIZERAMBLOCK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask SIZERAMBLOCK) J(v int) SIZERAMBLOCK {
-	return SIZERAMBLOCK(bits.Make32(v, uint32(mask)))
+	return SIZERAMBLOCK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RSIZERAMBLOCK struct{ mmio.U32 }
@@ -232,7 +232,7 @@ func (b CONFIGID) Field(mask CONFIGID) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CONFIGID) J(v int) CONFIGID {
-	return CONFIGID(bits.Make32(v, uint32(mask)))
+	return CONFIGID(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCONFIGID struct{ mmio.U32 }
@@ -259,7 +259,7 @@ func (b DEVICEID) Field(mask DEVICEID) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DEVICEID) J(v int) DEVICEID {
-	return DEVICEID(bits.Make32(v, uint32(mask)))
+	return DEVICEID(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDEVICEID struct{ mmio.U32 }
@@ -286,7 +286,7 @@ func (b ER) Field(mask ER) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask ER) J(v int) ER {
-	return ER(bits.Make32(v, uint32(mask)))
+	return ER(bits.MakeField32(v, uint32(mask)))
 }
 
 type RER struct{ mmio.U32 }
@@ -313,7 +313,7 @@ func (b IR) Field(mask IR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask IR) J(v int) IR {
-	return IR(bits.Make32(v, uint32(mask)))
+	return IR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RIR struct{ mmio.U32 }
@@ -340,7 +340,7 @@ func (b DEVICEADDRTYPE) Field(mask DEVICEADDRTYPE) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DEVICEADDRTYPE) J(v int) DEVICEADDRTYPE {
-	return DEVICEADDRTYPE(bits.Make32(v, uint32(mask)))
+	return DEVICEADDRTYPE(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDEVICEADDRTYPE struct{ mmio.U32 }
@@ -371,7 +371,7 @@ func (b DEVICEADDR) Field(mask DEVICEADDR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DEVICEADDR) J(v int) DEVICEADDR {
-	return DEVICEADDR(bits.Make32(v, uint32(mask)))
+	return DEVICEADDR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDEVICEADDR struct{ mmio.U32 }
@@ -400,7 +400,7 @@ func (b OVERRIDDEN) Field(mask OVERRIDDEN) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask OVERRIDDEN) J(v int) OVERRIDDEN {
-	return OVERRIDDEN(bits.Make32(v, uint32(mask)))
+	return OVERRIDDEN(bits.MakeField32(v, uint32(mask)))
 }
 
 type ROVERRIDDEN struct{ mmio.U32 }
@@ -437,7 +437,7 @@ func (b NRF_1MBIT) Field(mask NRF_1MBIT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask NRF_1MBIT) J(v int) NRF_1MBIT {
-	return NRF_1MBIT(bits.Make32(v, uint32(mask)))
+	return NRF_1MBIT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RNRF_1MBIT struct{ mmio.U32 }
@@ -466,7 +466,7 @@ func (b BLE_1MBIT) Field(mask BLE_1MBIT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask BLE_1MBIT) J(v int) BLE_1MBIT {
-	return BLE_1MBIT(bits.Make32(v, uint32(mask)))
+	return BLE_1MBIT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RBLE_1MBIT struct{ mmio.U32 }
@@ -495,7 +495,7 @@ func (b INFO_PART) Field(mask INFO_PART) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask INFO_PART) J(v int) INFO_PART {
-	return INFO_PART(bits.Make32(v, uint32(mask)))
+	return INFO_PART(bits.MakeField32(v, uint32(mask)))
 }
 
 type RINFO_PART struct{ mmio.U32 }
@@ -524,7 +524,7 @@ func (b INFO_VARIANT) Field(mask INFO_VARIANT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask INFO_VARIANT) J(v int) INFO_VARIANT {
-	return INFO_VARIANT(bits.Make32(v, uint32(mask)))
+	return INFO_VARIANT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RINFO_VARIANT struct{ mmio.U32 }
@@ -555,7 +555,7 @@ func (b INFO_PACKAGE) Field(mask INFO_PACKAGE) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask INFO_PACKAGE) J(v int) INFO_PACKAGE {
-	return INFO_PACKAGE(bits.Make32(v, uint32(mask)))
+	return INFO_PACKAGE(bits.MakeField32(v, uint32(mask)))
 }
 
 type RINFO_PACKAGE struct{ mmio.U32 }
@@ -586,7 +586,7 @@ func (b INFO_RAM) Field(mask INFO_RAM) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask INFO_RAM) J(v int) INFO_RAM {
-	return INFO_RAM(bits.Make32(v, uint32(mask)))
+	return INFO_RAM(bits.MakeField32(v, uint32(mask)))
 }
 
 type RINFO_RAM struct{ mmio.U32 }
@@ -613,7 +613,7 @@ func (b INFO_FLASH) Field(mask INFO_FLASH) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask INFO_FLASH) J(v int) INFO_FLASH {
-	return INFO_FLASH(bits.Make32(v, uint32(mask)))
+	return INFO_FLASH(bits.MakeField32(v, uint32(mask)))
 }
 
 type RINFO_FLASH struct{ mmio.U32 }
@@ -642,7 +642,7 @@ func (b TEMP_A) Field(mask TEMP_A) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask TEMP_A) J(v int) TEMP_A {
-	return TEMP_A(bits.Make32(v, uint32(mask)))
+	return TEMP_A(bits.MakeField32(v, uint32(mask)))
 }
 
 type RTEMP_A struct{ mmio.U32 }
@@ -669,7 +669,7 @@ func (b TEMP_B) Field(mask TEMP_B) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask TEMP_B) J(v int) TEMP_B {
-	return TEMP_B(bits.Make32(v, uint32(mask)))
+	return TEMP_B(bits.MakeField32(v, uint32(mask)))
 }
 
 type RTEMP_B struct{ mmio.U32 }
@@ -696,7 +696,7 @@ func (b TEMP_T) Field(mask TEMP_T) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask TEMP_T) J(v int) TEMP_T {
-	return TEMP_T(bits.Make32(v, uint32(mask)))
+	return TEMP_T(bits.MakeField32(v, uint32(mask)))
 }
 
 type RTEMP_T struct{ mmio.U32 }
@@ -723,7 +723,7 @@ func (b NFC_TAGHEADER) Field(mask NFC_TAGHEADER) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask NFC_TAGHEADER) J(v int) NFC_TAGHEADER {
-	return NFC_TAGHEADER(bits.Make32(v, uint32(mask)))
+	return NFC_TAGHEADER(bits.MakeField32(v, uint32(mask)))
 }
 
 type RNFC_TAGHEADER struct{ mmio.U32 }

@@ -42,7 +42,7 @@ func (b DCFG) Field(mask DCFG) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DCFG) J(v int) DCFG {
-	return DCFG(bits.Make32(v, uint32(mask)))
+	return DCFG(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDCFG struct{ mmio.U32 }
@@ -89,7 +89,7 @@ func (b DCTL) Field(mask DCTL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DCTL) J(v int) DCTL {
-	return DCTL(bits.Make32(v, uint32(mask)))
+	return DCTL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDCTL struct{ mmio.U32 }
@@ -156,7 +156,7 @@ func (b DSTS) Field(mask DSTS) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DSTS) J(v int) DSTS {
-	return DSTS(bits.Make32(v, uint32(mask)))
+	return DSTS(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDSTS struct{ mmio.U32 }
@@ -199,7 +199,7 @@ func (b DIEPMSK) Field(mask DIEPMSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DIEPMSK) J(v int) DIEPMSK {
-	return DIEPMSK(bits.Make32(v, uint32(mask)))
+	return DIEPMSK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDIEPMSK struct{ mmio.U32 }
@@ -258,7 +258,7 @@ func (b DOEPMSK) Field(mask DOEPMSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DOEPMSK) J(v int) DOEPMSK {
-	return DOEPMSK(bits.Make32(v, uint32(mask)))
+	return DOEPMSK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDOEPMSK struct{ mmio.U32 }
@@ -313,7 +313,7 @@ func (b DAINT) Field(mask DAINT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DAINT) J(v int) DAINT {
-	return DAINT(bits.Make32(v, uint32(mask)))
+	return DAINT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDAINT struct{ mmio.U32 }
@@ -348,7 +348,7 @@ func (b DAINTMSK) Field(mask DAINTMSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DAINTMSK) J(v int) DAINTMSK {
-	return DAINTMSK(bits.Make32(v, uint32(mask)))
+	return DAINTMSK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDAINTMSK struct{ mmio.U32 }
@@ -383,7 +383,7 @@ func (b DVBUSDIS) Field(mask DVBUSDIS) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DVBUSDIS) J(v int) DVBUSDIS {
-	return DVBUSDIS(bits.Make32(v, uint32(mask)))
+	return DVBUSDIS(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDVBUSDIS struct{ mmio.U32 }
@@ -414,7 +414,7 @@ func (b DVBUSPULSE) Field(mask DVBUSPULSE) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DVBUSPULSE) J(v int) DVBUSPULSE {
-	return DVBUSPULSE(bits.Make32(v, uint32(mask)))
+	return DVBUSPULSE(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDVBUSPULSE struct{ mmio.U32 }
@@ -447,7 +447,7 @@ func (b DTHRCTL) Field(mask DTHRCTL) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DTHRCTL) J(v int) DTHRCTL {
-	return DTHRCTL(bits.Make32(v, uint32(mask)))
+	return DTHRCTL(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDTHRCTL struct{ mmio.U32 }
@@ -498,7 +498,7 @@ func (b DIEPEMPMSK) Field(mask DIEPEMPMSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DIEPEMPMSK) J(v int) DIEPEMPMSK {
-	return DIEPEMPMSK(bits.Make32(v, uint32(mask)))
+	return DIEPEMPMSK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDIEPEMPMSK struct{ mmio.U32 }
@@ -531,7 +531,7 @@ func (b DEACHINT) Field(mask DEACHINT) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DEACHINT) J(v int) DEACHINT {
-	return DEACHINT(bits.Make32(v, uint32(mask)))
+	return DEACHINT(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDEACHINT struct{ mmio.U32 }
@@ -566,7 +566,7 @@ func (b DEACHMSK) Field(mask DEACHMSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DEACHMSK) J(v int) DEACHMSK {
-	return DEACHMSK(bits.Make32(v, uint32(mask)))
+	return DEACHMSK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDEACHMSK struct{ mmio.U32 }
@@ -593,7 +593,7 @@ func (b DINEP1MSK) Field(mask DINEP1MSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DINEP1MSK) J(v int) DINEP1MSK {
-	return DINEP1MSK(bits.Make32(v, uint32(mask)))
+	return DINEP1MSK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDINEP1MSK struct{ mmio.U32 }
@@ -622,7 +622,7 @@ func (b DOUTEP1MSK) Field(mask DOUTEP1MSK) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask DOUTEP1MSK) J(v int) DOUTEP1MSK {
-	return DOUTEP1MSK(bits.Make32(v, uint32(mask)))
+	return DOUTEP1MSK(bits.MakeField32(v, uint32(mask)))
 }
 
 type RDOUTEP1MSK struct{ mmio.U32 }

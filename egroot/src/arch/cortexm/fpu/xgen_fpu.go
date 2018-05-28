@@ -29,7 +29,7 @@ func (b CPACR) Field(mask CPACR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CPACR) J(v int) CPACR {
-	return CPACR(bits.Make32(v, uint32(mask)))
+	return CPACR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCPACR struct{ mmio.U32 }
@@ -64,7 +64,7 @@ func (b FPCCR) Field(mask FPCCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FPCCR) J(v int) FPCCR {
-	return FPCCR(bits.Make32(v, uint32(mask)))
+	return FPCCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFPCCR struct{ mmio.U32 }
@@ -127,7 +127,7 @@ func (b FPCAR) Field(mask FPCAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FPCAR) J(v int) FPCAR {
-	return FPCAR(bits.Make32(v, uint32(mask)))
+	return FPCAR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFPCAR struct{ mmio.U32 }
@@ -158,7 +158,7 @@ func (b FPDSCR) Field(mask FPDSCR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask FPDSCR) J(v int) FPDSCR {
-	return FPDSCR(bits.Make32(v, uint32(mask)))
+	return FPDSCR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RFPDSCR struct{ mmio.U32 }

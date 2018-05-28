@@ -54,7 +54,7 @@ func (b CHCFGR1) Field(mask CHCFGR1) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CHCFGR1) J(v int) CHCFGR1 {
-	return CHCFGR1(bits.Make32(v, uint32(mask)))
+	return CHCFGR1(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCHCFGR1 struct{ mmio.U32 }
@@ -125,7 +125,7 @@ func (b CHCFGR2) Field(mask CHCFGR2) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CHCFGR2) J(v int) CHCFGR2 {
-	return CHCFGR2(bits.Make32(v, uint32(mask)))
+	return CHCFGR2(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCHCFGR2 struct{ mmio.U32 }
@@ -160,7 +160,7 @@ func (b CHAWSCDR) Field(mask CHAWSCDR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CHAWSCDR) J(v int) CHAWSCDR {
-	return CHAWSCDR(bits.Make32(v, uint32(mask)))
+	return CHAWSCDR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCHAWSCDR struct{ mmio.U32 }
@@ -203,7 +203,7 @@ func (b CHWDATAR) Field(mask CHWDATAR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CHWDATAR) J(v int) CHWDATAR {
-	return CHWDATAR(bits.Make32(v, uint32(mask)))
+	return CHWDATAR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCHWDATAR struct{ mmio.U32 }
@@ -230,7 +230,7 @@ func (b CHDATINR) Field(mask CHDATINR) int {
 	return bits.Field32(uint32(b), uint32(mask))
 }
 func (mask CHDATINR) J(v int) CHDATINR {
-	return CHDATINR(bits.Make32(v, uint32(mask)))
+	return CHDATINR(bits.MakeField32(v, uint32(mask)))
 }
 
 type RCHDATINR struct{ mmio.U32 }

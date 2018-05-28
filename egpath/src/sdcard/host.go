@@ -27,6 +27,7 @@ type Host interface {
 	// Cmd sends the cmd to the card and receives its response, if any. Short
 	// response is returned in r[0]. Long is returned in r[0:3] (r[0] contains
 	// the least significant bits, r[3] contains the most significant bits).
+	// If preceded by Data, Cmd performs data transfer.
 	Cmd(cmd Command, arg uint32) (r Response)
 
 	// Data prepares the data transfer for subsequent command.
