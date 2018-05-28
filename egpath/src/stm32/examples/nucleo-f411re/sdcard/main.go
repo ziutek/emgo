@@ -15,7 +15,7 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var h Host
+var sd *sdmmc.Driver
 
 func init() {
 	system.Setup96(8) // Setups USB/SDIO/RNG clock to 48 MHz
@@ -42,11 +42,11 @@ func init() {
 
 	d := dma.DMA2
 	d.EnableClock(true)
-	h.dma = d.Channel(6, 4)
-	h.p = sdmmc.SDIO
-	h.p.EnableClock(true)
-	h.p.Enable()
+	sd = sdmmc.NewDriver(sdmmc.SDIO, d.Channel(6, 4))
+	sd.Periph().EnableClock(true)
+	sd.Periph().Enable()
 
+	rtos.IRQ(irq.SDIO).Enable()
 }
 
 func main() {
@@ -55,23 +55,23 @@ func main() {
 	ocr := sdcard.V31 | sdcard.V32 | sdcard.V33 | sdcard.HCXC
 	v2 := true
 
-	// Set SDIO_CK to no more than 400 kHz (max. open-drain freq). Clock must
+	// Set SDIO_CK to no more than 400 kHz (max. open-drain freq). Clock must be
 	// continuously enabled (pwrsave = false) to allow correct initialisation.
-	h.SetFreq(400e3, false)
+	sd.SetFreq(400e3, false)
 
-	// SD card power-up takes maximum of 1 ms or 74 clock cycles.
+	// SD card power-up takes maximum of 1 ms or 74 SDIO_CK cycles.
 	delay.Millisec(1)
 
 	// Reset.
-	h.Cmd(sdcard.CMD0())
-	checkErr("CMD0", h.Err(true), 0)
+	sd.Cmd(sdcard.CMD0())
+	checkErr("CMD0", sd.Err(true), 0)
 
-	// CMD0 may require up to 8 clock cycles to reset the card.
+	// CMD0 may require up to 8 SDIO_CK cycles to reset the card.
 	delay.Millisec(1)
 
 	// Verify card interface operating condition.
-	vhs, pattern := h.Cmd(sdcard.CMD8(sdcard.V27_36, 0xAC)).R7()
-	if err := h.Err(true); err != nil {
+	vhs, pattern := sd.Cmd(sdcard.CMD8(sdcard.V27_36, 0xAC)).R7()
+	if err := sd.Err(true); err != nil {
 		if err == sdcard.ErrCmdTimeout {
 			ocr &^= sdcard.HCXC
 			v2 = false
@@ -88,9 +88,9 @@ func main() {
 	fmt.Printf("Initializing SD card ")
 	var oca sdcard.OCR
 	for i := 0; oca&sdcard.PWUP == 0 && i < 20; i++ {
-		h.Cmd(sdcard.CMD55(0))
-		oca = h.Cmd(sdcard.ACMD41(ocr)).R3()
-		checkErr("ACMD41", h.Err(true), 0)
+		sd.Cmd(sdcard.CMD55(0))
+		oca = sd.Cmd(sdcard.ACMD41(ocr)).R3()
+		checkErr("ACMD41", sd.Err(true), 0)
 		fmt.Printf(".")
 		delay.Millisec(50)
 	}
@@ -103,89 +103,64 @@ func main() {
 	fmt.Printf("Operation Conditions Register: 0x%08X\n\n", oca)
 
 	// Read Card Identification Register.
-	cid := h.Cmd(sdcard.CMD2()).R2CID()
-	checkErr("CMD2", h.Err(true), 0)
+	cid := sd.Cmd(sdcard.CMD2()).R2CID()
+	checkErr("CMD2", sd.Err(true), 0)
 
 	printCID(cid)
 
 	// Generate new Relative Card Address.
-	rca, _ := h.Cmd(sdcard.CMD3()).R6()
-	checkErr("CMD3", h.Err(true), 0)
+	rca, _ := sd.Cmd(sdcard.CMD3()).R6()
+	checkErr("CMD3", sd.Err(true), 0)
 
 	fmt.Printf("Relative Card Address: 0x%04X\n\n", rca)
 
 	// After CMD3 card is in Data Transfer Mode (Standby State) and SDIO_CK can
 	// be set to no more than 25 MHz (max. push-pull freq). Clock power save
 	// mode can be enabled.
-	h.SetFreq(25e6, true)
+	sd.SetFreq(25e6, true)
 
 	// Read Card Specific Data register.
-	csd := h.Cmd(sdcard.CMD9(rca)).R2CSD()
-	checkErr("CMD9", h.Err(true), 0)
+	csd := sd.Cmd(sdcard.CMD9(rca)).R2CSD()
+	checkErr("CMD9", sd.Err(true), 0)
 
 	printCSD(csd)
 
 	// Select card (put into Transfer State).
-	cs := h.Cmd(sdcard.CMD7(rca)).R1()
-	checkErr("CMD7", h.Err(true), cs)
+	cs := sd.Cmd(sdcard.CMD7(rca)).R1()
+	checkErr("CMD7", sd.Err(true), cs)
 
 	// Disable 50k pull-up resistor on D3/CD.
-	h.Cmd(sdcard.CMD55(rca))
-	cs = h.Cmd(sdcard.ACMD42(false)).R1()
-	checkErr("ACMD42", h.Err(true), cs)
+	sd.Cmd(sdcard.CMD55(rca))
+	cs = sd.Cmd(sdcard.ACMD42(false)).R1()
+	checkErr("ACMD42", sd.Err(true), cs)
 
 	if ocr&sdcard.HCXC == 0 {
 		// Set block size to 512 B for version < 2 or SDSC card.
-		cs = h.Cmd(sdcard.CMD16(512)).R1()
-		checkErr("CMD16", h.Err(true), cs)
+		cs = sd.Cmd(sdcard.CMD16(512)).R1()
+		checkErr("CMD16", sd.Err(true), cs)
 	}
 
-	block := make([]uint32, 512/4)
+	buf := make(sdcard.Data, 512/8)
 
 	for n := uint(0); n < 16; n++ {
 		addr := n
 		if oca&sdcard.HCXC == 0 {
 			addr *= 512
 		}
-		h.SetupDMA(dma.PTM, block)
-		cs = h.Cmd(sdcard.CMD17(addr)).R1()
-		checkErr("CMD17", h.Err(true), cs)
-		h.StartBlockTransfer(sdmmc.Recv)
-		// Wait for DMA.
-		for {
-			ev, err := h.dma.Status()
-			if err != 0 {
-				fmt.Printf("DMA error: %v\n", err)
-				return
-			}
-			if ev == dma.Complete {
-				break
-			}
-		}
-		// Wait for CRC.
-		for {
-			ev, err := h.p.Status()
-			if err != 0 || ev&sdmmc.DataBlkEnd != 0 {
-				h.err = err
-				break
-			}
-			rtos.SchedYield()
-		}
-		checkErr("CMD17 data", h.Err(true), 0)
+		sd.Data(sdcard.Recv|sdcard.Block512, buf)
+		cs = sd.Cmd(sdcard.CMD17(addr)).R1()
+		checkErr("CMD17", sd.Err(true), cs)
 		fmt.Printf("%d:\n", n)
-		for i, w := range block {
-			c := ' '
-			if (i+1)%8 == 0 {
-				c = '\n'
-			}
-			fmt.Printf("%08x%c", w, c)
-			delay.Millisec(2)
+		s := buf.Bytes()
+		for i := 0; i < len(s); i += 16 {
+			fmt.Printf("%02x\n", s[i:i+16])
+			delay.Millisec(50) // ST-LINK V2-1 SWO is too slow.
 		}
 	}
 }
 
 func sdioISR() {
-
+	sd.ISR()
 }
 
 //c:__attribute__((section(".ISRs")))

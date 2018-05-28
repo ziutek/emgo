@@ -162,30 +162,40 @@ func (p *Periph) SetDataLen(dlen int) {
 type DataCtrl uint16
 
 const (
-	DTEna   DataCtrl = 1 << 0  // Enable data transfer.
-	Recv    DataCtrl = 1 << 1  // Receive data from card.
-	Stream  DataCtrl = 1 << 2  // Stream or SDIO multibyte data transfer.
-	UseDMA  DataCtrl = 1 << 3  // Use DMA.
-	RWStart DataCtrl = 1 << 8  // Read wait start.
-	RWStop  DataCtrl = 1 << 9  // Read wait stop.
-	RWCK    DataCtrl = 1 << 10 // Read wait constrol using CK instead of D2.
-	IO      DataCtrl = 1 << 11 // SDIO specific operation.
+	DTEna    DataCtrl = 1 << 0  // Enable data transfer.
+	Recv     DataCtrl = 1 << 1  // Receive data from card.
+	Stream   DataCtrl = 1 << 2  // Stream or SDIO multibyte data transfer.
+	UseDMA   DataCtrl = 1 << 3  // Use DMA.
+	Block1   DataCtrl = 0 << 4  // Block data transfer, block size: 1 B.
+	Block2   DataCtrl = 1 << 4  // Block data transfer, block size: 2 B.
+	Block4   DataCtrl = 2 << 4  // Block data transfer, block size: 4 B.
+	Block8   DataCtrl = 3 << 4  // Block data transfer, block size: 8 B.
+	Block16  DataCtrl = 4 << 4  // Block data transfer, block size: 16 B.
+	Block32  DataCtrl = 5 << 4  // Block data transfer, block size: 32 B.
+	Block62  DataCtrl = 6 << 4  // Block data transfer, block size: 64 B.
+	Block128 DataCtrl = 7 << 4  // Block data transfer, block size: 128 B.
+	Block256 DataCtrl = 8 << 4  // Block data transfer, block size: 256 B.
+	Block512 DataCtrl = 9 << 4  // Block data transfer, block size: 512 B.
+	Block1K  DataCtrl = 10 << 4 // Block data transfer, block size: 1 KiB.
+	Block2K  DataCtrl = 11 << 4 // Block data transfer, block size: 2 KiB.
+	Block4K  DataCtrl = 12 << 4 // Block data transfer, block size: 4 KiB.
+	Block8K  DataCtrl = 13 << 4 // Block data transfer, block size: 8 KiB.
+	Block16K DataCtrl = 14 << 4 // Block data transfer, block size: 16 KiB.
+	RWStart  DataCtrl = 1 << 8  // Read wait start.
+	RWStop   DataCtrl = 1 << 9  // Read wait stop.
+	RWCK     DataCtrl = 1 << 10 // Read wait constrol using CK instead of D2.
+	IO       DataCtrl = 1 << 11 // SDIO specific operation.
 )
 
 // DataCtrl returns current state/configuration of Data Path State Machine
-// (DPMS). Data block length is equal to 2^blexp bytes.
-func (p *Periph) DataCtrl() (cfg DataCtrl, blexp int) {
-	dctrl := p.raw.DCTRL.Load()
-	return DataCtrl(dctrl & 0xF0F), int(dctrl >> 4 & 15)
+// (DPMS).
+func (p *Periph) DataCtrl() DataCtrl {
+	return DataCtrl(p.raw.DCTRL.Load())
 }
 
-// SetDataCtrl controls Data Path State Machine (DPMS). It sets data block
-// length to 2^blexp bytes.
-func (p *Periph) SetDataCtrl(cfg DataCtrl, blexp int) {
-	if uint(blexp) > 14 {
-		panic("sdio: bad block len")
-	}
-	p.raw.DCTRL.U32.Store(uint32(cfg) | uint32(blexp)<<4)
+// SetDataCtrl controls Data Path State Machine (DPMS).
+func (p *Periph) SetDataCtrl(cfg DataCtrl) {
+	p.raw.DCTRL.U32.Store(uint32(cfg))
 }
 
 // RemainBytes returns the number of remaining data bytes to be transfered.
@@ -217,10 +227,6 @@ const (
 
 type Error byte
 
-func (err Error) Error() string {
-	return "sdmmc: error"
-}
-
 const (
 	ErrCmdCRC      Error = 1 << 0 // Command response received, CRC failed.
 	ErrDataCRC     Error = 1 << 1 // Data response receifed, CRC failed.
@@ -230,6 +236,39 @@ const (
 	ErrRxOverrun   Error = 1 << 5 // Rx FIFO overrun.
 	ErrAll         Error = 0x3F
 )
+
+func (err Error) Error() string {
+	var (
+		s string
+		d Error
+	)
+	switch {
+	case err&ErrCmdCRC != 0:
+		d = ErrCmdCRC
+		s = "sdmmc: cmd CRC+"
+	case err&ErrDataCRC != 0:
+		d = ErrDataCRC
+		s = "sdmmc: data CRC+"
+	case err&ErrCmdTimeout != 0:
+		d = ErrCmdTimeout
+		s = "sdmmc: cmd timeout+"
+	case err&ErrDataTimeout != 0:
+		d = ErrDataTimeout
+		s = "sdmmc: data timeout+"
+	case err&ErrTxUnderrun != 0:
+		d = ErrTxUnderrun
+		s = "sdmmc: Tx underrun+"
+	case err&ErrRxOverrun != 0:
+		d = ErrRxOverrun
+		s = "sdmmc: Rx overrun+"
+	default:
+		return ""
+	}
+	if err == d {
+		s = s[:len(s)-1]
+	}
+	return s
+}
 
 // Status returns the status bits: events and errors.
 //

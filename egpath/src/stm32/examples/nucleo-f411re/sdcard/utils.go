@@ -8,7 +8,7 @@ import (
 
 func checkErr(what string, err error, status sdcard.CardStatus) {
 	if err != nil {
-		fmt.Printf("%s: %v (0x%X)\n", what, err, err)
+		fmt.Printf("%s: %v\n", what, err)
 		for {
 		}
 	}
