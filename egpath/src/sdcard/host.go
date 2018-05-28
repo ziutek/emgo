@@ -7,6 +7,8 @@ import (
 // DataMode describes data transfer mode.
 type DataMode byte
 
+// All constants defined in STM32 friendly way. Do not modify without checking
+// stm32/hal/sdmmc. 
 const (
 	Send     DataMode = 0 << 1  // Send data to a card.
 	Recv     DataMode = 1 << 1  // Receive data from a card.
