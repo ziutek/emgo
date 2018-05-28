@@ -47,25 +47,25 @@ const (
 	ErrAll = ErrTransfer | ErrDirectMode | ErrFIFO
 )
 
-func (e Error) Error() string {
+func (err Error) Error() string {
 	var (
 		s string
 		d Error
 	)
 	switch {
-	case e&ErrTransfer != 0:
+	case err&ErrTransfer != 0:
 		d = ErrTransfer
 		s = "DMA transfer+"
-	case e&ErrDirectMode != 0:
+	case err&ErrDirectMode != 0:
 		d = ErrDirectMode
 		s = "DMA direct mode+"
-	case e&ErrFIFO != 0:
+	case err&ErrFIFO != 0:
 		d = ErrFIFO
 		s = "DMA FIFO+"
 	default:
 		return ""
 	}
-	if e&^d == 0 {
+	if err == d {
 		s = s[:len(s)-1]
 	}
 	return s
