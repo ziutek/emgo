@@ -63,14 +63,14 @@ func main() {
 	delay.Millisec(1)
 
 	// Reset.
-	sd.Cmd(sdcard.CMD0())
+	sd.SendCmd(sdcard.CMD0())
 	checkErr("CMD0", sd.Err(true), 0)
 
 	// CMD0 may require up to 8 SDIO_CK cycles to reset the card.
 	delay.Millisec(1)
 
 	// Verify card interface operating condition.
-	vhs, pattern := sd.Cmd(sdcard.CMD8(sdcard.V27_36, 0xAC)).R7()
+	vhs, pattern := sd.SendCmd(sdcard.CMD8(sdcard.V27_36, 0xAC)).R7()
 	if err := sd.Err(true); err != nil {
 		if err == sdcard.ErrCmdTimeout {
 			ocr &^= sdcard.HCXC
@@ -88,8 +88,8 @@ func main() {
 	fmt.Printf("Initializing SD card ")
 	var oca sdcard.OCR
 	for i := 0; oca&sdcard.PWUP == 0 && i < 20; i++ {
-		sd.Cmd(sdcard.CMD55(0))
-		oca = sd.Cmd(sdcard.ACMD41(ocr)).R3()
+		sd.SendCmd(sdcard.CMD55(0))
+		oca = sd.SendCmd(sdcard.ACMD41(ocr)).R3()
 		checkErr("ACMD41", sd.Err(true), 0)
 		fmt.Printf(".")
 		delay.Millisec(50)
@@ -103,13 +103,13 @@ func main() {
 	fmt.Printf("Operation Conditions Register: 0x%08X\n\n", oca)
 
 	// Read Card Identification Register.
-	cid := sd.Cmd(sdcard.CMD2()).R2CID()
+	cid := sd.SendCmd(sdcard.CMD2()).R2CID()
 	checkErr("CMD2", sd.Err(true), 0)
 
 	printCID(cid)
 
 	// Generate new Relative Card Address.
-	rca, _ := sd.Cmd(sdcard.CMD3()).R6()
+	rca, _ := sd.SendCmd(sdcard.CMD3()).R6()
 	checkErr("CMD3", sd.Err(true), 0)
 
 	fmt.Printf("Relative Card Address: 0x%04X\n\n", rca)
@@ -120,36 +120,53 @@ func main() {
 	sd.SetFreq(25e6, true)
 
 	// Read Card Specific Data register.
-	csd := sd.Cmd(sdcard.CMD9(rca)).R2CSD()
+	csd := sd.SendCmd(sdcard.CMD9(rca)).R2CSD()
 	checkErr("CMD9", sd.Err(true), 0)
 
 	printCSD(csd)
 
 	// Select card (put into Transfer State).
-	cs := sd.Cmd(sdcard.CMD7(rca)).R1()
-	checkErr("CMD7", sd.Err(true), cs)
+	st := sd.SendCmd(sdcard.CMD7(rca)).R1()
+	checkErr("CMD7", sd.Err(true), st)
+
+	// Read SD Configuration Register
+	sd.SendCmd(sdcard.CMD55(rca))
+	st = sd.SendCmd(sdcard.ACMD51()).R1()
+	checkErr("ACMD51", sd.Err(true), st)
 
 	// Disable 50k pull-up resistor on D3/CD.
-	sd.Cmd(sdcard.CMD55(rca))
-	cs = sd.Cmd(sdcard.ACMD42(false)).R1()
-	checkErr("ACMD42", sd.Err(true), cs)
+	sd.SendCmd(sdcard.CMD55(rca))
+	st = sd.SendCmd(sdcard.ACMD42(false)).R1()
+	checkErr("ACMD42", sd.Err(true), st)
+
+	// Enable 4-bit data bus.
+	//sd.SendCmd(sdcard.CMD55(rca))
+	//st = sd.SendCmd(sdcard.ACMD6(sdcard.Bus4bit)).R1()
+	//checkErr("ACMD6", sd.Err(true), st)
 
 	if ocr&sdcard.HCXC == 0 {
 		// Set block size to 512 B for version < 2 or SDSC card.
-		cs = sd.Cmd(sdcard.CMD16(512)).R1()
-		checkErr("CMD16", sd.Err(true), cs)
+		st = sd.SendCmd(sdcard.CMD16(512)).R1()
+		checkErr("CMD16", sd.Err(true), st)
 	}
 
-	buf := make(sdcard.Data, 512/8)
+	buf := make(sdcard.Data, 3*512/8)
 
-	for n := uint(0); n < 16; n++ {
+	for n := uint(0); n < 8; n++ {
 		addr := n
 		if oca&sdcard.HCXC == 0 {
 			addr *= 512
 		}
-		sd.Data(sdcard.Recv|sdcard.Block512, buf)
-		cs = sd.Cmd(sdcard.CMD17(addr)).R1()
-		checkErr("CMD17", sd.Err(true), cs)
+		sd.SetupData(sdcard.Recv|sdcard.Block512, buf)
+		if len(buf) > 512/8 {
+			st = sd.SendCmd(sdcard.CMD18(addr)).R1()
+			checkErr("CMD18", sd.Err(true), st)
+			st = sd.SendCmd(sdcard.CMD12()).R1()
+			checkErr("CMD12", sd.Err(true), st)
+		} else {
+			st = sd.SendCmd(sdcard.CMD17(addr)).R1()
+			checkErr("CMD17", sd.Err(true), st)
+		}
 		fmt.Printf("%d:\n", n)
 		s := buf.Bytes()
 		for i := 0; i < len(s); i += 16 {

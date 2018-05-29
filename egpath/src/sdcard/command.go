@@ -70,6 +70,12 @@ const (
 	acmd51 = AppCmd | 51 | R1 // SEND_SCR
 )
 
+// Use command numbers (eg. CMD17) as function names instead of abbreviated
+// command names (eg. READ_SINGLE_BLOCK) because the SD Card protocol
+// specification uses numbers instead of names when describes state machines
+// and algorithms. It turned out to be difficult to follow the source code side
+// by side with the protocol specification when code uses command names.
+
 // CMD0 (GO_IDLE_STATE) performs software reset and sets the card into Idle
 // State.
 func CMD0() (Command, uint32) {
@@ -149,6 +155,12 @@ func CMD9(rca uint16) (Command, uint32) {
 	return cmd9, uint32(rca) << 16
 }
 
+// CMD12 (STOP_TRANSMISSION, R1b) forces the card to stop transmission in
+// Multiple Block Read Operation.
+func CMD12() (Command, uint32) {
+	return cmd12, 0
+}
+
 // CMD16 (SET_BLOCKLEN, R1) sets the block length (in bytes) for block commands.
 func CMD16(blen int) (Command, uint32) {
 	return cmd16, uint32(blen)
@@ -157,6 +169,13 @@ func CMD16(blen int) (Command, uint32) {
 // CMD17 (READ_SINGLE_BLOCK, R1) reads a block of the size selected by CMD16.
 func CMD17(addr uint) (Command, uint32) {
 	return cmd17, uint32(addr)
+}
+
+// CMD18 (READ_MULTIPLE_BLOCK, R1) works like CMD17 but does not stop the
+// transmision after first data block. Instead the card continuously transfers
+// data blocks until it receives CMD12 (STOP_TRANSMISSION) command.
+func CMD18(addr uint) (Command, uint32) {
+	return cmd18, uint32(addr)
 }
 
 // CMD55 (APP_CMD, R1) indicates to the card that the next command is an
@@ -185,4 +204,9 @@ func ACMD41(ocr OCR) (Command, uint32) {
 // ACMD42 (SET_CLR_CARD_DETECT, R1) enables/disables pull-up resistor on D3/CD.
 func ACMD42(pullUp bool) (Command, uint32) {
 	return acmd42, uint32(bits.One(pullUp))
+}
+
+// ACMD51 (SEND_SCR, R1) reads SD Configuration Register.
+func ACMD51() (Command, uint32) {
+	return acmd51, 0
 }

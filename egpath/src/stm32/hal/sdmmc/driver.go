@@ -80,7 +80,9 @@ func (d *Driver) SetFreq(freqhz int, pwrsave bool) {
 	if pwrsave {
 		cfg |= PwrSave
 	}
-	d.p.SetBusClock(cfg, clkdiv)
+	p := d.p
+	p.SetBusClock(cfg, clkdiv)
+	p.SetDataTimeout(uint(freqhz)) // ≈ 1s
 }
 
 func (d *Driver) ISR() {
@@ -88,7 +90,11 @@ func (d *Driver) ISR() {
 	d.done.Signal(1)
 }
 
-func (d *Driver) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
+// SendCmd sends the cmd to the card and receives its response, if any. Short
+// response is returned in r[0]. Long is returned in r[0:3] (r[0] contains the
+// least significant bits, r[3] contains the most significant bits). If preceded
+// by SetupData, SendCmd performs the data transfer.
+func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	if d.err != 0 || d.dmaErr != 0 {
 		return
 	}
@@ -121,12 +127,12 @@ func (d *Driver) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 			return
 		}
 		if cmd&sdcard.LongResp != 0 {
-			resp[3] = p.Resp(0) // Most significant bits.
-			resp[2] = p.Resp(1)
-			resp[1] = p.Resp(2)
-			resp[0] = p.Resp(3) // Least significant bits.
+			r[3] = p.Resp(0) // Most significant bits.
+			r[2] = p.Resp(1)
+			r[1] = p.Resp(2)
+			r[0] = p.Resp(3) // Least significant bits.
 		} else {
-			resp[0] = p.Resp(0)
+			r[0] = p.Resp(0)
 		}
 	}
 	switch {
@@ -143,8 +149,9 @@ func (d *Driver) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 	d.done.Wait(1, 0)
 	_, d.err = p.Status()
 	// Ensure DMA transfer has been completed (it should be).
+	ch := d.dma
 	for {
-		ev, err := d.dma.Status()
+		ev, err := ch.Status()
 		if err != 0 {
 			d.dmaErr = err
 			break
@@ -153,10 +160,14 @@ func (d *Driver) Cmd(cmd sdcard.Command, arg uint32) (resp sdcard.Response) {
 			break
 		}
 	}
+	ch.Disable() // Required by STM32F1 to allow setup next transfer.
 	return
 }
 
-func (d *Driver) Data(mode sdcard.DataMode, buf sdcard.Data) {
+// SetupData setups the data transfer for subsequent command. On every call it
+// configures DMA stream/channel completely from scratch so Driver can share its
+// DMA stream/channel with other driver that do the same.
+func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
 	if d.err != 0 || d.dmaErr != 0 {
 		return
 	}
@@ -173,7 +184,6 @@ func (d *Driver) Data(mode sdcard.DataMode, buf sdcard.Data) {
 	ch.SetAddrM(unsafe.Pointer(&buf[0]))
 	ch.Enable()
 	p := d.p
-	p.SetDataTimeout(191 << 18) // ≈ 1s at high speed, const. fits in mov.w.
 	p.SetDataLen(len(buf) * 8)
 	p.SetDataCtrl(DTEna | UseDMA | DataCtrl(mode))
 }

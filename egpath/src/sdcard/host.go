@@ -7,8 +7,8 @@ import (
 // DataMode describes data transfer mode.
 type DataMode byte
 
-// All constants defined in STM32 friendly way. Do not modify without checking
-// stm32/hal/sdmmc. 
+// All constants defined in STM32 friendly way. Do not add, delete, modify
+// without checking stm32/hal/sdmmc.
 const (
 	Send     DataMode = 0 << 1  // Send data to a card.
 	Recv     DataMode = 1 << 1  // Receive data from a card.
@@ -40,17 +40,17 @@ type Host interface {
 	// SetBusWidth allow to change the the host data bus width.
 	SetBusWidth(width int)
 
-	// Cmd sends the cmd to the card and receives its response, if any. Short
-	// response is returned in r[0]. Long is returned in r[0:3] (r[0] contains
-	// the least significant bits, r[3] contains the most significant bits).
-	// If preceded by Data, Cmd performs data transfer.
-	Cmd(cmd Command, arg uint32) (r Response)
+	// SendCmd sends the cmd to the card and receives its response, if any.
+	// Short response is returned in r[0], long is returned in r[0:3] (r[0]
+	// contains the least significant bits, r[3] contains the most significant
+	// bits). If preceded by SetupData, SendCmd performs the data transfer.
+	SendCmd(cmd Command, arg uint32) (r Response)
 
-	// Data prepares the data transfer for subsequent command.
-	Data(mode DataMode, buf Data)
+	// SetupData setups the data transfer for subsequent command.
+	SetupData(mode DataMode, buf Data)
 
 	// Err returns and clears the host internal error. The internal error, if
-	// not nil, prevents any subsequent operations on the card. Host should
-	// convert its internal command timeout error to ErrCmdTimeout.
+	// not nil, prevents any subsequent operations. Host should convert its
+	// internal command timeout error to ErrCmdTimeout.
 	Err(clear bool) error
 }
