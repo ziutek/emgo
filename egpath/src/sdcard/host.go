@@ -19,7 +19,7 @@ const (
 	Block8   DataMode = 3 << 4  // Block data transfer, block size: 8 B.
 	Block16  DataMode = 4 << 4  // Block data transfer, block size: 16 B.
 	Block32  DataMode = 5 << 4  // Block data transfer, block size: 32 B.
-	Block62  DataMode = 6 << 4  // Block data transfer, block size: 64 B.
+	Block64  DataMode = 6 << 4  // Block data transfer, block size: 64 B.
 	Block128 DataMode = 7 << 4  // Block data transfer, block size: 128 B.
 	Block256 DataMode = 8 << 4  // Block data transfer, block size: 256 B.
 	Block512 DataMode = 9 << 4  // Block data transfer, block size: 512 B.
@@ -33,12 +33,9 @@ const (
 var ErrCmdTimeout = errors.New("sdio: cmd timeout")
 
 type Host interface {
-	// SetFreq sets the SD/SPI clock frequency to freqhz. Host can implement
-	// disabling clock output if the bus is idle and pwrsave is set to true.
-	SetFreq(freqhz int, pwrsave bool)
-
-	// SetBusWidth allow to change the the host data bus width.
-	SetBusWidth(width int)
+	// SetBus sets the SD bus width and SD/SPI clock frequency. SD host can
+	// implement disabling clock output if the bus is idle and pwrsave is true.
+	SetBus(width, freqhz int, pwrsave bool)
 
 	// SendCmd sends the cmd to the card and receives its response, if any.
 	// Short response is returned in r[0], long is returned in r[0:3] (r[0]

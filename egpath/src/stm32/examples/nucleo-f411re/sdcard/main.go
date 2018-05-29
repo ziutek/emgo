@@ -2,6 +2,7 @@ package main
 
 import (
 	"delay"
+	"encoding/binary/be"
 	"fmt"
 	"rtos"
 
@@ -26,16 +27,16 @@ func init() {
 	gpio.A.EnableClock(true)
 	// irq := gpio.A.Pin(0)
 	cmd := gpio.A.Pin(6)
-	//d1 := gpio.A.Pin(8)
-	//d2 := gpio.A.Pin(9)
+	d1 := gpio.A.Pin(8)
+	d2 := gpio.A.Pin(9)
 
 	gpio.B.EnableClock(true)
-	//d3 := gpio.B.Pin(5)
+	d3 := gpio.B.Pin(5)
 	d0 := gpio.B.Pin(7)
 	clk := gpio.B.Pin(15)
 
 	cfg := gpio.Config{Mode: gpio.Alt, Speed: gpio.High, Pull: gpio.PullUp}
-	for _, pin := range []gpio.Pin{clk, cmd, d0 /*d1, d2, d3*/} {
+	for _, pin := range []gpio.Pin{clk, cmd, d0, d1, d2, d3} {
 		pin.Setup(&cfg)
 		pin.SetAltFunc(gpio.SDIO)
 	}
@@ -57,7 +58,7 @@ func main() {
 
 	// Set SDIO_CK to no more than 400 kHz (max. open-drain freq). Clock must be
 	// continuously enabled (pwrsave = false) to allow correct initialisation.
-	sd.SetFreq(400e3, false)
+	sd.SetBus(sdcard.Bus1, 400e3, false)
 
 	// SD card power-up takes maximum of 1 ms or 74 SDIO_CK cycles.
 	delay.Millisec(1)
@@ -117,7 +118,7 @@ func main() {
 	// After CMD3 card is in Data Transfer Mode (Standby State) and SDIO_CK can
 	// be set to no more than 25 MHz (max. push-pull freq). Clock power save
 	// mode can be enabled.
-	sd.SetFreq(25e6, true)
+	sd.SetBus(sdcard.Bus1, 25e6, true)
 
 	// Read Card Specific Data register.
 	csd := sd.SendCmd(sdcard.CMD9(rca)).R2CSD()
@@ -129,10 +130,18 @@ func main() {
 	st := sd.SendCmd(sdcard.CMD7(rca)).R1()
 	checkErr("CMD7", sd.Err(true), st)
 
-	// Read SD Configuration Register
+	// Now the card is int Transfer State.
+
+	buf := make(sdcard.Data, 3*512/8)
+
+	// Read SD Configuration Register.
 	sd.SendCmd(sdcard.CMD55(rca))
+	sd.SetupData(sdcard.Recv|sdcard.Block8, buf[:1])
 	st = sd.SendCmd(sdcard.ACMD51()).R1()
 	checkErr("ACMD51", sd.Err(true), st)
+
+	scr := sdcard.SCR(be.Decode64(buf.Bytes()))
+	printSCR(scr)
 
 	// Disable 50k pull-up resistor on D3/CD.
 	sd.SendCmd(sdcard.CMD55(rca))
@@ -140,17 +149,20 @@ func main() {
 	checkErr("ACMD42", sd.Err(true), st)
 
 	// Enable 4-bit data bus.
-	//sd.SendCmd(sdcard.CMD55(rca))
-	//st = sd.SendCmd(sdcard.ACMD6(sdcard.Bus4bit)).R1()
-	//checkErr("ACMD6", sd.Err(true), st)
+	if scr.SD_BUS_WIDTHS()&sdcard.SDBus4 != 0 {
+		sd.SendCmd(sdcard.CMD55(rca))
+		st = sd.SendCmd(sdcard.ACMD6(sdcard.Bus4)).R1()
+		checkErr("ACMD6", sd.Err(true), st)
+		sd.SetBus(sdcard.Bus4, 25e6, true)
+	}
 
+	// Set block size to 512 B for version < 2 or SDSC card.
 	if ocr&sdcard.HCXC == 0 {
-		// Set block size to 512 B for version < 2 or SDSC card.
 		st = sd.SendCmd(sdcard.CMD16(512)).R1()
 		checkErr("CMD16", sd.Err(true), st)
 	}
 
-	buf := make(sdcard.Data, 3*512/8)
+	//delay.Millisec(5000)
 
 	for n := uint(0); n < 8; n++ {
 		addr := n

@@ -172,7 +172,7 @@ const (
 	Block8   DataCtrl = 3 << 4  // Block data transfer, block size: 8 B.
 	Block16  DataCtrl = 4 << 4  // Block data transfer, block size: 16 B.
 	Block32  DataCtrl = 5 << 4  // Block data transfer, block size: 32 B.
-	Block62  DataCtrl = 6 << 4  // Block data transfer, block size: 64 B.
+	Block64  DataCtrl = 6 << 4  // Block data transfer, block size: 64 B.
 	Block128 DataCtrl = 7 << 4  // Block data transfer, block size: 128 B.
 	Block256 DataCtrl = 8 << 4  // Block data transfer, block size: 256 B.
 	Block512 DataCtrl = 9 << 4  // Block data transfer, block size: 512 B.

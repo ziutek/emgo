@@ -1,5 +1,8 @@
 package sdcard
 
+// Consider to move SD Memory Card and SDIO specific thing
+// (responses/registers) to their own subpackages.
+
 type Response [4]uint32
 
 func (r Response) R1() CardStatus {
@@ -86,7 +89,6 @@ const (
 	HCXC  OCR = 1 << 30 // Card Capacity Status (set fot SDHC, SDXC).
 	PWUP  OCR = 1 << 31 // Card in power up state (^Busy).
 )
-
 
 // CID - Card Identification Register
 type CID [4]uint32
@@ -293,4 +295,50 @@ func (csd CSD) TMP_WRITE_PROTECT() bool {
 // CRC returns the checksum for the CSD content.
 func (csd CSD) CRC() byte {
 	return byte(csd[3] >> 1 & 127)
+}
+
+// SCR (SD CARD Configuration Register) is 8 byte register that can be read
+// using ACMD51 and 8-byte block data transfer (it is not returned in response).
+type SCR uint64
+
+// SCR_STRUCTURE returns SCR structure version.
+func (scr SCR) SCR_STRUCTURE() int {
+	return int(scr >> 60)
+}
+
+// SD_SPEC returns the version of SD memory card specification.
+func (scr SCR) SD_SPEC() int {
+	return int(scr>>56) & 15
+}
+
+// DATA_STAT_AFTER_ERASE returns data status after erase: 0 or 1.
+func (scr SCR) DATA_STAT_AFTER_ERASE() int {
+	return int(scr>>55) & 1
+}
+
+type SDSecurity byte
+
+const (
+	NoSecurity      SDSecurity = 0
+	SecurityNotUsed SDSecurity = 1
+	SecuritySDSC    SDSecurity = 2 // Version 1.01
+	SecuritySDHC    SDSecurity = 3 // Version 2.00
+	SecuritySDXC    SDSecurity = 4 // Version 3.xx
+)
+
+// SD_SECURITY returns CPRM Security Specification Version.
+func (scr SCR) SD_SECURITY() SDSecurity {
+	return SDSecurity(scr>>52) & 7
+}
+
+type SDBusWidths byte
+
+const (
+	SDBus1 SDBusWidths = 1 << 0
+	SDBus4 SDBusWidths = 1 << 2
+)
+
+// SD_BUS_WIDTHS returns bitfield that describes all supported data bus widths.
+func (scr SCR) SD_BUS_WIDTHS() SDBusWidths {
+	return SDBusWidths(scr>>48) & 15
 }

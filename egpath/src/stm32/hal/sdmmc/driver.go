@@ -63,15 +63,18 @@ end:
 	return err
 }
 
-// SetFreq sets SDMMCCLK divider to provide SDMMC_CK frequency <= freqhz.
-func (d *Driver) SetFreq(freqhz int, pwrsave bool) {
+// SetBus sets data bus width and SDMMC_CK frequency <= freqhz.
+func (d *Driver) SetBus(width sdcard.BusWidth, freqhz int, pwrsave bool) {
 	var (
 		clkdiv int
 		cfg    BusClock
 	)
+	if width > sdcard.Bus8 {
+		panic("sdcard: bus width")
+	}
 	if freqhz > 0 {
 		// BUG: This code assumes 48 MHz SDMMCCLK.
-		cfg = ClkEna
+		cfg = ClkEna | BusClock(width*3>>2)<<3
 		clkdiv = (48e6+freqhz-1)/freqhz - 2
 	}
 	if clkdiv < 0 {
@@ -172,13 +175,18 @@ func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
 		return
 	}
 	d.data = mode
-	dir := dma.PTM
+	dmacfg := dma.PFC | dma.IncM
 	if mode&sdcard.Recv == 0 {
-		dir = dma.MTP
+		dmacfg |= dma.MTP
+	}
+	if len(buf)&1 == 0 {
+		dmacfg |= dma.FT4 | dma.PB4 | dma.MB4
+	} else {
+		dmacfg |= dma.FT2
 	}
 	ch := d.dma
 	ch.Clear(dma.EvAll, dma.ErrAll)
-	ch.Setup(dir | dma.PFC | dma.IncM | dma.FT4 | dma.PB4 | dma.MB4)
+	ch.Setup(dmacfg)
 	ch.SetWordSize(4, 4)
 	ch.SetAddrP(unsafe.Pointer(&d.p.raw.FIFO))
 	ch.SetAddrM(unsafe.Pointer(&buf[0]))

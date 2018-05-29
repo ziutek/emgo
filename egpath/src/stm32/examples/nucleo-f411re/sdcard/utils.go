@@ -73,5 +73,14 @@ func printCSD(csd sdcard.CSD) {
 	fmt.Printf("FILE_FORMAT:        %d\n", csd.FILE_FORMAT())
 	fmt.Printf("COPY:               %t\n", csd.COPY())
 	fmt.Printf("PERM_WRITE_PROTECT: %t\n", csd.PERM_WRITE_PROTECT())
-	fmt.Printf("TMP_WRITE_PROTECT:  %t\n", csd.TMP_WRITE_PROTECT())
+	fmt.Printf("TMP_WRITE_PROTECT:  %t\n\n", csd.TMP_WRITE_PROTECT())
+}
+
+func printSCR(scr sdcard.SCR) {
+	fmt.Printf("SCR_STRUCTURE:         %d\n", scr.SCR_STRUCTURE())
+	fmt.Printf("SD_SPEC:               %d\n", scr.SD_SPEC())
+	fmt.Printf("DATA_STAT_AFTER_ERASE: %d\n", scr.DATA_STAT_AFTER_ERASE())
+	fmt.Printf("SD_SECURITY:           %d\n", scr.SD_SECURITY())
+	fmt.Printf("SD_BUS_WIDTHS:         0b%04b\n", scr.SD_BUS_WIDTHS())
+
 }

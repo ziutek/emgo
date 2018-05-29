@@ -5,7 +5,9 @@ import (
 	"unsafe"
 )
 
-// Data should be used for data transfers. It ensures 8-byte alignment.
+// Data should be used for data transfers. It ensures 8-byte alignment but does
+// not guarantee any byte order for its 64-bit elements. Use Bytes method to
+// return Data as correctly ordered string of bytes.
 type Data []uint64
 
 // Bytes returns d as []byte.

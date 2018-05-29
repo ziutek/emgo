@@ -187,8 +187,9 @@ func CMD55(rca uint16) (Command, uint32) {
 type BusWidth byte
 
 const (
-	Bus1bit BusWidth = 0
-	Bus4bit BusWidth = 2
+	Bus1 BusWidth = 0
+	Bus4 BusWidth = 2
+	Bus8 BusWidth = 3
 )
 
 // ACMD6 (SET_BUS_WIDTH, R1) sets the data bus width.
