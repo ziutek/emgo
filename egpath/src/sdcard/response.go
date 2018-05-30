@@ -306,7 +306,7 @@ func (scr SCR) SCR_STRUCTURE() int {
 	return int(scr >> 60)
 }
 
-// SD_SPEC returns the version of SD memory card specification.
+// SD_SPEC returns the version of SD Memory Card (SDMC) specification.
 func (scr SCR) SD_SPEC() int {
 	return int(scr>>56) & 15
 }
@@ -338,7 +338,42 @@ const (
 	SDBus4 SDBusWidths = 1 << 2
 )
 
-// SD_BUS_WIDTHS returns bitfield that describes all supported data bus widths.
+// SD_BUS_WIDTHS returns the bitfield that describes supported data bus widths.
 func (scr SCR) SD_BUS_WIDTHS() SDBusWidths {
 	return SDBusWidths(scr>>48) & 15
+}
+
+// SD_SPEC3 returns 1 for SDMC spec. version >= 3.00.
+func (scr SCR) SD_SPEC3() int {
+	return int(scr>>47) & 1
+}
+
+// EX_SECURITY returns Extended Security indicator.
+func (scr SCR) EX_SECURITY() int {
+	return int(scr>>43) & 15
+}
+
+// SD_SPEC4 returns 1 for SDMC spec. version >= 4.00.
+func (scr SCR) SD_SPEC4() int {
+	return int(scr>>42) & 1
+}
+
+// SD_SPECX returns 1 for SDMC spec. version 5.xx, 2 for version 6.xx.
+func (scr SCR) SD_SPECX() int {
+	return int(scr>>38) & 15
+}
+
+type CmdSupport byte
+
+const (
+	HasCMD20    CmdSupport = 1 << 0
+	HasCMD23    CmdSupport = 1 << 1
+	HasCMD48_49 CmdSupport = 1 << 2
+	HasCMD58_59 CmdSupport = 1 << 3
+)
+
+// CMD_SUPPORT returns the bitfield that describes support for CMD20, CMD23,
+// CMD48, CMD49, CMD58, CMD59.
+func (scr SCR) CMD_SUPPORT() CmdSupport {
+	return CmdSupport(scr>>32) & 15
 }

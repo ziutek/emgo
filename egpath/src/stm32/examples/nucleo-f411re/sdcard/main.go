@@ -55,10 +55,11 @@ func main() {
 
 	ocr := sdcard.V31 | sdcard.V32 | sdcard.V33 | sdcard.HCXC
 	v2 := true
+	busWidth := sdcard.Bus1
 
 	// Set SDIO_CK to no more than 400 kHz (max. open-drain freq). Clock must be
 	// continuously enabled (pwrsave = false) to allow correct initialisation.
-	sd.SetBus(sdcard.Bus1, 400e3, false)
+	sd.SetBus(busWidth, 400e3, false)
 
 	// SD card power-up takes maximum of 1 ms or 74 SDIO_CK cycles.
 	delay.Millisec(1)
@@ -118,7 +119,7 @@ func main() {
 	// After CMD3 card is in Data Transfer Mode (Standby State) and SDIO_CK can
 	// be set to no more than 25 MHz (max. push-pull freq). Clock power save
 	// mode can be enabled.
-	sd.SetBus(sdcard.Bus1, 25e6, true)
+	sd.SetBus(busWidth, 25e6, true)
 
 	// Read Card Specific Data register.
 	csd := sd.SendCmd(sdcard.CMD9(rca)).R2CSD()
@@ -153,7 +154,31 @@ func main() {
 		sd.SendCmd(sdcard.CMD55(rca))
 		st = sd.SendCmd(sdcard.ACMD6(sdcard.Bus4)).R1()
 		checkErr("ACMD6", sd.Err(true), st)
-		sd.SetBus(sdcard.Bus4, 25e6, true)
+		busWidth = sdcard.Bus4
+		sd.SetBus(busWidth, 25e6, true)
+	}
+
+	// Enable High Speed.
+	if scr.SD_SPEC() > 0 {
+		sd.SetupData(sdcard.Recv|sdcard.Block64, buf[:64/8])
+		st = sd.SendCmd(sdcard.CMD6(sdcard.ModeCheck | sdcard.HighSpeed)).R1()
+		checkErr("CMD6", sd.Err(true), st)
+
+		fmt.Printf("CMD6 (SWITCH_FUNC) status:\n")
+		fmt.Printf("- max. current: %d mA\n", be.Decode16(buf.Bytes()[0:2]))
+		fmt.Printf("- supported functions:\n")
+		fmt.Printf("   group 6: 0b%016b\n", be.Decode16(buf.Bytes()[2:4]))
+		fmt.Printf("   group 5: 0b%016b\n", be.Decode16(buf.Bytes()[4:6]))
+		fmt.Printf("   group 4: 0b%016b\n", be.Decode16(buf.Bytes()[6:8]))
+		fmt.Printf("   group 3: 0b%016b\n", be.Decode16(buf.Bytes()[8:10]))
+		fmt.Printf("   group 2: 0b%016b\n", be.Decode16(buf.Bytes()[10:12]))
+		fmt.Printf("   group 1: 0b%016b\n", be.Decode16(buf.Bytes()[12:14]))
+		sel := sdcard.SwitchFunc(be.Decode32(buf.Bytes()[13:17]) & 0xFFFFFF)
+		fmt.Printf("- selected functions: 0x%06x\n\n", sel)
+
+		if sel&sdcard.AccessMode == sdcard.HighSpeed {
+			sd.SetBus(busWidth, 50e6, true)
+		}
 	}
 
 	// Set block size to 512 B for version < 2 or SDSC card.

@@ -122,8 +122,8 @@ const (
 	Power2880  SwitchFunc = 0x003000 // Limit: 2880 mW.
 	Power1800  SwitchFunc = 0x004000 // Limit: 1800 mW.
 
-	ModeCheck  SwitchFunc = 0 << 31
-	ModeSwitch SwitchFunc = 1 << 31
+	ModeCheck  SwitchFunc = 0 << 31 // Checks switchable function.
+	ModeSwitch SwitchFunc = 1 << 31 // Switch card function.
 )
 
 // CMD6 (SWITCH_FUNC, R1) switches or expands memory card functions.

@@ -82,5 +82,9 @@ func printSCR(scr sdcard.SCR) {
 	fmt.Printf("DATA_STAT_AFTER_ERASE: %d\n", scr.DATA_STAT_AFTER_ERASE())
 	fmt.Printf("SD_SECURITY:           %d\n", scr.SD_SECURITY())
 	fmt.Printf("SD_BUS_WIDTHS:         0b%04b\n", scr.SD_BUS_WIDTHS())
-
+	fmt.Printf("SD_SPEC3:              %d\n", scr.SD_SPEC3())
+	fmt.Printf("EX_SECURITY:           %d\n", scr.EX_SECURITY())
+	fmt.Printf("SD_SPEC4:              %d\n", scr.SD_SPEC4())
+	fmt.Printf("SD_SPECX:              %d\n", scr.SD_SPECX())
+	fmt.Printf("CMD_SUPPORT:           0b%04b\n\n", scr.CMD_SUPPORT())
 }
