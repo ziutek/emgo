@@ -2,18 +2,13 @@ package fmt
 
 import (
 	"io"
-	"stack" // Use noinline to avoid stack overflows.
-	"unsafe"
 )
 
-
-//emgo:noinline
 func Fprint(w io.Writer, a ...interface{}) (int, error) {
+	neww := writer{w: w}
 	p, ok := w.(printer)
 	if !ok {
-		ptr := unsafe.Pointer(stack.Alloc(1, unsafe.Sizeof(*p.writer)))
-		p.writer = (*writer)(ptr)
-		p.writer.w = w
+		p.writer = &neww
 	}
 	p.parse("")
 	for _, v := range a {
@@ -27,11 +22,10 @@ func Fprint(w io.Writer, a ...interface{}) (int, error) {
 
 //emgo:noinline
 func Fprintln(w io.Writer, a ...interface{}) (int, error) {
+	neww := writer{w: w}
 	p, ok := w.(printer)
 	if !ok {
-		ptr := unsafe.Pointer(stack.Alloc(1, unsafe.Sizeof(*p.writer)))
-		p.writer = (*writer)(ptr)
-		p.writer.w = w
+		p.writer = &neww
 	}
 	p.parse("")
 	for i, v := range a {

@@ -2,9 +2,9 @@ package fmt
 
 import (
 	"io"
-	"stack" // Use noinline to avoid stack overflows.
+	//"stack" // Use noinline to avoid stack overflows.
 	"strings"
-	"unsafe"
+	//"unsafe"
 )
 
 func findVerb(f string) (int, string, byte) {
@@ -27,13 +27,11 @@ func findVerb(f string) (int, string, byte) {
 	return start, "", 0
 }
 
-//emgo:noinline
 func Fprintf(w io.Writer, f string, a ...interface{}) (int, error) {
+	neww := writer{w: w}
 	p, ok := w.(printer)
 	if !ok {
-		ptr := unsafe.Pointer(stack.Alloc(1, unsafe.Sizeof(*p.writer)))
-		p.writer = (*writer)(ptr)
-		p.writer.w = w
+		p.writer = &neww
 	}
 	var m int
 	for {
