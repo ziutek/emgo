@@ -8,7 +8,7 @@ struct tinfo {
 };
 
 typedef struct {
-	ithead h$;
+	ithead h;
 	string (*Error)(ival *);
 } error;
 
@@ -43,41 +43,46 @@ enum {
 	Array = -1
 };
 
-//#define TINFO(i) (tinfo*)(((const ithead*)((i).itab$))->typ)
-
+/*
 #define TINFO(i) ({                  \
-	const ithead *ith = (i).itab$;   \
+	const ithead *ith = (i).itab;    \
 	const tinfo *ti = nil;           \
 	if (ith != nil) {                \
 		ti = (const tinfo*)ith->typ; \
 	}                                \
 	ti;                              \
 })
-	
+*/
+
+#define TINFO(i) ({                                \
+	const ithead *_ith = (i).itab;                 \
+	(_ith != nil) ? (const tinfo*)_ith->typ : nil; \
+})
+
 
 #define IASSIGN(expr, etyp, ityp) INTERFACE(         \
 	expr,                                            \
 	internal$ItableFor((tinfo*)&ityp, (tinfo*)&etyp) \
 )
 
-#define ICONVERTIE(iexpr) ({       \
-	interface e = iexpr;           \
-	(interface){e.val$, TINFO(e)}; \
+#define ICONVERTIE(iexpr) ({      \
+	interface e = iexpr;          \
+	(interface){e.val, TINFO(e)}; \
 })
 
-#define ICONVERTEI(iexpr, ityp) ({                           \
-	interface e = iexpr;                                     \
-	(interface){                                             \
-		e.val$,                                              \
-		internal$ItableFor((tinfo*)&ityp, (tinfo*)(e.itab$)) \
-	};                                                       \
+#define ICONVERTEI(iexpr, ityp) ({                          \
+	interface e = iexpr;                                    \
+	(interface){                                            \
+		e.val,                                              \
+		internal$ItableFor((tinfo*)&ityp, (tinfo*)(e.itab)) \
+	};                                                      \
 })
 
 
 #define ICONVERTII(iexpr, ityp) ({                          \
 	interface e = iexpr;                                    \
 	(interface){                                            \
-		e.val$,                                             \
+		e.val,                                              \
 		internal$ItableFor((tinfo*)&ityp, (tinfo*)TINFO(e)) \
 	};                                                      \
 })

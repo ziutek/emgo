@@ -786,9 +786,9 @@ func (cdd *CDD) imethod(sel *types.Selection) string {
 		acd.indent(w)
 		w.WriteString("return ((")
 		acd.Name(w, rcv.(*types.Named).Obj(), false)
-		w.WriteString("*)_r.itab$)->")
+		w.WriteString("*)_r.itab)->")
 		w.WriteString(fun.Name())
-		w.WriteString("(&_r.val$")
+		w.WriteString("(&_r.val")
 	} else {
 		acd.indent(w)
 		w.WriteString("return ")

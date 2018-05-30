@@ -627,7 +627,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 						}
 						w.WriteString("implements(")
 						if iempty {
-							w.WriteString("_tag.itab$, &")
+							w.WriteString("_tag.itab, &")
 						} else {
 							w.WriteString("TINFO(_tag), &")
 						}
@@ -635,7 +635,7 @@ func (cdd *CDD) Stmt(w *bytes.Buffer, stmt ast.Stmt, label, resultT string, tup 
 						w.WriteByte(')')
 					default:
 						if iempty {
-							w.WriteString("_tag.itab$ == ")
+							w.WriteString("_tag.itab == ")
 						} else {
 							w.WriteString("TINFO(_tag) == ")
 						}
@@ -948,12 +948,12 @@ func (cdd *CDD) call(e *ast.CallExpr, t *types.Signature, eval bool) *call {
 		// Interface receiver
 		cast := "((" + cdd.NameStr(in.Obj(), false) + "*)"
 		if _, ok := e.Fun.(*ast.SelectorExpr).X.(*ast.Ident); ok && !eval {
-			c.fun.l = cast + "(" + rs + ".itab$))->" + fs
-			c.args[n] = arg{types.Typ[types.Uintptr], "&" + rs + ".val$", ""}
+			c.fun.l = cast + "(" + rs + ".itab))->" + fs
+			c.args[n] = arg{types.Typ[types.Uintptr], "&" + rs + ".val", ""}
 		} else {
 			c.rcv = arg{rt, "_r", rs}
-			c.fun.l = cast + "_r.itab$)->" + fs
-			c.args[n] = arg{types.Typ[types.Uintptr], "&_r" + ".val$", ""}
+			c.fun.l = cast + "_r.itab)->" + fs
+			c.args[n] = arg{types.Typ[types.Uintptr], "&_r" + ".val", ""}
 		}
 		n++
 	} else if rs == "" {

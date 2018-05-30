@@ -652,7 +652,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type, permitaa b
 			}
 			w.WriteString("implements(")
 			if iempty {
-				w.WriteString("_i.itab$, &")
+				w.WriteString("_i.itab, &")
 			} else {
 				w.WriteString("TINFO(_i), &")
 			}
@@ -679,7 +679,7 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type, permitaa b
 				w.WriteString("if (!")
 			}
 			if iempty {
-				w.WriteString("(_i.itab$ == &")
+				w.WriteString("(_i.itab == &")
 			} else {
 				w.WriteString("(TINFO(_i) == &")
 			}
