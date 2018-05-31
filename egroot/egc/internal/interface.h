@@ -33,21 +33,24 @@ typedef struct {
 	const void *itab;
 } interface;
 
+// Be careful when choosing a name for temporary variables in macro. See what
+// gotoc uses for its temporary variables (eg. _i, _ok, _tmp).
+
 /*
-#define INTERFACE(e, itab) ({         \
-	interface _i = { .itab = itab }; \
-	*((typeof(e) *)(&_i.val)) = (e); \
-	_i;                              \
+#define INTERFACE(e, itab) ({       \
+	interface i = { .itab = itab }; \
+	*((typeof(e) *)(&i.val)) = (e); \
+	i;                              \
 })
 */
 
-#define INTERFACE(e, itab) ({    \
-	ival _v = {};                \
-	*((typeof(e) *)(&_v)) = (e); \
-	(interface){_v, itab};       \
+#define INTERFACE(e, itab) ({   \
+	ival v = {};                \
+	*((typeof(e) *)(&v)) = (e); \
+	(interface){v, itab};       \
 })
 
-#define IVAL(i, typ) ({ interface _i = (i); *(typ *)(&_i.val); })
+#define IVAL(ie, typ) ({ interface i = (ie); *(typ *)(&i.val); })
 
 #define NILI ((interface){})
-#define ISNILI(e) ((e).itab == nil)
+#define ISNILI(ie) ((ie).itab == nil)
