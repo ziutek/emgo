@@ -55,11 +55,10 @@ func main() {
 
 	ocr := sdcard.V31 | sdcard.V32 | sdcard.V33 | sdcard.HCXC
 	v2 := true
-	busWidth := sdcard.Bus1
 
 	// Set SDIO_CK to no more than 400 kHz (max. open-drain freq). Clock must be
 	// continuously enabled (pwrsave = false) to allow correct initialisation.
-	sd.SetBus(busWidth, 400e3, false)
+	sd.SetBusClock(400e3, false)
 
 	// SD card power-up takes maximum of 1 ms or 74 SDIO_CK cycles.
 	delay.Millisec(1)
@@ -119,7 +118,7 @@ func main() {
 	// After CMD3 card is in Data Transfer Mode (Standby State) and SDIO_CK can
 	// be set to no more than 25 MHz (max. push-pull freq). Clock power save
 	// mode can be enabled.
-	sd.SetBus(busWidth, 25e6, true)
+	sd.SetBusClock(25e6, true)
 
 	// Read Card Specific Data register.
 	csd := sd.SendCmd(sdcard.CMD9(rca)).R2CSD()
@@ -133,7 +132,7 @@ func main() {
 
 	// Now the card is int Transfer State.
 
-	buf := make(sdcard.Data, 3*512/8)
+	buf := make(sdcard.Data, 4*1024/8)
 
 	// Read SD Configuration Register.
 	sd.SendCmd(sdcard.CMD55(rca))
@@ -149,19 +148,19 @@ func main() {
 	st = sd.SendCmd(sdcard.ACMD42(false)).R1()
 	checkErr("ACMD42", sd.Err(true), st)
 
-	// Enable 4-bit data bus.
 	if scr.SD_BUS_WIDTHS()&sdcard.SDBus4 != 0 {
+		fmt.Printf("Enable 4-bit data bus... ")
 		sd.SendCmd(sdcard.CMD55(rca))
 		st = sd.SendCmd(sdcard.ACMD6(sdcard.Bus4)).R1()
 		checkErr("ACMD6", sd.Err(true), st)
-		busWidth = sdcard.Bus4
-		sd.SetBus(busWidth, 25e6, true)
+		sd.SetBusWidth(sdcard.Bus4)
+		fmt.Printf("OK\n")
 	}
 
 	// Enable High Speed.
 	if scr.SD_SPEC() > 0 {
 		sd.SetupData(sdcard.Recv|sdcard.Block64, buf[:64/8])
-		st = sd.SendCmd(sdcard.CMD6(sdcard.ModeCheck | sdcard.HighSpeed)).R1()
+		st = sd.SendCmd(sdcard.CMD6(sdcard.ModeSwitch | sdcard.HighSpeed)).R1()
 		checkErr("CMD6", sd.Err(true), st)
 
 		fmt.Printf("CMD6 (SWITCH_FUNC) status:\n")
@@ -177,25 +176,34 @@ func main() {
 		fmt.Printf("- selected functions: 0x%06x\n\n", sel)
 
 		if sel&sdcard.AccessMode == sdcard.HighSpeed {
-			sd.SetBus(busWidth, 50e6, true)
+			fmt.Printf("Card supports High Speed: set clock to 48 MHz.\n\n")
+			delay.Millisec(1) // Function switch takes max. 8 SDIO_CK cycles.
+			sd.SetBusClock(50e6, true)
 		}
 	}
 
-	// Set block size to 512 B for version < 2 or SDSC card.
+	// Set block size to 512 B (required for protocol version < 2 or SDSC card).
 	if ocr&sdcard.HCXC == 0 {
 		st = sd.SendCmd(sdcard.CMD16(512)).R1()
 		checkErr("CMD16", sd.Err(true), st)
 	}
 
-	//delay.Millisec(5000)
+	bufSize := len(buf.Bytes())
+	testLen := uint(1e5)
 
-	for n := uint(0); n < 8; n++ {
+	fmt.Printf(
+		"Read %d blocks (%d KiB) using %d B buffer... ",
+		testLen, testLen/2, bufSize,
+	)
+
+	t := rtos.Nanosec()
+	for n, step := uint(0), uint(bufSize)/512; n < testLen; n += step {
 		addr := n
 		if oca&sdcard.HCXC == 0 {
 			addr *= 512
 		}
 		sd.SetupData(sdcard.Recv|sdcard.Block512, buf)
-		if len(buf) > 512/8 {
+		if len(buf.Bytes()) > 512 {
 			st = sd.SendCmd(sdcard.CMD18(addr)).R1()
 			checkErr("CMD18", sd.Err(true), st)
 			st = sd.SendCmd(sdcard.CMD12()).R1()
@@ -204,13 +212,9 @@ func main() {
 			st = sd.SendCmd(sdcard.CMD17(addr)).R1()
 			checkErr("CMD17", sd.Err(true), st)
 		}
-		fmt.Printf("%d:\n", n)
-		s := buf.Bytes()
-		for i := 0; i < len(s); i += 16 {
-			fmt.Printf("%02x\n", s[i:i+16])
-			delay.Millisec(50) // ST-LINK V2-1 SWO is too slow.
-		}
 	}
+	dt := rtos.Nanosec() - t
+	fmt.Printf("%d KiB/s\n", 1e9/2*int64(testLen)/dt)
 }
 
 func sdioISR() {
