@@ -2,4 +2,8 @@
 
 package reflect
 
-type ival complex128
+type ival struct {
+	ptr uintptr
+	w   uint32
+	dw  uint64
+}

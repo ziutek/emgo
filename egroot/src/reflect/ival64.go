@@ -2,4 +2,7 @@
 
 package reflect
 
-type ival []byte
+type ival struct {
+	ptr    uintptr
+	w1, w2 uint64
+}
