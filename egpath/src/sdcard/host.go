@@ -4,11 +4,20 @@ import (
 	"errors"
 )
 
+// BusWidth describes SD data bus width.
+type BusWidth byte
+
+const (
+	Bus1 BusWidth = 0 // 1-lane SD data bus.
+	Bus4 BusWidth = 2 // 4-lane SD data bus.
+	Bus8 BusWidth = 3 // 8-lane SD data bus.
+)
+
 // DataMode describes data transfer mode.
 type DataMode byte
 
-// All constants defined in STM32 friendly way. Do not add, delete, modify
-// without checking stm32/hal/sdmmc.
+// All DataMode constants are defined in STM32 friendly way. Do not add, delete,
+// modify without checking stm32/hal/sdmmc.
 const (
 	Send     DataMode = 0 << 1  // Send data to a card.
 	Recv     DataMode = 1 << 1  // Receive data from a card.
@@ -30,12 +39,16 @@ const (
 	Block16K DataMode = 14 << 4 // Block data transfer, block size: 16 KiB.
 )
 
+// ErrCmdTimeout is returned by Host in case of command response timeout.
 var ErrCmdTimeout = errors.New("sdio: cmd timeout")
 
 type Host interface {
-	// SetBus sets the SD bus width and SD/SPI clock frequency. SD host can
-	// implement disabling clock output if the bus is idle and pwrsave is true.
-	SetBus(width, freqhz int, pwrsave bool)
+	// SetBusClock sets SD/SPI clock frequency. SD host can implement disabling
+	// the clock output if the bus is idle and pwrsave is true.
+	SetBusClock(freqhz int, pwrsave bool)
+
+	// SetBusWidth sets the SD bus width.
+	SetBusWidth(width BusWidth)
 
 	// SendCmd sends the cmd to the card and receives its response, if any.
 	// Short response is returned in r[0], long is returned in r[0:3] (r[0]

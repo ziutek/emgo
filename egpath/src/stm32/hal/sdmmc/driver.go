@@ -63,29 +63,41 @@ end:
 	return err
 }
 
-// SetBus sets data bus width and SDMMC_CK frequency <= freqhz.
-func (d *Driver) SetBus(width sdcard.BusWidth, freqhz int, pwrsave bool) {
+// SetBusClock sets SD bus clock frequency (freqhz <= 0 disables clock). If
+// pwrsave is true the clock output is automatically disabled when bus is idle.
+func (d *Driver) SetBusClock(freqhz int, pwrsave bool) {
 	var (
 		clkdiv int
 		cfg    BusClock
+		p      = d.p
 	)
-	if width > sdcard.Bus8 {
-		panic("sdcard: bus width")
-	}
+	busWidth, _ := p.BusClock()
+	busWidth &= BusWidth
 	if freqhz > 0 {
 		// BUG: This code assumes 48 MHz SDMMCCLK.
-		cfg = ClkEna | BusClock(width*3>>2)<<3
+		cfg = ClkEna
 		clkdiv = (48e6+freqhz-1)/freqhz - 2
 	}
 	if clkdiv < 0 {
+		clkdiv = 0
 		cfg |= ClkByp
 	}
 	if pwrsave {
 		cfg |= PwrSave
 	}
-	p := d.p
-	p.SetBusClock(cfg, clkdiv)
+	p.SetBusClock(cfg|busWidth, clkdiv)
 	p.SetDataTimeout(uint(freqhz)) // ≈ 1s
+}
+
+// SetBusWidth sets the SD bus width.
+func (d *Driver) SetBusWidth(width sdcard.BusWidth) {
+	if width > sdcard.Bus8 {
+		panic("sdmmc: bad bus width")
+	}
+	p := d.p
+	cfg, clkdiv := p.BusClock()
+	cfg = cfg&^BusWidth | BusClock(width*3>>2)<<3
+	p.SetBusClock(cfg, clkdiv)
 }
 
 func (d *Driver) ISR() {
@@ -98,7 +110,7 @@ func (d *Driver) ISR() {
 // least significant bits, r[3] contains the most significant bits). If preceded
 // by SetupData, SendCmd performs the data transfer.
 func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
-	if d.err != 0 || d.dmaErr != 0 {
+	if uint(d.err)|uint(d.dmaErr) != 0 {
 		return
 	}
 	var waitFor Event
@@ -171,7 +183,7 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 // configures DMA stream/channel completely from scratch so Driver can share its
 // DMA stream/channel with other driver that do the same.
 func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
-	if d.err != 0 || d.dmaErr != 0 {
+	if uint(d.err)|uint(d.dmaErr) != 0 {
 		return
 	}
 	d.data = mode

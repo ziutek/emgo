@@ -184,14 +184,6 @@ func CMD55(rca uint16) (Command, uint32) {
 	return cmd55, uint32(rca) << 16
 }
 
-type BusWidth byte
-
-const (
-	Bus1 BusWidth = 0
-	Bus4 BusWidth = 2
-	Bus8 BusWidth = 3
-)
-
 // ACMD6 (SET_BUS_WIDTH, R1) sets the data bus width.
 func ACMD6(bw BusWidth) (Command, uint32) {
 	return acmd6, uint32(bw)

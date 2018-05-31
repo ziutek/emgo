@@ -82,6 +82,8 @@ func (p *Periph) BusClock() (cfg BusClock, clkdiv int) {
 //	3*period(PCLK)+3*period(SDMMCCLK) < 32/BusWidth*period(SDMMC_CK)
 //  (always met for: PCLK > 28.8 MHz).
 //
+// At least 3 SDMMCCLK clock periods plus 2 PCLK clock periods are needed
+// between subsequent SetBusClock.
 func (p *Periph) SetBusClock(cfg BusClock, clkdiv int) {
 	if uint(clkdiv) > 255 {
 		panic("sdio: bad clkdiv")
