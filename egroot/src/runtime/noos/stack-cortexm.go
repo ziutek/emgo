@@ -46,11 +46,12 @@ func stackGuardBegin(n int) uintptr {
 // Since taskInfos was placed in stack guard slots, the less restricted
 // mpu.Arw__ was used. TODO: Check is there a cheap way to return to mpu.A____.
 func setMPUStackGuard(n int) {
-	mpu.SetRegion(mpu.BaseAttr{
-		stackGuardBegin(n) + mpu.VALID + mpuStackGuard,
-		mpu.ENA | mpu.SIZE(5) | mpu.C | mpu.S | mpu.Arw__ | mpu.XN,
-	})
-	// Return from exception works like DSB, ISB so can ommit them here..
+	mpu.SetRegion(
+		stackGuardBegin(n)+mpu.VALID+mpu5_StackGuard,
+		mpu.ENA|mpu.SIZE(5)|mpu.C|mpu.S|mpu.Arw__|mpu.XN,
+	)
+	cortexm.DSB()
+	// Return from exception works like ISB so can ommit it here.
 }
 
 func stackGuardArray(n int) *[8]uint32 {

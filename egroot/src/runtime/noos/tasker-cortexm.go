@@ -117,12 +117,12 @@ func (ts *taskSched) deliverEvents(e syscall.Event) {
 }
 
 const (
-	mpuFlash = iota
-	mpuSRAM
-	mpuPeriph
-	mpuExtRAM
-	mpuExtDev
-	mpuStackGuard
+	mpu0_Flash      = 0
+	mpu1_SRAM       = 1
+	mpu2_Periph     = 2
+	mpu3_ExtRAM     = 3
+	mpu4_ExtDev     = 4
+	mpu5_StackGuard = 5
 )
 
 func (ts *taskSched) init() {
@@ -170,39 +170,39 @@ func (ts *taskSched) init() {
 		// used to setup the stack guard area at the bottom of the stack of
 		// active task (setStackGuard function is used).
 		//
-		// Below there is the MPU configuration that more or less corresponds to
-		// the default behavior, without MPU enabled, but all RAM and peripheral
-		// regions are declared as shareable (usually shared with DMA). In case
-		// of Cortex-M7, shareable regions are not cacheable (set acc.SIWT bit
-		// to allow use cache but only in WT mode or reconfigure MPU).
+		// Bellow there is the MPU configuration that more or less corresponds
+		// to the default CPU behavior, without MPU enabled, but RAM region is
+		// configured as shareable (usually shared with DMA). Shareable regions
+		// are by default not cacheable. initCPU enables L1 cache for Cortex-M7
+		// and sets acc.SIWT bit so RAM is cacheable in write-through mode.
 		var (
 			maPeriph = mpu.B | mpu.Arwrw | mpu.XN
 			maFlash  = mpu.C | mpu.Ar_r_
 			maRAM    = mpu.TEX(1) | mpu.C | mpu.B | mpu.S | mpu.Arwrw
 		)
-		mpu.SetRegion(mpu.BaseAttr{
-			0x00000000 | mpu.VALID | mpuFlash,
-			mpu.ENA | mpu.SIZE(29) | maFlash,
-		})
-		mpu.SetRegion(mpu.BaseAttr{
-			0x20000000 | mpu.VALID | mpuSRAM,
-			mpu.ENA | mpu.SIZE(29) | maRAM,
-		})
-		mpu.SetRegion(mpu.BaseAttr{
-			0x40000000 | mpu.VALID | mpuPeriph,
-			mpu.ENA | mpu.SIZE(29) | maPeriph,
-		})
-		mpu.SetRegion(mpu.BaseAttr{
-			0x60000000 | mpu.VALID | mpuExtRAM,
-			mpu.ENA | mpu.SIZE(30) | maRAM,
-		})
-		mpu.SetRegion(mpu.BaseAttr{
-			0xA0000000 | mpu.VALID | mpuExtDev,
-			mpu.ENA | mpu.SIZE(29) | maPeriph,
-		})
+		cortexm.DSB()
+		mpu.SetRegion(
+			0x00000000|mpu.VALID|mpu0_Flash,
+			mpu.ENA|mpu.SIZE(29)|maFlash,
+		)
+		mpu.SetRegion(
+			0x20000000|mpu.VALID|mpu1_SRAM,
+			mpu.ENA|mpu.SIZE(29)|maRAM,
+		)
+		mpu.SetRegion(
+			0x40000000|mpu.VALID|mpu2_Periph,
+			mpu.ENA|mpu.SIZE(29)|maPeriph,
+		)
+		mpu.SetRegion(
+			0x60000000|mpu.VALID|mpu3_ExtRAM,
+			mpu.ENA|mpu.SIZE(30)|maRAM,
+		)
+		mpu.SetRegion(
+			0xA0000000|mpu.VALID|mpu4_ExtDev,
+			mpu.ENA|mpu.SIZE(29)|maPeriph,
+		)
 		mpu.Set(mpu.ENABLE | mpu.PRIVDEFENA)
 		cortexm.DSB()
-		cortexm.ISB()
 	}
 
 	// Set taskInfo for initial (current) task.
@@ -211,8 +211,9 @@ func (ts *taskSched) init() {
 		setMPUStackGuard(0)
 	}
 
-	// Leave privileged level.
+	// Leave the privileged level.
 	cortexm.SetCONTROL(cortexm.CONTROL() | cortexm.Unpriv)
+	cortexm.ISB()
 }
 
 func (ts *taskSched) initTask(n int, sp uintptr) {
