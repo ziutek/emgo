@@ -10,18 +10,19 @@ type regs struct {
 	typ  mmio.U32
 	ctrl mmio.U32
 	rnr  mmio.U32
-	bas  [4]BaseAttr //c:volatile
+	rbar mmio.U32
+	rasr mmio.U32
 }
 
 //emgo:const
-var r = (*regs)(unsafe.Pointer(uintptr(0xE000ED90)))
+var p = (*regs)(unsafe.Pointer(uintptr(0xE000ED90)))
 
 // Type returns information about MPU unit:
 // i - number of supported instruction regions,
 // d - number of supported data regions.
 // s - true if separate instruction and data regions are supported.
 func Type() (i, d int, s bool) {
-	typ := r.typ.Load()
+	typ := p.typ.Load()
 	i = int(typ>>16) & 0xf
 	d = int(typ>>8) & 0xf
 	s = (typ&1 != 0)
@@ -43,21 +44,21 @@ const (
 
 // Set sets flags specified by fl.
 func Set(fl Flags) {
-	r.ctrl.SetBits(uint32(fl))
+	p.ctrl.SetBits(uint32(fl))
 }
 
 // Clear clears flags specified by fl.
 func Clear(fl Flags) {
-	r.ctrl.ClearBits(uint32(fl))
+	p.ctrl.ClearBits(uint32(fl))
 }
 
 func State() Flags {
-	return Flags(r.ctrl.Load())
+	return Flags(p.ctrl.Load())
 }
 
 // Select selects region number n.
 func Select(n int) {
-	r.rnr.Store(uint32(n))
+	p.rnr.Store(uint32(n))
 }
 
 type Attr uint32
@@ -70,7 +71,7 @@ const (
 	S Attr = 1 << 18 // Shareable.
 
 	// Access permissons.
-	AMASK Attr = 7 << 24 // Use to extract access permission bits.
+	Amask Attr = 7 << 24 // Use to extract access permission bits.
 	A____ Attr = 0 << 24 // No access.
 	Ar___ Attr = 5 << 24 // Priv-RO.
 	Arw__ Attr = 1 << 24 // Priv-RW.
@@ -81,11 +82,11 @@ const (
 	XN Attr = 1 << 28 // Instruction access disable.
 )
 
-func SIZE(log2 int) Attr {
-	return Attr(log2-1) & 0x1f << 1
+func SIZE(exp int) Attr {
+	return Attr(exp-1) & 0x1f << 1
 }
 
-func (a Attr) SIZE() (log2 int) {
+func (a Attr) SIZE() (exp int) {
 	return int(a>>1)&0x1f + 1
 }
 
@@ -107,19 +108,21 @@ func (a Attr) TEX() int {
 
 const VALID = 1 << 4
 
+func SetRegion(base uintptr, attr Attr) {
+	p.rbar.Store(uint32(base))
+	p.rasr.Store(uint32(attr))
+}
+
+func Region() (base uintptr, attr Attr) {
+	return uintptr(p.rbar.Load()), Attr(p.rasr.Load())
+}
+
+/*
+TODO: Implement SetRegions using STM instrucion.
 type BaseAttr struct {
 	RBAR uintptr
 	RASR Attr
 }
 
-func SetRegion(ba BaseAttr) {
-	r.bas[0] = ba
-}
-
-func Region() BaseAttr {
-	return r.bas[0]
-}
-
-func SetRegions(bas [4]BaseAttr) {
-	r.bas = bas
-}
+func SetRegions(bas [4]BaseAttr)
+*/
