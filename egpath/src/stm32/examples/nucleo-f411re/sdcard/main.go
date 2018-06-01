@@ -165,13 +165,13 @@ func main() {
 
 		sel := printCMD6Status(buf.Bytes()[:64])
 
-		if sel&sdcard.AccessMode == sdcard.HighSpeed&&false {
+		if sel&sdcard.AccessMode == sdcard.HighSpeed {
 			fmt.Printf("Card supports High Speed: set clock to 50 MHz.\n\n")
 			delay.Millisec(1) // Function switch takes max. 8 SDIO_CK cycles.
-			sd.SetBusClock(50e6, true)
+			//sd.SetBusClock(50e6, true)
 		}
 	}
-	
+
 	delay.Millisec(500)
 
 	// Set block size to 512 B (required for protocol version < 2 or SDSC card).
@@ -208,12 +208,13 @@ func main() {
 	testLen := uint(1e4)
 
 	fmt.Printf(
-		"Reading %d blocks (%d KiB) using %d B buffer...",
+		"Reading %d blocks (%d KiB) using %d B buffer ",
 		testLen, testLen/2, bufSize,
 	)
 
 	t := rtos.Nanosec()
 	for n, step := uint(0), uint(bufSize)/512; n < testLen; n += step {
+		fmt.Printf(".")
 		addr := n
 		if oca&sdcard.HCXC == 0 {
 			addr *= 512
@@ -230,7 +231,7 @@ func main() {
 		}
 	}
 	dt := rtos.Nanosec() - t
-	fmt.Printf(" %d KiB/s\n", 1e9/2*int64(testLen)/dt)
+	fmt.Printf("%d KiB/s\n", 1e9/2*int64(testLen)/dt)
 }
 
 func sdioISR() {

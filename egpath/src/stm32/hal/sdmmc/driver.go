@@ -127,19 +127,13 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	fence.W() // This orders writes to normal and I/O memory.
 	p.SetCmd(CmdEna | Command(cmd)&255)
 	d.done.Wait(1, 0)
-	_, d.err = p.Status()
+	_, err := p.Status()
 	if cmd&sdcard.HasResp != 0 {
-		if d.err&ErrCmdCRC != 0 {
+		if err&ErrCmdCRC != 0 {
 			switch cmd & sdcard.RespType {
 			case sdcard.R3, sdcard.R4:
-				d.err &^= ErrCmdCRC
+				err &^= ErrCmdCRC
 			}
-			if r := cmd & sdcard.RespType; r == sdcard.R3 || r == sdcard.R4 {
-				d.err &^= ErrCmdCRC
-			}
-		}
-		if d.err != 0 {
-			return
 		}
 		if cmd&sdcard.LongResp != 0 {
 			r[3] = p.Resp(0) // Most significant bits.
@@ -150,23 +144,36 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 			r[0] = p.Resp(0)
 		}
 	}
-	if d.dtc == 0 {
+	if err != 0 {
+		d.err = err
+		d.dtc = 0
 		return
+	}
+	if d.dtc == 0 {
+		return // No data transfer scheduled.
 	}
 	if d.dtc&Recv == 0 {
 		p.SetDataCtrl(d.dtc)
 	}
+	waitFor = 0
 	if d.dtc&Stream == 0 {
-		waitFor = DataBlkEnd
-	} else {
-		waitFor = DataEnd
+		waitFor |= DataBlkEnd
 	}
 	d.dtc = 0
 	d.done.Reset(0)
-	p.EnableIRQ(waitFor, ErrAll)
+	fence.W() // This orders writes to normal and I/O memory.
+	p.EnableIRQ(DataEnd, ErrAll)
 	d.done.Wait(1, 0)
-	_, d.err = p.Status()
-	// Ensure DMA transfer has been completed (it should be).
+	for waitFor != 0 {
+		ev, err := p.Status()
+		if err != 0 {
+			d.err = err
+			d.dma.Disable()
+			p.SetDataCtrl(0)
+			return
+		}
+		waitFor &^= ev
+	}
 	ch := d.dma
 	for {
 		ev, err := ch.Status()
@@ -174,18 +181,23 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 			d.dmaErr = err
 			break
 		}
-		if ev == dma.Complete {
+		if ev&dma.Complete != 0 {
 			break
 		}
+		/*if !ch.Enabled() {
+			break  // STM32F103 RM says about waiting until channel disabled.
+		}*/
 	}
-	ch.Disable() // Required by STM32F1 to allow setup next transfer.
 	return
 }
 
-// SetupData setups the data transfer for subsequent command. On every call it
-// configures DMA stream/channel completely from scratch so Driver can share its
-// DMA stream/channel with other driver that do the same.
+// SetupData setups the data transfer for subsequent command. Ensure len(buf) <=
+// 32767. SetupData configures DMA stream/channel completely from scratch so
+// Driver can share its DMA stream/channel with other driver that do the same.
 func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
+	if len(buf) > 32767 {
+		panic("sdio: buf too big")
+	}
 	if uint(d.err)|uint(d.dmaErr) != 0 {
 		return
 	}
@@ -200,11 +212,13 @@ func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
 		dmacfg |= dma.FT2
 	}
 	ch := d.dma
+	ch.Disable()
 	ch.Clear(dma.EvAll, dma.ErrAll)
 	ch.Setup(dmacfg)
-	ch.SetWordSize(4, 4)
 	ch.SetAddrP(unsafe.Pointer(&d.p.raw.FIFO))
 	ch.SetAddrM(unsafe.Pointer(&buf[0]))
+	ch.SetWordSize(4, 4)
+	//ch.SetLen(len(buf) * 2) // Does  STM32F1 require this?
 	ch.Enable()
 	p := d.p
 	p.SetDataLen(len(buf) * 8)
