@@ -178,6 +178,18 @@ func CMD18(addr uint) (Command, uint32) {
 	return cmd18, uint32(addr)
 }
 
+// CMD24 (WRITE_BLOCK, R1) writes a block of the size selected by CMD16.
+func CMD24(addr uint) (Command, uint32) {
+	return cmd24, uint32(addr)
+}
+
+// CMD25 (WRITE_MULTIPLE_BLOCK, R1) works like CMD24 but allows to transmit
+// multiple block to the card until. To signal the end of transfer host have to
+// send CMD12 (STOP_TRANSMISSION) command.
+func CMD25(addr uint) (Command, uint32) {
+	return cmd25, uint32(addr)
+}
+
 // CMD55 (APP_CMD, R1) indicates to the card that the next command is an
 // application specific command.
 func CMD55(rca uint16) (Command, uint32) {
