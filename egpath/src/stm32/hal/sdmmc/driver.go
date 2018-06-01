@@ -17,7 +17,7 @@ type Driver struct {
 	done   rtos.EventFlag
 	err    Error
 	dmaErr dma.Error
-	data   sdcard.DataMode
+	dtc    DataCtrl
 }
 
 // MakeDriver returns initialized SPI driver that uses provided SPI peripheral
@@ -150,15 +150,18 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 			r[0] = p.Resp(0)
 		}
 	}
-	switch {
-	case d.data == 0:
+	if d.dtc == 0 {
 		return
-	case d.data&sdcard.Stream == 0:
+	}
+	if d.dtc&Recv == 0 {
+		p.SetDataCtrl(d.dtc)
+	}
+	if d.dtc&Stream == 0 {
 		waitFor = DataBlkEnd
-	default:
+	} else {
 		waitFor = DataEnd
 	}
-	d.data = 0
+	d.dtc = 0
 	d.done.Reset(0)
 	p.EnableIRQ(waitFor, ErrAll)
 	d.done.Wait(1, 0)
@@ -167,7 +170,7 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	ch := d.dma
 	for {
 		ev, err := ch.Status()
-		if err != 0 {
+		if err &^= dma.ErrFIFO; err != 0 {
 			d.dmaErr = err
 			break
 		}
@@ -186,9 +189,9 @@ func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
 	if uint(d.err)|uint(d.dmaErr) != 0 {
 		return
 	}
-	d.data = mode
+	d.dtc = DTEna | UseDMA | DataCtrl(mode)
 	dmacfg := dma.PFC | dma.IncM
-	if mode&sdcard.Recv == 0 {
+	if d.dtc&Recv == 0 {
 		dmacfg |= dma.MTP
 	}
 	if len(buf)&1 == 0 {
@@ -205,5 +208,7 @@ func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
 	ch.Enable()
 	p := d.p
 	p.SetDataLen(len(buf) * 8)
-	p.SetDataCtrl(DTEna | UseDMA | DataCtrl(mode))
+	if d.dtc&Recv != 0 {
+		p.SetDataCtrl(d.dtc)
+	}
 }

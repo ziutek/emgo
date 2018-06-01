@@ -165,6 +165,7 @@ type DataCtrl uint16
 
 const (
 	DTEna    DataCtrl = 1 << 0  // Enable data transfer.
+	Send     DataCtrl = 0 << 1  // Send data to card.
 	Recv     DataCtrl = 1 << 1  // Receive data from card.
 	Stream   DataCtrl = 1 << 2  // Stream or SDIO multibyte data transfer.
 	UseDMA   DataCtrl = 1 << 3  // Use DMA.
