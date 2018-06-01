@@ -1,6 +1,6 @@
 #!/bin/sh
 
-INTERFACE=stlink-v2
+INTERFACE=stlink
 TARGET=nrf51
 
 . ../../../../../scripts/debug-oocd.sh $@

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-INTERFACE=stlink-v2-1
+INTERFACE=stlink
 TARGET=stm32l4x
 
 . ../../../../../scripts/debug-oocd.sh $@

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-INTERFACE=stlink-v2
+INTERFACE=stlink
 TARGET=stm32l1
 TRACECLKIN=32000000
 

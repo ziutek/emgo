@@ -1,6 +1,6 @@
 #!/bin/sh
 
-INTERFACE=stlink-v2
+INTERFACE=stlink
 TARGET=stm32f0x
 
 #cfg='reset_config none separat' # Press reset before connect.
