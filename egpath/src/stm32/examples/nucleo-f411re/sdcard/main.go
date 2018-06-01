@@ -190,7 +190,7 @@ func main() {
 	st = sd.SendCmd(sdcard.CMD24(512)).R1()
 	checkErr("CMD24", sd.Err(true), st)
 
-	delay.Millisec(1000)
+	delay.Millisec(500)
 
 	for i := range block {
 		block[i] = 0
@@ -202,7 +202,6 @@ func main() {
 
 	for i, d := 0, block.Bytes(); i < len(d); i += 16 {
 		fmt.Printf("%02x\n", d[i:i+16])
-		delay.Millisec(100)
 	}
 
 	bufSize := len(buf.Bytes())
