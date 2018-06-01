@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary/be"
 	"fmt"
 
 	"sdcard"
@@ -87,4 +88,27 @@ func printSCR(scr sdcard.SCR) {
 	fmt.Printf("SD_SPEC4:              %d\n", scr.SD_SPEC4())
 	fmt.Printf("SD_SPECX:              %d\n", scr.SD_SPECX())
 	fmt.Printf("CMD_SUPPORT:           0b%04b\n\n", scr.CMD_SUPPORT())
+}
+
+func printGroupBits(d []byte) {
+	for i := 6; i > 0; i-- {
+		fmt.Printf("   group %d: 0b%016b\n", i, be.Decode16(d[(6-i)*2:]))
+	}
+}
+
+func printCMD6Status(d []byte) (sel sdcard.SwitchFunc) {
+	fmt.Printf("CMD6 (SWITCH_FUNC) status:\n")
+	fmt.Printf("- max. current: %d mA\n", be.Decode16(d[0:2]))
+	fmt.Printf("- supported functions:\n")
+	printGroupBits(d[2:14])
+	sel = sdcard.SwitchFunc(be.Decode32(d[13:17]) & 0xFFFFFF)
+	fmt.Printf("- selected functions: 0x%06x\n", sel)
+	if d[17] == 0 {
+		goto end
+	}
+	fmt.Printf("- busy functions:\n")
+	printGroupBits(d[18:30])
+end:
+	fmt.Printf("\n")
+	return
 }

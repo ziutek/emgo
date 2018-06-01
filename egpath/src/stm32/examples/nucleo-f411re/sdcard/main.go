@@ -35,7 +35,7 @@ func init() {
 	d0 := gpio.B.Pin(7)
 	clk := gpio.B.Pin(15)
 
-	cfg := gpio.Config{Mode: gpio.Alt, Speed: gpio.High, Pull: gpio.PullUp}
+	cfg := gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh, Pull: gpio.PullUp}
 	for _, pin := range []gpio.Pin{clk, cmd, d0, d1, d2, d3} {
 		pin.Setup(&cfg)
 		pin.SetAltFunc(gpio.SDIO)
@@ -163,24 +163,16 @@ func main() {
 		st = sd.SendCmd(sdcard.CMD6(sdcard.ModeSwitch | sdcard.HighSpeed)).R1()
 		checkErr("CMD6", sd.Err(true), st)
 
-		fmt.Printf("CMD6 (SWITCH_FUNC) status:\n")
-		fmt.Printf("- max. current: %d mA\n", be.Decode16(buf.Bytes()[0:2]))
-		fmt.Printf("- supported functions:\n")
-		fmt.Printf("   group 6: 0b%016b\n", be.Decode16(buf.Bytes()[2:4]))
-		fmt.Printf("   group 5: 0b%016b\n", be.Decode16(buf.Bytes()[4:6]))
-		fmt.Printf("   group 4: 0b%016b\n", be.Decode16(buf.Bytes()[6:8]))
-		fmt.Printf("   group 3: 0b%016b\n", be.Decode16(buf.Bytes()[8:10]))
-		fmt.Printf("   group 2: 0b%016b\n", be.Decode16(buf.Bytes()[10:12]))
-		fmt.Printf("   group 1: 0b%016b\n", be.Decode16(buf.Bytes()[12:14]))
-		sel := sdcard.SwitchFunc(be.Decode32(buf.Bytes()[13:17]) & 0xFFFFFF)
-		fmt.Printf("- selected functions: 0x%06x\n\n", sel)
+		sel := printCMD6Status(buf.Bytes()[:64])
 
-		if sel&sdcard.AccessMode == sdcard.HighSpeed {
-			fmt.Printf("Card supports High Speed: set clock to 48 MHz.\n\n")
+		if sel&sdcard.AccessMode == sdcard.HighSpeed&&false {
+			fmt.Printf("Card supports High Speed: set clock to 50 MHz.\n\n")
 			delay.Millisec(1) // Function switch takes max. 8 SDIO_CK cycles.
 			sd.SetBusClock(50e6, true)
 		}
 	}
+	
+	delay.Millisec(500)
 
 	// Set block size to 512 B (required for protocol version < 2 or SDSC card).
 	if ocr&sdcard.HCXC == 0 {
@@ -188,11 +180,36 @@ func main() {
 		checkErr("CMD16", sd.Err(true), st)
 	}
 
+	block := buf[:512/8]
+	for i := range block.Bytes() {
+		block.Bytes()[i] = byte(i)
+	}
+
+	fmt.Printf("Write block of data...\n")
+	sd.SetupData(sdcard.Send|sdcard.Block512, block)
+	st = sd.SendCmd(sdcard.CMD24(512)).R1()
+	checkErr("CMD24", sd.Err(true), st)
+
+	delay.Millisec(1000)
+
+	for i := range block {
+		block[i] = 0
+	}
+	fmt.Printf("Read block of data...\n")
+	sd.SetupData(sdcard.Recv|sdcard.Block512, block)
+	st = sd.SendCmd(sdcard.CMD17(512)).R1()
+	checkErr("CMD17", sd.Err(true), st)
+
+	for i, d := 0, block.Bytes(); i < len(d); i += 16 {
+		fmt.Printf("%02x\n", d[i:i+16])
+		delay.Millisec(100)
+	}
+
 	bufSize := len(buf.Bytes())
-	testLen := uint(1e5)
+	testLen := uint(1e4)
 
 	fmt.Printf(
-		"Read %d blocks (%d KiB) using %d B buffer... ",
+		"Reading %d blocks (%d KiB) using %d B buffer...",
 		testLen, testLen/2, bufSize,
 	)
 
@@ -214,7 +231,7 @@ func main() {
 		}
 	}
 	dt := rtos.Nanosec() - t
-	fmt.Printf("%d KiB/s\n", 1e9/2*int64(testLen)/dt)
+	fmt.Printf(" %d KiB/s\n", 1e9/2*int64(testLen)/dt)
 }
 
 func sdioISR() {
