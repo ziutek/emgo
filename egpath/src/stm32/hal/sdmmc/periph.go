@@ -315,12 +315,28 @@ func (p *Periph) Store(w uint32) {
 	p.raw.FIFO.U32.Store(w)
 }
 
-// Load16 reads 16 words from FIFO using two LDM instructions.
-//func (p *Periph) Load16(buf []uint32)
+//emgo:inline
+func burstCopyPTM(p, m uintptr) uintptr
 
-// Store16 stores 16 words into FIFO using two STM instructions.
-//func (p *Periph) Store16(buf []uint32)
+//emgo:inline
+func burstCopyMTP(m, p uintptr) uintptr
 
-func (p *Periph) FIFOAddr() uintptr {
-	return p.raw.FIFO.Addr()
+func panicShortBuf() {
+	panic("sdio: buf too short")
+}
+
+// BurstLoad reads 16 words from FIFO using LDM and STM instructions.
+func (p *Periph) BurstLoad(buf []uint32) {
+	if len(buf) < 16 {
+		panicShortBuf()
+	}
+	burstCopyPTM(p.raw.FIFO.Addr(), uintptr(unsafe.Pointer(&buf[0])))
+}
+
+// BurstStore stores 16 words into FIFO using LDM and STM instructions.
+func (p *Periph) BurstStore(buf []uint32) {
+	if len(buf) < 16 {
+		panicShortBuf()
+	}
+	burstCopyMTP(uintptr(unsafe.Pointer(&buf[0])), p.raw.FIFO.Addr())
 }

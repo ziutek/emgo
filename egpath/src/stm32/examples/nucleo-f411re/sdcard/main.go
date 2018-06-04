@@ -16,7 +16,7 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var sd *sdmmc.Driver
+var sd *sdmmc.DriverDMA
 
 func init() {
 	system.Setup96(8) // Setups USB/SDIO/RNG clock to 48 MHz
@@ -43,7 +43,7 @@ func init() {
 
 	d := dma.DMA2
 	d.EnableClock(true)
-	sd = sdmmc.NewDriver(sdmmc.SDIO, d.Channel(6, 4))
+	sd = sdmmc.NewDriverDMA(sdmmc.SDIO, d.Channel(6, 4))
 	sd.Periph().EnableClock(true)
 	sd.Periph().Enable()
 
@@ -165,7 +165,7 @@ func main() {
 
 		sel := printCMD6Status(buf.Bytes()[:64])
 
-		if sel&sdcard.AccessMode == sdcard.HighSpeed {
+		if sel&sdcard.AccessMode == sdcard.HighSpeed && false {
 			fmt.Printf("Card supports High Speed: set clock to 50 MHz.\n\n")
 			delay.Millisec(1) // Function switch takes max. 8 SDIO_CK cycles.
 			sd.SetBusClock(50e6, true)
@@ -185,14 +185,12 @@ func main() {
 		block.Bytes()[i] = byte(i)
 	}
 
-	/*
-		fmt.Printf("Write block of data...\n")
-		sd.SetupData(sdcard.Send|sdcard.Block512, block)
-		st = sd.SendCmd(sdcard.CMD24(512)).R1()
-		checkErr("CMD24", sd.Err(true), st)
+	fmt.Printf("Write block of data...\n")
+	sd.SetupData(sdcard.Send|sdcard.Block512, block)
+	st = sd.SendCmd(sdcard.CMD24(512)).R1()
+	checkErr("CMD24", sd.Err(true), st)
 
-		delay.Millisec(500)
-	*/
+	delay.Millisec(500)
 
 	for i := range block {
 		block[i] = 0
