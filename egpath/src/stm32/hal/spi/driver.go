@@ -137,6 +137,7 @@ func (d *Driver) setupDMA(ch *dma.Channel, mode dma.Mode, wordSize uintptr) {
 }
 
 func startDMA(ch *dma.Channel, addr uintptr, n int) {
+	ch.Disable() // STM32F1 does not disable channel at end of transfer.
 	ch.SetAddrM(unsafe.Pointer(addr))
 	ch.SetLen(n)
 	ch.Clear(dma.EvAll, dma.ErrAll)
@@ -174,8 +175,6 @@ func (d *Driver) writeReadDMA(out, in uintptr, olen, ilen int, wsize uintptr) (n
 		in += uintptr(m)
 		n += m
 		done := d.done.Wait(1, d.deadline)
-		d.txDMA.Disable() // Required by STM32F1 to allow setup next transfer.
-		d.rxDMA.Disable() // Required by STM32F1 to allow setup next transfer.
 		if !done {
 			d.txDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
 			d.rxDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
@@ -222,7 +221,6 @@ func (d *Driver) writeDMA(out uintptr, n int, wsize uintptr, incm dma.Mode) {
 			out += uintptr(m)
 		}
 		done := d.done.Wait(1, d.deadline)
-		d.txDMA.Disable() // Required by STM32F1 to allow setup next transfer
 		if !done {
 			d.txDMA.DisableIRQ(dma.EvAll, dma.ErrAll)
 			d.err = uint32(ErrTimeout) << 16

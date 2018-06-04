@@ -132,7 +132,7 @@ func main() {
 
 	// Now the card is int Transfer State.
 
-	buf := make(sdcard.Data, 4*1024/8)
+	buf := make(sdcard.Data, 8*512/8)
 
 	// Read SD Configuration Register.
 	sd.SendCmd(sdcard.CMD55(rca))
@@ -168,7 +168,7 @@ func main() {
 		if sel&sdcard.AccessMode == sdcard.HighSpeed {
 			fmt.Printf("Card supports High Speed: set clock to 50 MHz.\n\n")
 			delay.Millisec(1) // Function switch takes max. 8 SDIO_CK cycles.
-			//sd.SetBusClock(50e6, true)
+			sd.SetBusClock(50e6, true)
 		}
 	}
 
@@ -185,12 +185,14 @@ func main() {
 		block.Bytes()[i] = byte(i)
 	}
 
-	fmt.Printf("Write block of data...\n")
-	sd.SetupData(sdcard.Send|sdcard.Block512, block)
-	st = sd.SendCmd(sdcard.CMD24(512)).R1()
-	checkErr("CMD24", sd.Err(true), st)
+	/*
+		fmt.Printf("Write block of data...\n")
+		sd.SetupData(sdcard.Send|sdcard.Block512, block)
+		st = sd.SendCmd(sdcard.CMD24(512)).R1()
+		checkErr("CMD24", sd.Err(true), st)
 
-	delay.Millisec(500)
+		delay.Millisec(500)
+	*/
 
 	for i := range block {
 		block[i] = 0
