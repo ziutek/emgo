@@ -43,9 +43,9 @@ const (
 var ErrCmdTimeout = errors.New("sdio: cmd timeout")
 
 type Host interface {
-	// SetBusClock sets SD/SPI clock frequency. SD host can implement disabling
-	// the clock output if the bus is idle and pwrsave is true.
-	SetBusClock(freqhz int, pwrsave bool)
+	// SetClock sets SD/SPI clock frequency. SD host can implement disabling the
+	// clock output if the bus is idle and pwrsave is true.
+	SetClock(freqhz int, pwrsave bool)
 
 	// SetBusWidth sets the SD bus width.
 	SetBusWidth(width BusWidth)

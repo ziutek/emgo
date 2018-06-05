@@ -63,9 +63,9 @@ end:
 	return err
 }
 
-// SetBusClock sets SD bus clock frequency (freqhz <= 0 disables clock). If
+// SetClock sets SD bus clock frequency (freqhz <= 0 disables clock). If
 // pwrsave is true the clock output is automatically disabled when bus is idle.
-func (d *DriverDMA) SetBusClock(freqhz int, pwrsave bool) {
+func (d *DriverDMA) SetClock(freqhz int, pwrsave bool) {
 	var (
 		clkdiv int
 		cfg    BusClock
@@ -101,7 +101,7 @@ func (d *DriverDMA) SetBusWidth(width sdcard.BusWidth) {
 }
 
 func (d *DriverDMA) ISR() {
-	d.p.DisableIRQ(EvAll, ErrAll)
+	d.p.SetIRQMask(0, 0)
 	d.done.Signal(1)
 }
 
@@ -122,7 +122,7 @@ func (d *DriverDMA) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) 
 	d.done.Reset(0)
 	p := d.p
 	p.Clear(EvAll, ErrAll)
-	p.EnableIRQ(waitFor, ErrAll)
+	p.SetIRQMask(waitFor, ErrAll)
 	p.SetArg(arg)
 	fence.W() // This orders writes to normal and I/O memory.
 	p.SetCmd(CmdEna | Command(cmd)&255)
@@ -162,7 +162,7 @@ func (d *DriverDMA) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) 
 	d.dtc = 0
 	d.done.Reset(0)
 	fence.W() // This orders writes to normal and I/O memory.
-	p.EnableIRQ(DataEnd, ErrAll)
+	p.SetIRQMask(DataEnd, ErrAll)
 	d.done.Wait(1, 0)
 	for waitFor != 0 {
 		ev, err := p.Status()

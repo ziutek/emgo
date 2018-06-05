@@ -12,7 +12,7 @@ type driverCommon struct {
 	done rtos.EventFlag
 }
 
-func (d *driverCommon) setBusClock(freqhz int, pwrsave bool) {
+func (d *driverCommon) setClock(freqhz int, pwrsave bool) {
 	var (
 		clkdiv int
 		cfg    BusClock
@@ -56,7 +56,7 @@ func (d *driverCommon) sendCmd(cmd sdcard.Command, arg uint32, r *sdcard.Respons
 	d.done.Reset(0)
 	p := d.p
 	p.Clear(EvAll, ErrAll)
-	p.EnableIRQ(waitFor, ErrAll)
+	p.SetIRQMask(waitFor, ErrAll)
 	p.SetArg(arg)
 	fence.W() // This orders writes to normal and I/O memory.
 	p.SetCmd(CmdEna | Command(cmd)&255)

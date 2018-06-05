@@ -289,14 +289,15 @@ func (p *Periph) Clear(ev Event, err Error) {
 	p.raw.ICR.U32.Store(uint32(ev) | uint32(err))
 }
 
-// EnableIRQ enables generating of IRQ by specified events and errors.
-func (p *Periph) EnableIRQ(ev Event, err Error) {
-	p.raw.MASK.U32.SetBits(uint32(ev) | uint32(err))
+// IRQEnabled retuns which events and errors can generate IRQ.
+func (p *Periph) IRQMask() (Event, Error) {
+	mask := p.raw.MASK.Load()
+	return Event(mask) & EvAll, Error(mask) & ErrAll
 }
 
-// DisableIRQ disables generating of IRQ by specified events and errors.
-func (p *Periph) DisableIRQ(ev Event, err Error) {
-	p.raw.MASK.U32.ClearBits(uint32(ev) | uint32(err))
+// SetIRQMask sets which events and errors can generate IRQ.
+func (p *Periph) SetIRQMask(ev Event, err Error) {
+	p.raw.MASK.U32.Store(uint32(ev) | uint32(err))
 }
 
 // RemainWords returns the number of remaining words that can be read from /

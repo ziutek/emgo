@@ -1,6 +1,7 @@
 package sdmmc
 
 import (
+	"sync/fence"
 	"unsafe"
 
 	"sdcard"
@@ -49,8 +50,8 @@ func (d *Driver) Err(clear bool) error {
 
 // SetBusClock sets SD bus clock frequency (freqhz <= 0 disables clock). If
 // pwrsave is true the clock output is automatically disabled when bus is idle.
-func (d *Driver) SetBusClock(freqhz int, pwrsave bool) {
-	d.setBusClock(freqhz, pwrsave)
+func (d *Driver) SeClock(freqhz int, pwrsave bool) {
+	d.setClock(freqhz, pwrsave)
 }
 
 // SetBusWidth sets the SD bus width.
@@ -60,32 +61,66 @@ func (d *Driver) SetBusWidth(width sdcard.BusWidth) {
 
 func (d *Driver) ISR() {
 	p := d.p
-	p.DisableIRQ(EvAll, ErrAll)
+	ev, err := p.Status()
 	addr := d.addr
 	n := d.n
+	if err != 0 {
+		goto done
+	}
 	if n == 0 {
 		goto done
 	}
 	if d.dtc&Recv != 0 {
 		for n >= 16 {
-			ev, err := p.Status()
-			_ = ev
-			if err != 0 {
-				goto done
+			if ev&RxHalfFull == 0 {
+				goto waitData
 			}
 			addr = burstCopyPTM(p.raw.FIFO.Addr(), addr)
 			n -= 16
+			ev, err = p.Status()
+			if err != 0 {
+				goto done
+			}
 		}
-		for d.n > 0 {
+		if ev&DataEnd == 0 {
+			goto waitData
+		}
+		for n > 0 {
 			*(*uint32)(unsafe.Pointer(addr)) = p.Load()
 			addr += 4
-			d.n--
+			n--
 		}
 	} else {
-
+		for n >= 16 {
+			if ev&TxHalfEmpty == 0 {
+				goto waitData
+			}
+			addr = burstCopyMTP(addr, p.raw.FIFO.Addr())
+			n -= 16
+			ev, err = p.Status()
+			if err != 0 {
+				goto done
+			}
+		}
+		if ev&DataEnd == 0 {
+			goto waitData
+		}
+		for n > 0 {
+			p.Store(*(*uint32)(unsafe.Pointer(addr)))
+			addr += 4
+			n--
+		}
 	}
+	d.n = n // eq. d.n = 0
 done:
+	p.SetIRQMask(0, 0)
+	fence.Compiler() // Ensure clear IRQ mask a few instructions before return.
+	d.err = err
 	d.done.Signal(1)
+	return
+waitData:
+	d.addr = addr
+	d.n = n
 }
 
 // SendCmd sends the cmd to the card and receives its response, if any. Short
@@ -108,7 +143,6 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	if d.dtc&Recv == 0 {
 		d.p.SetDataCtrl(d.dtc)
 	}
-
 	return
 }
 
