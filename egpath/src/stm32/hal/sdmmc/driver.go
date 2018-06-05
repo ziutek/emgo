@@ -1,6 +1,7 @@
 package sdmmc
 
 import (
+	"delay"
 	"sync/fence"
 	"unsafe"
 
@@ -139,6 +140,7 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	d.done.Reset(0)
 	p := d.p
 	p.Clear(EvAll, ErrAll)
+	delay.Millisec(4)
 	p.SetIRQMask(waitFor, ErrAll)
 	p.SetArg(arg)
 	fence.W() // This orders writes to normal and I/O memory.

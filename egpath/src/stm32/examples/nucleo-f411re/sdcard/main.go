@@ -93,7 +93,7 @@ func main() {
 	for i := 0; oca&sdcard.PWUP == 0 && i < 20; i++ {
 		sd.SendCmd(sdcard.CMD55(0))
 		oca = sd.SendCmd(sdcard.ACMD41(ocr)).R3()
-		checkErr("ACMD41", err, 0)
+		checkErr("ACMD41", sd.Err(true), 0)
 		fmt.Printf(".")
 		delay.Millisec(50)
 	}
