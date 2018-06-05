@@ -7,6 +7,7 @@ import (
 	"unsafe"
 )
 
+//emgo:export
 //c:inline
 func hostIO(cmd int, p unsafe.Pointer) int
 

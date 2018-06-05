@@ -315,10 +315,12 @@ func (p *Periph) Store(w uint32) {
 	p.raw.FIFO.U32.Store(w)
 }
 
-//emgo:inline
+//emgo:export
+//c:inline
 func burstCopyPTM(p, m uintptr) uintptr
 
-//emgo:inline
+//emgo:export
+//c:inline
 func burstCopyMTP(m, p uintptr) uintptr
 
 func panicShortBuf() {
