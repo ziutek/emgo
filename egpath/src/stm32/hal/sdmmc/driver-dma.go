@@ -122,10 +122,10 @@ func (d *DriverDMA) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) 
 	d.done.Reset(0)
 	p := d.p
 	p.Clear(EvAll, ErrAll)
-	p.SetIRQMask(waitFor, ErrAll)
 	p.SetArg(arg)
-	fence.W() // This orders writes to normal and I/O memory.
 	p.SetCmd(CmdEna | Command(cmd)&255)
+	fence.W()                     // Orders writes to normal and IO memory.
+	p.SetIRQMask(waitFor, ErrAll) // After SetCmd because of spurious IRQs.
 	d.done.Wait(1, 0)
 	_, err := p.Status()
 	if cmd&sdcard.HasResp != 0 {

@@ -16,8 +16,9 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-//var sd *sdmmc.DriverDMA
-var sd *sdmmc.Driver
+var sd *sdmmc.DriverDMA
+
+//var sd *sdmmc.Driver
 
 func init() {
 	system.Setup96(8) // Setups USB/SDIO/RNG clock to 48 MHz
@@ -44,8 +45,8 @@ func init() {
 
 	d := dma.DMA2
 	d.EnableClock(true)
-	//sd = sdmmc.NewDriverDMA(sdmmc.SDIO, d.Channel(6, 4))
-	sd = sdmmc.NewDriver(sdmmc.SDIO)
+	sd = sdmmc.NewDriverDMA(sdmmc.SDIO, d.Channel(6, 4))
+	//sd = sdmmc.NewDriver(sdmmc.SDIO)
 	sd.Periph().EnableClock(true)
 	sd.Periph().Enable()
 

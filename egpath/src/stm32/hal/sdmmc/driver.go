@@ -1,7 +1,6 @@
 package sdmmc
 
 import (
-	"delay"
 	"sync/fence"
 	"unsafe"
 
@@ -62,6 +61,11 @@ func (d *Driver) SetBusWidth(width sdcard.BusWidth) {
 }
 
 func (d *Driver) ISR() {
+	d.p.SetIRQMask(0, 0)
+	d.done.Signal(1)
+}
+
+func (d *Driver) ISR_() {
 	p := d.p
 	ev, err := p.Status()
 	addr := d.addr
@@ -140,11 +144,10 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	d.done.Reset(0)
 	p := d.p
 	p.Clear(EvAll, ErrAll)
-	delay.Millisec(4)
-	p.SetIRQMask(waitFor, ErrAll)
 	p.SetArg(arg)
-	fence.W() // This orders writes to normal and I/O memory.
 	p.SetCmd(CmdEna | Command(cmd)&255)
+	fence.W()                     // Orders writes to normal and IO memory.
+	p.SetIRQMask(waitFor, ErrAll) // After SetCmd because of spurious IRQs.
 	d.done.Wait(1, 0)
 	_, err := p.Status()
 	if cmd&sdcard.HasResp != 0 {
