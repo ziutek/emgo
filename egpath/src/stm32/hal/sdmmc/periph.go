@@ -32,19 +32,20 @@ func (p *Periph) Reset() {
 	internal.APB_Reset(unsafe.Pointer(p))
 }
 
-// Enabled reports whether the p is enabled.
+// Enabled reports whether the p is in power-on state.
 func (p *Periph) Enabled() bool {
 	return p.raw.PWRCTRL().Load() == 3
 }
 
-// Enable enables p. At least 7 PCLK clock periods are needed between any
-// Enable or Disable. At least 3 SDMMCCLK clock periods plus 3 PCLK clock
-// periods are needed between any Enable or Disable.
+// Enable sets p in power-on state. At least 7 PCLK clock periods are needed
+// between any Enable or Disable. At least 3 SDMMCCLK clock periods plus 3 PCLK
+// clock periods are needed between any Enable or Disable.
 func (p *Periph) Enable() {
 	p.raw.POWER.Store(3)
 }
 
-// Disable disables gp. At least 7 PCLK clock periods are needed between any
+// Disable sets p in power-off state. At least 7 PCLK clock periods are needed 
+between any
 // Enable or Disable. At least 3 SDMMCCLK clock periods plus 3 PCLK clock
 // periods are needed between any Enable or Disable.
 func (p *Periph) Disable() {

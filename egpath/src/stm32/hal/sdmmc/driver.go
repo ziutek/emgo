@@ -61,11 +61,6 @@ func (d *Driver) SetBusWidth(width sdcard.BusWidth) {
 }
 
 func (d *Driver) ISR() {
-	d.p.SetIRQMask(0, 0)
-	d.done.Signal(1)
-}
-
-func (d *Driver) ISR_() {
 	p := d.p
 	ev, err := p.Status()
 	addr := d.addr
@@ -73,7 +68,8 @@ func (d *Driver) ISR_() {
 	if err != 0 {
 		goto done
 	}
-	if n == 0 {
+	if n <= 0 {
+		d.n = -n
 		goto done
 	}
 	if d.dtc&Recv != 0 {
@@ -149,14 +145,17 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	fence.W()                     // Orders writes to normal and IO memory.
 	p.SetIRQMask(waitFor, ErrAll) // After SetCmd because of spurious IRQs.
 	d.done.Wait(1, 0)
-	_, err := p.Status()
-	if cmd&sdcard.HasResp != 0 {
-		if err&ErrCmdCRC != 0 {
-			switch cmd & sdcard.RespType {
-			case sdcard.R3, sdcard.R4:
-				err &^= ErrCmdCRC
-			}
+	if _, err := p.Status(); err != 0 {
+		if rt := cmd & sdcard.RespType; rt == sdcard.R3 || rt == sdcard.R4 {
+			err &^= ErrCmdCRC
 		}
+		if err != 0 {
+			d.err = err
+			d.dtc = 0
+			return
+		}
+	}
+	if cmd&sdcard.HasResp != 0 {
 		if cmd&sdcard.LongResp != 0 {
 			r[3] = p.Resp(0) // Most significant bits.
 			r[2] = p.Resp(1)
@@ -166,14 +165,10 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 			r[0] = p.Resp(0)
 		}
 	}
-	if err != 0 {
-		d.err = err
-		d.dtc = 0
-		return
-	}
 	if d.dtc == 0 {
 		return // No data transfer scheduled.
 	}
+	d.done.Reset(0)
 	irqs := DataEnd
 	if d.dtc&Recv == 0 {
 		irqs |= TxHalfEmpty
@@ -181,27 +176,25 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	} else {
 		irqs |= RxHalfFull
 	}
+	fence.W() // This orders writes to normal and I/O memory.
+	p.SetIRQMask(irqs, ErrAll)
+	d.done.Wait(1, 0)
 	var waitCRC Event
 	if d.dtc&Stream == 0 {
 		waitCRC = DataBlkEnd
 	}
 	d.dtc = 0
-	d.done.Reset(0)
-	fence.W() // This orders writes to normal and I/O memory.
-	p.SetIRQMask(irqs, ErrAll)
-	d.done.Wait(1, 0)
-	if d.err != 0 {
-		return
-	}
-	for waitCRC != 0 {
+	for {
 		ev, err := p.Status()
 		if err != 0 {
 			d.err = err
 			return
 		}
 		waitCRC &^= ev
+		if waitCRC == 0 {
+			return
+		}
 	}
-	return
 }
 
 // SetupData setups the data transfer for subsequent command.
@@ -211,7 +204,7 @@ func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
 	}
 	d.dtc = DTEna | DataCtrl(mode)
 	d.addr = uintptr(unsafe.Pointer(&buf[0]))
-	d.n = len(buf) * 2
+	d.n = len(buf) * -2
 	p := d.p
 	p.SetDataLen(len(buf) * 8)
 	if d.dtc&Recv != 0 {
