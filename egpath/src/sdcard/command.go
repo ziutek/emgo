@@ -6,6 +6,10 @@ import (
 
 type Command uint16
 
+// All Command constants are defined to be friendly to use with ARM PrimeCell
+// Multimedia Card Interface (used by STM32, LPC and probably more MCUs). Do
+// not add, delete, modify command fields without checking the stm32/hal/sdmmc
+// and lpc/hal/sdmmc.
 const (
 	// Command fields
 	CmdIdx   Command = 63 << 0 // Command index.

@@ -16,8 +16,10 @@ const (
 // DataMode describes data transfer mode.
 type DataMode byte
 
-// All DataMode constants are defined in STM32 friendly way. Do not add, delete,
-// modify without checking stm32/hal/sdmmc.
+// All DataMode constants are defined to be friendly to use with ARM PrimeCell
+// Multimedia Card Interface (used by STM32, LPC and probably more MCUs). Do
+// not add, delete, modify these constants without checking the stm32/hal/sdmmc
+// and lpc/hal/sdmmc.
 const (
 	Send     DataMode = 0 << 1  // Send data to a card.
 	Recv     DataMode = 1 << 1  // Receive data from a card.
