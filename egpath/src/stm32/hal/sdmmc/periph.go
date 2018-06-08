@@ -44,10 +44,9 @@ func (p *Periph) Enable() {
 	p.raw.POWER.Store(3)
 }
 
-// Disable sets p in power-off state. At least 7 PCLK clock periods are needed 
-between any
-// Enable or Disable. At least 3 SDMMCCLK clock periods plus 3 PCLK clock
-// periods are needed between any Enable or Disable.
+// Disable sets p in power-off state. At least 7 PCLK clock periods are needed
+// between any Enable or Disable. At least 3 SDMMCCLK clock periods plus 3 PCLK
+// clock periods are needed between any Enable or Disable.
 func (p *Periph) Disable() {
 	p.raw.POWER.Store(0)
 }
@@ -207,6 +206,19 @@ func (p *Periph) RemainBytes() int {
 	return int(p.raw.DCOUNT.Load())
 }
 
+type Error uint16
+
+const (
+	ErrCmdCRC      Error = 1 << 0 // Command response received, CRC failed.
+	ErrDataCRC     Error = 1 << 1 // Data response receifed, CRC failed.
+	ErrCmdTimeout  Error = 1 << 2 // Command response timeout.
+	ErrDataTimeout Error = 1 << 3 // Data response timeout.
+	ErrTxUnderrun  Error = 1 << 4 // Tx FIFO underrun.
+	ErrRxOverrun   Error = 1 << 5 // Rx FIFO overrun.
+	ErrStartBit    Error = 1 << 9 // Data start bit detection problem.
+	ErrAll         Error = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9
+)
+
 type Event uint32
 
 const (
@@ -226,19 +238,7 @@ const (
 	TxNotEmpty  Event = 1 << 20 // Tx FIFO not empty.
 	RxNotEmpty  Event = 1 << 21 // Rx FIFO not empty.
 	IOIRQ       Event = 1 << 22 // SDIO interrupt request.
-	EvAll       Event = 0x7FFDC0
-)
-
-type Error byte
-
-const (
-	ErrCmdCRC      Error = 1 << 0 // Command response received, CRC failed.
-	ErrDataCRC     Error = 1 << 1 // Data response receifed, CRC failed.
-	ErrCmdTimeout  Error = 1 << 2 // Command response timeout.
-	ErrDataTimeout Error = 1 << 3 // Data response timeout.
-	ErrTxUnderrun  Error = 1 << 4 // Tx FIFO underrun.
-	ErrRxOverrun   Error = 1 << 5 // Rx FIFO overrun.
-	ErrAll         Error = 0x3F
+	EvAll       Event = 0x7FFFFF &^ Event(ErrAll)
 )
 
 func (err Error) Error() string {
@@ -265,6 +265,9 @@ func (err Error) Error() string {
 	case err&ErrRxOverrun != 0:
 		d = ErrRxOverrun
 		s = "sdmmc: Rx overrun+"
+	case err&ErrStartBit != 0:
+		d = ErrStartBit
+		s = "sdmmc: start bit+"
 	default:
 		return ""
 	}
