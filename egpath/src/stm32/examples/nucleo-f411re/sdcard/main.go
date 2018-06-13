@@ -17,7 +17,6 @@ import (
 )
 
 //var sd *sdmmc.DriverDMA
-
 var sd *sdmmc.Driver
 
 func init() {

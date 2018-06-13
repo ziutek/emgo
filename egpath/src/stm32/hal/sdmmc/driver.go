@@ -170,11 +170,11 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	}
 	d.done.Reset(0)
 	irqs := DataEnd
-	if d.dtc&Recv == 0 {
+	if d.dtc&Recv != 0 {
+		irqs |= RxHalfFull
+	} else {
 		irqs |= TxHalfEmpty
 		p.SetDataCtrl(d.dtc)
-	} else {
-		irqs |= RxHalfFull
 	}
 	fence.W() // This orders writes to normal and I/O memory.
 	p.SetIRQMask(irqs, ErrAll)

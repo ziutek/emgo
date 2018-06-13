@@ -108,7 +108,7 @@ const (
 	HasResp  Command = 1 << 6  // Response expected.
 	LongResp Command = 1 << 7  // Long response.
 	WaitInt  Command = 1 << 8  // Disable command timeout and wait for IRQ.
-	WaitPend Command = 1 << 9  // Wait for end of stream data transfer.
+	WaitPend Command = 1 << 9  // Wait for end of data transfer before send cmd.
 	CmdEna   Command = 1 << 10 // Enable CPSM (send command) / CPSM is enabled.
 	SuspIO   Command = 1 << 11 // SDIO suspend command.
 )
@@ -132,7 +132,8 @@ func (p *Periph) RespCmd() Command {
 }
 
 // Resp returns n-th 32-bit word of the last received response. Resp(0) returns
-// the most significant bits, Resp(3) returns the least significant bits.
+// all bits of short response. In case of long response Resp(0) returns bits
+// 127:96, Resp(1) - 95:64, Resp(2) - 63:32, Resp(3) - 31:0.
 func (p *Periph) Resp(n int) uint32 {
 	return p.raw.RESP[n].U32.Load()
 }
@@ -152,9 +153,10 @@ func (p *Periph) DataLen() int {
 	return int(p.raw.DLEN.Load())
 }
 
-// SetDataLen sets the number of data bytes to be transfered.
+// SetDataLen sets the number of data bytes to be transfered. It accepts value
+// from 0 to 1<<24 - 1.
 func (p *Periph) SetDataLen(dlen int) {
-	if uint(dlen) > 1<<24-1 {
+	if uint(dlen) >= 1<<24 {
 		panic("sdio: bad data len")
 	}
 	p.raw.DLEN.U32.Store(uint32(dlen))
@@ -215,7 +217,7 @@ const (
 	ErrDataTimeout Error = 1 << 3 // Data response timeout.
 	ErrTxUnderrun  Error = 1 << 4 // Tx FIFO underrun.
 	ErrRxOverrun   Error = 1 << 5 // Rx FIFO overrun.
-	ErrStartBit    Error = 1 << 9 // Data start bit detection problem.
+	ErrStartBit    Error = 1 << 9 // Start bit not detected on all data signals.
 	ErrAll         Error = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9
 )
 
@@ -224,7 +226,7 @@ type Event uint32
 const (
 	CmdRespOK   Event = 1 << 6  // Command response received, CRC OK.
 	CmdSent     Event = 1 << 7  // Command sent (no response required).
-	DataEnd     Event = 1 << 8  // DataCount() == 0.
+	DataEnd     Event = 1 << 8  // RemainBytes() == 0.
 	DataBlkEnd  Event = 1 << 10 // Data block sent/received, CRC OK.
 	CmdAct      Event = 1 << 11 // Command transfer in progress.
 	TxAct       Event = 1 << 12 // Data transmit in progress.
@@ -287,8 +289,10 @@ func (p *Periph) Status() (Event, Error) {
 	return Event(sta) & EvAll, Error(sta) & ErrAll
 }
 
-// Clear clears specified events and errors. All errors and CmdRespOK, CmdSent,
-// DataEnd, DataBlkEnd, IOIRQ events can be cleared this way.
+// Clear can be used to clear static events and errors flags. All errors and
+// CmdRespOK, CmdSent, DataEnd, DataBlkEnd, IOIRQ events are static flags that
+// remain asserted until Clear is called. Other events are dynamic flags that
+// change the state following the underlying logic.
 func (p *Periph) Clear(ev Event, err Error) {
 	p.raw.ICR.U32.Store(uint32(ev) | uint32(err))
 }
