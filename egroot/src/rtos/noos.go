@@ -38,21 +38,15 @@ func (f *EventFlag) reset(val int) {
 	fence.RW_SMP() // Reset has RELEASE semantic.
 	state := atomicInitLoadState(&f.state)
 	event := state &^ 1
-	new := event | syscall.Event(val&1)
-	if state != new {
-		syscall.AtomicStoreEvent(&f.state, new)
-	}
+	syscall.AtomicStoreEvent(&f.state, event|syscall.Event(val&1))
 }
 
 func (f *EventFlag) signal(val int) {
 	fence.RW_SMP() // Signal has RELEASE semantic.
 	state := atomicInitLoadState(&f.state)
 	event := state &^ 1
-	new := event | syscall.Event(val&1)
-	if state != new {
-		syscall.AtomicStoreEvent(&f.state, new)
-		event.Send()
-	}
+	syscall.AtomicStoreEvent(&f.state, event|syscall.Event(val&1))
+	event.Send()
 }
 
 func (f *EventFlag) value() int {
