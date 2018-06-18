@@ -102,12 +102,13 @@ func (ts *taskSched) SetSysTimer(nanosec func() int64, setWakeup func(int64)) {
 func (ts *taskSched) deliverEvents(e syscall.Event) {
 	for n := range ts.tasks {
 		ti := ts.tasks[n].info
+
 		switch ti.state() {
 		case taskEmpty:
 			// skip
 		case taskWaitEvent:
 			if ti.event&e != 0 {
-				ti.event = 0
+				ti.event = 0 // Task will set it again before subsequent sleep.
 				ti.setState(taskReady)
 			}
 		default:
