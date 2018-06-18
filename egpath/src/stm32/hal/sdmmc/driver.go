@@ -10,6 +10,7 @@ import (
 // Driver implements sdcard.Host interface.
 type Driver struct {
 	driverCommon
+	isr  func(*Driver)
 	addr uintptr
 	n    int
 	err  Error
@@ -61,64 +62,96 @@ func (d *Driver) SetBusWidth(width sdcard.BusWidth) {
 }
 
 func (d *Driver) ISR() {
+	d.isr(d)
+}
+
+func (d *Driver) cmdISR() {
 	p := d.p
-	ev, err := p.Status()
+	_, err := p.Status()
+	if err != 0 || d.n == 0 {
+		p.SetIRQMask(0, 0)
+		d.done.Signal(1)
+	}
+	irqs := DataEnd
+	if d.dtc&Recv != 0 {
+		d.isr = (*Driver).recvISR
+		irqs |= RxHalfFull
+	} else {
+		irqs |= TxHalfEmpty
+		d.isr = (*Driver).sendISR
+		p.SetDataCtrl(d.dtc)
+	}
+	p.SetIRQMask(irqs, ErrAll)
+}
+
+func (d *Driver) recvISR() {
+	p := d.p
 	addr := d.addr
 	n := d.n
+	for n >= 8 {
+		ev, err := p.Status()
+		if err != 0 {
+			goto done
+		}
+		if ev&RxHalfFull == 0 {
+			goto wait
+		}
+		addr = burstCopyPTM(p.raw.FIFO.Addr(), addr)
+		n -= 8
+	}
+	ev, err := p.Status()
 	if err != 0 {
 		goto done
 	}
-	if n <= 0 {
-		d.n = -n
-		goto done
+	if ev&DataEnd == 0 {
+		goto wait
 	}
-	if d.dtc&Recv != 0 {
-		for n >= 16 {
-			if ev&RxHalfFull == 0 {
-				goto waitData
-			}
-			addr = burstCopyPTM(p.raw.FIFO.Addr(), addr)
-			n -= 16
-			ev, err = p.Status()
-			if err != 0 {
-				goto done
-			}
-		}
-		if ev&DataEnd == 0 {
-			goto waitData
-		}
-		for n > 0 {
-			*(*uint32)(unsafe.Pointer(addr)) = p.Load()
-			addr += 4
-			n--
-		}
-	} else {
-		for n >= 16 {
-			if ev&TxHalfEmpty == 0 {
-				goto waitData
-			}
-			addr = burstCopyMTP(addr, p.raw.FIFO.Addr())
-			n -= 16
-			ev, err = p.Status()
-			if err != 0 {
-				goto done
-			}
-		}
-		if ev&DataEnd == 0 {
-			goto waitData
-		}
-		for n > 0 {
-			p.Store(*(*uint32)(unsafe.Pointer(addr)))
-			addr += 4
-			n--
-		}
+	for n > 0 {
+		*(*uint32)(unsafe.Pointer(addr)) = p.Load()
+		*(*uint32)(unsafe.Pointer(addr + 4)) = p.Load()
+		addr += 8
+		n--
 	}
-	d.n = n // eq. d.n = 0
 done:
 	p.SetIRQMask(0, 0)
 	d.done.Signal(1)
-	return
-waitData:
+wait:
+	d.addr = addr
+	d.n = n
+}
+
+func (d *Driver) sendISR() {
+	p := d.p
+	addr := d.addr
+	n := d.n
+	for n >= 8 {
+		ev, err := p.Status()
+		if err != 0 {
+			goto done
+		}
+		if ev&TxHalfEmpty == 0 {
+			goto wait
+		}
+		addr = burstCopyMTP(addr, p.raw.FIFO.Addr())
+		n -= 8
+	}
+	ev, err := p.Status()
+	if err != 0 {
+		goto done
+	}
+	if ev&DataEnd == 0 {
+		goto wait
+	}
+	for n > 0 {
+		p.Store(*(*uint32)(unsafe.Pointer(addr)))
+		p.Store(*(*uint32)(unsafe.Pointer(addr + 4)))
+		addr += 8
+		n--
+	}
+done:
+	p.SetIRQMask(0, 0)
+	d.done.Signal(1)
+wait:
 	d.addr = addr
 	d.n = n
 }
@@ -137,6 +170,7 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	} else {
 		waitFor = CmdSent
 	}
+	d.isr = (*Driver).cmdISR
 	d.done.Reset(0)
 	p := d.p
 	p.Clear(EvAll, ErrAll)
@@ -166,35 +200,22 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 		}
 	}
 	if d.dtc == 0 {
-		return // No data transfer scheduled.
+		return
 	}
-	d.done.Reset(0)
-	irqs := DataEnd
-	if d.dtc&Recv != 0 {
-		irqs |= RxHalfFull
-	} else {
-		irqs |= TxHalfEmpty
-		p.SetDataCtrl(d.dtc)
-	}
-	fence.W() // This orders writes to normal and I/O memory.
-	p.SetIRQMask(irqs, ErrAll)
-	d.done.Wait(1, 0)
-	var waitCRC Event
 	if d.dtc&Stream == 0 {
-		waitCRC = DataBlkEnd
+		// Wait for data CRC.
+		for {
+			ev, err := p.Status()
+			if err != 0 {
+				d.err = err
+				break
+			}
+			if ev&DataBlkEnd != 0 {
+				break
+			}
+		}
 	}
 	d.dtc = 0
-	for {
-		ev, err := p.Status()
-		if err != 0 {
-			d.err = err
-			return
-		}
-		waitCRC &^= ev
-		if waitCRC == 0 {
-			return
-		}
-	}
 }
 
 // SetupData setups the data transfer for subsequent command.
@@ -204,7 +225,7 @@ func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
 	}
 	d.dtc = DTEna | DataCtrl(mode)
 	d.addr = uintptr(unsafe.Pointer(&buf[0]))
-	d.n = len(buf) * -2
+	d.n = -len(buf)
 	p := d.p
 	p.SetDataLen(len(buf) * 8)
 	if d.dtc&Recv != 0 {

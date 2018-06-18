@@ -173,6 +173,8 @@ func main() {
 			sd.SetClock(50e6, true)
 		}
 	}
+	
+	return
 
 	delay.Millisec(500)
 
