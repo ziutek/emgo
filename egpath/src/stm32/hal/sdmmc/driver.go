@@ -45,6 +45,7 @@ func (d *Driver) Err(clear bool) error {
 	}
 	if clear {
 		d.n = 0
+		d.dtc = 0
 		d.err = 0
 	}
 	return err
@@ -61,25 +62,27 @@ func (d *Driver) SetBusWidth(width sdcard.BusWidth) {
 	d.setBusWidth(width)
 }
 
+// ISR handles command responses and data transfers. It requires high priority
+// to avoid data FIFO underrun/overrun.
 func (d *Driver) ISR() {
 	d.isr(d)
 }
 
 func (d *Driver) cmdISR() {
 	p := d.p
-	_, err := p.Status()
-	if err != 0 || d.n == 0 {
-		p.SetIRQMask(0, 0)
+	p.SetIRQMask(0, 0)
+	if _, err := p.Status(); err != 0 || d.dtc == 0 {
 		d.done.Signal(1)
+		return
 	}
-	irqs := DataEnd
+	p.SetDataCtrl(d.dtc)
+	var irqs Event
 	if d.dtc&Recv != 0 {
+		irqs = RxHalfFull | DataEnd
 		d.isr = (*Driver).recvISR
-		irqs |= RxHalfFull
 	} else {
-		irqs |= TxHalfEmpty
+		irqs = TxHalfEmpty // It seems that 
 		d.isr = (*Driver).sendISR
-		p.SetDataCtrl(d.dtc)
 	}
 	p.SetIRQMask(irqs, ErrAll)
 }
@@ -99,11 +102,9 @@ func (d *Driver) recvISR() {
 		addr = burstCopyPTM(p.raw.FIFO.Addr(), addr)
 		n -= 8
 	}
-	ev, err := p.Status()
-	if err != 0 {
+	if ev, err := p.Status(); err != 0 {
 		goto done
-	}
-	if ev&DataEnd == 0 {
+	} else if ev&DataEnd == 0 {
 		goto wait
 	}
 	for n > 0 {
@@ -135,11 +136,12 @@ func (d *Driver) sendISR() {
 		addr = burstCopyMTP(addr, p.raw.FIFO.Addr())
 		n -= 8
 	}
-	ev, err := p.Status()
-	if err != 0 {
+	if n == 0 {
 		goto done
 	}
-	if ev&DataEnd == 0 {
+	if ev, err := p.Status(); err != 0 {
+		goto done
+	} else if ev&TxHalfEmpty == 0 {
 		goto wait
 	}
 	for n > 0 {
@@ -156,6 +158,22 @@ wait:
 	d.n = n
 }
 
+// SetupData setups the data transfer for subsequent command.
+func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
+	if d.err != 0 {
+		return
+	}
+	if len(buf) == 0 {
+		panicShortBuf()
+	}
+	d.dtc = DTEna | DataCtrl(mode)
+	d.addr = uintptr(unsafe.Pointer(&buf[0]))
+	d.n = len(buf)
+	p := d.p
+	p.SetDataLen(len(buf) * 8)
+
+}
+
 // SendCmd sends the cmd to the card and receives its response, if any. Short
 // response is returned in r[0]. Long is returned in r[0:3] (r[0] contains the
 // least significant bits, r[3] contains the most significant bits). If preceded
@@ -164,11 +182,9 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	if d.err != 0 {
 		return
 	}
-	var waitFor Event
+	cmdEnd := CmdSent
 	if cmd&sdcard.HasResp != 0 {
-		waitFor = CmdRespOK
-	} else {
-		waitFor = CmdSent
+		cmdEnd = CmdRespOK
 	}
 	d.isr = (*Driver).cmdISR
 	d.done.Reset(0)
@@ -176,16 +192,15 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	p.Clear(EvAll, ErrAll)
 	p.SetArg(arg)
 	p.SetCmd(CmdEna | Command(cmd)&255)
-	fence.W()                     // Orders writes to normal and IO memory.
-	p.SetIRQMask(waitFor, ErrAll) // After SetCmd because of spurious IRQs.
+	fence.W()                    // Orders writes to normal and IO memory.
+	p.SetIRQMask(cmdEnd, ErrAll) // After SetCmd because of spurious IRQs.
 	d.done.Wait(1, 0)
 	if _, err := p.Status(); err != 0 {
 		if rt := cmd & sdcard.RespType; rt == sdcard.R3 || rt == sdcard.R4 {
-			err &^= ErrCmdCRC
+			err &^= ErrCmdCRC // Ignore CRC error for R3 and R4 responses.
 		}
 		if err != 0 {
 			d.err = err
-			d.dtc = 0
 			return
 		}
 	}
@@ -200,15 +215,15 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 		}
 	}
 	if d.dtc == 0 {
-		return
+		return // No data transfer sheduled.
 	}
 	if d.dtc&Stream == 0 {
-		// Wait for data CRC.
+		// Wait for data CRC (it should be ready so use simple pooling).
 		for {
 			ev, err := p.Status()
 			if err != 0 {
 				d.err = err
-				break
+				return
 			}
 			if ev&DataBlkEnd != 0 {
 				break
@@ -216,19 +231,5 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 		}
 	}
 	d.dtc = 0
-}
-
-// SetupData setups the data transfer for subsequent command.
-func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
-	if d.err != 0 || len(buf) == 0 {
-		return
-	}
-	d.dtc = DTEna | DataCtrl(mode)
-	d.addr = uintptr(unsafe.Pointer(&buf[0]))
-	d.n = -len(buf)
-	p := d.p
-	p.SetDataLen(len(buf) * 8)
-	if d.dtc&Recv != 0 {
-		p.SetDataCtrl(d.dtc)
-	}
+	return
 }

@@ -174,8 +174,6 @@ func main() {
 		}
 	}
 	
-	return
-
 	delay.Millisec(500)
 
 	// Set block size to 512 B (required for protocol version < 2 or SDSC card).
