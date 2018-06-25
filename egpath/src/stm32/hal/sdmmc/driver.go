@@ -81,7 +81,8 @@ func (d *Driver) cmdISR() {
 		irqs = RxHalfFull | DataEnd
 		d.isr = (*Driver).recvISR
 	} else {
-		irqs = TxHalfEmpty // It seems that 
+		d.sendISR() // Immediately fill FIFO.
+		irqs = TxHalfEmpty
 		d.isr = (*Driver).sendISR
 	}
 	p.SetIRQMask(irqs, ErrAll)
@@ -91,18 +92,18 @@ func (d *Driver) recvISR() {
 	p := d.p
 	addr := d.addr
 	n := d.n
-	for n >= 8 {
-		ev, err := p.Status()
+	ev, err := p.Status()
+	for n >= 4 {
 		if err != 0 {
 			goto done
-		}
-		if ev&RxHalfFull == 0 {
+		} else if ev&RxHalfFull == 0 {
 			goto wait
 		}
 		addr = burstCopyPTM(p.raw.FIFO.Addr(), addr)
-		n -= 8
+		n -= 4
+		ev, err = p.Status()
 	}
-	if ev, err := p.Status(); err != 0 {
+	if err != 0 {
 		goto done
 	} else if ev&DataEnd == 0 {
 		goto wait
@@ -125,21 +126,18 @@ func (d *Driver) sendISR() {
 	p := d.p
 	addr := d.addr
 	n := d.n
-	for n >= 8 {
-		ev, err := p.Status()
+	ev, err := p.Status()
+	for n >= 4 {
 		if err != 0 {
 			goto done
-		}
-		if ev&TxHalfEmpty == 0 {
+		} else if ev&TxHalfEmpty == 0 {
 			goto wait
 		}
 		addr = burstCopyMTP(addr, p.raw.FIFO.Addr())
-		n -= 8
+		n -= 4
+		ev, err = p.Status()
 	}
-	if n == 0 {
-		goto done
-	}
-	if ev, err := p.Status(); err != 0 {
+	if err != 0 {
 		goto done
 	} else if ev&TxHalfEmpty == 0 {
 		goto wait
@@ -149,6 +147,10 @@ func (d *Driver) sendISR() {
 		p.Store(*(*uint32)(unsafe.Pointer(addr + 4)))
 		addr += 8
 		n--
+	}
+	if ev&DataEnd == 0 {
+		p.SetIRQMask(DataEnd, ErrAll)
+		goto wait
 	}
 done:
 	p.SetIRQMask(0, 0)

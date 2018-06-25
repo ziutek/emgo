@@ -132,7 +132,7 @@ func main() {
 	st := sd.SendCmd(sdcard.CMD7(rca)).R1()
 	checkErr("CMD7", sd.Err(true), st)
 
-	// Now the card is int Transfer State.
+	// Now the card is in the Transfer State.
 
 	buf := make(sdcard.Data, 8*512/8)
 
@@ -173,7 +173,7 @@ func main() {
 			sd.SetClock(50e6, true)
 		}
 	}
-	
+
 	delay.Millisec(500)
 
 	// Set block size to 512 B (required for protocol version < 2 or SDSC card).
@@ -216,7 +216,6 @@ func main() {
 
 	t := rtos.Nanosec()
 	for n, step := uint(0), uint(bufSize)/512; n < testLen; n += step {
-		fmt.Printf(".")
 		addr := n
 		if oca&sdcard.HCXC == 0 {
 			addr *= 512
@@ -234,6 +233,7 @@ func main() {
 	}
 	dt := rtos.Nanosec() - t
 	fmt.Printf("%d KiB/s\n", 1e9/2*int64(testLen)/dt)
+	fmt.Printf("End\n")
 }
 
 func sdioISR() {
