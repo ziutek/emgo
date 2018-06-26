@@ -1,15 +1,21 @@
 package sdmmc
 
 import (
+	"rtos"
 	"sync/fence"
 	"unsafe"
 
 	"sdcard"
+
+	"stm32/hal/exti"
+	"stm32/hal/gpio"
 )
 
 // Driver implements sdcard.Host interface.
 type Driver struct {
-	driverCommon
+	p    *Periph
+	d0   gpio.Pin
+	done rtos.EventFlag
 	isr  func(*Driver)
 	addr uintptr
 	n    int
@@ -18,14 +24,20 @@ type Driver struct {
 }
 
 // MakeDriver returns initialized SPI driver that uses provided SPI peripheral.
-func MakeDriver(p *Periph) Driver {
-	return Driver{driverCommon: driverCommon{p: p}}
+// If d0 is valid it also configures EXTI to detect rising edge on d0 pin.
+func MakeDriver(p *Periph, d0 gpio.Pin) Driver {
+	if d0.IsValid() {
+		l := exti.Lines(d0.Mask())
+		l.Connect(d0.Port())
+		l.EnableRiseTrig()
+	}
+	return Driver{p: p, d0: d0}
 }
 
 // NewDriver provides convenient way to create heap allocated Driver struct.
-func NewDriver(p *Periph) *Driver {
+func NewDriver(p *Periph, d0 gpio.Pin) *Driver {
 	d := new(Driver)
-	*d = MakeDriver(p)
+	*d = MakeDriver(p, d0)
 	return d
 }
 
@@ -54,12 +66,24 @@ func (d *Driver) Err(clear bool) error {
 // SetBusClock sets SD bus clock frequency (freqhz <= 0 disables clock). If
 // pwrsave is true the clock output is automatically disabled when bus is idle.
 func (d *Driver) SetClock(freqhz int, pwrsave bool) {
-	d.setClock(freqhz, pwrsave)
+	setClock(d.p, freqhz, pwrsave)
 }
 
 // SetBusWidth sets the SD bus width.
 func (d *Driver) SetBusWidth(width sdcard.BusWidth) {
-	d.setBusWidth(width)
+	setBusWidth(d.p, width)
+}
+
+func (d *Driver) Wait(deadline int64) bool {
+	return wait(d.d0, &d.done, deadline)
+}
+
+func (d *Driver) BusyLine() exti.Lines {
+	return exti.Lines(d.d0.Mask())
+}
+
+func (d *Driver) BusyISR() {
+	busyISR(d.d0, &d.done)
 }
 
 // ISR handles command responses and data transfers. It requires high priority

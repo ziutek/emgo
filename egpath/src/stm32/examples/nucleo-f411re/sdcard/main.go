@@ -9,6 +9,7 @@ import (
 	"sdcard"
 
 	"stm32/hal/dma"
+	"stm32/hal/exti"
 	"stm32/hal/gpio"
 	"stm32/hal/irq"
 	"stm32/hal/sdmmc"
@@ -16,8 +17,8 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-//var sd *sdmmc.DriverDMA
 var sd *sdmmc.Driver
+var d0 gpio.Pin
 
 func init() {
 	system.Setup96(8) // Setups USB/SDIO/RNG clock to 48 MHz
@@ -33,7 +34,7 @@ func init() {
 
 	gpio.B.EnableClock(true)
 	d3 := gpio.B.Pin(5)
-	d0 := gpio.B.Pin(7)
+	d0 = gpio.B.Pin(7)
 	clk := gpio.B.Pin(15)
 
 	cfg := gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh, Pull: gpio.PullUp}
@@ -45,11 +46,12 @@ func init() {
 	d := dma.DMA2
 	d.EnableClock(true)
 	//sd = sdmmc.NewDriverDMA(sdmmc.SDIO, d.Channel(6, 4))
-	sd = sdmmc.NewDriver(sdmmc.SDIO)
+	sd = sdmmc.NewDriver(sdmmc.SDIO, d0)
 	sd.Periph().EnableClock(true)
 	sd.Periph().Enable()
 
 	rtos.IRQ(irq.SDIO).Enable()
+	rtos.IRQ(irq.EXTI9_5).Enable()
 }
 
 func main() {
@@ -174,8 +176,6 @@ func main() {
 		}
 	}
 
-	delay.Millisec(500)
-
 	// Set block size to 512 B (required for protocol version < 2 or SDSC card).
 	if ocr&sdcard.HCXC == 0 {
 		st = sd.SendCmd(sdcard.CMD16(512)).R1()
@@ -192,7 +192,8 @@ func main() {
 	st = sd.SendCmd(sdcard.CMD24(512)).R1()
 	checkErr("CMD24", sd.Err(true), st)
 
-	delay.Millisec(500)
+	// Wait for end of write.
+	sd.Wait(0)
 
 	for i := range block {
 		block[i] = 0
@@ -240,7 +241,16 @@ func sdioISR() {
 	sd.ISR()
 }
 
+func exti9_5ISR() {
+	pending := exti.Pending() & 0x3E0
+	pending.ClearPending()
+	if pending&sd.BusyLine() != 0 {
+		sd.BusyISR()
+	}
+}
+
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.SDIO: sdioISR,
+	irq.SDIO:    sdioISR,
+	irq.EXTI9_5: exti9_5ISR,
 }

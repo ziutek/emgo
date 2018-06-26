@@ -5,18 +5,15 @@ import (
 	"sync/fence"
 
 	"sdcard"
+
+	"stm32/hal/exti"
+	"stm32/hal/gpio"
 )
 
-type driverCommon struct {
-	p    *Periph
-	done rtos.EventFlag
-}
-
-func (d *driverCommon) setClock(freqhz int, pwrsave bool) {
+func setClock(p *Periph, freqhz int, pwrsave bool) {
 	var (
 		clkdiv int
 		cfg    BusClock
-		p      = d.p
 	)
 	busWidth, _ := p.BusClock()
 	busWidth &= BusWidth
@@ -36,47 +33,32 @@ func (d *driverCommon) setClock(freqhz int, pwrsave bool) {
 	p.SetDataTimeout(uint(freqhz)) // ≈ 1s
 }
 
-func (d *driverCommon) setBusWidth(width sdcard.BusWidth) {
+func setBusWidth(p *Periph, width sdcard.BusWidth) {
 	if width > sdcard.Bus8 {
 		panic("sdmmc: bad bus width")
 	}
-	p := d.p
 	cfg, clkdiv := p.BusClock()
 	cfg = cfg&^BusWidth | BusClock(width*3>>2)<<3
 	p.SetBusClock(cfg, clkdiv)
 }
 
-func (d *driverCommon) sendCmd(cmd sdcard.Command, arg uint32, r *sdcard.Response) Error {
-	var waitFor Event
-	if cmd&sdcard.HasResp != 0 {
-		waitFor = CmdRespOK
-	} else {
-		waitFor = CmdSent
+func wait(d0 gpio.Pin, done *rtos.EventFlag, deadline int64) bool {
+	if d0.Load() != 0 {
+		return true // Fast path.
 	}
-	d.done.Reset(0)
-	p := d.p
-	p.Clear(EvAll, ErrAll)
-	p.SetIRQMask(waitFor, ErrAll)
-	p.SetArg(arg)
-	fence.W() // This orders writes to normal and I/O memory.
-	p.SetCmd(CmdEna | Command(cmd)&255)
-	d.done.Wait(1, 0)
-	_, err := p.Status()
-	if cmd&sdcard.HasResp != 0 {
-		if err&ErrCmdCRC != 0 {
-			switch cmd & sdcard.RespType {
-			case sdcard.R3, sdcard.R4:
-				err &^= ErrCmdCRC
-			}
-		}
-		if cmd&sdcard.LongResp != 0 {
-			r[3] = p.Resp(0) // Most significant bits.
-			r[2] = p.Resp(1)
-			r[1] = p.Resp(2)
-			r[0] = p.Resp(3) // Least significant bits.
-		} else {
-			r[0] = p.Resp(0)
-		}
+	done.Reset(0)
+	l := exti.Lines(d0.Mask())
+	l.ClearPending()
+	fence.W() // Order writes to normal and I/O memory.
+	l.EnableIRQ()
+	if d0.Load() != 0 {
+		l.DisableIRQ()
+		return true
 	}
-	return err
+	return done.Wait(1, deadline)
+}
+
+func busyISR(d0 gpio.Pin, done *rtos.EventFlag) {
+	exti.Lines(d0.Mask()).DisableIRQ()
+	done.Signal(1)
 }
