@@ -119,6 +119,8 @@ func main() {
 
 	fmt.Printf("Relative Card Address: 0x%04X\n\n", rca)
 
+	printStatus(sd.SendCmd(sdcard.CMD13(rca, sdcard.Status)).R1())
+
 	// After CMD3 card is in Data Transfer Mode (Standby State) and SDIO_CK can
 	// be set to no more than 25 MHz (max. push-pull freq). Clock power save
 	// mode can be enabled.
@@ -135,8 +137,9 @@ func main() {
 	checkErr("CMD7", sd.Err(true), st)
 
 	// Now the card is in the Transfer State.
+	printStatus(sd.SendCmd(sdcard.CMD13(rca, sdcard.Status)).R1())
 
-	buf := make(sdcard.Data, 8*512/8)
+	buf := make(sdcard.Data, 512/8)
 
 	// Read SD Configuration Register.
 	sd.SendCmd(sdcard.CMD55(rca))
@@ -192,8 +195,6 @@ func main() {
 	st = sd.SendCmd(sdcard.CMD24(512)).R1()
 	checkErr("CMD24", sd.Err(true), st)
 
-	waitWrite(sd)
-
 	for i := range block {
 		block[i] = 0
 	}
@@ -207,21 +208,48 @@ func main() {
 	}
 
 	bufSize := len(buf.Bytes())
+	step := bufSize / 512
 	testLen := uint(1e4)
 
 	fmt.Printf(
-		"Reading %d blocks (%d KiB) using %d B buffer ",
+		"Write %d blocks (%d KiB) using %d B buffer: ",
 		testLen, testLen/2, bufSize,
 	)
 
 	t := rtos.Nanosec()
-	for n, step := uint(0), uint(bufSize)/512; n < testLen; n += step {
+	for n := uint(0); n < testLen; n += uint(step) {
+		addr := n
+		if oca&sdcard.HCXC == 0 {
+			addr *= 512
+		}
+		sd.SetupData(sdcard.Send|sdcard.Block512, buf)
+		if step > 1 {
+			st = sd.SendCmd(sdcard.CMD25(addr)).R1()
+			checkErr("CMD25", sd.Err(true), st)
+			st = sd.SendCmd(sdcard.CMD12()).R1()
+			checkErr("CMD12", sd.Err(true), st)
+		} else {
+			st = sd.SendCmd(sdcard.CMD24(addr)).R1()
+			checkErr("CMD24", sd.Err(true), st)
+		}
+	}
+	waitDataReady(sd)
+	dt := rtos.Nanosec() - t
+	fmt.Printf("%d KiB/s\n", 1e9/2*int64(testLen)/dt)
+
+	fmt.Printf(
+		"Read %d blocks (%d KiB) using %d B buffer: ",
+		testLen, testLen/2, bufSize,
+	)
+
+	t = rtos.Nanosec()
+	for n := uint(0); n < testLen; n += uint(step) {
 		addr := n
 		if oca&sdcard.HCXC == 0 {
 			addr *= 512
 		}
 		sd.SetupData(sdcard.Recv|sdcard.Block512, buf)
-		if len(buf.Bytes()) > 512 {
+		if step > 1 {
 			st = sd.SendCmd(sdcard.CMD18(addr)).R1()
 			checkErr("CMD18", sd.Err(true), st)
 			st = sd.SendCmd(sdcard.CMD12()).R1()
@@ -231,7 +259,7 @@ func main() {
 			checkErr("CMD17", sd.Err(true), st)
 		}
 	}
-	dt := rtos.Nanosec() - t
+	dt = rtos.Nanosec() - t
 	fmt.Printf("%d KiB/s\n", 1e9/2*int64(testLen)/dt)
 	fmt.Printf("End\n")
 }

@@ -50,9 +50,12 @@ func (d *Driver) Err(clear bool) error {
 		return nil
 	}
 	var err error
-	if d.err == ErrCmdTimeout {
+	switch d.err {
+	case ErrCmdTimeout:
 		err = sdcard.ErrCmdTimeout
-	} else {
+	case ErrDataTimeout, errReadyForDataTimeout:
+		err = sdcard.ErrDataTimeout
+	default:
 		err = d.err
 	}
 	if clear {
@@ -211,6 +214,11 @@ func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
 func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	if d.err != 0 {
 		return
+	}
+	if d.dtc != 0 {
+		if !d.Wait(rtos.Nanosec() + 250e6) {
+			d.err = errReadyForDataTimeout
+		}
 	}
 	cmdEnd := CmdSent
 	if cmd&sdcard.HasResp != 0 {

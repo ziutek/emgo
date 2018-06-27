@@ -38,14 +38,86 @@ func checkErr(what string, err error, status sdcard.CardStatus) {
 	}
 }
 
-func waitWrite(sd sdcard.Host) {
+func waitDataReady(sd sdcard.Host) {
 	const wait = 250 // ms
 	if sd.Wait(rtos.Nanosec() + wait*1e6) {
 		return
 	}
-	fmt.Printf("write timeout\n")
+	fmt.Printf("data ready timeout\n")
 	for {
 	}
+}
+
+//emgo:const
+var statusStr = [...]string{
+	"?",
+	"?",
+	"?",
+	"AKE_SEQ_ERROR",
+	"?",
+	"APP_CMD",
+	"FX_EVENT",
+	"?",
+	"READY_FOR_DATA",
+	"?",
+	"?",
+	"?",
+	"?",
+	"ERASE_RESET",
+	"CARD_ECC_DISABLED",
+	"WP_ERASE_SKIP",
+	"CSD_OVERWRITE",
+	"?",
+	"?",
+	"ERROR",
+	"CC_ERROR",
+	"CARD_ECC_FAILED",
+	"ILLEGAL_COMMAND",
+	"COM_CRC_ERROR",
+	"LOCK_UNLOCK_FAILED",
+	"CARD_IS_LOCKED",
+	"WP_VIOLATION",
+	"ERASE_PARAM",
+	"ERASE_SEQ_ERROR",
+	"BLOCK_LEN_ERROR",
+	"ADDRESS_ERROR",
+	"OUT_OF_RANGE",
+}
+
+//emgo:const
+var stateStr = [...]string{
+	"StateIdle",
+	"StateReady",
+	"StateIdent",
+	"StateStby",
+	"StateTran",
+	"StateData",
+	"StateRcv",
+	"StatePrg",
+	"StateDis",
+	"?",
+	"?",
+	"?",
+	"?",
+	"?",
+	"?",
+	"StateIOOnly",
+}
+
+func printStatus(st sdcard.CardStatus) {
+	fmt.Printf("Card status: ")
+	fmt.Printf(stateStr[st&sdcard.CURRENT_STATE>>9])
+	for n := uint(0); n < 32; n++ {
+		if n == 9 {
+			n = 12
+			continue
+		}
+		if st&(1<<n) != 0 {
+			fmt.Printf(",")
+			fmt.Printf(statusStr[n])
+		}
+	}
+	fmt.Printf("\n\n")
 }
 
 func printCID(cid sdcard.CID) {
@@ -114,12 +186,10 @@ func printCMD6Status(d []byte) (sel sdcard.SwitchFunc) {
 	printGroupBits(d[2:14])
 	sel = sdcard.SwitchFunc(be.Decode32(d[13:17]) & 0xFFFFFF)
 	fmt.Printf("- selected functions: 0x%06x\n", sel)
-	if d[17] == 0 {
-		goto end
+	if d[17] != 0 {
+		fmt.Printf("- busy functions:\n")
+		printGroupBits(d[18:30])
 	}
-	fmt.Printf("- busy functions:\n")
-	printGroupBits(d[18:30])
-end:
 	fmt.Printf("\n")
 	return
 }

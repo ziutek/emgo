@@ -154,7 +154,7 @@ func CMD8(vhs VHS, checkPattern byte) (Command, uint32) {
 	return cmd8, uint32(vhs)&0xF<<8 | uint32(checkPattern)
 }
 
-// CMD9 (SEND_CSD, R2) gets Card Specific Data from card indentified by rca.
+// CMD9 (SEND_CSD, R2) reads Card Specific Data from card indentified by rca.
 func CMD9(rca uint16) (Command, uint32) {
 	return cmd9, uint32(rca) << 16
 }
@@ -163,6 +163,18 @@ func CMD9(rca uint16) (Command, uint32) {
 // Multiple Block Read Operation.
 func CMD12() (Command, uint32) {
 	return cmd12, 0
+}
+
+type StatusReg byte
+
+const (
+	Status     StatusReg = 0
+	TaskStatus StatusReg = 1
+)
+
+// CMD13 (SEND_STATUS/SEND_TASK_STATUS, R1) reads Status or TaskStatus register.
+func CMD13(rca uint16, reg StatusReg) (Command, uint32) {
+	return cmd13, uint32(rca)<<16 | uint32(reg)<<15
 }
 
 // CMD16 (SET_BLOCKLEN, R1) sets the block length (in bytes) for block commands.
