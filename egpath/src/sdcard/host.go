@@ -61,6 +61,10 @@ type Host interface {
 	// SetupData setups the data transfer for subsequent command.
 	SetupData(mode DataMode, buf Data)
 
+	// Wait waits for deassertion of busy signal on DATA0 line. It returns
+	// false if the deadline has passed. Zero deadline means no deadline.
+	Wait(deadline int64) bool
+
 	// Err returns and clears the host internal error. The internal error, if
 	// not nil, prevents any subsequent operations. Host should convert its
 	// internal command timeout error to ErrCmdTimeout.

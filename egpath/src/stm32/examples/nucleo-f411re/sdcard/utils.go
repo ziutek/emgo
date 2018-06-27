@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary/be"
 	"fmt"
+	"rtos"
 
 	"sdcard"
 )
@@ -34,6 +35,16 @@ func checkErr(what string, err error, status sdcard.CardStatus) {
 		fmt.Printf("%s: 0x%X", what, status)
 		for {
 		}
+	}
+}
+
+func waitWrite(sd sdcard.Host) {
+	const wait = 250 // ms
+	if sd.Wait(rtos.Nanosec() + wait*1e6) {
+		return
+	}
+	fmt.Printf("write timeout\n")
+	for {
 	}
 }
 

@@ -74,14 +74,18 @@ func (d *Driver) SetBusWidth(width sdcard.BusWidth) {
 	setBusWidth(d.p, width)
 }
 
+// Wait waits for deassertion of busy signal on DATA0 line. It returns false if
+// the deadline has passed. Zero deadline means no deadline.
 func (d *Driver) Wait(deadline int64) bool {
 	return wait(d.d0, &d.done, deadline)
 }
 
+// BusyLine returns EXTI line used to detect end of busy state.
 func (d *Driver) BusyLine() exti.Lines {
 	return exti.Lines(d.d0.Mask())
 }
 
+// BusyISR handles EXTI IRQ that detects end of busy state.
 func (d *Driver) BusyISR() {
 	busyISR(d.d0, &d.done)
 }
