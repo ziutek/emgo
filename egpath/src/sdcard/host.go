@@ -41,19 +41,12 @@ const (
 	Block16K DataMode = 14 << 4 // Block data transfer, block size: 16 KiB.
 )
 
-var (
-	// ErrCmdTimeout is returned by Host in case of command response timeout.
-	ErrCmdTimeout = errors.New("sdio: cmd timeout")
-
-	// ErrDataTimeout is returned by Host in case of data response timeout or
-	// ready for data timeout.
-	ErrDataTimeout = errors.New("sdio: data timeout")
-)
+// ErrCmdTimeout is returned by Host in case of command response timeout.
+var	ErrCmdTimeout = errors.New("sdio: cmd timeout")
 
 type Host interface {
-	// SetClock sets SD/SPI clock frequency. SD host can implement disabling the
-	// clock output if the bus is idle and pwrsave is true.
-	SetClock(freqhz int, pwrsave bool)
+	// SetClock sets SD/SPI clock frequency.
+	SetClock(freqhz int)
 
 	// SetBusWidth sets the SD bus width.
 	SetBusWidth(width BusWidth)
@@ -61,15 +54,14 @@ type Host interface {
 	// SendCmd sends the cmd to the card and receives its response, if any.
 	// Short response is returned in r[0], long is returned in r[0:3] (r[0]
 	// contains the least significant bits, r[3] contains the most significant
-	// bits). If preceded by SetupData, SendCmd waits for READY_FOR_DATA state
-	// and performs the data transfer.
+	// bits). If preceded by SetupData, SendCmd performs the data transfer.
 	SendCmd(cmd Command, arg uint32) (r Response)
 
 	// SetupData setups the data transfer for subsequent command.
 	SetupData(mode DataMode, buf Data)
 
-	// Wait waits for deassertion of busy signal on DATA0 line (READY_FOR_DATA).
-	// It returns false if the deadline has passed.
+	// Wait waits for deassertion of busy signal on DATA0 line (READY_FOR_DATA
+	// state). It returns false if the deadline has passed.
 	Wait(deadline int64) bool
 
 	// Err returns and clears the host internal error. The internal error, if

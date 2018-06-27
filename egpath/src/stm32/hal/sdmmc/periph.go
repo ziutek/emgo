@@ -219,8 +219,6 @@ const (
 	ErrRxOverrun   Error = 1 << 5 // Rx FIFO overrun.
 	ErrStartBit    Error = 1 << 9 // Start bit not detected on all data signals.
 	ErrAll         Error = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9
-
-	errReadyForDataTimeout Error = 1 << 15
 )
 
 type Event uint32

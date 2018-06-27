@@ -10,7 +10,11 @@ import (
 	"stm32/hal/gpio"
 )
 
-func setClock(p *Periph, freqhz int, pwrsave bool) {
+// setClock don't use PwrSave mode because continous clock is required during
+// initialization and multiple block write (and maybe more cases). Using
+// PwrSave mode seems to be impractical. Low power application should disable
+// the whole peripheral if not used.
+func setClock(p *Periph, freqhz int) {
 	var (
 		clkdiv int
 		cfg    BusClock
@@ -25,9 +29,6 @@ func setClock(p *Periph, freqhz int, pwrsave bool) {
 	if clkdiv < 0 {
 		clkdiv = 0
 		cfg |= ClkByp
-	}
-	if pwrsave {
-		cfg |= PwrSave
 	}
 	p.SetBusClock(cfg|busWidth, clkdiv)
 	p.SetDataTimeout(uint(freqhz)) // ≈ 1s

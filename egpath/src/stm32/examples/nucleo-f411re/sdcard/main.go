@@ -18,6 +18,7 @@ import (
 )
 
 var sddrv *sdmmc.Driver
+var d0 gpio.Pin
 
 func init() {
 	system.Setup96(8) // Setups USB/SDIO/RNG clock to 48 MHz
@@ -33,7 +34,7 @@ func init() {
 
 	gpio.B.EnableClock(true)
 	d3 := gpio.B.Pin(5)
-	d0 := gpio.B.Pin(7)
+	d0 = gpio.B.Pin(7)
 	clk := gpio.B.Pin(15)
 
 	cfg := gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh, Pull: gpio.PullUp}
@@ -60,9 +61,8 @@ func main() {
 	v2 := true
 	sd := sdcard.Host(sddrv)
 
-	// Set SDIO_CK to no more than 400 kHz (max. open-drain freq). Clock must be
-	// continuously enabled (pwrsave = false) to allow correct initialisation.
-	sd.SetClock(400e3, false)
+	// Set SDIO_CK to no more than 400 kHz (max. open-drain freq)..
+	sd.SetClock(400e3)
 
 	// SD card power-up takes maximum of 1 ms or 74 SDIO_CK cycles.
 	delay.Millisec(1)
@@ -124,7 +124,7 @@ func main() {
 	// After CMD3 card is in Data Transfer Mode (Standby State) and SDIO_CK can
 	// be set to no more than 25 MHz (max. push-pull freq). Clock power save
 	// mode can be enabled.
-	sd.SetClock(25e6, true)
+	sd.SetClock(25e6)
 
 	// Read Card Specific Data register.
 	csd := sd.SendCmd(sdcard.CMD9(rca)).R2CSD()
@@ -139,7 +139,7 @@ func main() {
 	// Now the card is in the Transfer State.
 	printStatus(sd.SendCmd(sdcard.CMD13(rca, sdcard.Status)).R1())
 
-	buf := make(sdcard.Data, 512/8)
+	buf := make(sdcard.Data, 8*512/8)
 
 	// Read SD Configuration Register.
 	sd.SendCmd(sdcard.CMD55(rca))
@@ -175,7 +175,7 @@ func main() {
 		if sel&sdcard.AccessMode == sdcard.HighSpeed && false {
 			fmt.Printf("Card supports High Speed: set clock to 50 MHz.\n\n")
 			delay.Millisec(1) // Function switch takes max. 8 SDIO_CK cycles.
-			sd.SetClock(50e6, true)
+			sd.SetClock(50e6)
 		}
 	}
 
@@ -192,6 +192,7 @@ func main() {
 
 	fmt.Printf("Write block of data...\n")
 	sd.SetupData(sdcard.Send|sdcard.Block512, block)
+
 	st = sd.SendCmd(sdcard.CMD24(512)).R1()
 	checkErr("CMD24", sd.Err(true), st)
 
@@ -200,6 +201,7 @@ func main() {
 	}
 	fmt.Printf("Read block of data...\n")
 	sd.SetupData(sdcard.Recv|sdcard.Block512, block)
+	waitDataReady(sd)
 	st = sd.SendCmd(sdcard.CMD17(512)).R1()
 	checkErr("CMD17", sd.Err(true), st)
 
@@ -209,13 +211,12 @@ func main() {
 
 	bufSize := len(buf.Bytes())
 	step := bufSize / 512
-	testLen := uint(1e4)
+	testLen := uint(1e3)
 
 	fmt.Printf(
 		"Write %d blocks (%d KiB) using %d B buffer: ",
 		testLen, testLen/2, bufSize,
 	)
-
 	t := rtos.Nanosec()
 	for n := uint(0); n < testLen; n += uint(step) {
 		addr := n
@@ -223,9 +224,11 @@ func main() {
 			addr *= 512
 		}
 		sd.SetupData(sdcard.Send|sdcard.Block512, buf)
+		waitDataReady(sd)
 		if step > 1 {
 			st = sd.SendCmd(sdcard.CMD25(addr)).R1()
 			checkErr("CMD25", sd.Err(true), st)
+			waitDataReady(sd)
 			st = sd.SendCmd(sdcard.CMD12()).R1()
 			checkErr("CMD12", sd.Err(true), st)
 		} else {
@@ -233,7 +236,6 @@ func main() {
 			checkErr("CMD24", sd.Err(true), st)
 		}
 	}
-	waitDataReady(sd)
 	dt := rtos.Nanosec() - t
 	fmt.Printf("%d KiB/s\n", 1e9/2*int64(testLen)/dt)
 
@@ -242,6 +244,7 @@ func main() {
 		testLen, testLen/2, bufSize,
 	)
 
+	waitDataReady(sd)
 	t = rtos.Nanosec()
 	for n := uint(0); n < testLen; n += uint(step) {
 		addr := n

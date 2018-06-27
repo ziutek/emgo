@@ -50,12 +50,9 @@ func (d *Driver) Err(clear bool) error {
 		return nil
 	}
 	var err error
-	switch d.err {
-	case ErrCmdTimeout:
+	if d.err == ErrCmdTimeout {
 		err = sdcard.ErrCmdTimeout
-	case ErrDataTimeout, errReadyForDataTimeout:
-		err = sdcard.ErrDataTimeout
-	default:
+	} else {
 		err = d.err
 	}
 	if clear {
@@ -66,10 +63,9 @@ func (d *Driver) Err(clear bool) error {
 	return err
 }
 
-// SetBusClock sets SD bus clock frequency (freqhz <= 0 disables clock). If
-// pwrsave is true the clock output is automatically disabled when bus is idle.
-func (d *Driver) SetClock(freqhz int, pwrsave bool) {
-	setClock(d.p, freqhz, pwrsave)
+// SetBusClock sets SD bus clock frequency (freqhz <= 0 disables clock).
+func (d *Driver) SetClock(freqhz int) {
+	setClock(d.p, freqhz)
 }
 
 // SetBusWidth sets the SD bus width.
@@ -208,17 +204,12 @@ func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
 }
 
 // SendCmd sends the cmd to the card and receives its response, if any. Short
-// response is returned in r[0]. Long is returned in r[0:3] (r[0] contains the
+// response is returned in r[0], long is returned in r[0:3] (r[0] contains the
 // least significant bits, r[3] contains the most significant bits). If preceded
 // by SetupData, SendCmd performs the data transfer.
 func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	if d.err != 0 {
 		return
-	}
-	if d.dtc != 0 {
-		if !d.Wait(rtos.Nanosec() + 250e6) {
-			d.err = errReadyForDataTimeout
-		}
 	}
 	cmdEnd := CmdSent
 	if cmd&sdcard.HasResp != 0 {
@@ -229,7 +220,7 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	p := d.p
 	p.Clear(EvAll, ErrAll)
 	p.SetArg(arg)
-	p.SetCmd(CmdEna | Command(cmd)&255)
+	p.SetCmd(CmdEna | Command(cmd)&0x3FF)
 	fence.W()                    // Orders writes to normal and IO memory.
 	p.SetIRQMask(cmdEnd, ErrAll) // After SetCmd because of spurious IRQs.
 	d.done.Wait(1, 0)
