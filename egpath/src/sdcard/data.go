@@ -58,7 +58,7 @@ func (d Data) BlockSlice(m, n int) Data {
 	return Data{d.words[m*64 : n*64]}
 }
 
-// NumBlock returns the number of full 512-byte blocks that can fit into d.
-func (d Data) NumBlock() int {
+// NumBlocks returns the number of full 512-byte blocks that can fit into d.
+func (d Data) NumBlocks() int {
 	return len(d.words) >> 6
 }

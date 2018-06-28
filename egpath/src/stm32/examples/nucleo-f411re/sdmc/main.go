@@ -53,28 +53,6 @@ func init() {
 	rtos.IRQ(irq.EXTI9_5).Enable()
 }
 
-func checkErr(what string, err error) {
-	if err == nil {
-		return
-	}
-	fmt.Printf("%s: %v\n", what, err)
-	for {
-	}
-}
-
-func printCID(cid sdcard.CID) {
-	y, m := cid.MDT()
-	pnm := cid.PNM()
-	oid := cid.OID()
-	prv := cid.PRV()
-	fmt.Printf("Manufacturer ID:       %d\n", cid.MID())
-	fmt.Printf("OEM/Application ID:    %s\n", oid[:])
-	fmt.Printf("Product name:          %s\n", pnm[:])
-	fmt.Printf("Product revision:      %d.%d\n", prv>>4&15, prv&15)
-	fmt.Printf("Product serial number: %d\n", cid.PSN())
-	fmt.Printf("Manufacturing date:    %04d-%02d\n", y, m)
-}
-
 func main() {
 	delay.Millisec(200) // For SWO output
 
@@ -85,8 +63,46 @@ func main() {
 		25e6, sdcard.Bus4,
 		sdcard.HCXC|sdcard.V30|sdcard.V31|sdcard.V32|sdcard.V33,
 	)
-	printCID(cid) // Init can return valid CID even if it returned error.
-	checkErr("Init", err)
+	// Init can return valid CID and capacity even if it returned error.
+	printCID(cid)
+	fmt.Printf(
+		"Card capacity:         %d blk ≈ %d MiB ≈ %d MB\n",
+		card.Cap(), card.Cap()>>11, card.Cap()*512/1e6,
+	)
+	checkErr(err, card.LastStatus())
+
+	buf := sdcard.MakeDataBlocks(32)
+	start := card.Cap() / 1000
+	stop := start + start
+
+	fmt.Printf("Write pattern to card: ")
+
+	for addr := start; addr < stop; addr += int64(buf.NumBlocks()) {
+		for n := range buf.Words() {
+			buf.Words()[n] = uint64(addr + int64(n))
+		}
+		err = card.WriteBlocks(addr, buf)
+		checkErr(err, card.LastStatus())
+		fmt.Printf(".")
+	}
+
+	fmt.Printf("\nRead and check pattern: ")
+
+	for addr := start; addr < stop; addr += int64(buf.NumBlocks()) {
+		for n := range buf.Words() {
+			buf.Words()[n] = 0
+		}
+		err = card.ReadBlocks(addr, buf)
+		checkErr(err, card.LastStatus())
+		for n := range buf.Words() {
+			if buf.Words()[n] != uint64(addr+int64(n)) {
+				fmt.Printf("Data don't march!")
+				return
+			}
+		}
+		fmt.Printf(".")
+	}
+	fmt.Printf("\nEnd\n")
 }
 
 func sdioISR() {

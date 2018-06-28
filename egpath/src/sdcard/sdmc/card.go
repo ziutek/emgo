@@ -8,14 +8,17 @@ import (
 )
 
 var (
-	ErrInitIC = errors.New("sdmc: init IC")
-	ErrInitOC = errors.New("sdmc: init OC")
-	ErrStatus = errors.New("sdmc: status")
+	ErrInitCMD8    = errors.New("sdmc: init CMD8")
+	ErrInitACMD41  = errors.New("sdmc: init ACMD41")
+	ErrStatus      = errors.New("sdmc: status")
+	ErrBusyTimeout = errors.New("sdmc: busy timeout")
+	ErrBadAddr     = errors.New("sdmc: bad addr")
 )
 
 type Card struct {
 	host   sdcard.Host
 	oca    sdcard.OCR
+	cap    int64
 	status sdcard.CardStatus
 	rca    uint16
 }
@@ -30,16 +33,24 @@ func NewCard(host sdcard.Host) *Card {
 	return c
 }
 
-// Status returns last received card status.
-func (c *Card) Status() sdcard.CardStatus {
+// Cap returns card capacity as number of 512-byte blocks.
+func (c *Card) Cap() int64 {
+	return c.cap
+}
+
+// LastStatus returns status of last command.
+func (c *Card) LastStatus() sdcard.CardStatus {
 	return c.status
 }
 
-func (c *Card) statusCmd(cmd sdcard.Command, arg uint32) {
-	c.status = c.host.SendCmd(cmd, arg).R1()
+func (c *Card) Status() (sdcard.CardStatus, error) {
+	h := c.host
+	c.status = h.SendCmd(sdcard.CMD13(c.rca, sdcard.Status)).R1()
+	return c.status, h.Err(true)
 }
 
-func (c *Card) checkErr() error {
+func (c *Card) statusCmd(cmd sdcard.Command, arg uint32) error {
+	c.status = c.host.SendCmd(cmd, arg).R1()
 	if err := c.host.Err(true); err != nil {
 		c.host.SetClock(0)
 		return err

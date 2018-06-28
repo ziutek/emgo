@@ -10,6 +10,7 @@ import (
 // Init initializes the card and reports wheter the initialization was
 // successful.
 func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID, error) {
+	c.cap = 0
 	c.status = 0
 	h := c.host
 
@@ -41,7 +42,7 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 			ocr &^= sdcard.HCXC
 		} else if vhs != sdcard.V27_36 || pattern != 0xAC {
 			h.SetClock(0)
-			return sdcard.CID{}, ErrInitIC
+			return sdcard.CID{}, ErrInitCMD8
 		}
 	}
 
@@ -49,7 +50,7 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 	for i := 0; i < 20; i++ {
 		h.SendCmd(sdcard.CMD55(0))
 		c.oca = h.SendCmd(sdcard.ACMD41(ocr)).R3()
-		if err := c.checkErr(); err != nil {
+		if err := h.Err(true); err != nil {
 			return sdcard.CID{}, err
 		}
 		if c.oca&sdcard.PWUP != 0 {
@@ -58,7 +59,7 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 		delay.Millisec(50)
 	}
 	if c.oca&sdcard.PWUP == 0 {
-		return sdcard.CID{}, ErrInitOC
+		return sdcard.CID{}, ErrInitACMD41
 	}
 
 	// Read Card Identification Register.
@@ -66,7 +67,7 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 
 	// Generate new Relative Card Address.
 	c.rca, _ = h.SendCmd(sdcard.CMD3()).R6()
-	if err := c.checkErr(); err != nil {
+	if err := h.Err(true); err != nil {
 		return cid, err
 	}
 
@@ -78,9 +79,16 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 	}
 	h.SetClock(f)
 
+	// Read Card Specific Data register.
+	csd := h.SendCmd(sdcard.CMD9(c.rca)).R2CSD()
+	if err := h.Err(true); err != nil {
+		return cid, err
+	}
+	c.cap = csd.C_SIZE()
+
 	// Select card (put into Transfer State).
-	c.statusCmd(sdcard.CMD7(c.rca))
-	if err := c.checkErr(); err != nil {
+	err := c.statusCmd(sdcard.CMD7(c.rca))
+	if err != nil {
 		return cid, err
 	}
 
@@ -90,15 +98,15 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 	// Read SD Configuration Register.
 	h.SendCmd(sdcard.CMD55(c.rca))
 	h.SetupData(sdcard.Recv|sdcard.Block8, buf[:1])
-	c.statusCmd(sdcard.ACMD51())
-	if err := c.checkErr(); err != nil {
+	err = c.statusCmd(sdcard.ACMD51())
+	if err != nil {
 		return cid, err
 	}
 
 	// Disable 50k pull-up resistor on D3/CD.
 	h.SendCmd(sdcard.CMD55(c.rca))
-	c.statusCmd(sdcard.ACMD42(false))
-	if err := c.checkErr(); err != nil {
+	err = c.statusCmd(sdcard.ACMD42(false))
+	if err != nil {
 		return cid, err
 	}
 
@@ -109,8 +117,8 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 
 		// Enable 4-bit data bus
 		h.SendCmd(sdcard.CMD55(c.rca))
-		c.statusCmd(sdcard.ACMD6(sdcard.Bus4))
-		if err := c.checkErr(); err != nil {
+		err = c.statusCmd(sdcard.ACMD6(sdcard.Bus4))
+		if err != nil {
 			return cid, err
 		}
 		h.SetBusWidth(sdcard.Bus4)
@@ -119,8 +127,8 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 	if freqhz > 25e6 && scr.SD_SPEC() > 0 {
 		// Check and enable High Speed.
 		h.SetupData(sdcard.Recv|sdcard.Block64, buf[:])
-		c.statusCmd(sdcard.CMD6(sdcard.ModeSwitch | sdcard.HighSpeed))
-		if err := c.checkErr(); err != nil {
+		err = c.statusCmd(sdcard.CMD6(sdcard.ModeSwitch | sdcard.HighSpeed))
+		if err != nil {
 			return cid, err
 		}
 		sel := sdcard.SwitchFunc(be.Decode32(bytes[13:17]) & 0xFFFFFF)
@@ -132,8 +140,8 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 
 	// Set block size to 512 B (required for protocol version < 2 or SDSC card).
 	if c.oca&sdcard.HCXC == 0 {
-		c.statusCmd(sdcard.CMD16(512))
-		if err := c.checkErr(); err != nil {
+		err = c.statusCmd(sdcard.CMD16(512))
+		if err != nil {
 			return cid, err
 		}
 	}
