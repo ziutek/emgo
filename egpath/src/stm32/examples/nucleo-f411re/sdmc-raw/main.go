@@ -18,7 +18,6 @@ import (
 )
 
 var sddrv *sdmmc.Driver
-var d0 gpio.Pin
 
 func init() {
 	system.Setup96(8) // Setups USB/SDIO/RNG clock to 48 MHz
@@ -34,7 +33,7 @@ func init() {
 
 	gpio.B.EnableClock(true)
 	d3 := gpio.B.Pin(5)
-	d0 = gpio.B.Pin(7)
+	d0 := gpio.B.Pin(7)
 	clk := gpio.B.Pin(15)
 
 	cfg := gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh, Pull: gpio.PullUp}
@@ -180,7 +179,7 @@ func main() {
 	}
 
 	// Set block size to 512 B (required for protocol version < 2 or SDSC card).
-	if ocr&sdcard.HCXC == 0 {
+	if oca&sdcard.HCXC == 0 {
 		st = sd.SendCmd(sdcard.CMD16(512)).R1()
 		checkErr("CMD16", sd.Err(true), st)
 	}
