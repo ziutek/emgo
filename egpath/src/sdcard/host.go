@@ -42,14 +42,15 @@ const (
 )
 
 // ErrCmdTimeout is returned by Host in case of command response timeout.
-var	ErrCmdTimeout = errors.New("sdio: cmd timeout")
+var ErrCmdTimeout = errors.New("sdio: cmd timeout")
 
 type Host interface {
 	// SetClock sets SD/SPI clock frequency.
 	SetClock(freqhz int)
 
-	// SetBusWidth sets the SD bus width.
-	SetBusWidth(width BusWidth)
+	// SetBusWidth sets the SD bus width. Returns supported bus widths. SD host
+	// returns combination of SDBus1 and SDBus4. SPI host returns SPIBus.
+	SetBusWidth(width BusWidth) BusWidths
 
 	// SendCmd sends the cmd to the card and receives its response, if any.
 	// Short response is returned in r[0], long is returned in r[0:3] (r[0]
@@ -58,7 +59,7 @@ type Host interface {
 	SendCmd(cmd Command, arg uint32) (r Response)
 
 	// SetupData setups the data transfer for subsequent command.
-	SetupData(mode DataMode, buf Data)
+	SetupData(mode DataMode, buf []uint64)
 
 	// Wait waits for deassertion of busy signal on DATA0 line (READY_FOR_DATA
 	// state). It returns false if the deadline has passed.

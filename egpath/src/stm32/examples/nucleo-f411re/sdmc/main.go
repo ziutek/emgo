@@ -62,14 +62,31 @@ func checkErr(what string, err error) {
 	}
 }
 
+func printCID(cid sdcard.CID) {
+	y, m := cid.MDT()
+	pnm := cid.PNM()
+	oid := cid.OID()
+	prv := cid.PRV()
+	fmt.Printf("Manufacturer ID:       %d\n", cid.MID())
+	fmt.Printf("OEM/Application ID:    %s\n", oid[:])
+	fmt.Printf("Product name:          %s\n", pnm[:])
+	fmt.Printf("Product revision:      %d.%d\n", prv>>4&15, prv&15)
+	fmt.Printf("Product serial number: %d\n", cid.PSN())
+	fmt.Printf("Manufacturing date:    %04d-%02d\n", y, m)
+}
+
 func main() {
 	delay.Millisec(200) // For SWO output
 
 	card := sdmc.NewCard(sddrv)
-	err := card.Init(25e6, sdcard.HCXC|sdcard.V31|sdcard.V32|sdcard.V33)
-	checkErr("Init", err)
 
-	fmt.Printf("OK\n")
+	fmt.Printf("\nInitializing SD Memory Card...\n")
+	cid, err := card.Init(
+		25e6, sdcard.Bus4,
+		sdcard.HCXC|sdcard.V30|sdcard.V31|sdcard.V32|sdcard.V33,
+	)
+	printCID(cid) // Init can return valid CID even if it returned error.
+	checkErr("Init", err)
 }
 
 func sdioISR() {

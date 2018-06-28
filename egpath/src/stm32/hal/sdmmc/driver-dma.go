@@ -194,7 +194,7 @@ func (d *DriverDMA) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) 
 // SetupData setups the data transfer for subsequent command. Ensure len(buf) <=
 // 32767. SetupData configures DMA stream/channel completely from scratch so
 // Driver can share its DMA stream/channel with other driver that do the same.
-func (d *DriverDMA) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
+func (d *DriverDMA) SetupData(mode sdcard.DataMode, buf []uint64) {
 	if len(buf) > 32767 {
 		panic("sdio: buf too big")
 	}

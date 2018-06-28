@@ -3,80 +3,22 @@ package sdmc
 import (
 	"delay"
 	"encoding/binary/be"
-	"errors"
 
 	"sdcard"
 )
 
-var (
-	ErrInitV2 = errors.New("sdmc: init V2")
-	ErrInitOC = errors.New("sdmc: init OC")
-	ErrStatus = errors.New("sdmc: status")
-)
-
-type Card struct {
-	host   sdcard.Host
-	oca    sdcard.OCR
-	status sdcard.CardStatus
-	rca    uint16
-}
-
-func MakeCard(host sdcard.Host) Card {
-	return Card{host: host}
-}
-
-func NewCard(host sdcard.Host) *Card {
-	c := new(Card)
-	*c = MakeCard(host)
-	return c
-}
-
-// Status returns last received card status.
-func (c *Card) Status() sdcard.CardStatus {
-	return c.status
-}
-
-func (c *Card) statusCmd(cmd sdcard.Command, arg uint32) {
-	c.status = c.host.SendCmd(cmd, arg).R1()
-}
-
-func (c *Card) checkErr() error {
-	if err := c.host.Err(true); err != nil {
-		c.host.SetClock(0)
-		return err
-	}
-	errFlags := sdcard.OUT_OF_RANGE |
-		sdcard.ADDRESS_ERROR |
-		sdcard.BLOCK_LEN_ERROR |
-		sdcard.ERASE_SEQ_ERROR |
-		sdcard.ERASE_PARAM |
-		sdcard.WP_VIOLATION |
-		sdcard.LOCK_UNLOCK_FAILED |
-		sdcard.COM_CRC_ERROR |
-		sdcard.ILLEGAL_COMMAND |
-		sdcard.CARD_ECC_FAILED |
-		sdcard.CC_ERROR |
-		sdcard.ERROR |
-		sdcard.CSD_OVERWRITE |
-		sdcard.WP_ERASE_SKIP |
-		sdcard.CARD_ECC_DISABLED |
-		sdcard.ERASE_RESET |
-		sdcard.AKE_SEQ_ERROR
-	if c.status&errFlags != 0 {
-		return ErrStatus
-	}
-	return nil
-}
-
 // Init initializes the card and reports wheter the initialization was
 // successful.
-func (c *Card) Init(freqhz int, ocr sdcard.OCR) error {
+func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID, error) {
 	c.status = 0
 	h := c.host
 
 	// Set initial clock and bus width.
 	h.SetClock(400e3)
-	h.SetBusWidth(sdcard.Bus1)
+	hostBusWidths := h.SetBusWidth(sdcard.Bus1)
+
+	// BUG: Use hostBusWidths to detect SPI host.
+	// BUG: SPI host not supported.
 
 	// SD card power-up takes maximum of 1 ms or 74 SDIO_CK cycles.
 	delay.Millisec(1)
@@ -94,32 +36,38 @@ func (c *Card) Init(freqhz int, ocr sdcard.OCR) error {
 		if err := h.Err(true); err != nil {
 			if err != sdcard.ErrCmdTimeout {
 				h.SetClock(0)
-				return err
+				return sdcard.CID{}, err
 			}
 			ocr &^= sdcard.HCXC
 		} else if vhs != sdcard.V27_36 || pattern != 0xAC {
 			h.SetClock(0)
-			return ErrInitV2
+			return sdcard.CID{}, ErrInitIC
 		}
 	}
 
 	// Initializing SD card.
-	for i := 0; c.oca&sdcard.PWUP == 0 && i < 20; i++ {
+	for i := 0; i < 20; i++ {
 		h.SendCmd(sdcard.CMD55(0))
 		c.oca = h.SendCmd(sdcard.ACMD41(ocr)).R3()
 		if err := c.checkErr(); err != nil {
-			return err
+			return sdcard.CID{}, err
+		}
+		if c.oca&sdcard.PWUP != 0 {
+			break
 		}
 		delay.Millisec(50)
 	}
 	if c.oca&sdcard.PWUP == 0 {
-		return ErrInitOC
+		return sdcard.CID{}, ErrInitOC
 	}
+
+	// Read Card Identification Register.
+	cid := h.SendCmd(sdcard.CMD2()).R2CID()
 
 	// Generate new Relative Card Address.
 	c.rca, _ = h.SendCmd(sdcard.CMD3()).R6()
 	if err := c.checkErr(); err != nil {
-		return err
+		return cid, err
 	}
 
 	// After CMD3 card is in Data Transfer Mode (Standby State) and SDIO_CK can
@@ -133,35 +81,37 @@ func (c *Card) Init(freqhz int, ocr sdcard.OCR) error {
 	// Select card (put into Transfer State).
 	c.statusCmd(sdcard.CMD7(c.rca))
 	if err := c.checkErr(); err != nil {
-		return err
+		return cid, err
 	}
 
-	var data [8]uint64
-	buf := sdcard.Data(data[:])
+	var buf [8]uint64
+	bytes := sdcard.AsData(buf[:]).Bytes()
 
 	// Read SD Configuration Register.
 	h.SendCmd(sdcard.CMD55(c.rca))
 	h.SetupData(sdcard.Recv|sdcard.Block8, buf[:1])
 	c.statusCmd(sdcard.ACMD51())
 	if err := c.checkErr(); err != nil {
-		return err
+		return cid, err
 	}
 
 	// Disable 50k pull-up resistor on D3/CD.
 	h.SendCmd(sdcard.CMD55(c.rca))
 	c.statusCmd(sdcard.ACMD42(false))
 	if err := c.checkErr(); err != nil {
-		return err
+		return cid, err
 	}
 
-	scr := sdcard.SCR(be.Decode64(buf.Bytes()))
+	scr := sdcard.SCR(be.Decode64(bytes))
 
-	if scr.SD_BUS_WIDTHS()&sdcard.SDBus4 != 0 {
+	if bw == sdcard.Bus4 && hostBusWidths&(1<<bw) != 0 &&
+		scr.SD_BUS_WIDTHS()&sdcard.SDBus4 != 0 {
+
 		// Enable 4-bit data bus
 		h.SendCmd(sdcard.CMD55(c.rca))
 		c.statusCmd(sdcard.ACMD6(sdcard.Bus4))
 		if err := c.checkErr(); err != nil {
-			return err
+			return cid, err
 		}
 		h.SetBusWidth(sdcard.Bus4)
 	}
@@ -171,9 +121,9 @@ func (c *Card) Init(freqhz int, ocr sdcard.OCR) error {
 		h.SetupData(sdcard.Recv|sdcard.Block64, buf[:])
 		c.statusCmd(sdcard.CMD6(sdcard.ModeSwitch | sdcard.HighSpeed))
 		if err := c.checkErr(); err != nil {
-			return err
+			return cid, err
 		}
-		sel := sdcard.SwitchFunc(be.Decode32(buf.Bytes()[13:17]) & 0xFFFFFF)
+		sel := sdcard.SwitchFunc(be.Decode32(bytes[13:17]) & 0xFFFFFF)
 		if sel&sdcard.AccessMode == sdcard.HighSpeed {
 			delay.Millisec(1) // Function switch takes max. 8 SDIO_CK cycles.
 			h.SetClock(freqhz)
@@ -184,9 +134,9 @@ func (c *Card) Init(freqhz int, ocr sdcard.OCR) error {
 	if c.oca&sdcard.HCXC == 0 {
 		c.statusCmd(sdcard.CMD16(512))
 		if err := c.checkErr(); err != nil {
-			return err
+			return cid, err
 		}
 	}
 
-	return nil
+	return cid, nil
 }

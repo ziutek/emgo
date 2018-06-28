@@ -138,11 +138,11 @@ func main() {
 	// Now the card is in the Transfer State.
 	printStatus(sd.SendCmd(sdcard.CMD13(rca, sdcard.Status)).R1())
 
-	buf := make(sdcard.Data, 8*512/8)
+	buf := sdcard.MakeDataBlocks(8)
 
 	// Read SD Configuration Register.
 	sd.SendCmd(sdcard.CMD55(rca))
-	sd.SetupData(sdcard.Recv|sdcard.Block8, buf[:1])
+	sd.SetupData(sdcard.Recv|sdcard.Block8, buf.Words()[:1])
 	st = sd.SendCmd(sdcard.ACMD51()).R1()
 	checkErr("ACMD51", sd.Err(true), st)
 
@@ -165,7 +165,7 @@ func main() {
 
 	// Enable High Speed.
 	if scr.SD_SPEC() > 0 {
-		sd.SetupData(sdcard.Recv|sdcard.Block64, buf[:64/8])
+		sd.SetupData(sdcard.Recv|sdcard.Block64, buf.Words()[:8])
 		st = sd.SendCmd(sdcard.CMD6(sdcard.ModeSwitch | sdcard.HighSpeed)).R1()
 		checkErr("CMD6", sd.Err(true), st)
 
@@ -184,22 +184,22 @@ func main() {
 		checkErr("CMD16", sd.Err(true), st)
 	}
 
-	block := buf[:512/8]
+	block := buf.Block(0)
 	for i := range block.Bytes() {
 		block.Bytes()[i] = byte(i)
 	}
 
 	fmt.Printf("Write block of data...\n")
-	sd.SetupData(sdcard.Send|sdcard.Block512, block)
+	sd.SetupData(sdcard.Send|sdcard.Block512, block.Words())
 
 	st = sd.SendCmd(sdcard.CMD24(512)).R1()
 	checkErr("CMD24", sd.Err(true), st)
 
-	for i := range block {
-		block[i] = 0
+	for i := range block.Words() {
+		block.Words()[i] = 0
 	}
 	fmt.Printf("Read block of data...\n")
-	sd.SetupData(sdcard.Recv|sdcard.Block512, block)
+	sd.SetupData(sdcard.Recv|sdcard.Block512, block.Words())
 	waitDataReady(sd)
 	st = sd.SendCmd(sdcard.CMD17(512)).R1()
 	checkErr("CMD17", sd.Err(true), st)
@@ -222,7 +222,7 @@ func main() {
 		if oca&sdcard.HCXC == 0 {
 			addr *= 512
 		}
-		sd.SetupData(sdcard.Send|sdcard.Block512, buf)
+		sd.SetupData(sdcard.Send|sdcard.Block512, buf.Words())
 		waitDataReady(sd)
 		if step > 1 {
 			st = sd.SendCmd(sdcard.CMD25(addr)).R1()
@@ -250,7 +250,7 @@ func main() {
 		if oca&sdcard.HCXC == 0 {
 			addr *= 512
 		}
-		sd.SetupData(sdcard.Recv|sdcard.Block512, buf)
+		sd.SetupData(sdcard.Recv|sdcard.Block512, buf.Words())
 		if step > 1 {
 			st = sd.SendCmd(sdcard.CMD18(addr)).R1()
 			checkErr("CMD18", sd.Err(true), st)

@@ -331,16 +331,17 @@ func (scr SCR) SD_SECURITY() SDSecurity {
 	return SDSecurity(scr>>52) & 7
 }
 
-type SDBusWidths byte
+type BusWidths byte
 
 const (
-	SDBus1 SDBusWidths = 1 << 0
-	SDBus4 SDBusWidths = 1 << 2
+	SDBus1 BusWidths = 1 << 0
+	SDBus4 BusWidths = 1 << 2
+	SPIBus BusWidths = 1 << 5 // Invalid, used by Host to report SPI bus.
 )
 
 // SD_BUS_WIDTHS returns the bitfield that describes supported data bus widths.
-func (scr SCR) SD_BUS_WIDTHS() SDBusWidths {
-	return SDBusWidths(scr>>48) & 15
+func (scr SCR) SD_BUS_WIDTHS() BusWidths {
+	return BusWidths(scr>>48) & 15
 }
 
 // SD_SPEC3 returns 1 for SDMC spec. version >= 3.00.

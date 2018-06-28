@@ -68,9 +68,9 @@ func (d *Driver) SetClock(freqhz int) {
 	setClock(d.p, freqhz)
 }
 
-// SetBusWidth sets the SD bus width.
-func (d *Driver) SetBusWidth(width sdcard.BusWidth) {
-	setBusWidth(d.p, width)
+// SetBusWidth sets the SD bus width. It returns sdcard.SDBus1|sdcard.SDBus4.
+func (d *Driver) SetBusWidth(width sdcard.BusWidth) sdcard.BusWidths {
+	return setBusWidth(d.p, width)
 }
 
 // Wait waits for deassertion of busy signal on DATA0 line. It returns false if
@@ -188,7 +188,7 @@ wait:
 }
 
 // SetupData setups the data transfer for subsequent command.
-func (d *Driver) SetupData(mode sdcard.DataMode, buf sdcard.Data) {
+func (d *Driver) SetupData(mode sdcard.DataMode, buf []uint64) {
 	if d.err != 0 {
 		return
 	}

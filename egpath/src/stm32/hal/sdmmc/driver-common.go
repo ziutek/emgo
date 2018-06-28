@@ -34,13 +34,14 @@ func setClock(p *Periph, freqhz int) {
 	p.SetDataTimeout(uint(freqhz)) // ≈ 1s
 }
 
-func setBusWidth(p *Periph, width sdcard.BusWidth) {
+func setBusWidth(p *Periph, width sdcard.BusWidth) sdcard.BusWidths {
 	if width > sdcard.Bus8 {
 		panic("sdmmc: bad bus width")
 	}
 	cfg, clkdiv := p.BusClock()
 	cfg = cfg&^BusWidth | BusClock(width*3>>2)<<3
 	p.SetBusClock(cfg, clkdiv)
+	return sdcard.SDBus1 | sdcard.SDBus4
 }
 
 func wait(d0 gpio.Pin, done *rtos.EventFlag, deadline int64) bool {
