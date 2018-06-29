@@ -177,8 +177,8 @@ func (csd CSD) TRAN_SPEED() int {
 }
 
 // CCC returns SDMC command set as 12-bit bitfield.
-func (csd CSD) CCC() uint {
-	return uint(csd[2] >> 20)
+func (csd CSD) CCC() uint16 {
+	return uint16(csd[2] >> 20)
 }
 
 // READ_BL_LEN returns the maximum read data block length (bytes).

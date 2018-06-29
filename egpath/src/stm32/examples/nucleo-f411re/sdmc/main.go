@@ -71,7 +71,7 @@ func main() {
 	)
 	checkErr(err, card.LastStatus())
 
-	buf := sdcard.MakeDataBlocks(32)
+	buf := sdcard.MakeDataBlocks(8)
 	start := card.Cap() / 1000
 	stop := start + start
 

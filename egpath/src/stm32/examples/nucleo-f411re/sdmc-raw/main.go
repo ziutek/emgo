@@ -222,8 +222,8 @@ func main() {
 		if oca&sdcard.HCXC == 0 {
 			addr *= 512
 		}
-		sd.SetupData(sdcard.Send|sdcard.Block512, buf.Words())
 		waitDataReady(sd)
+		sd.SetupData(sdcard.Send|sdcard.Block512, buf.Words())
 		if step > 1 {
 			st = sd.SendCmd(sdcard.CMD25(addr)).R1()
 			checkErr("CMD25", sd.Err(true), st)

@@ -10,17 +10,18 @@ import (
 var (
 	ErrInitCMD8    = errors.New("sdmc: init CMD8")
 	ErrInitACMD41  = errors.New("sdmc: init ACMD41")
-	ErrStatus      = errors.New("sdmc: status")
+	ErrStatus      = errors.New("sdmc: status") // Error flag or StateData timeout.
 	ErrBusyTimeout = errors.New("sdmc: busy timeout")
 	ErrBadAddr     = errors.New("sdmc: bad addr")
 )
 
 type Card struct {
 	host   sdcard.Host
-	oca    sdcard.OCR
 	cap    int64
+	oca    sdcard.OCR
 	status sdcard.CardStatus
 	rca    uint16
+	ccc    uint16
 }
 
 func MakeCard(host sdcard.Host) Card {
@@ -38,7 +39,8 @@ func (c *Card) Cap() int64 {
 	return c.cap
 }
 
-// LastStatus returns status of last command.
+// LastStatus returns status of the last command that returns R1
+// response.
 func (c *Card) LastStatus() sdcard.CardStatus {
 	return c.status
 }
@@ -49,30 +51,32 @@ func (c *Card) Status() (sdcard.CardStatus, error) {
 	return c.status, h.Err(true)
 }
 
+const statusErrFlags = sdcard.OUT_OF_RANGE |
+	sdcard.ADDRESS_ERROR |
+	sdcard.BLOCK_LEN_ERROR |
+	sdcard.ERASE_SEQ_ERROR |
+	sdcard.ERASE_PARAM |
+	sdcard.WP_VIOLATION |
+	sdcard.LOCK_UNLOCK_FAILED |
+	sdcard.COM_CRC_ERROR |
+	sdcard.ILLEGAL_COMMAND |
+	sdcard.CARD_ECC_FAILED |
+	sdcard.CC_ERROR |
+	sdcard.ERROR |
+	sdcard.CSD_OVERWRITE |
+	sdcard.WP_ERASE_SKIP |
+	sdcard.CARD_ECC_DISABLED |
+	sdcard.ERASE_RESET |
+	sdcard.AKE_SEQ_ERROR
+
 func (c *Card) statusCmd(cmd sdcard.Command, arg uint32) error {
-	c.status = c.host.SendCmd(cmd, arg).R1()
+	status := c.host.SendCmd(cmd, arg).R1()
 	if err := c.host.Err(true); err != nil {
 		c.host.SetClock(0)
 		return err
 	}
-	errFlags := sdcard.OUT_OF_RANGE |
-		sdcard.ADDRESS_ERROR |
-		sdcard.BLOCK_LEN_ERROR |
-		sdcard.ERASE_SEQ_ERROR |
-		sdcard.ERASE_PARAM |
-		sdcard.WP_VIOLATION |
-		sdcard.LOCK_UNLOCK_FAILED |
-		sdcard.COM_CRC_ERROR |
-		sdcard.ILLEGAL_COMMAND |
-		sdcard.CARD_ECC_FAILED |
-		sdcard.CC_ERROR |
-		sdcard.ERROR |
-		sdcard.CSD_OVERWRITE |
-		sdcard.WP_ERASE_SKIP |
-		sdcard.CARD_ECC_DISABLED |
-		sdcard.ERASE_RESET |
-		sdcard.AKE_SEQ_ERROR
-	if c.status&errFlags != 0 {
+	c.status = status
+	if status&statusErrFlags != 0 {
 		return ErrStatus
 	}
 	return nil

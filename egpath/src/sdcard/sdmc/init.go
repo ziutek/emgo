@@ -85,6 +85,7 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 		return cid, err
 	}
 	c.cap = csd.C_SIZE()
+	c.ccc = csd.CCC()
 
 	// Select card (put into Transfer State).
 	err := c.statusCmd(sdcard.CMD7(c.rca))

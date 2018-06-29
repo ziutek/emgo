@@ -62,7 +62,8 @@ type Host interface {
 	SetupData(mode DataMode, buf []uint64)
 
 	// Wait waits for deassertion of busy signal on DATA0 line (READY_FOR_DATA
-	// state). It returns false if the deadline has passed.
+	// state). It returns false if the deadline has passed. Wait can not be used
+	// while transfer is in progress.
 	Wait(deadline int64) bool
 
 	// Err returns and clears the host internal error. The internal error, if
