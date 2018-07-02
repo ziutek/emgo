@@ -27,6 +27,14 @@ func (r Response) R3() OCR {
 	return OCR(r[0])
 }
 
+// R4 contains OCR, memory present flag and number of I/O functions.
+func (r Response) R4() (ocr OCR, mem bool, numIO int) {
+	ocr = OCR(r[0] & 0x81FFFFFF)
+	mem = r[0]>>27&1 != 0
+	numIO = int(r[0] >> 28 & 3)
+	return
+}
+
 // R6 contains Relative Card Address and Card Status bits 23, 22, 19, 12:0.
 func (r Response) R6() (rca uint16, status CardStatus) {
 	rca = uint16(r[0] >> 16)
@@ -148,7 +156,14 @@ func (cs CardStatus) Format(f fmt.State, _ rune) {
 type OCR uint32
 
 const (
-	DVC   OCR = 1 << 7  // Dual Voltage Card
+	DVC   OCR = 1 << 7  // Dual Voltage Card (SDMC)
+	V21   OCR = 1 << 8  // 2.0-2.1 V (SDIO)
+	V22   OCR = 1 << 9  // 2.1-2.2 V (SDIO)
+	V23   OCR = 1 << 10 // 2.2-2.3 V (SDIO)
+	V24   OCR = 1 << 11 // 2.3-2.4 V (SDIO)
+	V25   OCR = 1 << 12 // 2.4-2.5 V (SDIO)
+	V26   OCR = 1 << 13 // 2.5-2.6 V (SDIO)
+	V27   OCR = 1 << 14 // 2.6-2.7 V (SDIO)
 	V28   OCR = 1 << 15 // 2.7-2.8 V
 	V29   OCR = 1 << 16 // 2.8-2.9 V
 	V30   OCR = 1 << 17 // 2.9-3.0 V

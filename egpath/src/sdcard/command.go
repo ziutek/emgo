@@ -130,6 +130,12 @@ const (
 	ModeSwitch SwitchFunc = 1 << 31 // Switch card function.
 )
 
+// CMD5 (IO_SEND_OP_COND, R4) inquires about the voltage range needed by the
+// I/O card.
+func CMD5(ocr OCR) (Command, uint32) {
+	return cmd5, uint32(ocr)
+}
+
 // CMD6 (SWITCH_FUNC, R1) switches or expands memory card functions.
 func CMD6(sf SwitchFunc) (Command, uint32) {
 	return cmd6, uint32(sf)
