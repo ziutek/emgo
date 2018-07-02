@@ -12,32 +12,6 @@ func waitDataReady(h sdcard.Host) bool {
 	return h.Wait(rtos.Nanosec() + busyTimeout)
 }
 
-func (c *Card) waitDataReadyAfterRecv() error {
-	deadline := rtos.Nanosec() + busyTimeout
-	for {
-		status, err := c.Status()
-		if err != nil {
-			return err
-		}
-		if status&statusErrFlags != 0 {
-			return ErrStatus
-		}
-		if status&sdcard.CURRENT_STATE != sdcard.StateData {
-			if status&sdcard.READY_FOR_DATA != 0 {
-				return nil
-			}
-			break
-		}
-		if rtos.Nanosec() >= deadline {
-			return ErrStatus
-		}
-	}
-	if !c.host.Wait(deadline) {
-		return ErrBusyTimeout
-	}
-	return nil
-}
-
 // ReadBlocks reads buf.NumBlocks() 512-byte blocks from the card to buf
 // starting from block number addr.
 func (c *Card) ReadBlocks(addr int64, buf sdcard.Data) error {
@@ -50,12 +24,12 @@ func (c *Card) ReadBlocks(addr int64, buf sdcard.Data) error {
 	if c.oca&sdcard.HCXC == 0 {
 		addr *= 512
 	}
-	err := c.waitDataReadyAfterRecv()
-	if err != nil {
-		return err
-	}
 	h := c.host
+	if !waitDataReady(h) {
+		return ErrBusyTimeout
+	}
 	h.SetupData(sdcard.Recv|sdcard.Block512, buf.Words())
+	var err error
 	if buf.NumBlocks() == 1 {
 		err = c.statusCmd(sdcard.CMD17(uint(addr)))
 	} else {
@@ -80,21 +54,18 @@ func (c *Card) WriteBlocks(addr int64, buf sdcard.Data) error {
 	if c.oca&sdcard.HCXC == 0 {
 		addr *= 512
 	}
-	err := c.waitDataReadyAfterRecv()
-	if err != nil {
-		return err
-	}
 	h := c.host
+	if !waitDataReady(h) {
+		return ErrBusyTimeout
+	}
 	h.SetupData(sdcard.Send|sdcard.Block512, buf.Words())
+	var err error
 	if buf.NumBlocks() == 1 {
 		err = c.statusCmd(sdcard.CMD24(uint(addr)))
 	} else {
 		err = c.statusCmd(sdcard.CMD25(uint(addr)))
 		if err != nil {
 			return err
-		}
-		if !waitDataReady(h) {
-			return ErrBusyTimeout
 		}
 		err = c.statusCmd(sdcard.CMD12())
 	}

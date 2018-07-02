@@ -1,3 +1,4 @@
+// Warning! This example destroys all data on your SD card.
 package main
 
 import (

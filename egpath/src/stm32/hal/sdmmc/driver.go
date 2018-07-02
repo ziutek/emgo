@@ -45,6 +45,7 @@ func (d *Driver) Periph() *Periph {
 	return d.p
 }
 
+// Err returns and optionally clears internal error.
 func (d *Driver) Err(clear bool) error {
 	if d.err == 0 {
 		return nil
@@ -102,13 +103,13 @@ func (d *Driver) cmdISR() {
 		d.done.Signal(1)
 		return
 	}
-	p.SetDataCtrl(d.dtc)
 	var irqs Event
 	if d.dtc&Recv != 0 {
 		irqs = RxHalfFull | DataEnd
 		d.isr = (*Driver).recvISR
 	} else {
-		d.sendISR() // Immediately fill FIFO.
+		p.SetDataCtrl(d.dtc) // Start sending.
+		d.sendISR()          // Immediately fill FIFO.
 		irqs = TxHalfEmpty
 		d.isr = (*Driver).sendISR
 	}
@@ -200,7 +201,9 @@ func (d *Driver) SetupData(mode sdcard.DataMode, buf []uint64) {
 	d.n = len(buf)
 	p := d.p
 	p.SetDataLen(len(buf) * 8)
-
+	if d.dtc&Recv != 0 {
+		p.SetDataCtrl(d.dtc)
+	}
 }
 
 // SendCmd sends the cmd to the card and receives its response, if any. Short
@@ -244,10 +247,10 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 		}
 	}
 	if d.dtc == 0 {
-		return // No data transfer sheduled.
+		return // No data transfer scheduled.
 	}
 	if d.dtc&Stream == 0 {
-		// Wait for data CRC (it should be ready so use simple pooling).
+		// Wait for data CRC (it should be ready now so use simple pooling).
 		for {
 			ev, err := p.Status()
 			if err != 0 {

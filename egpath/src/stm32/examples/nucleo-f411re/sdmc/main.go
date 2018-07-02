@@ -1,3 +1,4 @@
+// Warning! This example destroys all data on your SD card.
 package main
 
 import (
@@ -71,16 +72,32 @@ func main() {
 	)
 	checkErr(err, card.LastStatus())
 
-	buf := sdcard.MakeDataBlocks(8)
-	start := card.Cap() / 1000
+	buf := sdcard.MakeDataBlocks(16)
+	start := card.Cap() / 8000
 	stop := start + start
 
 	fmt.Printf("Write pattern to card: ")
 
-	for addr := start; addr < stop; addr += int64(buf.NumBlocks()) {
-		for n := range buf.Words() {
-			buf.Words()[n] = uint64(addr + int64(n))
+	// Use constant pattern at beggining of buffer to allow to test the transfer
+	// with long/weak cables (breadboard). Better (more random) pattern can be
+	// used with well-designed connections. The problems with weak connections
+	// can be observed when reading multiple blocks (len(buf) > 1) with clock
+	// > 2MHz. In case of long (> 5 cm) wires twisting GND and CMD helps much.
+	//
+	// To stop the ongoing transfer started by CMD18 (READ_MULTIPLE_BLOCK) the
+	// CMD12 command must be sent to the card. This is the only case when the
+	// signals on DATAx lines can interfere with the command on CMD line. To
+	// avoid this the first 3/4 words of the buffer is set to 0.
+
+	pattern := uint64(0)
+	for n := range buf.Words() {
+		if n >= len(buf.Words())*3/4 {
+			pattern = uint64(n)
 		}
+		buf.Words()[n] = pattern
+	}
+
+	for addr := start; addr < stop; addr += int64(buf.NumBlocks()) {
 		err = card.WriteBlocks(addr, buf)
 		checkErr(err, card.LastStatus())
 		fmt.Printf(".")
@@ -90,13 +107,17 @@ func main() {
 
 	for addr := start; addr < stop; addr += int64(buf.NumBlocks()) {
 		for n := range buf.Words() {
-			buf.Words()[n] = 0
+			buf.Words()[n] = uint64(n)
 		}
 		err = card.ReadBlocks(addr, buf)
 		checkErr(err, card.LastStatus())
+		pattern = 0
 		for n := range buf.Words() {
-			if buf.Words()[n] != uint64(addr+int64(n)) {
-				fmt.Printf("Data don't march!")
+			if n >= len(buf.Words())*3/4 {
+				pattern = uint64(n)
+			}
+			if buf.Words()[n] != pattern {
+				fmt.Printf("\nData don't march!\n")
 				return
 			}
 		}

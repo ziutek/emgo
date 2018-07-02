@@ -1,5 +1,10 @@
 package sdcard
 
+import (
+	"fmt"
+	"io"
+)
+
 // Consider to move SD Memory Card and SDIO specific thing
 // (responses/registers) to their own subpackages.
 
@@ -69,6 +74,76 @@ const (
 	ADDRESS_ERROR      CardStatus = 1 << 30
 	OUT_OF_RANGE       CardStatus = 1 << 31
 )
+
+//emgo:const
+var statusStr = [...]string{
+	"?",
+	"?",
+	"?",
+	"AKE_SEQ_ERROR",
+	"?",
+	"APP_CMD",
+	"FX_EVENT",
+	"?",
+	"READY_FOR_DATA",
+	"?",
+	"?",
+	"?",
+	"?",
+	"ERASE_RESET",
+	"CARD_ECC_DISABLED",
+	"WP_ERASE_SKIP",
+	"CSD_OVERWRITE",
+	"?",
+	"?",
+	"ERROR",
+	"CC_ERROR",
+	"CARD_ECC_FAILED",
+	"ILLEGAL_COMMAND",
+	"COM_CRC_ERROR",
+	"LOCK_UNLOCK_FAILED",
+	"CARD_IS_LOCKED",
+	"WP_VIOLATION",
+	"ERASE_PARAM",
+	"ERASE_SEQ_ERROR",
+	"BLOCK_LEN_ERROR",
+	"ADDRESS_ERROR",
+	"OUT_OF_RANGE",
+}
+
+//emgo:const
+var stateStr = [...]string{
+	"StateIdle",
+	"StateReady",
+	"StateIdent",
+	"StateStby",
+	"StateTran",
+	"StateData",
+	"StateRcv",
+	"StatePrg",
+	"StateDis",
+	"?",
+	"?",
+	"?",
+	"?",
+	"?",
+	"?",
+	"StateIOOnly",
+}
+
+func (cs CardStatus) Format(f fmt.State, _ rune) {
+	io.WriteString(f, stateStr[cs&CURRENT_STATE>>9])
+	for n := uint(3); n < 32; n++ {
+		if n == 9 {
+			n = 12
+			continue
+		}
+		if cs&(1<<n) != 0 {
+			io.WriteString(f, ",")
+			io.WriteString(f, statusStr[n])
+		}
+	}
+}
 
 type OCR uint32
 
