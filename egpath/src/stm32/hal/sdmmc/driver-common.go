@@ -44,6 +44,12 @@ func setBusWidth(p *Periph, width sdcard.BusWidth) sdcard.BusWidths {
 	return sdcard.SDBus1 | sdcard.SDBus4
 }
 
+func setupEXTI(d0 gpio.Pin) {
+	l := exti.Lines(d0.Mask())
+	l.Connect(d0.Port())
+	l.EnableRiseTrig()
+}
+
 func wait(d0 gpio.Pin, done *rtos.EventFlag, deadline int64) bool {
 	if d0.Load() != 0 {
 		return true // Fast path.

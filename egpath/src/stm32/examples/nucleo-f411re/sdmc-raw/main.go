@@ -18,7 +18,8 @@ import (
 	"stm32/hal/system/timer/systick"
 )
 
-var sddrv *sdmmc.Driver
+//var sddrv *sdmmc.Driver
+var sddrv *sdmmc.DriverDMA
 
 func init() {
 	system.Setup96(8) // Setups USB/SDIO/RNG clock to 48 MHz
@@ -45,8 +46,8 @@ func init() {
 
 	d := dma.DMA2
 	d.EnableClock(true)
-	//sddrv = sdmmc.NewDriverDMA(sdmmc.SDIO, d.Channel(6, 4))
-	sddrv = sdmmc.NewDriver(sdmmc.SDIO, d0)
+	sddrv = sdmmc.NewDriverDMA(sdmmc.SDIO, d.Channel(6, 4), d0)
+	//sddrv = sdmmc.NewDriver(sdmmc.SDIO, d0)
 	sddrv.Periph().EnableClock(true)
 	sddrv.Periph().Enable()
 
@@ -199,14 +200,20 @@ func main() {
 	for i := range block.Words() {
 		block.Words()[i] = 0
 	}
+
+	waitDataReady(sd)
+
 	fmt.Printf("Read block of data...\n")
 	sd.SetupData(sdcard.Recv|sdcard.Block512, block.Words())
-	waitDataReady(sd)
 	st = sd.SendCmd(sdcard.CMD17(512)).R1()
 	checkErr("CMD17", sd.Err(true), st)
 
 	for i, d := 0, block.Bytes(); i < len(d); i += 16 {
 		fmt.Printf("%02x\n", d[i:i+16])
+	}
+
+	for i := range buf.Words() {
+		buf.Words()[i] = 0
 	}
 
 	bufSize := len(buf.Bytes())
@@ -228,7 +235,6 @@ func main() {
 		if step > 1 {
 			st = sd.SendCmd(sdcard.CMD25(addr)).R1()
 			checkErr("CMD25", sd.Err(true), st)
-			waitDataReady(sd)
 			st = sd.SendCmd(sdcard.CMD12()).R1()
 			checkErr("CMD12", sd.Err(true), st)
 		} else {

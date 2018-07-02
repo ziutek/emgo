@@ -8,28 +8,35 @@ import (
 	"sdcard"
 
 	"stm32/hal/dma"
+	"stm32/hal/exti"
+	"stm32/hal/gpio"
 )
 
 // DriverDMA implements sdcard.Host interface using DMA.
 type DriverDMA struct {
 	p      *Periph
 	dma    *dma.Channel
+	d0     gpio.Pin
 	done   rtos.EventFlag
-	err    Error
 	dmaErr dma.Error
+	err    Error
 	dtc    DataCtrl
 }
 
-// MakeDriverDMA returns initialized SPI driver that uses provided SPI
-// peripheral and DMA channel.
-func MakeDriverDMA(p *Periph, dma *dma.Channel) DriverDMA {
-	return DriverDMA{p: p, dma: dma}
+// MakeDriverDMA returns initialized driver that uses provided SDMMC peripheral
+// and DMA channel. If d0 is valid it also configures EXTI to detect rising edge
+// on d0 pin.
+func MakeDriverDMA(p *Periph, dma *dma.Channel, d0 gpio.Pin) DriverDMA {
+	if d0.IsValid() {
+		setupEXTI(d0)
+	}
+	return DriverDMA{p: p, dma: dma, d0: d0}
 }
 
 // NewDriverDMA provides convenient way to create heap allocated Driver struct.
-func NewDriverDMA(p *Periph, dma *dma.Channel) *DriverDMA {
+func NewDriverDMA(p *Periph, dma *dma.Channel, d0 gpio.Pin) *DriverDMA {
 	d := new(DriverDMA)
-	*d = MakeDriverDMA(p, dma)
+	*d = MakeDriverDMA(p, dma, d0)
 	return d
 }
 
@@ -39,6 +46,22 @@ func (d *DriverDMA) Periph() *Periph {
 
 func (d *DriverDMA) DMA() *dma.Channel {
 	return d.dma
+}
+
+// SetBusClock sets SD bus clock frequency (freqhz <= 0 disables clock).
+func (d *DriverDMA) SetClock(freqhz int) {
+	setClock(d.p, freqhz)
+}
+
+// SetBusWidth sets the SD bus width. It returns sdcard.SDBus1|sdcard.SDBus4.
+func (d *DriverDMA) SetBusWidth(width sdcard.BusWidth) sdcard.BusWidths {
+	return setBusWidth(d.p, width)
+}
+
+// Wait waits for deassertion of busy signal on DATA0 line. It returns false if
+// the deadline has passed. Zero deadline means no deadline.
+func (d *DriverDMA) Wait(deadline int64) bool {
+	return wait(d.d0, &d.done, deadline)
 }
 
 func (d *DriverDMA) Err(clear bool) error {
@@ -53,148 +76,48 @@ func (d *DriverDMA) Err(clear bool) error {
 	case d.dmaErr != 0:
 		err = d.dmaErr
 	default:
-		goto end
+		return nil
 	}
 	if clear {
 		d.err = 0
 		d.dmaErr = 0
+		d.dtc = 0
 	}
-end:
 	return err
 }
 
-// SetClock sets SD bus clock frequency (freqhz <= 0 disables clock). If
-// pwrsave is true the clock output is automatically disabled when bus is idle.
-func (d *DriverDMA) SetClock(freqhz int, pwrsave bool) {
-	var (
-		clkdiv int
-		cfg    BusClock
-		p      = d.p
-	)
-	busWidth, _ := p.BusClock()
-	busWidth &= BusWidth
-	if freqhz > 0 {
-		// BUG: This code assumes 48 MHz SDMMCCLK.
-		cfg = ClkEna
-		clkdiv = (48e6+freqhz-1)/freqhz - 2
-	}
-	if clkdiv < 0 {
-		clkdiv = 0
-		cfg |= ClkByp
-	}
-	if pwrsave {
-		cfg |= PwrSave
-	}
-	p.SetBusClock(cfg|busWidth, clkdiv)
-	p.SetDataTimeout(uint(freqhz)) // ≈ 1s
+// BusyLine returns EXTI line used to detect end of busy state.
+func (d *DriverDMA) BusyLine() exti.Lines {
+	return exti.Lines(d.d0.Mask())
 }
 
-// SetBusWidth sets the SD bus width.
-func (d *DriverDMA) SetBusWidth(width sdcard.BusWidth) {
-	if width > sdcard.Bus8 {
-		panic("sdmmc: bad bus width")
-	}
-	p := d.p
-	cfg, clkdiv := p.BusClock()
-	cfg = cfg&^BusWidth | BusClock(width*3>>2)<<3
-	p.SetBusClock(cfg, clkdiv)
+// BusyISR handles EXTI IRQ that detects end of busy state.
+func (d *DriverDMA) BusyISR() {
+	busyISR(d.d0, &d.done)
 }
 
 func (d *DriverDMA) ISR() {
-	d.p.SetIRQMask(0, 0)
-	d.done.Signal(1)
-}
-
-// SendCmd sends the cmd to the card and receives its response, if any. Short
-// response is returned in r[0]. Long is returned in r[0:3] (r[0] contains the
-// least significant bits, r[3] contains the most significant bits). If preceded
-// by SetupData, SendCmd performs the data transfer.
-func (d *DriverDMA) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
-	if uint(d.err)|uint(d.dmaErr) != 0 {
-		return
-	}
-	var waitFor Event
-	if cmd&sdcard.HasResp != 0 {
-		waitFor = CmdRespOK
-	} else {
-		waitFor = CmdSent
-	}
-	d.done.Reset(0)
 	p := d.p
-	p.Clear(EvAll, ErrAll)
-	p.SetArg(arg)
-	p.SetCmd(CmdEna | Command(cmd)&255)
-	fence.W()                     // Orders writes to normal and IO memory.
-	p.SetIRQMask(waitFor, ErrAll) // After SetCmd because of spurious IRQs.
-	d.done.Wait(1, 0)
-	_, err := p.Status()
-	if cmd&sdcard.HasResp != 0 {
-		if err&ErrCmdCRC != 0 {
-			switch cmd & sdcard.RespType {
-			case sdcard.R3, sdcard.R4:
-				err &^= ErrCmdCRC
-			}
-		}
-		if cmd&sdcard.LongResp != 0 {
-			r[3] = p.Resp(0) // Most significant bits.
-			r[2] = p.Resp(1)
-			r[1] = p.Resp(2)
-			r[0] = p.Resp(3) // Least significant bits.
-		} else {
-			r[0] = p.Resp(0)
-		}
-	}
-	if err != 0 {
-		d.err = err
-		d.dtc = 0
+	p.SetIRQMask(0, 0)
+	dtc := d.dtc
+	if _, err := p.Status(); err != 0 || dtc&DTEna == 0 {
+		d.done.Signal(1)
 		return
 	}
-	if d.dtc == 0 {
-		return // No data transfer scheduled.
+	if dtc&Recv == 0 {
+		p.SetDataCtrl(d.dtc) // Start sending.
 	}
-	if d.dtc&Recv == 0 {
-		p.SetDataCtrl(d.dtc)
-	}
-	waitFor = 0
-	if d.dtc&Stream == 0 {
-		waitFor |= DataBlkEnd
-	}
-	d.dtc = 0
-	d.done.Reset(0)
-	fence.W() // This orders writes to normal and I/O memory.
+	d.dtc = dtc &^ DTEna
 	p.SetIRQMask(DataEnd, ErrAll)
-	d.done.Wait(1, 0)
-	for waitFor != 0 {
-		ev, err := p.Status()
-		if err != 0 {
-			d.err = err
-			d.dma.Disable()
-			p.SetDataCtrl(0)
-			return
-		}
-		waitFor &^= ev
-	}
-	ch := d.dma
-	for {
-		ev, err := ch.Status()
-		if err &^= dma.ErrFIFO; err != 0 {
-			d.dmaErr = err
-			break
-		}
-		if ev&dma.Complete != 0 {
-			break
-		}
-		/*if !ch.Enabled() {
-			break  // STM32F103 RM says about waiting until channel disabled.
-		}*/
-	}
-	return
 }
 
 // SetupData setups the data transfer for subsequent command. Ensure len(buf) <=
 // 32767. SetupData configures DMA stream/channel completely from scratch so
 // Driver can share its DMA stream/channel with other driver that do the same.
 func (d *DriverDMA) SetupData(mode sdcard.DataMode, buf []uint64) {
+	if len(buf) == 0 {
+		panicShortBuf()
+	}
 	if len(buf) > 32767 {
 		panic("sdio: buf too big")
 	}
@@ -218,11 +141,88 @@ func (d *DriverDMA) SetupData(mode sdcard.DataMode, buf []uint64) {
 	ch.SetAddrP(unsafe.Pointer(&d.p.raw.FIFO))
 	ch.SetAddrM(unsafe.Pointer(&buf[0]))
 	ch.SetWordSize(4, 4)
-	//ch.SetLen(len(buf) * 2) // Does  STM32F1 require this?
+	//ch.SetLen(len(buf) * 2) // Does STM32F1 require this?
 	ch.Enable()
 	p := d.p
 	p.SetDataLen(len(buf) * 8)
 	if d.dtc&Recv != 0 {
 		p.SetDataCtrl(d.dtc)
 	}
+}
+
+// SendCmd sends the cmd to the card and receives its response, if any. Short
+// response is returned in r[0]. Long is returned in r[0:3] (r[0] contains the
+// least significant bits, r[3] contains the most significant bits). If preceded
+// by SetupData, SendCmd performs the data transfer.
+func (d *DriverDMA) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
+	if uint(d.err)|uint(d.dmaErr) != 0 {
+		return
+	}
+	cmdEnd := CmdSent
+	if cmd&sdcard.HasResp != 0 {
+		cmdEnd = CmdRespOK
+	}
+	d.done.Reset(0)
+	p := d.p
+	p.Clear(EvAll, ErrAll)
+	p.SetArg(arg)
+	p.SetCmd(CmdEna | Command(cmd)&255)
+	fence.W()                    // Orders writes to normal and IO memory.
+	p.SetIRQMask(cmdEnd, ErrAll) // After SetCmd because of spurious IRQs.
+	d.done.Wait(1, 0)
+	if _, err := p.Status(); err != 0 {
+		if rt := cmd & sdcard.RespType; rt == sdcard.R3 || rt == sdcard.R4 {
+			err &^= ErrCmdCRC // Ignore CRC error for R3 and R4 responses.
+		}
+		if err != 0 {
+			d.err = err
+			return
+		}
+	}
+	if cmd&sdcard.HasResp != 0 {
+		if cmd&sdcard.LongResp != 0 {
+			r[3] = p.Resp(0) // Most significant bits.
+			r[2] = p.Resp(1)
+			r[1] = p.Resp(2)
+			r[0] = p.Resp(3) // Least significant bits.
+		} else {
+			r[0] = p.Resp(0)
+		}
+	}
+	if d.dtc == 0 {
+		return // No data transfer scheduled.
+	}
+	if d.dtc&Stream == 0 {
+		// Wait for data CRC. It should be received and checked already so use
+		// simple pooling.
+		for {
+			ev, err := p.Status()
+			if err != 0 {
+				d.err = err
+				d.dma.Disable()
+				return
+			}
+			if ev&DataBlkEnd != 0 {
+				break
+			}
+		}
+	}
+	// Wait for end of DMA transfer. It should be ended already so use simple
+	// pooling.
+	ch := d.dma
+	for {
+		ev, err := ch.Status()
+		if err &^= dma.ErrFIFO; err != 0 {
+			d.dmaErr = err
+			return
+		}
+		if ev&dma.Complete != 0 {
+			break
+		}
+		/*if !ch.Enabled() {
+			break  // STM32F103 RM says about waiting until channel disabled.
+		}*/
+	}
+	d.dtc = 0
+	return
 }

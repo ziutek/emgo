@@ -27,9 +27,7 @@ type Driver struct {
 // If d0 is valid it also configures EXTI to detect rising edge on d0 pin.
 func MakeDriver(p *Periph, d0 gpio.Pin) Driver {
 	if d0.IsValid() {
-		l := exti.Lines(d0.Mask())
-		l.Connect(d0.Port())
-		l.EnableRiseTrig()
+		setupEXTI(d0)
 	}
 	return Driver{p: p, d0: d0}
 }
@@ -43,6 +41,22 @@ func NewDriver(p *Periph, d0 gpio.Pin) *Driver {
 
 func (d *Driver) Periph() *Periph {
 	return d.p
+}
+
+// SetBusClock sets SD bus clock frequency (freqhz <= 0 disables clock).
+func (d *Driver) SetClock(freqhz int) {
+	setClock(d.p, freqhz)
+}
+
+// SetBusWidth sets the SD bus width. It returns sdcard.SDBus1|sdcard.SDBus4.
+func (d *Driver) SetBusWidth(width sdcard.BusWidth) sdcard.BusWidths {
+	return setBusWidth(d.p, width)
+}
+
+// Wait waits for deassertion of busy signal on DATA0 line. It returns false if
+// the deadline has passed. Zero deadline means no deadline.
+func (d *Driver) Wait(deadline int64) bool {
+	return wait(d.d0, &d.done, deadline)
 }
 
 // Err returns and optionally clears internal error.
@@ -62,22 +76,6 @@ func (d *Driver) Err(clear bool) error {
 		d.err = 0
 	}
 	return err
-}
-
-// SetBusClock sets SD bus clock frequency (freqhz <= 0 disables clock).
-func (d *Driver) SetClock(freqhz int) {
-	setClock(d.p, freqhz)
-}
-
-// SetBusWidth sets the SD bus width. It returns sdcard.SDBus1|sdcard.SDBus4.
-func (d *Driver) SetBusWidth(width sdcard.BusWidth) sdcard.BusWidths {
-	return setBusWidth(d.p, width)
-}
-
-// Wait waits for deassertion of busy signal on DATA0 line. It returns false if
-// the deadline has passed. Zero deadline means no deadline.
-func (d *Driver) Wait(deadline int64) bool {
-	return wait(d.d0, &d.done, deadline)
 }
 
 // BusyLine returns EXTI line used to detect end of busy state.
@@ -190,11 +188,11 @@ wait:
 
 // SetupData setups the data transfer for subsequent command.
 func (d *Driver) SetupData(mode sdcard.DataMode, buf []uint64) {
-	if d.err != 0 {
-		return
-	}
 	if len(buf) == 0 {
 		panicShortBuf()
+	}
+	if d.err != 0 {
+		return
 	}
 	d.dtc = DTEna | DataCtrl(mode)
 	d.addr = uintptr(unsafe.Pointer(&buf[0]))
@@ -223,7 +221,7 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	p := d.p
 	p.Clear(EvAll, ErrAll)
 	p.SetArg(arg)
-	p.SetCmd(CmdEna | Command(cmd)&0x3FF)
+	p.SetCmd(CmdEna | Command(cmd)&255)
 	fence.W()                    // Orders writes to normal and IO memory.
 	p.SetIRQMask(cmdEnd, ErrAll) // After SetCmd because of spurious IRQs.
 	d.done.Wait(1, 0)
