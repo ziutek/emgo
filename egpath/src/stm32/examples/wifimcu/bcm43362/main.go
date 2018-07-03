@@ -17,12 +17,17 @@ import (
 	"stm32/hal/system"
 	"stm32/hal/system/timer/systick"
 	"stm32/hal/usart"
+
+	"stm32/hal/raw/pwr"
+	"stm32/hal/raw/rcc"
 )
 
 var (
-	led gpio.Pin
-	sd  *sdmmc.DriverDMA
-	tts *usart.Driver
+	led     gpio.Pin
+	sd      *sdmmc.DriverDMA
+	tts     *usart.Driver
+	bcmRSTn gpio.Pin
+	bcmD1   gpio.Pin
 )
 
 func init() {
@@ -32,32 +37,39 @@ func init() {
 	// GPIO
 
 	gpio.A.EnableClock(false)
-	//irq := gpio.A.Pin(0)
-	port, tx, rx := gpio.A, gpio.Pin2, gpio.Pin3
+	//bcmIRQ := gpio.A.Pin(0)
+	tx2 := gpio.A.Pin(2)
+	rx2 := gpio.A.Pin(3)
 	led = gpio.A.Pin(4)
-	cmd := gpio.A.Pin(6)
-	d1 := gpio.A.Pin(8)
-	d2 := gpio.A.Pin(9)
+	bcmCMD := gpio.A.Pin(6)
+	//flashMOSI = gpio.A.Pin(7)
+	bcmD1 = gpio.A.Pin(8) // Also LSE output (MCO1) to WLAN powersave clock.
+	bcmD2 := gpio.A.Pin(9)
+	//flashCSn := gpio.A.Pin(15)
 
 	gpio.B.EnableClock(true)
-	d3 := gpio.B.Pin(5)
-	d0 := gpio.B.Pin(7)
-	clk := gpio.B.Pin(15)
+	//flashSCK := gpio.B.Pin(3)
+	//flashMISO := gpio.B.Pin(4)
+	bcmD3 := gpio.B.Pin(5)
+	bcmD0 := gpio.B.Pin(7)
+	bcmRSTn = gpio.B.Pin(14)
+	bcmCLK := gpio.B.Pin(15)
 
 	// LED
 
-	cfg := &gpio.Config{
+	led.Set()
+	led.Setup(&gpio.Config{
 		Mode:   gpio.Out,
 		Driver: gpio.OpenDrain,
 		Speed:  gpio.Low,
-	}
-	led.Setup(cfg)
+	})
 
-	// UART
+	// USART2
 
-	port.Setup(tx, &gpio.Config{Mode: gpio.Alt})
-	port.Setup(rx, &gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
-	port.SetAltFunc(tx|rx, gpio.USART2)
+	tx2.Setup(&gpio.Config{Mode: gpio.Alt})
+	rx2.Setup(&gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
+	tx2.SetAltFunc(gpio.USART2)
+	rx2.SetAltFunc(gpio.USART2)
 	d := dma.DMA1
 	d.EnableClock(true) // DMA clock must remain enabled in sleep mode.
 	tts = usart.NewDriver(
@@ -76,19 +88,20 @@ func init() {
 		linewriter.CRLF,
 	)
 
-	// SDIO (BCM43362)
+	// WLAN (BCM43362: SDIO, reset, IRQ)
 
-	cfg = &gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh, Pull: gpio.PullUp}
-	for _, pin := range []gpio.Pin{clk, cmd, d0, d1, d2, d3} {
+	bcmRSTn.Setup(&gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
+
+	cfg := &gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh, Pull: gpio.PullUp}
+	for _, pin := range []gpio.Pin{bcmCLK, bcmCMD, bcmD0, bcmD1, bcmD2, bcmD3} {
 		pin.Setup(cfg)
 		pin.SetAltFunc(gpio.SDIO)
 	}
 	d = dma.DMA2
 	d.EnableClock(true)
-	sd = sdmmc.NewDriverDMA(sdmmc.SDIO, d.Channel(6, 4), d0)
+	sd = sdmmc.NewDriverDMA(sdmmc.SDIO, d.Channel(6, 4), bcmD0)
 	sd.Periph().EnableClock(true)
 	sd.Periph().Enable()
-
 	rtos.IRQ(irq.SDIO).Enable()
 	rtos.IRQ(irq.EXTI9_5).Enable()
 }
@@ -99,29 +112,66 @@ func checkErr(what string, err error) {
 	}
 	fmt.Printf("%s: %v\n", what, err)
 	for {
+		//led.Clear()
+		delay.Millisec(100)
+		//led.Set()
+		delay.Millisec(100)
 	}
 }
 
 func main() {
-	fmt.Printf("Try to communicate with BCM43362...\n")
+	fmt.Printf("Try to communicate with BCM43362:\n")
 
-	// Set SDIO_CK to no more than 400 kHz (max. open-drain freq)..
-	sd.SetClock(400e3)
+	// Initialize WLAN
 
-	// SD card power-up takes maximum of 1 ms or 74 SDIO_CK cycles.
-	delay.Millisec(1)
+	bcmRSTn.Store(0) // Set WLAN into reset state.
 
-	ocr, mem, numIO := sd.SendCmd(sdcard.CMD5(0)).R4()
-	checkErr("CMD5", sd.Err(true))
+	sd.SetBusWidth(sdcard.Bus1)
+	sd.SetClock(400e3, true)
 
-	fmt.Printf("ocr=%08x mem=%t numIO=%d\n", ocr, mem, numIO)
-
-	for {
+	// Provide WLAN powersave clock on PA8 (SDIO_D1).
+	RCC := rcc.RCC
+	PWR := pwr.PWR
+	RCC.PWREN().Set()
+	PWR.DBP().Set()
+	RCC.LSEON().Set()
+	for RCC.LSERDY().Load() == 0 {
 		led.Clear()
-		delay.Millisec(900)
+		delay.Millisec(50)
 		led.Set()
-		delay.Millisec(100)
+		delay.Millisec(50)
 	}
+	RCC.MCO1().Store(1 << rcc.MCO1n) // LSE on MCO1.
+	PWR.DBP().Clear()
+	RCC.PWREN().Clear()
+	bcmD1.SetAltFunc(gpio.MCO)
+
+	delay.Millisec(1)
+	bcmRSTn.Store(1)
+
+	var (
+		rca uint16
+		cs  sdcard.CardStatus
+	)
+	led.Clear()
+	for {
+		delay.Millisec(1)
+		sd.SendCmd(sdcard.CMD0())
+		checkErr("CMD0", sd.Err(true))
+		sd.SendCmd(sdcard.CMD5(0))
+		sd.Err(true)
+		rca, cs = sd.SendCmd(sdcard.CMD3()).R6()
+		if sd.Err(true) == nil {
+			break
+		}
+	}
+	led.Set()
+	fmt.Printf("CMD5: rca=%x cs=%s\n", rca, cs)
+
+	cs = sd.SendCmd(sdcard.CMD7(rca)).R1()
+	checkErr("CMD7", sd.Err(true))
+	fmt.Printf("CMD7: cs=%s\n", cs)
+
 }
 
 func ttsISR() {
