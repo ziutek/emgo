@@ -44,8 +44,8 @@ func (d *Driver) Periph() *Periph {
 }
 
 // SetBusClock sets SD bus clock frequency (freqhz <= 0 disables clock).
-func (d *Driver) SetClock(freqhz int) {
-	setClock(d.p, freqhz)
+func (d *Driver) SetClock(freqhz int, pwrsave bool) {
+	setClock(d.p, freqhz, pwrsave)
 }
 
 // SetBusWidth sets the SD bus width. It returns sdcard.SDBus1|sdcard.SDBus4.

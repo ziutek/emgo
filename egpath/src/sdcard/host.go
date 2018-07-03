@@ -14,7 +14,7 @@ const (
 )
 
 // DataMode describes data transfer mode.
-type DataMode byte
+type DataMode uint16
 
 // All DataMode constants are defined to be friendly to use with ARM PrimeCell
 // Multimedia Card Interface (used by STM32, LPC and probably more MCUs). Do
@@ -39,14 +39,18 @@ const (
 	Block4K  DataMode = 12 << 4 // Block data transfer, block size: 4 KiB.
 	Block8K  DataMode = 13 << 4 // Block data transfer, block size: 8 KiB.
 	Block16K DataMode = 14 << 4 // Block data transfer, block size: 16 KiB.
+	RWStart  DataMode = 1 << 8  // Read wait start.
+	RWStop   DataMode = 1 << 9  // Read wait stop.
+	RWCK     DataMode = 1 << 10 // Read wait control using CK instead od D2.
 )
 
 // ErrCmdTimeout is returned by Host in case of command response timeout.
 var ErrCmdTimeout = errors.New("sdio: cmd timeout")
 
 type Host interface {
-	// SetClock sets SD/SPI clock frequency.
-	SetClock(freqhz int)
+	// SetClock sets SD/SPI clock frequency. If pwrsave is true the host can
+	// disable clock in case of inactive bus.
+	SetClock(freqhz int, pwrsave bool)
 
 	// SetBusWidth sets the SD bus width. Returns supported bus widths. SD host
 	// returns combination of SDBus1 and SDBus4. SPI host returns SPIBus.

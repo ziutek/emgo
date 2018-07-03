@@ -72,7 +72,7 @@ const statusErrFlags = sdcard.OUT_OF_RANGE |
 func (c *Card) statusCmd(cmd sdcard.Command, arg uint32) error {
 	status := c.host.SendCmd(cmd, arg).R1()
 	if err := c.host.Err(true); err != nil {
-		c.host.SetClock(0)
+		c.host.SetClock(0, false)
 		return err
 	}
 	c.status = status

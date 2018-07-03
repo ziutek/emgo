@@ -49,8 +49,8 @@ func (d *DriverDMA) DMA() *dma.Channel {
 }
 
 // SetBusClock sets SD bus clock frequency (freqhz <= 0 disables clock).
-func (d *DriverDMA) SetClock(freqhz int) {
-	setClock(d.p, freqhz)
+func (d *DriverDMA) SetClock(freqhz int, pwrsave bool) {
+	setClock(d.p, freqhz, pwrsave)
 }
 
 // SetBusWidth sets the SD bus width. It returns sdcard.SDBus1|sdcard.SDBus4.

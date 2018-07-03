@@ -63,7 +63,7 @@ func main() {
 	sd := sdcard.Host(sddrv)
 
 	// Set SDIO_CK to no more than 400 kHz (max. open-drain freq)..
-	sd.SetClock(400e3)
+	sd.SetClock(400e3, false)
 
 	// SD card power-up takes maximum of 1 ms or 74 SDIO_CK cycles.
 	delay.Millisec(1)
@@ -125,7 +125,7 @@ func main() {
 	// After CMD3 card is in Data Transfer Mode (Standby State) and SDIO_CK can
 	// be set to no more than 25 MHz (max. push-pull freq). Clock power save
 	// mode can be enabled.
-	sd.SetClock(25e6)
+	sd.SetClock(25e6, false)
 
 	// Read Card Specific Data register.
 	csd := sd.SendCmd(sdcard.CMD9(rca)).R2CSD()
@@ -176,7 +176,7 @@ func main() {
 		if sel&sdcard.AccessMode == sdcard.HighSpeed && false {
 			fmt.Printf("Card supports High Speed: set clock to 50 MHz.\n\n")
 			delay.Millisec(1) // Function switch takes max. 8 SDIO_CK cycles.
-			sd.SetClock(50e6)
+			sd.SetClock(50e6, false)
 		}
 	}
 

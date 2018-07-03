@@ -15,7 +15,7 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 	h := c.host
 
 	// Set initial clock and bus width.
-	h.SetClock(400e3)
+	h.SetClock(400e3, false)
 	hostBusWidths := h.SetBusWidth(sdcard.Bus1)
 
 	// BUG: Use hostBusWidths to detect SPI host.
@@ -36,12 +36,12 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 		vhs, pattern := h.SendCmd(sdcard.CMD8(sdcard.V27_36, 0xAC)).R7()
 		if err := h.Err(true); err != nil {
 			if err != sdcard.ErrCmdTimeout {
-				h.SetClock(0)
+				h.SetClock(0, false)
 				return sdcard.CID{}, err
 			}
 			ocr &^= sdcard.HCXC
 		} else if vhs != sdcard.V27_36 || pattern != 0xAC {
-			h.SetClock(0)
+			h.SetClock(0, false)
 			return sdcard.CID{}, ErrInitCMD8
 		}
 	}
@@ -77,7 +77,7 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 	if f > 25e6 {
 		f = 25e6
 	}
-	h.SetClock(f)
+	h.SetClock(f, false)
 
 	// Read Card Specific Data register.
 	csd := h.SendCmd(sdcard.CMD9(c.rca)).R2CSD()
@@ -135,7 +135,7 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 		sel := sdcard.SwitchFunc(be.Decode32(bytes[13:17]) & 0xFFFFFF)
 		if sel&sdcard.AccessMode == sdcard.HighSpeed {
 			delay.Millisec(1) // Function switch takes max. 8 SDIO_CK cycles.
-			h.SetClock(freqhz)
+			h.SetClock(freqhz, false)
 		}
 	}
 
