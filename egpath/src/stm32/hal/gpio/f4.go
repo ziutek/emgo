@@ -7,6 +7,10 @@ import (
 )
 
 const (
+	MCO      = AF0
+	RTC_50HZ = AF0
+	TRACE    = AF0
+
 	TIM1 = AF1
 	TIM2 = AF1
 
