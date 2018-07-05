@@ -166,30 +166,30 @@ func (p *Periph) SetDataLen(dlen int) {
 type DataCtrl uint16
 
 const (
-	DTEna    DataCtrl = 1 << 0  // Enable data transfer.
-	Send     DataCtrl = 0 << 1  // Send data to card.
-	Recv     DataCtrl = 1 << 1  // Receive data from card.
-	Stream   DataCtrl = 1 << 2  // Stream or SDIO multibyte data transfer.
-	UseDMA   DataCtrl = 1 << 3  // Use DMA.
-	Block1   DataCtrl = 0 << 4  // Block data transfer, block size: 1 B.
-	Block2   DataCtrl = 1 << 4  // Block data transfer, block size: 2 B.
-	Block4   DataCtrl = 2 << 4  // Block data transfer, block size: 4 B.
-	Block8   DataCtrl = 3 << 4  // Block data transfer, block size: 8 B.
-	Block16  DataCtrl = 4 << 4  // Block data transfer, block size: 16 B.
-	Block32  DataCtrl = 5 << 4  // Block data transfer, block size: 32 B.
-	Block64  DataCtrl = 6 << 4  // Block data transfer, block size: 64 B.
-	Block128 DataCtrl = 7 << 4  // Block data transfer, block size: 128 B.
-	Block256 DataCtrl = 8 << 4  // Block data transfer, block size: 256 B.
-	Block512 DataCtrl = 9 << 4  // Block data transfer, block size: 512 B.
-	Block1K  DataCtrl = 10 << 4 // Block data transfer, block size: 1 KiB.
-	Block2K  DataCtrl = 11 << 4 // Block data transfer, block size: 2 KiB.
-	Block4K  DataCtrl = 12 << 4 // Block data transfer, block size: 4 KiB.
-	Block8K  DataCtrl = 13 << 4 // Block data transfer, block size: 8 KiB.
-	Block16K DataCtrl = 14 << 4 // Block data transfer, block size: 16 KiB.
-	RWStart  DataCtrl = 1 << 8  // Read wait start.
-	RWStop   DataCtrl = 1 << 9  // Read wait stop.
-	RWCK     DataCtrl = 1 << 10 // Read wait constrol using CK instead of D2.
-	IO       DataCtrl = 1 << 11 // SDIO specific operation.
+	DTEna      DataCtrl = 1 << 0  // Enable data transfer.
+	Send       DataCtrl = 0 << 1  // Send data to card.
+	Recv       DataCtrl = 1 << 1  // Receive data from card.
+	Stream     DataCtrl = 1 << 2  // Stream or SDIO multibyte data transfer.
+	UseDMA     DataCtrl = 1 << 3  // Use DMA.
+	Block1     DataCtrl = 0 << 4  // Block data transfer, block size: 1 B.
+	Block2     DataCtrl = 1 << 4  // Block data transfer, block size: 2 B.
+	Block4     DataCtrl = 2 << 4  // Block data transfer, block size: 4 B.
+	Block8     DataCtrl = 3 << 4  // Block data transfer, block size: 8 B.
+	Block16    DataCtrl = 4 << 4  // Block data transfer, block size: 16 B.
+	Block32    DataCtrl = 5 << 4  // Block data transfer, block size: 32 B.
+	Block64    DataCtrl = 6 << 4  // Block data transfer, block size: 64 B.
+	Block128   DataCtrl = 7 << 4  // Block data transfer, block size: 128 B.
+	Block256   DataCtrl = 8 << 4  // Block data transfer, block size: 256 B.
+	Block512   DataCtrl = 9 << 4  // Block data transfer, block size: 512 B.
+	Block1K    DataCtrl = 10 << 4 // Block data transfer, block size: 1 KiB.
+	Block2K    DataCtrl = 11 << 4 // Block data transfer, block size: 2 KiB.
+	Block4K    DataCtrl = 12 << 4 // Block data transfer, block size: 4 KiB.
+	Block8K    DataCtrl = 13 << 4 // Block data transfer, block size: 8 KiB.
+	Block16K   DataCtrl = 14 << 4 // Block data transfer, block size: 16 KiB.
+	RWaitStart DataCtrl = 1 << 8  // Read wait start.
+	RWaitStop  DataCtrl = 1 << 9  // Read wait stop.
+	RWaitCK    DataCtrl = 1 << 10 // Read wait control using CK instead of D2.
+	IO         DataCtrl = 1 << 11 // SDIO specific operation.
 )
 
 // DataCtrl returns current state/configuration of Data Path State Machine
