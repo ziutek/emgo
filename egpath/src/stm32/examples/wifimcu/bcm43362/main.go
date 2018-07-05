@@ -107,11 +107,15 @@ func init() {
 	rtos.IRQ(irq.EXTI9_5).Enable()
 }
 
-func checkErr(what string, err error) {
-	if err == nil {
+func checkErr(what string, err error, status sdcard.IOStatus) {
+	switch {
+	case err != nil:
+		fmt.Printf(" %s: %v\n", what, err)
+	case status&^sdcard.IO_CURRENT_STATE != 0:
+		fmt.Printf(" %s: 0x%X", what, status)
+	default:
 		return
 	}
-	fmt.Printf("%s: %v\n", what, err)
 	for {
 		//led.Clear()
 		delay.Millisec(100)
@@ -120,9 +124,9 @@ func checkErr(what string, err error) {
 	}
 }
 
-func main() {
-	fmt.Printf("Try to communicate with BCM43362:\n")
+func printOK() { fmt.Printf(" OK\n") }
 
+func main() {
 	// Initialize WLAN
 
 	bcmRSTn.Store(0) // Set WLAN into reset state.
@@ -154,11 +158,13 @@ func main() {
 		rca uint16
 		cs  sdcard.CardStatus
 	)
+
+	fmt.Printf("Enumerate:")
 	led.Clear()
 	for {
 		delay.Millisec(1)
 		sd.SendCmd(sdcard.CMD0())
-		checkErr("CMD0", sd.Err(true))
+		checkErr("CMD0", sd.Err(true), 0)
 		sd.SendCmd(sdcard.CMD5(0))
 		sd.Err(true)
 		rca, cs = sd.SendCmd(sdcard.CMD3()).R6()
@@ -166,29 +172,38 @@ func main() {
 			break
 		}
 	}
+	fmt.Printf(" RCA=%x CardStatus=%s\n", rca, cs)
 	led.Set()
-	fmt.Printf("CMD5: rca=%x cs=%s\n", rca, cs)
 
+	fmt.Printf("Select card:")
 	cs = sd.SendCmd(sdcard.CMD7(rca)).R1()
-	checkErr("CMD7", sd.Err(true))
-	fmt.Printf("CMD7: cs=%s\n", cs)
+	checkErr("CMD7", sd.Err(true), 0)
+	printOK()
 
-	fmt.Printf("Enable FN1: ")
+	fmt.Printf("Enable FN1:")
 	for {
-		ioen, st := sd.SendCmd(sdcard.CMD52(
-			sdio.CIA, sdio.CCCR_IOEN, sdcard.Write|sdcard.RAW, sdio.FN1,
-		)).R5()
-		checkErr("CMD52", sd.Err(true))
-		if st&^sdcard.IO_CURRENT_STATE != 0 {
-			fmt.Println(st)
-			return
-		}
-		if ioen&sdio.FN1 != 0 {
+		reg, st := sd.SendCmd(
+			sdcard.CMD52(sdio.CIA, sdio.CCCR_IOEN, sdcard.WriteRead, sdio.FN1),
+		).R5()
+		checkErr("CMD52", sd.Err(true), st)
+		if reg&sdio.FN1 != 0 {
 			break
 		}
 		delay.Millisec(1)
 	}
-	fmt.Printf("OK\n")
+	printOK()
+
+	fmt.Printf("Enable 4-bit data bus:")
+	reg, st := sd.SendCmd(
+		sdcard.CMD52(sdio.CIA, sdio.CCCR_BUSICTRL, sdcard.Read, 0),
+	).R5()
+	checkErr("CMD52", sd.Err(true), st)
+	reg = reg&^3 | byte(sdcard.Bus4)
+	_, st = sd.SendCmd(
+		sdcard.CMD52(sdio.CIA, sdio.CCCR_BUSICTRL, sdcard.Write, reg),
+	).R5()
+	checkErr("CMD52", sd.Err(true), st)
+	printOK()
 }
 
 func ttsISR() {
