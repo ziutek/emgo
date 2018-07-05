@@ -107,25 +107,6 @@ func init() {
 	rtos.IRQ(irq.EXTI9_5).Enable()
 }
 
-func checkErr(what string, err error, status sdcard.IOStatus) {
-	switch {
-	case err != nil:
-		fmt.Printf(" %s: %v\n", what, err)
-	case status&^sdcard.IO_CURRENT_STATE != 0:
-		fmt.Printf(" %s: 0x%X", what, status)
-	default:
-		return
-	}
-	for {
-		//led.Clear()
-		delay.Millisec(100)
-		//led.Set()
-		delay.Millisec(100)
-	}
-}
-
-func printOK() { fmt.Printf(" OK\n") }
-
 func main() {
 	// Initialize WLAN
 
@@ -151,18 +132,18 @@ func main() {
 	RCC.PWREN().Clear()
 	bcmD1.SetAltFunc(gpio.MCO)
 
-	delay.Millisec(1)
+	delay.Millisec(2)
 	bcmRSTn.Store(1)
 
 	var (
-		rca uint16
-		cs  sdcard.CardStatus
+		retry int
+		rca   uint16
+		cs    sdcard.CardStatus
 	)
 
 	fmt.Printf("Enumerate:")
-	led.Clear()
-	for {
-		delay.Millisec(1)
+	for retry = 250; retry > 0; retry-- {
+		delay.Millisec(2)
 		sd.SendCmd(sdcard.CMD0())
 		checkErr("CMD0", sd.Err(true), 0)
 		sd.SendCmd(sdcard.CMD5(0))
@@ -172,8 +153,8 @@ func main() {
 			break
 		}
 	}
+	checkRetry(retry)
 	fmt.Printf(" RCA=%x CardStatus=%s\n", rca, cs)
-	led.Set()
 
 	fmt.Printf("Select card:")
 	cs = sd.SendCmd(sdcard.CMD7(rca)).R1()
@@ -181,29 +162,53 @@ func main() {
 	printOK()
 
 	fmt.Printf("Enable FN1:")
-	for {
-		reg, st := sd.SendCmd(
-			sdcard.CMD52(sdio.CIA, sdio.CCCR_IOEN, sdcard.WriteRead, sdio.FN1),
-		).R5()
-		checkErr("CMD52", sd.Err(true), st)
+	for retry = 250; retry > 0; retry-- {
+		reg := sendCMD52(sd, 0, sdio.CCCR_IOEN, sdcard.WriteRead, sdio.FN1)
 		if reg&sdio.FN1 != 0 {
 			break
 		}
-		delay.Millisec(1)
+		delay.Millisec(2)
 	}
+	checkRetry(retry)
 	printOK()
 
 	fmt.Printf("Enable 4-bit data bus:")
-	reg, st := sd.SendCmd(
-		sdcard.CMD52(sdio.CIA, sdio.CCCR_BUSICTRL, sdcard.Read, 0),
-	).R5()
-	checkErr("CMD52", sd.Err(true), st)
+	reg := sendCMD52(sd, 0, sdio.CCCR_BUSICTRL, sdcard.Read, 0)
 	reg = reg&^3 | byte(sdcard.Bus4)
-	_, st = sd.SendCmd(
-		sdcard.CMD52(sdio.CIA, sdio.CCCR_BUSICTRL, sdcard.Write, reg),
-	).R5()
-	checkErr("CMD52", sd.Err(true), st)
+	sendCMD52(sd, 0, sdio.CCCR_BUSICTRL, sdcard.Write, reg)
 	printOK()
+
+	fmt.Printf("Set 64B block size for FN0:")
+	for retry = 250; retry > 0; retry-- {
+		if sendCMD52(sd, 0, sdio.CCCR_BLKSIZE0, sdcard.WriteRead, 64) == 64 {
+			break
+		}
+		delay.Millisec(2)
+	}
+	checkRetry(retry)
+	printOK()
+
+	fmt.Printf("Set 64B block size for FN1:")
+	sendCMD52(sd, 0, sdio.FBR1+sdio.FBR_BLKSIZE0, sdcard.Write, 64)
+	printOK()
+
+	fmt.Printf("Set 64B block size for FN2:")
+	sendCMD52(sd, 0, sdio.FBR2+sdio.FBR_BLKSIZE0, sdcard.Write, 64)
+	sendCMD52(sd, 0, sdio.FBR2+sdio.FBR_BLKSIZE1, sdcard.Write, 0)
+	printOK()
+
+	fmt.Printf("Enable client interrupts:")
+	sendCMD52(
+		sd, 0, sdio.CCCR_INTEN, sdcard.Write, sdio.IENM|sdio.FN1|sdio.FN2,
+	)
+	printOK()
+
+	/* In case of 3.3V signaling the high speed is supported by default.
+	fmt.Printf("Enabld support for high speed (50 MHz):")
+	reg = sendCMD52(sd, 0, sdio.CCCR_SPEEDSEL, sdcard.Read, 0)
+	sendCMD52(sd, 0, sdio.CCCR_SPEEDSEL, sdcard.Write, reg|2)
+	*/
+
 }
 
 func ttsISR() {
