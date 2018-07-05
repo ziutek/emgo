@@ -220,6 +220,8 @@ const (
 	Block   IORWFlags = 1 << 1 // Block mode (CMD53)
 	Read    IORWFlags = 0 << 5 // Read data (CMD52, CMD53)
 	Write   IORWFlags = 1 << 5 // Write data (CMD52, CMD53)
+
+	WriteRead = Write | RAW
 )
 
 func panicIOFunc() {
