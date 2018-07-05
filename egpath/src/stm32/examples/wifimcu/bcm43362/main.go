@@ -8,6 +8,7 @@ import (
 	"text/linewriter"
 
 	"sdcard"
+	"sdcard/sdio"
 
 	"stm32/hal/dma"
 	"stm32/hal/exti"
@@ -172,6 +173,22 @@ func main() {
 	checkErr("CMD7", sd.Err(true))
 	fmt.Printf("CMD7: cs=%s\n", cs)
 
+	fmt.Printf("Enable FN1: ")
+	for {
+		ioen, st := sd.SendCmd(sdcard.CMD52(
+			sdio.CIA, sdio.CCCR_IOEN, sdcard.Write|sdcard.RAW, sdio.FN1,
+		)).R5()
+		checkErr("CMD52", sd.Err(true))
+		if st&^sdcard.IO_CURRENT_STATE != 0 {
+			fmt.Println(st)
+			return
+		}
+		if ioen&sdio.FN1 != 0 {
+			break
+		}
+		delay.Millisec(1)
+	}
+	fmt.Printf("OK\n")
 }
 
 func ttsISR() {
