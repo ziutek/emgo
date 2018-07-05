@@ -35,6 +35,11 @@ func (r Response) R4() (ocr OCR, mem bool, numIO int) {
 	return
 }
 
+// R5
+func (r Response) R5() (val byte, status IOStatus) {
+	return byte(r[0]), IOStatus(r[0] >> 8)
+}
+
 // R6 contains Relative Card Address and Card Status bits 23, 22, 19, 12:0.
 func (r Response) R6() (rca uint16, status CardStatus) {
 	rca = uint16(r[0] >> 16)
@@ -94,10 +99,10 @@ var statusStr = [...]string{
 	"FX_EVENT",
 	"?",
 	"READY_FOR_DATA",
-	"?",
-	"?",
-	"?",
-	"?",
+	"",
+	"",
+	"",
+	"",
 	"ERASE_RESET",
 	"CARD_ECC_DISABLED",
 	"WP_ERASE_SKIP",
@@ -141,7 +146,7 @@ var stateStr = [...]string{
 
 func (cs CardStatus) Format(f fmt.State, _ rune) {
 	io.WriteString(f, stateStr[cs&CURRENT_STATE>>9])
-	for n := uint(3); n < 32; n++ {
+	for n := uint(0); n < 32; n++ {
 		if n == 9 {
 			n = 12
 			continue
@@ -467,4 +472,52 @@ const (
 // CMD48, CMD49, CMD58, CMD59.
 func (scr SCR) CMD_SUPPORT() CmdSupport {
 	return CmdSupport(scr>>32) & 15
+}
+
+type IOStatus byte
+
+const (
+	IO_OUT_OF_RANGE    IOStatus = 1 << 0
+	IO_FUNCTION_NUMBER IOStatus = 1 << 1
+	IO_ERROR           IOStatus = 1 << 3
+	IO_CURRENT_STATE   IOStatus = 3 << 4
+	IO_DIS             IOStatus = 0 << 4
+	IO_CMD             IOStatus = 1 << 4
+	IO_TRN             IOStatus = 2 << 4
+	IO_ILLEGAL_COMMAND IOStatus = 1 << 6
+	IO_COM_CRC_ERROR   IOStatus = 1 << 7
+)
+
+//emgo:const
+var ioStatusStr = [...]string{
+	"OUT_OF_RANGE",
+	"FUNCTION_NUMBER",
+	"?",
+	"ERROR",
+	"",
+	"",
+	"ILLEGAL_COMMAND",
+	"COM_CRC_ERROR",
+}
+
+//emgo:const
+var ioStateStr = [...]string{
+	"Disabled",
+	"Command",
+	"Transfer",
+	"?",
+}
+
+func (ios IOStatus) Format(f fmt.State, _ rune) {
+	io.WriteString(f, ioStateStr[ios&IO_CURRENT_STATE>>4])
+	for n := uint(0); n < 8; n++ {
+		if n == 4 {
+			n++
+			continue
+		}
+		if ios&(1<<n) != 0 {
+			io.WriteString(f, ",")
+			io.WriteString(f, ioStateStr[n])
+		}
+	}
 }

@@ -97,6 +97,12 @@ func CMD3() (Command, uint32) {
 	return cmd3, 0
 }
 
+// CMD5 (IO_SEND_OP_COND, R4) inquires about the voltage range needed by the
+// I/O card.
+func CMD5(ocr OCR) (Command, uint32) {
+	return cmd5, uint32(ocr)
+}
+
 type SwitchFunc uint32
 
 const (
@@ -129,12 +135,6 @@ const (
 	ModeCheck  SwitchFunc = 0 << 31 // Checks switchable function.
 	ModeSwitch SwitchFunc = 1 << 31 // Switch card function.
 )
-
-// CMD5 (IO_SEND_OP_COND, R4) inquires about the voltage range needed by the
-// I/O card.
-func CMD5(ocr OCR) (Command, uint32) {
-	return cmd5, uint32(ocr)
-}
 
 // CMD6 (SWITCH_FUNC, R1) switches or expands memory card functions.
 func CMD6(sf SwitchFunc) (Command, uint32) {
@@ -210,6 +210,51 @@ func CMD24(addr uint) (Command, uint32) {
 // send CMD12 (STOP_TRANSMISSION) command.
 func CMD25(addr uint) (Command, uint32) {
 	return cmd25, uint32(addr)
+}
+
+type IORWFlags byte
+
+const (
+	IncAddr IORWFlags = 1 << 0 // OP Code (CMD53)
+	RAW     IORWFlags = 1 << 1 // Read after write (CMD52)
+	Block   IORWFlags = 1 << 1 // Block mode (CMD53)
+	Read    IORWFlags = 0 << 5 // Read data (CMD52, CMD53)
+	Write   IORWFlags = 1 << 5 // Write data (CMD52, CMD53)
+)
+
+func panicIOFunc() {
+	panic("sdcard: IO func")
+}
+
+func panicIOAddr() {
+	panic("sdcard: IO addr")
+}
+
+// CMD52 (IO_RW_DIRECT, R5)
+func CMD52(fn, addr int, flags IORWFlags, val byte) (Command, uint32) {
+	if uint(fn) > 7 {
+		panicIOFunc()
+	}
+	if uint(addr) > 0x1FFFF {
+		panicIOAddr()
+	}
+	return cmd52,
+		uint32(val) | uint32(addr)<<9 | uint32(flags)<<26 | uint32(fn)<<28
+}
+
+// CMD53 (IO_RW_EXTENDED, R5)
+func CMD53(fn, addr int, flags IORWFlags, n int) (Command, uint32) {
+	if uint(fn) > 7 {
+		panicIOFunc()
+	}
+	if uint(addr) > 0x1FFFF {
+		panicIOAddr()
+	}
+	if uint(n) > 0x1F {
+		panic("sdcard: IO count")
+	}
+	return cmd52,
+		uint32(n) | uint32(addr)<<9 | uint32(flags)<<26 | uint32(fn)<<28
 }
 
 // CMD55 (APP_CMD, R1) indicates to the card that the next command is an
