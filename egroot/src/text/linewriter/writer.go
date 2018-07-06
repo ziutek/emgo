@@ -72,3 +72,10 @@ func (w *Writer) Write(buf []byte) (n int, err error) {
 		buf = buf[i+1:]
 	}
 }
+
+func (w *Writer) Flush() error {
+	if b, ok := w.out.(*bufio.Writer); ok {
+		return b.Flush()
+	}
+	return nil
+}
