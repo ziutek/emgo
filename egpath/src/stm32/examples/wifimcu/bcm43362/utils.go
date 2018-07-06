@@ -3,9 +3,23 @@ package main
 import (
 	"delay"
 	"fmt"
+	"io"
+	"text/linewriter"
 
 	"sdcard"
 )
+
+func print(s string) {
+	io.WriteString(fmt.DefaultWriter, s)
+	if s[len(s)-1] == '\n' {
+		return
+	}
+	fmt.DefaultWriter.(*linewriter.Writer).Flush()
+}
+
+func printOK() {
+	print(" OK\n")
+}
 
 func checkErr(what string, err error, status sdcard.IOStatus) {
 	switch {
@@ -28,17 +42,13 @@ func checkRetry(retry int) {
 	if retry > 0 {
 		return
 	}
-	fmt.Printf(" retry timeout")
+	print(" retry timeout\n")
 	for {
 		led.Clear()
 		delay.Millisec(200)
 		led.Set()
 		delay.Millisec(200)
 	}
-}
-
-func printOK() {
-	fmt.Printf(" OK\n")
 }
 
 func sendCMD52(h sdcard.Host, fn, addr int, flags sdcard.IORWFlags, val byte) byte {
