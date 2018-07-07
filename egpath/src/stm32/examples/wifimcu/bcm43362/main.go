@@ -274,7 +274,10 @@ func main() {
 	checkRetry(retry)
 	printOK()
 
-	print("Send firmware:")
+	print("Sending firmware:")
+	
+	
+	
 
 }
 

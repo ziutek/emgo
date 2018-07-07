@@ -52,3 +52,26 @@ const (
 	SFC_CRC4WOOS = 1 << 2
 	SFC_ABORTALL = 1 << 3
 )
+
+// BCM43362 constants
+
+const (
+	DOT11MAC_BASE_ADDR    = 0x18001000
+	SDIO_BASE_ADDRESS     = 0x18002000
+	WLAN_ARMCM3_BASE_ADDR = 0x18003000
+	SOCSRAM_BASE_ADDR     = 0x18004000
+)
+
+const (
+	WLAN_ARM_CORE = 0
+	SOCRAM_CORE   = 1
+	SDIOD_CORE    = 2
+)
+
+//emgo:const
+var coreBaseAddr = [...]uint32{
+	WLAN_ARMCM3_BASE_ADDR + 0x100000,
+	SOCSRAM_BASE_ADDR + 0x100000,
+	SDIO_BASE_ADDRESS,
+}
+
