@@ -12,12 +12,12 @@ type Command uint16
 // and lpc/hal/sdmmc.
 const (
 	// Command fields
-	CmdIdx   Command = 63 << 0 // Command index.
-	HasResp  Command = 1 << 6  // Response expected.
-	LongResp Command = 1 << 7  // Long response.
-	RespIdx  Command = 15 << 8 // Response index.
-	Busy     Command = 1 << 14 // Command can set D0 low to signal busy state.
-	App      Command = 1 << 15 // Application command (hint, APP_CMD required).
+	CmdIdx   Command = 63 << 0  // Command index.
+	HasResp  Command = 1 << 6   // Response expected.
+	LongResp Command = 1 << 7   // Long response.
+	RespIdx  Command = 15 << 10 // Response index.
+	Busy     Command = 1 << 14  // Command can set D0 low to signal busy state.
+	App      Command = 1 << 15  // Application command (hint, APP_CMD required).
 
 	// Response types
 	RespType = RespIdx | HasResp | LongResp
