@@ -32,6 +32,9 @@ func cmd52(sd sdcard.Host, f, addr int, flags sdcard.IORWFlags, val byte) byte {
 	return val
 }
 
+// Following code is heavily inspired and sometimes simply translated from WLAN
+// code in NuttX (http://nuttx.org/).
+
 func enableFunction(sd sdcard.Host, f int) (timeout bool) {
 	m := byte(1 << uint(f))
 
@@ -138,9 +141,31 @@ func (d *Driver) Init(reset func(nrst int)) error {
 	// Clear the enable request.
 	cmd52(sd, backplane, sbsdioFunc1ChipClkCSR, sdcard.Write, 0)
 
+	// Disable pull-ups - we use STM32 GPIO pull-ups.
+
+	cmd52(sd, backplane, sbsdioFunc1SDIOPullUp, sdcard.Write, 0)
+
 	return sd.Err(true)
 }
 
-func (d *Driver) LoadFirmware(r io.Reader) error {
+func (d *Driver) disableCore(core int) {
+	sd := d.sd
+	base := d.chip.baseAddr[core]
+
+	r, _ := cmd52(sd, base+commonResetCtl, sdcard.Read, 0)
+	if r&1 != 0 {
+		return // Already in reset state.
+	}
+	delay.Millisec(10)
+	cmd52(sd, base+commonResetCtl, sdcard.Write, 1)
+	delay.Millisec(1)
+	cmd52(sd, base+commonIOCtl, sdcard.Write, 0)
+	cmd52(sd, base+commonIOCtl, sdcard.Read, 0)
+	delay.Millisec(1)
+}
+
+func (d *Driver) UploadFirmware(r io.Reader) error {
+	d.disableCore(coreARMCM3)
+
 	return nil
 }

@@ -38,3 +38,12 @@ const (
 	sbsdioALPAvail         = 1 << 6
 	sbsdioHTAvail          = 1 << 7
 )
+
+// Agent registers (common for every core).
+// Source: kernel/include/linux/bcma/bcma_regs.h
+const (
+	commonIOCtl    = 0x0408
+	commonIOSt     = 0x0500
+	commonResetCtl = 0x0800
+	commonResetSt  = 0x0804
+)

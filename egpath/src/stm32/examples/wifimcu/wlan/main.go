@@ -139,11 +139,6 @@ func main() {
 
 	var retry int
 
-
-	print("Disable BCM43362 SDIO pull-ups:") // We use STM32 GPIO pull-ups.
-	sendCMD52(sd, BP, PULL_UP, sdcard.Write, 0)
-	printOK()
-
 	print("Enable FN2 (WLAN data):")
 	sendCMD52(sd, CIA, sdio.CCCR_IOEN, sdcard.Write, sdio.FN1|sdio.FN2)
 	printOK()
