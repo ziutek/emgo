@@ -139,85 +139,6 @@ func main() {
 
 	var retry int
 
-	print("Enable FN1 (Backplane):")
-	for retry = 250; retry > 0; retry-- {
-		reg := sendCMD52(sd, CIA, sdio.CCCR_IOEN, sdcard.WriteRead, sdio.FN1)
-		if reg&sdio.FN1 != 0 {
-			break
-		}
-		delay.Millisec(2)
-	}
-	checkRetry(retry)
-	printOK()
-
-	print("Enable 4-bit data bus:")
-	reg := sendCMD52(sd, CIA, sdio.CCCR_BUSICTRL, sdcard.Read, 0)
-	reg = reg&^3 | byte(sdcard.Bus4)
-	sendCMD52(sd, CIA, sdio.CCCR_BUSICTRL, sdcard.Write, reg)
-	printOK()
-
-	print("Set 64B block size for FN0:")
-	for retry = 250; retry > 0; retry-- {
-		if sendCMD52(sd, CIA, sdio.CCCR_BLKSIZE0, sdcard.WriteRead, 64) == 64 {
-			break
-		}
-		delay.Millisec(2)
-	}
-	checkRetry(retry)
-	printOK()
-
-	print("Set 64B block size for FN1 (Backplane):")
-	sendCMD52(sd, CIA, sdio.FBR1+sdio.FBR_BLKSIZE0, sdcard.Write, 64)
-	printOK()
-
-	print("Set 64B block size for FN2 (WLAN data):")
-	sendCMD52(sd, CIA, sdio.FBR2+sdio.FBR_BLKSIZE0, sdcard.Write, 64)
-	sendCMD52(sd, CIA, sdio.FBR2+sdio.FBR_BLKSIZE1, sdcard.Write, 0)
-	printOK()
-
-	/*
-		print("Enable client interrupts:")
-		sendCMD52(
-			sd, CIA, sdio.CCCR_INTEN, sdcard.Write, sdio.IENM|sdio.FN1|sdio.FN2,
-		)
-		printOK()
-	*/
-
-	reg = sendCMD52(sd, CIA, sdio.CCCR_SPEEDSEL, sdcard.Read, 0)
-	if reg&1 != 0 {
-		print("Enable high speed mode (50 MHz):")
-		sendCMD52(sd, CIA, sdio.CCCR_SPEEDSEL, sdcard.Write, reg|2)
-		printOK()
-		sd.SetClock(50e6, true)
-	} else {
-		sd.SetClock(25e6, true)
-	}
-
-	print("Wait for FN1 (Backplane) is ready:")
-	for retry = 250; retry > 0; retry-- {
-		if sendCMD52(sd, CIA, sdio.CCCR_IORDY, sdcard.Read, 0)&sdio.FN1 != 0 {
-			break
-		}
-		delay.Millisec(2)
-	}
-	checkRetry(retry)
-	printOK()
-
-	print("Enable ALP clock:")
-	sendCMD52(
-		sd, BP, CHIP_CLOCK_CSR, sdcard.Write,
-		SBSDIO_FORCE_HW_CLKREQ_OFF|SBSDIO_ALP_AVAIL_REQ|SBSDIO_FORCE_ALP,
-	)
-	for retry = 50; retry > 0; retry-- {
-		reg := sendCMD52(sd, BP, CHIP_CLOCK_CSR, sdcard.Read, 0)
-		if reg&SBSDIO_ALP_AVAIL != 0 {
-			break
-		}
-		delay.Millisec(2)
-	}
-	checkRetry(retry)
-	sendCMD52(sd, BP, CHIP_CLOCK_CSR, sdcard.Write, 0) // Clear enable request.
-	printOK()
 
 	print("Disable BCM43362 SDIO pull-ups:") // We use STM32 GPIO pull-ups.
 	sendCMD52(sd, BP, PULL_UP, sdcard.Write, 0)
@@ -225,18 +146,6 @@ func main() {
 
 	print("Enable FN2 (WLAN data):")
 	sendCMD52(sd, CIA, sdio.CCCR_IOEN, sdcard.Write, sdio.FN1|sdio.FN2)
-	printOK()
-
-	print("Enable out-of-band interrupts:")
-	sendCMD52(
-		sd, CIA, SEP_INT_CTL, sdcard.Write,
-		SEP_INTR_CTL_MASK|SEP_INTR_CTL_EN|SEP_INTR_CTL_POL,
-	)
-	// EMW3165 uses default IRQ pin (Pin0). Redirection isn't needed.
-	printOK()
-
-	print("Enable FN2 (WLAN data) interrupts:")
-	sendCMD52(sd, CIA, sdio.CCCR_INTEN, sdcard.Write, sdio.IENM|sdio.FN2)
 	printOK()
 
 	print("Ensure FN2 (WLAN data) is ready:")
