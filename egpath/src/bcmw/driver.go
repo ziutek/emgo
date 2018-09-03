@@ -125,19 +125,26 @@ func (d *Driver) Init(reset func(nrst int)) error {
 }
 
 func (d *Driver) disableCore(core int) {
+	d.setBackplaneWindow(d.chip.baseAddr[core])
 	sd := d.sd
-	base := d.chip.baseAddr[core]
-
-	r, _ := cmd52(sd, backplane, base+commonResetCtl, sdcard.Read, 0)
-	if r&1 != 0 {
+	if cmd52(sd, backplane, ssbResetCtl, sdcard.Read, 0)&1 != 0 {
 		return // Already in reset state.
 	}
 	delay.Millisec(10)
-	cmd52(sd, backplane, base+commonResetCtl, sdcard.Write, 1)
+	cmd52(sd, backplane, ssbResetCtl, sdcard.Write, 1)
 	delay.Millisec(1)
-	cmd52(sd, backplane, base+commonIOCtl, sdcard.Write, 0)
-	cmd52(sd, backplane, base+commonIOCtl, sdcard.Read, 0)
+	cmd52(sd, backplane, ssbIOCtl, sdcard.Write, 0)
+	cmd52(sd, backplane, ssbIOCtl, sdcard.Read, 0)
 	delay.Millisec(1)
+}
+
+func (d *Driver) resetCore(core int) {
+	d.disableCore(core)
+
+	// Initialization sequence.
+
+	cmd52(d.sd, backplane, ssbIOCtl, sdcard.Write, ioCtlClk|ioCtlFGC)
+
 }
 
 func (d *Driver) UploadFirmware(r io.Reader) error {

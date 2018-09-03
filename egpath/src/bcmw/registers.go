@@ -39,11 +39,25 @@ const (
 	sbsdioHTAvail          = 1 << 7
 )
 
+// Sonics Silicon Backplane (SSB) Core Registers
+//
+// Windowed access: base address (bits 15 to 31) is set in sbsdioFunc1SBAddr*.
+// Less significant bits are specified in CMD52/CMD53. More info:
+// http://www.gc-linux.org/wiki/Wii:WLAN
+
 // Agent registers (common for every core).
 // Source: kernel/include/linux/bcma/bcma_regs.h
 const (
-	commonIOCtl    = 0x0408
-	commonIOSt     = 0x0500
-	commonResetCtl = 0x0800
-	commonResetSt  = 0x0804
+	ssbIOCtl    = 0x0408
+	ssbIOSt     = 0x0500
+	ssbResetCtl = 0x0800
+	ssbResetSt  = 0x0804
 )
+
+// ssbIOCtl bits
+const (
+	ioCtlClk = 1 << 0
+	ioCtlFGC = 1 << 1
+)
+
+const access32bit = 1 << 15
