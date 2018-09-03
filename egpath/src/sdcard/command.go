@@ -221,7 +221,9 @@ const (
 	Read    IORWFlags = 0 << 5 // Read data (CMD52, CMD53)
 	Write   IORWFlags = 1 << 5 // Write data (CMD52, CMD53)
 
-	WriteRead = Write | RAW
+	WriteRead  = Write | RAW   // CMD52 only.
+	BlockRead  = Read | Block  // CMD53 only.
+	BlockWrite = Write | Block // CMD53 only.
 )
 
 func panicIOFunc() {
@@ -233,8 +235,8 @@ func panicIOAddr() {
 }
 
 // CMD52 (IO_RW_DIRECT, R5)
-func CMD52(fn, addr int, flags IORWFlags, val byte) (Command, uint32) {
-	if uint(fn) > 7 {
+func CMD52(f, addr int, flags IORWFlags, val byte) (Command, uint32) {
+	if uint(f) > 7 {
 		panicIOFunc()
 	}
 	if uint(addr) > 0x1FFFF {
@@ -245,18 +247,18 @@ func CMD52(fn, addr int, flags IORWFlags, val byte) (Command, uint32) {
 }
 
 // CMD53 (IO_RW_EXTENDED, R5)
-func CMD53(fn, addr int, flags IORWFlags, n int) (Command, uint32) {
-	if uint(fn) > 7 {
+func CMD53(f, addr int, flags IORWFlags, n int) (Command, uint32) {
+	if uint(f) > 7 {
 		panicIOFunc()
 	}
 	if uint(addr) > 0x1FFFF {
 		panicIOAddr()
 	}
-	if uint(n) > 0x1F {
+	if uint(n) > 0x1FF {
 		panic("sdcard: IO count")
 	}
-	return cmd52,
-		uint32(n) | uint32(addr)<<9 | uint32(flags)<<26 | uint32(fn)<<28
+	return cmd53,
+		uint32(n) | uint32(addr)<<9 | uint32(flags)<<26 | uint32(f)<<28
 }
 
 // CMD55 (APP_CMD, R1) indicates to the card that the next command is an
