@@ -12,9 +12,9 @@ import (
 var ErrTimeout = errors.New("bcmw: timeout")
 
 type Driver struct {
-	sd   sdcard.Host
-	chip *Chip
-	rca  uint16
+	sd              sdcard.Host
+	chip            *Chip
+	backplaneWindow uint32
 }
 
 func MakeDriver(sd sdcard.Host, chip *Chip) Driver {
@@ -25,30 +25,6 @@ func NewDriver(sd sdcard.Host, chip *Chip) *Driver {
 	d := new(Driver)
 	*d = MakeDriver(sd, chip)
 	return d
-}
-
-func cmd52(sd sdcard.Host, f, addr int, flags sdcard.IORWFlags, val byte) byte {
-	val, _ = sd.SendCmd(sdcard.CMD52(f, addr, flags, val)).R5()
-	return val
-}
-
-// Following code is heavily inspired and sometimes simply translated from WLAN
-// code in NuttX (http://nuttx.org/).
-
-func enableFunction(sd sdcard.Host, f int) (timeout bool) {
-	m := byte(1 << uint(f))
-
-	r := cmd52(sd, cia, sdio.CCCR_IOEN, sdcard.Read, 0)
-	cmd52(sd, cia, sdio.CCCR_IOEN, sdcard.Write, r|m)
-
-	for retry := 250; retry > 0; retry-- {
-		delay.Millisec(2)
-		r = cmd52(sd, cia, sdio.CCCR_IORDY, sdcard.Read, 0)
-		if sd.Err(false) == nil || r&m != 0 {
-			return false
-		}
-	}
-	return true
 }
 
 func (d *Driver) Init(reset func(nrst int)) error {
@@ -152,15 +128,15 @@ func (d *Driver) disableCore(core int) {
 	sd := d.sd
 	base := d.chip.baseAddr[core]
 
-	r, _ := cmd52(sd, base+commonResetCtl, sdcard.Read, 0)
+	r, _ := cmd52(sd, backplane, base+commonResetCtl, sdcard.Read, 0)
 	if r&1 != 0 {
 		return // Already in reset state.
 	}
 	delay.Millisec(10)
-	cmd52(sd, base+commonResetCtl, sdcard.Write, 1)
+	cmd52(sd, backplane, base+commonResetCtl, sdcard.Write, 1)
 	delay.Millisec(1)
-	cmd52(sd, base+commonIOCtl, sdcard.Write, 0)
-	cmd52(sd, base+commonIOCtl, sdcard.Read, 0)
+	cmd52(sd, backplane, base+commonIOCtl, sdcard.Write, 0)
+	cmd52(sd, backplane, base+commonIOCtl, sdcard.Read, 0)
 	delay.Millisec(1)
 }
 
