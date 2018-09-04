@@ -43,9 +43,9 @@ func (d Data) Bytes() []byte {
 
 // ByteSlice aligns m, n down to 8-byte boundary and the returns slice of d that
 // contains (n>>3 - m>>3) * 8 bytes from aligned m to aligned n.
-func (d Data) ByteSlice(m, n int) []byte {
+/*func (d Data) ByteSlice(m, n int) []byte {
 	return Data{d.words[m>>3 : n>>3]}.Bytes()
-}
+}*/
 
 // Block returns slice of d that contains n-th 512-byte block.
 func (d Data) Block(n int) Data {

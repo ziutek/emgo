@@ -28,7 +28,7 @@ func (c *Card) ReadBlocks(addr int64, buf sdcard.Data) error {
 	if !waitDataReady(h) {
 		return ErrBusyTimeout
 	}
-	h.SetupData(sdcard.Recv|sdcard.Block512, buf.Words())
+	h.SetupData(sdcard.Recv|sdcard.Block512, buf.Words(), len(buf.Words())*8)
 	var err error
 	if buf.NumBlocks() == 1 {
 		err = c.statusCmd(sdcard.CMD17(uint(addr)))
@@ -58,7 +58,7 @@ func (c *Card) WriteBlocks(addr int64, buf sdcard.Data) error {
 	if !waitDataReady(h) {
 		return ErrBusyTimeout
 	}
-	h.SetupData(sdcard.Send|sdcard.Block512, buf.Words())
+	h.SetupData(sdcard.Send|sdcard.Block512, buf.Words(), len(buf.Words())*8)
 	var err error
 	if buf.NumBlocks() == 1 {
 		err = c.statusCmd(sdcard.CMD24(uint(addr)))

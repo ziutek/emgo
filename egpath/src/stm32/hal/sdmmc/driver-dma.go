@@ -111,15 +111,16 @@ func (d *DriverDMA) ISR() {
 	p.SetIRQMask(DataEnd, ErrAll)
 }
 
-// SetupData setups the data transfer for subsequent command. Ensure len(buf) <=
-// 32767. SetupData configures DMA stream/channel completely from scratch so
-// Driver can share its DMA stream/channel with other driver that do the same.
-func (d *DriverDMA) SetupData(mode sdcard.DataMode, buf []uint64) {
+// SetupData setups the data transfer for subsequent command. Data will be read
+// from / write to buf. Ensure nbytes < 1<<24 and len(buf)*8 >= nbytes.
+// SetupData configures DMA stream/channel completely from scratch so the Driver
+// can share its DMA stream/channel with other driver that do the same.
+func (d *DriverDMA) SetupData(mode sdcard.DataMode, buf []uint64, nbytes int) {
 	if len(buf) == 0 {
 		panicShortBuf()
 	}
-	if len(buf) > 32767 {
-		panic("sdio: buf too big")
+	if len(buf)*8 < nbytes {
+		panic("sdio: buf too short")
 	}
 	if uint(d.err)|uint(d.dmaErr) != 0 {
 		return
@@ -141,10 +142,10 @@ func (d *DriverDMA) SetupData(mode sdcard.DataMode, buf []uint64) {
 	ch.SetAddrP(unsafe.Pointer(&d.p.raw.FIFO))
 	ch.SetAddrM(unsafe.Pointer(&buf[0]))
 	ch.SetWordSize(4, 4)
-	//ch.SetLen(len(buf) * 2) // Does STM32F1 require this?
+	//ch.SetLen(len(buf) * 2) // Does STM32F1 require this? Use nbytes?
 	ch.Enable()
 	p := d.p
-	p.SetDataLen(len(buf) * 8)
+	p.SetDataLen(nbytes)
 	if d.dtc&Recv != 0 {
 		p.SetDataCtrl(d.dtc)
 	}

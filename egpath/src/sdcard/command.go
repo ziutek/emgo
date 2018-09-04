@@ -243,7 +243,7 @@ func CMD52(f, addr int, flags IORWFlags, val byte) (Command, uint32) {
 		panicIOAddr()
 	}
 	return cmd52,
-		uint32(val) | uint32(addr)<<9 | uint32(flags)<<26 | uint32(fn)<<28
+		uint32(val) | uint32(addr)<<9 | uint32(flags)<<26 | uint32(f)<<28
 }
 
 // CMD53 (IO_RW_EXTENDED, R5)

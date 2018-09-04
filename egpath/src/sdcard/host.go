@@ -63,7 +63,7 @@ type Host interface {
 	SendCmd(cmd Command, arg uint32) (r Response)
 
 	// SetupData setups the data transfer for subsequent command.
-	SetupData(mode DataMode, buf []uint64)
+	SetupData(mode DataMode, buf []uint64, nbytes int)
 
 	// Wait waits for deassertion of busy signal on DATA0 line (READY_FOR_DATA
 	// state). It returns false if the deadline has passed. Wait can not be used
