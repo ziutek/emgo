@@ -120,7 +120,7 @@ func (d *DriverDMA) SetupData(mode sdcard.DataMode, buf []uint64, nbytes int) {
 		panicShortBuf()
 	}
 	if len(buf)*8 < nbytes {
-		panic("sdio: buf too short")
+		panic("sdmmc: buf too short")
 	}
 	if uint(d.err)|uint(d.dmaErr) != 0 {
 		return

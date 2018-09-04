@@ -86,7 +86,7 @@ func (p *Periph) BusClock() (cfg BusClock, clkdiv int) {
 // between subsequent SetBusClock.
 func (p *Periph) SetBusClock(cfg BusClock, clkdiv int) {
 	if uint(clkdiv) > 255 {
-		panic("sdio: bad clkdiv")
+		panic("sdmmc: bad clkdiv")
 	}
 	p.raw.CLKCR.U32.Store(uint32(cfg)<<8 | uint32(clkdiv))
 }
@@ -157,7 +157,7 @@ func (p *Periph) DataLen() int {
 // from 0 to 1<<24 - 1.
 func (p *Periph) SetDataLen(dlen int) {
 	if uint(dlen) >= 1<<24 {
-		panic("sdio: bad data len")
+		panic("sdmmc: bad data len")
 	}
 	p.raw.DLEN.U32.Store(uint32(dlen))
 }
@@ -333,7 +333,7 @@ func burstCopyPTM(p, m uintptr) uintptr
 func burstCopyMTP(m, p uintptr) uintptr
 
 func panicShortBuf() {
-	panic("sdio: buf too short")
+	panic("sdmmc: buf too short")
 }
 
 // BurstLoad reads 16 words from FIFO using LDM and STM instructions.
