@@ -98,7 +98,7 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 
 	// Read SD Configuration Register.
 	h.SendCmd(sdcard.CMD55(c.rca))
-	h.SetupData(sdcard.Recv|sdcard.Block8, buf[:], 64)
+	h.SetupData(sdcard.Recv|sdcard.Block8, buf[:], 8)
 	err = c.statusCmd(sdcard.ACMD51())
 	if err != nil {
 		return cid, err
@@ -127,7 +127,7 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 
 	if freqhz > 25e6 && scr.SD_SPEC() > 0 {
 		// Check and enable High Speed.
-		h.SetupData(sdcard.Recv|sdcard.Block64, buf[:], 512)
+		h.SetupData(sdcard.Recv|sdcard.Block64, buf[:], 64)
 		err = c.statusCmd(sdcard.CMD6(sdcard.ModeSwitch | sdcard.HighSpeed))
 		if err != nil {
 			return cid, err
