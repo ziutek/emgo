@@ -15,6 +15,7 @@ type Driver struct {
 	sd              sdcard.Host
 	chip            *Chip
 	backplaneWindow uint32
+	timeout         bool
 }
 
 func MakeDriver(sd sdcard.Host, chip *Chip) Driver {
@@ -27,10 +28,23 @@ func NewDriver(sd sdcard.Host, chip *Chip) *Driver {
 	return d
 }
 
-func (d *Driver) Init(reset func(nrst int)) error {
-	sd := d.sd
+func (d *Driver) Err(clear bool) error {
+	err := d.sd.Err(clear)
+	if err == nil && d.timeout {
+		err = ErrTimeout
+		if clear {
+			d.timeout = false
+		}
+	}
+	return err
+}
 
+func (d *Driver) Init(reset func(nrst int)) {
+	if d.error() {
+		return
+	}
 	reset(0)
+	sd := d.sd
 	sd.SetBusWidth(sdcard.Bus4)
 	sd.SetClock(400e3, true)
 	delay.Millisec(10)
@@ -42,33 +56,27 @@ func (d *Driver) Init(reset func(nrst int)) error {
 	sd.SendCmd(sdcard.CMD0())
 	sd.SendCmd(sdcard.CMD5(0))
 	rca, _ := sd.SendCmd(sdcard.CMD3()).R6()
-	if err := sd.Err(true); err != nil {
-		return err
-	}
 
 	// Select the card and put it into Transfer State.
 
 	sd.SendCmd(sdcard.CMD7(rca))
-	if err := sd.Err(true); err != nil {
-		return err
-	}
 
 	// Enable 4-bit data bus.
 
-	r := cmd52(sd, cia, sdio.CCCR_BUSICTRL, sdcard.Read, 0)
-	cmd52(sd, cia, sdio.CCCR_BUSICTRL, sdcard.Write, r&^3|byte(sdcard.Bus4))
+	r := d.cmd52(cia, sdio.CCCR_BUSICTRL, sdcard.Read, 0)
+	d.cmd52(cia, sdio.CCCR_BUSICTRL, sdcard.Write, r&^3|byte(sdcard.Bus4))
 
 	// Set block size to 64 bytes for all functions.
 
 	for f := cia; f <= wlanData; f++ {
-		cmd52(sd, cia, f<<8+sdio.FBR_BLKSIZE0, sdcard.Write, 64)
-		cmd52(sd, cia, f<<8+sdio.FBR_BLKSIZE1, sdcard.Write, 0)
+		d.cmd52(cia, f<<8+sdio.FBR_BLKSIZE0, sdcard.Write, 64)
+		d.cmd52(cia, f<<8+sdio.FBR_BLKSIZE1, sdcard.Write, 0)
 	}
 
 	/*
 		// Enable out-of-band interrupts.
-		cmd52(
-			sd, cia, SEP_INT_CTL, sdcard.Write,
+		d.cmd52(
+			cia, SEP_INT_CTL, sdcard.Write,
 			SEP_INTR_CTL_MASK|SEP_INTR_CTL_EN|SEP_INTR_CTL_POL,
 		)
 		// EMW3165 uses default IRQ pin (Pin0). Redirection isn't needed.
@@ -77,13 +85,13 @@ func (d *Driver) Init(reset func(nrst int)) error {
 	// Enable interrupts from Backplane and WLAN Data functions (bit 0 is
 	// Master Interrupt Enable bit).
 
-	cmd52(sd, cia, sdio.CCCR_INTEN, sdcard.Write, 1|1<<backplane|1<<wlanData)
+	d.cmd52(cia, sdio.CCCR_INTEN, sdcard.Write, 1|1<<backplane|1<<wlanData)
 
 	// Enable High Speed if supported.
 
-	r = cmd52(sd, cia, sdio.CCCR_SPEEDSEL, sdcard.Read, 0)
+	r = d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Read, 0)
 	if r&1 != 0 {
-		cmd52(sd, cia, sdio.CCCR_SPEEDSEL, sdcard.Write, r|2)
+		d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Write, r|2)
 		sd.SetClock(50e6, true)
 	} else {
 		sd.SetClock(25e6, true)
@@ -91,64 +99,40 @@ func (d *Driver) Init(reset func(nrst int)) error {
 
 	// Enable function 1.
 
-	if enableFunction(sd, backplane) {
-		return ErrTimeout
-	}
+	d.enableFunction(backplane)
 
 	// Enable Active Low-Power clock.
 
-	cmd52(
-		sd, backplane, sbsdioFunc1ChipClkCSR, sdcard.Write,
+	d.cmd52(
+		backplane, sbsdioFunc1ChipClkCSR, sdcard.Write,
 		sbsdioForceHwClkReqOff|sbsdioALPAvailReq|sbsdioForceALP,
 	)
 	for retry := 50; ; retry-- {
 		delay.Millisec(2)
-		r := cmd52(sd, backplane, sbsdioFunc1ChipClkCSR, sdcard.Read, 0)
-		if err := sd.Err(true); err != nil {
-			return err
+		r := d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Read, 0)
+		if d.error() {
+			return
 		}
 		if r&sbsdioALPAvail != 0 {
 			break
 		}
 		if retry == 1 {
-			return ErrTimeout
+			d.timeout = true
+			return
 		}
 	}
 	// Clear the enable request.
-	cmd52(sd, backplane, sbsdioFunc1ChipClkCSR, sdcard.Write, 0)
+	d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Write, 0)
 
 	// Disable pull-ups - we use STM32 GPIO pull-ups.
 
-	cmd52(sd, backplane, sbsdioFunc1SDIOPullUp, sdcard.Write, 0)
-
-	return sd.Err(true)
+	d.cmd52(backplane, sbsdioFunc1SDIOPullUp, sdcard.Write, 0)
 }
 
-func (d *Driver) disableCore(core int) {
-	d.setBackplaneWindow(d.chip.baseAddr[core])
-	sd := d.sd
-	if cmd52(sd, backplane, ssbResetCtl, sdcard.Read, 0)&1 != 0 {
-		return // Already in reset state.
+func (d *Driver) UploadFirmware(r io.Reader) {
+	if d.error() {
+		return
 	}
-	delay.Millisec(10)
-	cmd52(sd, backplane, ssbResetCtl, sdcard.Write, 1)
-	delay.Millisec(1)
-	cmd52(sd, backplane, ssbIOCtl, sdcard.Write, 0)
-	cmd52(sd, backplane, ssbIOCtl, sdcard.Read, 0)
-	delay.Millisec(1)
-}
-
-func (d *Driver) resetCore(core int) {
-	d.disableCore(core)
-
-	// Initialization sequence.
-
-	cmd52(d.sd, backplane, ssbIOCtl, sdcard.Write, ioCtlClk|ioCtlFGC)
-
-}
-
-func (d *Driver) UploadFirmware(r io.Reader) error {
 	d.disableCore(coreARMCM3)
-
-	return nil
+	d.resetCore(coreSOCSRAM)
 }
