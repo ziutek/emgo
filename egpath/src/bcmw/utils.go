@@ -3,6 +3,7 @@ package bcmw
 import (
 	"delay"
 	"encoding/binary/be"
+	"fmt"
 	"rtos"
 
 	"sdcard"
@@ -26,6 +27,9 @@ func (d *Driver) cmd52(f, addr int, flags sdcard.IORWFlags, val byte) byte {
 // http://www.gc-linux.org/wiki/Wii:WLAN
 
 func (d *Driver) setBackplaneWindow(addr uint32) {
+	if d.error() {
+		return
+	}
 	addr &^= 0x7FFF
 	win := d.backplaneWindow
 	if win == addr {
@@ -104,6 +108,6 @@ func (d *Driver) resetCore(core int) {
 	// Initialization sequence.
 
 	d.cmd52(backplane, ssbIOCtl, sdcard.Write, ioCtlClk|ioCtlFGC)
-	d.read32(backplane, ssbIOCtl)
-
+	v := d.read32(backplane, ssbIOCtl)
+	fmt.Printf("Disable core: %d\n", v)
 }

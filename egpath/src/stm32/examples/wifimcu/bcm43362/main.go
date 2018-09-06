@@ -166,8 +166,8 @@ func main() {
 
 	print("Enable FN1 (Backplane):")
 	for retry = 250; retry > 0; retry-- {
-		reg := sendCMD52(sd, CIA, sdio.CCCR_IOEN, sdcard.WriteRead, sdio.FN1)
-		if reg&sdio.FN1 != 0 {
+		reg := sendCMD52(sd, CIA, sdio.CCCR_IOEN, sdcard.WriteRead, 1<<SSB)
+		if reg&(1<<SSB) != 0 {
 			break
 		}
 		delay.Millisec(2)
@@ -220,7 +220,7 @@ func main() {
 
 	print("Wait for FN1 (Backplane) is ready:")
 	for retry = 250; retry > 0; retry-- {
-		if sendCMD52(sd, CIA, sdio.CCCR_IORDY, sdcard.Read, 0)&sdio.FN1 != 0 {
+		if sendCMD52(sd, CIA, sdio.CCCR_IORDY, sdcard.Read, 0)&(1<<SSB) != 0 {
 			break
 		}
 		delay.Millisec(2)
@@ -249,7 +249,7 @@ func main() {
 	printOK()
 
 	print("Enable FN2 (WLAN data):")
-	sendCMD52(sd, CIA, sdio.CCCR_IOEN, sdcard.Write, sdio.FN1|sdio.FN2)
+	sendCMD52(sd, CIA, sdio.CCCR_IOEN, sdcard.Write, 1<<SSB|1<<WLAN)
 	printOK()
 
 	print("Enable out-of-band interrupts:")
@@ -261,12 +261,12 @@ func main() {
 	printOK()
 
 	print("Enable FN2 (WLAN data) interrupts:")
-	sendCMD52(sd, CIA, sdio.CCCR_INTEN, sdcard.Write, sdio.IENM|sdio.FN2)
+	sendCMD52(sd, CIA, sdio.CCCR_INTEN, sdcard.Write, 1<<CIA|1<<WLAN)
 	printOK()
 
 	print("Ensure FN2 (WLAN data) is ready:")
 	for retry = 250; retry > 0; retry-- {
-		if sendCMD52(sd, CIA, sdio.CCCR_IORDY, sdcard.Read, 0)&sdio.FN2 != 0 {
+		if sendCMD52(sd, CIA, sdio.CCCR_IORDY, sdcard.Read, 0)&(1<<WLAN) != 0 {
 			break
 		}
 		delay.Millisec(2)
@@ -275,9 +275,6 @@ func main() {
 	printOK()
 
 	print("Sending firmware:")
-	
-	
-	
 
 }
 

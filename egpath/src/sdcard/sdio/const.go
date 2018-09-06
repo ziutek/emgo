@@ -29,19 +29,6 @@ const (
 )
 
 const (
-	FN0 = 1 << 0
-	FN1 = 1 << 1
-	FN2 = 1 << 2
-	FN3 = 1 << 3
-	FN4 = 1 << 4
-	FN5 = 1 << 5
-	FN6 = 1 << 6
-	FN7 = 1 << 7
-
-	IENM = 1 << 0
-)
-
-const (
 	FBR1 = 0x100 // Function Basic Registers for FN1
 	FBR2 = 0x200 // Function Basic Registers for FN2
 	FBR3 = 0x300 // Function Basic Registers for FN3

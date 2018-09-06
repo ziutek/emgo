@@ -1,6 +1,10 @@
 package main
 
-const CIA = 0 // Common IO Area (FN0)
+const (
+	CIA  = 0 // Common IO Area (function 0)
+	SSB  = 1 // Backplane (function 1)
+	WLAN = 2 // WLAN data (function 2)
+)
 
 // Vendor unique registers
 const (
@@ -74,4 +78,3 @@ var coreBaseAddr = [...]uint32{
 	SOCSRAM_BASE_ADDR + 0x100000,
 	SDIO_BASE_ADDRESS,
 }
-

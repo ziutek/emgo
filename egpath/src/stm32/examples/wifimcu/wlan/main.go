@@ -2,13 +2,9 @@ package main
 
 import (
 	"bufio"
-	"delay"
 	"fmt"
 	"rtos"
 	"text/linewriter"
-
-	"sdcard"
-	"sdcard/sdio"
 
 	"bcmw"
 
@@ -112,9 +108,7 @@ func init() {
 func main() {
 	wlan := bcmw.NewDriver(sddrv, bcmw.Chip43362)
 
-	sd := sdcard.Host(sddrv)
-
-	// Initialize WLAN
+	print("Initialize WLAN:")
 
 	/*
 		// Provide WLAN powersave clock on PA8 (SDIO_D1).
@@ -135,26 +129,37 @@ func main() {
 		bcmD1.SetAltFunc(gpio.MCO)
 	*/
 
-	checkErr("wlan.Init", wlan.Init(bcmRSTn.Store), 0)
+	wlan.Init(bcmRSTn.Store)
 
-	var retry int
-
-	print("Enable FN2 (WLAN data):")
-	sendCMD52(sd, CIA, sdio.CCCR_IOEN, sdcard.Write, sdio.FN1|sdio.FN2)
+	checkErr("Init", wlan.Err(true))
 	printOK()
 
-	print("Ensure FN2 (WLAN data) is ready:")
-	for retry = 250; retry > 0; retry-- {
-		if sendCMD52(sd, CIA, sdio.CCCR_IORDY, sdcard.Read, 0)&sdio.FN2 != 0 {
-			break
+	print("Uploading firmware:")
+
+	wlan.UploadFirmware(nil)
+
+	checkErr("UploadFirmware", wlan.Err(true))
+	printOK()
+
+	/*
+
+		print("Enable FN2 (WLAN data):")
+		sendCMD52(sd, CIA, sdio.CCCR_IOEN, sdcard.Write, sdio.FN1|sdio.FN2)
+		printOK()
+
+		print("Ensure FN2 (WLAN data) is ready:")
+		var retry int
+		for retry = 250; retry > 0; retry-- {
+			if sendCMD52(
+				sd, CIA, sdio.CCCR_IORDY, sdcard.Read, 0,
+			)&sdio.FN2 != 0 {
+				break
+			}
+			delay.Millisec(2)
 		}
-		delay.Millisec(2)
-	}
-	checkRetry(retry)
-	printOK()
-
-	print("Sending firmware:")
-
+		checkRetry(retry)
+		printOK()
+	*/
 }
 
 func ttsISR() {

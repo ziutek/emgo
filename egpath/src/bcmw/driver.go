@@ -82,10 +82,10 @@ func (d *Driver) Init(reset func(nrst int)) {
 		// EMW3165 uses default IRQ pin (Pin0). Redirection isn't needed.
 	*/
 
-	// Enable interrupts from Backplane and WLAN Data functions (bit 0 is
+	// Enable interrupts from Backplane and WLAN Data functions (1<<cia is
 	// Master Interrupt Enable bit).
 
-	d.cmd52(cia, sdio.CCCR_INTEN, sdcard.Write, 1|1<<backplane|1<<wlanData)
+	d.cmd52(cia, sdio.CCCR_INTEN, sdcard.Write, 1<<cia|1<<backplane|1<<wlanData)
 
 	// Enable High Speed if supported.
 
@@ -111,7 +111,7 @@ func (d *Driver) Init(reset func(nrst int)) {
 		delay.Millisec(2)
 		r := d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Read, 0)
 		if d.error() {
-			return
+			return // Fast return if error.
 		}
 		if r&sbsdioALPAvail != 0 {
 			break

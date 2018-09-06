@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"text/linewriter"
-
-	"sdcard"
 )
 
 func print(s string) {
@@ -21,6 +19,20 @@ func printOK() {
 	print(" OK\n")
 }
 
+func checkErr(what string, err error) {
+	if err == nil {
+		return
+	}
+	fmt.Printf(" %s: %v\n", what, err)
+	for {
+		led.Clear()
+		delay.Millisec(200)
+		led.Set()
+		delay.Millisec(200)
+	}
+}
+
+/*
 func checkErr(what string, err error, status sdcard.IOStatus) {
 	switch {
 	case err != nil:
@@ -37,22 +49,4 @@ func checkErr(what string, err error, status sdcard.IOStatus) {
 		delay.Millisec(200)
 	}
 }
-
-func checkRetry(retry int) {
-	if retry > 0 {
-		return
-	}
-	print(" retry timeout\n")
-	for {
-		led.Clear()
-		delay.Millisec(200)
-		led.Set()
-		delay.Millisec(200)
-	}
-}
-
-func sendCMD52(h sdcard.Host, fn, addr int, flags sdcard.IORWFlags, val byte) byte {
-	val, st := h.SendCmd(sdcard.CMD52(fn, addr, flags, val)).R5()
-	checkErr("CMD52", h.Err(true), st)
-	return val
-}
+*/
