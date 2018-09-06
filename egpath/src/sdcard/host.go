@@ -42,6 +42,7 @@ const (
 	RWaitStart DataMode = 1 << 8  // Read wait start.
 	RWaitStop  DataMode = 1 << 9  // Read wait stop.
 	RWaitCK    DataMode = 1 << 10 // Read wait control using CK instead od D2.
+	IO         DataMode = 1 << 11 // SDIO specific operation.
 )
 
 // ErrCmdTimeout is returned by Host in case of command response timeout.

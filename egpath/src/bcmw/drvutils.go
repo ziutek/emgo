@@ -11,14 +11,16 @@ import (
 )
 
 func (d *Driver) error() bool {
-	return d.sd.Err(false) != nil || d.timeout
+	return d.sd.Err(false) != nil ||
+		d.ioStatus&^sdcard.IO_CURRENT_STATE != 0 ||
+		d.timeout
 }
 
 func (d *Driver) cmd52(f, addr int, flags sdcard.IORWFlags, val byte) byte {
 	if d.error() {
 		return 0
 	}
-	val, _ = d.sd.SendCmd(sdcard.CMD52(f, addr, flags, val)).R5()
+	val, d.ioStatus = d.sd.SendCmd(sdcard.CMD52(f, addr, flags, val)).R5()
 	return val
 }
 
@@ -60,8 +62,10 @@ func (d *Driver) read32(f, addr int) uint32 {
 		return 0
 	}
 	var buf [1]uint64
-	sd.SetupData(sdcard.Recv, buf[:], 4)
-	sd.SendCmd(sdcard.CMD53(f, addr|access32bit, sdcard.Read, 4))
+	sd.SetupData(sdcard.Recv|sdcard.IO|sdcard.Stream, buf[:], 4)
+	_, d.ioStatus = sd.SendCmd(
+		sdcard.CMD53(f, addr|access32bit, sdcard.Read, 4),
+	).R5()
 	return be.Decode32(sdcard.AsData(buf[:]).Bytes())
 }
 
@@ -109,5 +113,5 @@ func (d *Driver) resetCore(core int) {
 
 	d.cmd52(backplane, ssbIOCtl, sdcard.Write, ioCtlClk|ioCtlFGC)
 	v := d.read32(backplane, ssbIOCtl)
-	fmt.Printf("Disable core: %d\n", v)
+	fmt.Printf("\nDisable core: %x\n", v)
 }

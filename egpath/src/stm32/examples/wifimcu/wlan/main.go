@@ -131,14 +131,14 @@ func main() {
 
 	wlan.Init(bcmRSTn.Store)
 
-	checkErr("Init", wlan.Err(true))
+	checkErr("", wlan.Err(true))
 	printOK()
 
 	print("Uploading firmware:")
 
 	wlan.UploadFirmware(nil)
 
-	checkErr("UploadFirmware", wlan.Err(true))
+	checkErr("", wlan.Err(true))
 	printOK()
 
 	/*

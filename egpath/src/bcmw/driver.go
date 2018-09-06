@@ -9,13 +9,17 @@ import (
 	"sdcard/sdio"
 )
 
-var ErrTimeout = errors.New("bcmw: timeout")
+var (
+	ErrTimeout  = errors.New("bcmw: timeout")
+	ErrIOStatus = errors.New("bcmw: IO status")
+)
 
 type Driver struct {
 	sd              sdcard.Host
 	chip            *Chip
 	backplaneWindow uint32
 	timeout         bool
+	ioStatus        sdcard.IOStatus
 }
 
 func MakeDriver(sd sdcard.Host, chip *Chip) Driver {
@@ -30,13 +34,24 @@ func NewDriver(sd sdcard.Host, chip *Chip) *Driver {
 
 func (d *Driver) Err(clear bool) error {
 	err := d.sd.Err(clear)
-	if err == nil && d.timeout {
+	switch {
+	case err != nil:
+	case d.ioStatus&^sdcard.IO_CURRENT_STATE != 0:
+		err = ErrIOStatus
+	case d.timeout:
 		err = ErrTimeout
-		if clear {
-			d.timeout = false
-		}
+	default:
+		return nil
+	}
+	if clear {
+		d.ioStatus &= sdcard.IO_CURRENT_STATE
+		d.timeout = false
 	}
 	return err
+}
+
+func (d *Driver) IOStatus() sdcard.IOStatus {
+	return d.IOStatus()
 }
 
 func (d *Driver) Init(reset func(nrst int)) {
