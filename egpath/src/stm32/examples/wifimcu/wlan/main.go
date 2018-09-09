@@ -136,7 +136,7 @@ func main() {
 
 	print("Uploading firmware:")
 
-	wlan.UploadFirmware(nil)
+	wlan.UploadFirmware(nil, firmware[:])
 
 	checkErr("", wlan.Err(true))
 	printOK()

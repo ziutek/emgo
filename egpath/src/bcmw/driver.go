@@ -83,6 +83,20 @@ func (d *Driver) Init(reset func(nrst int)) {
 
 	// Set block size to 64 bytes for all functions.
 
+	for retry := 250; ; retry-- {
+		delay.Millisec(2)
+		r := d.cmd52(cia, sdio.CCCR_BLKSIZE0, sdcard.WriteRead, 64)
+		if d.error() {
+			return // Fast return if error.
+		}
+		if r == 64 {
+			break
+		}
+		if retry == 1 {
+			d.timeout = true
+			return
+		}
+	}
 	for f := cia; f <= wlanData; f++ {
 		d.cmd52(cia, f<<8+sdio.FBR_BLKSIZE0, sdcard.Write, 64)
 		d.cmd52(cia, f<<8+sdio.FBR_BLKSIZE1, sdcard.Write, 0)
@@ -107,9 +121,9 @@ func (d *Driver) Init(reset func(nrst int)) {
 	r = d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Read, 0)
 	if r&1 != 0 {
 		d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Write, r|2)
-		sd.SetClock(50e6, true)
+		sd.SetClock(50e6, false)
 	} else {
-		sd.SetClock(25e6, true)
+		sd.SetClock(25e6, false)
 	}
 
 	// Enable function 1.
@@ -144,10 +158,21 @@ func (d *Driver) Init(reset func(nrst int)) {
 	d.cmd52(backplane, sbsdioFunc1SDIOPullUp, sdcard.Write, 0)
 }
 
-func (d *Driver) UploadFirmware(r io.Reader) {
+func (d *Driver) UploadFirmware(r io.Reader, firmware []uint64) {
 	if d.error() {
 		return
 	}
 	d.disableCore(coreARMCM3)
 	d.resetCore(coreSOCSRAM)
+
+	if d.chip == &chip43438 {
+		// Disable remap for SRAM3 in case of 4343x
+		d.wbr32(socsramBankxIndex, 3)
+		d.wbr32(socsramBankxPDA, 0)
+	}
+
+	delay.Millisec(50)
+
+	d.wblock(0, firmware[:8])
+	//d.wbr32(0, 0x12345678)
 }

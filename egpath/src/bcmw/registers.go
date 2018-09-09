@@ -45,6 +45,8 @@ const (
 // Less significant bits are specified in CMD52/CMD53. More info:
 // http://www.gc-linux.org/wiki/Wii:WLAN
 
+const access32bit = 1 << 15
+
 // Agent registers (common for every core).
 // Source: kernel/include/linux/bcma/bcma_regs.h
 const (
@@ -60,4 +62,8 @@ const (
 	ioCtlFGC = 1 << 1
 )
 
-const access32bit = 1 << 15
+// SOCSRAM registers
+const (
+	socsramBankxIndex = 0x18004000 + 0x10
+	socsramBankxPDA   = 0x18004000 + 0x44
+)

@@ -39,7 +39,6 @@ var (
 	}
 )
 
-//emgo:const
 var (
 	Chip43362 = &chip43362
 	Chip43438 = &chip43438
