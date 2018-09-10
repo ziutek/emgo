@@ -34,7 +34,7 @@ func init() {
 
 	// GPIO
 
-	gpio.A.EnableClock(false)
+	gpio.A.EnableClock(true)
 	bcmIRQ := gpio.A.Pin(0)
 	tx2 := gpio.A.Pin(2)
 	rx2 := gpio.A.Pin(3)
@@ -131,14 +131,14 @@ func main() {
 
 	wlan.Init(bcmRSTn.Store)
 
-	checkErr("", wlan.Err(true))
+	checkErr(wlan.Err(true))
 	printOK()
 
 	print("Uploading firmware:")
 
 	wlan.UploadFirmware(nil, firmware[:])
 
-	checkErr("", wlan.Err(true))
+	checkErr(wlan.Err(true))
 	printOK()
 
 	/*

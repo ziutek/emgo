@@ -146,13 +146,16 @@ func (d *Driver) enableFunction(f int) {
 	if d.error() {
 		return
 	}
-	m := d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Read, 0) | byte(1<<uint(f))
+	m := byte(1 << uint(f))
+	r := d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Read, 0)
+	d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Write, r|m)
+
 	for retry := 250; retry > 0; retry-- {
-		r := d.cmd52(cia, sdio.CCCR_IOEN, sdcard.WriteRead, m)
-		if d.error() || r == m {
+		delay.Millisec(2)
+		r = d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Read, 0)
+		if d.error() || r&m != 0 {
 			return
 		}
-		delay.Millisec(2)
 	}
 	d.timeout = true
 }

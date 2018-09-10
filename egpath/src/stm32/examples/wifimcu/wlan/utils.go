@@ -19,11 +19,11 @@ func printOK() {
 	print(" OK\n")
 }
 
-func checkErr(what string, err error) {
+func checkErr(err error) {
 	if err == nil {
 		return
 	}
-	fmt.Printf(" %s: %v\n", what, err)
+	fmt.Println(err)
 	for {
 		led.Clear()
 		delay.Millisec(200)
