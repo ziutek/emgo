@@ -54,7 +54,7 @@ func (d *Driver) IOStatus() sdcard.IOStatus {
 	return d.IOStatus()
 }
 
-func (d *Driver) Init(reset func(nrst int)) {
+func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 	if d.error() {
 		return
 	}
@@ -82,7 +82,7 @@ func (d *Driver) Init(reset func(nrst int)) {
 		}
 	}
 
-	// Enable function 1 (bakcplane).
+	// Enable function 1.
 
 	d.enableFunction(backplane)
 
@@ -112,15 +112,6 @@ func (d *Driver) Init(reset func(nrst int)) {
 		d.cmd52(cia, f<<8+sdio.FBR_BLKSIZE1, sdcard.Write, 0)
 	}
 
-	/*
-		// Enable out-of-band interrupts.
-		d.cmd52(
-			cia, SEP_INT_CTL, sdcard.Write,
-			SEP_INTR_CTL_MASK|SEP_INTR_CTL_EN|SEP_INTR_CTL_POL,
-		)
-		// EMW3165 uses default IRQ pin (Pin0). Redirection isn't needed.
-	*/
-
 	// Enable interrupts from Backplane and WLAN Data functions (1<<cia is
 	// Master Interrupt Enable bit).
 
@@ -129,7 +120,7 @@ func (d *Driver) Init(reset func(nrst int)) {
 	// Enable High Speed if supported.
 
 	r = d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Read, 0)
-	if r&1 != 0 {
+	if r&1 != 0 && false {
 		d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Write, r|2)
 		sd.SetClock(50e6, false)
 	} else {
@@ -179,6 +170,34 @@ func (d *Driver) Init(reset func(nrst int)) {
 	// Disable pull-ups - we use STM32 GPIO pull-ups.
 
 	d.cmd52(backplane, sbsdioFunc1SDIOPullUp, sdcard.Write, 0)
+
+	// Enable function 2.
+
+	d.enableFunction(wlanData)
+
+	// Enable out-of-band interrupts.
+
+	if oobIntPin >= 0 {
+		d.cmd52(
+			cia, cccrSepIntCtl, sdcard.Write,
+			sepIntCtlMask|sepIntCtlEn|sepIntCtlPol, // Active high.
+		)
+		switch oobIntPin {
+		case 0:
+			// Default pin
+		case 1:
+			d.cmd52(backplane, sbsdioGPIOSel, sdcard.Write, 0xF)
+			d.cmd52(backplane, sbsdioGPIOOut, sdcard.Write, 0)
+			d.cmd52(backplane, sbsdioGPIOEn, sdcard.Write, 2)
+			d.wbr32(commonGPIOCtl, 2)
+		default:
+			panic("bcme: bad int pin")
+		}
+	}
+
+	// Disable Backplane interrupt
+
+	d.cmd52(cia, sdio.CCCR_INTEN, sdcard.Write, 1<<cia|1<<wlanData)
 }
 
 func (d *Driver) UploadFirmware(r io.Reader, firmware []uint64) {

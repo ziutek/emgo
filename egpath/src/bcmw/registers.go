@@ -7,16 +7,25 @@ const (
 	wlanData  = 2 // Function 2
 )
 
+// CCCR vendor specific registers
+const (
+	cccrCardCap   = 0xF0
+	cccrCardCtl   = 0xF1
+	cccrSepIntCtl = 0xF2
+)
+
+// cccrSepIntCtl bits
+const (
+	sepIntCtlMask = 1 << 0
+	sepIntCtlEn   = 1 << 1
+	sepIntCtlPol  = 1 << 2
+)
+
 // Backplane registers
 const (
-	sbsdioSPROMCS         = 0x10000
-	sbsdioSPROMInfo       = 0x10001
-	sbsdioSPROMDataLow    = 0x10002
-	sbsdioSPROMDataHigh   = 0x10003
-	sbsdioSPROMAddrLow    = 0x10004
-	sbsdioSPROMAddrHigh   = 0x10005
-	sbsdioChipCtrlData    = 0x10006
-	sbsdioChipCtrlEn      = 0x10007
+	sbsdioGPIOSel         = 0x10005
+	sbsdioGPIOOut         = 0x10006
+	sbsdioGPIOEn          = 0x10007
 	sbsdioWatermark       = 0x10008
 	sbsdioDeviceCtl       = 0x10009
 	sbsdioFunc1SBAddrLow  = 0x1000A
@@ -60,6 +69,11 @@ const (
 const (
 	ioCtlClk = 1 << 0
 	ioCtlFGC = 1 << 1
+)
+
+// Chip common registers
+const (
+	commonGPIOCtl = 0x18000000 + 0x6C
 )
 
 // SOCSRAM registers

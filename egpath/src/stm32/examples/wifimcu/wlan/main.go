@@ -129,7 +129,7 @@ func main() {
 		bcmD1.SetAltFunc(gpio.MCO)
 	*/
 
-	wlan.Init(bcmRSTn.Store)
+	wlan.Init(bcmRSTn.Store, 0)
 
 	checkErr(wlan.Err(true))
 	printOK()
@@ -140,26 +140,6 @@ func main() {
 
 	checkErr(wlan.Err(true))
 	printOK()
-
-	/*
-
-		print("Enable FN2 (WLAN data):")
-		sendCMD52(sd, CIA, sdio.CCCR_IOEN, sdcard.Write, sdio.FN1|sdio.FN2)
-		printOK()
-
-		print("Ensure FN2 (WLAN data) is ready:")
-		var retry int
-		for retry = 250; retry > 0; retry-- {
-			if sendCMD52(
-				sd, CIA, sdio.CCCR_IORDY, sdcard.Read, 0,
-			)&sdio.FN2 != 0 {
-				break
-			}
-			delay.Millisec(2)
-		}
-		checkRetry(retry)
-		printOK()
-	*/
 }
 
 func ttsISR() {
