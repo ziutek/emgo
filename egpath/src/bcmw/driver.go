@@ -191,7 +191,7 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 			d.cmd52(backplane, sbsdioGPIOEn, sdcard.Write, 2)
 			d.wbr32(commonGPIOCtl, 2)
 		default:
-			panic("bcme: bad int pin")
+			panic("bcmw: bad IRQ pin")
 		}
 	}
 
@@ -212,9 +212,5 @@ func (d *Driver) UploadFirmware(r io.Reader, firmware []uint64) {
 		d.wbr32(socsramBankxIndex, 3)
 		d.wbr32(socsramBankxPDA, 0)
 	}
-
-	delay.Millisec(50)
-
-	d.wblock(0, firmware[:8])
-	//d.wbr32(0, 0x12345678)
+	d.wbb(0, firmware)
 }

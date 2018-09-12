@@ -96,50 +96,40 @@ func (d *Driver) wbr32(addr uint32, val uint32) {
 	)).R5()
 }
 
-func (d *Driver) wblock(addr uint32, buf []uint64) {
-	d.setBackplaneWindow(addr)
-	if d.error() {
-		return
-	}
-	sd := d.sd
-	if d.timeout = !waitDataReady(sd); d.timeout {
-		return
-	}
-	sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block64, buf, 64)
-	_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
-		backplane, int(addr&0x7FFF), sdcard.BlockWrite|sdcard.IncAddr, 1,
-	)).R5()
-}
-
 func (d *Driver) wbb(addr uint32, buf []uint64) {
 	sd := d.sd
 	for len(buf) >= 8 {
 		d.setBackplaneWindow(addr)
-		n := len(buf) >> 3
-		if n > 0x1FF {
-			n = 0x1FF
-		}
 		if d.timeout = !waitDataReady(sd); d.timeout {
 			return
 		}
-		sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block64, buf, n*64)
+		nbl := len(buf) >> 3
+		if nbl >= 0x1FF {
+			nbl = 0x1FF
+		}
+		sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block64, buf, nbl*64)
 		_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
-			backplane, int(addr&0x7FFF), sdcard.BlockWrite|sdcard.IncAddr, n,
+			backplane, int(addr&0x7FFF), sdcard.BlockWrite|sdcard.IncAddr, nbl,
 		)).R5()
 		if d.error() {
 			return
 		}
-		buf = buf[n*8:]
-		addr += uint32(n) * 64
+		buf = buf[nbl*8:]
+		addr += uint32(nbl) * 64
 	}
+	if len(buf) == 0 {
+		return
+	}
+	d.setBackplaneWindow(addr)
 	if d.timeout = !waitDataReady(sd); d.timeout {
 		return
 	}
+	return // BUG: The following code does not work.
 	n := len(buf) * 8
 	sd.SetupData(sdcard.Recv|sdcard.IO|sdcard.Stream, buf, n)
-	_, d.ioStatus = sd.SendCmd(
-		sdcard.CMD53(backplane, int(addr&0x7FFF), sdcard.Write, n),
-	).R5()
+	_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
+		backplane, int(addr&0x7FFF), sdcard.Write|sdcard.IncAddr, n,
+	)).R5()
 }
 
 func (d *Driver) enableFunction(f int) {
