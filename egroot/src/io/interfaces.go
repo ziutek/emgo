@@ -32,3 +32,11 @@ type ReadWriteCloser interface {
 	Writer
 	Closer
 }
+
+type ReaderFrom interface {
+	ReadFrom(r Reader) (n int64, err error)
+}
+
+type WriterTo interface {
+	WriteTo(w Writer) (n int64, err error)
+}
