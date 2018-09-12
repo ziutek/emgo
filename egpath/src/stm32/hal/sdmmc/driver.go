@@ -189,7 +189,10 @@ wait:
 // SetupData setups the data transfer for subsequent command. Data will be read
 // from / write to buf. Ensure len(buf)*8 >= nbytes.
 func (d *Driver) SetupData(mode sdcard.DataMode, buf []uint64, nbytes int) {
-	if len(buf) == 0 {
+	if nbytes == 0 {
+		panicNoData()
+	}
+	if len(buf)*8 < nbytes {
 		panicShortBuf()
 	}
 	if d.err != 0 {
@@ -197,7 +200,7 @@ func (d *Driver) SetupData(mode sdcard.DataMode, buf []uint64, nbytes int) {
 	}
 	d.dtc = DTEna | DataCtrl(mode)
 	d.addr = uintptr(unsafe.Pointer(&buf[0]))
-	d.n = len(buf)
+	d.n = nbytes
 	p := d.p
 	p.SetDataLen(nbytes)
 	if d.dtc&Recv != 0 {

@@ -332,6 +332,10 @@ func burstCopyPTM(p, m uintptr) uintptr
 //c:inline
 func burstCopyMTP(m, p uintptr) uintptr
 
+func panicNoData() {
+	panic("sdmmc: no data")
+}
+
 func panicShortBuf() {
 	panic("sdmmc: buf too short")
 }

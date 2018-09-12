@@ -116,11 +116,11 @@ func (d *DriverDMA) ISR() {
 // SetupData configures DMA stream/channel completely from scratch so the Driver
 // can share its DMA stream/channel with other driver that do the same.
 func (d *DriverDMA) SetupData(mode sdcard.DataMode, buf []uint64, nbytes int) {
-	if len(buf) == 0 {
-		panicShortBuf()
+	if nbytes == 0 {
+		panicNoData()
 	}
 	if len(buf)*8 < nbytes {
-		panic("sdmmc: buf too short")
+		panicShortBuf()
 	}
 	if uint(d.err)|uint(d.dmaErr) != 0 {
 		return
@@ -130,7 +130,7 @@ func (d *DriverDMA) SetupData(mode sdcard.DataMode, buf []uint64, nbytes int) {
 	if d.dtc&Recv == 0 {
 		dmacfg |= dma.MTP
 	}
-	if len(buf)&1 == 0 {
+	if nbytes&15 == 0 {
 		dmacfg |= dma.FT4 | dma.PB4 | dma.MB4
 	} else {
 		dmacfg |= dma.FT2
