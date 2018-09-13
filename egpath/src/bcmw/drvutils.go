@@ -124,11 +124,10 @@ func (d *Driver) wbb(addr uint32, buf []uint64) {
 	if d.timeout = !waitDataReady(sd); d.timeout {
 		return
 	}
-	return // BUG: The following code does not work.
 	n := len(buf) * 8
-	sd.SetupData(sdcard.Recv|sdcard.IO|sdcard.Stream, buf, n)
+	sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Stream, buf, n)
 	_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
-		backplane, int(addr&0x7FFF), sdcard.Write|sdcard.IncAddr, n,
+		backplane, int(addr&0x7FFF|access32bit), sdcard.Write|sdcard.IncAddr, n,
 	)).R5()
 }
 

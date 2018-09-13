@@ -120,7 +120,7 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 	// Enable High Speed if supported.
 
 	r = d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Read, 0)
-	if r&1 != 0 && false {
+	if false && r&1 != 0 {
 		d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Write, r|2)
 		sd.SetClock(50e6, false)
 	} else {
