@@ -179,3 +179,15 @@ func (d *Driver) resetCore(core int) {
 	d.rbr8(base + ssbIOCtl)
 	delay.Millisec(1)
 }
+
+func (d *Driver) isCoreUp(core int) bool {
+	if d.error() {
+		return false
+	}
+	base := d.chip.baseAddr[core]
+	r := d.rbr8(base + ssbIOCtl)
+	if r&(ioCtlClk|ioCtlFGC) != ioCtlClk {
+		return false
+	}
+	return d.rbr8(base+ssbResetCtl)&1 == 0
+}

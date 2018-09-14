@@ -5,9 +5,11 @@ import (
 	"unsafe"
 )
 
-// Data should be used for data transfers. It ensures 8-byte alignment but does
-// not guarantee any byte order for its 64-bit elements. Use Bytes method to
-// return Data as correctly ordered string of bytes.
+// Data can be used to access bytes sent/received using SD card data transfers.
+// It ensures 8-byte alignment required by Host.SetupData method. The bit order
+// of its 64-bit elements is hardware depend. Use Bytes method to return Data as
+// correctly ordered string of bytes. Additionally it helps to operate on
+// typical 512 byte blocks.
 type Data struct {
 	words []uint64
 }

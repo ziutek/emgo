@@ -3,6 +3,7 @@ package bcmw
 import (
 	"delay"
 	"errors"
+	"fmt"
 	"io"
 
 	"sdcard"
@@ -94,6 +95,7 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 	// Set block size to 64 bytes for all functions.
 
 	for retry := 250; ; retry-- {
+		fmt.Printf("blk siz\n")
 		delay.Millisec(2)
 		r := d.cmd52(cia, sdio.CCCR_BLKSIZE0, sdcard.WriteRead, 64)
 		if d.error() {
@@ -130,6 +132,7 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 	// Wait till the backplane is ready.
 
 	for retry := 250; ; retry-- {
+		fmt.Printf("bkpl rdy\n")
 		r = d.cmd52(cia, sdio.CCCR_IORDY, sdcard.Read, 0)
 		if d.error() {
 			return // Fast return if error.
@@ -213,4 +216,46 @@ func (d *Driver) UploadFirmware(r io.Reader, firmware []uint64) {
 		d.wbr32(socsramBankxPDA, 0)
 	}
 	d.wbb(0, firmware)
+}
+
+func (d *Driver) UploadNVRAM(r io.Reader, nvram string) {
+	if d.error() {
+		return
+	}
+	var tmp [8]uint64
+	buf := sdcard.AsData(tmp[:])
+	nvsiz := (len(nvram) + 63) &^ 63 // Round up to n*64 bytes.
+	addr := uint32(d.chip.ramSize - 4 - nvsiz)
+	for len(nvram) > 0 {
+		n := copy(buf.Bytes(), nvram)
+		nvram = nvram[n:]
+		d.wbb(addr, buf.Words())
+		addr += 64
+	}
+	token := uint32(nvsiz) >> 2
+	token = ^token<<16 | token
+	d.wbr32(addr, token)
+
+	d.resetCore(coreARMCM3)
+	if d.isCoreUp(coreARMCM3) {
+		fmt.Printf("ARM up!\n")
+	} else {
+		fmt.Printf("ARM down!\n")
+		return
+	}
+	for retry := 250; ; retry-- {
+		r := d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Read, 0)
+		if d.error() {
+			return // Fast return if error.
+		}
+		fmt.Printf("ht clk: %x\n", r)
+		if r&sbsdioHTAvail != 0 {
+			break
+		}
+		if retry == 1 {
+			d.timeout = true
+			return
+		}
+		delay.Millisec(2)
+	}
 }

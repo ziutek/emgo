@@ -140,6 +140,13 @@ func main() {
 
 	checkErr(wlan.Err(true))
 	printOK()
+
+	print("Uploading NVRAM:")
+
+	wlan.UploadNVRAM(nil, nvram)
+
+	checkErr(wlan.Err(true))
+	printOK()
 }
 
 func ttsISR() {
