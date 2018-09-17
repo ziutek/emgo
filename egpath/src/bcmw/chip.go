@@ -4,7 +4,7 @@ package bcmw
 
 type Chip struct {
 	ramSize  int
-	baseAddr [5]uint32
+	wrapBase [5]uint32
 }
 
 const (
@@ -19,7 +19,7 @@ const (
 var (
 	chip43362 = Chip{
 		ramSize: 240 * 1024,
-		baseAddr: [5]uint32{
+		wrapBase: [5]uint32{
 			coreCommon:   0x18000000,
 			coreDot11MAC: 0x18001000,
 			coreSDIO:     0x18002000,
@@ -29,7 +29,7 @@ var (
 	}
 	chip43438 = Chip{
 		ramSize: 512 * 1024,
-		baseAddr: [5]uint32{
+		wrapBase: [5]uint32{
 			coreCommon:   0x18000000,
 			coreDot11MAC: 0x18001000,
 			coreSDIO:     0x18002000,

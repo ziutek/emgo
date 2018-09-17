@@ -23,7 +23,50 @@ func (d *Driver) cmd52(f, addr int, flags sdcard.IORWFlags, val byte) byte {
 	return val
 }
 
-func (d *Driver) setBackplaneWindow(addr uint32) {
+func (d *Driver) sdioSetBlockSize(f, blksiz int) {
+	if d.error() {
+		return
+	}
+	d.cmd52(cia, f<<8+sdio.FBR_BLKSIZE0, sdcard.Write, byte(blksiz))
+	d.cmd52(cia, f<<8+sdio.FBR_BLKSIZE1, sdcard.Write, byte(blksiz>>8))
+}
+
+func (d *Driver) sdioEnableFunc(f, timeoutms int) {
+	if d.error() {
+		return
+	}
+	r := d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Read, 0)
+	m := byte(1 << uint(f))
+	d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Write, r|m)
+	for retry := timeoutms >> 1; retry > 0; retry-- {
+		r := d.cmd52(cia, sdio.CCCR_IORDY, sdcard.Read, 0)
+		if d.error() || r&m != 0 {
+			return
+		}
+		delay.Millisec(2)
+	}
+	d.timeout = true
+}
+
+func (d *Driver) sdiodRead8(addr int) byte {
+	if d.error() {
+		return 0
+	}
+	return d.cmd52(backplane, addr, sdcard.Read, 0)
+}
+
+func (d *Driver) sdiodWrite8(addr int, v byte) {
+	if d.error() {
+		return
+	}
+	d.cmd52(backplane, addr, sdcard.Write, v)
+}
+
+// The sdiodSetBackplaneWindow, sdiodReadReg32, sdiodWriteReg32 are methods
+// that allow to access core registers in the way specific to Sonics Silicon
+// Backplane. More info: http://www.gc-linux.org/wiki/Wii:WLAN
+
+func (d *Driver) sdiodSetBackplaneWindow(addr uint32) {
 	if d.error() {
 		return
 	}
@@ -40,30 +83,17 @@ func (d *Driver) setBackplaneWindow(addr uint32) {
 			d.cmd52(backplane, sbsdioFunc1SBAddrLow+n, sdcard.Write, a)
 		}
 	}
+	if d.error() {
+		d.backplaneWindow = 0
+	}
 }
-
-// The setBackplaneWindow, rbr*, wbr*, wbb* are methods that allow to access
-// core registers in the way specific to Sonics Silicon Backplane. More info:
-// http://www.gc-linux.org/wiki/Wii:WLAN
-
-func (d *Driver) rbr8(addr uint32) byte {
-	d.setBackplaneWindow(addr)
-	return d.cmd52(backplane, int(addr&0x7FFF), sdcard.Read, 0)
-}
-
-func (d *Driver) wbr8(addr uint32, val byte) {
-	d.setBackplaneWindow(addr)
-	d.cmd52(backplane, int(addr&0x7FFF), sdcard.Write, val)
-}
-
-const busyTimeout = 1e9 // 1 s
 
 func waitDataReady(sd sdcard.Host) bool {
-	return sd.Wait(rtos.Nanosec() + busyTimeout)
+	return sd.Wait(rtos.Nanosec() + 1e9)
 }
 
-func (d *Driver) rbr32(addr uint32) uint32 {
-	d.setBackplaneWindow(addr)
+func (d *Driver) sdiodRead32(addr uint32) uint32 {
+	d.sdiodSetBackplaneWindow(addr)
 	if d.error() {
 		return 0
 	}
@@ -74,13 +104,13 @@ func (d *Driver) rbr32(addr uint32) uint32 {
 	var buf [1]uint64
 	sd.SetupData(sdcard.Recv|sdcard.IO|sdcard.Block4, buf[:], 4)
 	_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
-		backplane, int(addr&0x7FFF|access32bit), sdcard.Read, 4,
+		backplane, int(addr&0x7FFF|sbsdioAccess32bit), sdcard.Read, 4,
 	)).R5()
 	return le.Decode32(sdcard.AsData(buf[:]).Bytes())
 }
 
-func (d *Driver) wbr32(addr uint32, val uint32) {
-	d.setBackplaneWindow(addr)
+func (d *Driver) sdiodWrite32(addr, v uint32) {
+	d.sdiodSetBackplaneWindow(addr)
 	if d.error() {
 		return
 	}
@@ -89,17 +119,73 @@ func (d *Driver) wbr32(addr uint32, val uint32) {
 		return
 	}
 	var buf [1]uint64
-	le.Encode32(sdcard.AsData(buf[:]).Bytes(), val)
+	le.Encode32(sdcard.AsData(buf[:]).Bytes(), v)
 	sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block4, buf[:], 4)
 	_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
-		backplane, int(addr&0x7FFF|access32bit), sdcard.Write, 4,
+		backplane, int(addr&0x7FFF|sbsdioAccess32bit), sdcard.Write, 4,
 	)).R5()
 }
+
+func (d *Driver) chipIsCoreUp(core int) bool {
+	if d.error() {
+		return false
+	}
+	base := d.chip.wrapBase[core]
+	r := d.sdiodRead32(base + agentIOCtl)
+	if r&(ioCtlFGC|ioCtlClk) != ioCtlClk {
+		return false
+	}
+	return d.sdiodRead32(base+agentResetCtl)&1 == 0
+}
+
+func (d *Driver) chipCoreDisable(core int, prereset, reset uint32) {
+	if d.error() {
+		return
+	}
+	base := d.chip.wrapBase[core]
+	if d.sdiodRead32(base+agentResetCtl)&1 == 0 {
+		goto configure // Already in reset state.
+	}
+	d.sdiodWrite32(base+agentIOCtl, ioCtlFGC|ioCtlClk|prereset)
+	d.sdiodRead32(base + agentIOCtl)
+	d.sdiodWrite32(base+agentResetCtl, 1)
+	delay.Millisec(1)
+	if d.sdiodRead32(base+agentResetCtl)&1 == 0 {
+		d.timeout = true
+		return
+	}
+configure:
+	d.sdiodWrite32(base+agentIOCtl, ioCtlFGC|ioCtlClk|reset)
+	d.sdiodRead32(base + agentIOCtl)
+}
+
+func (d *Driver) chipCoreReset(core int, prereset, reset, postreset uint32) {
+	if d.error() {
+		return
+	}
+	d.chipCoreDisable(core, prereset, reset)
+	base := d.chip.wrapBase[core]
+	for retry := 3; ; retry-- {
+		d.sdiodWrite32(base+agentResetCtl, 0)
+		delay.Millisec(1)
+		if d.sdiodRead32(base+agentResetCtl)&1 == 0 {
+			break
+		}
+		if retry == 1 {
+			d.timeout = true
+			return
+		}
+	}
+	d.sdiodWrite32(base+agentIOCtl, ioCtlClk|postreset)
+	d.sdiodRead32(base + agentIOCtl)
+}
+
+/*
 
 func (d *Driver) wbb(addr uint32, buf []uint64) {
 	sd := d.sd
 	for len(buf) >= 8 {
-		d.setBackplaneWindow(addr)
+		d.sdiodSetBackplaneWindow(addr)
 		if d.timeout = !waitDataReady(sd); d.timeout {
 			return
 		}
@@ -120,7 +206,7 @@ func (d *Driver) wbb(addr uint32, buf []uint64) {
 	if len(buf) == 0 {
 		return
 	}
-	d.setBackplaneWindow(addr)
+	d.sdiodSetBackplaneWindow(addr)
 	// STM32x MCUs don't handle well multibyte transfers so configure the SDMMC
 	// driver to use 8-byte block mode len(buf) times.
 	for i := 0; i < len(buf); i++ {
@@ -129,7 +215,7 @@ func (d *Driver) wbb(addr uint32, buf []uint64) {
 		}
 		sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block8, buf[i:], 8)
 		_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
-			backplane, int(addr&0x7FFF|access32bit),
+			backplane, int(addr&0x7FFF|sbsdioAccess32bit),
 			sdcard.Write|sdcard.IncAddr, 8,
 		)).R5()
 		if d.error() {
@@ -139,63 +225,6 @@ func (d *Driver) wbb(addr uint32, buf []uint64) {
 	}
 }
 
-func (d *Driver) enableFunction(f int) {
-	if d.error() {
-		return
-	}
-	m := d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Read, 0) | byte(1<<uint(f))
-	for retry := 250; retry > 0; retry-- {
-		r := d.cmd52(cia, sdio.CCCR_IOEN, sdcard.WriteRead, m)
-		if d.error() || r == m {
-			return
-		}
-		delay.Millisec(2)
-	}
-	d.timeout = true
-}
 
-func (d *Driver) disableCore(core int) {
-	if d.error() {
-		return
-	}
-	base := d.chip.baseAddr[core]
-	d.rbr8(base + ssbResetCtl)
-	if d.rbr8(base+ssbResetCtl)&1 != 0 {
-		return // Already in reset state.
-	}
-	d.wbr8(base+ssbIOCtl, 0)
-	d.rbr8(base + ssbIOCtl)
-	delay.Millisec(1)
-	d.wbr8(base+ssbResetCtl, 1)
-	delay.Millisec(1)
-}
 
-func (d *Driver) resetCore(core int) {
-	if d.error() {
-		return
-	}
-	d.disableCore(core)
-
-	// Initialization sequence.
-
-	base := d.chip.baseAddr[core]
-	d.wbr8(base+ssbIOCtl, ioCtlClk|ioCtlFGC)
-	d.rbr8(base + ssbIOCtl)
-	d.wbr8(base+ssbResetCtl, 0)
-	delay.Millisec(1)
-	d.wbr8(base+ssbIOCtl, ioCtlClk)
-	d.rbr8(base + ssbIOCtl)
-	delay.Millisec(1)
-}
-
-func (d *Driver) isCoreUp(core int) bool {
-	if d.error() {
-		return false
-	}
-	base := d.chip.baseAddr[core]
-	r := d.rbr8(base + ssbIOCtl)
-	if r&(ioCtlClk|ioCtlFGC) != ioCtlClk {
-		return false
-	}
-	return d.rbr8(base+ssbResetCtl)&1 == 0
-}
+*/

@@ -3,6 +3,8 @@ package bcmw
 import (
 	"delay"
 	"errors"
+	"fmt"
+	"io"
 
 	"sdcard"
 	"sdcard/sdio"
@@ -81,10 +83,41 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 		}
 	}
 
+	// Enable function 1.
+
+	d.enableFunction(backplane)
+
 	// Enable 4-bit data bus.
 
 	r := d.cmd52(cia, sdio.CCCR_BUSICTRL, sdcard.Read, 0)
 	d.cmd52(cia, sdio.CCCR_BUSICTRL, sdcard.Write, r&^3|byte(sdcard.Bus4))
+
+	// Set block size to 64 bytes for all functions.
+
+	for retry := 250; ; retry-- {
+		fmt.Printf("blk siz\n")
+		delay.Millisec(2)
+		r := d.cmd52(cia, sdio.CCCR_BLKSIZE0, sdcard.WriteRead, 64)
+		if d.error() {
+			return // Fast return if error.
+		}
+		if r == 64 {
+			break
+		}
+		if retry == 1 {
+			d.timeout = true
+			return
+		}
+	}
+	for f := cia; f <= wlanData; f++ {
+		d.cmd52(cia, f<<8+sdio.FBR_BLKSIZE0, sdcard.Write, 64)
+		d.cmd52(cia, f<<8+sdio.FBR_BLKSIZE1, sdcard.Write, 0)
+	}
+
+	// Enable interrupts from Backplane and WLAN Data functions (1<<cia is
+	// Master Interrupt Enable bit).
+
+	d.cmd52(cia, sdio.CCCR_INTEN, sdcard.Write, 1<<cia|1<<backplane|1<<wlanData)
 
 	// Enable High Speed if supported.
 
@@ -96,23 +129,32 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 		sd.SetClock(25e6, false)
 	}
 
-	// Set block size to 64 bytes for all functions.
+	// Wait till the backplane is ready.
 
-	d.sdioSetBlockSize(cia, 64)
-	d.sdioSetBlockSize(backplane, 64)
-	d.sdioSetBlockSize(wlanData, 512)
+	for retry := 250; ; retry-- {
+		fmt.Printf("bkpl rdy\n")
+		r = d.cmd52(cia, sdio.CCCR_IORDY, sdcard.Read, 0)
+		if d.error() {
+			return // Fast return if error.
+		}
+		if r&(1<<backplane) != 0 {
+			break
+		}
+		if retry == 1 {
+			d.timeout = true
+			return
+		}
+		delay.Millisec(2)
+	}
 
-	// Enable function 1.
+	// Enable Active Low-Power clock.
 
-	d.sdioEnableFunc(backplane, 500)
-
-	// Wait for sbsdioALPAvail
-
-	d.sdiodWrite8(
-		sbsdioFunc1ChipClkCSR, sbsdioForceHwClkReqOff|sbsdioALPAvailReq,
+	d.cmd52(
+		backplane, sbsdioFunc1ChipClkCSR, sdcard.Write,
+		sbsdioForceHwClkReqOff|sbsdioALPAvailReq|sbsdioForceALP,
 	)
-	for retry := 8; ; retry-- {
-		r := d.sdiodRead8(sbsdioFunc1ChipClkCSR)
+	for retry := 50; ; retry-- {
+		r := d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Read, 0)
 		if d.error() {
 			return // Fast return if error.
 		}
@@ -125,109 +167,42 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 		}
 		delay.Millisec(2)
 	}
+	// Clear the enable request.
+	d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Write, 0)
 
-	// Force Active Low-Power clock.
+	// Disable pull-ups - we use STM32 GPIO pull-ups.
 
-	d.sdiodWrite8(sbsdioFunc1ChipClkCSR, sbsdioForceHwClkReqOff|sbsdioForceALP)
-	delay.Millisec(1)
+	d.cmd52(backplane, sbsdioFunc1SDIOPullUp, sdcard.Write, 0)
 
-	// Disable extra SDIO pull-ups.
+	// Enable function 2.
 
-	d.sdiodWrite8(sbsdioFunc1SDIOPullUp, 0)
+	d.enableFunction(wlanData)
 
-	d.chipCoreDisable(coreARMCM3, 0, 0)
-	d.chipCoreReset(
-		coreDot11MAC, ioCtlDot11PhyReset|ioCtlDot11PhyClockEn,
-		ioCtlDot11PhyClockEn, ioCtlDot11PhyClockEn,
-	)
-	d.chipCoreReset(coreSOCSRAM, 0, 0, 0)
+	// Enable out-of-band interrupts.
 
-	if d.chip == &chip43438 {
-		// Disable remap for SRAM3 in case of 4343x
-		d.sdiodWrite32(socsramBankxIndex, 3)
-		d.sdiodWrite32(socsramBankxPDA, 0)
+	if oobIntPin >= 0 {
+		d.cmd52(
+			cia, cccrSepIntCtl, sdcard.Write,
+			sepIntCtlMask|sepIntCtlEn|sepIntCtlPol, // Active high.
+		)
+		switch oobIntPin {
+		case 0:
+			// Default pin
+		case 1:
+			d.cmd52(backplane, sbsdioGPIOSel, sdcard.Write, 0xF)
+			d.cmd52(backplane, sbsdioGPIOOut, sdcard.Write, 0)
+			d.cmd52(backplane, sbsdioGPIOEn, sdcard.Write, 2)
+			d.wbr32(commonGPIOCtl, 2)
+		default:
+			panic("bcmw: bad IRQ pin")
+		}
 	}
 
-	/*
-		// Enable interrupts from Backplane and WLAN Data functions (1<<cia is
-		// Master Interrupt Enable bit).
+	// Disable Backplane interrupt
 
-		d.cmd52(cia, sdio.CCCR_INTEN, sdcard.Write, 1<<cia|1<<backplane|1<<wlanData)
-
-
-		// Wait till the backplane is ready.
-
-		for retry := 250; ; retry-- {
-			fmt.Printf("bkpl rdy\n")
-			r = d.cmd52(cia, sdio.CCCR_IORDY, sdcard.Read, 0)
-			if d.error() {
-				return // Fast return if error.
-			}
-			if r&(1<<backplane) != 0 {
-				break
-			}
-			if retry == 1 {
-				d.timeout = true
-				return
-			}
-			delay.Millisec(2)
-		}
-
-		// Enable Active Low-Power clock.
-
-		d.cmd52(
-			backplane, sbsdioFunc1ChipClkCSR, sdcard.Write,
-			sbsdioForceHwClkReqOff|sbsdioALPAvailReq|sbsdioForceALP,
-		)
-		for retry := 50; ; retry-- {
-			r := d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Read, 0)
-			if d.error() {
-				return // Fast return if error.
-			}
-			if r&sbsdioALPAvail != 0 {
-				break
-			}
-			if retry == 1 {
-				d.timeout = true
-				return
-			}
-			delay.Millisec(2)
-		}
-		// Clear the enable request.
-		d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Write, 0)
-
-
-		// Enable function 2.
-
-		d.enableFunction(wlanData)
-
-		// Enable out-of-band interrupts.
-
-		if oobIntPin >= 0 {
-			d.cmd52(
-				cia, cccrSepIntCtl, sdcard.Write,
-				sepIntCtlMask|sepIntCtlEn|sepIntCtlPol, // Active high.
-			)
-			switch oobIntPin {
-			case 0:
-				// Default pin
-			case 1:
-				d.cmd52(backplane, sbsdioGPIOSel, sdcard.Write, 0xF)
-				d.cmd52(backplane, sbsdioGPIOOut, sdcard.Write, 0)
-				d.cmd52(backplane, sbsdioGPIOEn, sdcard.Write, 2)
-				d.wbr32(commonGPIOCtl, 2)
-			default:
-				panic("bcmw: bad IRQ pin")
-			}
-		}
-
-		// Disable Backplane interrupt
-
-		d.cmd52(cia, sdio.CCCR_INTEN, sdcard.Write, 1<<cia|1<<wlanData)
-	*/
+	d.cmd52(cia, sdio.CCCR_INTEN, sdcard.Write, 1<<cia|1<<wlanData)
 }
 
-/*
 func (d *Driver) UploadFirmware(r io.Reader, firmware []uint64) {
 	if d.error() {
 		return
@@ -285,4 +260,3 @@ func (d *Driver) UploadNVRAM(r io.Reader, nvram string) {
 		delay.Millisec(2)
 	}
 }
-*/

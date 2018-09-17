@@ -134,19 +134,21 @@ func main() {
 	checkErr(wlan.Err(true))
 	printOK()
 
-	print("Uploading firmware:")
+	/*
+		print("Uploading firmware:")
 
-	wlan.UploadFirmware(nil, firmware[:])
+		wlan.UploadFirmware(nil, firmware[:])
 
-	checkErr(wlan.Err(true))
-	printOK()
+		checkErr(wlan.Err(true))
+		printOK()
 
-	print("Uploading NVRAM:")
+		print("Uploading NVRAM:")
 
-	wlan.UploadNVRAM(nil, nvram)
+		wlan.UploadNVRAM(nil, nvram)
 
-	checkErr(wlan.Err(true))
-	printOK()
+		checkErr(wlan.Err(true))
+		printOK()
+	*/
 }
 
 func ttsISR() {

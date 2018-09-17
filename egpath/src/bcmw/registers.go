@@ -54,21 +54,25 @@ const (
 // Less significant bits are specified in CMD52/CMD53. More info:
 // http://www.gc-linux.org/wiki/Wii:WLAN
 
-const access32bit = 1 << 15
+const sbsdioAccess32bit = 1 << 15
 
 // Agent registers (common for every core).
-// Source: kernel/include/linux/bcma/bcma_regs.h
+// Source: linux/include/linux/bcma/bcma_regs.h
 const (
-	ssbIOCtl    = 0x0408
-	ssbIOSt     = 0x0500
-	ssbResetCtl = 0x0800
-	ssbResetSt  = 0x0804
+	agentIOCtl    = 0x0408
+	agentIOSt     = 0x0500
+	agentResetCtl = 0x0800
+	agentResetSt  = 0x0804
 )
 
-// ssbIOCtl bits
+// agentIOCtl bits
 const (
 	ioCtlClk = 1 << 0
 	ioCtlFGC = 1 << 1
+
+	// Dot11MAC core specific control flag bits
+	ioCtlDot11PhyClockEn = 1 << 2
+	ioCtlDot11PhyReset   = 1 << 3
 )
 
 // Chip common registers
