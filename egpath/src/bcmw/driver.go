@@ -243,12 +243,13 @@ func (d *Driver) UploadNVRAM(r io.Reader, nvram string) {
 		fmt.Printf("ARM down!\n")
 		return
 	}
+	fmt.Printf("ht clk:")
 	for retry := 250; ; retry-- {
 		r := d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Read, 0)
 		if d.error() {
 			return // Fast return if error.
 		}
-		fmt.Printf("ht clk: %x\n", r)
+		fmt.Printf(" %x", r)
 		if r&sbsdioHTAvail != 0 {
 			break
 		}

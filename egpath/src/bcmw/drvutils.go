@@ -72,7 +72,7 @@ func (d *Driver) rbr32(addr uint32) uint32 {
 		return 0
 	}
 	var buf [1]uint64
-	sd.SetupData(sdcard.Recv|sdcard.IO|sdcard.Stream, buf[:], 4)
+	sd.SetupData(sdcard.Recv|sdcard.IO|sdcard.Block4, buf[:], 4)
 	_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
 		backplane, int(addr&0x7FFF|access32bit), sdcard.Read, 4,
 	)).R5()
@@ -90,7 +90,7 @@ func (d *Driver) wbr32(addr uint32, val uint32) {
 	}
 	var buf [1]uint64
 	le.Encode32(sdcard.AsData(buf[:]).Bytes(), val)
-	sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Stream, buf[:], 4)
+	sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block4, buf[:], 4)
 	_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
 		backplane, int(addr&0x7FFF|access32bit), sdcard.Write, 4,
 	)).R5()
@@ -121,14 +121,22 @@ func (d *Driver) wbb(addr uint32, buf []uint64) {
 		return
 	}
 	d.setBackplaneWindow(addr)
-	if d.timeout = !waitDataReady(sd); d.timeout {
-		return
+	// STM32x MCUs don't handle well multibyte transfers so configure the SDMMC
+	// driver to use 8-byte block mode len(buf) times.
+	for i := 0; i < len(buf); i++ {
+		if d.timeout = !waitDataReady(sd); d.timeout {
+			return
+		}
+		sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block8, buf[i:], 8)
+		_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
+			backplane, int(addr&0x7FFF|access32bit),
+			sdcard.Write|sdcard.IncAddr, 8,
+		)).R5()
+		if d.error() {
+			return
+		}
+		addr += 8
 	}
-	n := len(buf) * 8
-	sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Stream, buf, n)
-	_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
-		backplane, int(addr&0x7FFF|access32bit), sdcard.Write|sdcard.IncAddr, n,
-	)).R5()
 }
 
 func (d *Driver) enableFunction(f int) {
