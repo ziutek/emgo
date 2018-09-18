@@ -2,32 +2,46 @@ package bcmw
 
 import (
 	"delay"
-	"errors"
 
 	"sdcard"
 	"sdcard/sdio"
 )
 
-var (
-	ErrTimeout  = errors.New("bcmw: timeout")
-	ErrIOStatus = errors.New("bcmw: IO status")
+type Error byte
+
+const (
+	ErrTimeout Error = iota + 1
+	ErrIOStatus
+	ErrUnknownChip
 )
+
+//emgo:const
+var errStr = [...]string{
+	ErrTimeout:     "bcmw: timeout",
+	ErrIOStatus:    "bcmw: IO status",
+	ErrUnknownChip: "bcmw: unknown chip",
+}
+
+func (e Error) Error() string {
+	return errStr[e]
+}
 
 type Driver struct {
 	sd              sdcard.Host
-	chip            *Chip
 	backplaneWindow uint32
-	timeout         bool
+	ramSize         uint32
+	chipID          uint16
 	ioStatus        sdcard.IOStatus
+	err             Error
 }
 
-func MakeDriver(sd sdcard.Host, chip *Chip) Driver {
-	return Driver{sd: sd, chip: chip}
+func MakeDriver(sd sdcard.Host) Driver {
+	return Driver{sd: sd}
 }
 
-func NewDriver(sd sdcard.Host, chip *Chip) *Driver {
+func NewDriver(sd sdcard.Host) *Driver {
 	d := new(Driver)
-	*d = MakeDriver(sd, chip)
+	*d = MakeDriver(sd)
 	return d
 }
 
@@ -37,14 +51,14 @@ func (d *Driver) Err(clear bool) error {
 	case err != nil:
 	case d.ioStatus&^sdcard.IO_CURRENT_STATE != 0:
 		err = ErrIOStatus
-	case d.timeout:
-		err = ErrTimeout
+	case d.err != 0:
+		err = d.err
 	default:
 		return nil
 	}
 	if clear {
 		d.ioStatus &= sdcard.IO_CURRENT_STATE
-		d.timeout = false
+		d.err = 0
 	}
 	return err
 }
@@ -53,10 +67,16 @@ func (d *Driver) IOStatus() sdcard.IOStatus {
 	return d.IOStatus()
 }
 
+func (d *Driver) ChipID() uint16 {
+	return d.chipID
+}
+
 func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
-	if d.error() {
-		return
-	}
+	d.ramSize = 0
+	d.chipID = 0
+	d.ioStatus = 0
+	d.err = 0
+
 	reset(0)
 	sd := d.sd
 	sd.SetBusWidth(sdcard.Bus4)
@@ -76,27 +96,27 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 			break
 		}
 		if retry == 1 {
-			d.timeout = true
+			d.err = ErrTimeout
 			return
 		}
 	}
 
 	// Enable 4-bit data bus.
 
-	r := d.cmd52(cia, sdio.CCCR_BUSICTRL, sdcard.Read, 0)
-	d.cmd52(cia, sdio.CCCR_BUSICTRL, sdcard.Write, r&^3|byte(sdcard.Bus4))
+	r8 := d.cmd52(cia, sdio.CCCR_BUSICTRL, sdcard.Read, 0)
+	d.cmd52(cia, sdio.CCCR_BUSICTRL, sdcard.Write, r8&^3|byte(sdcard.Bus4))
 
 	// Enable High Speed if supported.
 
-	r = d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Read, 0)
-	if false && r&1 != 0 {
-		d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Write, r|2)
+	r8 = d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Read, 0)
+	if false && r8&1 != 0 {
+		d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Write, r8|2)
 		sd.SetClock(50e6, false)
 	} else {
 		sd.SetClock(25e6, false)
 	}
 
-	// Set block size to 64 bytes for all functions.
+	// Set block size for all functions.
 
 	d.sdioSetBlockSize(cia, 64)
 	d.sdioSetBlockSize(backplane, 64)
@@ -120,7 +140,7 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 			break
 		}
 		if retry == 1 {
-			d.timeout = true
+			d.err = ErrTimeout
 			return
 		}
 		delay.Millisec(2)
@@ -135,6 +155,43 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 
 	d.sdiodWrite8(sbsdioFunc1SDIOPullUp, 0)
 
+	// Identify chip.
+
+	r32 := d.backplaneRead32(commonEnumBase)
+	chipID := r32 & 0xFFFF
+	chipType := r32 >> 28 & 0xF
+	chipRev := r32 >> 16 & 0xF
+	chipCores := r32 >> 14 & 0xF
+	d.debug(
+		"chipID: %d, chipRev: %d, chipType: %d, chipCores: %d\n",
+		chipID, chipRev, chipType, chipCores,
+	)
+	if chipType != 1 {
+		d.chipID = 0
+		return // Not AXI.
+
+	}
+	switch chipID {
+	case 43362:
+		d.ramSize = 240 * 1024
+	case 43438:
+		d.ramSize = 512 * 1024
+	default:
+		d.chipID = 0
+		return // Unknown chip.
+	}
+	d.chipID = uint16(chipID)
+	
+	// Disable function 2.
+	
+	d.sdioDisableFunc(wlanData)
+	
+	// Done with backplane-dependent accesses, disable clock.
+	
+	d.sdiodWrite8(sbsdioFunc1ChipClkCSR, 0)
+
+	// Disable/reset cores.
+
 	d.chipCoreDisable(coreARMCM3, 0, 0)
 	d.chipCoreReset(
 		coreDot11MAC, ioCtlDot11PhyReset|ioCtlDot11PhyClockEn,
@@ -142,10 +199,10 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 	)
 	d.chipCoreReset(coreSOCSRAM, 0, 0, 0)
 
-	if d.chip == &chip43438 {
+	if d.chipID == 43438 {
 		// Disable remap for SRAM3 in case of 4343x
-		d.sdiodWrite32(socsramBankxIndex, 3)
-		d.sdiodWrite32(socsramBankxPDA, 0)
+		d.backplaneWrite32(socsramBankxIndex, 3)
+		d.backplaneWrite32(socsramBankxPDA, 0)
 	}
 
 	/*
@@ -172,30 +229,6 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 			}
 			delay.Millisec(2)
 		}
-
-		// Enable Active Low-Power clock.
-
-		d.cmd52(
-			backplane, sbsdioFunc1ChipClkCSR, sdcard.Write,
-			sbsdioForceHwClkReqOff|sbsdioALPAvailReq|sbsdioForceALP,
-		)
-		for retry := 50; ; retry-- {
-			r := d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Read, 0)
-			if d.error() {
-				return // Fast return if error.
-			}
-			if r&sbsdioALPAvail != 0 {
-				break
-			}
-			if retry == 1 {
-				d.timeout = true
-				return
-			}
-			delay.Millisec(2)
-		}
-		// Clear the enable request.
-		d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Write, 0)
-
 
 		// Enable function 2.
 

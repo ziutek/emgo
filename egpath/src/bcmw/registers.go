@@ -77,7 +77,8 @@ const (
 
 // Chip common registers
 const (
-	commonGPIOCtl = 0x18000000 + 0x6C
+	commonEnumBase = 0x18000000 + 0x00 // Chip ID
+	commonGPIOCtl  = 0x18000000 + 0x6C
 )
 
 // SOCSRAM registers

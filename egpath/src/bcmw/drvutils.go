@@ -3,16 +3,24 @@ package bcmw
 import (
 	"delay"
 	"encoding/binary/le"
+	"fmt"
 	"rtos"
 
 	"sdcard"
 	"sdcard/sdio"
 )
 
+func (d *Driver) debug(f string, args ...interface{}) {
+	if d.error() {
+		return
+	}
+	fmt.Printf(f, args...)
+}
+
 func (d *Driver) error() bool {
 	return d.sd.Err(false) != nil ||
 		d.ioStatus&^sdcard.IO_CURRENT_STATE != 0 ||
-		d.timeout
+		d.err != 0
 }
 
 func (d *Driver) cmd52(f, addr int, flags sdcard.IORWFlags, val byte) byte {
@@ -45,7 +53,16 @@ func (d *Driver) sdioEnableFunc(f, timeoutms int) {
 		}
 		delay.Millisec(2)
 	}
-	d.timeout = true
+	d.err = ErrTimeout
+}
+
+func (d *Driver) sdioDisableFunc(f int) {
+	if d.error() {
+		return
+	}
+	r := d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Read, 0)
+	r &^= 1 << uint(f)
+	d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Write, r)
 }
 
 func (d *Driver) sdiodRead8(addr int) byte {
@@ -62,11 +79,11 @@ func (d *Driver) sdiodWrite8(addr int, v byte) {
 	d.cmd52(backplane, addr, sdcard.Write, v)
 }
 
-// The sdiodSetBackplaneWindow, sdiodReadReg32, sdiodWriteReg32 are methods
+// The backplaneSetWindow, backplaneRead32, backplaneWrite32 are methods
 // that allow to access core registers in the way specific to Sonics Silicon
 // Backplane. More info: http://www.gc-linux.org/wiki/Wii:WLAN
 
-func (d *Driver) sdiodSetBackplaneWindow(addr uint32) {
+func (d *Driver) backplaneSetWindow(addr uint32) {
 	if d.error() {
 		return
 	}
@@ -92,13 +109,14 @@ func waitDataReady(sd sdcard.Host) bool {
 	return sd.Wait(rtos.Nanosec() + 1e9)
 }
 
-func (d *Driver) sdiodRead32(addr uint32) uint32 {
-	d.sdiodSetBackplaneWindow(addr)
+func (d *Driver) backplaneRead32(addr uint32) uint32 {
+	d.backplaneSetWindow(addr)
 	if d.error() {
 		return 0
 	}
 	sd := d.sd
-	if d.timeout = !waitDataReady(sd); d.timeout {
+	if !waitDataReady(sd) {
+		d.err = ErrTimeout
 		return 0
 	}
 	var buf [1]uint64
@@ -109,13 +127,14 @@ func (d *Driver) sdiodRead32(addr uint32) uint32 {
 	return le.Decode32(sdcard.AsData(buf[:]).Bytes())
 }
 
-func (d *Driver) sdiodWrite32(addr, v uint32) {
-	d.sdiodSetBackplaneWindow(addr)
+func (d *Driver) backplaneWrite32(addr, v uint32) {
+	d.backplaneSetWindow(addr)
 	if d.error() {
 		return
 	}
 	sd := d.sd
-	if d.timeout = !waitDataReady(sd); d.timeout {
+	if !waitDataReady(sd) {
+		d.err = ErrTimeout
 		return
 	}
 	var buf [1]uint64
@@ -130,33 +149,43 @@ func (d *Driver) chipIsCoreUp(core int) bool {
 	if d.error() {
 		return false
 	}
-	base := d.chip.wrapBase[core]
-	r := d.sdiodRead32(base + agentIOCtl)
+	base := wrapBase[core]
+	r := d.backplaneRead32(base + agentIOCtl)
 	if r&(ioCtlFGC|ioCtlClk) != ioCtlClk {
 		return false
 	}
-	return d.sdiodRead32(base+agentResetCtl)&1 == 0
+	return d.backplaneRead32(base+agentResetCtl)&1 == 0
 }
 
 func (d *Driver) chipCoreDisable(core int, prereset, reset uint32) {
 	if d.error() {
 		return
 	}
-	base := d.chip.wrapBase[core]
-	if d.sdiodRead32(base+agentResetCtl)&1 == 0 {
+	d.debug("disable core %d A\n", core)
+	base := wrapBase[core]
+	if d.backplaneRead32(base+agentResetCtl)&1 == 0 {
 		goto configure // Already in reset state.
 	}
-	d.sdiodWrite32(base+agentIOCtl, ioCtlFGC|ioCtlClk|prereset)
-	d.sdiodRead32(base + agentIOCtl)
-	d.sdiodWrite32(base+agentResetCtl, 1)
+	d.debug("disable core %d B\n", core)
+	d.backplaneWrite32(base+agentIOCtl, ioCtlFGC|ioCtlClk|prereset)
+	d.debug("disable core %d C\n", core)
+	d.backplaneRead32(base + agentIOCtl)
+	d.debug("disable core %d D\n", core)
+	d.backplaneWrite32(base+agentResetCtl, 1)
+	d.debug("disable core %d E\n", core)
 	delay.Millisec(1)
-	if d.sdiodRead32(base+agentResetCtl)&1 == 0 {
-		d.timeout = true
+	if d.backplaneRead32(base+agentResetCtl)&1 == 0 {
+		if d.err == 0 {
+			d.err = ErrTimeout
+		}
 		return
 	}
 configure:
-	d.sdiodWrite32(base+agentIOCtl, ioCtlFGC|ioCtlClk|reset)
-	d.sdiodRead32(base + agentIOCtl)
+	d.debug("disable core %d F\n", core)
+	d.backplaneWrite32(base+agentIOCtl, ioCtlFGC|ioCtlClk|reset)
+	d.debug("disable core %d G\n", core)
+	d.backplaneRead32(base + agentIOCtl)
+	d.debug("disable core %d H\n", core)
 }
 
 func (d *Driver) chipCoreReset(core int, prereset, reset, postreset uint32) {
@@ -164,20 +193,24 @@ func (d *Driver) chipCoreReset(core int, prereset, reset, postreset uint32) {
 		return
 	}
 	d.chipCoreDisable(core, prereset, reset)
-	base := d.chip.wrapBase[core]
+	base := wrapBase[core]
 	for retry := 3; ; retry-- {
-		d.sdiodWrite32(base+agentResetCtl, 0)
+		d.backplaneWrite32(base+agentResetCtl, 0)
 		delay.Millisec(1)
-		if d.sdiodRead32(base+agentResetCtl)&1 == 0 {
+		r := d.backplaneRead32(base + agentResetCtl)
+		if d.error() {
+			return
+		}
+		if r&1 == 0 {
 			break
 		}
 		if retry == 1 {
-			d.timeout = true
+			d.err = ErrTimeout
 			return
 		}
 	}
-	d.sdiodWrite32(base+agentIOCtl, ioCtlClk|postreset)
-	d.sdiodRead32(base + agentIOCtl)
+	d.backplaneWrite32(base+agentIOCtl, ioCtlClk|postreset)
+	d.backplaneRead32(base + agentIOCtl)
 }
 
 /*

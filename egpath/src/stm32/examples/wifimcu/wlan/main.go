@@ -106,7 +106,7 @@ func init() {
 }
 
 func main() {
-	wlan := bcmw.NewDriver(sddrv, bcmw.Chip43362)
+	wlan := bcmw.NewDriver(sddrv)
 
 	print("Initialize WLAN:")
 
