@@ -181,22 +181,14 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 		return // Unknown chip.
 	}
 	d.chipID = uint16(chipID)
-	
-	// Disable function 2.
-	
-	d.sdioDisableFunc(wlanData)
-	
-	// Done with backplane-dependent accesses, disable clock.
-	
-	d.sdiodWrite8(sbsdioFunc1ChipClkCSR, 0)
 
-	// Disable/reset cores.
+	// Chip must be passive before access its cores.
 
 	d.chipCoreDisable(coreARMCM3, 0, 0)
-	d.chipCoreReset(
+	/*d.chipCoreReset(
 		coreDot11MAC, ioCtlDot11PhyReset|ioCtlDot11PhyClockEn,
 		ioCtlDot11PhyClockEn, ioCtlDot11PhyClockEn,
-	)
+	)*/
 	d.chipCoreReset(coreSOCSRAM, 0, 0, 0)
 
 	if d.chipID == 43438 {
@@ -204,6 +196,10 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 		d.backplaneWrite32(socsramBankxIndex, 3)
 		d.backplaneWrite32(socsramBankxPDA, 0)
 	}
+
+	// Done with backplane-dependent accesses, disable clock.
+
+	d.sdiodWrite8(sbsdioFunc1ChipClkCSR, 0)
 
 	/*
 		// Enable interrupts from Backplane and WLAN Data functions (1<<cia is

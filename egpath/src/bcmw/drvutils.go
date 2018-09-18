@@ -161,18 +161,13 @@ func (d *Driver) chipCoreDisable(core int, prereset, reset uint32) {
 	if d.error() {
 		return
 	}
-	d.debug("disable core %d A\n", core)
 	base := wrapBase[core]
 	if d.backplaneRead32(base+agentResetCtl)&1 == 0 {
 		goto configure // Already in reset state.
 	}
-	d.debug("disable core %d B\n", core)
 	d.backplaneWrite32(base+agentIOCtl, ioCtlFGC|ioCtlClk|prereset)
-	d.debug("disable core %d C\n", core)
 	d.backplaneRead32(base + agentIOCtl)
-	d.debug("disable core %d D\n", core)
 	d.backplaneWrite32(base+agentResetCtl, 1)
-	d.debug("disable core %d E\n", core)
 	delay.Millisec(1)
 	if d.backplaneRead32(base+agentResetCtl)&1 == 0 {
 		if d.err == 0 {
@@ -181,11 +176,8 @@ func (d *Driver) chipCoreDisable(core int, prereset, reset uint32) {
 		return
 	}
 configure:
-	d.debug("disable core %d F\n", core)
 	d.backplaneWrite32(base+agentIOCtl, ioCtlFGC|ioCtlClk|reset)
-	d.debug("disable core %d G\n", core)
 	d.backplaneRead32(base + agentIOCtl)
-	d.debug("disable core %d H\n", core)
 }
 
 func (d *Driver) chipCoreReset(core int, prereset, reset, postreset uint32) {
@@ -211,6 +203,10 @@ func (d *Driver) chipCoreReset(core int, prereset, reset, postreset uint32) {
 	}
 	d.backplaneWrite32(base+agentIOCtl, ioCtlClk|postreset)
 	d.backplaneRead32(base + agentIOCtl)
+}
+
+func (d *Driver) ramWrite(buf []uint64) {
+	sd := d.sd
 }
 
 /*
