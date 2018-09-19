@@ -120,22 +120,18 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 
 	d.sdioSetBlockSize(cia, 64)
 	d.sdioSetBlockSize(backplane, 64)
-	d.sdioSetBlockSize(wlanData, 64)
-
-	// TODO: Enable interrupts.
+	d.sdioSetBlockSize(wlanData, 512)
 
 	// Enable function 1.
 
 	d.sdioEnableFunc(backplane, 500)
 
-	// Enable Active Low-Power clock.
+	// Wait for sbsdioALPAvail
 
 	d.sdiodWrite8(
-		sbsdioFunc1ChipClkCSR,
-		sbsdioForceHwClkReqOff|sbsdioALPAvailReq|sbsdioForceALP,
+		sbsdioFunc1ChipClkCSR, sbsdioForceHwClkReqOff|sbsdioALPAvailReq,
 	)
 	for retry := 8; ; retry-- {
-		delay.Millisec(2)
 		r := d.sdiodRead8(sbsdioFunc1ChipClkCSR)
 		if d.error() {
 			return // Fast return if error.
@@ -147,8 +143,13 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 			d.err = ErrTimeout
 			return
 		}
+		delay.Millisec(2)
 	}
-	d.sdiodWrite8(sbsdioFunc1ChipClkCSR, 0) // Clear ALP request.
+
+	// Force Active Low-Power clock.
+
+	d.sdiodWrite8(sbsdioFunc1ChipClkCSR, sbsdioForceHwClkReqOff|sbsdioForceALP)
+	delay.Millisec(1)
 
 	// Disable extra SDIO pull-ups.
 
@@ -176,39 +177,18 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 	case 43438:
 		d.ramSize = 512 * 1024
 	default:
-		d.err = ErrUnknownChip
-		return
+		d.chipID = 0
+		return // Unknown chip.
 	}
 	d.chipID = uint16(chipID)
-}
-
-func (d *Driver) UploadFirmware(r io.Reader, firmware []uint64) {
-	if d.error() {
-		return
-	}
-	d.chipCoreDisable(coreARMCM3, 0, 0)
-	d.chipCoreReset(coreSOCSRAM, 0, 0, 0)
-
-	if d.chipID == 43438 {
-		// Disable remap for SRAM3 in case of 4343x
-		d.backplaneWrite32(socsramBankxIndex, 3)
-		d.backplaneWrite32(socsramBankxPDA, 0)
-	}
-
-	delay.Millisec(50)
-
-}
-
-/*
-	/////////////////////////////////////////////////////////
 
 	// Chip must be passive before access its cores.
 
 	d.chipCoreDisable(coreARMCM3, 0, 0)
-	d.chipCoreReset(
+	/*d.chipCoreReset(
 		coreDot11MAC, ioCtlDot11PhyReset|ioCtlDot11PhyClockEn,
 		ioCtlDot11PhyClockEn, ioCtlDot11PhyClockEn,
-	)
+	)*/
 	d.chipCoreReset(coreSOCSRAM, 0, 0, 0)
 
 	if d.chipID == 43438 {
@@ -221,7 +201,7 @@ func (d *Driver) UploadFirmware(r io.Reader, firmware []uint64) {
 
 	d.sdiodWrite8(sbsdioFunc1ChipClkCSR, 0)
 
-
+	/*
 		// Enable interrupts from Backplane and WLAN Data functions (1<<cia is
 		// Master Interrupt Enable bit).
 
@@ -273,9 +253,24 @@ func (d *Driver) UploadFirmware(r io.Reader, firmware []uint64) {
 		// Disable Backplane interrupt
 
 		d.cmd52(cia, sdio.CCCR_INTEN, sdcard.Write, 1<<cia|1<<wlanData)
-*/
+	*/
+}
 
 /*
+func (d *Driver) UploadFirmware(r io.Reader, firmware []uint64) {
+	if d.error() {
+		return
+	}
+	d.disableCore(coreARMCM3)
+	d.resetCore(coreSOCSRAM)
+
+	if d.chip == &chip43438 {
+		// Disable remap for SRAM3 in case of 4343x
+		d.wbr32(socsramBankxIndex, 3)
+		d.wbr32(socsramBankxPDA, 0)
+	}
+	d.wbb(0, firmware)
+}
 
 func (d *Driver) UploadNVRAM(r io.Reader, nvram string) {
 	if d.error() {
