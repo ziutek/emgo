@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"rtos"
 	"text/linewriter"
@@ -134,14 +135,15 @@ func main() {
 	checkErr(wlan.Err(true))
 	printOK()
 
+	print("Uploading firmware:")
+
+	buf := bytes.MakeBuffer(firmware, true)
+	wlan.UploadFirmware(&buf)
+
+	checkErr(wlan.Err(true))
+	printOK()
+
 	/*
-		print("Uploading firmware:")
-
-		wlan.UploadFirmware(nil, firmware[:])
-
-		checkErr(wlan.Err(true))
-		printOK()
-
 		print("Uploading NVRAM:")
 
 		wlan.UploadNVRAM(nil, nvram)

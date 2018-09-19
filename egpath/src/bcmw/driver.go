@@ -2,6 +2,7 @@ package bcmw
 
 import (
 	"delay"
+	"io"
 
 	"sdcard"
 	"sdcard/sdio"
@@ -45,22 +46,17 @@ func NewDriver(sd sdcard.Host) *Driver {
 	return d
 }
 
-func (d *Driver) Err(clear bool) error {
-	err := d.sd.Err(clear)
-	switch {
-	case err != nil:
-	case d.ioStatus&^sdcard.IO_CURRENT_STATE != 0:
-		err = ErrIOStatus
-	case d.err != 0:
-		err = d.err
-	default:
-		return nil
+func (d *Driver) firstErr() error {
+	if err := d.sd.Err(false); err != nil {
+		return err
 	}
-	if clear {
-		d.ioStatus &= sdcard.IO_CURRENT_STATE
-		d.err = 0
+	if d.ioStatus&^sdcard.IO_CURRENT_STATE != 0 {
+		return ErrIOStatus
 	}
-	return err
+	if d.err != 0 {
+		return d.err
+	}
+	return nil
 }
 
 func (d *Driver) IOStatus() sdcard.IOStatus {
@@ -71,11 +67,12 @@ func (d *Driver) ChipID() uint16 {
 	return d.chipID
 }
 
-func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
+func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
 	d.ramSize = 0
 	d.chipID = 0
 	d.ioStatus = 0
 	d.err = 0
+	d.sd.Err(true)
 
 	reset(0)
 	sd := d.sd
@@ -97,7 +94,7 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 		}
 		if retry == 1 {
 			d.err = ErrTimeout
-			return
+			return d.firstErr()
 		}
 	}
 
@@ -136,16 +133,16 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 	)
 	for retry := 8; ; retry-- {
 		delay.Millisec(2)
-		r := d.sdiodRead8(sbsdioFunc1ChipClkCSR)
+		r8 = d.sdiodRead8(sbsdioFunc1ChipClkCSR)
 		if d.error() {
-			return // Fast return if error.
+			return d.firstErr() // Fast return if error.
 		}
-		if r&sbsdioALPAvail != 0 {
+		if r8&sbsdioALPAvail != 0 {
 			break
 		}
 		if retry == 1 {
 			d.err = ErrTimeout
-			return
+			return d.firstErr()
 		}
 	}
 	d.sdiodWrite8(sbsdioFunc1ChipClkCSR, 0) // Clear ALP request.
@@ -157,34 +154,25 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) {
 	// Identify chip.
 
 	r32 := d.backplaneRead32(commonEnumBase)
-	chipID := r32 & 0xFFFF
-	chipType := r32 >> 28 & 0xF
-	chipRev := r32 >> 16 & 0xF
-	chipCores := r32 >> 14 & 0xF
-	d.debug(
-		"chipID: %d, chipRev: %d, chipType: %d, chipCores: %d\n",
-		chipID, chipRev, chipType, chipCores,
-	)
-	if chipType != 1 {
-		d.chipID = 0
-		return // Not AXI.
-
+	d.chipID = uint16(r32)
+	if r32>>28&0xF != 1 {
+		d.err = ErrUnknownChip // Not AXI.
+		return d.firstErr()
 	}
-	switch chipID {
+	switch d.chipID {
 	case 43362:
 		d.ramSize = 240 * 1024
 	case 43438:
 		d.ramSize = 512 * 1024
 	default:
 		d.err = ErrUnknownChip
-		return
 	}
-	d.chipID = uint16(chipID)
+	return d.firstErr()
 }
 
-func (d *Driver) UploadFirmware(r io.Reader, firmware []uint64) {
+func (d *Driver) UploadFirmware(r io.Reader) error {
 	if d.error() {
-		return
+		return d.firstErr()
 	}
 	d.chipCoreDisable(coreARMCM3, 0, 0)
 	d.chipCoreReset(coreSOCSRAM, 0, 0, 0)
@@ -197,6 +185,16 @@ func (d *Driver) UploadFirmware(r io.Reader, firmware []uint64) {
 
 	delay.Millisec(50)
 
+	var tmp [8]uint64
+	buf := sdcard.AsData(tmp[:])
+	for {
+		n, err := io.ReadFull(r, buf.Bytes())
+		_ = n
+		if err != nil {
+			//...
+		}
+	}
+	return d.firstErr()
 }
 
 /*

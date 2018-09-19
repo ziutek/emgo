@@ -145,6 +145,16 @@ func (d *Driver) backplaneWrite32(addr, v uint32) {
 	)).R5()
 }
 
+func (d *Driver) backplaneWrite(addr uint32, buf []byte) {
+	d.backplaneSetWindow(addr)
+	if d.error() {
+		return
+	}
+	//off, data64 := slice64(buf)
+	
+}
+
+
 func (d *Driver) chipIsCoreUp(core int) bool {
 	if d.error() {
 		return false
@@ -205,9 +215,6 @@ func (d *Driver) chipCoreReset(core int, prereset, reset, postreset uint32) {
 	d.backplaneRead32(base + agentIOCtl)
 }
 
-func (d *Driver) ramWrite(buf []uint64) {
-	sd := d.sd
-}
 
 /*
 
