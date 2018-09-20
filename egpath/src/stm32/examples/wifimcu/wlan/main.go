@@ -139,6 +139,12 @@ func main() {
 	checkErr(wlan.UploadFirmware(&buf))
 	printOK()
 
+	print("Checking firmware:")
+
+	buf = bytes.MakeBuffer(firmware[:], true)
+	checkErr(wlan.CheckFirmware(&buf))
+	printOK()
+
 	/*
 		print("Uploading NVRAM:")
 

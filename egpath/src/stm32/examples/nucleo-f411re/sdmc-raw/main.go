@@ -201,8 +201,6 @@ func main() {
 		block.Words()[i] = 0
 	}
 
-	waitDataReady(sd)
-
 	fmt.Printf("Read block of data...\n")
 	sd.SetupData(sdcard.Recv|sdcard.Block512, block.Words(), 512)
 	st = sd.SendCmd(sdcard.CMD17(512)).R1()
@@ -230,7 +228,6 @@ func main() {
 		if oca&sdcard.HCXC == 0 {
 			addr *= 512
 		}
-		waitDataReady(sd)
 		sd.SetupData(
 			sdcard.Send|sdcard.Block512, buf.Words(), len(buf.Words())*8,
 		)
@@ -252,7 +249,6 @@ func main() {
 		testLen, testLen/2, bufSize,
 	)
 
-	waitDataReady(sd)
 	t = rtos.Nanosec()
 	for n := uint(0); n < testLen; n += uint(step) {
 		addr := n

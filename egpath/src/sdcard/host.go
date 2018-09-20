@@ -45,8 +45,14 @@ const (
 	IO         DataMode = 1 << 11 // SDIO specific operation.
 )
 
-// ErrCmdTimeout is returned by Host in case of command response timeout.
-var ErrCmdTimeout = errors.New("sdio: cmd timeout")
+var (
+	// ErrCmdTimeout is returned by Host in case of command response timeout.
+	ErrCmdTimeout = errors.New("sdio: cmd timeout")
+
+	// ErrBusyTimeout is returned by Host if it waited 1s for end of card busy
+	// state and for that reason it could not start a data transfer.
+	ErrBusyTimeout = errors.New("sdmc: busy timeout")
+)
 
 type Host interface {
 	// SetClock sets SD/SPI clock frequency. If pwrsave is true the host can
@@ -60,9 +66,8 @@ type Host interface {
 	// SendCmd sends the cmd to the card and receives its response, if any.
 	// Short response is returned in r[0], long is returned in r[0:3] (r[0]
 	// contains the least significant bits, r[3] contains the most significant
-	// bits). If preceded by SetupData, SendCmd performs the data transfer.
-	// TODO: If data transfer is scheduled, SendCmd should wait for 1 second
-	// for deassertion of busy signal on D0.
+	// bits). If preceded by SetupData, SendCmd waits up to 1s for end of busy
+	// state and performs the data transfer.
 	SendCmd(cmd Command, arg uint32) (r Response)
 
 	// SetupData setups the data transfer for subsequent command.
@@ -71,7 +76,6 @@ type Host interface {
 	// Wait waits for deassertion of busy signal on DATA0 line (READY_FOR_DATA
 	// state). It returns false if the deadline has passed. Wait can not be used
 	// while transfer is in progress.
-	// TODO: SendCmd should call Wait(1e9) before start data transfer.
 	Wait(deadline int64) bool
 
 	// Err returns and clears the host internal error. The internal error, if

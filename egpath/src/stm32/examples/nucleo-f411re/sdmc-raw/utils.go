@@ -38,7 +38,7 @@ func checkErr(what string, err error, status sdcard.CardStatus) {
 	}
 }
 
-func waitDataReady(sd sdcard.Host) {
+func _waitDataReady(sd sdcard.Host) {
 	const wait = 500 // Timeout for SDXC: 500 ms (SDSC, SDHC: 250 ms).
 	if sd.Wait(rtos.Nanosec() + wait*1e6) {
 		return

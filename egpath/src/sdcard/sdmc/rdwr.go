@@ -1,16 +1,8 @@
 package sdmc
 
 import (
-	"rtos"
-
 	"sdcard"
 )
-
-const busyTimeout = 500e6 // Timeout for SDXC: 500 ms (SDSC, SDHC: 250 ms).
-
-func waitDataReady(h sdcard.Host) bool {
-	return h.Wait(rtos.Nanosec() + busyTimeout)
-}
 
 // ReadBlocks reads buf.NumBlocks() 512-byte blocks from the card to buf
 // starting from block number addr.
@@ -26,9 +18,6 @@ func (c *Card) ReadBlocks(addr int64, buf sdcard.Data) error {
 		addr *= 512
 	}
 	h := c.host
-	if !waitDataReady(h) {
-		return ErrBusyTimeout
-	}
 	h.SetupData(sdcard.Recv|sdcard.Block512, buf.Words(), nblocks*512)
 	var err error
 	if nblocks == 1 {
@@ -57,9 +46,6 @@ func (c *Card) WriteBlocks(addr int64, buf sdcard.Data) error {
 		addr *= 512
 	}
 	h := c.host
-	if !waitDataReady(h) {
-		return ErrBusyTimeout
-	}
 	h.SetupData(sdcard.Send|sdcard.Block512, buf.Words(), nblocks*512)
 	var err error
 	if nblocks == 1 {

@@ -13,14 +13,15 @@ import (
 
 // Driver implements sdcard.Host interface.
 type Driver struct {
-	p    *Periph
-	d0   gpio.Pin
-	done rtos.EventFlag
-	isr  func(*Driver)
-	addr uintptr
-	n    int
-	err  Error
-	dtc  DataCtrl
+	p       *Periph
+	d0      gpio.Pin
+	done    rtos.EventFlag
+	isr     func(*Driver)
+	addr    uintptr
+	n       int
+	dtc     DataCtrl
+	err     Error
+	timeout bool
 }
 
 // MakeDriver returns initialized SPI driver that uses provided SPI peripheral.
@@ -54,26 +55,32 @@ func (d *Driver) SetBusWidth(width sdcard.BusWidth) sdcard.BusWidths {
 }
 
 // Wait waits for deassertion of busy signal on DATA0 line. It returns false if
-// the deadline has passed. Zero deadline means no deadline.
+// the deadline has passed. Zero deadline means no deadline. If d0 was not set
+// to valid pin Wait immediately returns true.
 func (d *Driver) Wait(deadline int64) bool {
 	return wait(d.d0, &d.done, deadline)
 }
 
 // Err returns and optionally clears internal error.
 func (d *Driver) Err(clear bool) error {
-	if d.err == 0 {
-		return nil
-	}
 	var err error
-	if d.err == ErrCmdTimeout {
-		err = sdcard.ErrCmdTimeout
-	} else {
-		err = d.err
+	switch {
+	case d.err != 0:
+		if d.err == ErrCmdTimeout {
+			err = sdcard.ErrCmdTimeout
+		} else {
+			err = d.err
+		}
+	case d.timeout:
+		err = sdcard.ErrBusyTimeout
+	default:
+		return nil
 	}
 	if clear {
 		d.n = 0
 		d.dtc = 0
 		d.err = 0
+		d.timeout = false
 	}
 	return err
 }
@@ -201,19 +208,20 @@ func (d *Driver) SetupData(mode sdcard.DataMode, buf []uint64, nbytes int) {
 	d.dtc = DTEna | DataCtrl(mode)
 	d.addr = uintptr(unsafe.Pointer(&buf[0]))
 	d.n = nbytes
-	p := d.p
-	p.SetDataLen(nbytes)
-	if d.dtc&Recv != 0 {
-		p.SetDataCtrl(d.dtc)
-	}
+	d.p.SetDataLen(nbytes)
 }
 
 // SendCmd sends the cmd to the card and receives its response, if any. Short
 // response is returned in r[0], long is returned in r[0:3] (r[0] contains the
 // least significant bits, r[3] contains the most significant bits). If preceded
-// by SetupData, SendCmd performs the data transfer.
+// by SetupData it performs the data transfer (can wait up to 1s for end of busy
+// state).
 func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	if d.err != 0 {
+		return
+	}
+	if d.dtc != 0 && !wait(d.d0, &d.done, rtos.Nanosec()+busyTimeout) {
+		d.timeout = true
 		return
 	}
 	cmdEnd := CmdSent
@@ -223,6 +231,9 @@ func (d *Driver) SendCmd(cmd sdcard.Command, arg uint32) (r sdcard.Response) {
 	d.isr = (*Driver).cmdISR
 	d.done.Reset(0)
 	p := d.p
+	if d.dtc&Recv != 0 {
+		p.SetDataCtrl(d.dtc)
+	}
 	p.Clear(EvAll, ErrAll)
 	p.SetArg(arg)
 	p.SetCmd(CmdEna | Command(cmd)&255)

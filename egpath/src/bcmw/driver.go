@@ -67,6 +67,7 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
 	sd.SetClock(400e3, true)
 	delay.Millisec(1)
 	reset(1)
+	delay.Millisec(1)
 
 	// Enumerate and put the card into Transfer State.
 
@@ -172,7 +173,7 @@ func (d *Driver) UploadFirmware(r io.Reader) error {
 
 	delay.Millisec(50)
 
-	var buf [256]byte
+	var buf [4 * 64]byte
 	addr := uint32(0)
 	for {
 		n, err := r.Read(buf[:])
@@ -181,11 +182,37 @@ func (d *Driver) UploadFirmware(r io.Reader) error {
 			return d.firstErr()
 		}
 		if err != nil {
+			if err == io.EOF {
+				break
+			}
 			return err
 		}
 		addr += uint32(n)
 	}
 	return nil
+}
+
+func (d *Driver) CheckFirmware(r io.Reader) error {
+	var buf [1]byte
+	for addr := uint32(0); ; addr++ {
+		if _, err := r.Read(buf[:]); err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+		b := d.backplaneRead8(addr)
+		if d.error() {
+			return d.firstErr()
+		}
+		if b != buf[0] {
+			d.debug(
+				"Don't match at %d: firmware=%d != SRAM=%d\n",
+				addr, buf[0], b,
+			)
+			return nil
+		}
+	}
 }
 
 /*

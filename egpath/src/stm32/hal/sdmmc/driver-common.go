@@ -10,6 +10,9 @@ import (
 	"stm32/hal/gpio"
 )
 
+// Busy timeout: SDIO: 1000 ms, SDXC: 500 ms, SDSC/SDHC: 250 ms
+const busyTimeout = 1e9 
+
 // setClock don't use PwrSave mode because continous clock is required during
 // initialization and multiple block write (and maybe more cases). Using
 // PwrSave mode seems to be impractical. Low power application should disable
@@ -54,7 +57,7 @@ func setupEXTI(d0 gpio.Pin) {
 }
 
 func wait(d0 gpio.Pin, done *rtos.EventFlag, deadline int64) bool {
-	if d0.Load() != 0 {
+	if !d0.IsValid() || d0.Load() != 0 {
 		return true // Fast path.
 	}
 	done.Reset(0)

@@ -11,7 +11,6 @@ var (
 	ErrInitCMD8    = errors.New("sdmc: init CMD8")
 	ErrInitACMD41  = errors.New("sdmc: init ACMD41")
 	ErrStatus      = errors.New("sdmc: status") // Error flag or StateData timeout.
-	ErrBusyTimeout = errors.New("sdmc: busy timeout")
 	ErrBadAddr     = errors.New("sdmc: bad addr")
 )
 
