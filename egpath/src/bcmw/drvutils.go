@@ -23,6 +23,19 @@ func (d *Driver) error() bool {
 		d.err != 0
 }
 
+func (d *Driver) firstErr() error {
+	if err := d.sd.Err(false); err != nil {
+		return err
+	}
+	if d.ioStatus&^sdcard.IO_CURRENT_STATE != 0 {
+		return ErrIOStatus
+	}
+	if d.err != 0 {
+		return d.err
+	}
+	return nil
+}
+
 func (d *Driver) cmd52(f, addr int, flags sdcard.IORWFlags, val byte) byte {
 	if d.error() {
 		return 0
@@ -97,12 +110,22 @@ func (d *Driver) backplaneSetWindow(addr uint32) {
 		addr >>= 8
 		win >>= 8
 		if a := byte(addr); a != byte(win) {
-			d.cmd52(backplane, sbsdioFunc1SBAddrLow+n, sdcard.Write, a)
+			d.sdiodWrite8(sbsdioFunc1SBAddrLow+n, a)
 		}
 	}
 	if d.error() {
 		d.backplaneWindow = 0
 	}
+}
+
+func (d *Driver) backplaneRead8(addr uint32) byte {
+	d.backplaneSetWindow(addr)
+	return d.sdiodRead8(int(addr & 0x7FFF))
+}
+
+func (d *Driver) backplaneWrite8(addr uint32, b byte) {
+	d.backplaneSetWindow(addr)
+	d.sdiodWrite8(int(addr&0x7FFF), b)
 }
 
 func waitDataReady(sd sdcard.Host) bool {
@@ -145,15 +168,112 @@ func (d *Driver) backplaneWrite32(addr, v uint32) {
 	)).R5()
 }
 
-func (d *Driver) backplaneWrite(addr uint32, buf []byte) {
-	d.backplaneSetWindow(addr)
+func (d *Driver) backplaneWrite(addr uint32, data []byte) {
 	if d.error() {
 		return
 	}
-	//off, data64 := slice64(buf)
-	
+	head, aligned, tail := uint64slice(data)
+	d.debug(
+		"data: %d (%x), head: %d, aligned: %d, tail: %d\n",
+		len(data), &data[0], len(head), len(aligned), len(tail),
+	)
+	for _, b := range head {
+		d.backplaneWrite8(addr, b)
+		addr++
+	}
+	if d.error() {
+		return
+	}
+	sd := d.sd
+	/*
+		for {
+			nbl := len(aligned) >> 3
+			if nbl >= 0x1FF {
+				nbl = 0x1FF
+			}
+			d.backplaneSetWindow(addr)
+			if !waitDataReady(sd) {
+				d.err = ErrTimeout
+				return
+			}
+			sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block64, aligned, nbl*64)
+			_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
+				backplane, int(addr&0x7FFF), sdcard.BlockWrite|sdcard.IncAddr, nbl,
+			)).R5()
+			if d.error() {
+				return
+			}
+			aligned = aligned[nbl*8:]
+			addr += uint32(nbl) * 64
+		}
+	*/
+	for i := 0; i < len(aligned); i++ {
+		d.backplaneSetWindow(addr)
+		if !waitDataReady(sd) {
+			d.err = ErrTimeout
+			return
+		}
+		sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block8, aligned[i:], 8)
+		_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
+			backplane, int(addr&0x7FFF), sdcard.Write|sdcard.IncAddr, 8,
+		)).R5()
+		if d.error() {
+			return
+		}
+		addr += 8
+	}
+	for _, b := range tail {
+		d.backplaneWrite8(addr, b)
+		addr++
+	}
 }
 
+/*
+
+func (d *Driver) wbb(addr uint32, buf []uint64) {
+	sd := d.sd
+	for len(buf) >= 8 {
+		d.sdiodSetBackplaneWindow(addr)
+		if d.timeout = !waitDataReady(sd); d.timeout {
+			return
+		}
+		nbl := len(buf) >> 3
+		if nbl >= 0x1FF {
+			nbl = 0x1FF
+		}
+		sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block64, buf, nbl*64)
+		_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
+			backplane, int(addr&0x7FFF), sdcard.BlockWrite|sdcard.IncAddr, nbl,
+		)).R5()
+		if d.error() {
+			return
+		}
+		buf = buf[nbl*8:]
+		addr += uint32(nbl) * 64
+	}
+	if len(buf) == 0 {
+		return
+	}
+	d.sdiodSetBackplaneWindow(addr)
+	// STM32x MCUs don't handle well multibyte transfers so configure the SDMMC
+	// driver to use 8-byte block mode len(buf) times.
+	for i := 0; i < len(buf); i++ {
+		if d.timeout = !waitDataReady(sd); d.timeout {
+			return
+		}
+		sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block8, buf[i:], 8)
+		_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
+			backplane, int(addr&0x7FFF|sbsdioAccess32bit),
+			sdcard.Write|sdcard.IncAddr, 8,
+		)).R5()
+		if d.error() {
+			return
+		}
+		addr += 8
+	}
+}
+
+*/
 
 func (d *Driver) chipIsCoreUp(core int) bool {
 	if d.error() {
@@ -214,53 +334,3 @@ func (d *Driver) chipCoreReset(core int, prereset, reset, postreset uint32) {
 	d.backplaneWrite32(base+agentIOCtl, ioCtlClk|postreset)
 	d.backplaneRead32(base + agentIOCtl)
 }
-
-
-/*
-
-func (d *Driver) wbb(addr uint32, buf []uint64) {
-	sd := d.sd
-	for len(buf) >= 8 {
-		d.sdiodSetBackplaneWindow(addr)
-		if d.timeout = !waitDataReady(sd); d.timeout {
-			return
-		}
-		nbl := len(buf) >> 3
-		if nbl >= 0x1FF {
-			nbl = 0x1FF
-		}
-		sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block64, buf, nbl*64)
-		_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
-			backplane, int(addr&0x7FFF), sdcard.BlockWrite|sdcard.IncAddr, nbl,
-		)).R5()
-		if d.error() {
-			return
-		}
-		buf = buf[nbl*8:]
-		addr += uint32(nbl) * 64
-	}
-	if len(buf) == 0 {
-		return
-	}
-	d.sdiodSetBackplaneWindow(addr)
-	// STM32x MCUs don't handle well multibyte transfers so configure the SDMMC
-	// driver to use 8-byte block mode len(buf) times.
-	for i := 0; i < len(buf); i++ {
-		if d.timeout = !waitDataReady(sd); d.timeout {
-			return
-		}
-		sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block8, buf[i:], 8)
-		_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
-			backplane, int(addr&0x7FFF|sbsdioAccess32bit),
-			sdcard.Write|sdcard.IncAddr, 8,
-		)).R5()
-		if d.error() {
-			return
-		}
-		addr += 8
-	}
-}
-
-
-
-*/

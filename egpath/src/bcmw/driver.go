@@ -46,19 +46,6 @@ func NewDriver(sd sdcard.Host) *Driver {
 	return d
 }
 
-func (d *Driver) firstErr() error {
-	if err := d.sd.Err(false); err != nil {
-		return err
-	}
-	if d.ioStatus&^sdcard.IO_CURRENT_STATE != 0 {
-		return ErrIOStatus
-	}
-	if d.err != 0 {
-		return d.err
-	}
-	return nil
-}
-
 func (d *Driver) IOStatus() sdcard.IOStatus {
 	return d.IOStatus()
 }
@@ -185,16 +172,20 @@ func (d *Driver) UploadFirmware(r io.Reader) error {
 
 	delay.Millisec(50)
 
-	var tmp [8]uint64
-	buf := sdcard.AsData(tmp[:])
+	var buf [256]byte
+	addr := uint32(0)
 	for {
-		n, err := io.ReadFull(r, buf.Bytes())
-		_ = n
-		if err != nil {
-			//...
+		n, err := r.Read(buf[:])
+		d.backplaneWrite(addr, buf[:n])
+		if d.error() {
+			return d.firstErr()
 		}
+		if err != nil {
+			return err
+		}
+		addr += uint32(n)
 	}
-	return d.firstErr()
+	return nil
 }
 
 /*

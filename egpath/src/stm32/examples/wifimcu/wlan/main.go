@@ -130,17 +130,13 @@ func main() {
 		bcmD1.SetAltFunc(gpio.MCO)
 	*/
 
-	wlan.Init(bcmRSTn.Store, 0)
-
-	checkErr(wlan.Err(true))
+	checkErr(wlan.Init(bcmRSTn.Store, 0))
 	printOK()
 
 	print("Uploading firmware:")
 
-	buf := bytes.MakeBuffer(firmware, true)
-	wlan.UploadFirmware(&buf)
-
-	checkErr(wlan.Err(true))
+	buf := bytes.MakeBuffer(firmware[:], true)
+	checkErr(wlan.UploadFirmware(&buf))
 	printOK()
 
 	/*
