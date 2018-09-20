@@ -108,7 +108,7 @@ type printer struct {
 	wpf
 }
 
-func (p *printer) Ferr(verb byte, info string, a interface{}) {
+func (p *printer) fmtErr(verb byte, info string, a interface{}) {
 	if a == nil {
 		a = ""
 	}

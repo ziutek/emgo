@@ -2,9 +2,7 @@ package fmt
 
 import (
 	"io"
-	//"stack" // Use noinline to avoid stack overflows.
 	"strings"
-	//"unsafe"
 )
 
 func findVerb(f string) (int, string, byte) {
@@ -48,7 +46,7 @@ func Fprintf(w io.Writer, f string, a ...interface{}) (int, error) {
 			p.WriteByte('%')
 		case 0:
 			// Unfinished format.
-			p.Ferr(0, "UNFINISHED", nil)
+			p.fmtErr(0, "UNFINISHED", nil)
 		default:
 			if m < len(a) {
 				p.parse(flags)
@@ -60,7 +58,7 @@ func Fprintf(w io.Writer, f string, a ...interface{}) (int, error) {
 			return p.n, p.err
 		}
 		if m > len(a) {
-			p.Ferr(verb, "MISSING", nil)
+			p.fmtErr(verb, "MISSING", nil)
 			if p.err != nil {
 				return p.n, p.err
 			}
@@ -68,7 +66,7 @@ func Fprintf(w io.Writer, f string, a ...interface{}) (int, error) {
 		f = f[start+2+len(flags):]
 	}
 	for ; m < len(a); m++ {
-		p.Ferr(0, "EXTRA ", a[m])
+		p.fmtErr(0, "EXTRA ", a[m])
 		if p.err != nil {
 			break
 		}

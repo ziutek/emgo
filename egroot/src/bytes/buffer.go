@@ -83,7 +83,7 @@ func (b *Buffer) empty() bool { return len(b.buf) <= b.off }
 func (b *Buffer) Read(s []byte) (n int, err error) {
 	if b.empty() {
 		b.Reset()
-		if len(p) == 0 {
+		if len(s) == 0 {
 			return 0, nil
 		}
 		return 0, io.EOF
