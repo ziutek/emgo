@@ -140,6 +140,8 @@ func main() {
 	nr := strings.MakeReader(nvram)
 	checkErr(wlan.UploadFirmware(&fr, &nr, len(nvram)))
 	printOK()
+	
+	wlan.StatusLoop()
 }
 
 func ttsISR() {

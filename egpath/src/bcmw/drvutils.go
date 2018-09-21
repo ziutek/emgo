@@ -12,9 +12,10 @@ import (
 
 func (d *Driver) debug(f string, args ...interface{}) {
 	if d.error() {
-		return
+		fmt.Printf("error: %v\n", d.firstErr())
+	} else {
+		fmt.Printf(f, args...)
 	}
-	fmt.Printf(f, args...)
 }
 
 func (d *Driver) error() bool {
@@ -36,32 +37,30 @@ func (d *Driver) firstErr() error {
 	return nil
 }
 
-func (d *Driver) cmd52(f, addr int, flags sdcard.IORWFlags, val byte) byte {
+func (d *Driver) sdioRead8(f int, addr int) (b byte) {
 	if d.error() {
 		return 0
 	}
-	val, d.ioStatus = d.sd.SendCmd(sdcard.CMD52(f, addr, flags, val)).R5()
-	return val
+	b, d.ioStatus = d.sd.SendCmd(sdcard.CMD52(f, addr, sdcard.Read, 0)).R5()
+	return
 }
 
-func (d *Driver) sdioSetBlockSize(f, blksiz int) {
+func (d *Driver) sdioWrite8(f int, addr int, b byte) {
 	if d.error() {
 		return
 	}
-	d.cmd52(cia, f<<8+sdio.FBR_BLKSIZE0, sdcard.WriteRead, byte(blksiz))
-	d.cmd52(cia, f<<8+sdio.FBR_BLKSIZE1, sdcard.WriteRead, byte(blksiz>>8))
-	return
+	_, d.ioStatus = d.sd.SendCmd(sdcard.CMD52(f, addr, sdcard.Write, b)).R5()
 }
 
 func (d *Driver) sdioEnableFunc(f, timeoutms int) {
 	if d.error() {
 		return
 	}
-	r := d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Read, 0)
+	r := d.sdioRead8(cia, sdio.CCCR_IOEN)
 	m := byte(1 << uint(f))
-	d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Write, r|m)
+	d.sdioWrite8(cia, sdio.CCCR_IOEN, r|m)
 	for retry := timeoutms >> 1; retry > 0; retry-- {
-		r := d.cmd52(cia, sdio.CCCR_IORDY, sdcard.Read, 0)
+		r := d.sdioRead8(cia, sdio.CCCR_IORDY)
 		if d.error() || r&m != 0 {
 			return
 		}
@@ -74,23 +73,18 @@ func (d *Driver) sdioDisableFunc(f int) {
 	if d.error() {
 		return
 	}
-	r := d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Read, 0)
+	r := d.sdioRead8(cia, sdio.CCCR_IOEN)
 	r &^= 1 << uint(f)
-	d.cmd52(cia, sdio.CCCR_IOEN, sdcard.Write, r)
+	d.sdioWrite8(cia, sdio.CCCR_IOEN, r)
 }
 
-func (d *Driver) sdiodRead8(addr int) byte {
-	if d.error() {
-		return 0
-	}
-	return d.cmd52(backplane, addr, sdcard.Read, 0)
-}
-
-func (d *Driver) sdiodWrite8(addr int, v byte) {
+func (d *Driver) sdioSetBlockSize(f, blksiz int) {
 	if d.error() {
 		return
 	}
-	d.cmd52(backplane, addr, sdcard.Write, v)
+	d.sdioWrite8(cia, f<<8+sdio.FBR_BLKSIZE0, byte(blksiz))
+	d.sdioWrite8(cia, f<<8+sdio.FBR_BLKSIZE1, byte(blksiz>>8))
+	return
 }
 
 // The backplaneSetWindow, backplaneRead32, backplaneWrite32 are methods
@@ -111,7 +105,7 @@ func (d *Driver) backplaneSetWindow(addr uint32) {
 		addr >>= 8
 		win >>= 8
 		if a := byte(addr); a != byte(win) {
-			d.sdiodWrite8(sbsdioFunc1SBAddrLow+n, a)
+			d.sdioWrite8(backplane, sbsdioFunc1SBAddrLow+n, a)
 		}
 	}
 	if d.error() {
@@ -121,12 +115,12 @@ func (d *Driver) backplaneSetWindow(addr uint32) {
 
 func (d *Driver) backplaneRead8(addr uint32) byte {
 	d.backplaneSetWindow(addr)
-	return d.sdiodRead8(int(addr & 0x7FFF))
+	return d.sdioRead8(backplane, int(addr&0x7FFF))
 }
 
 func (d *Driver) backplaneWrite8(addr uint32, b byte) {
 	d.backplaneSetWindow(addr)
-	d.sdiodWrite8(int(addr&0x7FFF), b)
+	d.sdioWrite8(backplane, int(addr&0x7FFF), b)
 }
 
 func (d *Driver) backplaneRead32(addr uint32) uint32 {

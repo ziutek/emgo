@@ -90,14 +90,14 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
 
 	// Enable 4-bit data bus.
 
-	r8 := d.cmd52(cia, sdio.CCCR_BUSICTRL, sdcard.Read, 0)
-	d.cmd52(cia, sdio.CCCR_BUSICTRL, sdcard.Write, r8&^3|byte(sdcard.Bus4))
+	r8 := d.sdioRead8(cia, sdio.CCCR_BUSICTRL)
+	d.sdioWrite8(cia, sdio.CCCR_BUSICTRL, r8&^3|byte(sdcard.Bus4))
 
 	// Enable High Speed if supported.
 
-	r8 = d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Read, 0)
+	r8 = d.sdioRead8(cia, sdio.CCCR_SPEEDSEL)
 	if false && r8&1 != 0 {
-		d.cmd52(cia, sdio.CCCR_SPEEDSEL, sdcard.Write, r8|2)
+		d.sdioWrite8(cia, sdio.CCCR_SPEEDSEL, r8|2)
 		sd.SetClock(50e6, false)
 	} else {
 		sd.SetClock(25e6, false)
@@ -110,19 +110,19 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
 
 	// Disable extra SDIO pull-ups.
 
-	d.sdiodWrite8(sbsdioFunc1SDIOPullUp, 0)
+	d.sdioWrite8(backplane, sbsdioFunc1SDIOPullUp, 0)
 
 	// TODO: Enable interrupts / OOB IRQ config.
 
 	// Enable Active Low-Power clock.
 
-	d.sdiodWrite8(
-		sbsdioFunc1ChipClkCSR,
+	d.sdioWrite8(
+		backplane, sbsdioFunc1ChipClkCSR,
 		sbsdioForceHwClkReqOff|sbsdioALPAvailReq|sbsdioForceALP,
 	)
 	for retry := 8; ; retry-- {
 		delay.Millisec(2)
-		r8 = d.sdiodRead8(sbsdioFunc1ChipClkCSR)
+		r8 = d.sdioRead8(backplane, sbsdioFunc1ChipClkCSR)
 		if d.error() {
 			return d.firstErr()
 		}
@@ -134,7 +134,7 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
 			return d.err
 		}
 	}
-	d.sdiodWrite8(sbsdioFunc1ChipClkCSR, 0) // Clear ALP request.
+	d.sdioWrite8(backplane, sbsdioFunc1ChipClkCSR, 0) // Clear ALP request.
 
 	// Identify chip.
 
@@ -160,12 +160,12 @@ func (d *Driver) UploadFirmware(firmware, nvram io.Reader, nvramSiz int) error {
 		return d.firstErr()
 	}
 
-	// Disable ARMCM3 core and reset SOCSRAM
+	// Disable ARMCM3 core and reset SOCSRAM.
 
 	d.chipCoreDisable(coreARMCM3, 0, 0)
 	d.chipCoreReset(coreSOCSRAM, 0, 0, 0)
 
-	// Upload firmware
+	// Upload firmware.
 
 	if d.chipID == 43430 {
 		// Disable remap for SRAM3 in case of 4343x
@@ -176,7 +176,7 @@ func (d *Driver) UploadFirmware(firmware, nvram io.Reader, nvramSiz int) error {
 		return err
 	}
 
-	// Upload NVRAM
+	// Upload NVRAM.
 
 	siz := uint32(nvramSiz+63) &^ 63
 	if err := d.backplaneUpload(d.ramSize-4-siz, nvram); err != nil {
@@ -186,7 +186,7 @@ func (d *Driver) UploadFirmware(firmware, nvram io.Reader, nvramSiz int) error {
 	token = ^token<<16 | token&0xFFFF
 	d.backplaneWrite32(d.ramSize-4, token)
 
-	// Reset ARMCM3 core
+	// Reset ARMCM3 core.
 
 	d.chipCoreReset(coreARMCM3, 0, 0, 0)
 	up := d.chipIsCoreUp(coreARMCM3)
@@ -198,10 +198,10 @@ func (d *Driver) UploadFirmware(firmware, nvram io.Reader, nvramSiz int) error {
 		return d.err
 	}
 
-	// Wait for High Throughput clock
+	// Wait for High Throughput clock.
 
 	for retry := 250; ; retry-- {
-		r := d.sdiodRead8(sbsdioFunc1ChipClkCSR)
+		r := d.sdioRead8(backplane, sbsdioFunc1ChipClkCSR)
 		if d.error() {
 			return d.firstErr()
 		}
@@ -214,5 +214,29 @@ func (d *Driver) UploadFirmware(firmware, nvram io.Reader, nvramSiz int) error {
 		}
 		delay.Millisec(2)
 	}
-	return nil
+
+	// Enable function 2.
+
+	d.sdioEnableFunc(wlanData, 500)
+	d.sdioSetBlockSize(wlanData, 64)
+
+	return d.firstErr()
+}
+
+func (d *Driver) StatusLoop() {
+	for {
+		irqs := d.backplaneRead32(sdiodIntStatus)
+		d.backplaneWrite32(sdiodIntStatus, irqs)
+		if irqs&intHMBFrame == 0 {
+			delay.Millisec(500)
+			continue
+		}
+		sd := d.sd
+		var buf [1]uint64
+		sd.SetupData(sdcard.Recv|sdcard.IO|sdcard.Block4, buf[:], 4)
+		_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
+			backplane, 0, sdcard.Read, 4,
+		)).R5()
+		d.debug("%x\n", buf[0])
+	}
 }

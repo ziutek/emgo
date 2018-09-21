@@ -81,6 +81,20 @@ const (
 	commonGPIOCtl  = 0x18000000 + 0x6C
 )
 
+// SDIOD core registers
+const (
+	sdiodCore          = 0x18002000 + 0x00
+	sdiodIntStatus     = 0x18002000 + 0x20
+	sdiodHostIntMask   = 0x18002000 + 0x24
+	sdiodFuncIntMask   = 0x18002000 + 0x34
+	sdiodSBMailbox     = 0x18002000 + 0x40
+	sdiodSBMailboxData = 0x18002000 + 0x48
+)
+
+const (
+	intHMBFrame = 1 << 6
+)
+
 // SOCSRAM registers
 const (
 	socsramBankxIndex = 0x18004000 + 0x10
