@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"rtos"
+	"strings"
 	"text/linewriter"
 
 	"bcmw"
@@ -109,7 +110,7 @@ func init() {
 func main() {
 	wlan := bcmw.NewDriver(sddrv)
 
-	print("Initialize WLAN:")
+	print("\nInitialize WLAN:")
 
 	/*
 		// Provide WLAN powersave clock on PA8 (SDIO_D1).
@@ -135,24 +136,10 @@ func main() {
 
 	print("Uploading firmware:")
 
-	buf := bytes.MakeBuffer(firmware[:], true)
-	checkErr(wlan.UploadFirmware(&buf))
+	fr := bytes.MakeBuffer(firmware[:], true)
+	nr := strings.MakeReader(nvram)
+	checkErr(wlan.UploadFirmware(&fr, &nr, len(nvram)))
 	printOK()
-
-	print("Checking firmware:")
-
-	buf = bytes.MakeBuffer(firmware[:], true)
-	checkErr(wlan.CheckFirmware(&buf))
-	printOK()
-
-	/*
-		print("Uploading NVRAM:")
-
-		wlan.UploadNVRAM(nil, nvram)
-
-		checkErr(wlan.Err(true))
-		printOK()
-	*/
 }
 
 func ttsISR() {

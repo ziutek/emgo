@@ -14,6 +14,7 @@ const (
 	ErrTimeout Error = iota + 1
 	ErrIOStatus
 	ErrUnknownChip
+	ErrARMIsDown
 )
 
 //emgo:const
@@ -21,6 +22,7 @@ var errStr = [...]string{
 	ErrTimeout:     "bcmw: timeout",
 	ErrIOStatus:    "bcmw: IO status",
 	ErrUnknownChip: "bcmw: unknown chip",
+	ErrARMIsDown:   "bcmw: ARM is down",
 }
 
 func (e Error) Error() string {
@@ -101,17 +103,16 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
 		sd.SetClock(25e6, false)
 	}
 
-	// Set block size for all functions.
-
-	d.sdioSetBlockSize(cia, 64)
-	d.sdioSetBlockSize(backplane, 64)
-	d.sdioSetBlockSize(wlanData, 64)
-
-	// TODO: Enable interrupts.
-
 	// Enable function 1.
 
 	d.sdioEnableFunc(backplane, 500)
+	d.sdioSetBlockSize(backplane, 64)
+
+	// Disable extra SDIO pull-ups.
+
+	d.sdiodWrite8(sbsdioFunc1SDIOPullUp, 0)
+
+	// TODO: Enable interrupts / OOB IRQ config.
 
 	// Enable Active Low-Power clock.
 
@@ -123,21 +124,17 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
 		delay.Millisec(2)
 		r8 = d.sdiodRead8(sbsdioFunc1ChipClkCSR)
 		if d.error() {
-			return d.firstErr() // Fast return if error.
+			return d.firstErr()
 		}
 		if r8&sbsdioALPAvail != 0 {
 			break
 		}
 		if retry == 1 {
 			d.err = ErrTimeout
-			return d.firstErr()
+			return d.err
 		}
 	}
 	d.sdiodWrite8(sbsdioFunc1ChipClkCSR, 0) // Clear ALP request.
-
-	// Disable extra SDIO pull-ups.
-
-	d.sdiodWrite8(sbsdioFunc1SDIOPullUp, 0)
 
 	// Identify chip.
 
@@ -150,7 +147,7 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
 	switch d.chipID {
 	case 43362:
 		d.ramSize = 240 * 1024
-	case 43438:
+	case 43430:
 		d.ramSize = 512 * 1024
 	default:
 		d.err = ErrUnknownChip
@@ -158,181 +155,64 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
 	return d.firstErr()
 }
 
-func (d *Driver) UploadFirmware(r io.Reader) error {
+func (d *Driver) UploadFirmware(firmware, nvram io.Reader, nvramSiz int) error {
 	if d.error() {
 		return d.firstErr()
 	}
+
+	// Disable ARMCM3 core and reset SOCSRAM
+
 	d.chipCoreDisable(coreARMCM3, 0, 0)
 	d.chipCoreReset(coreSOCSRAM, 0, 0, 0)
 
-	if d.chipID == 43438 {
+	// Upload firmware
+
+	if d.chipID == 43430 {
 		// Disable remap for SRAM3 in case of 4343x
 		d.backplaneWrite32(socsramBankxIndex, 3)
 		d.backplaneWrite32(socsramBankxPDA, 0)
 	}
-
-	delay.Millisec(50)
-
-	var buf [4 * 64]byte
-	addr := uint32(0)
-	for {
-		n, err := r.Read(buf[:])
-		d.backplaneWrite(addr, buf[:n])
-		if d.error() {
-			return d.firstErr()
-		}
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return err
-		}
-		addr += uint32(n)
-	}
-	return nil
-}
-
-func (d *Driver) CheckFirmware(r io.Reader) error {
-	var buf [1]byte
-	for addr := uint32(0); ; addr++ {
-		if _, err := r.Read(buf[:]); err != nil {
-			if err == io.EOF {
-				return nil
-			}
-			return err
-		}
-		b := d.backplaneRead8(addr)
-		if d.error() {
-			return d.firstErr()
-		}
-		if b != buf[0] {
-			d.debug(
-				"Don't match at %d: firmware=%d != SRAM=%d\n",
-				addr, buf[0], b,
-			)
-			return nil
-		}
-	}
-}
-
-/*
-	/////////////////////////////////////////////////////////
-
-	// Chip must be passive before access its cores.
-
-	d.chipCoreDisable(coreARMCM3, 0, 0)
-	d.chipCoreReset(
-		coreDot11MAC, ioCtlDot11PhyReset|ioCtlDot11PhyClockEn,
-		ioCtlDot11PhyClockEn, ioCtlDot11PhyClockEn,
-	)
-	d.chipCoreReset(coreSOCSRAM, 0, 0, 0)
-
-	if d.chipID == 43438 {
-		// Disable remap for SRAM3 in case of 4343x
-		d.backplaneWrite32(socsramBankxIndex, 3)
-		d.backplaneWrite32(socsramBankxPDA, 0)
+	if err := d.backplaneUpload(0, firmware); err != nil {
+		return err
 	}
 
-	// Done with backplane-dependent accesses, disable clock.
+	// Upload NVRAM
 
-	d.sdiodWrite8(sbsdioFunc1ChipClkCSR, 0)
+	siz := uint32(nvramSiz+63) &^ 63
+	if err := d.backplaneUpload(d.ramSize-4-siz, nvram); err != nil {
+		return err
+	}
+	token := uint32(siz) >> 2
+	token = ^token<<16 | token&0xFFFF
+	d.backplaneWrite32(d.ramSize-4, token)
 
+	// Reset ARMCM3 core
 
-		// Enable interrupts from Backplane and WLAN Data functions (1<<cia is
-		// Master Interrupt Enable bit).
-
-		d.cmd52(cia, sdio.CCCR_INTEN, sdcard.Write, 1<<cia|1<<backplane|1<<wlanData)
-
-
-		// Wait till the backplane is ready.
-
-		for retry := 250; ; retry-- {
-			fmt.Printf("bkpl rdy\n")
-			r = d.cmd52(cia, sdio.CCCR_IORDY, sdcard.Read, 0)
-			if d.error() {
-				return // Fast return if error.
-			}
-			if r&(1<<backplane) != 0 {
-				break
-			}
-			if retry == 1 {
-				d.timeout = true
-				return
-			}
-			delay.Millisec(2)
-		}
-
-		// Enable function 2.
-
-		d.enableFunction(wlanData)
-
-		// Enable out-of-band interrupts.
-
-		if oobIntPin >= 0 {
-			d.cmd52(
-				cia, cccrSepIntCtl, sdcard.Write,
-				sepIntCtlMask|sepIntCtlEn|sepIntCtlPol, // Active high.
-			)
-			switch oobIntPin {
-			case 0:
-				// Default pin
-			case 1:
-				d.cmd52(backplane, sbsdioGPIOSel, sdcard.Write, 0xF)
-				d.cmd52(backplane, sbsdioGPIOOut, sdcard.Write, 0)
-				d.cmd52(backplane, sbsdioGPIOEn, sdcard.Write, 2)
-				d.wbr32(commonGPIOCtl, 2)
-			default:
-				panic("bcmw: bad IRQ pin")
-			}
-		}
-
-		// Disable Backplane interrupt
-
-		d.cmd52(cia, sdio.CCCR_INTEN, sdcard.Write, 1<<cia|1<<wlanData)
-*/
-
-/*
-
-func (d *Driver) UploadNVRAM(r io.Reader, nvram string) {
+	d.chipCoreReset(coreARMCM3, 0, 0, 0)
+	up := d.chipIsCoreUp(coreARMCM3)
 	if d.error() {
-		return
+		return d.firstErr()
 	}
-	var tmp [8]uint64
-	buf := sdcard.AsData(tmp[:])
-	nvsiz := (len(nvram) + 63) &^ 63 // Round up to n*64 bytes.
-	addr := uint32(d.chip.ramSize - 4 - nvsiz)
-	for len(nvram) > 0 {
-		n := copy(buf.Bytes(), nvram)
-		nvram = nvram[n:]
-		d.wbb(addr, buf.Words())
-		addr += 64
+	if !up {
+		d.err = ErrARMIsDown
+		return d.err
 	}
-	token := uint32(nvsiz) >> 2
-	token = ^token<<16 | token
-	d.wbr32(addr, token)
 
-	d.resetCore(coreARMCM3)
-	if d.isCoreUp(coreARMCM3) {
-		fmt.Printf("ARM up!\n")
-	} else {
-		fmt.Printf("ARM down!\n")
-		return
-	}
-	fmt.Printf("ht clk:")
+	// Wait for High Throughput clock
+
 	for retry := 250; ; retry-- {
-		r := d.cmd52(backplane, sbsdioFunc1ChipClkCSR, sdcard.Read, 0)
+		r := d.sdiodRead8(sbsdioFunc1ChipClkCSR)
 		if d.error() {
-			return // Fast return if error.
+			return d.firstErr()
 		}
-		fmt.Printf(" %x", r)
 		if r&sbsdioHTAvail != 0 {
 			break
 		}
 		if retry == 1 {
-			d.timeout = true
-			return
+			d.err = ErrARMIsDown
+			return d.err
 		}
 		delay.Millisec(2)
 	}
+	return nil
 }
-*/
