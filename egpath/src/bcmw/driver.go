@@ -56,7 +56,7 @@ func (d *Driver) ChipID() uint16 {
 	return d.chipID
 }
 
-func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
+func (d *Driver) Init(reset func(nrst int), altIRQPin bool) error {
 	d.ramSize = 0
 	d.chipID = 0
 	d.ioStatus = 0
@@ -112,7 +112,15 @@ func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
 
 	d.sdioWrite8(backplane, sbsdioFunc1SDIOPullUp, 0)
 
-	// TODO: Enable interrupts / OOB IRQ config.
+	// Enable OOB IRQ, active high.
+
+	d.sdioWrite8(cia, cccrSepIntCtl, sepIntCtlMask|sepIntCtlEn|sepIntCtlPol)
+	if altIRQPin {
+		d.sdioWrite8(backplane, sbsdioGPIOSel, 0xF)
+		d.sdioWrite8(backplane, sbsdioGPIOOut, 0)
+		d.sdioWrite8(backplane, sbsdioGPIOEn, 2)
+		d.backplaneWrite32(commonGPIOCtl, 2)
+	}
 
 	// Enable Active Low-Power clock.
 
@@ -215,16 +223,25 @@ func (d *Driver) UploadFirmware(firmware, nvram io.Reader, nvramSiz int) error {
 		delay.Millisec(2)
 	}
 
+	if d.chipID == 43430 {
+		// TODO: check and configure save/restore.
+	}
+
 	// Enable function 2.
 
 	d.sdioEnableFunc(wlanData, 500)
 	d.sdioSetBlockSize(wlanData, 64)
+	d.sdioWrite8(cia, sdio.CCCR_INTEN, 1<<cia|1<<wlanData)
 
 	return d.firstErr()
 }
 
-func (d *Driver) StatusLoop() {
+func (d *Driver) StatusLoop(oobIRQ func() int) {
 	for {
+		d.debug(
+			"OOB IRQ: %d, CCCR_INTPEND: %bb\n",
+			oobIRQ(), d.sdioRead8(cia, sdio.CCCR_INTPEND),
+		)
 		irqs := d.backplaneRead32(sdiodIntStatus)
 		d.backplaneWrite32(sdiodIntStatus, irqs)
 		if irqs&intHMBFrame == 0 {

@@ -27,6 +27,7 @@ var (
 	sddrv   *sdmmc.DriverDMA
 	tts     *usart.Driver
 	bcmRSTn gpio.Pin
+	bcmIRQ  gpio.Pin
 	bcmD1   gpio.Pin
 )
 
@@ -37,7 +38,7 @@ func init() {
 	// GPIO
 
 	gpio.A.EnableClock(true)
-	bcmIRQ := gpio.A.Pin(0)
+	bcmIRQ = gpio.A.Pin(0)
 	tx2 := gpio.A.Pin(2)
 	rx2 := gpio.A.Pin(3)
 	led = gpio.A.Pin(4)
@@ -131,7 +132,7 @@ func main() {
 		bcmD1.SetAltFunc(gpio.MCO)
 	*/
 
-	checkErr(wlan.Init(bcmRSTn.Store, 0))
+	checkErr(wlan.Init(bcmRSTn.Store, false))
 	printOK()
 
 	print("Uploading firmware:")
@@ -140,8 +141,8 @@ func main() {
 	nr := strings.MakeReader(nvram)
 	checkErr(wlan.UploadFirmware(&fr, &nr, len(nvram)))
 	printOK()
-	
-	wlan.StatusLoop()
+
+	wlan.StatusLoop(bcmIRQ.Load)
 }
 
 func ttsISR() {
