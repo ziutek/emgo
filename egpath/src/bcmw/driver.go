@@ -231,19 +231,24 @@ func (d *Driver) UploadFirmware(firmware, nvram io.Reader, nvramSiz int) error {
 
 	d.sdioEnableFunc(wlanData, 500)
 	d.sdioSetBlockSize(wlanData, 64)
-	d.sdioWrite8(cia, sdio.CCCR_INTEN, 1<<cia|1<<wlanData)
+
+	// Enable intHMBFrame interrupt from function 2 (WLAN data).
+
+	d.backplaneWrite32(sdiodHostIntMask, intHMBFrame)
+	d.backplaneWrite32(sdiodFuncIntMask, 1<<backplane|1<<wlanData)
+	d.sdioWrite8(cia, sdio.CCCR_INTEN, 1<<cia|1<<backplane|1<<wlanData)
 
 	return d.firstErr()
 }
 
 func (d *Driver) StatusLoop(oobIRQ func() int) {
 	for {
-		d.debug(
-			"OOB IRQ: %d, CCCR_INTPEND: %bb\n",
-			oobIRQ(), d.sdioRead8(cia, sdio.CCCR_INTPEND),
-		)
 		irqs := d.backplaneRead32(sdiodIntStatus)
 		d.backplaneWrite32(sdiodIntStatus, irqs)
+		d.debug(
+			"OOB IRQ: %d, CCCR_INTPEND: %bb sdiodIntStatus: %bb\n",
+			oobIRQ(), d.sdioRead8(cia, sdio.CCCR_INTPEND), irqs,
+		)
 		if irqs&intHMBFrame == 0 {
 			delay.Millisec(500)
 			continue
