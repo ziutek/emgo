@@ -235,8 +235,8 @@ func (d *Driver) UploadFirmware(firmware, nvram io.Reader, nvramSiz int) error {
 	// Enable intHMBFrame interrupt from function 2 (WLAN data).
 
 	d.backplaneWrite32(sdiodHostIntMask, intHMBFrame)
-	d.backplaneWrite32(sdiodFuncIntMask, 1<<backplane|1<<wlanData)
-	d.sdioWrite8(cia, sdio.CCCR_INTEN, 1<<cia|1<<backplane|1<<wlanData)
+	d.backplaneWrite32(sdiodFuncIntMask, 1<<wlanData)
+	d.sdioWrite8(cia, sdio.CCCR_INTEN, 1<<cia|1<<wlanData)
 
 	return d.firstErr()
 }
