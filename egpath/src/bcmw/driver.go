@@ -36,6 +36,8 @@ type Driver struct {
 	chipID          uint16
 	ioStatus        sdcard.IOStatus
 	err             Error
+
+	irq bool
 }
 
 func MakeDriver(sd sdcard.Host) Driver {
@@ -49,14 +51,18 @@ func NewDriver(sd sdcard.Host) *Driver {
 }
 
 func (d *Driver) IOStatus() sdcard.IOStatus {
-	return d.IOStatus()
+	return d.ioStatus
 }
 
 func (d *Driver) ChipID() uint16 {
 	return d.chipID
 }
 
-func (d *Driver) Init(reset func(nrst int), altIRQPin bool) error {
+func (d *Driver) ISR() {
+	d.irq = true
+}
+
+func (d *Driver) Init(reset func(nrst int), gpio1irq bool) error {
 	d.ramSize = 0
 	d.chipID = 0
 	d.ioStatus = 0
@@ -115,7 +121,7 @@ func (d *Driver) Init(reset func(nrst int), altIRQPin bool) error {
 	// Enable OOB IRQ, active high.
 
 	d.sdioWrite8(cia, cccrSepIntCtl, sepIntCtlMask|sepIntCtlEn|sepIntCtlPol)
-	if altIRQPin {
+	if gpio1irq {
 		d.sdioWrite8(backplane, sbsdioGPIOSel, 0xF)
 		d.sdioWrite8(backplane, sbsdioGPIOOut, 0)
 		d.sdioWrite8(backplane, sbsdioGPIOEn, 2)
@@ -224,31 +230,38 @@ func (d *Driver) UploadFirmware(firmware, nvram io.Reader, nvramSiz int) error {
 	}
 
 	if d.chipID == 43430 {
-		// TODO: check and configure save/restore.
+		// TODO: Check save/restore support in firmware and configure it.
 	}
 
 	// Enable function 2.
 
 	d.sdioEnableFunc(wlanData, 500)
-	d.sdioSetBlockSize(wlanData, 64)
+	d.sdioSetBlockSize(wlanData, 512)
 
-	// Enable intHMBFrame interrupt from function 2 (WLAN data).
+	// Enable interrupts from function 2 (WLAN data).
 
-	d.backplaneWrite32(sdiodHostIntMask, intHMBFrame)
+	d.backplaneWrite32(sdiodHostIntMask, intHMBSWMask)
 	d.backplaneWrite32(sdiodFuncIntMask, 1<<wlanData)
 	d.sdioWrite8(cia, sdio.CCCR_INTEN, 1<<cia|1<<wlanData)
+
+	// Lower F2 watermark to avoid DMA hang in F2 when SD clock is stopped.
+
+	d.sdioWrite8(backplane, sbsdioWatermark, 8)
 
 	return d.firstErr()
 }
 
 func (d *Driver) StatusLoop(oobIRQ func() int) {
 	for {
-		irqs := d.backplaneRead32(sdiodIntStatus)
-		d.backplaneWrite32(sdiodIntStatus, irqs)
 		d.debug(
-			"OOB IRQ: %d, CCCR_INTPEND: %bb sdiodIntStatus: %bb\n",
-			oobIRQ(), d.sdioRead8(cia, sdio.CCCR_INTPEND), irqs,
+			"%t OOB IRQ: %d, CCCR_INTPEND: %bb",
+			d.irq, oobIRQ(), d.sdioRead8(cia, sdio.CCCR_INTPEND),
 		)
+		irqs := d.backplaneRead32(sdiodIntStatus)
+		d.debug(" sdiodIntStatus: %bb\n", irqs)
+		if irqs&intHMBSWMask != 0 {
+			d.backplaneWrite32(sdiodIntStatus, irqs&intHMBSWMask)
+		}
 		if irqs&intHMBFrame == 0 {
 			delay.Millisec(500)
 			continue

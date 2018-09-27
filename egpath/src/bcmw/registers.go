@@ -92,7 +92,21 @@ const (
 )
 
 const (
-	intHMBFrame = 1 << 6
+	intSMBSW0    = 1 << 0 // To SB Mail S/W IRQ 0.
+	intSMBSW1    = 1 << 1 // To SB Mail S/W IRQ 1.
+	intSMBSW2    = 1 << 2 // To SB Mail S/W IRQ 2.
+	intSMBSW3    = 1 << 3 // To SB Mail S/W IRQ 3.
+	intSMBSWMask = 0x0F   // To SB Mail S/W IRQ mask.
+	intHMBSW0    = 1 << 4 // To Host Mail S/W IRQ 0.
+	intHMBSW1    = 1 << 5 // To Host Mail S/W IRQ 1.
+	intHMBSW2    = 1 << 6 // To Host Mail S/W IRQ 2 (frame???).
+	intHMBSW3    = 1 << 7 // To Host Mail S/W IRQ 3 (host???).
+	intHMBSWMask = 0xF0   // To Host Mail S/W IRQ mask.
+
+	intHMBFCState  = intHMBSW0 // To Host Mailbox Flow Control State.
+	intHMBFCChange = intHMBSW1 // To Host Mailbox Flow Control State Changed.
+	intHMBFrame    = intHMBSW2 // To Host Mailbox Frame Indication.
+	intHMBHost     = intHMBSW3 // To Host Mailbox Miscellaneous Interrupt.
 )
 
 // SOCSRAM registers
