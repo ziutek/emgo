@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Event bitmask that represents events that multiple tasks or ISRs can send
+// Event is bitmask that represents events that multiple tasks or ISRs can send
 // and multiple tasks (but not ISRs) can wait for. Events are intended to be
 // used by low-level library rutines to implement higher level communication and
 // synchronization primitives like channels and mutexes. They are specific to
@@ -50,7 +50,7 @@ func (e Event) Send() {
 	schedNext()
 }
 
-// TakeEventReg is intended tao be used by runtime to obtain accumulated events.
+// TakeEventReg is intended to be used by runtime to obtain accumulated events.
 // It returns value of shared event register and clears it in one atomic
 // operation.
 func TakeEventReg() Event {
@@ -69,7 +69,7 @@ func (e Event) Wait() {
 
 // Assign Allarm event. Event(1) seems to be good choise for such ubiquitous
 // event: it is always different from events returned by AssignEventFlag and
-// different from the first 31 events assigned by AssignFlag.
+// different from the first 31 events assigned by AssignEvent.
 
 // Alarm is an event that is sent by runtime when asked by using SetAlarm.
 var Alarm = Event(1)
