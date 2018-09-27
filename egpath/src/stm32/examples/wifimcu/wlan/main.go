@@ -92,6 +92,12 @@ func init() {
 	// WLAN (BCM43362: SDIO, reset, IRQ)
 
 	bcmIRQ.Setup(&gpio.Config{Mode: gpio.In})
+	oobIRQ := exti.Lines(bcmIRQ.Mask())
+	oobIRQ.Connect(bcmIRQ.Port())
+	oobIRQ.EnableRiseTrig()
+	oobIRQ.EnableIRQ()
+	rtos.IRQ(irq.EXTI0).Enable()
+
 	bcmRSTn.Setup(&gpio.Config{Mode: gpio.Out, Speed: gpio.Low})
 
 	cfg := &gpio.Config{Mode: gpio.Alt, Speed: gpio.VeryHigh, Pull: gpio.PullUp}
@@ -108,8 +114,10 @@ func init() {
 	rtos.IRQ(irq.EXTI9_5).Enable()
 }
 
+var wlan *bcmw.Driver
+
 func main() {
-	wlan := bcmw.NewDriver(sddrv)
+	wlan = bcmw.NewDriver(sddrv)
 
 	print("\nInitialize WLAN:")
 
@@ -169,6 +177,14 @@ func exti9_5ISR() {
 	}
 }
 
+func exti0IRQ() {
+	pending := exti.Pending() & exti.L0
+	if pending != 0 {
+		pending.ClearPending()
+		wlan.ISR()
+	}
+}
+
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
 	irq.USART2:       ttsISR,
@@ -177,4 +193,6 @@ var ISRs = [...]func(){
 
 	irq.SDIO:    sdioISR,
 	irq.EXTI9_5: exti9_5ISR,
+
+	irq.EXTI0: exti0IRQ,
 }
