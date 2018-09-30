@@ -62,7 +62,7 @@ func (d *Driver) ISR() {
 	d.irq = true
 }
 
-func (d *Driver) Init(reset func(nrst int), gpio1irq bool) error {
+func (d *Driver) Init(reset func(nrst int), oobIntPin int) error {
 	d.ramSize = 0
 	d.chipID = 0
 	d.ioStatus = 0
@@ -120,12 +120,20 @@ func (d *Driver) Init(reset func(nrst int), gpio1irq bool) error {
 
 	// Enable OOB IRQ, active high.
 
-	d.sdioWrite8(cia, cccrSepIntCtl, sepIntCtlMask|sepIntCtlEn|sepIntCtlPol)
-	if gpio1irq {
-		d.sdioWrite8(backplane, sbsdioGPIOSel, 0xF)
-		d.sdioWrite8(backplane, sbsdioGPIOOut, 0)
-		d.sdioWrite8(backplane, sbsdioGPIOEn, 2)
-		d.backplaneWrite32(commonGPIOCtl, 2)
+	if oobIntPin >= 0 {
+		d.sdioWrite8(cia, cccrSepIntCtl, sepIntCtlMask|sepIntCtlEn|sepIntCtlPol)
+		switch oobIntPin {
+		case 0:
+			// Default GPIO_0 pin.
+		case 1:
+			// GPIO_1 pin.
+			d.sdioWrite8(backplane, sbsdioGPIOSel, 0xF)
+			d.sdioWrite8(backplane, sbsdioGPIOOut, 0)
+			d.sdioWrite8(backplane, sbsdioGPIOEn, 2)
+			d.backplaneWrite32(commonGPIOCtl, 2)
+		default:
+			panic("bcmw: bad IRQ pin")
+		}
 	}
 
 	// Enable Active Low-Power clock.
@@ -266,12 +274,7 @@ func (d *Driver) StatusLoop(oobIRQ func() int) {
 			delay.Millisec(500)
 			continue
 		}
-		sd := d.sd
-		var buf [1]uint64
-		sd.SetupData(sdcard.Recv|sdcard.IO|sdcard.Block4, buf[:], 4)
-		_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
-			backplane, 0, sdcard.Read, 4,
-		)).R5()
-		d.debug("%x\n", buf[0])
+		for d.sdpcmReadFrame() {
+		}
 	}
 }

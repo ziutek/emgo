@@ -134,7 +134,7 @@ func (d *Driver) backplaneRead32(addr uint32) uint32 {
 	_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
 		backplane, int(addr&0x7FFF|sbsdioAccess32bit), sdcard.Read, 4,
 	)).R5()
-	return le.Decode32(sdcard.AsData(buf[:]).Bytes())
+	return le.Decode32(sdcard.Data(buf[:]).Bytes())
 }
 
 func (d *Driver) backplaneWrite32(addr, v uint32) {
@@ -144,7 +144,7 @@ func (d *Driver) backplaneWrite32(addr, v uint32) {
 	}
 	sd := d.sd
 	var buf [1]uint64
-	le.Encode32(sdcard.AsData(buf[:]).Bytes(), v)
+	le.Encode32(sdcard.Data(buf[:]).Bytes(), v)
 	sd.SetupData(sdcard.Send|sdcard.IO|sdcard.Block4, buf[:], 4)
 	_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
 		backplane, int(addr&0x7FFF|sbsdioAccess32bit), sdcard.Write, 4,
@@ -180,13 +180,12 @@ func (d *Driver) backplaneWrite(addr uint32, data []byte) {
 		aligned = aligned[nbl*8:]
 		addr += uint32(nbl) * 64
 	}
-	bms := [...]sdcard.DataMode{sdcard.Block32, sdcard.Block16, sdcard.Block8}
-	for i, bm := range bms {
-		n := 1 << uint(2-i)
+	for bm := sdcard.Block32; bm >= sdcard.Block8; bm -= sdcard.BlockStep {
+		siz := bm.BlockSize()
+		n := siz >> 3
 		if n > len(aligned) {
 			continue
 		}
-		siz := n * 8
 		d.backplaneSetWindow(addr)
 		sd.SetupData(sdcard.Send|sdcard.IO|bm, aligned, siz)
 		_, d.ioStatus = sd.SendCmd(sdcard.CMD53(
