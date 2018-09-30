@@ -91,11 +91,11 @@ func main() {
 	// avoid this the first 3/4 words of the buffer is set to 0.
 
 	pattern := uint64(0)
-	for n := range buf.Words() {
-		if n >= len(buf.Words())*3/4 {
+	for n := range buf {
+		if n >= len(buf)*3/4 {
 			pattern = uint64(n)
 		}
-		buf.Words()[n] = pattern
+		buf[n] = pattern
 	}
 
 	for addr := start; addr < stop; addr += int64(buf.NumBlocks()) {
@@ -107,17 +107,17 @@ func main() {
 	fmt.Printf("\nRead and check pattern: ")
 
 	for addr := start; addr < stop; addr += int64(buf.NumBlocks()) {
-		for n := range buf.Words() {
-			buf.Words()[n] = uint64(n)
+		for n := range buf {
+			buf[n] = uint64(n)
 		}
 		err = card.ReadBlocks(addr, buf)
 		checkErr(err, card.LastStatus())
 		pattern = 0
-		for n := range buf.Words() {
-			if n >= len(buf.Words())*3/4 {
+		for n := range buf {
+			if n >= len(buf)*3/4 {
 				pattern = uint64(n)
 			}
-			if buf.Words()[n] != pattern {
+			if buf[n] != pattern {
 				fmt.Printf("\nData don't march!\n")
 				return
 			}

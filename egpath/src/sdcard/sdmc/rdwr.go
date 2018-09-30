@@ -18,7 +18,7 @@ func (c *Card) ReadBlocks(addr int64, buf sdcard.Data) error {
 		addr *= 512
 	}
 	h := c.host
-	h.SetupData(sdcard.Recv|sdcard.Block512, buf.Words(), nblocks*512)
+	h.SetupData(sdcard.Recv|sdcard.Block512, buf, nblocks*512)
 	var err error
 	if nblocks == 1 {
 		err = c.statusCmd(sdcard.CMD17(uint(addr)))
@@ -46,7 +46,7 @@ func (c *Card) WriteBlocks(addr int64, buf sdcard.Data) error {
 		addr *= 512
 	}
 	h := c.host
-	h.SetupData(sdcard.Send|sdcard.Block512, buf.Words(), nblocks*512)
+	h.SetupData(sdcard.Send|sdcard.Block512, buf, nblocks*512)
 	var err error
 	if nblocks == 1 {
 		err = c.statusCmd(sdcard.CMD24(uint(addr)))

@@ -14,12 +14,31 @@ const (
 )
 
 // DataMode describes data transfer mode.
-type DataMode uint16
+type DataMode int16
+
+// BlockSize returns size of block in bytes in case of block mode or -1 in case
+// of stream mode.
+func (dm DataMode) BlockSize() int {
+	if dm&Stream != 0 {
+		return -1
+	}
+	return 1 << (uint(dm) >> 4 & 15)
+}
 
 // All DataMode constants are defined to be friendly to use with ARM PrimeCell
-// Multimedia Card Interface (used by STM32, LPC and probably more MCUs). Do
-// not add, delete, modify these constants without checking the stm32/hal/sdmmc
-// and lpc/hal/sdmmc.
+// Multimedia Card Interface (used by STM32, LPC and probably more MCUs). Do not
+// add, delete, modify these constants without checking the stm32/hal/sdmmc and
+// lpc/hal/sdmmc.
+
+// Do not use DataMode(exp<<4) to specify block size, instead use BlockMode
+// function. You can also use Block* constants directly instead of exp and
+// iterate over block sizes this way:
+//
+//	for bm := sdcard.Block512; bm >= sdcard.Block1; bm -= sdcard.BlockStep {
+//		bs := bm.BlockSize()
+//		...
+//	}
+//
 const (
 	Send       DataMode = 0 << 1  // Send data to a card.
 	Recv       DataMode = 1 << 1  // Receive data from a card.
@@ -39,11 +58,21 @@ const (
 	Block4K    DataMode = 12 << 4 // Block data transfer, block size: 4 KiB.
 	Block8K    DataMode = 13 << 4 // Block data transfer, block size: 8 KiB.
 	Block16K   DataMode = 14 << 4 // Block data transfer, block size: 16 KiB.
+	BlockStep  DataMode = 1 << 4  // To iterate over block sizes.
 	RWaitStart DataMode = 1 << 8  // Read wait start.
 	RWaitStop  DataMode = 1 << 9  // Read wait stop.
 	RWaitCK    DataMode = 1 << 10 // Read wait control using CK instead od D2.
 	IO         DataMode = 1 << 11 // SDIO specific operation.
 )
+
+// BlockMode returns bits of DataMode that correspond to block data transfer
+// with block size equal 1<<exp.
+func BlockMode(exp int) DataMode {
+	if uint(exp) > 14 {
+		panic("sdcard: bad block mode")
+	}
+	return DataMode(exp << 4)
+}
 
 var (
 	// ErrCmdTimeout is returned by Host in case of command response timeout.

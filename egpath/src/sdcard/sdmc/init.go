@@ -94,7 +94,7 @@ func (c *Card) Init(freqhz int, bw sdcard.BusWidth, ocr sdcard.OCR) (sdcard.CID,
 	}
 
 	var buf [8]uint64
-	bytes := sdcard.AsData(buf[:]).Bytes()
+	bytes := sdcard.Data(buf[:]).Bytes()
 
 	// Read SD Configuration Register.
 	h.SendCmd(sdcard.CMD55(c.rca))
