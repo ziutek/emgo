@@ -507,12 +507,18 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type, permitaa b
 			w.WriteString("(cmpstr(" + lhs + ", " + rhs + ") " + op + " 0)")
 			break
 		}
-		if op == "==" || op == "!=" {
+		if e.Op == token.EQL || e.Op == token.NEQ {
 			cdd.eq(w, lhs, op, rhs, ltyp, rtyp)
 			break
 		}
-		if op == "&^" {
+		switch e.Op {
+		case token.AND_NOT:
 			op = "&~"
+			fallthrough
+		case token.AND, token.OR, token.XOR, token.SHL, token.SHR:
+			w.WriteByte('(')
+			cdd.Type(w, cdd.exprType(e.X))
+			w.WriteByte(')')
 		}
 		w.WriteString("(" + lhs + op + rhs + ")")
 
@@ -541,11 +547,15 @@ func (cdd *CDD) Expr(w *bytes.Buffer, expr ast.Expr, nilT types.Type, permitaa b
 			cdd.ptrExpr(w, e.X, permitaa)
 			break
 		}
-		op := e.Op.String()
 		if e.Op == token.XOR {
-			op = "~"
+			w.WriteByte('(')
+			cdd.Type(w, cdd.exprType(e.X))
+			w.WriteString(")(~")
+			cdd.Expr(w, e.X, nil, permitaa)
+			w.WriteByte(')')
+			break
 		}
-		w.WriteString(op)
+		w.WriteString(e.Op.String())
 		cdd.Expr(w, e.X, nil, permitaa)
 
 	case *ast.CallExpr:
