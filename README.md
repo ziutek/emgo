@@ -88,7 +88,9 @@ You can also load your program during debug session in gdb. Run `../debug-stutil
 
 There are also scripts for [Black Magic Probe](https://github.com/blacksphere/blackmagic/wiki): load-bmp.sh, debug-bmp.sh.
 
-You may encounter a problem where st-util or openocd can not connect to the board. This is often the case for boards without integrated programmer/debuger, when the external programmer has no connection to the reset pin. If you can not make such connection, simply press and hold the reset button on your board, next run load/debug script and after the script finishes printing anything, release the reset.
+If you played with examples and enjoyed Emgo you probably want to write your first program from scratch, compile it and load without these all magic scripts. This [blog post](https://ziutek.github.io/2018/03/30/go_on_very_small_hardware.html) presents how to do it.
+
+You may encounter a problem where st-util or openocd can not connect to your board. This is often the case for boards without integrated programmer/debuger, when the external programmer has no connection to the reset pin. If you can not make such connection, simply press and hold the reset button on your board, next run load/debug script and after the script finishes printing anything, release the reset.
 
 #### Documentation
 
