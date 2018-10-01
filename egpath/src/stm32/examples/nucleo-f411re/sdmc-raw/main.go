@@ -144,7 +144,7 @@ func main() {
 
 	// Read SD Configuration Register.
 	sd.SendCmd(sdcard.CMD55(rca))
-	sd.SetupData(sdcard.Recv|sdcard.Block8, buf.Words()[:1], 8)
+	sd.SetupData(sdcard.Recv|sdcard.Block8, buf[:1], 8)
 	st = sd.SendCmd(sdcard.ACMD51()).R1()
 	checkErr("ACMD51", sd.Err(true), st)
 
@@ -167,7 +167,7 @@ func main() {
 
 	// Enable High Speed.
 	if scr.SD_SPEC() > 0 {
-		sd.SetupData(sdcard.Recv|sdcard.Block64, buf.Words()[:8], 64)
+		sd.SetupData(sdcard.Recv|sdcard.Block64, buf[:8], 64)
 		st = sd.SendCmd(sdcard.CMD6(sdcard.ModeSwitch | sdcard.HighSpeed)).R1()
 		checkErr("CMD6", sd.Err(true), st)
 
@@ -192,17 +192,17 @@ func main() {
 	}
 
 	fmt.Printf("Write block of data...\n")
-	sd.SetupData(sdcard.Send|sdcard.Block512, block.Words(), 512)
+	sd.SetupData(sdcard.Send|sdcard.Block512, block, 512)
 
 	st = sd.SendCmd(sdcard.CMD24(512)).R1()
 	checkErr("CMD24", sd.Err(true), st)
 
-	for i := range block.Words() {
-		block.Words()[i] = 0
+	for i := range block {
+		block[i] = 0
 	}
 
 	fmt.Printf("Read block of data...\n")
-	sd.SetupData(sdcard.Recv|sdcard.Block512, block.Words(), 512)
+	sd.SetupData(sdcard.Recv|sdcard.Block512, block, 512)
 	st = sd.SendCmd(sdcard.CMD17(512)).R1()
 	checkErr("CMD17", sd.Err(true), st)
 
@@ -210,8 +210,8 @@ func main() {
 		fmt.Printf("%02x\n", d[i:i+16])
 	}
 
-	for i := range buf.Words() {
-		buf.Words()[i] = 0
+	for i := range buf {
+		buf[i] = 0
 	}
 
 	bufSize := len(buf.Bytes())
@@ -229,7 +229,7 @@ func main() {
 			addr *= 512
 		}
 		sd.SetupData(
-			sdcard.Send|sdcard.Block512, buf.Words(), len(buf.Words())*8,
+			sdcard.Send|sdcard.Block512, buf, len(buf)*8,
 		)
 		if step > 1 {
 			st = sd.SendCmd(sdcard.CMD25(addr)).R1()
@@ -256,7 +256,7 @@ func main() {
 			addr *= 512
 		}
 		sd.SetupData(
-			sdcard.Recv|sdcard.Block512, buf.Words(), len(buf.Words())*8,
+			sdcard.Recv|sdcard.Block512, buf, len(buf)*8,
 		)
 		if step > 1 {
 			st = sd.SendCmd(sdcard.CMD18(addr)).R1()
