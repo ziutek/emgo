@@ -117,7 +117,7 @@ func init() {
 	menu.Setup(tim.TIM6, system.APB1.Clock())
 	irqen(irq.TIM6, 9)
 
-	initRTC()
+	//initRTC()
 
 	// room.Start must be after owd.Start.
 	room.Start(tim.TIM4, system.APB1.Clock())

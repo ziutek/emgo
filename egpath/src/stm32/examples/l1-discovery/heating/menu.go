@@ -5,6 +5,8 @@ import (
 	"rtos"
 	"strconv"
 	"sync/fence"
+	"time"
+	"time/tz"
 
 	"display/hdc/hdcfb"
 	"onewire"
@@ -179,16 +181,16 @@ func printTemp(fbs *hdcfb.SyncSlice, sensor *Sensor) {
 		fbs.WriteString(" blad ")
 		return
 	}
-	strconv.WriteFloat(fbs, float64(t)*0.0625, 'f', 4, 1, 32, ' ')
+	strconv.WriteFloat(fbs, float64(t)*0.0625, 'f', 1, 32, 4, ' ')
 	fbs.WriteString("\xdfC")
 }
 
 func showStatus(fbs *hdcfb.SyncSlice) {
-	dt := readRTC()
+	t := time.Now()
 	fbs.SetPos(0)
 	fmt.Fprintf(
 		fbs, "Status      %02d:%02d:%02d",
-		dt.Hour(), dt.Minute(), dt.Second(),
+		t.Hour(), t.Minute(), t.Second(),
 	)
 	fmt.Fprintf(fbs, " Woda: (%2dkW) ", water.LastPower())
 	printTemp(fbs, water.TempSensor())
@@ -357,13 +359,27 @@ func setDesiredRoomTemp(fbs *hdcfb.SyncSlice) {
 	)
 }
 
-func printDateTime(fbs *hdcfb.SyncSlice, dt DateTime) {
+//emgo:const
+var wdaysPL = [7]string{
+	"Niedziela",    // Sunday
+	"Poniedzialek", // Monday
+	"Wtorek",       // Tuesday
+	"Sroda",        // Wednesday
+	"Czwartek",     // Thursday
+	"Piatek",       // Friday
+	"Sobota",       // Saturday
+}
+
+func printDateTime(fbs *hdcfb.SyncSlice, t time.Time) {
 	fbs.SetPos(0)
-	fbs.WriteString("Data i czas")
-	fbs.Fill(29, ' ')
-	fmt.Fprintf(fbs, "%04d-%02d-%02d", 2000+dt.Year(), dt.Month(), dt.Day())
-	fmt.Fprintf(fbs, "  %02d:%02d:%02d", dt.Hour(), dt.Minute(), dt.Second())
-	wd := dt.Weekday().String()
+	zone, _ := t.Zone()
+	fmt.Fprintf(fbs, "Data i czas     %4s", zone)
+	fbs.Fill(20, ' ')
+	y, mo, d := t.Date()
+	h, mi, s := t.Clock()
+	fmt.Fprintf(fbs, "%04d-%02d-%02d", y, mo, d)
+	fmt.Fprintf(fbs, "  %02d:%02d:%02d", h, mi, s)
+	wd := wdaysPL[t.Weekday()]
 	fbs.Fill(10-len(wd)/2, ' ')
 	fbs.WriteString(wd)
 	fbs.Fill(fbs.Remain(), ' ')
@@ -371,33 +387,54 @@ func printDateTime(fbs *hdcfb.SyncSlice, dt DateTime) {
 }
 
 func showDateTime(fbs *hdcfb.SyncSlice) {
-	printDateTime(fbs, readRTC())
+	printDateTime(fbs, time.Now())
 }
 
-func updateDateTime(fbs *hdcfb.SyncSlice, dt *DateTime, get func(DateTime) int,
-	set func(*DateTime, int), offs, mod int) {
+type dateTime struct {
+	year, month, day int
+	hour, min, sec   int
+}
 
-	encoder.SetCnt(get(*dt))
+func (dt *dateTime) time() time.Time {
+	return time.Date(
+		dt.year, time.Month(dt.month), dt.day,
+		dt.hour, dt.min, dt.sec, 0,
+		&tz.EuropeWarsaw,
+	)
+}
+
+func updateDateTime(fbs *hdcfb.SyncSlice, dt *dateTime, field *int, offs, mod int) {
+	encoder.SetCnt(*field - offs)
 	for es := range encoder.State {
 		if btnPreRel(es) {
 			break
 		}
-		set(dt, offs+es.ModCnt(mod))
-		printDateTime(fbs, *dt)
+		*field = offs + es.ModCnt(mod)
+		printDateTime(fbs, dt.time())
 	}
 }
 
 func setDateTime(fbs *hdcfb.SyncSlice) {
-	dt := readRTC()
-	updateDateTime(fbs, &dt, (DateTime).Year, (*DateTime).SetYear, 0, 100)
-	updateDateTime(fbs, &dt, (DateTime).Month, (*DateTime).SetMonth, 1, 12)
-	updateDateTime(fbs, &dt, (DateTime).Day, (*DateTime).SetDay, 1, 31)
-	dt.SetWeekday(dayofweek(2000+dt.Year(), dt.Month(), dt.Day()))
-	printDateTime(fbs, dt)
-	updateDateTime(fbs, &dt, (DateTime).Hour, (*DateTime).SetHour, 0, 24)
-	updateDateTime(fbs, &dt, (DateTime).Minute, (*DateTime).SetMinute, 0, 60)
-	updateDateTime(fbs, &dt, (DateTime).Second, (*DateTime).SetSecond, 0, 60)
-	setRTC(dt)
+	var dt dateTime
+	t := time.Now()
+	dt.year = t.Year()
+	if dt.year > 2000 {
+		dt.month = int(t.Month())
+		dt.day = t.Day()
+		dt.hour, dt.min, dt.sec = t.Clock()
+	} else {
+		dt.year = 2000
+		dt.month = 1
+		dt.day = 1
+	}
+	updateDateTime(fbs, &dt, &dt.year, 0, 3000)
+	updateDateTime(fbs, &dt, &dt.month, 1, 12)
+	updateDateTime(fbs, &dt, &dt.day, 1, 31)
+	printDateTime(fbs, dt.time())
+	updateDateTime(fbs, &dt, &dt.hour, 0, 24)
+	updateDateTime(fbs, &dt, &dt.min, 0, 60)
+	updateDateTime(fbs, &dt, &dt.sec, 0, 60)
+	time.Set(dt.time(), rtos.Nanosec())
 }
 
 func showDisplOffTimeout(fbs *hdcfb.SyncSlice) {

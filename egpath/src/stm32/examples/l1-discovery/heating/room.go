@@ -3,6 +3,7 @@ package main
 import (
 	"delay"
 	"sync/atomic"
+	"time"
 
 	"stm32/hal/raw/tim"
 )
@@ -45,15 +46,27 @@ func (r *roomHeaterControl) loop(t *tim.TIM_Periph) {
 	tempResp := make(chan int, 1)
 	for {
 		p := 0
-		dt := readRTC()
-		hm := dt.Hour()*60 + dt.Minute()
+		t := time.Now()
+		hm := t.Hour()*60 + t.Minute()
 		dev := r.tempSensor.Load()
-		// Heat only if tempSensor set and cheap energy time: 22-6 and 13-15.
-		const offset = -25 // My electric meter is 25 minutes late.
-		const margin = 5
-		if dt.IsValid() && dev.Type() != 0 &&
-			(hm < 6*60-margin+offset || hm > 22*60+margin+offset ||
-				hm > 13*60+margin+offset && hm < 15*60-margin+offset) {
+		// Heat only if tempSensor set and cheap energy time: 22-6 and
+		// 13-15 CET or 15-17 CEST.
+		const (
+			offset     = -25 // My electric meter is 25 minutes late.
+			margin     = 5
+			nightStart = 22*60 + margin + offset
+			nightEnd   = 6*60 - margin + offset
+		)
+		dayStart := 13*60 + margin + offset
+		dayEnd := 15*60 - margin + offset
+		zone, _ := t.Zone()
+		if zone == "CEST" {
+			dayStart = 15*60 + margin + offset
+			dayEnd = 17*60 - margin + offset
+		}
+		if (zone == "CET" || zone == "CEST") && t.Year() >= 2018 &&
+			dev.Type() != 0 && (hm < nightEnd || hm > nightStart ||
+			hm > dayStart && hm < dayEnd) {
 
 			owd.Cmd <- TempCmd{Dev: dev, Resp: tempResp}
 			t := <-tempResp
@@ -85,7 +98,7 @@ func (r *roomHeaterControl) loop(t *tim.TIM_Periph) {
 
 func (r *roomHeaterControl) Start(t *tim.TIM_Periph, pclk uint) {
 	setupPWM(t, pclk, 500, rhMax-1)
-	r.SetDesiredTemp16(20 * 16) // °C/16
+	r.SetDesiredTemp16(21 * 16) // °C/16
 	go r.loop(t)
 }
 
