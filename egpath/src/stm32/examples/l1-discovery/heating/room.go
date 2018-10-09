@@ -59,12 +59,11 @@ func (r *roomHeaterControl) loop(t *tim.TIM_Periph) {
 		)
 		dayStart := 13*60 + margin + offset
 		dayEnd := 15*60 - margin + offset
-		zone, _ := t.Zone()
-		if zone == "CEST" {
+		if m := t.Month(); m >= 3 && m < 10 {
 			dayStart = 15*60 + margin + offset
 			dayEnd = 17*60 - margin + offset
 		}
-		if (zone == "CET" || zone == "CEST") && t.Year() >= 2018 &&
+		if t.Year() >= 2018 &&
 			dev.Type() != 0 && (hm < nightEnd || hm > nightStart ||
 			hm > dayStart && hm < dayEnd) {
 
