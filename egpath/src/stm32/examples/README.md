@@ -4,6 +4,10 @@ This directory contains examples for the following STM32 development boards:
 
 ![WaveShare Core746I](core746i/board.jpg)
 
+[emw3162](emw3162): MXCHIP EMW3162 ([STM32F205RGT6](https://www.st.com/en/microcontrollers/stm32f205rg.html) + [BCM43362](http://www.cypress.com/products/wi-fi)), [website](http://en.mxchip.com/product/wifi_product/39)
+
+![EMW3162](emw3162/board.jpg)
+
 [f030-demo-board](f030-demo-board): STM32F030 demo board, [website](https://www.hotmcu.com/stm32f030f4p6-minimum-systerm-boardcortexm0-p-208.html?cPath=1_20)
 
 ![STM32F030 demo board](f030-demo-board/board.jpg)
