@@ -31,7 +31,7 @@ func init() {
 	u.P.StorePSEL(uart.TXD, gpio.P0.Pin(9))
 	u.P.StoreBAUDRATE(uart.Baud115200)
 	u.P.StoreENABLE(true)
-	rtos.IRQ(u.P.NVIC()).Enable()
+	rtos.IRQ(u.P.NVIRQ()).Enable()
 	fmt.DefaultWriter = u
 }
 
@@ -40,7 +40,7 @@ func main() {
 	t := temp.TEMP
 	t.Event(temp.DATARDY).Clear()
 	t.Event(temp.DATARDY).EnableIRQ()
-	rtos.IRQ(t.NVIC()).Enable()
+	rtos.IRQ(t.NVIRQ()).Enable()
 	for {
 		done.Reset(0)
 		fence.W()

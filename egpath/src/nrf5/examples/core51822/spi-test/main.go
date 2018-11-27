@@ -30,7 +30,7 @@ func init() {
 	s.P.StorePSEL(spi.MOSI, p0.Pin(10))
 	s.P.StoreFREQUENCY(spi.Freq125k)
 	s.Enable()
-	rtos.IRQ(s.P.NVIC()).Enable()
+	rtos.IRQ(s.P.NVIRQ()).Enable()
 
 	u = uart.NewDriver(uart.UART0, make([]byte, 80))
 	u.P.StorePSEL(uart.RXD, p0.Pin(11))
@@ -39,7 +39,7 @@ func init() {
 	u.Enable()
 	//u.EnableRx()
 	u.EnableTx()
-	rtos.IRQ(u.P.NVIC()).Enable()
+	rtos.IRQ(u.P.NVIRQ()).Enable()
 	fmt.DefaultWriter = u
 }
 

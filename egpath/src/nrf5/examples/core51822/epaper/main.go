@@ -41,7 +41,7 @@ func init() {
 	d.P.StorePSEL(spi.MOSI, p0.Pin(29))
 	d.P.StoreFREQUENCY(spi.Freq125k)
 	d.Enable()
-	rtos.IRQ(d.P.NVIC()).Enable()
+	rtos.IRQ(d.P.NVIRQ()).Enable()
 }
 
 func main() {

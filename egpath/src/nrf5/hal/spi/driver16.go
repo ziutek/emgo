@@ -51,7 +51,7 @@ func (d *Driver) writeSwpISR() {
 		if txptr < txmax {
 			p.StoreTXD(*(*byte)(unsafe.Pointer(txptr ^ 1)))
 		} else if txptr > txmax {
-			p.NVIC().ClearPending() // Can be edge triggered during ISR.
+			p.NVIRQ().ClearPending() // Can be edge triggered during ISR.
 			d.done.Signal(1)
 			return
 		}
@@ -72,7 +72,7 @@ func (d *Driver) readSwpISR() {
 		if rxptr < rxmax {
 			p.StoreTXD(0xFF)
 		} else if rxptr > rxmax {
-			p.NVIC().ClearPending() // Can be edge triggered during ISR.
+			p.NVIRQ().ClearPending() // Can be edge triggered during ISR.
 			d.done.Signal(1)
 			return
 		}
@@ -103,7 +103,7 @@ func (d *Driver) writeRead16ISR() {
 				// There is still one byte to receive.
 				continue
 			} else if rxptr > rxmax {
-				p.NVIC().ClearPending() // Can be edge triggered during ISR.
+				p.NVIRQ().ClearPending() // Can be edge triggered during ISR.
 				d.done.Signal(1)
 				return
 			}
@@ -228,7 +228,7 @@ func (d *Driver) repeatWord16ISR() {
 			p.StoreTXD(byte(w))
 			w = bits.ReverseBytes16(w)
 		} else if n < 0 {
-			p.NVIC().ClearPending() // Can be edge triggered during ISR.
+			p.NVIRQ().ClearPending() // Can be edge triggered during ISR.
 			d.done.Signal(1)
 			return
 		}

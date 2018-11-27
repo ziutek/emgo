@@ -27,7 +27,7 @@ func radioInit(r *radio.Periph) {
 	r.StoreCRCCNF(3, true)
 	r.StoreCRCPOLY(0x100065B)
 	r.DisableIRQ(te.EvAll)
-	irq := rtos.IRQ(r.NVIC())
+	irq := rtos.IRQ(r.NVIRQ())
 	irq.SetPrio(rtos.IRQPrioHighest)
 	irq.Enable()
 }

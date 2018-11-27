@@ -67,7 +67,7 @@ func init() {
 	u.Enable()
 	//u.EnableRx()
 	u.EnableTx()
-	rtos.IRQ(u.P.NVIC()).Enable()
+	rtos.IRQ(u.P.NVIRQ()).Enable()
 	fmt.DefaultWriter = linewriter.New(
 		bufio.NewWriterSize(u, 80),
 		linewriter.CRLF,
@@ -79,7 +79,7 @@ func init() {
 	lcdspi.P.StorePSEL(spi.SCK, ilisck)
 	lcdspi.P.StorePSEL(spi.MISO, ilimiso)
 	lcdspi.P.StorePSEL(spi.MOSI, ilimosi)
-	rtos.IRQ(lcdspi.P.NVIC()).Enable()
+	rtos.IRQ(lcdspi.P.NVIRQ()).Enable()
 
 	// LCD controll
 

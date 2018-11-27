@@ -47,7 +47,7 @@ func init() {
 	udrv.P.StoreBAUDRATE(uart.Baud115200)
 	udrv.P.StoreENABLE(true)
 	udrv.EnableTx()
-	rtos.IRQ(udrv.P.NVIC()).Enable()
+	rtos.IRQ(udrv.P.NVIRQ()).Enable()
 	fmt.DefaultWriter = udrv
 }
 

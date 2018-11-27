@@ -30,7 +30,7 @@ func (d *Driver) writeISR() {
 		if txptr < txmax {
 			p.StoreTXD(*(*byte)(unsafe.Pointer(txptr)))
 		} else if txptr > txmax {
-			p.NVIC().ClearPending() // Can be edge triggered during ISR.
+			p.NVIRQ().ClearPending() // Can be edge triggered during ISR.
 			d.done.Signal(1)
 			return
 		}
@@ -51,7 +51,7 @@ func (d *Driver) readISR() {
 		if rxptr < rxmax {
 			p.StoreTXD(0xFF)
 		} else if rxptr > rxmax {
-			p.NVIC().ClearPending() // Can be edge triggered during ISR.
+			p.NVIRQ().ClearPending() // Can be edge triggered during ISR.
 			d.done.Signal(1)
 			return
 		}
@@ -81,7 +81,7 @@ func (d *Driver) writeReadISR() {
 				// There is still one byte to receive.
 				continue
 			} else if rxptr > rxmax {
-				p.NVIC().ClearPending() // Can be edge triggered during ISR.
+				p.NVIRQ().ClearPending() // Can be edge triggered during ISR.
 				d.done.Signal(1)
 				return
 			}
@@ -207,7 +207,7 @@ func (d *Driver) repeatByteISR() {
 		if n > 0 {
 			p.StoreTXD(b)
 		} else if n < 0 {
-			p.NVIC().ClearPending() // Can be edge triggered during ISR.
+			p.NVIRQ().ClearPending() // Can be edge triggered during ISR.
 			d.done.Signal(1)
 			return
 		}

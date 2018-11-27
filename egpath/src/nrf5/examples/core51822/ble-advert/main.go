@@ -60,7 +60,7 @@ func init() {
 	r.StoreCRCCNF(3, true)
 	r.StoreCRCPOLY(0x100065B)
 	r.StoreSHORTS(radio.READY_START | radio.END_DISABLE)
-	rtos.IRQ(r.NVIC()).Enable()
+	rtos.IRQ(r.NVIRQ()).Enable()
 
 	rnd.Seed(rtos.Nanosec())
 }
