@@ -194,84 +194,84 @@ func (p *Periph) StoreMODE(mode Mode) {
 	p.mode.StoreBits(0xf, uint32(mode))
 }
 
-type PktConf0 uint32
+type PktCnf0 uint32
 
 const (
-	Pre8b     PktConf0 = 0
-	Pre16b    PktConf0 = 1 << 24
-	S0_0b     PktConf0 = 0
-	S0_8b     PktConf0 = 1 << 8
-	S1AutoRAM PktConf0 = 0
-	S1AlwsRAM PktConf0 = 1 << 20
+	Pre8b     PktCnf0 = 0
+	Pre16b    PktCnf0 = 1 << 24
+	S0_0b     PktCnf0 = 0
+	S0_8b     PktCnf0 = 1 << 8
+	S1AutoRAM PktCnf0 = 0
+	S1AlwsRAM PktCnf0 = 1 << 20
 )
 
-func LenBitN(n int) PktConf0 {
-	return PktConf0(n & 15)
+func LenBitN(n int) PktCnf0 {
+	return PktCnf0(n & 15)
 }
 
-func S1BitN(n int) PktConf0 {
-	return PktConf0(n & 15 << 16)
+func S1BitN(n int) PktCnf0 {
+	return PktCnf0(n & 15 << 16)
 }
 
 // LenBitN returns number of bits used for LENGTH field.
-func (c PktConf0) LenBitN() int {
+func (c PktCnf0) LenBitN() int {
 	return int(c & 15)
 }
 
 // S1BitN returns number of bits used for S1 field.
-func (c PktConf0) S1BitN() int {
+func (c PktCnf0) S1BitN() int {
 	return int(c >> 16 & 15)
 }
 
-func (p *Periph) LoadPCNF0() PktConf0 {
-	return PktConf0(p.pcnf0.Load())
+func (p *Periph) LoadPCNF0() PktCnf0 {
+	return PktCnf0(p.pcnf0.Load())
 }
 
-func (p *Periph) StorePCNF0(pcnf PktConf0) {
+func (p *Periph) StorePCNF0(pcnf PktCnf0) {
 	p.pcnf0.Store(uint32(pcnf))
 }
 
-type PktConf1 uint32
+type PktCnf1 uint32
 
 const (
-	LSBFirst PktConf1 = 0
-	MSBFirst PktConf1 = 1 << 24
-	WhiteDis PktConf1 = 0
-	WhiteEna PktConf1 = 1 << 25
+	LSBFirst PktCnf1 = 0
+	MSBFirst PktCnf1 = 1 << 24
+	WhiteDis PktCnf1 = 0
+	WhiteEna PktCnf1 = 1 << 25
 )
 
-func MaxLen(n int) PktConf1 {
-	return PktConf1(n & 0xff)
+func MaxLen(n int) PktCnf1 {
+	return PktCnf1(n & 0xff)
 }
 
-func StatLen(n int) PktConf1 {
-	return PktConf1(n & 0xff << 8)
+func StatLen(n int) PktCnf1 {
+	return PktCnf1(n & 0xff << 8)
 }
 
-func BALen(n int) PktConf1 {
-	return PktConf1(n & 7 << 16)
+func BALen(n int) PktCnf1 {
+	return PktCnf1(n & 7 << 16)
 }
 
 // MaxLen returns maximum length of packet payload in bytes.
-func (c PktConf1) MaxLen() int {
+func (c PktCnf1) MaxLen() int {
 	return int(c & 0xff)
 }
 
 // StatLen returns static length of payload in bytes.
-func (c PktConf1) StatLen() int {
+func (c PktCnf1) StatLen() int {
 	return int(c >> 8 & 0xff)
 }
 
 // BALen returns number of bytes used as base address.
-func (c PktConf1) BALen() int {
+func (c PktCnf1) BALen() int {
 	return int(c >> 16 & 7)
 }
 
-func (p *Periph) LoadPCNF1() PktConf1 {
-	return PktConf1(p.pcnf1.Load())
+func (p *Periph) LoadPCNF1() PktCnf1 {
+	return PktCnf1(p.pcnf1.Load())
 }
 
-func (p *Periph) StorePCNF1(pcnf PktConf1) {
+func (p *Periph) StorePCNF1(pcnf PktCnf1) {
 	p.pcnf1.Store(uint32(pcnf))
 }
 
