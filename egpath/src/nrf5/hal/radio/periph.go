@@ -205,10 +205,12 @@ const (
 	S1AlwsRAM PktCnf0 = 1 << 20
 )
 
+// LenBitN returns PktCnf0 field that sets the length of LENGTH field to n bits.
 func LenBitN(n int) PktCnf0 {
 	return PktCnf0(n & 15)
 }
 
+// S1BitN returns PktCnf0 field that sets the length of S1 field to n bits.
 func S1BitN(n int) PktCnf0 {
 	return PktCnf0(n & 15 << 16)
 }
@@ -240,14 +242,20 @@ const (
 	WhiteEna PktCnf1 = 1 << 25
 )
 
+// MaxLen returns PktCnf1 field that sets the maximum length of packet payload
+// to n bytes.
 func MaxLen(n int) PktCnf1 {
 	return PktCnf1(n & 0xff)
 }
 
+// StatLen returns PktCnf1 field that sets the static length of payload to
+// n bytes.
 func StatLen(n int) PktCnf1 {
 	return PktCnf1(n & 0xff << 8)
 }
 
+// BALen returns PktCnf1 field that sets the number of bytes used as base
+// address
 func BALen(n int) PktCnf1 {
 	return PktCnf1(n & 7 << 16)
 }
