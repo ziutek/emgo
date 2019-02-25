@@ -66,7 +66,7 @@ func (w *waterHeaterControl) SetDesiredTemp16(temp16 int) {
 
 func (w *waterHeaterControl) LastPower() int {
 	pwmMax := w.pwm.Max()
-	return 24 * atomic.LoadInt(&w.lastPWM) / pwmMax
+	return 21 * atomic.LoadInt(&w.lastPWM) / pwmMax
 }
 
 const waterPWMPeriod = 500 // ms
@@ -76,9 +76,9 @@ func (w *waterHeaterControl) Init(timPWM, timCnt *tim.TIM_Periph, pclk uint) {
 	w.pwm.Init(timPWM)
 	w.cnt.Init(timCnt)
 	w.tempResp = make(chan int, 1)
-	w.SetDesiredTemp16(41 * 16) // °C/16
+	w.SetDesiredTemp16(43 * 16) // °C/16
 	w.lastTemp16 = 20 * 16      // °C/16
-	w.scale = w.pwm.Max() / 1200
+	w.scale = w.pwm.Max() / 1024
 }
 
 var water waterHeaterControl
@@ -92,7 +92,7 @@ func waterPWMISR() {
 	water.pwm.ClearIF()
 	cnt := water.cnt.LoadAndReset()
 
-	const coldWaterTemp16 = 15 * 16 // Typical input water temp. [°C/16]
+	const coldWaterTemp16 = 14 * 16 // Typical input water temp. [°C/16]
 	desiredTemp16 := atomic.LoadInt(&water.desiredTemp16)
 	delta16 := desiredTemp16 - coldWaterTemp16
 
