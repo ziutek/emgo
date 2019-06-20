@@ -1,6 +1,7 @@
 package main
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -88,6 +89,7 @@ func bits(r *scanner, pkgs []*Package) {
 		mask uint32
 		pos  uint
 	})
+	bitRegexp := regexp.MustCompile(`_\d$`)
 	for r.Scan() {
 		line := strings.TrimSpace(r.Text())
 		if def := doxy(line, "#define"); def != "" {
@@ -118,6 +120,11 @@ func bits(r *scanner, pkgs []*Package) {
 				if msk {
 					if n := strings.Index(mask, "<<"); n > 0 {
 						mask = strings.TrimSpace(mask[:n])
+					}
+				} else {
+					if bitRegexp.MatchString(name) {
+						warn(name, " looks like a bit alias, and we don't know how to handle those, skipping")
+						continue
 					}
 				}
 				mask = strings.TrimSuffix(mask, "U")

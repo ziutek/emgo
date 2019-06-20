@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -38,6 +39,8 @@ func lastTweaks(pkg *Package) {
 			dmaRequest(p)
 		case "SDIO":
 			sdio(p)
+		case "DSI":
+			dsi(p)
 		}
 	}
 }
@@ -388,4 +391,29 @@ func sdio(p *Periph) {
 		regs = append(regs, r)
 	}
 	p.Regs = regs
+}
+
+func dsi(p *Periph) {
+	// DSI uses the same bit name in multiple registers; need to prefix them so the consts don't conflict
+	bitMap := make(map[string][]*Register, 0)
+	for _, r := range p.Regs {
+		for _, b := range r.Bits {
+			if _, ok := bitMap[b.Name]; !ok {
+				bitMap[b.Name] = make([]*Register, 0)
+			}
+			bitMap[b.Name] = append(bitMap[b.Name], r)
+		}
+	}
+
+	for name, regs := range bitMap {
+		if len(regs) > 1 {
+			for _, r := range regs {
+				for _, b := range r.Bits {
+					if b.Name == name {
+						b.Name = fmt.Sprintf("%s_%s", r.Name, b.Name)
+					}
+				}
+			}
+		}
+	}
 }
