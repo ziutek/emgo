@@ -1,7 +1,7 @@
 package nvic
 
 // IRQ represents Cortex-M external interrupt.
-type IRQ byte
+type IRQ byte // BUG: ARMv7-M supports up to 496 external interrupts
 
 // Enabled returns true if handler for irq is enabled.
 func (irq IRQ) Enabled() bool {
