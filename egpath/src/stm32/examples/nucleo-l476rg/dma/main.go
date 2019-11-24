@@ -18,21 +18,20 @@ import (
 
 var (
 	ch     *dma.Channel
-	dmaErr dma.Error
 	tce    rtos.EventFlag
 )
 
 func init() {
-	system.Setup168(8)
+	system.Setup80(0, 0)
 	systick.Setup(2e6)
 
-	d := dma.DMA2
+	d := dma.DMA1
 	d.EnableClock(true)
-	ch = d.Channel(0, 0)
-	rtos.IRQ(irq.DMA2_Stream0).Enable()
+	ch = d.Channel(1, 0)
+	rtos.IRQ(irq.DMA1_Channel1).Enable()
 }
 
-const n = 40 * 1024 / 4
+const n = 20 * 1024 / 4
 
 var (
 	src = make([]uint32, n)
@@ -55,9 +54,9 @@ func printSpeed(t int64, check bool) {
 	fmt.Printf(" %6d kB/s\n", (int64(n*unsafe.Sizeof(dst[0]))*1e6+dt/2)/dt)
 }
 
-func copyDMA(mode dma.Mode) {
+func copyDMA() {
 	tce.Reset(0)
-	ch.Setup(dma.MTM | dma.IncP | dma.IncM | mode)
+	ch.Setup(dma.MTM | dma.IncP | dma.IncM)
 	ch.SetWordSize(unsafe.Sizeof(src[0]), unsafe.Sizeof(dst[0]))
 	ch.SetLen(n)
 	ch.SetAddrP(unsafe.Pointer(&src[0]))
@@ -97,34 +96,9 @@ func main() {
 
 		fmt.Printf("DMA                                   ")
 		t = rtos.Nanosec()
-		copyDMA(0)
+		copyDMA()
 		printSpeed(t, true)
-
-		fmt.Printf("DMA FT1                               ")
-		t = rtos.Nanosec()
-		copyDMA(dma.FT1)
-		printSpeed(t, true)
-
-		fmt.Printf("DMA FT2                               ")
-		t = rtos.Nanosec()
-		copyDMA(dma.FT2)
-		printSpeed(t, true)
-
-		fmt.Printf("DMA FT3                               ")
-		t = rtos.Nanosec()
-		copyDMA(dma.FT3)
-		printSpeed(t, true)
-
-		fmt.Printf("DMA FT4                               ")
-		t = rtos.Nanosec()
-		copyDMA(dma.FT4)
-		printSpeed(t, true)
-
-		fmt.Printf("DMA FT4 PB4 MB4                       ")
-		t = rtos.Nanosec()
-		copyDMA(dma.FT4 | dma.PB4 | dma.MB4)
-		printSpeed(t, true)
-
+		
 		delay.Millisec(2e3)
 		fmt.Println()
 	}
@@ -138,5 +112,5 @@ func dmaISR() {
 //emgo:const
 //c:__attribute__((section(".ISRs")))
 var ISRs = [...]func(){
-	irq.DMA2_Stream0: dmaISR,
+	irq.DMA1_Channel1: dmaISR,
 }
