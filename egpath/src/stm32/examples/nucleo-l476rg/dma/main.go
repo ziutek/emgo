@@ -106,6 +106,7 @@ func main() {
 
 func dmaISR() {
 	ch.DisableIRQ(dma.EvAll, dma.ErrAll)
+	ch.Disable()
 	tce.Signal(1)
 }
 
