@@ -39,6 +39,6 @@ const (
 	// ReturnPSP: exception will return to thread mode using PSP.
 	ReturnPSP = 0xd
 
-	// UseFPSMask: if set there is floating-point state saved on stack.
-	UseFPSMask = 0x10
+	// BasicFrame: if set there is no floating-point state saved on stack.
+	BasicFrame = 0x10
 )

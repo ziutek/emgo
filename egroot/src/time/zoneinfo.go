@@ -1,3 +1,7 @@
+// Copyright 2019 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package time
 
 type Zone struct {
@@ -12,7 +16,7 @@ type Zone struct {
 // last weekday at end of month or to do not lose first weekday at beginning of
 // month.
 type DST struct {
-	Zone  Zone
+	Zone  *Zone
 	Start uint32
 	End   uint32
 }
@@ -29,7 +33,6 @@ func (l *Location) String() string {
 	return l.Name
 }
 
-//emgo:const
 var (
 	utcZone = Zone{"UTC", 0}
 	utcLoc  = Location{"UTC", &utcZone, nil}
