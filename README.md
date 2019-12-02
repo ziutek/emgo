@@ -1,5 +1,17 @@
 ### Emgo
 
+Emgo consist of compiler (based on Go to C translation) and set of packages that
+allows you to run Go programs on  small 32-bit microcontrollers.
+
+There is [Embedded Go](https://github.com/embeddedgo) project that envolved from
+Emgo which is based on the [reference Go compiler](https://golang.org). It has
+much higher hardware requirements but it is also 100% compatible with the [Go
+language specification](https://golang.org/ref/spec). The main development
+process has moved to Embeadded Go but I still use Emgo for small MCUs so some
+things can be backported here.
+
+### How to start
+
 First of all, to try Emgo you need the [Go compiler](https://golang.org/) installed. The current Emgo compiler and whole process described below requires also some kind of Unix-like operating system. There is a chance that Windows with Cygwin can be used but this was not tested.
 
 You can probably use `go get` to install Emgo but the preferred way is to clone this repository using the git command:
