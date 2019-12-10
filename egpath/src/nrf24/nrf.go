@@ -1,7 +1,7 @@
 package nrf24
 
-// DCI represents the simplified nRF24L01(+) Data and Control Interface: only SPI
-// part of full DCI is need.
+// DCI represents the simplified nRF24L01(+) Data and Control Interface: only
+// SPI part of the full DCI is need.
 type DCI interface {
 	// WriteRead performs full SPI transation: sets CSN low, writes and reads oi
 	// data and sets CSN high.
