@@ -19,7 +19,7 @@ var leds [4]gpio.Pin
 func init() {
 	// Initialize system and runtime.
 	system.Setup(clock.XTAL, clock.XTAL, true)
-	rtcst.Setup(rtc.RTC0, 1)
+	rtcst.Setup(rtc.RTC1, 1)
 
 	// Configure P0.18 as SWO (fmt.Print* functions use it as standard output).
 	clock.StoreTRACECONFIG(clock.T4MHz, clock.Serial)
