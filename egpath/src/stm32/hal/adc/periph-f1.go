@@ -109,7 +109,7 @@ func (p *Periph) setSamplTime(ch int, st SamplTime) {
 }
 
 func (p *Periph) setSequence(ch []int) {
-	if len(ch) > 17 {
+	if len(ch) > 16 {
 		panicSeq()
 	}
 	sqr1 := adc.SQR1(len(ch)-1) << adc.Ln
@@ -143,6 +143,7 @@ func (p *Periph) setSequence(ch []int) {
 		sqr1 |= adc.SQR1(c) << (uint(i) * 5)
 	}
 	raw.SQR1.Store(sqr1)
+	raw.SCAN().Set()
 }
 
 func (p *Periph) setTrigSrc(src TrigSrc) {
@@ -184,5 +185,15 @@ func (p *Periph) disableDMA() {
 }
 
 func (p *Periph) start() {
+	if p.raw.ADON().Load() == 0 {
+		p.raw.ADON().Set()
+		for p.raw.ADON().Load() == 0 {
+			rtos.SchedYield()
+		}
+	}
 	p.raw.ADON().Set()
+}
+
+func (p *Periph) stop() {
+	p.raw.ADON().Clear()
 }

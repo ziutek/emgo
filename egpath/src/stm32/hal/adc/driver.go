@@ -67,18 +67,15 @@ func (d *Driver) DMAISR() {
 	d.done.Signal(1)
 }
 
-// watch requires: ev!=0 || err!=0.
 func (d *Driver) watch(ev Event, err Error) {
 	d.done.Reset(0)
-	d.waitfor = uint32(ev)<<16 | uint32(err)
-	p := d.P
-	p.Clear(ev, err)
-	p.EnableIRQ(ev, err)
+	if waitfor := uint32(ev)<<16 | uint32(err); waitfor != 0 {
+		d.waitfor = uint32(ev)<<16 | uint32(err)
+		p := d.P
+		p.Clear(ev, err)
+		p.EnableIRQ(ev, err)
+	}
 	fence.W() // To order writes to normal and I/O memory.
-}
-
-func (d *Driver) happened() bool {
-	return atomic.LoadUint32(&d.waitfor) == 0
 }
 
 func (d *Driver) readDMA(maddr unsafe.Pointer, n int, wsize uintptr) (int, error) {
@@ -93,13 +90,14 @@ func (d *Driver) readDMA(maddr unsafe.Pointer, n int, wsize uintptr) (int, error
 	enableDMA(ch, 0, 0, unsafe.Pointer(paddr), maddr, wsize, n)
 	p.EnableDMA(false)
 	d.watch(0, ErrAll)
-	acceptTrig(p)
+	p.Start()
 	d.done.Wait(1, 0)
+	p.Stop()
 	ch.Disable() // Required by STM32F1 to allow setup next transfer.
 	p.DisableDMA()
 	var err error
 	switch {
-	case d.happened():
+	case ErrAll != 0 && atomic.LoadUint32(&d.waitfor) == 0:
 		ch.DisableIRQ(dma.EvAll, dma.ErrAll)
 		_, err = p.Status()
 	default:

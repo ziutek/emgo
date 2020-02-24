@@ -21,6 +21,3 @@ func (d *Driver) enable(calibrate bool) {
 	d.done.Wait(1, 0)
 }
 
-func acceptTrig(p *Periph) {
-	p.Start()
-}

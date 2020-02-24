@@ -325,6 +325,6 @@ func (p *Periph) Started() bool {
 	return p.raw.ADSTART().Load() != 0
 }
 
-func (p *Periph) Stop() {
+func (p *Periph) stop() {
 	p.raw.CR.Store(adc.ADSTP | advregen)
 }

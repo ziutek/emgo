@@ -134,7 +134,7 @@ func (d *CircDriver) Start(wordSize, byteOffset uintptr) {
 	)
 	p.EnableDMA(true)
 	d.watch(^EvAll)
-	acceptTrig(p)
+	p.Start()
 }
 
 func (d *CircDriver) Stop() {

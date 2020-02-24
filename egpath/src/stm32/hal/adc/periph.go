@@ -159,3 +159,7 @@ func (p *Periph) DisableDMA() {
 func (p *Periph) Start() {
 	p.start()
 }
+
+func (p *Periph) Stop() {
+	p.stop()
+}

@@ -14,6 +14,3 @@ func (d *Driver) enable(calibrate bool) {
 		p.Calibrate()
 	}
 }
-
-func acceptTrig(_ *Periph) {
-}
