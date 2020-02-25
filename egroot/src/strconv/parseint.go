@@ -146,8 +146,34 @@ func ParseStringInt32(s string, base int) (int32, error) {
 	if err != nil {
 		return 0, err
 	}
-	if u > 0x80000000 || sign > 0 && u == 0x80000000 {
+	if u > 1<<31 || sign > 0 && u == 1<<31 {
 		return 0, ErrRange
 	}
 	return sign * int32(u), nil
+}
+
+func ParseStringInt64(s string, base int) (int64, error) {
+	sign := int64(1)
+	if s[0] == '-' {
+		sign = -1
+		s = s[1:]
+	}
+	u, err := ParseStringUint64(s, base)
+	if err != nil {
+		return 0, err
+	}
+	if u > 1<<63 || sign > 0 && u == 1<<63 {
+		return 0, ErrRange
+	}
+	return sign * int64(u), nil
+}
+
+func ParseStringInt(s string, base int) (int, error) {
+	if intSize <= 4 {
+		u, err := ParseStringInt32(s, base)
+		return int(u), err
+	} else {
+		u, err := ParseStringInt64(s, base)
+		return int(u), err
+	}
 }
