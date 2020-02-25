@@ -55,6 +55,26 @@ func IndexByte(s []byte, c byte) int {
 	return -1
 }
 
+// TrimSpace returns a slice of the s, with all leading and trailing white
+// space removed. BUG: unicode whitespaces not supported.
+func TrimSpace(s []byte) []byte {
+	for len(s) != 0 {
+		b := s[0]
+		if b != ' ' && b != '\t' && b != '\r' && b != '\n' {
+			break
+		}
+		s = s[1:]
+	}
+	for len(s) != 0 {
+		b := s[len(s)-1]
+		if b != ' ' && b != '\t' && b != '\r' && b != '\n' {
+			break
+		}
+		s = s[:len(s)-1]
+	}
+	return s
+}
+
 /*
 // Index returns the index of first sep in s or -1 if there is no sep in s.
 func Index(s, sep []byte) int {

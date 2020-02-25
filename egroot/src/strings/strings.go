@@ -22,3 +22,23 @@ func HasPrefix(s, prefix string) bool {
 	}
 	return true
 }
+
+// TrimSpace returns a slice of the string s, with all leading and trailing
+// white space removed. BUG: unicode whitespaces not supported.
+func TrimSpace(s string) string {
+	for len(s) != 0 {
+		b := s[0]
+		if b != ' ' && b != '\t' && b != '\r' && b != '\n' {
+			break
+		}
+		s = s[1:]
+	}
+	for len(s) != 0 {
+		b := s[len(s)-1]
+		if b != ' ' && b != '\t' && b != '\r' && b != '\n' {
+			break
+		}
+		s = s[:len(s)-1]
+	}
+	return s
+}
