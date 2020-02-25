@@ -65,7 +65,7 @@ func (dec *u64decoder) PushDigit(digit byte) error {
 }
 
 func getBase(b0, b1 byte) (base, offset int) {
-	if b0 == 0 {
+	if b0 == '0' {
 		if b1 == 'x' || b1 == 'X' {
 			return 16, 2
 		}
@@ -134,4 +134,20 @@ func ParseStringUint(s string, base int) (uint, error) {
 		u, err := ParseStringUint64(s, base)
 		return uint(u), err
 	}
+}
+
+func ParseStringInt32(s string, base int) (int32, error) {
+	sign := int32(1)
+	if s[0] == '-' {
+		sign = -1
+		s = s[1:]
+	}
+	u, err := ParseStringUint32(s, base)
+	if err != nil {
+		return 0, err
+	}
+	if u > 0x80000000 || sign > 0 && u == 0x80000000 {
+		return 0, ErrRange
+	}
+	return sign * int32(u), nil
 }
