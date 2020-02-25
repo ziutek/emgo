@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"rtos"
+	"strconv"
 
 	"stm32/hal/adc"
 	"stm32/hal/dma"
@@ -15,8 +18,6 @@ import (
 
 	"stm32/hal/raw/rcc"
 	"stm32/hal/raw/tim"
-
-	"github.com/ziutek/emgo/egroot/src/delay"
 )
 
 var (
@@ -26,17 +27,29 @@ var (
 )
 
 const (
-	IN0   = 0
-	IN1   = 1
-	IN3   = 2
-	IN4   = 3
-	INVCC = 4
-	IN6   = 5
-	IN7   = 6
-	IN8   = 7
-	IN9   = 8
-	NIN   = 9
+	in0 = 0
+	in1 = 1
+	in3 = 2
+	in4 = 3
+	vcc = 4
+	in6 = 5
+	in7 = 6
+	in8 = 7
+	in9 = 8
+	nin = 9
 )
+
+var instr = [nin]string{
+	in0: "in0",
+	in1: "in1",
+	in3: "in3",
+	in4: "in4",
+	vcc: "vcc",
+	in6: "in6",
+	in7: "in7",
+	in8: "in8",
+	in9: "in9",
+}
 
 func init() {
 	system.SetupPLL(8, 1, 36/8)
@@ -44,23 +57,23 @@ func init() {
 
 	// GPIO
 
-	var apins [NIN]gpio.Pin
+	var apins [nin]gpio.Pin
 
 	gpio.A.EnableClock(true)
-	apins[IN0] = gpio.A.Pin(0)
-	apins[IN1] = gpio.A.Pin(1)
+	apins[in0] = gpio.A.Pin(0)
+	apins[in1] = gpio.A.Pin(1)
 	opin := gpio.A.Pin(2) // USART2_TX for one-wire bus
-	apins[IN3] = gpio.A.Pin(3)
-	apins[IN4] = gpio.A.Pin(4)
-	apins[INVCC] = gpio.A.Pin(5)
-	apins[IN6] = gpio.A.Pin(6)
-	apins[IN7] = gpio.A.Pin(7)
+	apins[in3] = gpio.A.Pin(3)
+	apins[in4] = gpio.A.Pin(4)
+	apins[vcc] = gpio.A.Pin(5)
+	apins[in6] = gpio.A.Pin(6)
+	apins[in7] = gpio.A.Pin(7)
 	tx := gpio.A.Pin(9)
 	rx := gpio.A.Pin(10)
 
 	gpio.B.EnableClock(true)
-	apins[IN8] = gpio.B.Pin(0)
-	apins[IN9] = gpio.B.Pin(1)
+	apins[in8] = gpio.B.Pin(0)
+	apins[in9] = gpio.B.Pin(1)
 
 	// DMA
 	dma1 := dma.DMA1
@@ -71,7 +84,7 @@ func init() {
 	tx.Setup(&gpio.Config{Mode: gpio.Alt})
 	rx.Setup(&gpio.Config{Mode: gpio.AltIn, Pull: gpio.PullUp})
 	tts = usart.NewDriver(
-		usart.USART1, dma1.Channel(4, 0), dma1.Channel(5, 0), make([]byte, 40),
+		usart.USART1, dma1.Channel(4, 0), dma1.Channel(5, 0), make([]byte, 80),
 	)
 	tts.Periph().EnableClock(true)
 	tts.Periph().SetBaudRate(115200)
@@ -124,52 +137,97 @@ func main() {
 	adct.ARR.Store(tim.ARR(div2 - 1))
 	adct.EGR.Store(tim.UG)
 
-	const n = 256 // number of samples per input
-	buf := make([]uint16, n*NIN)
 
-	const (
-		avcc   = 5000.0 / 28.0 // A/VCC
-		offset = 10
-	)
+	const n = 300 // number of samples per input
+
+	buf := make([]uint16, n*nin)
+	var base [nin]int32
 
 	for {
-		_, err := adcd.Read16(buf)
-		checkErr(err)
+		skipLine()
 
-		for i := 0; i < len(buf); i += NIN {
-			for k := 0; k < NIN; k++ {
-				fmt.Printf("%4d ", buf[i+k])
-			}
-			fmt.Printf("\r\n")
+		if _, err := adcd.Read16(buf); err != nil {
+			fmt.Printf("error: %s\r\n", err.Error())
+			continue
 		}
 
 		yvcc := int32(0)
-		for i := INVCC; i < len(buf); i += NIN {
+		for i := vcc; i < len(buf); i += nin {
 			yvcc += int32(buf[i])
 		}
-		yvcc /= n
+		yvcc = yvcc / n
 
-		y0 := yvcc/2 - offset
+		fmt.Printf("vcc: %d\r\n", yvcc)
 
-		y6avg := int32(0)
-		y6rms := uint32(0)
-		for i := IN6; i < len(buf); i += NIN {
-			dy := int32(buf[i]) - y0
-			y6avg += dy
-			y6rms += uint32(dy * dy)
+		if err := readBase(&base); err != nil {
+			fmt.Printf("error: %s\r\n", err.Error())
+			continue
 		}
-		y6avg /= n
-		y6rms = sqrt(y6rms / n)
 
-		scale := avcc / float64(yvcc)
+		fmt.Printf("base: %d\r\n", base[:])
 
-		fmt.Printf(
-			"yavg = %d  iavg = %.1f A  yrms = %d irms = %.1f A\r\n",
-			y6avg, float64(y6avg)*scale,
-			y6rms, float64(y6rms)*scale,
-		)
-		delay.Millisec(1e3)
+		for i := 0; i < nin; i++ {
+			y0 := base[i]
+			var ysum int32
+			var ysum2 uint64
+			for k := i; k < len(buf); k += nin {
+				y := int32(buf[k]) - y0
+				ysum += y
+				ysum2 += uint64(y * y)
+			}
+			fmt.Printf(
+				"%s: %d %d\r\n",
+				instr[i], ysum/n, sqrt(uint32(ysum2/n)),
+			)
+		}
 	}
+
+	/*
+
+
+			avcc   = 5000.0 / 28.0 // A/VCC
+			offset = 10
+
+		for {
+			_, err := adcd.Read16(buf)
+			checkErr(err)
+
+			for i := 0; i < len(buf); i += NIN {
+				for k := 0; k < NIN; k++ {
+					fmt.Printf("%4d ", buf[i+k])
+				}
+				fmt.Printf("\r\n")
+			}
+
+			yvcc := int32(0)
+			for i := INVCC; i < len(buf); i += NIN {
+				yvcc += int32(buf[i])
+			}
+			yvcc /= n
+
+			y0 := yvcc/2 - offset
+
+			y6avg := int32(0)
+			y6rms := uint32(0)
+			for i := IN6; i < len(buf); i += NIN {
+				dy := int32(buf[i]) - y0
+				y6avg += dy
+				y6rms += uint32(dy * dy)
+			}
+			y6avg /= n
+			y6rms = sqrt(y6rms / n)
+
+			scale := avcc / float64(yvcc)
+
+			fmt.Printf(
+				"yavg = %d  iavg = %.1f A  yrms = %d irms = %.1f A\r\n",
+				y6avg, float64(y6avg)*scale,
+				y6rms, float64(y6rms)*scale,
+			)
+			delay.Millisec(1e3)
+		}
+
+	*/
 }
 
 func ttsISR() {
@@ -204,6 +262,67 @@ var ISRs = [...]func(){
 }
 
 //// utils
+
+func nextInt32(s []byte) ([]byte, int32, error) {
+	i := 0
+	for i < len(s) {
+		b := s[i]
+		if b == ' ' || b == '\t' {
+			break
+		}
+		i++
+	}
+	v, err := strconv.ParseInt32(s[:i], 0)
+	return s[i:], v, err
+}
+
+func skipLine() error {
+	for {
+		b, err := tts.ReadByte()
+		if err != nil {
+			return err
+		}
+		if b == '\n' || b == '\r' {
+			return nil
+		}
+	}
+}
+
+func readBase(base *[nin]int32) error {
+	var buf [80]byte
+	i := -1
+	for {
+		i++
+		b, err := tts.ReadByte()
+		if err != nil {
+			return err
+		}
+		if b == '\n' || b == '\r' {
+			break
+		}
+		if i == len(buf) {
+			return errors.New("line too long")
+		}
+		buf[i] = b
+	}
+	s := buf[:i]
+	for i := 0; i < nin; i++ {
+		s = bytes.TrimSpace(s)
+		if len(s) == 0 {
+			break
+		}
+		var (
+			v   int32
+			err error
+		)
+		s, v, err = nextInt32(s)
+		if err != nil {
+			return err
+		}
+		base[i] = v
+	}
+	return nil
+}
 
 func draw(w io.Writer, x uint16) {
 	const s = "                                                                                                                                                                                                                                                                "
