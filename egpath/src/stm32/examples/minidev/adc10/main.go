@@ -181,53 +181,6 @@ func main() {
 			)
 		}
 	}
-
-	/*
-
-
-			avcc   = 5000.0 / 28.0 // A/VCC
-			offset = 10
-
-		for {
-			_, err := adcd.Read16(buf)
-			checkErr(err)
-
-			for i := 0; i < len(buf); i += NIN {
-				for k := 0; k < NIN; k++ {
-					fmt.Printf("%4d ", buf[i+k])
-				}
-				fmt.Printf("\r\n")
-			}
-
-			yvcc := int32(0)
-			for i := INVCC; i < len(buf); i += NIN {
-				yvcc += int32(buf[i])
-			}
-			yvcc /= n
-
-			y0 := yvcc/2 - offset
-
-			y6avg := int32(0)
-			y6rms := uint32(0)
-			for i := IN6; i < len(buf); i += NIN {
-				dy := int32(buf[i]) - y0
-				y6avg += dy
-				y6rms += uint32(dy * dy)
-			}
-			y6avg /= n
-			y6rms = sqrt(y6rms / n)
-
-			scale := avcc / float64(yvcc)
-
-			fmt.Printf(
-				"yavg = %d  iavg = %.1f A  yrms = %d irms = %.1f A\r\n",
-				y6avg, float64(y6avg)*scale,
-				y6rms, float64(y6rms)*scale,
-			)
-			delay.Millisec(1e3)
-		}
-
-	*/
 }
 
 func ttsISR() {
