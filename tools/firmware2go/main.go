@@ -29,7 +29,7 @@ func main() {
 		_, err = w.WriteString("//emgo:const\nvar firmware = [...]byte{")
 		checkErr(err)
 		for i, b := range data {
-			if i%15 == 0 {
+			if i%16 == 0 {
 				_, err = w.WriteString("\n\t")
 				checkErr(err)
 			}
@@ -42,7 +42,7 @@ func main() {
 		_, err = w.WriteString("const firmware = \"")
 		checkErr(err)
 		for i, b := range data {
-			if i%18 == 0 {
+			if i%16 == 0 {
 				_, err = w.WriteString("\" +\n\t\"")
 				checkErr(err)
 			}

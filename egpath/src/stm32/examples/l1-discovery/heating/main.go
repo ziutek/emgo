@@ -31,8 +31,10 @@ func irqen(irq nvic.IRQ, prio16 rtos.IRQPrio) {
 }
 
 func init() {
-	system.Setup32(0)
+	system.Setup32(0) // use 8MHz HSI as clock source
 	systick.Setup(2e6)
+
+	rcc.RCC.HSITRIM().Store((16 + 1) << rcc.HSITRIMn) // trim HSI clock around 1*40 kHz up
 
 	// GPIO.
 
