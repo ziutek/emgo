@@ -75,17 +75,6 @@ done:
 	d.done.Signal(1)
 }
 
-func (d *Driver) DMAISR(ch dma.Channel) {
-	ev, err := ch.Status()
-	if ev&dma.Complete != 0 || err&^dma.ErrFIFO != 0 {
-		ch.DisableIRQ(dma.EvAll, dma.ErrAll)
-		ch.Disable() // required by non-stream DMA (eg. F0,F1,F3,L1,L4) 
-		if atomic.AddInt32(&d.dmacnt, -1) == 0 {
-			d.done.Wakeup()
-		}
-	}
-}
-
 func (d *Driver) ISR() {
 	d.p.DisableIRQ(RxNotEmpty | Err)
 	d.done.Signal(1)
