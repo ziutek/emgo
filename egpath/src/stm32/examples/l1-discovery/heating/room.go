@@ -52,7 +52,7 @@ func (r *roomHeaterControl) loop(t *tim.TIM_Periph) {
 		// Heat only if tempSensor set and cheap energy time: 22-6 and
 		// 13-15: 1/10..29/02 or 15-17: 3/01..30/09.
 		const (
-			offset     = -37 // my electric meter is 37 minutes late.
+			offset     = 1 // my electric meter is 1 minute late.
 			margin     = 5
 			nightStart = 22*60 + margin + offset
 			nightEnd   = 6*60 - margin + offset
@@ -63,7 +63,7 @@ func (r *roomHeaterControl) loop(t *tim.TIM_Periph) {
 			dayStart = 15*60 + margin + offset
 			dayEnd = 17*60 - margin + offset
 		}
-		if t.Year() >= 2020 &&
+		if t.Year() >= 2021 &&
 			dev.Type() != 0 && (hm < nightEnd || hm > nightStart ||
 			hm > dayStart && hm < dayEnd) {
 
