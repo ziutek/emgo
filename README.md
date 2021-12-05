@@ -1,7 +1,7 @@
 ### Emgo
 
-Emgo consist of compiler and set of packages that allows you to run Go programs
-on small 32-bit microcontrollers. The compiler generates C as intermediate code
+Emgo consist of a compiler and the set of packages that allows you to run Go programs
+on small 32-bit microcontrollers. The compiler generates C as an intermediate code
 and uses C compiler to produce loadable binaries.
 
 There is [Embedded Go](https://github.com/embeddedgo) project that evolved from
